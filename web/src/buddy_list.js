@@ -10,6 +10,8 @@ import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as padded_widget from "./padded_widget";
+import * as peer_data from "./peer_data";
+import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 
 class BuddyListConf {
@@ -84,20 +86,58 @@ export class BuddyList extends BuddyListConf {
         this.all_user_ids = opts.all_user_ids;
 
         this.fill_screen_with_content();
-        this.update_empty_list_placeholders();
+
+        // We do a handful of things once we're done rendering all the users,
+        // and each of these tasks need shared data that we'll compute first.
+        // (More to come in upcoming commits.)
+        const current_sub = narrow_state.stream_sub();
+        const pm_ids_set = narrow_state.pm_ids_set();
+
+        // If we have only "other users" and aren't in a stream/DM view
+        // then we don't show section headers and only show one untitled
+        // section.
+        const hide_headers = this.should_hide_headers(current_sub, pm_ids_set);
+        const subscriber_count = this.total_subscriber_count(current_sub, pm_ids_set);
+        const total_user_count = people.get_active_human_count();
+        const other_users_count = total_user_count - subscriber_count;
+        const has_inactive_users_matching_view =
+            subscriber_count > this.users_matching_view_ids.length;
+        const has_inactive_other_users = other_users_count > this.other_user_ids.length;
+
+        const data = {
+            has_inactive_users_matching_view,
+            has_inactive_other_users,
+        };
+
+        if (!hide_headers) {
+            this.update_empty_list_placeholders(data);
+        }
     }
 
-    update_empty_list_placeholders() {
+    update_empty_list_placeholders({has_inactive_users_matching_narrow, has_inactive_other_users}) {
+        let empty_list_message;
         const is_searching_users = buddy_data.get_is_searching_users();
-        const empty_list_message = is_searching_users
-            ? $t({defaultMessage: "No matching users."})
-            : $t({defaultMessage: "None."});
+        if (is_searching_users) {
+            empty_list_message = $t({defaultMessage: "No matching users."});
+        } else if (has_inactive_other_users) {
+            empty_list_message = $t({defaultMessage: "No active users."});
+        } else {
+            empty_list_message = $t({defaultMessage: "None."});
+        }
 
         $("#buddy-list-other-users").data("search-results-empty", empty_list_message);
         if ($("#buddy-list-other-users .empty-list-message").length) {
             const empty_list_widget = render_empty_list_widget_for_list({empty_list_message});
             $("#buddy-list-other-users").empty();
             $("#buddy-list-other-users").append(empty_list_widget);
+        }
+
+        if (!is_searching_users) {
+            if (has_inactive_users_matching_narrow) {
+                empty_list_message = $t({defaultMessage: "No active users."});
+            } else {
+                empty_list_message = $t({defaultMessage: "None."});
+            }
         }
 
         $("#buddy-list-users-matching-view").data("search-results-empty", empty_list_message);
@@ -162,12 +202,7 @@ export class BuddyList extends BuddyListConf {
         this.$other_users_container = $(this.other_user_list_selector);
         this.$other_users_container.append(other_users_html);
 
-        // If we have only "other users" then we don't show the headers (unless we're searching
-        // from a stream/DM view).
-        // Note that if we only have subscribed users, we still keep the sections visible.
-        const subscribed_users_is_empty =
-            this.$users_matching_view_container.children(".user_sidebar_entry").length === 0;
-        const hide_headers = subscribed_users_is_empty && !current_sub && !pm_ids_set.size;
+        const hide_headers = this.should_hide_headers(current_sub, pm_ids_set);
         $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
         $("#buddy-list-other-users-container .buddy-list-subsection-header").toggleClass(
             "no-display",
@@ -182,6 +217,29 @@ export class BuddyList extends BuddyListConf {
 
         this.render_count += more_user_ids.length;
         this.update_padding();
+    }
+
+    should_hide_headers(current_sub, pm_ids_set) {
+        // If we have only "other users" and aren't in a stream/DM view
+        // then we don't show section headers and only show one untitled
+        // section.
+        return this.users_matching_view_ids.length === 0 && !current_sub && !pm_ids_set.size;
+    }
+
+    total_subscriber_count(current_sub, pm_ids_set) {
+        // Includes inactive users who might not show up in the buddy list.
+        if (current_sub) {
+            return peer_data.get_subscriber_count(current_sub.stream_id, false);
+        } else if (pm_ids_set.size) {
+            const pm_ids_list = [...pm_ids_set];
+            // Plus one for the "me" user, who isn't in the recipients list (except
+            // for when it's a private message conversation with only "me" in it).
+            if (pm_ids_list.length === 1 && people.is_my_user_id(pm_ids_list[0])) {
+                return 1;
+            }
+            return pm_ids_list.length + 1;
+        }
+        return 0;
     }
 
     get_items() {

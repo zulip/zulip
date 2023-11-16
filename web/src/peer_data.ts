@@ -69,9 +69,18 @@ export function potential_subscribers(stream_id: number): User[] {
     return people.filter_all_users(is_potential_subscriber);
 }
 
-export function get_subscriber_count(stream_id: number): number {
-    const subscribers = get_user_set(stream_id);
-    return subscribers.size;
+export function get_subscriber_count(stream_id: number, include_bots = true): number {
+    if (include_bots) {
+        return get_user_set(stream_id).size;
+    }
+
+    let count = 0;
+    for (const user_id of get_user_set(stream_id).keys()) {
+        if (!people.user_is_bot(user_id)) {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 export function get_subscribers(stream_id: number): number[] {
