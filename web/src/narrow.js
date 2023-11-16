@@ -970,6 +970,10 @@ function handle_post_narrow_deactivate_processes(msg_list) {
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
+
+    // We may need to scroll to the selected message after swapping
+    // the currently displayed center panel to zhome.
+    message_viewport.maybe_scroll_to_selected();
 }
 
 export function deactivate() {
