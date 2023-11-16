@@ -2,9 +2,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import tippy, {delegate} from "tippy.js";
 
+import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
+import * as people from "./people";
+import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
@@ -239,7 +242,6 @@ export function initialize(): void {
     delegate("body", {
         target: [
             "#streams_header .streams-tooltip-target",
-            "#userlist-title",
             "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
@@ -519,5 +521,17 @@ export function initialize(): void {
         }),
         placement: "bottom",
         appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#userlist-title",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const total_user_count = people.get_active_human_count();
+            instance.setContent(
+                ui_util.parse_html(render_buddy_list_title_tooltip({total_user_count})),
+            );
+        },
     });
 }
