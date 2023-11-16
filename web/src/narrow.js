@@ -970,7 +970,7 @@ function handle_post_narrow_deactivate_processes(msg_list) {
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 }
 
-export function deactivate(coming_from_all_messages = true, is_actively_scrolling = false) {
+export function deactivate(message_feed_previously_hidden = false, is_actively_scrolling = false) {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -989,7 +989,7 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
     search.clear_search_form();
     // Both All messages and Recent Conversations have `undefined` filter.
     // Return if already in the All message narrow.
-    if (narrow_state.filter() === undefined && coming_from_all_messages) {
+    if (narrow_state.filter() === undefined && !message_feed_previously_hidden) {
         return;
     }
     blueslip.debug("Unnarrowed");
@@ -997,7 +997,7 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
     if (is_actively_scrolling) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
-        // on an unnarrow. Wait a bit and try again once the scrolling is over.
+        // on an unnarrow. Wait a bit and try again once the scrolling is likely over.
         setTimeout(deactivate, 50);
         return;
     }
