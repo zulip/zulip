@@ -16881,6 +16881,8 @@ paths:
                         "msg": "",
                         "email": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                       }
+                    description: |
+                      An example JSON response with the stream's email address:
         "400":
           description: Bad request.
           content:
