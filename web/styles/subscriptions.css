@@ -535,7 +535,7 @@ h4.user_group_setting_subsection_title {
             fill: hsl(240deg 41% 50%);
         }
 
-        &.disabled svg {
+        &.disabled:not(.checked) svg {
             fill: hsl(0deg 0% 87%);
             cursor: not-allowed;
         }
@@ -651,18 +651,6 @@ h4.user_group_setting_subsection_title {
     &::selection,
     .icon .hashtag::selection {
         background-color: transparent;
-    }
-}
-
-.group-row {
-    /*
-        These are temporary rules and would get removed with
-        the completion of https://github.com/zulip/zulip/issues/25538
-        as these check buttons become functional for user groups.
-    */
-    .check.disabled {
-        pointer-events: none !important;
-        visibility: hidden !important;
     }
 }
 
