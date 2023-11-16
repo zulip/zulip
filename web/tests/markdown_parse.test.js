@@ -114,7 +114,7 @@ function get_realm_emoji_url(emoji_name) {
     return realm_emoji_map.get(emoji_name);
 }
 
-const regex = /(^|\s|\u0085|\p{Z}|['"(,:<])(#foo(\d+))($|[^\p{L}\p{N}])/gu;
+const regex = /#foo(\d+)(?!\w)/g;
 const linkifier_map = new Map();
 linkifier_map.set(regex, {
     url_template: url_template_lib.parse("http://foo.com/{id}"),
@@ -287,30 +287,30 @@ run_test("topic links repeated", () => {
 
 run_test("topic links overlapping", () => {
     linkifiers.initialize([
-        {pattern: "[a-z]+(?P<id>1\\d+) :[a-z]+", url_template: "http://a.com/{id}"},
+        {pattern: "[a-z]+(?P<id>1\\d+) #[a-z]+", url_template: "http://a.com/{id}"},
         {pattern: "[a-z]+(?P<id>1\\d+)", url_template: "http://b.com/{id}"},
-        {pattern: ".+:(?P<id>[a-z]+)", url_template: "http://wildcard.com/{id}"},
-        {pattern: ":(?P<id>[a-z]+)", url_template: "http://c.com/{id}"},
+        {pattern: ".+#(?P<id>[a-z]+)", url_template: "http://wildcard.com/{id}"},
+        {pattern: "#(?P<id>[a-z]+)", url_template: "http://c.com/{id}"},
     ]);
     // b.com's pattern should be matched while it overlaps with c.com's.
-    assert_topic_links(":foo100", [
+    assert_topic_links("#foo100", [
         {
             text: "foo100",
             url: "http://b.com/100",
         },
     ]);
     // a.com's pattern should be matched while it overlaps with b.com's, wildcard.com's and c.com's.
-    assert_topic_links(":asd123 :asd", [
+    assert_topic_links("#asd123 #asd", [
         {
-            text: "asd123 :asd",
+            text: "asd123 #asd",
             url: "http://a.com/123",
         },
     ]);
     // a.com's pattern do not match, wildcard.com's and b.com's patterns should match
     // and the links are ordered by the matched index.
-    assert_topic_links("/:asd :foo100", [
+    assert_topic_links("/#asd #foo100", [
         {
-            text: "/:asd",
+            text: "/#asd",
             url: "http://wildcard.com/asd",
         },
         {
@@ -318,27 +318,27 @@ run_test("topic links overlapping", () => {
             url: "http://b.com/100",
         },
     ]);
-    assert_topic_links("foo.anything/:asd", [
+    assert_topic_links("foo.anything/#asd", [
         {
-            text: "foo.anything/:asd",
+            text: "foo.anything/#asd",
             url: "http://wildcard.com/asd",
         },
     ]);
 
     // While the raw URL "http://foo.com/foo100" appears before b.com's match "foo100",
     // we prioritize the linkifier match first.
-    assert_topic_links("http://foo.com/:foo100", [
+    assert_topic_links("http://foo.com/foo100", [
         {
             text: "foo100",
             url: "http://b.com/100",
         },
     ]);
 
-    // Here the raw URL "https://foo.com/:asd" appears after wildcard.com's match "something https://foo.com/:asd".
+    // Here the raw URL "https://foo.com/#asd" appears after wildcard.com's match "something https://foo.com/#asd".
     // The latter is prioritized and the raw URL does not get included.
-    assert_topic_links("something https://foo.com/:asd", [
+    assert_topic_links("something https://foo.com/#asd", [
         {
-            text: "something https://foo.com/:asd",
+            text: "something https://foo.com/#asd",
             url: "http://wildcard.com/asd",
         },
     ]);
