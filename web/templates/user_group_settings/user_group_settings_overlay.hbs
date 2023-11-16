@@ -24,6 +24,22 @@
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
+                <div class="no-groups-to-show">
+                    <div class="your_groups_tab_empty_text">
+                        <span>
+                            {{t 'You are not a member of any user groups.'}}
+                            <a href="#groups/all">{{t 'View all user groups'}}</a>
+                        </span>
+                    </div>
+                    <div class="all_groups_tab_empty_text">
+                        <span>
+                            {{t 'There are no user groups you can view in this organization.'}}
+                            {{#if can_create_or_edit_user_groups}}
+                                <a href="#groups/new">{{t 'Create a user group'}}</a>
+                            {{/if}}
+                        </span>
+                    </div>
+                </div>
                 <div class="user-groups-list" data-simplebar>
                 </div>
             </div>
