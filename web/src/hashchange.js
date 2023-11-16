@@ -56,7 +56,7 @@ function show_all_message_view() {
     narrow.deactivate(coming_from_recent_view || coming_from_inbox);
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
-    setTimeout(message_viewport.maybe_scroll_to_selected, 0);
+    message_viewport.maybe_scroll_to_selected();
 }
 
 export function set_hash_to_home_view() {
