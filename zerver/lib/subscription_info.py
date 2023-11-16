@@ -493,7 +493,7 @@ def gather_subscriptions_helper(
                 """
                 User who are no longer subscribed to a stream that they don't have
                 metadata access to will not receive metadata related to this stream
-                and their clients will see it as an unkown stream if referenced
+                and their clients will see it as an unknown stream if referenced
                 somewhere (e.g. a markdown stream link), just like they would see
                 a reference to a private stream they had never been subscribed to.
                 """
