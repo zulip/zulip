@@ -40,7 +40,9 @@ function setup_group_edit_hash(group) {
 }
 
 function get_user_group_id(target) {
-    const $row = $(target).closest(".group-row, .user_group_settings_wrapper, .save-button");
+    const $row = $(target).closest(
+        ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header",
+    );
     return Number.parseInt($row.attr("data-group-id"), 10);
 }
 
@@ -133,6 +135,47 @@ function disable_group_edit_settings(group) {
     update_add_members_elements(group);
 }
 
+function group_membership_button(group_id) {
+    return $(`.group_settings_header[data-group-id='${CSS.escape(group_id)}'] .join_leave_button`);
+}
+
+function initialize_tooltip_for_membership_button(group_id) {
+    const $tooltip_wrapper = group_membership_button(group_id).closest(
+        ".join_leave_button_wrapper",
+    );
+    const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
+    let tooltip_message;
+    if (is_member) {
+        tooltip_message = $t({defaultMessage: "You do not have permission to leave this group."});
+    } else {
+        tooltip_message = $t({defaultMessage: "You do not have permission to join this group."});
+    }
+    stream_ui_updates.initialize_disable_btn_hint_popover($tooltip_wrapper, tooltip_message);
+}
+
+function update_group_membership_button(group_id) {
+    const $group_settings_button = group_membership_button(group_id);
+
+    if (!$group_settings_button.length) {
+        return;
+    }
+
+    const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
+    if (is_member) {
+        $group_settings_button.text($t({defaultMessage: "Leave group"}));
+    } else {
+        $group_settings_button.text($t({defaultMessage: "Join group"}));
+    }
+
+    if (settings_data.can_edit_user_group(group_id)) {
+        $group_settings_button.prop("disabled", false);
+        $group_settings_button.css("pointer-events", "");
+    } else {
+        $group_settings_button.prop("disabled", true);
+        initialize_tooltip_for_membership_button(group_id);
+    }
+}
+
 export function handle_member_edit_event(group_id, user_ids) {
     if (!overlays.groups_open()) {
         return;
@@ -143,6 +186,9 @@ export function handle_member_edit_event(group_id, user_ids) {
     const members = [...group.members];
     if (is_editing_group(group_id)) {
         user_group_edit_members.update_member_list_widget(group_id, members);
+        if (user_ids.includes(people.my_current_user_id())) {
+            update_group_membership_button(group_id);
+        }
     }
 
     // update display of group-rows on left panel.
@@ -190,10 +236,15 @@ export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
         can_edit: settings_data.can_edit_user_group(group.id),
+        is_member: user_groups.is_direct_member_of(people.my_current_user_id(), group.id),
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
     update_toggler_for_group_setting(group);
+
+    if (!settings_data.can_edit_user_group(group.id)) {
+        initialize_tooltip_for_membership_button(group.id);
+    }
 
     $("#user_group_settings .tab-container").prepend(toggler.get());
     const $edit_container = get_edit_container(group);
@@ -509,6 +560,25 @@ export function switch_group_tab(tab_name) {
     setup_group_list_tab_hash(tab_name);
 }
 
+export function add_or_remove_from_group(group) {
+    const user_id = people.my_current_user_id();
+    if (user_groups.is_direct_member_of(user_id, group.id)) {
+        user_group_edit_members.edit_user_group_membership({
+            group,
+            removed: [user_id],
+            success() {},
+            error() {},
+        });
+    } else {
+        user_group_edit_members.edit_user_group_membership({
+            group,
+            added: [user_id],
+            success() {},
+            error() {},
+        });
+    }
+}
+
 export function setup_page(callback) {
     function initialize_components() {
         group_list_toggler = components.toggle({
@@ -704,6 +774,12 @@ export function initialize() {
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $(".user-groups-header").removeClass("slide-left");
+    });
+
+    $("#groups_overlay_container").on("click", ".join_leave_button", (e) => {
+        const user_group_id = get_user_group_id(e.target);
+        const user_group = user_groups.get_user_group_from_id(user_group_id);
+        add_or_remove_from_group(user_group);
     });
 }
 

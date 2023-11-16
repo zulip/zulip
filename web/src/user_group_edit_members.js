@@ -131,7 +131,7 @@ function show_user_group_membership_request_result({
     }
 }
 
-function edit_user_group_membership({group, added = [], removed = [], success, error}) {
+export function edit_user_group_membership({group, added = [], removed = [], success, error}) {
     channel.post({
         url: "/json/user_groups/" + group.id + "/members",
         data: {

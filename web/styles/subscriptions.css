@@ -806,6 +806,7 @@ h4.user_group_setting_subsection_title {
             margin-right: 18px;
 
             .subscribe-button,
+            .join_leave_button,
             #preview-stream-button,
             .deactivate {
                 margin-right: 3px;
