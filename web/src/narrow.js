@@ -28,6 +28,7 @@ import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
+import * as message_scroll_state from "./message_scroll_state";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
@@ -970,7 +971,7 @@ function handle_post_narrow_deactivate_processes(msg_list) {
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 }
 
-export function deactivate(message_feed_previously_hidden = false, is_actively_scrolling = false) {
+export function deactivate(message_feed_previously_hidden = false) {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -994,7 +995,7 @@ export function deactivate(message_feed_previously_hidden = false, is_actively_s
     }
     blueslip.debug("Unnarrowed");
 
-    if (is_actively_scrolling) {
+    if (message_scroll_state.actively_scrolling) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is likely over.
