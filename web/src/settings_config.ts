@@ -872,14 +872,18 @@ export const realm_name_in_email_notifications_policy_values = {
 export const desktop_icon_count_display_values = {
     messages: {
         code: 1,
-        description: $t({defaultMessage: "All unreads"}),
+        description: $t({defaultMessage: "All unread messages"}),
     },
-    notifiable: {
+    dm_mention_followed_topic: {
         code: 2,
-        description: $t({defaultMessage: "Direct messages and mentions"}),
+        description: $t({defaultMessage: "DMs, mentions, and followed topics"}),
+    },
+    dm_mention: {
+        code: 3,
+        description: $t({defaultMessage: "DMs and mentions"}),
     },
     none: {
-        code: 3,
+        code: 4,
         description: $t({defaultMessage: "None"}),
     },
 };

@@ -264,6 +264,7 @@ class UnreadTopicCounter {
     get_counts(include_per_topic_count = false, include_per_topic_latest_msg_id = false) {
         const res = {};
         res.stream_unread_messages = 0;
+        res.followed_topic_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
         for (const [stream_id, per_stream_bucketer] of this.bucketer) {
             // We track unread counts for streams that may be currently
@@ -308,6 +309,8 @@ class UnreadTopicCounter {
                 // unreads.
                 res.stream_count.set(stream_id, this.get_stream_count(stream_id));
                 res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
+                res.followed_topic_unread_messages +=
+                    res.stream_count.get(stream_id).followed_count;
             }
         }
 
@@ -365,8 +368,13 @@ class UnreadTopicCounter {
         const sub = sub_store.get(stream_id);
         let unmuted_count = 0;
         let muted_count = 0;
+        let followed_count = 0;
         for (const [topic, msgs] of per_stream_bucketer) {
             const topic_count = msgs.size;
+
+            if (user_topics.is_topic_followed(stream_id, topic)) {
+                followed_count += topic_count;
+            }
 
             if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
                 unmuted_count += topic_count;
@@ -381,6 +389,7 @@ class UnreadTopicCounter {
         const stream_count = {
             unmuted_count,
             muted_count,
+            followed_count,
             stream_is_muted: sub.is_muted,
         };
         return stream_count;
@@ -482,6 +491,24 @@ class UnreadTopicCounter {
             }
         }
         return streams_with_unmuted_mentions;
+    }
+
+    get_followed_topic_unread_mentions() {
+        let followed_topic_unread_mentions = 0;
+        for (const message_id of unread_mentions_counter) {
+            const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            if (stream_id === undefined) {
+                // This is a direct message containing a mention.
+                continue;
+            }
+
+            const stream_bucketer = this.bucketer.get_bucket(stream_id);
+            const topic = stream_bucketer.reverse_lookup.get(message_id);
+            if (user_topics.is_topic_followed(stream_id, topic)) {
+                followed_topic_unread_mentions += 1;
+            }
+        }
+        return followed_topic_unread_mentions;
     }
 
     topic_has_any_unread(stream_id, topic) {
@@ -808,6 +835,9 @@ export function get_counts() {
     const streams_with_unmuted_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_unread_messages = topic_res.stream_unread_messages;
+    res.followed_topic_unread_messages_count = topic_res.followed_topic_unread_messages;
+    res.followed_topic_unread_messages_with_mention_count =
+        unread_topic_counter.get_followed_topic_unread_mentions();
     res.stream_count = topic_res.stream_count;
     res.streams_with_mentions = [...streams_with_mentions];
     res.streams_with_unmuted_mentions = [...streams_with_unmuted_mentions];
@@ -824,19 +854,33 @@ export function get_counts() {
 export function calculate_notifiable_count(res) {
     let new_message_count = 0;
 
-    const only_show_notifiable =
+    const only_show_dm_mention =
         user_settings.desktop_icon_count_display ===
-        settings_config.desktop_icon_count_display_values.notifiable.code;
+        settings_config.desktop_icon_count_display_values.dm_mention.code;
+    const only_show_dm_mention_followed_topic =
+        user_settings.desktop_icon_count_display ===
+        settings_config.desktop_icon_count_display_values.dm_mention_followed_topic.code;
     const no_notifications =
         user_settings.desktop_icon_count_display ===
         settings_config.desktop_icon_count_display_values.none.code;
-    if (only_show_notifiable) {
-        // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
-        new_message_count =
+
+    if (only_show_dm_mention || only_show_dm_mention_followed_topic) {
+        // DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION
+        const dm_mention_count =
             res.mentioned_message_count +
             res.direct_message_count -
             // Avoid double-counting direct messages containing mentions
             res.direct_message_with_mention_count;
+        if (only_show_dm_mention_followed_topic) {
+            // DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION_FOLLOWED_TOPIC
+            // Avoid double-counting followed topic messages containing mentions
+            new_message_count =
+                dm_mention_count +
+                res.followed_topic_unread_messages_count -
+                res.followed_topic_unread_messages_with_mention_count;
+        } else {
+            new_message_count = dm_mention_count;
+        }
     } else if (no_notifications) {
         // DESKTOP_ICON_COUNT_DISPLAY_NONE
         new_message_count = 0;
