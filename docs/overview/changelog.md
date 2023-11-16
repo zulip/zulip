@@ -7,6 +7,34 @@ up-to-date list of all changes.
 
 ## Zulip Server 7.x series
 
+### Zulip Server 7.5
+
+_Released 2023-11-16_
+
+- CVE-2023-47642: Invalid metadata access for formerly subscribed streams.
+  It was discovered by the Zulip development team that active users who had
+  previously been subscribed to a stream incorrectly continued being able to use
+  the Zulip API to access metadata for that stream. As a result, users who had
+  been removed from a stream, but still had an account in the organization,
+  could still view metadata for that stream (including the stream name,
+  description, settings, and an email address used to send emails into the
+  stream via the incoming email integration). This potentially allowed users to
+  see changes to a stream’s metadata after they had lost access to the stream.
+  This bug was present in all Zulip releases prior to Zulip Server 7.5.
+- Fixed a bug where [backups](../production/export-and-import.md#backups) might
+  be written using `postgresql-client-16`, which could not be straightforwardly
+  restored into a Zulip instance, as the format is not backwards-compatible, and
+  Zulip does not yet support PostgreSQL 16.
+- Renamed the `reactivate_stream` management command to `unarchive_stream`, to
+  match terminology in the app, and [documented
+  it](https://zulip.com/help/archive-a-stream#unarchiving-archived-streams).
+- Fixed a regression, introduced in 6.0, where users created via the API or LDAP
+  would have English set as their language, ignoring the configured realm
+  default.
+- Improved [documentation on `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL`](../production/authentication-methods.md#restricting-ldap-user-access-to-specific-organizations).
+- Improved error messages for subdomains being reserved versus being in use.
+- Upgraded Python dependencies.
+
 ### Zulip Server 7.4
 
 _Released 2023-09-15_
