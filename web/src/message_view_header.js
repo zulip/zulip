@@ -15,7 +15,7 @@ function make_message_view_header(filter) {
     if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
-            icon: "clock-o",
+            zulip_icon: "clock",
         };
     }
     if (inbox_util.is_visible()) {
@@ -27,7 +27,7 @@ function make_message_view_header(filter) {
     if (filter === undefined) {
         return {
             title: $t({defaultMessage: "All messages"}),
-            icon: "align-left",
+            zulip_icon: "all-messages",
         };
     }
     message_view_header.title = filter.get_title();
