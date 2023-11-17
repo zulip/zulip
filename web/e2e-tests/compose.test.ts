@@ -117,7 +117,7 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
         you_and_cordelia_selector,
     );
     const cordelia_user_id = await common.get_user_id_from_name(page, "Cordelia, Lear's daughter");
-    const pm_list_selector = `li[data-user-ids-string="${cordelia_user_id}"].pm-list-item.active-sub-filter`;
+    const pm_list_selector = `li[data-user-ids-string="${cordelia_user_id}"].dm-list-item.active-sub-filter`;
     await page.waitForSelector(pm_list_selector, {visible: true});
     await close_compose_box(page);
 
@@ -137,7 +137,7 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     });
 
     // Go back to all messages view and make sure all messages are loaded.
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
 
     await page.waitForSelector("#zhome .message_row", {visible: true});
     const pm = await page.waitForSelector(
@@ -217,7 +217,7 @@ async function test_markdown_preview(page: Page): Promise<void> {
 
 async function compose_tests(page: Page): Promise<void> {
     await common.log_in(page);
-    await page.click(".top_left_all_messages");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
     await test_send_messages(page);
     await test_keyboard_shortcuts(page);

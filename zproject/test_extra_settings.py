@@ -156,6 +156,10 @@ INLINE_URL_EMBED_PREVIEW = False
 HOME_NOT_LOGGED_IN = "/login/"
 LOGIN_URL = "/accounts/login/"
 
+# If dev_settings.py found a key or cert file to use here, ignore it.
+APNS_TOKEN_KEY_FILE: Optional[str] = None
+APNS_CERT_FILE: Optional[str] = None
+
 # By default will not send emails when login occurs.
 # Explicitly set this to True within tests that must have this on.
 SEND_LOGIN_EMAILS = False

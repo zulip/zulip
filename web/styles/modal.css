@@ -1,11 +1,3 @@
-.modal-body {
-    max-height: 60vh;
-}
-
-.modal-bg {
-    background-color: var(--color-background-modal);
-}
-
 /* Styles for the Micromodal-based modals */
 .modal__overlay {
     position: fixed;
@@ -68,12 +60,13 @@
         text-overflow: ellipsis;
     }
 
+    .user_profile_manage_own_edit_button,
     .user_profile_manage_others_edit_button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
         &:hover {
-            color: hsl(200deg 79% 66%);
+            color: hsl(200deg 100% 25%);
         }
     }
 }
@@ -135,11 +128,12 @@
 }
 
 .dialog_exit_button {
-    background: hsl(0deg 0% 100%);
-    border: 1px solid hsl(300deg 2% 11% / 30%);
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+    border: 1px solid var(--color-exit-button-border);
 
     &:hover {
-        background: hsl(0deg 0% 97%);
+        background: var(--color-exit-button-background-interactive);
     }
 }
 

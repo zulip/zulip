@@ -52,6 +52,7 @@ from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
+from typing_extensions import override
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_create_realm
@@ -94,7 +95,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.types import Validator
 from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.users import get_all_api_keys, get_api_key, get_raw_user_data
+from zerver.lib.users import get_all_api_keys, get_api_key, get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -898,6 +899,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         raise NotImplementedError
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -1086,38 +1088,59 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
     def test_social_auth_no_key(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with self.settings(**{self.CLIENT_KEY_SETTING: None}):
+        with self.settings(**{self.CLIENT_KEY_SETTING: None}), self.assertLogs(
+            "django.request", level="ERROR"
+        ) as m:
             result = self.social_auth_test(
                 account_data_dict, subdomain="zulip", next="/user_uploads/image"
             )
-            self.assert_in_success_response(["Configuration error"], result)
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("Configuration error", result)
+            self.assertEqual(
+                m.output,
+                [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
+            )
 
     def test_config_error_development(self) -> None:
         if hasattr(self, "CLIENT_KEY_SETTING") and hasattr(self, "CLIENT_SECRET_SETTING"):
-            with self.settings(**{self.CLIENT_KEY_SETTING: None}):
+            with self.settings(**{self.CLIENT_KEY_SETTING: None}), self.assertLogs(
+                "django.request", level="ERROR"
+            ) as m:
                 result = self.client_get(self.LOGIN_URL)
-                self.assert_in_success_response(["Configuration error"], result)
-                self.assert_in_success_response([self.CLIENT_KEY_SETTING.lower()], result)
-                self.assert_in_success_response([self.CLIENT_SECRET_SETTING.lower()], result)
-                self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-                self.assert_not_in_success_response([self.CLIENT_KEY_SETTING], result)
-                self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-                self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-                self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+                self.assertEqual(result.status_code, 500)
+                self.assert_in_response("Configuration error", result)
+                self.assert_in_response(self.CLIENT_KEY_SETTING.lower(), result)
+                self.assert_in_response(self.CLIENT_SECRET_SETTING.lower(), result)
+                self.assert_in_response("zproject/dev-secrets.conf", result)
+                self.assertNotIn(self.CLIENT_KEY_SETTING, result.content.decode())
+                self.assertNotIn("zproject/dev_settings.py", result.content.decode())
+                self.assertNotIn("/etc/zulip/settings.py", result.content.decode())
+                self.assertNotIn("/etc/zulip/zulip-secrets.conf", result.content.decode())
+                self.assertEqual(
+                    m.output,
+                    [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
+                )
 
     @override_settings(DEVELOPMENT=False)
     def test_config_error_production(self) -> None:
         if hasattr(self, "CLIENT_KEY_SETTING") and hasattr(self, "CLIENT_SECRET_SETTING"):
-            with self.settings(**{self.CLIENT_KEY_SETTING: None}):
+            with self.settings(**{self.CLIENT_KEY_SETTING: None}), self.assertLogs(
+                "django.request", level="ERROR"
+            ) as m:
                 result = self.client_get(self.LOGIN_URL)
-                self.assert_in_success_response(["Configuration error"], result)
-                self.assert_in_success_response([self.CLIENT_KEY_SETTING], result)
-                self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-                self.assert_in_success_response([self.CLIENT_SECRET_SETTING.lower()], result)
-                self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-                self.assert_not_in_success_response([self.CLIENT_KEY_SETTING.lower()], result)
-                self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-                self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
+                self.assertEqual(result.status_code, 500)
+                self.assert_in_response("Configuration error", result)
+                self.assert_in_response(self.CLIENT_KEY_SETTING, result)
+                self.assert_in_response("/etc/zulip/settings.py", result)
+                self.assert_in_response(self.CLIENT_SECRET_SETTING.lower(), result)
+                self.assert_in_response("/etc/zulip/zulip-secrets.conf", result)
+                self.assertNotIn(self.CLIENT_KEY_SETTING.lower(), result.content.decode())
+                self.assertNotIn("zproject/dev_settings.py", result.content.decode())
+                self.assertNotIn("zproject/dev-secrets.conf", result.content.decode())
+                self.assertEqual(
+                    m.output,
+                    [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
+                )
 
     def test_social_auth_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -1927,6 +1950,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     # We have to define our own social_auth_test as the flow of SAML authentication
     # is different from the other social backends.
+    @override
     def social_auth_test(
         self,
         account_data_dict: Dict[str, str],
@@ -2087,6 +2111,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_get("http://zulip.testserver/complete/saml/", parameters)
         return result
 
+    @override
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name)
 
@@ -2440,6 +2465,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             expect_full_name_prepopulated=False,
         )
 
+    @override
     def test_social_auth_no_key(self) -> None:
         """
         Since in the case of SAML there isn't a direct equivalent of CLIENT_KEY_SETTING,
@@ -2448,25 +2474,39 @@ class SAMLAuthBackendTest(SocialAuthBase):
         """
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=None):
-            result = self.social_auth_test(
-                account_data_dict, subdomain="zulip", next="/user_uploads/image"
-            )
-            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
+            with self.assertLogs("django.request", level="ERROR") as m:
+                result = self.social_auth_test(
+                    account_data_dict, subdomain="zulip", next="/user_uploads/image"
+                )
+                self.assertEqual(result.status_code, 500)
+                self.assert_in_response("Configuration error", result)
+                self.assert_in_response("SAML authentication", result)
+                self.assertEqual(
+                    m.output, [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"]
+                )
 
-            # Test the signup path too:
-            result = self.social_auth_test(
-                account_data_dict, is_signup=True, subdomain="zulip", next="/user_uploads/image"
-            )
-            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
+            with self.assertLogs("django.request", level="ERROR") as m:
+                # Test the signup path too:
+                result = self.social_auth_test(
+                    account_data_dict, is_signup=True, subdomain="zulip", next="/user_uploads/image"
+                )
+                self.assertEqual(result.status_code, 500)
+                self.assert_in_response("Configuration error", result)
+                self.assert_in_response("SAML authentication", result)
+                self.assertEqual(
+                    m.output, [f"ERROR:django.request:Internal Server Error: {self.SIGNUP_URL}"]
+                )
 
     def test_config_error_page(self) -> None:
         with self.assertLogs(level="INFO") as info_log:
             result = self.client_get("/accounts/login/social/saml")
         self.assertEqual(
-            info_log.output,
-            ["INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None"],
+            info_log.output[0],
+            "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None",
         )
-        self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response("Configuration error", result)
+        self.assert_in_response("SAML authentication", result)
 
     def test_saml_auth_works_without_private_public_keys(self) -> None:
         with self.settings(SOCIAL_AUTH_SAML_SP_PUBLIC_CERT="", SOCIAL_AUTH_SAML_SP_PRIVATE_KEY=""):
@@ -2514,6 +2554,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 expect_confirm_registration_page=False,
             )
 
+    @override
     def test_social_auth_complete(self) -> None:
         with mock.patch.object(OneLogin_Saml2_Response, "is_valid", return_value=True):
             with mock.patch.object(
@@ -2539,6 +2580,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 ],
             )
 
+    @override
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
         with mock.patch.object(OneLogin_Saml2_Response, "is_valid", return_value=True):
             with mock.patch(
@@ -2808,6 +2850,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             ],
         )
 
+    @override
     def test_social_auth_invalid_email(self) -> None:
         """
         This test needs an override from the original class. For security reasons,
@@ -2905,24 +2948,24 @@ class SAMLAuthBackendTest(SocialAuthBase):
             with self.assertLogs(level="INFO") as info_log:
                 result = self.client_get(f"/accounts/{action}/social/saml")
             # Missing idp argument.
-            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("Configuration error", result)
+            self.assert_in_response("SAML authentication", result)
             self.assertEqual(
-                info_log.output,
-                [
-                    "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None"
-                ],
+                info_log.output[0],
+                "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None",
             )
 
             with self.assertLogs(level="INFO") as info_log:
                 result = self.client_get(f"/accounts/{action}/social/saml/nonexistent_idp")
             # No such IdP is configured.
             self.assertEqual(
-                info_log.output,
-                [
-                    "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: nonexistent_idp"
-                ],
+                info_log.output[0],
+                "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: nonexistent_idp",
             )
-            self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("Configuration error", result)
+            self.assert_in_response("SAML authentication", result)
 
             result = self.client_get(f"/accounts/{action}/social/saml/")
             # No matching URL pattern.
@@ -3292,6 +3335,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
     # dummy value to keep SocialAuthBase common code happy.
     USER_INFO_URL = "/invalid-unused-url"
 
+    @override
     def social_auth_test_finish(
         self,
         result: "TestHttpResponse",
@@ -3309,6 +3353,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
         )
         return result
 
+    @override
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
@@ -3325,6 +3370,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             json=json.loads(EXAMPLE_JWK),
         )
 
+    @override
     def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
         # The ACCESS_TOKEN_URL endpoint works a bit different than in standard Oauth2,
         # and here, similarly to OIDC, id_token is also returned in the response.
@@ -3416,6 +3462,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
     SIGNUP_URL = "/complete/apple/"
     LOGIN_URL = "/complete/apple/"
 
+    @override
     def prepare_login_url_and_headers(
         self,
         subdomain: str,
@@ -3457,6 +3504,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         url += f"&{urlencode(params)}"
         return url, headers
 
+    @override
     def social_auth_test(
         self,
         account_data_dict: Dict[str, str],
@@ -3534,6 +3582,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         )
         self.assert_json_error(result, "Missing id_token parameter")
 
+    @override
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -3602,12 +3651,14 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             ],
         )
 
+    @override
     def test_social_auth_desktop_success(self) -> None:
         """
         The desktop app doesn't use the native flow currently and the desktop app flow in its
         current form happens in the browser, thus only the web flow is viable there.
         """
 
+    @override
     def test_social_auth_no_key(self) -> None:
         """
         The basic validation of server configuration is handled on the
@@ -3629,6 +3680,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
     USER_INFO_URL = f"{BASE_OIDC_URL}/userinfo"
     AUTH_FINISH_URL = "/complete/oidc/"
 
+    @override
     def social_auth_test(
         self,
         *args: Any,
@@ -3672,6 +3724,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
 
         return result
 
+    @override
     def social_auth_test_finish(self, *args: Any, **kwargs: Any) -> "TestHttpResponse":
         # Trying to generate a (access_token, id_token) pair here in tests that would
         # successfully pass validation by validate_and_return_id_token is impractical
@@ -3684,6 +3737,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         ):
             return super().social_auth_test_finish(*args, **kwargs)
 
+    @override
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
@@ -3697,6 +3751,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             json=json.loads(EXAMPLE_JWK),
         )
 
+    @override
     def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
         return json.dumps(
             {
@@ -3707,6 +3762,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             }
         )
 
+    @override
     def get_account_data_dict(self, email: str, name: Optional[str]) -> Dict[str, Any]:
         if name is not None:
             name_parts = name.split(" ")
@@ -3778,6 +3834,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             expect_full_name_prepopulated=False,
         )
 
+    @override
     def test_social_auth_no_key(self) -> None:
         """
         Requires overriding because client key/secret are configured
@@ -3788,11 +3845,19 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
         [idp_config_dict] = mock_oidc_setting_dict.values()
         del idp_config_dict["client_id"]
-        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict), self.assertLogs(
+            "django.request", level="ERROR"
+        ) as m:
             result = self.social_auth_test(
                 account_data_dict, subdomain="zulip", next="/user_uploads/image"
             )
-            self.assert_in_success_response(["Configuration error", "OpenID Connect"], result)
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("Configuration error", result)
+            self.assert_in_response("OpenID Connect", result)
+            self.assertEqual(
+                m.output,
+                [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
+            )
 
     def test_too_many_idps(self) -> None:
         """
@@ -3803,12 +3868,21 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
         [idp_config_dict] = mock_oidc_setting_dict.values()
         mock_oidc_setting_dict["secondprovider"] = idp_config_dict
-        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict), self.assertLogs(
+            "django.request", level="ERROR"
+        ) as m:
             result = self.social_auth_test(
                 account_data_dict, subdomain="zulip", next="/user_uploads/image"
             )
-            self.assert_in_success_response(["Configuration error", "OpenID Connect"], result)
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("Configuration error", result)
+            self.assert_in_response("OpenID Connect", result)
+            self.assertEqual(
+                m.output,
+                [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
+            )
 
+    @override
     def test_config_error_development(self) -> None:
         """
         This test is redundant for now, as test_social_auth_no_key already
@@ -3817,6 +3891,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         """
         return
 
+    @override
     def test_config_error_production(self) -> None:
         """
         This test is redundant for now, as test_social_auth_no_key already
@@ -3838,6 +3913,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     AUTH_FINISH_URL = "/complete/github/"
     email_data: List[Dict[str, Any]] = []
 
+    @override
     def social_auth_test_finish(
         self,
         result: "TestHttpResponse",
@@ -3888,6 +3964,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
         return result
 
+    @override
     def register_extra_endpoints(
         self,
         requests_mock: responses.RequestsMock,
@@ -3914,6 +3991,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
         self.email_data = email_data
 
+    @override
     def get_account_data_dict(
         self, email: str, name: str, user_avatar_url: str = ""
     ) -> Dict[str, Any]:
@@ -4353,6 +4431,7 @@ class GitLabAuthBackendTest(SocialAuthBase):
         with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.GitLabAuthBackend",)):
             self.assertTrue(gitlab_auth_enabled())
 
+    @override
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)
 
@@ -4368,6 +4447,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
     USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
     AUTH_FINISH_URL = "/complete/google/"
 
+    @override
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)
 
@@ -4700,6 +4780,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             m.output, [f"WARNING:root:log_into_subdomain: Invalid token given: {token}"]
         )
 
+    @override
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
         data: ExternalAuthDataDict = {
             "full_name": "Full Name",
@@ -4747,6 +4828,7 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
 
 
 class FetchAPIKeyTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -4954,6 +5036,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
 
 class DevFetchAPIKeyTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -5402,21 +5485,39 @@ class TestDevAuthBackend(ZulipTestCase):
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
         data = {"direct_email": email}
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",)
+        ), self.assertLogs("django.request", level="ERROR") as m:
             response = self.client_post("/accounts/login/local/", data)
-        self.assert_in_success_response(["Configuration error", "DevAuthBackend"], response)
+        self.assertEqual(response.status_code, 500)
+        self.assert_in_response("Configuration error", response)
+        self.assert_in_response("DevAuthBackend", response)
+        self.assertEqual(
+            m.output, ["ERROR:django.request:Internal Server Error: /accounts/login/local/"]
+        )
 
     def test_dev_direct_production_config_error(self) -> None:
-        result = self.client_get("/config-error/dev")
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["DevAuthBackend"], result)
+        with self.assertLogs("django.request", level="ERROR") as m:
+            result = self.client_get("/config-error/dev_not_supported")
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response("DevAuthBackend", result)
+        self.assertEqual(
+            m.output,
+            ["ERROR:django.request:Internal Server Error: /config-error/dev_not_supported"],
+        )
 
     def test_login_failure_due_to_nonexistent_user(self) -> None:
         email = "nonexisting@zulip.com"
         data = {"direct_email": email}
 
-        response = self.client_post("/accounts/login/local/", data)
-        self.assert_in_success_response(["Configuration error", "DevAuthBackend"], response)
+        with self.assertLogs("django.request", level="ERROR") as m:
+            response = self.client_post("/accounts/login/local/", data)
+        self.assertEqual(response.status_code, 500)
+        self.assert_in_response("Configuration error", response)
+        self.assert_in_response("DevAuthBackend", response)
+        self.assertEqual(
+            m.output, ["ERROR:django.request:Internal Server Error: /accounts/login/local/"]
+        )
 
 
 class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
@@ -5466,11 +5567,15 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
-        result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
-        self.assert_in_success_response(
-            ["Configuration error", "Authentication via the REMOTE_USER header is"], result
-        )
+        with self.assertLogs("django.request", level="ERROR") as m:
+            result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response("Configuration error", result)
+        self.assert_in_response("Authentication via the REMOTE_USER header is", result)
         self.assert_logged_in_user_id(None)
+        self.assertEqual(
+            m.output, ["ERROR:django.request:Internal Server Error: /accounts/login/sso/"]
+        )
 
     def test_login_failure_due_to_nonexisting_user(self) -> None:
         email = "nonexisting@zulip.com"
@@ -5487,10 +5592,15 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             self.assert_json_error_contains(result, "Enter a valid email address.", 400)
 
     def test_login_failure_due_to_missing_field(self) -> None:
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
+        ), self.assertLogs("django.request", level="ERROR") as m:
             result = self.client_get("/accounts/login/sso/")
-            self.assert_in_success_response(
-                ["Configuration error", "The REMOTE_USER header is not set."], result
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response("Configuration error", result)
+            self.assert_in_response("The REMOTE_USER header is not set.", result)
+            self.assertEqual(
+                m.output, ["ERROR:django.request:Internal Server Error: /accounts/login/sso/"]
             )
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
@@ -5804,7 +5914,9 @@ class TestJWTLogin(ZulipTestCase):
 
 
 class DjangoToLDAPUsernameTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
+        super().setUp()
         self.init_default_ldap_database()
         self.backend = ZulipLDAPAuthBackend()
 
@@ -5943,6 +6055,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
 
 
 class ZulipLDAPTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
 
@@ -7083,11 +7196,14 @@ class LDAPBackendTest(ZulipTestCase):
             "zproject.backends.ZulipLDAPAuthBackend.get_or_build_user", side_effect=error
         ), mock.patch("django_auth_ldap.backend._LDAPUser._authenticate_user_dn"), self.assertLogs(
             "django_auth_ldap", "WARNING"
-        ) as warn_log:
+        ) as warn_log, self.assertLogs(
+            "django.request", level="ERROR"
+        ):
             response = self.client_post("/login/", data)
-            self.assert_in_success_response(
-                ["Configuration error", "You are trying to log in using LDAP without creating an"],
-                response,
+            self.assertEqual(response.status_code, 500)
+            self.assert_in_response("Configuration error", response)
+            self.assert_in_response(
+                "You are trying to log in using LDAP without creating an", response
             )
         self.assertEqual(
             warn_log.output,
@@ -7096,13 +7212,14 @@ class LDAPBackendTest(ZulipTestCase):
 
 
 class JWTFetchAPIKeyTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.email = self.example_email("hamlet")
         self.realm = get_realm("zulip")
         self.user_profile = get_user_by_delivery_email(self.email, self.realm)
         self.api_key = get_api_key(self.user_profile)
-        self.raw_user_data = get_raw_user_data(
+        self.raw_user_data = get_users_for_api(
             self.user_profile.realm,
             self.user_profile,
             target_user=self.user_profile,

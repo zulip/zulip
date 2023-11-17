@@ -154,7 +154,6 @@ class UnreadDirectMessageCounter {
     get_counts(include_latest_msg_id = false) {
         const pm_dict = new Map(); // Hash by user_ids_string -> count Optional[, max_id]
         let total_count = 0;
-        let right_sidebar_count = 0;
         for (const [user_ids_string, id_set] of this.bucketer) {
             const count = id_set.size;
             if (include_latest_msg_id) {
@@ -166,18 +165,11 @@ class UnreadDirectMessageCounter {
             } else {
                 pm_dict.set(user_ids_string, count);
             }
-            const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
-            const is_with_one_human =
-                user_ids.length === 1 && !people.get_by_user_id(user_ids[0]).is_bot;
-            if (is_with_one_human) {
-                right_sidebar_count += count;
-            }
             total_count += count;
         }
         return {
             total_count,
             pm_dict,
-            right_sidebar_count,
         };
     }
 
@@ -815,6 +807,7 @@ export function get_counts() {
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
     const streams_with_unmuted_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
+    res.stream_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
     res.streams_with_mentions = [...streams_with_mentions];
     res.streams_with_unmuted_mentions = [...streams_with_unmuted_mentions];
@@ -822,7 +815,6 @@ export function get_counts() {
     const pm_res = unread_direct_message_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
     res.direct_message_count = pm_res.total_count;
-    res.right_sidebar_direct_message_count = pm_res.right_sidebar_count;
     res.home_unread_messages += pm_res.total_count;
 
     return res;

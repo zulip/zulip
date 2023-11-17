@@ -2,8 +2,8 @@ import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
-import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
+import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 
 // Check if we're doing a compose-preserving reload.  This must be
@@ -27,7 +27,7 @@ export function initialize() {
         // exist, but be log it so that it's available for future
         // debugging if an exception happens later.
         blueslip.info("Invalid hash change reload token");
-        hashchange.changehash("");
+        narrow.changehash("");
         return;
     }
     ls.remove(hash_fragment);
@@ -51,7 +51,7 @@ export function initialize() {
 
         try {
             compose_actions.start(vars.msg_type, {
-                stream: vars.stream || "",
+                stream_id: Number.parseInt(vars.stream_id, 10) || undefined,
                 topic: vars.topic || "",
                 private_message_recipient: vars.recipient || "",
                 content: vars.msg || "",
@@ -87,5 +87,5 @@ export function initialize() {
     }
 
     activity.set_new_user_input(false);
-    hashchange.changehash(vars.oldhash);
+    narrow.changehash(vars.oldhash);
 }

@@ -19,7 +19,7 @@ organization](/help/deactivate-your-organization) instead).
 
 {start_tabs}
 
-{tab|via-user-card}
+{tab|via-user-profile}
 
 {!manage-this-user.md!}
 
@@ -27,13 +27,7 @@ organization](/help/deactivate-your-organization) instead).
 
 1. Click **Save changes**. The new permissions will take effect immediately.
 
-{tab|via-user-profile}
-
-{!manage-this-user-via-user-profile.md!}
-
-1. Under **User role**, select a [role](/help/roles-and-permissions).
-
-1. Click **Save changes**. The new permissions will take effect immediately.
+{!manage-user-tab-tip.md!}
 
 {tab|via-organization-settings}
 

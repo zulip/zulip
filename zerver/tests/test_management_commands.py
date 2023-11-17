@@ -12,6 +12,7 @@ from django.core.management import call_command, find_commands
 from django.core.management.base import CommandError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
@@ -47,6 +48,7 @@ class TestCheckConfig(ZulipTestCase):
 
 
 class TestZulipBaseCommand(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.zulip_realm = get_realm("zulip")
@@ -200,6 +202,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
 
 class TestCommandsCanStart(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.commands = [
@@ -224,6 +227,7 @@ class TestCommandsCanStart(ZulipTestCase):
 class TestSendWebhookFixtureMessage(ZulipTestCase):
     COMMAND_NAME = "send_webhook_fixture_message"
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.fixture_path = os.path.join("some", "fake", "path.json")
@@ -306,6 +310,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
                 "email": email,
                 "realm_name": "Zulip test",
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_default_language": "en",
                 "realm_subdomain": "custom-test",
             },
         )
@@ -333,12 +338,13 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
                 "email": email,
                 "realm_name": realm_name,
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_default_language": "en",
                 "realm_subdomain": string_id,
             },
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
-            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}",
+            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}",
             result["Location"],
         )
         result = self.client_get(result["Location"])

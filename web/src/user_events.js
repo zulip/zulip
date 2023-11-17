@@ -6,12 +6,14 @@ import $ from "jquery";
 
 import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
+import {buddy_list} from "./buddy_list";
 import * as compose_state from "./compose_state";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
+import * as settings from "./settings";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 import * as settings_linkifiers from "./settings_linkifiers";
@@ -20,6 +22,7 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
+import * as stream_events from "./stream_events";
 
 export const update_person = function update(person) {
     const person_obj = people.maybe_get_user_by_id(person.user_id);
@@ -78,6 +81,7 @@ export const update_person = function update(person) {
         if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
             page_params.is_owner = person_obj.is_owner;
             settings_org.maybe_disable_widgets();
+            settings.update_lock_icon_in_sidebar();
         }
 
         if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
@@ -88,6 +92,7 @@ export const update_person = function update(person) {
             settings_streams.maybe_disable_widgets();
             settings_realm_user_settings_defaults.maybe_disable_widgets();
             settings_account.update_account_settings_display();
+            settings.update_lock_icon_in_sidebar();
         }
 
         if (
@@ -115,6 +120,7 @@ export const update_person = function update(person) {
             page_params.avatar_url = url;
             page_params.avatar_url_medium = person.avatar_url_medium;
             $("#user-avatar-upload-widget .image-block").attr("src", person.avatar_url_medium);
+            $("#personal-menu .header-button-avatar").attr("src", `${person.avatar_url_medium}`);
         }
 
         message_live_update.update_avatar(person_obj.user_id, person.avatar_url);
@@ -130,5 +136,20 @@ export const update_person = function update(person) {
 
     if (Object.hasOwn(person, "bot_owner_id")) {
         person_obj.bot_owner_id = person.bot_owner_id;
+    }
+
+    if (Object.hasOwn(person, "is_active")) {
+        if (person.is_active) {
+            people.add_active_user(person_obj);
+        } else {
+            people.deactivate(person_obj);
+            stream_events.remove_deactivated_user_from_all_streams(person.user_id);
+            settings_users.update_view_on_deactivate(person.user_id);
+            buddy_list.maybe_remove_key({key: person.user_id});
+        }
+        settings_account.maybe_update_deactivate_account_button();
+        if (people.user_is_bot(person.user_id)) {
+            settings_users.update_bot_data(person.user_id);
+        }
     }
 };

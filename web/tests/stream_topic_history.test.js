@@ -309,21 +309,34 @@ test("server_history_end_to_end", () => {
     ];
 
     let get_success_callback;
+    let get_error_callback;
     let on_success_called;
 
     channel.get = (opts) => {
         assert.equal(opts.url, "/json/users/me/99/topics");
         assert.deepEqual(opts.data, {});
+        assert.ok(stream_topic_history.is_request_pending_for(stream_id));
         get_success_callback = opts.success;
+        get_error_callback = opts.error;
     };
+
+    stream_topic_history_util.get_server_history(stream_id, () => {});
+
+    // Another call. Early return because a request is already in progress
+    // for stream_id = 99. This function call adds coverage.
+    stream_topic_history_util.get_server_history(stream_id, () => {});
+    assert.ok(stream_topic_history.is_request_pending_for(stream_id));
+
+    get_error_callback();
+    assert.ok(!stream_topic_history.is_request_pending_for(stream_id));
 
     stream_topic_history_util.get_server_history(stream_id, () => {
         on_success_called = true;
     });
 
     get_success_callback({topics});
-
     assert.ok(on_success_called);
+    assert.ok(!stream_topic_history.is_request_pending_for(stream_id));
 
     const history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic3", "topic2", "topic1"]);

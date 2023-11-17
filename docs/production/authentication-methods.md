@@ -384,7 +384,7 @@ You can restrict access to your Zulip server to a set of LDAP groups
 using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
 settings in `/etc/zulip/settings.py`.
 
-An example configation for Active Directory group restriction can be:
+An example configuration for Active Directory group restriction can be:
 
 ```python
 import django_auth_ldap
@@ -780,7 +780,7 @@ these instructions are for that provider; please [contact
 us](https://zulip.com/help/contact-support) if you need help using
 this with another IdP.
 
-#### IdP-initated Single Logout
+#### IdP-initiated Single Logout
 
 1. In the KeyCloak configuration for Zulip, enable `Force Name ID Format`
    and set `Name ID Format` to `email`. Zulip needs to receive

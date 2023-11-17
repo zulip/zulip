@@ -3,6 +3,8 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
+/// <reference types="spectrum" />
+
 declare let zulip_test: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 type JQueryCaretRange = {
@@ -11,6 +13,14 @@ type JQueryCaretRange = {
     length: number;
     text: string;
 };
+
+type JQueryIdleOptions = Partial<{
+    idle: number;
+    events: string;
+    onIdle: () => void;
+    onActive: () => void;
+    keepTracking: boolean;
+}>;
 
 declare namespace JQueryValidation {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -22,25 +32,10 @@ declare namespace JQueryValidation {
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-interface JQuery<TElement = HTMLElement> {
-    // Specialize .val() for elements with known value types.
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/66801
-    val():
-        | (TElement extends HTMLSelectElement & {type: "select-one"}
-              ? string
-              : TElement extends HTMLSelectElement & {type: "select-multiple"}
-              ? string[]
-              : TElement extends HTMLSelectElement
-              ? string | string[]
-              : TElement extends {value: string | number}
-              ? TElement["value"]
-              : string | number | string[])
-        | undefined;
-
+interface JQuery {
     expectOne(): this;
     get_offset_to_window(): DOMRect;
     tab(action?: string): this; // From web/third/bootstrap
-    modal(action?: string): this; // From web/third/bootstrap
 
     // Types for jquery-caret-plugin
     caret(): number;
@@ -50,6 +45,12 @@ interface JQuery<TElement = HTMLElement> {
     range(text: string): this;
     selectAll(): this;
     deselectAll(): this;
+
+    // Types for jquery-idle plugin
+    idle(opts: JQueryIdleOptions): {
+        cancel: () => void;
+        reset: () => void;
+    };
 }
 
 declare const ZULIP_VERSION: string;

@@ -105,6 +105,12 @@ run_test("get_localized_date_or_time_for_format returns correct format", () => {
                 date: "Wed, Jan 27, 2021, 1:53 AM",
             },
         },
+        {
+            format: "full_weekday_dayofyear_year_time",
+            expected: {
+                date: "Wednesday, January 27, 2021 at 1:53 AM",
+            },
+        },
     ];
 
     for (const format of formats) {

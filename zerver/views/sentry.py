@@ -1,15 +1,25 @@
+import logging
 import urllib
 from contextlib import suppress
+from typing import Type
 
 import orjson
+from circuitbreaker import CircuitBreakerError, circuit
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
+from requests.exceptions import HTTPError, ProxyError, RequestException, Timeout
+from sentry_sdk.integrations.logging import ignore_logger
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.validator import check_url, to_wild_value
+
+# In order to not overload Sentry if it's having a bad day, we tell
+# Sentry to ignore exceptions that we have when talking to Sentry.
+logger = logging.getLogger(__name__)
+ignore_logger(logger.name)
 
 
 class SentryTunnelSession(OutgoingSession):
@@ -41,7 +51,7 @@ def sentry_tunnel(
     # debugging more complicated.
     updated_body = request.body
     # If we fail to update the body for any reason, leave it as-is; it
-    # is better to mis-report the IP than to drop the report entirely.
+    # is better to misreport the IP than to drop the report entirely.
     with suppress(Exception):
         # This parses the Sentry ingestion format, known as an
         # Envelope.  See https://develop.sentry.dev/sdk/envelopes/ for
@@ -74,7 +84,42 @@ def sentry_tunnel(
                 parts.append(b"\n")
         updated_body = b"".join(parts)
 
-    SentryTunnelSession().post(
-        url=url, data=updated_body, headers={"Content-Type": "application/x-sentry-envelope"}
-    ).raise_for_status()
+    try:
+        sentry_request(url, updated_body)
+    except CircuitBreakerError:
+        logger.warning("Dropped a client exception due to circuit-breaking")
+    except RequestException as e:
+        # This logger has been configured, above, to not report to Sentry
+        logger.exception(e)
     return HttpResponse(status=200)
+
+
+# Circuit-break and temporarily stop trying to report to
+# Sentry if it keeps timing out.  We include ProxyError in
+# here because we are likely making our requests through
+# Smokescreen as a CONNECT proxy, so failures from Smokescreen
+# failing to connect at the TCP level will report as
+# ProxyErrors.
+def open_circuit_for(exc_type: Type[Exception], exc_value: Exception) -> bool:
+    if issubclass(exc_type, (ProxyError, Timeout)):
+        return True
+    if isinstance(exc_value, HTTPError):
+        response = exc_value.response
+        if response.status_code == 429 or response.status_code >= 500:
+            return True
+    return False
+
+
+# Open the circuit after 2 failures, and leave it open for 30s.
+@circuit(
+    failure_threshold=2,
+    recovery_timeout=30,
+    name="Sentry tunnel",
+    expected_exception=open_circuit_for,
+)
+def sentry_request(url: str, data: bytes) -> None:
+    SentryTunnelSession().post(
+        url=url,
+        data=data,
+        headers={"Content-Type": "application/x-sentry-envelope"},
+    ).raise_for_status()

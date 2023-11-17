@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -45,5 +47,6 @@ user@example.com deployed version 3eb5f44 of [sample-project](http://sample-proj
             content_type="application/x-www-form-urlencoded",
         )
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("heroku", fixture_name, file_type="txt")

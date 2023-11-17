@@ -11,7 +11,7 @@ import "jquery-validation";
 import "../setup";
 import "../reload";
 import "../hotkey";
-import "../notifications";
+import "../desktop_notifications";
 import "../server_events";
 import "../templates";
 import "../settings";
@@ -21,7 +21,6 @@ import "../zulip_test";
 // Import styles
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
-import "../../third/bootstrap-tooltip/tooltip.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";

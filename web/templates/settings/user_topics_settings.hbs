@@ -10,14 +10,14 @@
                 Zulip lets you mute topics and streams to avoid receiving notifications messages you are not interested in.
                 Muting a stream effectively mutes all topics in that stream. You can also manually mute a topic in an unmuted stream,
                 or unmute a topic in a muted stream. <z-link>Learn more.</z-link>
-                {{#*inline "z-link"}}<a href="/help/mute-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-link"}}<a href="/help/topic-notifications" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         {{/if}}
     </p>
     <div class="settings_panel_list_header">
         {{#if development}}
             <h3>{{t "Topic settings"}}
-                {{> ../help_link_widget link="/help/mute-a-topic" }}
+                {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
         {{else}}
             <h3>{{t "Topic settings"}}</h3>
@@ -33,7 +33,7 @@
                 <th data-sort="numeric" data-sort-prop="visibility_policy">{{t "Status" }}</th>
                 <th data-sort="numeric" data-sort-prop="date_updated" class="active topic_date_updated">{{t "Date updated" }}</th>
             </thead>
-            <tbody id="user_topics_table" class="required-text" data-empty="{{t 'You have not configured any topics yet.'}}"></tbody>
+            <tbody id="user_topics_table" data-empty="{{t 'You have not configured any topics yet.'}}" data-search-results-empty="{{t 'No topics match your current filter.' }}"></tbody>
         </table>
     </div>
 </div>

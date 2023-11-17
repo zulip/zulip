@@ -60,10 +60,13 @@ run_test("basics", () => {
     });
 
     user_status.set_status_emoji({
+        id: 1,
         user_id: 5,
+        type: "user_status",
         emoji_code: "991",
         emoji_name: "example_realm_emoji",
         reaction_type: "realm_emoji",
+        status_text: "",
     });
 
     assert.deepEqual(user_status.get_status_emoji(5), {
@@ -78,8 +81,13 @@ run_test("basics", () => {
     assert.equal(user_status.get_status_text(1), "in a meeting");
 
     user_status.set_status_text({
+        id: 2,
         user_id: 2,
+        type: "user_status",
         status_text: "out to lunch",
+        emoji_name: "",
+        emoji_code: "",
+        reaction_type: "",
     });
     assert.equal(user_status.get_status_text(2), "out to lunch");
 
@@ -90,10 +98,13 @@ run_test("basics", () => {
     assert.equal(user_status.get_status_text(2), undefined);
 
     user_status.set_status_emoji({
+        id: 3,
         user_id: 2,
+        type: "user_status",
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
+        status_text: "",
     });
     assert.deepEqual(user_status.get_status_emoji(2), {
         emoji_name: "smiley",
@@ -103,10 +114,13 @@ run_test("basics", () => {
     });
 
     user_status.set_status_emoji({
+        id: 4,
         user_id: 2,
+        type: "user_status",
         emoji_name: "",
         emoji_code: "",
         reaction_type: "",
+        status_text: "",
     });
     assert.deepEqual(user_status.get_status_emoji(2), undefined);
 });
@@ -142,23 +156,28 @@ run_test("defensive checks", () => {
     assert.throws(
         () =>
             user_status.set_status_emoji({
+                id: 1,
+                status_text: "",
+                type: "user_status",
                 user_id: 5,
                 emoji_name: "emoji",
                 // no status code or reaction type.
             }),
         {
-            name: "Error",
-            message: "Invalid params.",
+            name: "ZodError",
         },
     );
 
     assert.throws(
         () =>
             user_status.set_status_emoji({
+                id: 2,
+                type: "user_status",
                 user_id: 5,
                 reaction_type: "realm_emoji",
                 emoji_name: "does_not_exist",
                 emoji_code: "fake_code",
+                status_text: "",
             }),
         {
             name: "Error",

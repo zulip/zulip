@@ -10,6 +10,7 @@ import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_invites from "./settings_invites";
@@ -59,6 +60,9 @@ const admin_settings_label = {
     realm_enable_read_receipts: $t({defaultMessage: "Enable read receipts"}),
     realm_enable_read_receipts_parens_text: $t({
         defaultMessage: "Users can always disable their personal read receipts.",
+    }),
+    realm_enable_guest_user_indicator: $t({
+        defaultMessage: "Display “(guest)” after names of guest users",
     }),
 };
 
@@ -116,12 +120,14 @@ export function build_page() {
         realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
-        realm_message_content_edit_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
-            "realm_message_content_edit_limit_seconds",
-        ),
-        realm_message_content_delete_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
-            "realm_message_content_delete_limit_seconds",
-        ),
+        realm_message_content_edit_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_message_content_edit_limit_seconds",
+            ),
+        realm_message_content_delete_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_message_content_delete_limit_seconds",
+            ),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
@@ -178,7 +184,7 @@ export function build_page() {
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
-        default_view_values: settings_config.default_view_values,
+        web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
         display_settings: settings_config.get_all_display_settings(),
         settings_label: settings_config.realm_user_settings_defaults_labels,
@@ -213,6 +219,7 @@ export function build_page() {
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
+        realm_enable_guest_user_indicator: page_params.realm_enable_guest_user_indicator,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {

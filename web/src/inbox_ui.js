@@ -9,12 +9,15 @@ import render_user_with_status_icon from "../templates/user_with_status_icon.hbs
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
+import {$t} from "./i18n";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as popovers from "./popovers";
@@ -33,26 +36,34 @@ let dms_dict = new Map();
 let topics_dict = new Map();
 let streams_dict = new Map();
 let update_triggered_by_user = false;
+let filters_dropdown_widget;
+
+const FILTERS = {
+    ALL_TOPICS: "all_topics",
+    UNMUTED_TOPICS: "unmuted_topics",
+    FOLLOWED_TOPICS: "followed_topics",
+};
 
 const COLUMNS = {
     COLLAPSE_BUTTON: 0,
     RECIPIENT: 1,
     UNREAD_COUNT: 2,
-    ACTION_MENU: 3,
+    TOPIC_VISIBILITY: 3,
+    ACTION_MENU: 4,
 };
 let col_focus = COLUMNS.COLLAPSE_BUTTON;
 let row_focus = 0;
 
-const ls_filter_key = "inbox_filters";
+const ls_filter_key = "inbox-filters";
 const ls_collapsed_containers_key = "inbox_collapsed_containers";
 
 const ls = localstorage();
-let filters = new Set();
+let filters = new Set([FILTERS.UNMUTED_TOPICS]);
 let collapsed_containers = new Set();
 
 let search_keyword = "";
 const INBOX_SEARCH_ID = "inbox-search";
-const MUTED_FILTER_ID = "include_muted";
+const INBOX_FILTERS_DROPDOWN_ID = "inbox-filter_widget";
 export let current_focus_id;
 
 const STREAM_HEADER_PREFIX = "inbox-stream-header-";
@@ -68,10 +79,6 @@ function get_row_from_conversation_key(key) {
 function save_data_to_ls() {
     ls.set(ls_filter_key, [...filters]);
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
-}
-
-function should_include_muted() {
-    return filters.has(MUTED_FILTER_ID);
 }
 
 export function show() {
@@ -125,36 +132,16 @@ function get_stream_header_row(stream_id) {
 }
 
 function load_data_from_ls() {
-    filters = new Set(ls.get(ls_filter_key));
+    const saved_filters = new Set(ls.get(ls_filter_key));
+    const valid_filters = new Set(Object.values(FILTERS));
+    // If saved filters are not in the list of valid filters, we reset to default.
+    const is_subset = [...saved_filters].every((filter) => valid_filters.has(filter));
+    if (saved_filters.size === 0 || !is_subset) {
+        filters = new Set([FILTERS.UNMUTED_TOPICS]);
+    } else {
+        filters = saved_filters;
+    }
     collapsed_containers = new Set(ls.get(ls_collapsed_containers_key));
-    update_filters();
-}
-
-function update_filters() {
-    const $mute_checkbox = $("#inbox-filters #inbox_filter_mute_toggle");
-    const $mute_filter = $("#inbox-filters .btn-inbox-filter");
-    if (should_include_muted()) {
-        $mute_checkbox.removeClass("fa-square-o");
-        $mute_checkbox.addClass("fa-check-square-o");
-        $mute_filter.addClass("btn-inbox-selected");
-    } else {
-        $mute_checkbox.removeClass("fa-check-square-o");
-        $mute_checkbox.addClass("fa-square-o");
-        $mute_filter.removeClass("btn-inbox-selected");
-    }
-}
-
-export function toggle_muted_filter() {
-    const $mute_filter = $("#inbox-filters .btn-inbox-filter");
-    if ($mute_filter.hasClass("btn-inbox-selected")) {
-        filters.delete(MUTED_FILTER_ID);
-    } else {
-        filters.add(MUTED_FILTER_ID);
-    }
-
-    update_filters();
-    save_data_to_ls();
-    update();
 }
 
 function format_dm(user_ids_string, unread_count, latest_msg_id) {
@@ -310,6 +297,11 @@ function format_topic(stream_id, topic, topic_unread_count, latest_msg_id) {
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
         latest_msg_id,
+        // The 'all_visibility_policies' field is not specific to this context,
+        // but this is the easiest way we've figured out for passing the data
+        // to the template rendering.
+        all_visibility_policies: user_topics.all_visibility_policies,
+        visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
     };
 
     return context;
@@ -484,11 +476,11 @@ function reset_data() {
 
     const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
     topics_dict = get_sorted_stream_topic_dict();
-    const is_dms_collaped = collapsed_containers.has("inbox-dm-header");
+    const is_dms_collapsed = collapsed_containers.has("inbox-dm-header");
 
     return {
         unread_dms_count,
-        is_dms_collaped,
+        is_dms_collapsed,
         has_dms_post_filter,
         has_visible_unreads,
     };
@@ -502,12 +494,52 @@ function show_empty_inbox_text(has_visible_unreads) {
             $("#inbox-empty-without-search").hide();
         } else {
             $("#inbox-empty-with-search").hide();
-            $("#inbox-empty-without-search").show();
+            // Use display value specified in CSS.
+            $("#inbox-empty-without-search").css("display", "");
         }
     } else {
         $(".inbox-empty-text").hide();
         $("#inbox-list").css("border-width", "1px");
     }
+}
+
+function filters_dropdown_options() {
+    return [
+        {
+            unique_id: FILTERS.ALL_TOPICS,
+            name: $t({defaultMessage: "All topics"}),
+            bold_current_selection:
+                filters_dropdown_widget &&
+                filters_dropdown_widget.current_value === FILTERS.ALL_TOPICS,
+        },
+        {
+            unique_id: FILTERS.UNMUTED_TOPICS,
+            name: $t({defaultMessage: "Unmuted topics"}),
+            bold_current_selection:
+                filters_dropdown_widget &&
+                filters_dropdown_widget.current_value === FILTERS.UNMUTED_TOPICS,
+        },
+        {
+            unique_id: FILTERS.FOLLOWED_TOPICS,
+            name: $t({defaultMessage: "Followed topics"}),
+            bold_current_selection:
+                filters_dropdown_widget &&
+                filters_dropdown_widget.current_value === FILTERS.FOLLOWED_TOPICS,
+        },
+    ];
+}
+
+function filter_click_handler(event, dropdown, widget) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    // We don't support multiple filters yet, so we clear existing and add the new filter.
+    filters = new Set([filter_id]);
+    save_data_to_ls();
+    dropdown.hide();
+    widget.render();
+    update();
 }
 
 export function complete_rerender() {
@@ -519,16 +551,13 @@ export function complete_rerender() {
     $("#inbox-pane").html(
         render_inbox_view({
             search_val: search_keyword,
-            include_muted: should_include_muted(),
             INBOX_SEARCH_ID,
-            MUTED_FILTER_ID,
             dms_dict,
             topics_dict,
             streams_dict,
             ...additional_context,
         }),
     );
-    update_filters();
     show_empty_inbox_text(has_visible_unreads);
     // If the focus is not on the inbox rows, the inbox view scrolls
     // down when moving from other views to the inbox view. To avoid
@@ -539,6 +568,22 @@ export function complete_rerender() {
         $("#inbox-list .simplebar-content-wrapper").attr("tabindex", "-1");
         revive_current_focus();
     }, 0);
+
+    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "inbox-filter",
+        get_options: filters_dropdown_options,
+        item_click_callback: filter_click_handler,
+        $events_container: $("#inbox-main"),
+        tippy_props: {
+            placement: "bottom-start",
+            offset: [0, 2],
+        },
+        unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+        default_id: filters.values().next().value,
+        hide_search_box: true,
+        bold_current_selection: true,
+    });
+    filters_dropdown_widget.setup();
 }
 
 export function search_and_update() {
@@ -571,16 +616,21 @@ function filter_should_hide_row({stream_id, topic, dm_key}) {
             return true;
         }
 
-        if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
-            return false;
-        }
-
         if (
-            !should_include_muted() &&
-            (stream_data.is_muted(stream_id) || user_topics.is_topic_muted(stream_id, topic))
+            filters.has(FILTERS.FOLLOWED_TOPICS) &&
+            !user_topics.is_topic_followed(stream_id, topic)
         ) {
             return true;
         }
+
+        if (
+            filters.has(FILTERS.UNMUTED_TOPICS) &&
+            (user_topics.is_topic_muted(stream_id, topic) || stream_data.is_muted(stream_id)) &&
+            !user_topics.is_topic_unmuted_or_followed(stream_id, topic)
+        ) {
+            return true;
+        }
+
         text = (sub.name + " " + topic).toLowerCase();
     }
 
@@ -627,7 +677,7 @@ function focus_inbox_search() {
 }
 
 function is_list_focused() {
-    return ![INBOX_SEARCH_ID, MUTED_FILTER_ID].includes(current_focus_id);
+    return ![INBOX_SEARCH_ID, INBOX_FILTERS_DROPDOWN_ID].includes(current_focus_id);
 }
 
 function get_all_rows() {
@@ -640,7 +690,7 @@ function get_row_index($elt) {
     return $all_rows.index($row);
 }
 
-function focus_clicked_element($elt) {
+function focus_clicked_list_element($elt) {
     row_focus = get_row_index($elt);
     update_triggered_by_user = true;
 }
@@ -651,6 +701,85 @@ function revive_current_focus() {
     } else {
         focus_current_id();
     }
+}
+
+function update_closed_compose_text($row, is_header_row) {
+    // TODO: This fake "message" object is designed to allow using the
+    // get_recipient_label helper inside compose_closed_ui. Surely
+    // there's a more readable way to write this code.
+    // Similar code is present in recent view.
+
+    if (is_header_row) {
+        compose_closed_ui.set_standard_text_for_reply_button();
+        return;
+    }
+
+    let message;
+    const is_dm = $row.parent("#inbox-direct-messages-container").length > 0;
+    if (is_dm) {
+        message = {
+            display_reply_to: $row.find(".recipients_name").text(),
+        };
+    } else {
+        const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
+        message = {
+            stream_id: Number.parseInt($stream.attr("data-stream-id"), 10),
+            topic: $row.find(".inbox-topic-name a").text(),
+        };
+    }
+    compose_closed_ui.update_reply_recipient_label(message);
+}
+
+export function get_focused_row_message() {
+    if (!is_list_focused()) {
+        return {message: undefined};
+    }
+
+    const $all_rows = get_all_rows();
+    const $focused_row = $($all_rows.get(row_focus));
+    if (is_row_a_header($focused_row)) {
+        const is_dm_header = $focused_row.attr("id") === "inbox-dm-header";
+        if (is_dm_header) {
+            return {message: undefined, msg_type: "private"};
+        }
+
+        const stream_id = Number.parseInt($focused_row.attr("data-stream-id"), 10);
+        compose_state.set_compose_recipient_id(stream_id);
+        return {message: undefined, msg_type: "stream", stream_id};
+    }
+
+    const is_dm = $focused_row.parent("#inbox-direct-messages-container").length > 0;
+    const conversation_key = $focused_row.attr("id").slice(CONVERSATION_ID_PREFIX.length);
+    let row_info;
+    if (is_dm) {
+        row_info = dms_dict.get(conversation_key);
+    } else {
+        const $stream = $focused_row.parent(".inbox-topic-container").parent();
+        const stream_key = $stream.attr("id");
+        row_info = topics_dict.get(stream_key).get(conversation_key);
+    }
+
+    const message = message_store.get(row_info.latest_msg_id);
+    // Since inbox is populated based on unread data which is part
+    // of /register request, it is possible that we don't have the
+    // actual message in our message_store. In that case, we return
+    // a fake message object.
+    if (message === undefined) {
+        if (is_dm) {
+            const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
+            return {
+                msg_type: "private",
+                private_message_recipient: recipients,
+            };
+        }
+        return {
+            msg_type: "stream",
+            stream_id: row_info.stream_id,
+            topic: row_info.topic_name,
+        };
+    }
+
+    return {message};
 }
 
 function is_row_a_header($row) {
@@ -669,7 +798,7 @@ function set_list_focus(input_key) {
     const $all_rows = get_all_rows();
     const max_row_focus = $all_rows.length - 1;
     if (max_row_focus < 0) {
-        focus_inbox_search();
+        focus_filters_dropdown();
         return;
     }
 
@@ -680,11 +809,14 @@ function set_list_focus(input_key) {
     }
 
     const $row_to_focus = $($all_rows.get(row_focus));
-    // This includes a fake collapse button for `inbox-row`.
+    // This includes a fake collapse button for `inbox-row` and a fake topic visibility
+    // button for `inbox-header`. The fake buttons help simplify code here and
+    // `$($cols_to_focus[col_focus]).trigger("focus");` at the end of this function.
     const $cols_to_focus = [$row_to_focus, ...$row_to_focus.find("[tabindex=0]")];
     const total_cols = $cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
-    const not_a_header_row = !is_row_a_header($row_to_focus);
+    const is_header_row = is_row_a_header($row_to_focus);
+    update_closed_compose_text($row_to_focus, is_header_row);
 
     // Loop through columns.
     if (col_focus > total_cols - 1) {
@@ -695,12 +827,12 @@ function set_list_focus(input_key) {
 
     // Since header rows always have a collapse button, other rows have one less element to focus.
     if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
-        if (not_a_header_row && LEFT_NAVIGATION_KEYS.includes(input_key)) {
+        if (!is_header_row && LEFT_NAVIGATION_KEYS.includes(input_key)) {
             // In `inbox-row` user pressed left on COLUMNS.RECIPIENT, so
             // go to the last column.
             col_focus = total_cols - 1;
         }
-    } else if (not_a_header_row && col_focus === COLUMNS.RECIPIENT) {
+    } else if (!is_header_row && col_focus === COLUMNS.RECIPIENT) {
         if (RIGHT_NAVIGATION_KEYS.includes(input_key)) {
             // In `inbox-row` user pressed right on COLUMNS.COLLAPSE_BUTTON.
             // Since `inbox-row` has no collapse button, user wants to go
@@ -714,26 +846,76 @@ function set_list_focus(input_key) {
             col_focus = COLUMNS.COLLAPSE_BUTTON;
         } else {
             // up / down arrow
-            // For `inbox-row`, we focus entier row for COLUMNS.RECIPIENT.
+            // For `inbox-row`, we focus entire row for COLUMNS.RECIPIENT.
             $row_to_focus.trigger("focus");
             return;
+        }
+    } else if (is_header_row && col_focus === COLUMNS.TOPIC_VISIBILITY) {
+        // `inbox-header` doesn't have a topic visibility indicator, so focus on
+        // button around it instead.
+        if (LEFT_NAVIGATION_KEYS.includes(input_key)) {
+            col_focus = COLUMNS.UNREAD_COUNT;
+        } else {
+            col_focus = COLUMNS.ACTION_MENU;
         }
     }
 
     $($cols_to_focus[col_focus]).trigger("focus");
 }
 
-function focus_muted_filter() {
-    current_focus_id = MUTED_FILTER_ID;
-    focus_current_id();
+function focus_filters_dropdown() {
+    current_focus_id = INBOX_FILTERS_DROPDOWN_ID;
+    $(`#${INBOX_FILTERS_DROPDOWN_ID}`).trigger("focus");
 }
 
 function is_search_focused() {
     return current_focus_id === INBOX_SEARCH_ID;
 }
 
-function is_muted_filter_focused() {
-    return current_focus_id === MUTED_FILTER_ID;
+function is_filters_dropdown_focused() {
+    return current_focus_id === INBOX_FILTERS_DROPDOWN_ID;
+}
+
+function get_page_up_down_delta() {
+    const element_above = document.querySelector("#inbox-filters");
+    const element_down = document.querySelector("#compose");
+    const visible_top = element_above.getBoundingClientRect().bottom;
+    const visible_bottom = element_down.getBoundingClientRect().top;
+    // One usually wants PageDown to move what had been the bottom row
+    // to now be at the top, so one can be confident one will see
+    // every row using it. This offset helps achieve that goal.
+    //
+    // See navigate.amount_to_paginate for similar logic in the message feed.
+    const scrolling_reduction_to_maintain_context = 30;
+
+    const delta = visible_bottom - visible_top - scrolling_reduction_to_maintain_context;
+    return delta;
+}
+
+function page_up_navigation() {
+    const delta = get_page_up_down_delta();
+    const scroll_element = document.documentElement;
+    const new_scrollTop = scroll_element.scrollTop - delta;
+    if (new_scrollTop <= 0) {
+        row_focus = 0;
+    }
+    scroll_element.scrollTop = new_scrollTop;
+    set_list_focus();
+}
+
+function page_down_navigation() {
+    const delta = get_page_up_down_delta();
+    const scroll_element = document.documentElement;
+    const new_scrollTop = scroll_element.scrollTop + delta;
+    const $all_rows = get_all_rows();
+    const $last_row = $all_rows.last();
+    const last_row_bottom = $last_row.offset().top + $last_row.outerHeight();
+    // Move focus to last row if it is visible and we are at the bottom.
+    if (last_row_bottom <= new_scrollTop) {
+        row_focus = get_all_rows().length - 1;
+    }
+    scroll_element.scrollTop = new_scrollTop;
+    set_list_focus();
 }
 
 export function change_focused_element(input_key) {
@@ -749,14 +931,20 @@ export function change_focused_element(input_key) {
 
         switch (input_key) {
             case "down_arrow":
+            case "tab":
                 set_list_focus();
                 return true;
             case "right_arrow":
-            case "tab":
                 if (end !== text_length || is_selected) {
                     return false;
                 }
-                focus_muted_filter();
+                focus_filters_dropdown();
+                return true;
+            case "left_arrow":
+                if (start !== 0 || is_selected) {
+                    return false;
+                }
+                focus_filters_dropdown();
                 return true;
             case "escape":
                 if (get_all_rows().length === 0) {
@@ -764,21 +952,23 @@ export function change_focused_element(input_key) {
                 }
                 set_list_focus();
                 return true;
+        }
+    } else if (is_filters_dropdown_focused()) {
+        switch (input_key) {
+            case "down_arrow":
+                set_list_focus();
+                return true;
+            case "left_arrow":
+                focus_inbox_search();
+                return true;
+            case "right_arrow":
+            case "tab":
+                focus_inbox_search();
+                return true;
             case "shift_tab":
                 // Let user focus outside inbox view.
                 current_focus_id = "";
                 return false;
-        }
-    } else if (is_muted_filter_focused()) {
-        switch (input_key) {
-            case "down_arrow":
-            case "tab":
-                set_list_focus();
-                return true;
-            case "left_arrow":
-            case "shift_tab":
-                focus_inbox_search();
-                return true;
         }
     } else {
         switch (input_key) {
@@ -791,7 +981,7 @@ export function change_focused_element(input_key) {
             case "vim_up":
             case "up_arrow":
                 if (row_focus === 0) {
-                    focus_inbox_search();
+                    focus_filters_dropdown();
                     return true;
                 }
                 row_focus -= 1;
@@ -809,6 +999,12 @@ export function change_focused_element(input_key) {
             case LEFT_NAVIGATION_KEYS[2]:
                 col_focus -= 1;
                 set_list_focus(input_key);
+                return true;
+            case "page_up":
+                page_up_navigation();
+                return true;
+            case "page_down":
+                page_down_navigation();
                 return true;
         }
     }
@@ -870,7 +1066,10 @@ export function update() {
         if (stream_unread_count > 0) {
             // Stream isn't rendered.
             if (topics_dict.get(stream_key) === undefined) {
-                has_topics_post_filter = insert_stream(stream_id, topic_dict);
+                const is_stream_visible = insert_stream(stream_id, topic_dict);
+                if (is_stream_visible) {
+                    has_topics_post_filter = true;
+                }
                 continue;
             }
 
@@ -948,10 +1147,19 @@ function get_focus_class_for_header() {
 
 function get_focus_class_for_row() {
     let focus_class = ".inbox-left-part";
-    if (col_focus === COLUMNS.UNREAD_COUNT) {
-        focus_class = ".unread_count";
-    } else if (col_focus === COLUMNS.ACTION_MENU) {
-        focus_class = ".inbox-topic-menu";
+    switch (col_focus) {
+        case COLUMNS.UNREAD_COUNT: {
+            focus_class = ".unread_count";
+            break;
+        }
+        case COLUMNS.ACTION_MENU: {
+            focus_class = ".inbox-topic-menu";
+            break;
+        }
+        case COLUMNS.TOPIC_VISIBILITY: {
+            focus_class = ".change_visibility_policy";
+            break;
+        }
     }
     return focus_class;
 }
@@ -1033,7 +1241,8 @@ export function is_in_focus() {
         !compose_state.composing() &&
         !popovers.any_active() &&
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
-        !overlays.is_overlay_or_modal_open() &&
+        !overlays.any_active() &&
+        !modals.any_active() &&
         !$(".home-page-input").is(":focus")
     );
 }
@@ -1068,7 +1277,7 @@ export function initialize() {
         const $elt = $(e.currentTarget);
         const container_id = $elt.parents(".inbox-header").attr("id");
         col_focus = COLUMNS.COLLAPSE_BUTTON;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         collapse_or_expand(container_id);
         e.stopPropagation();
     });
@@ -1086,14 +1295,8 @@ export function initialize() {
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", (e) => {
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.RECIPIENT;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         window.location.href = $elt.find("a").attr("href");
-    });
-
-    $("body").on("click", "#include_muted", () => {
-        current_focus_id = MUTED_FILTER_ID;
-        update_triggered_by_user = true;
-        toggle_muted_filter();
     });
 
     $("body").on("click", "#inbox-list .on_hover_dm_read", (e) => {
@@ -1101,7 +1304,7 @@ export function initialize() {
         e.preventDefault();
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
             // direct message row
@@ -1124,7 +1327,7 @@ export function initialize() {
         e.preventDefault();
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.UNREAD_COUNT;
-        focus_clicked_element($elt);
+        focus_clicked_list_element($elt);
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
             // direct message row
@@ -1144,5 +1347,46 @@ export function initialize() {
         $("#inbox-search").val("");
         search_and_update();
         focus_inbox_search();
+    });
+
+    $("body").on("click", "#inbox-search", () => {
+        current_focus_id = INBOX_SEARCH_ID;
+        compose_closed_ui.set_standard_text_for_reply_button();
+    });
+
+    // Mute topic in a unmuted stream
+    $("body").on("click", "#inbox-list .stream_unmuted.on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        user_topics.set_visibility_policy_for_element(
+            $(e.target),
+            user_topics.all_visibility_policies.MUTED,
+        );
+    });
+
+    // Unmute topic in a unmuted stream
+    $("body").on("click", "#inbox-list .stream_unmuted.on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        user_topics.set_visibility_policy_for_element(
+            $(e.target),
+            user_topics.all_visibility_policies.INHERIT,
+        );
+    });
+
+    // Unmute topic in a muted stream
+    $("body").on("click", "#inbox-list .stream_muted.on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        user_topics.set_visibility_policy_for_element(
+            $(e.target),
+            user_topics.all_visibility_policies.UNMUTED,
+        );
+    });
+
+    // Mute topic in a muted stream
+    $("body").on("click", "#inbox-list .stream_muted.on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        user_topics.set_visibility_policy_for_element(
+            $(e.target),
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 }

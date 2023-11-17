@@ -1,14 +1,15 @@
 import $ from "jquery";
 import Micromodal from "micromodal";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "../blueslip";
 
-function is_modal_open(): boolean {
+function is_open(): boolean {
     return $(".micromodal").hasClass("modal--open");
 }
 
 function active_modal(): string | undefined {
-    if (!is_modal_open()) {
+    if (!is_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return undefined;
     }
@@ -17,9 +18,9 @@ function active_modal(): string | undefined {
     return `#${CSS.escape($micromodal.attr("id")!)}`;
 }
 
-function close_active_modal(): void {
-    if (!is_modal_open()) {
-        blueslip.warn("close_active_modal() called without checking is_modal_open()");
+export function close_active(): void {
+    if (!is_open()) {
+        blueslip.warn("close_active() called without checking is_open()");
         return;
     }
 
@@ -27,23 +28,23 @@ function close_active_modal(): void {
     Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
 }
 
-export function open_modal(modal_id: string, recursive_call_count: number = 0): void {
+export function open(modal_id: string, recursive_call_count: number = 0): void {
     if (modal_id === undefined) {
-        blueslip.error("Undefined id was passed into open_modal");
+        blueslip.error("Undefined id was passed into open");
         return;
     }
 
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
     if (modal_id.startsWith("#")) {
-        blueslip.error("hash-based selector passed in to open_modal", {modal_id});
+        blueslip.error("hash-based selector passed in to open", {modal_id});
         return;
     }
 
-    if (is_modal_open()) {
+    if (is_open()) {
         /*
           Our modal system doesn't directly support opening a modal
-          when one is already open, because the `is_modal_open` CSS
+          when one is already open, because the `is_open` CSS
           class doesn't update until Micromodal has finished its
           animations, which can take 100ms or more.
 
@@ -62,9 +63,9 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
             return;
         }
 
-        close_active_modal();
+        close_active();
         setTimeout(() => {
-            open_modal(modal_id, recursive_call_count);
+            open(modal_id, recursive_call_count);
         }, 10);
         return;
     }
@@ -77,7 +78,8 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
     const $micromodal = $(id_selector);
 
     $micromodal.find(".modal__container").on("animationend", (event) => {
-        const animation_name = (event.originalEvent as AnimationEvent).animationName;
+        assert(event.originalEvent instanceof AnimationEvent);
+        const animation_name = event.originalEvent.animationName;
         if (animation_name === "mmfadeIn") {
             // Micromodal adds the is-open class before the modal animation
             // is complete, which isn't really helpful since a modal is open after the
@@ -103,7 +105,7 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
         if (document.getSelection()?.type === "Range") {
             return;
         }
-        close_modal(modal_id);
+        close(modal_id);
     });
 
     Micromodal.show(modal_id, {
@@ -112,14 +114,14 @@ export function open_modal(modal_id: string, recursive_call_count: number = 0): 
     });
 }
 
-export function close_modal(modal_id: string): void {
+export function close(modal_id: string): void {
     if (modal_id === undefined) {
-        blueslip.error("Undefined id was passed into close_modal");
+        blueslip.error("Undefined id was passed into close");
         return;
     }
 
-    if (!is_modal_open()) {
-        blueslip.warn("close_active_modal() called without checking is_modal_open()");
+    if (!is_open()) {
+        blueslip.warn("close_active() called without checking is_open()");
         return;
     }
 

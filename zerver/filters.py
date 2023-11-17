@@ -2,9 +2,11 @@ from typing import Any, Dict, Optional
 
 from django.http import HttpRequest
 from django.views.debug import SafeExceptionReporterFilter
+from typing_extensions import override
 
 
 class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
+    @override
     def get_post_parameters(self, request: Optional[HttpRequest]) -> Dict[str, Any]:
         post_data = SafeExceptionReporterFilter.get_post_parameters(self, request)
         assert isinstance(post_data, dict)

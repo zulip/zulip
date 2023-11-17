@@ -28,6 +28,7 @@ mock_esm("../src/recent_view_ui", {
     process_messages: noop,
     show_loading_indicator: noop,
     hide_loading_indicator: noop,
+    set_oldest_message_date: noop,
 });
 mock_esm("../src/ui_report", {
     hide_error: noop,

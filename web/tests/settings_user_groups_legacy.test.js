@@ -45,7 +45,7 @@ function reset_test_setup($pill_container_stub) {
 }
 
 function test_ui(label, f) {
-    // The sloppy_$ flag lets us re-use setup from prior tests.
+    // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, f, {sloppy_$: true});
 }
 
@@ -306,7 +306,7 @@ test_ui("populate_user_groups", ({mock_template, override, override_rewire}) => 
             assert.ok(get_by_email_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, bob.user_id);
-            assert.equal(res.display_value, bob.full_name + " (deactivated)");
+            assert.equal(res.display_value, bob.full_name);
             assert.ok(res.deactivated);
             people.add_active_user(bob);
         })();
@@ -536,7 +536,7 @@ test_ui("on_events", ({mock_template, override, override_rewire}) => {
                     assert.equal(text, "translated HTML: User group added!");
                     assert.equal(ele, $("#dialog_error"));
                 };
-                dialog_widget.close_modal = () => {};
+                dialog_widget.close = () => {};
 
                 opts.success();
 

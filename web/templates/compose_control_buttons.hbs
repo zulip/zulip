@@ -1,4 +1,4 @@
-<div class="compose_control_buttons_container order-1">
+<div class="compose-control-buttons-container order-1">
     <input type="file" class="file_input notvisible" multiple />
     {{#if file_upload_enabled }}
     <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Upload files' }}">
@@ -7,8 +7,8 @@
     {{/if}}
     <a role="button" class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0 data-tippy-content="{{t 'Preview' }}"></a>
     <a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" data-tippy-content="{{t 'Write' }}"></a>
-    <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add audio call' }}">
-        <a role="button" class="compose_control_button fa fa-phone audio_link" aria-label="{{t 'Add audio call' }}" tabindex=0></a>
+    <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add voice call' }}">
+        <a role="button" class="compose_control_button fa fa-phone audio_link" aria-label="{{t 'Add voice call' }}" tabindex=0></a>
     </div>
     <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add video call' }}">
         <a role="button" class="compose_control_button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0></a>
@@ -26,9 +26,6 @@
     <div class="{{#if message_id}}hide-lg{{else}}hide-sm show-md hide-mc{{/if}}">
         {{> popovers/compose_control_buttons/compose_control_buttons_in_popover}}
     </div>
-    <a role="button" class="compose_control_button compose_draft_button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip_template">
-        {{t 'Drafts' }}
-    </a>
     <div class="compose_control_menu_wrapper" role="button" tabindex=0>
         <a class="compose_control_button zulip-icon zulip-icon-more-vertical hide {{#if message_id}}show-lg{{else}}show-sm hide-md show-mc{{/if}} compose_control_menu" tabindex="-1" data-tippy-content="Compose actions"></a>
     </div>

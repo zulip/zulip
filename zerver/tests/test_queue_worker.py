@@ -15,7 +15,7 @@ import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -626,6 +626,7 @@ class WorkerTest(ZulipTestCase):
 
         @queue_processors.assign_queue("unreliable_worker", is_test_queue=True)
         class UnreliableWorker(queue_processors.QueueProcessingWorker):
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == "unexpected behaviour":
                     raise Exception("Worker task not performing as expected!")
@@ -661,6 +662,7 @@ class WorkerTest(ZulipTestCase):
 
         @queue_processors.assign_queue("unreliable_loopworker", is_test_queue=True)
         class UnreliableLoopWorker(queue_processors.LoopQueueProcessingWorker):
+            @override
             def consume_batch(self, events: List[Dict[str, Any]]) -> None:
                 for event in events:
                     if event["type"] == "unexpected behaviour":
@@ -702,6 +704,7 @@ class WorkerTest(ZulipTestCase):
         class TimeoutWorker(queue_processors.QueueProcessingWorker):
             MAX_CONSUME_SECONDS = 1
 
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == "timeout":
                     time.sleep(1.5)
@@ -755,6 +758,7 @@ class WorkerTest(ZulipTestCase):
         class TimeoutWorker(FetchLinksEmbedData):
             MAX_CONSUME_SECONDS = 1
 
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 # Send SIGALRM to ourselves to simulate a timeout.
                 pid = os.getpid()
@@ -785,6 +789,7 @@ class WorkerTest(ZulipTestCase):
             def __init__(self) -> None:
                 super().__init__()
 
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 pass  # nocoverage # this is intentionally not called
 

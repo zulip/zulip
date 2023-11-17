@@ -8,6 +8,7 @@ import render_success_message_scheduled_banner from "../templates/compose_banner
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -41,13 +42,13 @@ export function clear_private_stream_alert() {
 }
 
 export function clear_preview_area() {
-    $("#compose-textarea").show();
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").show();
+    $("textarea#compose-textarea").trigger("focus");
     $("#compose .undo_markdown_preview").hide();
     $("#compose .preview_message_area").hide();
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
-    autosize.update($("#compose-textarea"));
+    autosize.update($("textarea#compose-textarea"));
 
     // While in preview mode we disable unneeded compose_control_buttons,
     // so here we are re-enabling those compose_control_buttons
@@ -68,7 +69,7 @@ export function create_message_object() {
         content: compose_state.message_content(),
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
-        stream_id: "",
+        stream_id: undefined,
     };
     message.topic = "";
 
@@ -106,11 +107,11 @@ export function clear_compose_box() {
     if (compose_ui.is_full_size()) {
         compose_ui.make_compose_box_original_size();
     }
-    $("#compose-textarea").val("").trigger("focus");
+    $("textarea#compose-textarea").val("").trigger("focus");
     compose_validate.check_overflow_text();
     compose_validate.clear_topic_resolved_warning();
-    $("#compose-textarea").removeData("draft-id");
-    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("textarea#compose-textarea").removeData("draft-id");
+    compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
@@ -118,15 +119,29 @@ export function clear_compose_box() {
     scheduled_messages.reset_selected_schedule_timestamp();
 }
 
-export function send_message_success(local_id, message_id, locally_echoed) {
-    if (!locally_echoed) {
-        if ($("#compose-textarea").data("draft-id")) {
-            drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
+export function send_message_success(request, data) {
+    if (!request.locally_echoed) {
+        if ($("textarea#compose-textarea").data("draft-id")) {
+            drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
         }
         clear_compose_box();
     }
 
-    echo.reify_message_id(local_id, message_id);
+    echo.reify_message_id(request.local_id, data.id);
+
+    if (request.type === "stream") {
+        if (data.automatic_new_visibility_policy) {
+            // topic has been automatically unmuted or followed. No need to
+            // suggest the user to unmute. Show the banner and return.
+            compose_notifications.notify_automatic_new_visibility_policy(request, data);
+            return;
+        }
+
+        const muted_narrow = compose_notifications.get_muted_narrow(request);
+        if (muted_narrow) {
+            compose_notifications.notify_unmute(muted_narrow, request.stream_id, request.topic);
+        }
+    }
 }
 
 export function send_message(request = create_message_object()) {
@@ -161,7 +176,7 @@ export function send_message(request = create_message_object()) {
     request.resend = false;
 
     function success(data) {
-        send_message_success(local_id, data.id, locally_echoed);
+        send_message_success(request, data);
     }
 
     function error(response) {
@@ -172,7 +187,7 @@ export function send_message(request = create_message_object()) {
                 response,
                 compose_banner.CLASSNAMES.generic_compose_error,
                 $("#compose_banners"),
-                $("#compose-textarea"),
+                $("textarea#compose-textarea"),
             );
             // For messages that were not locally echoed, we're
             // responsible for hiding the compose spinner to restore
@@ -352,7 +367,7 @@ function schedule_message_to_custom_date() {
 
     const $banner_container = $("#compose_banners");
     const success = function (data) {
-        drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
+        drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
         clear_compose_box();
         const new_row = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
@@ -369,7 +384,7 @@ function schedule_message_to_custom_date() {
             response,
             compose_banner.CLASSNAMES.generic_compose_error,
             $banner_container,
-            $("#compose-textarea"),
+            $("textarea#compose-textarea"),
         );
     };
 

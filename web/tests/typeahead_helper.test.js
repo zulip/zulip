@@ -316,7 +316,7 @@ test("sort_languages", () => {
     assert.deepEqual(test_langs, ["j", "javascript", "java"]);
 
     // (Only one alias should be shown per language
-    // (i.e searching for "js" shouldn't show "javascript")
+    // (e.g. searching for "js" shouldn't show "javascript")
     test_langs = ["js", "javascript", "java"];
     test_langs = th.sort_languages(test_langs, "js");
     assert.deepEqual(test_langs, ["js", "java"]);
@@ -498,7 +498,7 @@ test("sort_recipients dup bots", () => {
     const recipients = th.sort_recipients({
         users: dup_objects,
         query: "b",
-        current_stream_id: "",
+        current_stream_id: undefined,
         current_topic: "",
     });
     const recipients_email = recipients.map((person) => person.email);
@@ -588,7 +588,7 @@ test("sort broadcast mentions for stream message type", () => {
 
     assert.deepEqual(
         results.map((r) => r.email),
-        ["all", "everyone", "stream"],
+        ["all", "everyone", "stream", "topic"],
     );
 
     // Reverse the list to test actual sorting
@@ -602,7 +602,7 @@ test("sort broadcast mentions for stream message type", () => {
 
     assert.deepEqual(
         results2.map((r) => r.email),
-        ["all", "everyone", "stream", a_user.email, zman.email],
+        ["all", "everyone", "stream", "topic", a_user.email, zman.email],
     );
 });
 
@@ -680,6 +680,9 @@ test("highlight_with_escaping", () => {
 
 test("render_person when emails hidden", ({mock_template}) => {
     // Test render_person with regular person, under hidden email visibility case
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, b_user_1.full_name);
@@ -694,6 +697,9 @@ test("render_person when emails hidden", ({mock_template}) => {
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
+    page_params.custom_profile_field_types = {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    };
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);
@@ -774,6 +780,7 @@ test("render_emoji", ({mock_template}) => {
         emoji_code: "1f44d",
         is_emoji: true,
         has_image: false,
+        has_pronouns: false,
         has_secondary: false,
         has_status: false,
     };
@@ -800,6 +807,7 @@ test("render_emoji", ({mock_template}) => {
         img_src: "TBD",
         is_emoji: true,
         has_image: true,
+        has_pronouns: false,
         has_secondary: false,
         has_status: false,
     };

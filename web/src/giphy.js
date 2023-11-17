@@ -94,7 +94,7 @@ async function renderGIPHYGrid(targetEl) {
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
                 onGifClick(props) {
-                    let $textarea = $("#compose-textarea");
+                    let $textarea = $("textarea#compose-textarea");
                     if (edit_message_id !== undefined) {
                         $textarea = $(
                             `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
@@ -157,12 +157,6 @@ async function update_grid_with_search_term() {
 export function hide_giphy_popover() {
     // Returns `true` if the popover was open.
     if (giphy_popover_instance) {
-        // We need to destroy the popover because when
-        // we hide it, bootstrap popover
-        // library removes `giphy-content` element
-        // as part of cleaning up everything inside
-        // `popover-content`, so we need to reinitialize
-        // the popover by destroying it.
         giphy_popover_instance.destroy();
         giphy_popover_instance = undefined;
         edit_message_id = undefined;

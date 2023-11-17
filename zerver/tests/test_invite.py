@@ -15,6 +15,7 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from returns.curry import partial
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
@@ -60,6 +61,7 @@ from zerver.models import (
     Realm,
     ScheduledEmail,
     Stream,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -141,7 +143,7 @@ class StreamSetupTest(ZulipTestCase):
 
         new_user = self.create_simple_new_user(realm, new_user_email)
 
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(13):
             set_up_streams_for_new_human_user(
                 user_profile=new_user,
                 prereg_user=prereg_user,
@@ -956,7 +958,7 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
             inviter_msg.content.startswith(
-                f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
+                f"@_**{invitee_profile.full_name}|{invitee_profile.id}** accepted your",
             )
         )
 
@@ -1636,7 +1638,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         prereg_user.refresh_from_db()
         self.assertIsNotNone(prereg_user.created_user)
 
-        # Now attempt to re-use the same key.
+        # Now attempt to reuse the same key.
         result = self.client_post("/accounts/register/", {"key": registration_key})
         self.assertEqual(result.status_code, 404)
         self.assert_in_response(
@@ -2239,6 +2241,7 @@ class InvitationsTestCase(InviteUserBase):
 
 
 class InviteeEmailsParserTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.email1 = "email1@zulip.com"
@@ -2269,6 +2272,7 @@ class InviteeEmailsParserTests(ZulipTestCase):
 
 
 class MultiuseInviteTest(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")
@@ -2475,10 +2479,10 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_create_multiuse_invite_group_setting(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
         nobody_system_group = UserGroup.objects.get(
-            name=UserGroup.NOBODY_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
 
         # Default value of create_multiuse_invite_group is administrators
@@ -2510,7 +2514,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_only_owner_can_change_create_multiuse_invite_group(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
 
         self.login("iago")
@@ -2554,7 +2558,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_multiuse_link_for_inviting_as_admin(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -2585,7 +2589,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_multiuse_link_for_inviting_as_moderator(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(

@@ -100,7 +100,7 @@ export const user_card = new PopoverMenu();
 
 function popover_items_handle_keyboard_with_overrides(key, $items) {
     /* Variant of popover_items_handle_keyboard with somewhat hacky
-     * logic for for opening the manage menu. */
+     * logic for opening the manage menu. */
     if (!$items) {
         return;
     }
@@ -289,6 +289,7 @@ function get_user_card_popover_data(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
     };
 
     if (user.is_bot) {
@@ -331,7 +332,7 @@ function show_user_card_popover(
                 user_card_popovers[template_class].instance = instance;
 
                 const $popover = $(instance.popper);
-                const $popover_title = $popover.find(".popover-title");
+                const $popover_title = $popover.find(".user-card-popover-title");
 
                 $popover.addClass(get_popover_classname(template_class));
                 $popover_title.append(
@@ -659,7 +660,7 @@ function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
-        if (overlays.is_active()) {
+        if (overlays.any_active()) {
             overlays.close_active();
         }
         narrow.by("dm", email, {trigger: "user sidebar popover"});
@@ -671,7 +672,7 @@ function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
-        if (overlays.is_active()) {
+        if (overlays.any_active()) {
             overlays.close_active();
         }
         narrow.by("sender", email, {trigger: "user sidebar popover"});
@@ -679,7 +680,7 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".user-card-popover-actions .clear_status", (e) => {
+    $("body").on("click", ".user-card-popover-actions .user-card-clear-status-button", (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents("ul"));
         user_status.server_update_status({
@@ -693,7 +694,7 @@ function register_click_handlers() {
         });
     });
 
-    $("body").on("click", ".user-card-popover-actions .sidebar-popover-reactivate-user", (e) => {
+    $("body").on("click", ".sidebar-popover-reactivate-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all();
         e.stopPropagation();
@@ -703,7 +704,7 @@ function register_click_handlers() {
             channel.post({
                 url,
                 success() {
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                 },
                 error(xhr) {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
@@ -786,13 +787,13 @@ function register_click_handlers() {
     $("body").on("click", ".update_status_text", open_user_status_modal);
 
     // Clicking on one's own status emoji should open the user status modal.
-    $("#user_presences").on(
+    $("#buddy-list-users-matching-view").on(
         "click",
         ".user_sidebar_entry_me .status-emoji",
         open_user_status_modal,
     );
 
-    $("#user_presences").on("click", ".user-list-sidebar-menu-icon", (e) => {
+    $("#buddy-list-users-matching-view").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
 
@@ -823,7 +824,7 @@ function register_click_handlers() {
             private_message_recipient: email,
         });
         hide_all();
-        if (overlays.is_active()) {
+        if (overlays.any_active()) {
             overlays.close_active();
         }
         e.stopPropagation();

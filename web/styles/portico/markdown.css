@@ -208,6 +208,10 @@
             vertical-align: middle;
         }
 
+        & i.icon-collapsed-state {
+            transform: rotate(270deg);
+        }
+
         @media (width <= 500px) {
             padding: 10px;
         }

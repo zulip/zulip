@@ -22,6 +22,29 @@ in a more colloquial style, German translations should be rather informal as wel
 - "Das ist die Seite, wo der Quelltext steht." - the "_wo_" is regional,
   say _"Das ist die Seite, auf der Quelltext steht."_ instead.
 
+### Gender-inclusive language
+
+**Use gender-inclusive language, placing a _gender colon_
+([Gender-Doppelpunkt](https://de.wikipedia.org/wiki/Gender-Doppelpunkt))
+where necessary.**
+
+Place the gender colon between the word stem and the feminine ending.
+
+- Instead of _Nutzer_, use _Nutzer:innen_
+- Instead of _dieser Nutzer_, use _diese:r Nutzer:in_
+
+**Try to find gender-neutral alternatives before using the gender colon.**
+
+- Instead of _jede:r_, try to use _alle_.
+
+**If a gender-neutral term is readily available, consider using it.**
+
+- Instead of _benutzerdefiniert_, consider using _eigen_.
+
+**In compound nouns, only use the gender colon in the last element, if appropriate.**
+
+- Instead of _Nutzer:innengruppe_ or _Nutzer:innen-Gruppe_, use _Nutzergruppe_.
+
 ### Form of address
 
 **Use "Du" instead of "Sie".**
@@ -75,9 +98,6 @@ This becomes even more evident in internet applications,
 so you should not be afraid of using them if they provide an advantage over
 the German equivalent. Take the following two examples as a reference:
 
-- Translating _Stream_: Use the German word _Kanal_, since it is just as short
-  and used in other web apps.
-
 - Translating _Bot_: Use _Bot_, as a completely accurate German
   equivalent **doesn't** exist (e.g. _Roboter_) and the term _Bot_ is not
   unknown to German speakers.
@@ -129,13 +149,13 @@ speakers in the community. It's all about making Zulip friendly and usable.
 
 _"Nachricht" (Facebook, WhatsApp, Transifex)_
 
-- Private Message (PM) - **Private Nachricht (PN)**
+- Direct Message (DM), Direct Messages (DMs) - **Direktnachricht (DM), Direktnachrichten (DMs)**
 
-Since we try to avoid concatenating words whenever possible, don't use
-"Privatnachricht" . PN is the officially used abbreviation for
-"Private Nachricht" and is used in many German chat forums.
+While we try to avoid concatenating words whenever possible, "Direktnachricht" is used
+by many other platforms (e.g. X/Twitter, Slack, Discord).
+Use _DM_ with its plural form _DMs_ rather than DN/DNs in line with other services.
 
-_"Private Nachricht" (YouTube, Transifex)_
+_"Direktnachricht" (X/Twitter, Slack)_
 
 - Starred Message - **Markierte Nachricht**
 
@@ -162,17 +182,6 @@ small German forums)_
 - Topic - **Thema**
 
 _(Gmail - for email subjects, Transifex)_
-
-- Invite-Only Stream - **Geschlossener Stream**
-
-For users to be able to join to an "invite-only" stream, they must have been
-invited by some user in this stream. This type of stream is equivalent to
-Facebook's "closed" groups, which in turn translates to "geschlossen" in German.
-This translation seems to be appropriate, for example [Linguee](https://www.linguee.de/englisch-deutsch/uebersetzung/invite-only.html)
-search returns only paraphrases of this term.
-
-_"Geschlossener Stream" (Transifex), "Geschlossene Gruppe" (Facebook),
-paraphrases (Linguee)_
 
 - Public Stream - **Öffentlicher Stream**
 
@@ -299,7 +308,7 @@ problem.
 
 _"Anpinnen/Ablösen" (Transifex), "Pinnen" (Pinterest)_
 
-- Mention/@mention - **Erwähnen/"@-Erwähnen**
+- Mention/@mention - **Erwähnen/@-erwähnen**
 
 Make sure to say "@-erwähnen", but "die @-Erwähnung" (capitalized).
 
@@ -320,17 +329,17 @@ the infinitive form "anpassen".
 
 _"Ich möchte" - (Transifex, general sense of politeness)_
 
-- User - **Nutzer**
+- User - **Nutzer:in**
 
-"Benutzer" would work as well, but "Nutzer" is shorter and more commonly
+"Benutzer:in" would work as well, but "Nutzer:in" is shorter and more commonly
 used in web applications.
 
-_"Nutzer" (Facebook, Gmail), "Benutzer" (Transifex)_
+_"Nutzer\*innen" (Figma, Facebook), "Benutzer\*innen" (GitHub,
+Airtable), "Nutzer" (Facebook, Gmail), "Benutzer" (Transifex)_
 
-- Person/People - Nutzer/Personen
+- Person/People - Personen
 
-We use "Personen" instead of plural "Nutzer" for "people", as "Nutzer" stays
-the same in plural.
+We use "Personen" instead of plural "Nutzer:innen" for "people".
 
 _"Nutzer/Personen" (Transifex)_
 

@@ -266,7 +266,7 @@ export function set_up_toggler() {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
             scroll_util
-                .get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body"))
+                .get_scroll_element($(`#${CSS.escape(key)}`).find(".overlay-scroll-container"))
                 .trigger("focus");
         },
     };
@@ -277,7 +277,7 @@ export function set_up_toggler() {
 
     const modals = opts.values.map((item) => {
         const key = item.key; // e.g. message-formatting
-        const $modal = $(`#${CSS.escape(key)}`).find(".modal-body");
+        const $modal = $(`#${CSS.escape(key)}`).find(".overlay-scroll-container");
         return $modal;
     });
 
@@ -294,9 +294,9 @@ export function set_up_toggler() {
 
     $(".informational-overlays .overlay-tabs").append($elem);
 
-    $("#go-to-default-view-hotkey-help").toggleClass(
+    $("#go-to-home-view-hotkey-help").toggleClass(
         "notdisplayed",
-        !user_settings.escape_navigates_to_default_view,
+        !user_settings.web_escape_navigates_to_home_view,
     );
     common.adjust_mac_kbd_tags(".hotkeys_table .hotkey kbd");
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");

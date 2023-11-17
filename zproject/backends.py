@@ -76,6 +76,7 @@ from social_core.exceptions import (
 )
 from social_core.pipeline.partial import partial
 from social_django.utils import load_backend, load_strategy
+from typing_extensions import override
 from zxcvbn import zxcvbn
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
@@ -306,9 +307,11 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         self.username = username
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:{self.username}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
@@ -1536,6 +1539,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 
     create_unknown_user = False
 
+    @override
     def authenticate(  # type: ignore[override] # authenticate has an incompatible signature with ModelBackend and BaseBackend
         self,
         request: Optional[HttpRequest] = None,
@@ -1551,6 +1555,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
         return common_get_active_user(email, realm, return_data=return_data)
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         return [
             dict(
@@ -1976,6 +1981,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
         return {"social_auth_backend": self.name}
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         return [
             dict(
@@ -2257,6 +2263,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
         return user_details
 
+    @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         if not self.is_native_flow():
             # The default implementation in python-social-auth is the browser flow.
@@ -2405,6 +2412,7 @@ class SAMLDocument:
 
 
 class SAMLRequest(SAMLDocument):
+    @override
     def get_issuers(self) -> List[str]:
         config = self.backend.generate_saml_config()
         saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
@@ -2422,6 +2430,7 @@ class SAMLRequest(SAMLDocument):
 
 
 class SAMLResponse(SAMLDocument):
+    @override
     def get_issuers(self) -> List[str]:
         config = self.backend.generate_saml_config()
         saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
@@ -2712,6 +2721,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return HttpResponseRedirect(url)
 
+    @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
         Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
@@ -2862,6 +2872,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return True
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         result: List[ExternalAuthMethodDictT] = []
         for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
@@ -2882,6 +2893,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return result
 
+    @override
     def should_auto_signup(self) -> bool:
         """
         This function is meant to be called in the social pipeline or later,
@@ -2894,6 +2906,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         assert isinstance(auto_signup, bool)
         return auto_signup
 
+    @override
     def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
         idp_name = self.strategy.session_get("saml_idp_name")
         saml_session_index = self.strategy.session_get("saml_session_index")
@@ -2961,6 +2974,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         return True
 
     @classmethod
+    @override
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         return [
             dict(
@@ -2972,6 +2986,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
             )
         ]
 
+    @override
     def should_auto_signup(self) -> bool:
         result = self.settings_dict.get("auto_signup", False)
         assert isinstance(result, bool)

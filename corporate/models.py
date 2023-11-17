@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import CASCADE, Q
+from typing_extensions import override
 
 from zerver.models import Realm, UserProfile
 from zilencer.models import RemoteZulipServer
@@ -36,8 +37,12 @@ class Customer(models.Model):
             )
         ]
 
+    @override
     def __str__(self) -> str:
-        return f"{self.realm!r} {self.stripe_customer_id}"
+        if self.realm is not None:
+            return f"{self.realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
+        else:
+            return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
@@ -211,6 +216,10 @@ class CustomerPlan(models.Model):
 
     ANNUAL = 1
     MONTHLY = 2
+    BILLING_SCHEDULES = {
+        ANNUAL: "Annual",
+        MONTHLY: "Monthly",
+    }
     billing_schedule = models.SmallIntegerField()
 
     # The next date the billing system should go through ledger
@@ -351,3 +360,6 @@ class ZulipSponsorshipRequest(models.Model):
     org_website = models.URLField(max_length=MAX_ORG_URL_LENGTH, blank=True, null=True)
 
     org_description = models.TextField(default="")
+    expected_total_users = models.TextField(default="")
+    paid_users_count = models.TextField(default="")
+    paid_users_description = models.TextField(default="")

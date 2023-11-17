@@ -115,6 +115,7 @@ class HomeTest(ZulipTestCase):
         "realm_bot_creation_policy",
         "realm_bot_domain",
         "realm_bots",
+        "realm_can_access_all_users_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
@@ -137,6 +138,7 @@ class HomeTest(ZulipTestCase):
         "realm_emails_restricted_to_domains",
         "realm_embedded_bots",
         "realm_emoji",
+        "realm_enable_guest_user_indicator",
         "realm_enable_read_receipts",
         "realm_enable_spectator_access",
         "realm_filters",
@@ -201,6 +203,7 @@ class HomeTest(ZulipTestCase):
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
         "server_sentry_dsn",
+        "server_supported_permission_settings",
         "server_timestamp",
         "server_typing_started_expiry_period_milliseconds",
         "server_typing_started_wait_period_milliseconds",
@@ -210,6 +213,7 @@ class HomeTest(ZulipTestCase):
         "show_billing",
         "show_plans",
         "show_webathena",
+        "sponsorship_pending",
         "starred_messages",
         "stop_words",
         "subscriptions",
@@ -225,7 +229,6 @@ class HomeTest(ZulipTestCase):
         "user_status",
         "user_topics",
         "warn_no_email",
-        "webpack_public_path",
         "zulip_feature_level",
         "zulip_merge_base",
         "zulip_plan_is_not_limited",
@@ -362,12 +365,12 @@ class HomeTest(ZulipTestCase):
             "show_billing",
             "show_plans",
             "show_webathena",
+            "sponsorship_pending",
             "test_suite",
             "translation_data",
             "two_fa_enabled",
             "two_fa_enabled_user",
             "warn_no_email",
-            "webpack_public_path",
         ]
         self.assertEqual(actual_keys, expected_keys)
 
@@ -737,7 +740,7 @@ class HomeTest(ZulipTestCase):
         self.assertIn(bots[2].id, bot_ids)
         self.assertIn(bots[2].id, active_ids)
 
-        # Make sure nobody got mis-bucketed.
+        # Make sure nobody got misbucketed.
         self.assertNotIn(hamlet.id, non_active_ids)
         self.assertNotIn(defunct_user.id, active_ids)
 
@@ -837,6 +840,7 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # realm owner, with inactive CustomerPlan and realm plan_type SELF_HOSTED -> show only billing link
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
@@ -852,6 +856,7 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
@@ -859,26 +864,31 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_billing)
         self.assertTrue(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # Always false without CORPORATE_ENABLED
         with self.settings(CORPORATE_ENABLED=False):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # Always false without a UserProfile
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(None)
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
-        # realm admin, with CustomerPlan and realm plan_type LIMITED -> show only billing plans
+        # realm admin, with CustomerPlan and realm plan_type LIMITED -> don't show any links
+        # Only billing admin and realm owner have access to billing.
         user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user.save(update_fields=["role"])
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
-        self.assertTrue(billing_info.show_plans)
+        self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
         user.role = UserProfile.ROLE_MEMBER
@@ -889,6 +899,7 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
@@ -897,6 +908,7 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
@@ -906,6 +918,7 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # guest, with CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_GUEST
@@ -915,6 +928,7 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
         # billing admin, but no CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_MEMBER
@@ -925,21 +939,24 @@ class HomeTest(ZulipTestCase):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
-        # billing admin, with sponsorship pending and relam plan_type SELF_HOSTED -> show only billing link
+        # billing admin, with sponsorship pending and realm plan_type SELF_HOSTED -> show only sponsorship pending link
         customer.sponsorship_pending = True
         customer.save(update_fields=["sponsorship_pending"])
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
-        self.assertTrue(billing_info.show_billing)
+        self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertTrue(billing_info.sponsorship_pending)
 
-        # billing admin, no customer object and relam plan_type SELF_HOSTED -> neither billing link or plans
+        # billing admin, no customer object and realm plan_type SELF_HOSTED -> no links
         customer.delete()
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
+        self.assertFalse(billing_info.sponsorship_pending)
 
     def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Mapping, Type, Union
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
@@ -32,6 +32,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserProfile,
 )
@@ -68,6 +69,7 @@ class Command(BaseCommand):
             random_seed=self.random_seed,
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         # TODO: This should arguably only delete the objects
         # associated with the "analytics" realm.
@@ -113,7 +115,7 @@ class Command(BaseCommand):
         )
 
         administrators_user_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
         stream = Stream.objects.create(
             name="all",

@@ -66,7 +66,7 @@ from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key, get_raw_user_data, is_2fa_verified
+from zerver.lib.users import get_api_key, get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import check_bool, validate_login_email
 from zerver.models import (
@@ -80,6 +80,7 @@ from zerver.models import (
     remote_user_to_email,
 )
 from zerver.signals import email_on_new_login
+from zerver.views.errors import config_error
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     AppleAuthBackend,
@@ -142,12 +143,14 @@ def create_preregistration_realm(
     name: str,
     string_id: str,
     org_type: int,
+    default_language: str,
 ) -> PreregistrationRealm:
     return PreregistrationRealm.objects.create(
         email=email,
         name=name,
         string_id=string_id,
         org_type=org_type,
+        default_language=default_language,
     )
 
 
@@ -1020,7 +1023,7 @@ def jwt_fetch_api_key(
     }
 
     if include_profile:
-        members = get_raw_user_data(
+        members = get_users_for_api(
             realm,
             user_profile,
             target_user=user_profile,
@@ -1227,22 +1230,3 @@ def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
         return HttpResponse(content=metadata, content_type="text/xml")
 
     return HttpResponseServerError(content=", ".join(errors))
-
-
-def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse:
-    contexts: Dict[str, Dict[str, object]] = {
-        "apple": {"social_backend_name": "apple", "has_error_template": True},
-        "google": {"social_backend_name": "google", "has_error_template": True},
-        "github": {"social_backend_name": "github", "has_error_template": True},
-        "gitlab": {"social_backend_name": "gitlab", "has_error_template": True},
-        "ldap": {"error_name": "ldap_error_realm_is_none"},
-        "dev": {"error_name": "dev_not_supported_error"},
-        "saml": {"social_backend_name": "saml"},
-        "smtp": {"error_name": "smtp_error"},
-        "remote_user_backend_disabled": {"error_name": "remoteuser_error_backend_disabled"},
-        "remote_user_header_missing": {"error_name": "remoteuser_error_remote_user_header_missing"},
-        # TODO: Improve the config error page for OIDC.
-        "oidc": {"error_name": "oidc_error"},
-    }
-
-    return render(request, "zerver/config_error.html", contexts[error_category_name])

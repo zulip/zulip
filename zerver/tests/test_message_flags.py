@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 from django.db import connection, transaction
+from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_permission
@@ -166,6 +167,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
 
 
 class UnreadCountTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         with mock.patch(
@@ -1076,7 +1078,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
         # TODO: This should change when we make alert words work better.
         self.assertEqual(result["mentions"], [])
 
-        um.flags = UserMessage.flags.wildcard_mentioned
+        um.flags = UserMessage.flags.stream_wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [stream_message_id])
+
+        um.flags = UserMessage.flags.topic_wildcard_mentioned
         um.save()
         result = get_unread_data()
         self.assertEqual(result["mentions"], [stream_message_id])
@@ -1091,6 +1098,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile_id=user_profile.id,
             message_id=muted_stream_message_id,
         )
+        # personal mention takes precedence over mutedness in a muted stream
         um.flags = UserMessage.flags.mentioned
         um.save()
         result = get_unread_data()
@@ -1101,7 +1109,14 @@ class GetUnreadMsgsTest(ZulipTestCase):
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])
 
-        um.flags = UserMessage.flags.wildcard_mentioned
+        # wildcard mentions don't take precedence over mutedness in
+        # a normal or muted topic within a muted stream
+        um.flags = UserMessage.flags.stream_wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [])
+
+        um.flags = UserMessage.flags.topic_wildcard_mentioned
         um.save()
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])
@@ -1116,7 +1131,14 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile_id=user_profile.id,
             message_id=unmuted_topic_muted_stream_message_id,
         )
-        um.flags = UserMessage.flags.wildcard_mentioned
+        # wildcard mentions take precedence over mutedness in an unmuted
+        # or a followed topic within a muted stream.
+        um.flags = UserMessage.flags.stream_wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [unmuted_topic_muted_stream_message_id])
+
+        um.flags = UserMessage.flags.topic_wildcard_mentioned
         um.save()
         result = get_unread_data()
         self.assertEqual(result["mentions"], [unmuted_topic_muted_stream_message_id])
@@ -1131,6 +1153,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile_id=user_profile.id,
             message_id=muted_topic_message_id,
         )
+        # personal mention takes precedence over mutedness in a muted topic
         um.flags = UserMessage.flags.mentioned
         um.save()
         result = get_unread_data()
@@ -1141,7 +1164,13 @@ class GetUnreadMsgsTest(ZulipTestCase):
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])
 
-        um.flags = UserMessage.flags.wildcard_mentioned
+        # wildcard mentions don't take precedence over mutedness in a muted topic.
+        um.flags = UserMessage.flags.stream_wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [])
+
+        um.flags = UserMessage.flags.topic_wildcard_mentioned
         um.save()
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])

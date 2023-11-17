@@ -15,7 +15,6 @@ from zerver.lib.url_redirects import (
 )
 from zerver.models import Stream
 from zproject import urls
-from zproject.backends import AUTH_BACKEND_NAME_MAP
 
 
 class PublicURLTest(ZulipTestCase):
@@ -136,27 +135,29 @@ class PublicURLTest(ZulipTestCase):
         Here we simply sanity-check that all the URLs load
         correctly.
         """
-        auth_types = [auth.lower() for auth in AUTH_BACKEND_NAME_MAP]
-        for auth in [
-            "azuread",
-            "email",
-            "remoteuser",
-            # The endpoint is generated dynamically based on the configuration of the OIDC backend,
-            # so it can't be tested here.
-            "openid connect",
-        ]:  # We do not have configerror pages for AzureAD and Email.
-            auth_types.remove(auth)
-
-        auth_types += [
+        auth_error_pages = [
+            "apple",
+            "dev_not_supported",
+            "github",
+            "gitlab",
+            "google",
+            "ldap",
+            "remote_user_backend_disabled",
+            "remote_user_header_missing",
+            "saml",
             "smtp",
-            "remoteuser/remote_user_backend_disabled",
-            "remoteuser/remote_user_header_missing",
         ]
-        urls = [f"/config-error/{auth_type}" for auth_type in auth_types]
+        urls = [f"/config-error/{err_page_name}" for err_page_name in auth_error_pages]
         with self.settings(DEVELOPMENT=True):
             for url in urls:
-                response = self.client_get(url)
-                self.assert_in_success_response(["Configuration error"], response)
+                with self.assertLogs("django.request", level="ERROR") as m:
+                    response = self.client_get(url)
+                    self.assertEqual(response.status_code, 500)
+                    self.assert_in_response("Configuration error", response)
+                    self.assertEqual(
+                        m.output,
+                        [f"ERROR:django.request:Internal Server Error: {url}"],
+                    )
 
 
 class URLResolutionTest(ZulipTestCase):

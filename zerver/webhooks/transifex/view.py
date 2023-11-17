@@ -23,17 +23,18 @@ def api_transifex_webhook(
     project: str,
     resource: str,
     language: str,
+    event: str,
     translated: Optional[Json[int]] = None,
     reviewed: Optional[Json[int]] = None,
 ) -> HttpResponse:
     topic = f"{project} in {language}"
-    if translated:
+    if event == "translation_completed":
         event = "translated"
         body = f"Resource {resource} fully translated."
-    elif reviewed:
+    elif event == "review_completed":
         event = "review"
         body = f"Resource {resource} fully reviewed."
     else:
-        raise UnsupportedWebhookEventTypeError("Unknown Event Type")
+        raise UnsupportedWebhookEventTypeError(event)
     check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success(request)

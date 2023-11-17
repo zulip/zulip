@@ -37,7 +37,7 @@ export function get_item(key, config, file_id) {
     if (config.mode === "compose") {
         switch (key) {
             case "textarea":
-                return $("#compose-textarea");
+                return $("textarea#compose-textarea");
             case "send_button":
                 return $("#compose-send-button");
             case "banner_container":
@@ -406,9 +406,15 @@ export function setup_upload(config) {
 
     uppy.on("upload-error", (file, _error, response) => {
         const message = response ? response.body.msg : undefined;
+        // Hide the upload status banner on error so only the error banner shows
+        hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
         compose_ui.autosize_textarea(get_item("textarea", config));
+
+        // The files with failed upload should be removed since uppy doesn't allow files in the store
+        // to be re-uploaded again.
+        uppy.removeFile(file.id);
     });
 
     uppy.on("restriction-failed", (file) => {

@@ -28,16 +28,16 @@ server repository][zulip-server].
 
 ### Stable releases
 
-- Zulip Server **stable releases**, such as Zulip 4.5.
+- Zulip Server **stable releases**, such as Zulip 7.4.
   Organizations self-hosting Zulip primarily use stable releases.
 - The numbering scheme is simple: the first digit indicates the major
-  release series (which we'll refer to as "4.x"). (Before Zulip 3.0,
+  release series (which we'll refer to as "7.x"). (Before Zulip 3.0,
   Zulip versions had another digit, e.g. 1.9.2 was a bug fix release
   in the Zulip 1.9.x major release series).
-- [New major releases][blog-major-releases], like Zulip 4.0, are
+- [New major releases][blog-major-releases], like Zulip 7.0, are
   published every 3-6 months, and contain hundreds of features, bug
   fixes, and improvements to Zulip's internals.
-- New maintenance releases, like 4.3, are published roughly once a
+- New maintenance releases, like 7.4, are published roughly once a
   month. Maintenance releases are designed to have no risky changes
   and be easy to reverse, to minimize stress for administrators. When
   upgrading to a new major release series, We recommend always
@@ -46,16 +46,17 @@ server repository][zulip-server].
 - For the dates of past stable releases,
   [see the Zulip blog][blog-releases].
 
-Starting with Zulip 4.0, the Zulip web app displays the current server
-version in the gear menu. With older releases, the server version is
-available [via the API](https://zulip.com/api/get-server-settings).
+Starting with Zulip 4.0, the Zulip web app displays the current server version
+[in the gear menu](https://zulip.com/help/view-zulip-version). With older
+releases, the server version is available [via the
+API](https://zulip.com/api/get-server-settings).
 
 This ReadTheDocs documentation has a widget in the lower-left corner
 that lets you view the documentation for other versions. Other
 documentation, like our [Help Center](https://zulip.com/help/), [API
 documentation](https://zulip.com/api/), and [Integrations
 documentation](https://zulip.com/integrations/), are distributed with
-the Zulip server itself (E.g. `https://zulip.example.com/help/`).
+the Zulip server itself (e.g., `https://zulip.example.com/help/`).
 
 [blog-major-releases]: https://blog.zulip.com/tag/major-releases/
 [blog-releases]: https://blog.zulip.com/tag/release-announcements/
@@ -75,7 +76,7 @@ in a stable release.
   Zulip development community, is upgraded to `main` several times
   every week. We also often "test deploy" changes not yet in `main`
   to chat.zulip.org to facilitate design feedback.
-- We maintain Git branches with names like `4.x` containing backported
+- We maintain Git branches with names like `7.x` containing backported
   commits from `main` that we plan to include in the next maintenance
   release. Self-hosters can [upgrade][upgrade-from-git] to these
   stable release branches to get bug fixes staged for the next stable
@@ -163,21 +164,26 @@ releases, and do not support them in production.
 
 ### Server roadmap
 
-The Zulip server project uses several GitHub labels to structure
-communication within the project about priorities:
+The Zulip server project uses GitHub projects and labels to structure
+communication about priorities:
 
-- The [high priority][label-high] label tags issues that we consider
-  important. This label is meant to be a determination of importance
-  that can be done quickly and then used as an input to planning
-  processes.
-- The [release goal][label-release-goal] label is used for work that
-  we hope to include in the next major release. The related [post
-  release][label-post-release] label is used to track work we want to
-  focus on shortly after the next major release.
+- We use GitHub projects to track goals for major releases (e.g., [Zulip Server
+  8.0 priorities](https://github.com/orgs/zulip/projects/6)). The project board
+  should be seen a list of priorities being _considered_ for the release, not a
+  guarantee that features will be included. As the release date approaches,
+  features that will not make it into the release are dropped from the project
+  board on an ongoing basis.
+
+- The [high priority][label-high] label tags issues that we consider important.
+  It is reviewed in the planning stage of the release cycle to identify
+  priorities for the next release.
+
+- The [help wanted][label-help-wanted] label tags issues that are open for
+  contributions.
 
 The Zulip community feels strongly that all the little issues are, in
-aggregate, just as important as the big things. Most resolved issues
-do not have any of these priority labels.
+aggregate, just as important as the big things. Many resolved issues
+are never explicitly tagged as release goals.
 
 We welcome participation from our user community in influencing the Zulip
 roadmap. If a bug or missing feature is causing significant pain for you, we'd
@@ -238,5 +244,4 @@ independently as needed.
 [mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
 [label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
 [label-high]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
-[label-release-goal]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22release+goal%22
-[label-post-release]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22post+release%22
+[label-help-wanted]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22

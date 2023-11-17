@@ -5,6 +5,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
@@ -13,11 +14,11 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
 import * as message_lists from "./message_lists";
+import * as message_notifications from "./message_notifications";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
@@ -79,7 +80,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
-            notifications.notify_messages_outside_current_search(elsewhere_messages);
+            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
@@ -153,7 +154,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
     if (sent_by_this_client) {
-        notifications.notify_local_mixes(messages, need_user_to_scroll);
+        compose_notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
     if (any_untracked_unread_messages) {
@@ -161,7 +162,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     }
 
     unread_ops.process_visible();
-    notifications.received_messages(messages);
+    message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     recent_view_ui.process_messages(messages);
@@ -482,7 +483,7 @@ export function update_messages(events) {
                 anchor_message.last_edit_timestamp = event.edit_timestamp;
             }
 
-            notifications.received_messages([anchor_message]);
+            message_notifications.received_messages([anchor_message]);
             alert_words.process_message(anchor_message);
         }
 

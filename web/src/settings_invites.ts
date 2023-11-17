@@ -19,7 +19,7 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
-const invite_schema = z.intersection(
+export const invite_schema = z.intersection(
     z.object({
         invited_by_user_id: z.number(),
         invited: z.number(),
@@ -236,7 +236,7 @@ export function on_load_success(
     }
     $(".admin_invites_table").on("click", ".revoke", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
         const $row = $(e.target).closest(".invite_row");
@@ -267,7 +267,7 @@ export function on_load_success(
 
     $(".admin_invites_table").on("click", ".resend", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 

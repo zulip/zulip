@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from django_stubs_ext import StrPromise
+from typing_extensions import override
 
 
 class ErrorCode(Enum):
@@ -24,6 +25,8 @@ class ErrorCode(Enum):
     CSRF_FAILED = auto()
     INVITATION_FAILED = auto()
     INVALID_ZULIP_SERVER = auto()
+    INVALID_PUSH_DEVICE_TOKEN = auto()
+    INVALID_REMOTE_PUSH_DEVICE_TOKEN = auto()
     INVALID_MARKDOWN_INCLUDE_STATEMENT = auto()
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
@@ -127,6 +130,7 @@ class JsonableError(Exception):
     def data(self) -> Dict[str, Any]:
         return dict(((f, getattr(self, f)) for f in self.data_fields), code=self.code.name)
 
+    @override
     def __str__(self) -> str:
         return self.msg
 
@@ -147,6 +151,7 @@ class UnauthorizedError(JsonableError):
             raise AssertionError("Invalid www_authenticate value!")
 
     @property
+    @override
     def extra_headers(self) -> Dict[str, Any]:
         extra_headers_dict = super().extra_headers
         extra_headers_dict["WWW-Authenticate"] = self.www_authenticate
@@ -161,6 +166,7 @@ class StreamDoesNotExistError(JsonableError):
         self.stream = stream
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Stream '{stream}' does not exist")
 
@@ -173,6 +179,7 @@ class StreamWithIDDoesNotExistError(JsonableError):
         self.stream_id = stream_id
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Stream with ID '{stream_id}' does not exist")
 
@@ -186,6 +193,7 @@ class CannotDeactivateLastUserError(JsonableError):
         self.entity = _("organization owner") if is_last_owner else _("user")
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Cannot deactivate the only {entity}.")
 
@@ -198,6 +206,7 @@ class InvalidMarkdownIncludeStatementError(JsonableError):
         self.include_statement = include_statement
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Invalid Markdown include statement: {include_statement}")
 
@@ -210,10 +219,12 @@ class RateLimitedError(JsonableError):
         self.secs_to_freedom = secs_to_freedom
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("API usage exceeded rate limit")
 
     @property
+    @override
     def extra_headers(self) -> Dict[str, Any]:
         extra_headers_dict = super().extra_headers
         if self.secs_to_freedom is not None:
@@ -222,6 +233,7 @@ class RateLimitedError(JsonableError):
         return extra_headers_dict
 
     @property
+    @override
     def data(self) -> Dict[str, Any]:
         data_dict = super().data
         data_dict["retry-after"] = self.secs_to_freedom
@@ -233,6 +245,7 @@ class InvalidJSONError(JsonableError):
     code = ErrorCode.INVALID_JSON
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Malformed JSON")
 
@@ -244,6 +257,7 @@ class OrganizationMemberRequiredError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Must be an organization member")
 
@@ -255,6 +269,7 @@ class OrganizationAdministratorRequiredError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Must be an organization administrator")
 
@@ -266,6 +281,7 @@ class OrganizationOwnerRequiredError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Must be an organization owner")
 
@@ -279,6 +295,7 @@ class AuthenticationFailedError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Your username or password is incorrect")
 
@@ -287,6 +304,7 @@ class UserDeactivatedError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.USER_DEACTIVATED
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Account is deactivated")
 
@@ -295,6 +313,7 @@ class RealmDeactivatedError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.REALM_DEACTIVATED
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("This organization has been deactivated")
 
@@ -303,6 +322,7 @@ class RemoteServerDeactivatedError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.REALM_DEACTIVATED
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _(
             "The mobile push notification service registration for your server has been deactivated"
@@ -313,6 +333,7 @@ class PasswordAuthDisabledError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.PASSWORD_AUTH_DISABLED
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Password authentication is disabled in this organization")
 
@@ -321,6 +342,7 @@ class PasswordResetRequiredError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.PASSWORD_RESET_REQUIRED
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Your password has been disabled and needs to be reset")
 
@@ -337,12 +359,14 @@ class InvalidAPIKeyError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Invalid API key")
 
 
 class InvalidAPIKeyFormatError(InvalidAPIKeyError):
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Malformed API key")
 
@@ -381,6 +405,7 @@ class UnsupportedWebhookEventTypeError(WebhookError):
         self.event_type = event_type
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _(
             "The '{event_type}' event isn't currently supported by the {webhook_name} webhook; ignoring"
@@ -401,6 +426,7 @@ class AnomalousWebhookPayloadError(WebhookError):
     code = ErrorCode.ANOMALOUS_WEBHOOK_PAYLOAD
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Unable to parse request: Did {webhook_name} generate this event?")
 
@@ -424,6 +450,7 @@ class InvalidSubdomainError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Invalid subdomain")
 
@@ -464,6 +491,7 @@ class AccessDeniedError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Access denied")
 
@@ -502,6 +530,7 @@ class MessageMoveError(JsonableError):
         self.total_messages_allowed_to_move = total_messages_allowed_to_move
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _(
             "You only have permission to move the {total_messages_allowed_to_move}/{total_messages_in_topic} most recent messages in this topic."
@@ -515,6 +544,7 @@ class ReactionExistsError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Reaction already exists.")
 
@@ -526,6 +556,7 @@ class ReactionDoesNotExistError(JsonableError):
         pass
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Reaction doesn't exist.")
 

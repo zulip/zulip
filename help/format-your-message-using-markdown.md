@@ -36,11 +36,34 @@ whenever you need a reminder of the formatting syntax below.
 {!emphasis-examples.md!}
 
 !!! tip ""
+
     You can also use buttons or keyboard shortcuts (<kbd>Ctrl</kbd> +
     <kbd>B</kbd> or <kbd>Ctrl</kbd> + <kbd>I</kbd>) to make text bold or italic.
     [Learn more](/help/text-emphasis).
 
-{!format-lists.md!}
+## Bulleted lists
+
+{!bulleted-lists-intro.md!}
+
+{!bulleted-lists-examples.md!}
+
+!!! tip ""
+
+    You can also use the **Bulleted list** (<i class="fa fa-list-ul"></i>)
+    button in the compose box to insert bulleted list formatting.
+    [Learn more](/help/bulleted-lists).
+
+## Numbered lists
+
+{!numbered-lists-intro.md!}
+
+{!numbered-lists-examples.md!}
+
+!!! tip ""
+
+    You can also use the **Numbered list** (<i class="fa fa-list-ol"></i>)
+    button in the compose box to insert numbered list formatting.
+    [Learn more](/help/numbered-lists).
 
 ## Links
 
@@ -49,6 +72,7 @@ whenever you need a reminder of the formatting syntax below.
 {!links-examples.md!}
 
 !!! tip ""
+
     You can also use a button or a keyboard shortcut (<kbd>Ctrl</kbd> +
     <kbd>Shift</kbd> + <kbd>L</kbd>) to insert a link.
     [Learn more](/help/insert-a-link).
@@ -130,7 +154,9 @@ A summary of the formatting syntax above is available in the Zulip app.
 
 {start_tabs}
 
-{relative|gear|message-formatting}
+{tab|desktop-web}
+
+{relative|help|message-formatting}
 
 !!! tip ""
 

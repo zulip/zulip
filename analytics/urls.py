@@ -16,6 +16,7 @@ from analytics.views.stats import (
     get_chart_data_for_realm,
     get_chart_data_for_remote_installation,
     get_chart_data_for_remote_realm,
+    get_chart_data_for_stream,
     stats,
     stats_for_installation,
     stats_for_realm,
@@ -56,6 +57,7 @@ i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
 v1_api_and_json_patterns = [
     # get data for the graphs at /stats
     rest_path("analytics/chart_data", GET=get_chart_data),
+    rest_path("analytics/chart_data/stream/<stream_id>", GET=get_chart_data_for_stream),
     rest_path("analytics/chart_data/realm/<realm_str>", GET=get_chart_data_for_realm),
     rest_path("analytics/chart_data/installation", GET=get_chart_data_for_installation),
     rest_path(

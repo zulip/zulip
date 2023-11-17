@@ -5,10 +5,10 @@ import timezones from "../generated/timezones.json";
 import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
-import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as flatpickr from "./flatpickr";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -26,7 +26,7 @@ export let settings_label;
 
 $(() => {
     $("#settings_overlay_container").on("click", (e) => {
-        if (!overlays.is_modal_open()) {
+        if (!modals.any_active()) {
             return;
         }
         if ($(e.target).closest(".micromodal").length > 0) {
@@ -39,7 +39,7 @@ $(() => {
         // event to the parent container otherwise the modal will not open. This
         // is so because this event handler will get fired on any click in settings
         // overlay and subsequently close any open modal.
-        overlays.close_active_modal();
+        modals.close_active();
     });
 });
 
@@ -51,7 +51,7 @@ function setup_settings_label() {
         }),
         presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
         send_stream_typing_notifications: $t({
-            defaultMessage: "Let subscribers see when I'm typing messages in streams",
+            defaultMessage: "Let recipients see when I'm typing messages in streams",
         }),
         send_private_typing_notifications: $t({
             defaultMessage: "Let recipients see when I'm typing direct messages",
@@ -80,6 +80,28 @@ function user_can_change_password() {
     return page_params.realm_email_auth_enabled;
 }
 
+export function update_lock_icon_in_sidebar() {
+    if (page_params.is_owner) {
+        $(".org-settings-list .locked").hide();
+        return;
+    }
+    if (page_params.is_admin) {
+        $(".org-settings-list .locked").hide();
+        $(".org-settings-list li[data-section='auth-methods'] .locked").show();
+        return;
+    }
+
+    $(".org-settings-list .locked").show();
+
+    if (settings_bots.can_create_new_bots()) {
+        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+    }
+
+    if (settings_data.user_can_add_custom_emoji()) {
+        $(".org-settings-list li[data-section='emoji-settings'] .locked").hide();
+    }
+}
+
 export function build_page() {
     setup_settings_label();
 
@@ -87,7 +109,6 @@ export function build_page() {
         full_name: people.my_full_name(),
         date_joined_text: get_parsed_date_of_joining(),
         page_params,
-        development: page_params.development_environment,
         enable_sound_select:
             user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
@@ -102,7 +123,7 @@ export function build_page() {
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
-        default_view_values: settings_config.default_view_values,
+        web_home_view_values: settings_config.web_home_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications(user_settings).general_settings,
         notification_settings: settings_config.all_notifications(user_settings).settings,
@@ -159,37 +180,13 @@ export function launch(section) {
     settings_toggle.highlight_toggle("settings");
 }
 
-export function set_settings_header(key) {
-    const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
-    let header_prefix = $t_html({defaultMessage: "Personal settings"});
-    if (selected_tab_key === "organization") {
-        header_prefix = $t_html({defaultMessage: "Organization settings"});
-    }
-    $(".settings-header h1 .header-prefix").text(header_prefix);
-
-    const header_text = $(
-        `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
-    ).text();
-    if (header_text) {
-        $(".settings-header h1 .section").text(" / " + header_text);
-    } else {
-        blueslip.warn(
-            "Error: the key '" +
-                key +
-                "' does not exist in the settings" +
-                " sidebar list. Please add it.",
-        );
-    }
-}
-
 export function initialize() {
     const rendered_settings_overlay = render_settings_overlay({
         is_owner: page_params.is_owner,
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
         show_uploaded_files_section: page_params.max_file_upload_size_mib > 0,
-        show_emoji_settings_lock:
-            !page_params.is_admin && page_params.realm_add_emoji_by_admins_only,
+        show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
     });
     $("#settings_overlay_container").append(rendered_settings_overlay);

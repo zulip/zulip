@@ -13,12 +13,13 @@ import * as flatpickr from "./flatpickr";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
+import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as stream_data from "./stream_data";
-import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import {get_timestamp_for_flatpickr} from "./timerender";
@@ -43,21 +44,25 @@ export function initialize() {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
 
-    $("#below-compose-content .video_link").toggle(compose_call.compute_show_video_chat_button());
-    $("#below-compose-content .audio_link").toggle(compose_call.compute_show_audio_chat_button());
+    $(".compose-control-buttons-container .video_link").toggle(
+        compose_call.compute_show_video_chat_button(),
+    );
+    $(".compose-control-buttons-container .audio_link").toggle(
+        compose_call.compute_show_audio_chat_button(),
+    );
 
-    $("#compose-textarea").on("keydown", (event) => {
-        compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
+    $("textarea#compose-textarea").on("keydown", (event) => {
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea").expectOne());
     });
-    $("#compose-textarea").on("keyup", (event) => {
-        compose_ui.handle_keyup(event, $("#compose-textarea").expectOne());
+    $("textarea#compose-textarea").on("keyup", (event) => {
+        compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
-    $("#compose-textarea").on("input propertychange", () => {
+    $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
         const compose_text_length = compose_validate.check_overflow_text();
-        if (compose_text_length !== 0 && $("#compose-textarea").hasClass("invalid")) {
-            $("#compose-textarea").toggleClass("invalid", false);
+        if (compose_text_length !== 0 && $("textarea#compose-textarea").hasClass("invalid")) {
+            $("textarea#compose-textarea").toggleClass("invalid", false);
         }
         // Change compose close button tooltip as per condition.
         // We save compose text in draft only if its length is > 2.
@@ -130,11 +135,11 @@ export function initialize() {
             event.preventDefault();
 
             const stream_id = compose_state.stream_id();
-            if (stream_id === "") {
+            if (stream_id === undefined) {
                 return;
             }
             const sub = stream_data.get_sub_by_id(stream_id);
-            stream_settings_ui.sub_or_unsub(sub);
+            stream_settings_components.sub_or_unsub(sub);
             $(user_not_subscribed_selector).remove();
         },
     );
@@ -181,6 +186,17 @@ export function initialize() {
     $("body").on(
         "click",
         `.${CSS.escape(
+            compose_banner.CLASSNAMES.automatic_new_visibility_policy,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            window.location.href = "/#settings/notifications";
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(
             compose_banner.CLASSNAMES.unscheduled_message,
         )} .main-view-banner-action-button`,
         (event) => {
@@ -217,7 +233,7 @@ export function initialize() {
                     error_message,
                     compose_banner.CLASSNAMES.generic_compose_error,
                     $banner_container,
-                    $("#compose-textarea"),
+                    $("textarea#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
             }
@@ -318,8 +334,8 @@ export function initialize() {
         $("#compose").addClass("preview_mode");
         $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-        const content = $("#compose-textarea").val();
-        $("#compose-textarea").hide();
+        const content = $("textarea#compose-textarea").val();
+        $("textarea#compose-textarea").hide();
         $("#compose .markdown_preview").hide();
         $("#compose .undo_markdown_preview").show();
         $("#compose .undo_markdown_preview").trigger("focus");
@@ -358,15 +374,34 @@ export function initialize() {
         compose_ui.make_compose_box_original_size();
     });
 
-    $("#compose-textarea").on("focus", () => {
+    $("textarea#compose-textarea").on("focus", () => {
         compose_recipient.update_placeholder_text();
     });
 
-    $("#stream_message_recipient_topic").on("focus", () => {
+    $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
+        const $input = $("input#stream_message_recipient_topic");
+        const $button = $("#recipient_box_clear_topic_button");
+
+        $input.val("");
+        $input.trigger("focus");
+        $button.hide();
+    });
+
+    $("#compose_recipient_box").on("input", "input#stream_message_recipient_topic", (e) => {
+        const $button = $("#recipient_box_clear_topic_button");
+        const value = $(e.target).val();
+        if (value.length === 0) {
+            $button.hide();
+        } else {
+            $button.show();
+        }
+    });
+
+    $("input#stream_message_recipient_topic").on("focus", () => {
         compose_recipient.update_placeholder_text();
     });
 
-    $("#stream_message_recipient_topic").on("input", () => {
+    $("input#stream_message_recipient_topic").on("input", () => {
         compose_recipient.update_placeholder_text();
     });
 
@@ -375,6 +410,7 @@ export function initialize() {
         const $textarea = $compose_click_target.closest("form").find("textarea");
         const format_type = $(e.target).attr("data-format-type");
         compose_ui.format_text($textarea, format_type);
+        popovers.hide_all();
         $textarea.trigger("focus");
         e.preventDefault();
         e.stopPropagation();

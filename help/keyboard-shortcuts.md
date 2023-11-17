@@ -38,17 +38,19 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Next unread topic**: <kbd>N</kbd>
 
+* **Next unread followed topic**: <kbd>Shift</kbd> + <kbd>N</kbd>
+
 * **Next unread direct message**: <kbd>P</kbd>
 
 * **Search messages**: <kbd>/</kbd>
 
 * **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to default view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
+* **Go to home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
   <kbd>Esc</kbd>, [if enabled][disable-escape])
-  until you are in the [default view](/help/configure-default-view).
+  until you are in the [home view](/help/configure-home-view).
 
-[disable-escape]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
+[disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
 ## Navigation
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
@@ -201,6 +203,10 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Toggle gear menu**: <kbd>G</kbd>
 
+* **Open personal menu**: <kbd>G</kbd> + <kbd class="arrow-key">→</kbd>
+
+* **Open help menu**: <kbd>G</kbd> + <kbd class="arrow-key">←</kbd>
+
 ### For a selected message (outlined in blue)
 
 * **Toggle emoji reactions menu**: <kbd>:</kbd>
@@ -236,12 +242,13 @@ A summary of the keyboard shortcuts above is available in the Zulip app.
 
 {start_tabs}
 
-{relative|gear|keyboard-shortcuts}
+{tab|desktop-web}
 
-!!! tip ""
+{relative|help|keyboard-shortcuts}
 
-    You can also click the **keyboard** (<i class="fa fa-keyboard-o"></i>)
-    icon at the bottom of the app, just below the right sidebar.
+!!! keyboard_tip ""
+
+    You can also use <kbd>?</kbd> to open the keyboard shortcuts reference.
 
 {end_tabs}
 

@@ -195,7 +195,7 @@ def get_bigbluebutton_url(
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
     password = b32encode(secrets.token_bytes(20)).decode()  # 20 bytes means 32 characters
 
-    # We sign our data here to ensure a Zulip user can not tamper with
+    # We sign our data here to ensure a Zulip user cannot tamper with
     # the join link to gain access to other meetings that are on the
     # same bigbluebutton server.
     signed = Signer().sign_object(

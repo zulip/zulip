@@ -89,7 +89,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 
 mock_esm("../src/compose_closed_ui", {
     set_standard_text_for_reply_button: noop,
-    update_buttons_for_recent_view: noop,
+    update_buttons_for_non_stream_views: noop,
 });
 mock_esm("../src/hash_util", {
     by_stream_url: test_url,
@@ -117,12 +117,6 @@ mock_esm("../src/user_topics", {
         }
         return false;
     },
-    is_topic_unmuted(stream_id, topic) {
-        if (stream_id === stream6 && topic === topic11) {
-            return true;
-        }
-        return false;
-    },
     is_topic_unmuted_or_followed(stream_id, topic) {
         if (stream_id === stream6 && (topic === topic11 || topic === topic12)) {
             return true;
@@ -140,11 +134,6 @@ mock_esm("../src/user_topics", {
         return all_visibility_policies.INHERIT;
     },
     all_visibility_policies,
-});
-const narrow = mock_esm("../src/narrow", {
-    hide_unread_banner: noop,
-    handle_middle_pane_transition: noop,
-    has_shown_message_list_view: true,
 });
 mock_esm("../src/narrow_title", {
     update_narrow_title() {},
@@ -403,17 +392,13 @@ function generate_topic_data(topic_info_array) {
             stream_name: "stream_name",
             stream_color: "",
             stream_id,
-            stream_muted: undefined,
             stream_url: "https://www.example.com",
             topic,
             conversation_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",
             unread_count,
             mention_in_unread: false,
-            topic_muted: visibility_policy === all_visibility_policies.MUTED,
-            topic_unmuted: visibility_policy === all_visibility_policies.UNMUTED,
             visibility_policy,
-            development: true,
             all_visibility_policies,
         });
     }
@@ -452,9 +437,7 @@ function test(label, f) {
     });
 }
 
-test("test_recent_view_show", ({mock_template, override}) => {
-    override(narrow, "save_pre_narrow_offset_for_reload", () => {});
-
+test("test_recent_view_show", ({mock_template}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
@@ -969,7 +952,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     rt.set_default_focus();
     rt.set_filter("all");
     rt.process_messages(messages);
-    let all_topics = rt_data.get();
+    let all_topics = rt_data.get_conversations();
 
     // update a message
     generate_topic_data([[1, "topic-7", 1, all_visibility_policies.INHERIT]]);
@@ -1031,7 +1014,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         type: "private",
         to_user_ids: "6,7,8",
     });
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(all_topics.size, 12);
     assert.equal(
         [...all_topics.keys()].toString(),
@@ -1056,7 +1039,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         type: "stream",
     });
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "1:topic-3,6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
@@ -1073,7 +1056,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         type: "stream",
     });
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "1:topic-7,1:topic-3,6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
@@ -1151,14 +1134,14 @@ test("test_delete_messages", ({override}) => {
     let reduced_msgs = messages.slice(1);
     override(all_messages_data, "all_messages", () => reduced_msgs);
 
-    let all_topics = rt_data.get();
+    let all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
     rt.update_topics_of_deleted_message_ids([messages[0].id]);
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2",
@@ -1169,7 +1152,7 @@ test("test_delete_messages", ({override}) => {
 
     rt.update_topics_of_deleted_message_ids([messages[1].id, messages[2].id]);
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3",
@@ -1189,7 +1172,7 @@ test("test_topic_edit", ({override}) => {
     rt.set_filter("all");
     rt.process_messages(messages);
 
-    let all_topics = rt_data.get();
+    let all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
@@ -1203,7 +1186,7 @@ test("test_topic_edit", ({override}) => {
     messages[7].topic = topic8;
     messages[8].topic = topic8;
     rt.process_topic_edit(stream1, topic6, topic8);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
 
     verify_topic_data(all_topics, stream1, topic8, messages[8].id, true);
     assert.equal(all_topics.get(get_topic_key(stream1, topic6)), undefined);
@@ -1214,7 +1197,7 @@ test("test_topic_edit", ({override}) => {
 
     messages[0].stream_id = stream2;
     rt.process_topic_edit(stream1, topic1, topic1, stream2);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
 
     assert.equal(all_topics.get(get_topic_key(stream1, topic1)), undefined);
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
@@ -1226,7 +1209,7 @@ test("test_topic_edit", ({override}) => {
     messages[0].stream_id = stream3;
     messages[0].topic = topic9;
     rt.process_topic_edit(stream2, topic1, topic9, stream3);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
 
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
@@ -1235,7 +1218,7 @@ test("test_topic_edit", ({override}) => {
     messages[0].stream_id = stream5;
     messages[0].topic = topic8;
     rt.process_topic_edit(stream3, topic9, topic8, stream5);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(rt.filters_should_hide_topic(all_topics.get("5:topic-8")), true);
 });
 

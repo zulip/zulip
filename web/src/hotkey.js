@@ -31,8 +31,10 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
+import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_menus from "./navbar_menus";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -43,6 +45,7 @@ import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
+import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
@@ -52,7 +55,7 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as topic_zoom from "./topic_zoom";
+import * as topic_list from "./topic_list";
 import * as unread_ops from "./unread_ops";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
@@ -87,6 +90,7 @@ const keydown_shift_mappings = {
     38: {name: "up_arrow", message_view_only: false}, // up arrow
     40: {name: "down_arrow", message_view_only: false}, // down arrow
     72: {name: "view_edit_history", message_view_only: true}, // 'H'
+    78: {name: "narrow_to_next_unread_followed_topic", message_view_only: false}, // 'N'
 };
 
 const keydown_unshift_mappings = {
@@ -237,7 +241,8 @@ export function processing_text() {
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
         $focused_elt.parents(".pill-container").length >= 1 ||
-        $focused_elt.attr("id") === "compose-send-button"
+        $focused_elt.attr("id") === "compose-send-button" ||
+        $focused_elt.parents(".dropdown-list-container").length >= 1
     );
 }
 
@@ -268,29 +273,23 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (popovers.any_active() || sidebar_ui.any_sidebar_expanded_as_overlay()) {
+    if (popovers.any_active()) {
         if (user_card_popover.manage_menu.is_open()) {
             user_card_popover.manage_menu.hide();
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
-        sidebar_ui.hide_all();
         popovers.hide_all();
         return true;
     }
 
-    if (overlays.is_modal_open()) {
-        overlays.close_active_modal();
+    if (modals.any_active()) {
+        modals.close_active();
         return true;
     }
 
-    if (overlays.is_active()) {
+    if (overlays.any_active()) {
         overlays.close_active();
-        return true;
-    }
-
-    if (gear_menu.is_open()) {
-        gear_menu.close();
         return true;
     }
 
@@ -301,7 +300,7 @@ export function process_escape_key(e) {
         }
 
         if (stream_list.searching()) {
-            stream_list.escape_search();
+            stream_list.clear_and_hide_search();
             return true;
         }
 
@@ -323,7 +322,7 @@ export function process_escape_key(e) {
             // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
             if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
-                $("#compose-textarea").trigger("focus");
+                $("textarea#compose-textarea").trigger("focus");
                 return true;
             }
 
@@ -338,9 +337,21 @@ export function process_escape_key(e) {
             return true;
         }
 
+        // When the input is focused, we blur and clear the input. A second "Esc"
+        // will zoom out, handled below.
+        if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
+            topic_list.clear_topic_search(e);
+            return true;
+        }
+
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
         $("input:focus,textarea:focus").trigger("blur");
+        return true;
+    }
+
+    if (sidebar_ui.any_sidebar_expanded_as_overlay()) {
+        sidebar_ui.hide_all();
         return true;
     }
 
@@ -349,15 +360,15 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (topic_zoom.is_zoomed_in()) {
-        topic_zoom.zoom_out();
+    if (stream_list.is_zoomed_in()) {
+        stream_list.zoom_out();
         return true;
     }
 
-    /* The Ctrl+[ hotkey navigates to the default view
+    /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
-    if (user_settings.escape_navigates_to_default_view || e.which === 219) {
-        hashchange.set_hash_to_default_view();
+    if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
+        hashchange.set_hash_to_home_view();
         return true;
     }
 
@@ -415,11 +426,13 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(".dropdown.open, .dropup.open").length > 0 && $(e.target).attr("role") === "menuitem") {
-        // on dropdown menu elements, force a click and prevent default.
-        // this is because these links do not have an href and so don't force a
-        // default action.
+    if (popovers.any_active() && $(e.target).hasClass("navigate-link-on-enter")) {
+        // If a popover is open and we pressed Enter on a menu item,
+        // call click directly on the item to navigate to the `href`.
+        // trigger("click") doesn't work for them to navigate to `href`.
         e.target.click();
+        e.preventDefault();
+        popovers.hide_all();
         return true;
     }
 
@@ -474,7 +487,7 @@ export function process_enter_key(e) {
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
     if (e.target.id === "send_later") {
-        $("#send_later i").trigger("click");
+        scheduled_messages_popover.toggle();
         return true;
     }
 
@@ -485,7 +498,7 @@ export function process_enter_key(e) {
 
     // All custom logic for overlays/modals is above; if we're in a
     // modal at this point, let the browser handle the event.
-    if (overlays.is_modal_open()) {
+    if (modals.any_active()) {
         return false;
     }
 
@@ -621,7 +634,7 @@ export function process_shift_tab_key() {
         return emoji_picker.navigate("shift_tab");
     }
 
-    if ($("#stream_message_recipient_topic").is(":focus")) {
+    if ($("input#stream_message_recipient_topic").is(":focus")) {
         compose_recipient.open_compose_recipient_dropdown();
         return true;
     }
@@ -666,6 +679,8 @@ export function process_hotkey(e, hotkey) {
         case "vim_down":
         case "vim_left":
         case "vim_right":
+        case "page_up":
+        case "page_down":
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
@@ -692,7 +707,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // `list_util` will process the event in send later modal.
-    if (overlays.is_modal_open() && overlays.active_modal() !== "#send_later_modal") {
+    if (modals.any_active() && modals.active_modal() !== "#send_later_modal") {
         return false;
     }
 
@@ -715,7 +730,7 @@ export function process_hotkey(e, hotkey) {
             }
     }
 
-    if (hotkey.message_view_only && overlays.is_active()) {
+    if (hotkey.message_view_only && overlays.any_active()) {
         if (processing_text()) {
             return false;
         }
@@ -729,17 +744,6 @@ export function process_hotkey(e, hotkey) {
         }
         if (event_name === "open_drafts" && overlays.drafts_open()) {
             overlays.close_overlay("drafts");
-            return true;
-        }
-        return false;
-    }
-
-    if (hotkey.message_view_only && gear_menu.is_open()) {
-        // Inside the gear menu, we don't process most hotkeys; the
-        // exception is that the gear_menu hotkey should toggle the
-        // menu closed again.
-        if (event_name === "gear_menu") {
-            gear_menu.close();
             return true;
         }
         return false;
@@ -776,6 +780,14 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
+        return true;
+    }
+
+    // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    if (
+        navbar_menus.is_navbar_menus_displayed() &&
+        navbar_menus.handle_keyboard_events(event_name)
+    ) {
         return true;
     }
 
@@ -860,7 +872,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Prevent navigation in the background when the overlays are active.
-    if (overlays.is_overlay_or_modal_open()) {
+    if (overlays.any_active() || modals.any_active()) {
         if (event_name === "view_selected_stream" && overlays.streams_open()) {
             stream_settings_ui.view_stream();
             return true;
@@ -895,7 +907,7 @@ export function process_hotkey(e, hotkey) {
             search.initiate_search();
             return true;
         case "gear_menu":
-            gear_menu.open();
+            gear_menu.toggle();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");
@@ -907,7 +919,10 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic({trigger: "hotkey"});
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            return true;
+        case "narrow_to_next_unread_followed_topic":
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
             return true;
         case "p_key":
             narrow.narrow_to_next_pm_string({trigger: "hotkey"});

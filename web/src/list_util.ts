@@ -2,8 +2,8 @@ import $ from "jquery";
 
 const list_selectors = [
     "#stream_filters",
-    "#global_filters",
-    "#user_presences",
+    "#left-sidebar-navigation-list",
+    "#buddy-list-users-matching-view",
     "#send_later_options",
 ];
 

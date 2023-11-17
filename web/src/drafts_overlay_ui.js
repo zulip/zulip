@@ -26,7 +26,7 @@ function restore_draft(draft_id) {
     const compose_args = {...drafts.restore_message(draft), draft_id};
 
     if (compose_args.type === "stream") {
-        if (draft.stream_id !== "" && draft.topic !== "") {
+        if (draft.stream_id !== undefined && draft.topic !== "") {
             narrow.activate(
                 [
                     {operator: "stream", operand: compose_args.stream_name},

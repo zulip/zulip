@@ -489,6 +489,7 @@ test("get_items_for_users", () => {
     set_presence(alice.user_id, "offline");
     user_settings.emojiset = "google";
     user_settings.user_list_style = 2;
+
     const status_emoji_info = {
         emoji_alt_code: false,
         emoji_name: "car",
@@ -496,9 +497,16 @@ test("get_items_for_users", () => {
         reaction_type: "unicode_emoji",
     };
 
+    const status_emoji_info_event = {
+        id: 1,
+        type: "user_status",
+        status_text: "",
+        ...status_emoji_info,
+    };
+
     const user_ids = [me.user_id, alice.user_id, fred.user_id];
     for (const user_id of user_ids) {
-        user_status.set_status_emoji({user_id, ...status_emoji_info});
+        user_status.set_status_emoji({user_id, ...status_emoji_info_event});
     }
 
     const user_list_style = {
@@ -519,6 +527,7 @@ test("get_items_for_users", () => {
             user_circle_class: "user_circle_green",
             user_id: 1001,
             user_list_style,
+            should_add_guest_user_indicator: false,
         },
         {
             faded: false,
@@ -531,6 +540,7 @@ test("get_items_for_users", () => {
             user_circle_class: "user_circle_empty",
             user_id: 1002,
             user_list_style,
+            should_add_guest_user_indicator: false,
         },
         {
             faded: false,
@@ -543,6 +553,7 @@ test("get_items_for_users", () => {
             user_circle_class: "user_circle_empty",
             user_id: 1003,
             user_list_style,
+            should_add_guest_user_indicator: false,
         },
     ]);
 });

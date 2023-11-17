@@ -19,7 +19,7 @@ geo $realip_remote_addr $is_x_forwarded_proto_trusted {
 }
 
 # Check if the IP address that we resolved the request as coming
-# (after looking at X-Fowarded-For, if any) from is actually the proxy
+# (after looking at X-Forwarded-For, if any) from is actually the proxy
 # itself.
 geo $remote_addr $is_from_proxy {
     default 0;

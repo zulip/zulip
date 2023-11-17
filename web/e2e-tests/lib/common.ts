@@ -140,13 +140,12 @@ export async function fill_form(
         return (await page.$(`select[name="${CSS.escape(name)}"]`)) !== null;
     }
     for (const name of Object.keys(params)) {
-        const name_selector = `${form_selector} [name="${name}"]`;
         const value = params[name];
         if (typeof value === "boolean") {
             await page.$eval(
-                name_selector,
+                `${form_selector} input[name="${CSS.escape(name)}"]`,
                 (el, value) => {
-                    if (el instanceof HTMLInputElement && el.checked !== value) {
+                    if (el.checked !== value) {
                         el.click();
                     }
                 },
@@ -156,13 +155,9 @@ export async function fill_form(
             if (typeof value !== "string") {
                 throw new TypeError(`Expected string for ${name}`);
             }
-            await page.select(name_selector, value);
+            await page.select(`${form_selector} select[name="${CSS.escape(name)}"]`, value);
         } else {
-            // clear any existing text in the input field before filling.
-            await page.$eval(name_selector, (el) => {
-                (el as HTMLInputElement).value = "";
-            });
-            await page.type(name_selector, value);
+            await clear_and_type(page, `${form_selector} [name="${CSS.escape(name)}"]`, value);
         }
     }
 }
@@ -173,17 +168,24 @@ export async function check_form_contents(
     params: Record<string, boolean | string>,
 ): Promise<void> {
     for (const name of Object.keys(params)) {
-        const name_selector = `${form_selector} [name="${name}"]`;
         const expected_value = params[name];
         if (typeof expected_value === "boolean") {
             assert.equal(
-                await page.$eval(name_selector, (el) => (el as HTMLInputElement).checked),
+                await page.$eval(
+                    `${form_selector} input[name="${CSS.escape(name)}"]`,
+                    (el) => el.checked,
+                ),
                 expected_value,
                 "Form content is not as expected.",
             );
         } else {
             assert.equal(
-                await page.$eval(name_selector, (el) => (el as HTMLInputElement).value),
+                await page.$eval(`${form_selector} [name="${CSS.escape(name)}"]`, (el) => {
+                    if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) {
+                        throw new TypeError("Expected <input> or <textarea>");
+                    }
+                    return el.value;
+                }),
                 expected_value,
                 "Form content is not as expected.",
             );
@@ -266,16 +268,16 @@ export async function log_in(
         username: credentials.username,
         password: credentials.password,
     };
-    await fill_form(page, "#login_form", params);
-    await page.$eval("#login_form", (form) => (form as HTMLFormElement).submit());
+    await fill_form(page, "form#login_form", params);
+    await page.$eval("form#login_form", (form) => form.submit());
 
     await page.waitForSelector("#recent_view_filter_buttons", {visible: true});
 }
 
 export async function log_out(page: Page): Promise<void> {
     await page.goto(realm_url);
-    const menu_selector = "#settings-dropdown";
-    const logout_selector = ".dropdown-menu a.logout_button";
+    const menu_selector = "#personal-menu";
+    const logout_selector = ".personal-menu-actions a.logout_button";
     console.log("Logging out");
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
@@ -294,13 +296,14 @@ export function set_realm_url(new_realm_url: string): void {
 
 export async function ensure_enter_does_not_send(page: Page): Promise<void> {
     // NOTE: Caller should ensure that the compose box is already open.
+    await page.click("#send_later");
+    await page.waitForSelector("#send_later_popover");
     const enter_sends = await page.$eval(
-        ".enter_sends_true",
-        (el) => (el as HTMLElement).style.display !== "none",
+        ".enter_sends_choice input[value='true']",
+        (el) => el.checked === true,
     );
 
     if (enter_sends) {
-        await page.click(".open_enter_sends_dialog");
         const enter_sends_false_selector = ".enter_sends_choice input[value='false']";
         await page.waitForSelector(enter_sends_false_selector);
         await page.click(enter_sends_false_selector);
@@ -311,13 +314,12 @@ export async function assert_compose_box_content(
     page: Page,
     expected_value: string,
 ): Promise<void> {
-    const compose_box_element = await page.waitForSelector("#compose-textarea");
-    const compose_box_content = await page.evaluate((element) => {
-        if (!(element instanceof HTMLTextAreaElement)) {
-            throw new TypeError("expected HTMLTextAreaElement");
-        }
-        return element.value;
-    }, compose_box_element);
+    const compose_box_element = await page.waitForSelector("textarea#compose-textarea");
+    assert(compose_box_element !== null);
+    const compose_box_content = await page.evaluate(
+        (element) => element.value,
+        compose_box_element,
+    );
     assert.equal(
         compose_box_content,
         expected_value,
@@ -537,12 +539,19 @@ export async function open_streams_modal(page: Page): Promise<void> {
     assert.ok(url.includes("#streams/all"));
 }
 
+export async function open_personal_menu(page: Page): Promise<void> {
+    const menu_selector = "#personal-menu";
+    await page.waitForSelector(menu_selector, {visible: true});
+    await page.click(menu_selector);
+}
+
 export async function manage_organization(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
 
-    const organization_settings = '.dropdown-menu a[href="#organization"]';
+    const organization_settings = '.link-item a[href="#organization"]';
+    await page.waitForSelector(organization_settings, {visible: true});
     await page.click(organization_settings);
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
@@ -644,15 +653,10 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
     page.on("pageerror", (error: Error) => {
         page_errored = true;
 
-        // Puppeteer gives us the stack as the message for some reason.
-        const error1 = new Error("dummy");
-        error1.stack = error.message;
-
         const console_ready1 = console_ready;
         console_ready = (async () => {
             const frames = await Promise.all(
-                ErrorStackParser.parse(error1).map(async (frame1) => {
-                    let frame = frame1 as unknown as StackFrame;
+                ErrorStackParser.parse(error).map(async (frame) => {
                     try {
                         frame = await gps.getMappedLocation(frame);
                     } catch {
@@ -664,7 +668,7 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
                 }),
             );
             await console_ready1;
-            console.error("Page error:", error.message.split("\n", 1)[0] + frames.join(""));
+            console.error("Page error:", error.message + frames.join(""));
         })();
 
         const console_ready2 = console_ready;

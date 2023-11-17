@@ -30,12 +30,7 @@ Pillow
 
 # Needed for building complex DB queries
 SQLAlchemy==1.4.*
-# A requirement of SQLAlchemy that we don't use
-# (https://github.com/sqlalchemy/sqlalchemy/issues/6136) but that can
-# lead to segfaults when restarting
-# (https://github.com/python-greenlet/greenlet/issues/330), so bump to
-# the fixed version
-greenlet>=3.0.0a1
+greenlet
 
 # Needed for S3 file uploads and other AWS tools
 boto3
@@ -62,8 +57,8 @@ python-gcm
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
-# and to use a maintained cchardet fork: https://github.com/mailgun/talon/pull/233
-https://github.com/zulip/talon/archive/5529af43ff5172ff30c1a7b99111a68dcd997810.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
+# and chardet, cchardet: https://github.com/mailgun/talon/pull/239
+https://github.com/zulip/talon/archive/e3879d82331aa8b5a87e9d41b3ba3693caa24cd2.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
 css-inline
@@ -99,7 +94,7 @@ tornado
 orjson
 
 # Needed for iOS push notifications
-aioapns
+https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git  # https://github.com/Fatal1ty/aioapns/pull/52
 
 python-twitter
 
@@ -121,8 +116,8 @@ python-magic
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
-https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip==0.8.2+git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip_bots==0.8.2+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/0.9.0.zip#egg=zulip==0.9.0+git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.9.0.zip#egg=zulip_bots==0.9.0+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
@@ -139,7 +134,7 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-https://github.com/andersk/django-two-factor-auth/archive/b0ae80051d45ac360595ed327b044c766f57d32f.zip#egg=django-two-factor-auth[call,phonenumberslite,sms]==1.15.4+git  # https://github.com/jazzband/django-two-factor-auth/pull/649
+django-two-factor-auth[call,phonenumberslite,sms]
 
 # Needed for processing payments (in corporate)
 stripe

@@ -249,6 +249,12 @@ labels.
   use the existing pull request (PR) as a starting point for your contribution. If
   you think a different approach is needed, you can post a new PR, with a comment that clearly
   explains _why_ you decided to start from scratch.
+- **What if I ask if someone is still working on an issue, and they don't
+  respond?** If you don't get a reply within 2-3 days, go ahead and post a comment
+  that you are working on the issue, and submit a pull request. If the original
+  assignee ends up submitting a pull request first, no worries! You can help by
+  providing feedback on their work, or submit your own PR if you think a
+  different approach is needed (as described above).
 - **Can I come up with my own feature idea and work on it?** We welcome
   suggestions of features or other improvements that you feel would be valuable. If you
   have a new feature you'd like to add, you can start a conversation [in our

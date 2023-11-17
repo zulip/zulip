@@ -165,10 +165,8 @@ ul {
         cursor: pointer;
     }
 
-    .cta-buttons svg {
-        vertical-align: middle;
+    .cta-buttons i {
         margin-right: 4px;
-        margin-top: -3px;
     }
 
     .cta-buttons a:hover {
@@ -194,16 +192,13 @@ ul {
         grid-template-columns: repeat(6, 200px);
         grid-template-rows: 100px;
         justify-content: center;
-        align-items: center;
-        justify-items: center;
-        column-gap: 24px;
-        row-gap: 0;
+        place-items: center;
+        gap: 24px 0;
     }
 
     .client-logos div {
         transition: all 0.7s ease-out;
         background-position: center;
-        opacity: 0.7;
     }
 
     .screen-4,
@@ -703,9 +698,13 @@ ul {
         & footer {
             background: hsl(238deg 28% 21%);
         }
+
+        .client-logos div {
+            opacity: 0.7;
+        }
     }
 
-    /* Make sure breakpoints apprear sorted so that lower breakpoints always
+    /* Make sure breakpoints appear sorted so that lower breakpoints always
     override higher ones. */
     @media (width <= 1320px) {
         .client-logos {
@@ -1014,6 +1013,7 @@ ul {
             transform: scale(0.6);
             grid-template-columns: repeat(3, 200px);
             grid-template-rows: 100px 100px;
+            margin: -29px -500px;
         }
     }
 

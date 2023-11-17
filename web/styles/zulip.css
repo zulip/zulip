@@ -1,6 +1,5 @@
 html {
-    overflow-y: scroll;
-    overflow-x: hidden;
+    overflow: hidden scroll;
     overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
 }
@@ -99,6 +98,7 @@ body {
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
+    --left-sidebar-header-icon-width: 15px;
 
     /*
     Message box elements and values.
@@ -108,6 +108,11 @@ body {
     --message-box-line-height: 1.214;
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
+
+    /*
+    Reaction container UI scaling.
+    */
+    --scale-message-reaction-active: 0.96;
 
     /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
@@ -143,14 +148,14 @@ body {
     --recent-topics-filters-height: 50px;
 
     /* Overlay heights for streams modal */
-    --modal-container-height: 95vh;
-    --modal-container-max-height: 1000px;
+    --overlay-container-height: 95vh;
+    --overlay-container-max-height: 1000px;
     /* .subscriptions-header */
-    --modal-container-subscriptions-header-height: 45px;
+    --subscriptions-overlay-header-height: 45px;
     /* .display-type */
-    --modal-container-subscriptions-display-type-height: 44px;
-    /* .modal-footer */
-    --modal-container-subscriptions-modal-footer-height: 60px;
+    --subscriptions-overlay-display-type-height: 44px;
+    /* .settings-sticky-footer */
+    --subscriptions-overlay-sticky-footer-height: 60px;
 
     /*
     Maximum height of the compose box when it is not in expanded state. This
@@ -159,6 +164,13 @@ body {
     it can change depending on browser / OS on mobile devices.
     */
     --max-unexpanded-compose-height: 40vh;
+
+    /*
+    Maximum height of the subscribers list in stream settings so that
+    it doesn't cause the container to have a second scrollbar.
+    This value will be overridden when stream settings is opened.
+    */
+    --stream-subscriber-list-max-height: 100%;
 
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
@@ -189,6 +201,61 @@ body {
     --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
+    --color-background-image-loader: hsl(0deg 0% 0% / 10%);
+    --color-icon-purple: hsl(240deg 35% 60%);
+    --color-background-dropdown-menu: hsl(0deg 0% 100%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 10%);
+    --color-hotkey-hint: hsl(227deg 78% 59%);
+    --color-background-hover-dropdown-menu: hsl(220deg 12% 5% / 5%);
+    --color-background-active-dropdown-menu: hsl(220deg 12% 5% / 7%);
+    --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
+    --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
+    --color-background-unread-counter: hsl(105deg 2% 50%);
+    /* There's no alpha channel here, but this keeps
+       the variable names in line. */
+    --color-background-unread-counter-no-alpha: var(
+        --color-background-unread-counter
+    );
+    --color-background-unread-counter-dot: var(
+        --color-background-unread-counter
+    );
+    --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+    --color-border-unread-counter: var(--color-background-unread-counter);
+    --color-border-unread-counter-popover-menu: inherit;
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
+
+    /* Compose box colors */
+    --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
+    --color-compose-send-button-background: hsl(240deg 96% 68%);
+    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
+    --color-compose-send-button-focus-shadow: hsl(230deg 100% 20%);
+    --color-compose-send-control-button: hsl(240deg 30% 50% / 80%);
+    --color-compose-send-control-button-background: transparent;
+    --color-compose-send-control-button-interactive: hsl(240deg 30% 50%);
+    --color-compose-send-control-button-background-interactive: hsl(
+        240deg 100% 30% / 5%
+    );
+    --color-compose-send-control-button-focus-shadow: var(
+        --color-compose-send-button-focus-shadow
+    );
+    --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
+    --color-compose-collapsed-reply-button-area-background-interactive: var(
+        --color-compose-collapsed-reply-button-area-background
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 80%);
+    --color-compose-collapsed-reply-button-area-border-interactive: hsl(
+        0deg 0% 60%
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 20% 55%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 20% 30%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        231deg 100% 90% / 50%
+    );
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -202,6 +269,12 @@ body {
     --color-text-search: hsl(0deg 0% 35%);
     --color-text-search-hover: hsl(0deg 0% 0%);
     --color-text-search-placeholder: hsl(0deg 0% 50%);
+    --color-text-dropdown-menu: hsl(0deg 0% 15%);
+    --color-text-full-name: hsl(0deg 0% 15%);
+    --color-text-item: hsl(0deg 0% 40%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
+    --color-text-sidebar-heading: hsl(0deg 0% 43%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -210,14 +283,42 @@ body {
     --color-message-star-action: hsl(41deg 100% 47% / 100%);
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
-    --color-global-filter-icon: hsl(0deg 0% 20% / 70%);
+    --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
     --color-vdots-hint: hsl(0deg 0% 0% / 30%);
     --color-vdots-visible: hsl(0deg 0% 0% / 53%);
     --color-vdots-hover: hsl(0deg 0% 0%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --color-tab-picker-icon: hsl(200deg 100% 40%);
+
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(0deg 0% 0% / 12%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 40%);
+    --color-message-reaction-background: hsl(0deg 0% 100%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 100%);
+    --color-message-reaction-background-hover: hsl(210deg 30% 96%);
+    --color-message-reaction-shadow-inner: hsl(210deg 50% 50% / 15%);
+    --color-message-reaction-text: hsl(210deg 20% 25% / 100%);
+    --color-message-reaction-text-reacted: hsl(210deg 20% 20% / 100%);
+    --color-message-reaction-button-text: hsl(210deg 20% 20% / 60%);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text
+    );
+    --color-message-reaction-button-background: inherit;
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background
+    );
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border
+    );
+    --font-weight-message-reaction: 600;
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
     --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 27%);
     --color-zulip-logo-z: hsl(0deg 0% 100%);
 
     /* Message collapsing/condensing button colors */
@@ -236,13 +337,16 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
-    --color-background-inbox: hsl(0deg 0% 100%);
+    --width-inbox-filters-dropdown: 150px;
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
+    --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
     --color-inbox-search-text: hsl(0deg 0% 0%);
     --color-border-inbox-search: hsl(229.09deg 21.57% 10% / 30%);
     --color-border-inbox-search-hover: hsl(229.09deg 21.57% 10% / 60%);
-    --color-background-inbox-search-hover: var(--color-background-inbox);
-    --color-background-inbox-search-focus: var(--color-background-inbox);
+    --color-background-inbox-search: hsl(0deg 0% 100%);
+    --color-background-inbox-search-hover: hsl(0deg 0% 100%);
+    --color-background-inbox-search-focus: hsl(0deg 0% 100%);
     --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);
     --color-box-shadow-inbox-search-focus: hsl(228deg 9.8% 20% / 30%);
     --color-background-inbox-row: hsl(0deg 0% 100%);
@@ -254,9 +358,66 @@ body {
         hsl(0deg 0% 100%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
-    --color-border-inbox: hsl(0deg 0% 84.31%);
     --color-icons-inbox: hsl(0deg 0% 0%);
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
+        0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 13%);
+    --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 50%);
+    --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    /* This is a technique for directing CSS to do
+       the color mixing ordinarily handled by the
+       alpha channel in hsl(); here, the alpha value
+       is omitted from the hsl() syntax and instead
+       used as the percentage for mixing over top of
+       the navbar background. This is needed so that
+       elements like the unread-count dot can make
+       use of the color, but neither compound alpha
+       values or apply alpha values over different
+       colors, such as the background color on the
+       unread dot.
+
+       The second color value aligns with
+       --color-background-navbar. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 5%,
+        hsl(0deg 0% 97%)
+    );
+    --color-header-button-focus: hsl(0deg 0% 0% / 8%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 8%,
+        hsl(0deg 0% 97%)
+    );
+    --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
+    --color-fill-user-invite-copy-icon: hsl(0deg 0% 46.7%);
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23333333'/%3E%3C/svg%3E%0A");
+
+    /* Button colors on modals and message editing. */
+    /* Exit buttons are sometimes Cancel, but sometimes
+       other "Nah, forget it" actions. */
+    --color-exit-button-text: hsl(0deg 0% 0%);
+    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
+    --color-exit-button-background: hsl(0deg 0% 100%);
+    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
 }
 
 %dark-theme {
@@ -285,6 +446,67 @@ body {
     --color-background-search-option-hover: hsl(0deg 0% 30%);
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
+    --color-background-image-loader: hsl(0deg 0% 100% / 10%);
+    --color-background-dropdown-menu: hsl(0deg 0% 17%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
+    --color-hotkey-hint: hsl(225deg 100% 84%);
+    --color-background-hover-dropdown-menu: hsl(220deg 12% 95% / 5%);
+    --color-background-active-dropdown-menu: hsl(220deg 12% 95% / 7%);
+    --color-border-dropdown-menu: hsl(0deg 0% 0%);
+    --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
+    --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    /* When unreads are hovered on the condensed
+       views, they should not have an alpha.
+
+       The second color aligns with dark mode's
+       --color-background. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-background-unread-counter-no-alpha: color-mix(
+        in srgb,
+        hsl(105deg 2% 50%) 50%,
+        hsl(0deg 0% 11%)
+    );
+    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
+    --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+    --color-border-unread-counter: hsl(105deg 2% 50%);
+    --color-border-unread-counter-popover-menu: var(
+        --color-border-unread-counter
+    );
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
+
+    /* Compose box colors */
+    --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
+    --color-compose-send-control-button: hsl(240deg 30% 70%);
+    --color-compose-send-control-button-background: transparent;
+    --color-compose-send-control-button-interactive: var(
+        --color-compose-send-control-button
+    );
+    --color-compose-send-control-button-background-interactive: hsl(
+        235deg 100% 70% / 11%
+    );
+    --color-compose-send-control-button-focus-shadow: var(
+        --color-compose-send-button-focus-shadow
+    );
+    --color-compose-collapsed-reply-button-area-background: hsl(
+        0deg 0% 0% / 20%
+    );
+    --color-compose-collapsed-reply-button-area-background-interactive: hsl(
+        0deg 0% 0% / 15%
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 0% / 60%);
+    --color-compose-collapsed-reply-button-area-border-interactive: var(
+        --color-compose-collapsed-reply-button-area-border
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 30% 65%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 30% 70%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        235deg 100% 70% / 11%
+    );
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -302,19 +524,62 @@ body {
     --color-text-search: hsl(0deg 0% 100% / 75%);
     --color-text-search-hover: hsl(0deg 0% 100%);
     --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
+    --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
+    --color-text-full-name: hsl(0deg 0% 100%);
+    --color-text-item: hsl(0deg 0% 50%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
+    /* 75% opacity of --color-text-default against --color-background.
+       We use color-mix here to avoid defining a separate, compounding
+       `opacity` property, and also to preserve a record of the
+       relationship of the color of sidebar headings to other colors. */
+    --color-text-sidebar-heading: color-mix(
+        in srgb,
+        hsl(0deg 0% 75%) 75%,
+        hsl(0deg 0% 11%)
+    );
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
-    --color-global-filter-icon: hsl(0deg 0% 100% / 56%);
+    --color-left-sidebar-navigation-icon: hsl(0deg 0% 100% / 56%);
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
     --color-vdots-hover: hsl(0deg 0% 100%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --color-tab-picker-icon: hsl(0deg 0% 80%);
+
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 100% / 50%);
+    --color-message-reaction-background: hsl(0deg 0% 0% / 30%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 80%);
+    --color-message-reaction-background-hover: hsl(0deg 0% 100% / 10%);
+    /* No shadow in dark mode. */
+    --color-message-reaction-shadow-inner: transparent;
+    --color-message-reaction-text: hsl(0deg 0% 100% / 75%);
+    --color-message-reaction-text-reacted: hsl(0deg 0% 100% / 85%);
+    --color-message-reaction-button-text: var(--color-message-reaction-text);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text-reacted
+    );
+    --color-message-reaction-button-background: inherit;
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background-hover
+    );
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border
+    );
+    --font-weight-message-reaction: 550;
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
     --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 100% / 60%);
     --color-zulip-logo-z: hsl(214deg 27% 18%);
 
     /* Message collapsing/condensing button colors */
@@ -331,11 +596,13 @@ body {
     --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
 
     /* Inbox view */
-    --color-background-inbox: hsl(225deg 6% 10%);
+    --color-background-inbox: var(--color-background);
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 40% 55%);
     --color-icon-search-inbox: hsl(0deg 0% 100%);
     --color-inbox-search-text: hsl(0deg 0% 95%);
     --color-border-inbox-search: hsl(0deg 0% 100% / 20%);
     --color-border-inbox-search-hover: hsl(0deg 0% 100% / 40%);
+    --color-background-inbox-search: hsl(225deg 6% 10%);
     --color-background-inbox-search-hover: hsl(225deg 6% 8%);
     --color-background-inbox-search-focus: hsl(225deg 6% 7%);
     --color-border-inbox-search-focus: hsl(0deg 0% 100% / 50%);
@@ -349,9 +616,43 @@ body {
         hsl(0deg 0% 14.12%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
-    --color-border-inbox: hsl(0deg 0% 0% / 60%);
     --color-icons-inbox: hsl(0deg 0% 100%);
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 65%);
+    --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 4%,
+        hsl(0deg 0% 13%)
+    );
+    --color-header-button-focus: hsl(0deg 0% 100% / 7%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 7%,
+        hsl(0deg 0% 13%)
+    );
+    --color-fill-user-invite-copy-icon: hsl(236deg 33% 90%);
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23FFFFFFBF'/%3E%3C/svg%3E%0A");
+
+    /* Button colors on modals and message editing. */
+    --color-exit-button-text: hsl(0deg 0% 100%);
+    --color-exit-button-border: hsl(0deg 0% 0% / 60%);
+    --color-exit-button-background: hsl(211deg 29% 14%);
+    --color-exit-button-background-interactive: hsl(211deg 29% 17%);
 }
 
 @media screen {
@@ -598,7 +899,6 @@ p.n-margin {
 }
 
 #navbar-middle .column-middle-inner,
-#userlist-toggle-button,
 .header,
 #message_view_header {
     background-color: var(--color-background-navbar);
@@ -655,59 +955,6 @@ p.n-margin {
     }
 }
 
-#gear-menu .dropdown-menu {
-    .org-name,
-    .org-url {
-        padding: 0 20px;
-    }
-
-    .org-info {
-        text-align: center;
-
-        & a {
-            white-space: normal;
-        }
-    }
-
-    .org-name {
-        font-size: large;
-        font-weight: bold;
-    }
-
-    .org-url {
-        line-height: 100%;
-        color: hsl(0deg 0% 52%);
-    }
-
-    .org-version {
-        padding-top: 3px;
-        white-space: normal;
-    }
-
-    .org-upgrade {
-        color: hsl(226deg 82% 60%);
-
-        & a {
-            padding: 0;
-        }
-    }
-
-    .org-plan,
-    .org-upgrade {
-        & a {
-            line-height: 16px;
-        }
-    }
-
-    .plan-separator {
-        line-height: 8px;
-    }
-
-    .small-font-size {
-        font-size: 12px;
-    }
-}
-
 .recent_view_container #recent_view_table {
     margin-top: var(--navbar-fixed-height);
 }
@@ -758,9 +1005,11 @@ body.has-overlay-scrollbar {
         display: flex;
         justify-content: space-evenly;
         position: absolute;
-        top: 10px;
-        /* width of right column - width of gear icon(250px - 45px) */
-        width: 205px;
+        top: 8px;
+        /* gear menu + help menu width (40px * 2) */
+        right: 80px;
+        /* width of right column - width of gear icon - right margin of column-right (250px - 40px - 40px -7px) */
+        width: 163px;
 
         & a {
             font-size: calc(16em / 14);
@@ -788,10 +1037,8 @@ body.has-overlay-scrollbar {
         position: absolute;
         top: 0;
         right: 0;
-        /* Height of navbar in tablet sizes */
-        height: 40px;
-        /* Width of userlist-toggle button. */
-        width: 45px;
+        height: var(--header-height);
+        width: var(--header-height);
         border-left: 1px solid hsl(0deg 0% 88%);
 
         .login_button {
@@ -938,7 +1185,7 @@ li,
     z-index: 2;
 
     &:hover svg path {
-        fill: hsl(200deg 100% 40%);
+        fill: var(--color-fill-hover-copy-icon);
     }
 }
 
@@ -967,6 +1214,14 @@ li,
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {
         box-shadow: none;
+    }
+
+    & path {
+        fill: var(--color-fill-user-invite-copy-icon);
+    }
+
+    &:hover svg path {
+        fill: var(--color-fill-hover-copy-icon);
     }
 }
 
@@ -1008,13 +1263,6 @@ strong {
 
 .logout {
     white-space: nowrap;
-}
-
-.sidebar-title {
-    color: hsl(0deg 0% 43%);
-    font-size: inherit;
-    font-weight: normal;
-    display: inline;
 }
 
 .tooltip {
@@ -1065,10 +1313,6 @@ strong {
 .narrow-filter {
     display: block;
     position: relative;
-}
-
-#gear-menu .light-theme {
-    display: none;
 }
 
 /* .dropdown-menu from v2.3.2
@@ -1154,33 +1398,6 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
-}
-
-#gear_menu_about_zulip {
-    .white_zulip_icon_without_text {
-        position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
-    }
-
-    .about_zulip_text {
-        position: relative;
-        top: 1.4px;
-    }
-
-    :hover {
-        .white_zulip_icon_without_text {
-            filter: none;
-        }
-    }
-}
-
-.settings-dropdown-cog {
-    padding: 6px 12px;
 }
 
 td.pointer {
@@ -1739,8 +1956,13 @@ td.pointer {
 
     .sender_name_text {
         overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
+        display: inline-flex;
+
+        .user-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 }
 
@@ -1841,14 +2063,18 @@ div.focused-message-list {
 }
 
 .message-edit-timer {
-    float: right;
     display: none;
-    margin-top: 5px;
+    /* Center vertically relative to
+       buttons. */
+    align-self: center;
+    /* Use flexbox to position to far right of
+       the Save and Cancel buttons. */
+    margin-left: auto;
 }
 
 .message-edit-feature-group {
-    display: inline-flex;
-    margin: 0 auto -5px 10px;
+    display: flex;
+    margin: 0;
     align-items: baseline;
 }
 
@@ -2094,7 +2320,8 @@ div.focused-message-list {
             }
         }
 
-        .zulip-icon-inbox {
+        .zulip-icon-inbox,
+        .zulip-icon-star-filled {
             position: relative;
             top: 2px;
         }
@@ -2209,57 +2436,12 @@ div.focused-message-list {
     }
 }
 
-#navbar-buttons {
-    white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
-    display: inline-block;
-    float: right;
-
-    & ul.nav {
-        margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        & li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
-
-        & li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-    }
-}
-
 #streamlist-toggle {
     display: none;
     position: absolute;
     top: 0;
     left: 0;
     text-align: center;
-    vertical-align: middle;
-    /* border-right: 2px solid hsl(204, 20%, 74%); */
 }
 
 .hide-streamlist-toggle-visibility,
@@ -2269,39 +2451,60 @@ div.focused-message-list {
 
 #streamlist-toggle-button {
     text-decoration: none;
-    color: hsl(0deg 0% 52%);
-    display: block;
-    position: relative;
+    color: var(--color-navbar-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    height: 40px;
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-hover-no-alpha);
+        }
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:active,
+    &:focus-visible {
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-focus-no-alpha);
+        }
+    }
 }
 
-#streamlist-toggle-unreadcount,
-#userlist-toggle-unreadcount {
+#streamlist-toggle-unreadcount {
     position: absolute;
     display: none;
-    height: 12px;
-    min-width: 12px;
-    line-height: 12px;
-    background-color: hsl(0deg 100% 20%);
-    top: 4px;
-    right: 4px;
-    border: 1px solid hsl(0deg 0% 93%);
-    box-shadow: 0 0 1px hsl(0deg 0% 0% / 20%);
-    border-radius: 12px;
-    padding: 1px;
-    font-size: 9px;
-    z-index: 15;
-    font-weight: normal;
-    color: hsl(0deg 0% 100%);
+    height: 6px;
+    width: 6px;
+    background-color: var(--color-navbar-icon);
+    top: 10px;
+    right: 9px;
+    border: 2px solid var(--color-background-navbar);
+    border-radius: 6px;
+    padding: 0;
+    font-size: 0;
 }
 
 .nav .dropdown-menu {
     left: auto;
-    right: 0;
-    top: 30px;
+    right: -7px;
+    top: 35px;
     /* Match the width of the right sidebar so that we don't have
        the presence dots distracting you when looking at this. */
     min-width: 240px;
@@ -2320,12 +2523,6 @@ div.focused-message-list {
         content: "";
         z-index: 10;
     }
-}
-
-#gear-menu .zulip-icon-language {
-    position: relative;
-    top: 2.5px;
-    left: -0.5px;
 }
 
 .nav .dropdown-menu a,
@@ -2644,6 +2841,15 @@ select.invite-as {
     text-align: center;
 }
 
+.empty-feed-notice-title {
+    font-size: 1.5em;
+    font-weight: 400;
+}
+
+.empty-feed-notice-description {
+    font-size: 1.1em;
+}
+
 .message-fade,
 .user_sidebar_entry.user-fade {
     opacity: 0.4;
@@ -2954,12 +3160,30 @@ select.invite-as {
     .fa-copy:hover {
         color: hsl(170deg 48% 54%);
     }
+
+    .overlay-body {
+        max-height: 60vh;
+        padding: 15px;
+    }
 }
 
 @media (width < $xl_min) {
     .app-main,
     .header-main {
         min-width: 750px;
+    }
+
+    .spectator-view {
+        #navbar-middle {
+            /* = 40px (width of button) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: 130px;
+        }
+
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: 40px;
+        }
     }
 
     .column-right {
@@ -2988,15 +3212,6 @@ select.invite-as {
         }
     }
 
-    .header-main .column-right {
-        display: inline-block;
-        width: 30px;
-    }
-
-    #top_navbar #navbar-buttons {
-        margin-right: 41px;
-    }
-
     .nav .dropdown-menu {
         min-width: 180px;
         box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
@@ -3011,7 +3226,8 @@ select.invite-as {
     }
 
     #navbar-middle {
-        margin-right: 87px;
+        /* = 40px (width of button) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: 170px;
     }
 }
 
@@ -3095,26 +3311,58 @@ select.invite-as {
 @media (width < $sm_min) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: var(--navbar-fixed-height);
+        /* For very small sizes, skip the relatively large top padding. */
+        padding-top: 0;
+    }
+
+    /* TODO: Properly and accurately align the
+       topmost headers on the left and right
+       sidebar. */
+    .column-right.expanded .right-sidebar-items {
+        margin-top: 10px;
     }
 
     .column-left.expanded {
         .left-sidebar {
-            /* For very small sizes, skip the relatively large top padding. */
-            padding-top: 0;
-
             #streams_header {
                 padding-right: 10px;
             }
         }
 
-        .narrows_panel {
+        .left-sidebar-navigation-area {
             margin-top: 10px;
         }
     }
 
+    .spectator-view {
+        #navbar-middle {
+            /* = 30px (width of button) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: 100px;
+        }
+
+        #help-menu,
+        #gear-menu {
+            right: 30px;
+        }
+    }
+
+    #navbar-middle {
+        /* = 30px (width of button) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: 130px;
+    }
+
+    .nav .dropdown-menu {
+        right: -13px;
+    }
+
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 5px;
+    }
+
     #streamlist-toggle,
-    #navbar-buttons,
     #message_view_header,
     #searchbox,
     .header {
@@ -3132,13 +3380,16 @@ select.invite-as {
 
     #streamlist-toggle-button {
         height: var(--header-height);
-        padding-top: 0;
-        padding-bottom: 0;
     }
 
-    #navbar-buttons ul.nav .dropdown-toggle,
-    #navbar-buttons ul.nav li.active .dropdown-toggle {
-        top: -8px;
+    #streamlist-toggle-unreadcount {
+        /* Adjust in response to shorter navbar. */
+        top: 5px;
+    }
+
+    .column-right #personal-menu .header-button-avatar {
+        width: 20px;
+        height: 20px;
     }
 }
 
@@ -3311,6 +3562,10 @@ select.invite-as {
     }
 }
 
+.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+    font-weight: 700;
+}
+
 #scheduled_messages_overlay .error-icon-message-recipient {
     width: 15px;
     height: 100%;
@@ -3322,5 +3577,91 @@ select.invite-as {
 
     .zulip-icon {
         padding: 5px;
+    }
+}
+
+#unstar_all_messages,
+.emoji-popover-tab-item {
+    .zulip-icon-star {
+        position: relative;
+        top: 2px;
+    }
+}
+
+.typeahead-option-label {
+    display: flex !important;
+    justify-content: space-between;
+
+    > strong {
+        margin-right: 14px;
+    }
+}
+
+.header-main .column-right {
+    display: flex;
+    width: auto;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 7px;
+
+    & a:focus {
+        filter: none;
+        outline: 0;
+    }
+}
+
+.header-button {
+    width: var(--header-height);
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    .zulip-icon-gear {
+        font-size: 18px;
+    }
+
+    .zulip-icon-help,
+    .zulip-icon-triple-users {
+        font-size: 20px;
+    }
+
+    .zulip-icon-help {
+        position: relative;
+        top: 0.5px;
+        right: -0.5px;
+    }
+}
+
+#personal-menu {
+    .header-button-avatar {
+        width: 24px;
+        height: 24px;
+        background-size: cover;
+        border-radius: 4px;
+        background-color: var(--color-background-image-loader);
+        border: 1px solid var(--color-border-personal-menu-avatar);
     }
 }

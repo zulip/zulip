@@ -15,6 +15,7 @@ import orjson
 from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
 from returns.curry import partial
+from typing_extensions import override
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.actions.bots import (
@@ -121,9 +122,9 @@ from zerver.actions.user_settings import (
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
+    do_change_is_billing_admin,
     do_change_user_role,
     do_deactivate_user,
-    do_make_user_billing_admin,
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
@@ -152,7 +153,6 @@ from zerver.lib.event_schema import (
     check_reaction_remove,
     check_realm_bot_add,
     check_realm_bot_delete,
-    check_realm_bot_remove,
     check_realm_bot_update,
     check_realm_deactivated,
     check_realm_default_update,
@@ -166,7 +166,6 @@ from zerver.lib.event_schema import (
     check_realm_update,
     check_realm_update_dict,
     check_realm_user_add,
-    check_realm_user_remove,
     check_realm_user_update,
     check_scheduled_message_add,
     check_scheduled_message_remove,
@@ -232,6 +231,7 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserPresence,
@@ -261,6 +261,7 @@ class BaseAction(ZulipTestCase):
     for extensive design details for this testing system.
     """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("hamlet")
@@ -344,7 +345,7 @@ class BaseAction(ZulipTestCase):
             "msg": "",
             "result": "success",
         }
-        validate_against_openapi_schema(content, "/events", "get", "200", display_brief_error=True)
+        validate_against_openapi_schema(content, "/events", "get", "200")
         self.assert_length(events, num_events)
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
@@ -2132,9 +2133,13 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        events = self.verify_action(lambda: do_make_user_billing_admin(self.user_profile))
+        events = self.verify_action(lambda: do_change_is_billing_admin(self.user_profile, True))
         check_realm_user_update("events[0]", events[0], "is_billing_admin")
         self.assertEqual(events[0]["person"]["is_billing_admin"], True)
+
+        events = self.verify_action(lambda: do_change_is_billing_admin(self.user_profile, False))
+        check_realm_user_update("events[0]", events[0], "is_billing_admin")
+        self.assertEqual(events[0]["person"]["is_billing_admin"], False)
 
     def test_change_is_owner(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -2748,14 +2753,14 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot("test")
         action = lambda: do_deactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=2)
-        check_realm_user_remove("events[0]", events[0])
-        check_realm_bot_remove("events[1]", events[1])
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_realm_bot_update("events[1]", events[1], "is_active")
 
     def test_do_deactivate_user(self) -> None:
         user_profile = self.example_user("cordelia")
         action = lambda: do_deactivate_user(user_profile, acting_user=None)
         events = self.verify_action(action, num_events=1)
-        check_realm_user_remove("events[0]", events[0])
+        check_realm_user_update("events[0]", events[0], "is_active")
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")
@@ -2765,7 +2770,7 @@ class NormalActionsTest(BaseAction):
         do_deactivate_user(bot, acting_user=None)
         action = lambda: do_reactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=3)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
 
         # Test 'peer_add' event for private stream is received only if user is subscribed to it.
@@ -2773,7 +2778,7 @@ class NormalActionsTest(BaseAction):
         self.subscribe(self.example_user("hamlet"), "Test private stream")
         action = lambda: do_reactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=4)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
         check_subscription_peer_add("events[3]", events[3])
 
@@ -2786,7 +2791,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("iago")
         action = lambda: do_reactivate_user(bot, acting_user=self.example_user("iago"))
         events = self.verify_action(action, num_events=7)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_update("events[1]", events[1], "is_active")
         check_realm_bot_update("events[2]", events[2], "owner_id")
         check_realm_user_update("events[3]", events[3], "bot_owner_id")
         check_subscription_peer_remove("events[4]", events[4])
@@ -2822,15 +2827,12 @@ class NormalActionsTest(BaseAction):
             stream = self.make_stream(old_name)
             self.subscribe(self.user_profile, stream.name)
             action = partial(do_rename_stream, stream, new_name, self.user_profile)
-            events = self.verify_action(action, num_events=3, include_streams=include_streams)
+            events = self.verify_action(action, num_events=2, include_streams=include_streams)
 
             check_stream_update("events[0]", events[0])
             self.assertEqual(events[0]["name"], old_name)
 
-            check_stream_update("events[1]", events[1])
-            self.assertEqual(events[1]["name"], old_name)
-
-            check_message("events[2]", events[2])
+            check_message("events[1]", events[1])
 
             fields = dict(
                 sender_email="notification-bot@zulip.com",
@@ -2843,7 +2845,7 @@ class NormalActionsTest(BaseAction):
 
             fields[TOPIC_NAME] = "stream events"
 
-            msg = events[2]["message"]
+            msg = events[1]["message"]
             for k, v in fields.items():
                 self.assertEqual(msg[k], v)
 
@@ -3130,7 +3132,7 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_change_user_setting(
                 self.user_profile,
-                "default_view",
+                "web_home_view",
                 "all_messages",
                 acting_user=self.user_profile,
             ),
@@ -3332,7 +3334,7 @@ class RealmPropertyActionTest(BaseAction):
         bool_tests: List[bool] = [True, False, True]
         test_values: Dict[str, Any] = dict(
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
-            default_view=["recent_topics", "inbox", "all_messages"],
+            web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
@@ -3415,7 +3417,7 @@ class UserDisplayActionTest(BaseAction):
         test_changes: Dict[str, Any] = dict(
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
-            default_view=["all_messages", "inbox", "recent_topics"],
+            web_home_view=["all_messages", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
             user_list_style=[1, 2, 3],
@@ -3549,11 +3551,19 @@ class UserDisplayActionTest(BaseAction):
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])
 
-        # Check that guest user does not receive stream creation itself of public
+        # Check that guest user does not receive stream creation event of public
         # stream.
         self.user_profile = self.example_user("polonius")
         action = lambda: self.subscribe(self.example_user("hamlet"), "Test stream 2")
         events = self.verify_action(action, num_events=0, state_change_expected=False)
+
+        # Check that guest user receives stream creation event for web-public stream.
+        action = lambda: self.subscribe(
+            self.example_user("hamlet"), "Web public test stream", is_web_public=True
+        )
+        events = self.verify_action(action, num_events=2, state_change_expected=True)
+        check_stream_create("events[0]", events[0])
+        check_subscription_peer_add("events[1]", events[1])
 
         self.user_profile = self.example_user("hamlet")
         action = lambda: self.subscribe(
@@ -3742,7 +3752,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
 
         moderators_group = UserGroup.objects.get(
-            name=UserGroup.MODERATORS_GROUP_NAME,
+            name=SystemGroups.MODERATORS,
             is_system_group=True,
             realm=self.user_profile.realm,
         )
@@ -3774,17 +3784,115 @@ class SubscribeActionTest(BaseAction):
         )
         self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
+        # Add this user to make sure the stream is not deleted on unsubscribing hamlet.
+        self.subscribe(self.example_user("iago"), stream.name)
+
+        # Unsubscribe from invite-only stream.
+        action = lambda: bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+
         stream.invite_only = False
         stream.save()
 
-        # Subscribe as a guest to a public stream.
+        # Test events for guest user.
         self.user_profile = self.example_user("polonius")
+
+        # Guest user does not receive peer_add/peer_remove events for unsubscribed
+        # public streams.
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.example_user("othello")], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            num_events=0,
+            state_change_expected=False,
+        )
+
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.example_user("othello")], [stream], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            num_events=0,
+            state_change_expected=False,
+        )
+
+        # Subscribe as a guest to a public stream.
         action = lambda: bulk_add_subscriptions(
             user_profile.realm, [stream], [self.user_profile], acting_user=None
         )
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])
+
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.example_user("othello")], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+        check_subscription_peer_add("events[0]", events[0])
+
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.example_user("othello")], [stream], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+        check_subscription_peer_remove("events[0]", events[0])
+
+        # Unsubscribe guest from public stream.
+        action = lambda: bulk_remove_subscriptions(
+            realm, [self.user_profile], [stream], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+
+        stream = self.make_stream("web-public-stream", self.user_profile.realm, is_web_public=True)
+        # Guest user receives peer_add/peer_remove events for unsubscribed
+        # web-public streams.
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.example_user("othello")], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.example_user("othello")], [stream], acting_user=None
+        )
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers,
+        )
+
+        # Subscribe as a guest to web-public stream. Guest does not receive stream creation
+        # event for web-public stream.
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.user_profile], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
+        check_subscription_add("events[0]", events[0])
+
+        # Unsubscribe as a guest to web-public stream. Guest does not receive stream deletion
+        # event for web-public stream.
+        action = lambda: bulk_remove_subscriptions(
+            user_profile.realm, [self.user_profile], [stream], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
+        check_subscription_remove("events[0]", events[0])
 
 
 class DraftActionTest(BaseAction):

@@ -3,6 +3,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -16,6 +17,7 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
@@ -48,7 +50,7 @@ function hide_box() {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
-    $("#stream_message_recipient_topic").hide();
+    $("#compose_recipient_box").hide();
     $("#compose-direct-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
@@ -79,9 +81,9 @@ function clear_box() {
     compose_state.set_recipient_edited_manually(false);
     clear_textarea();
     compose_validate.check_overflow_text();
-    $("#compose-textarea").removeData("draft-id");
-    $("#compose-textarea").toggleClass("invalid", false);
-    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("textarea#compose-textarea").removeData("draft-id");
+    $("textarea#compose-textarea").toggleClass("invalid", false);
+    compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
@@ -89,7 +91,7 @@ function clear_box() {
 
 export function autosize_message_content() {
     if (!compose_ui.is_full_size()) {
-        autosize($("#compose-textarea"), {
+        autosize($("textarea#compose-textarea"), {
             callback() {
                 maybe_scroll_up_selected_message();
             },
@@ -111,10 +113,12 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(
-        opts.stream_id,
-        $("#stream_message_recipient_topic .message_header_stream"),
-    );
+    if (msg_type === "stream") {
+        stream_bar.decorate(
+            opts.stream_id,
+            $("#stream_message_recipient_topic .message_header_stream"),
+        );
+    }
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -148,7 +152,7 @@ export function maybe_scroll_up_selected_message() {
 export function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     return {
         message_type: msg_type,
-        stream_id: "",
+        stream_id: undefined,
         topic: "",
         private_message_recipient: "",
         trigger: "unknown",
@@ -179,6 +183,16 @@ export function start(msg_type, opts) {
         return;
     }
 
+    if (!msg_type) {
+        // We prefer callers to be explicit about the message type, but
+        // we if we don't know, we open a stream compose box by default,
+        // which opens stream selection dropdown.
+        // Also, msg_type is used to check if compose box is open in compose_state.composing().
+        msg_type = "stream";
+        blueslip.warn("Empty message type in compose.start");
+    }
+
+    popovers.hide_all();
     autosize_message_content();
 
     if (reload_state.is_in_progress()) {
@@ -188,13 +202,14 @@ export function start(msg_type, opts) {
     expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+    const is_clear_topic_button_triggered = opts.trigger === "clear topic button";
 
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // direct message recipient should be.
     if (
         opts.trigger === "compose_hotkey" ||
-        opts.trigger === "new topic button" ||
+        is_clear_topic_button_triggered ||
         opts.trigger === "new direct message"
     ) {
         opts.topic = "";
@@ -204,7 +219,7 @@ export function start(msg_type, opts) {
     const subbed_streams = stream_data.subscribed_subs();
     if (
         subbed_streams.length === 1 &&
-        (opts.trigger === "new topic button" ||
+        (is_clear_topic_button_triggered ||
             (opts.trigger === "compose_hotkey" && msg_type === "stream"))
     ) {
         opts.stream_id = subbed_streams[0].stream_id;
@@ -220,10 +235,12 @@ export function start(msg_type, opts) {
         clear_box();
     }
 
-    const $stream_header_colorblock = $(
-        "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
-    );
-    stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
+    if (msg_type === "stream") {
+        const $stream_header_colorblock = $(
+            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
+        );
+        stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
+    }
 
     if (msg_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
@@ -254,14 +271,21 @@ export function start(msg_type, opts) {
     show_compose_box(msg_type, opts);
 
     if (opts.draft_id) {
-        $("#compose-textarea").data("draft-id", opts.draft_id);
+        $("textarea#compose-textarea").data("draft-id", opts.draft_id);
     }
 
     if (opts.content !== undefined) {
         // If we were provided with message content, we might need to
         // resize the compose box, or display that it's too long.
-        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_ui.autosize_textarea($("textarea#compose-textarea"));
         compose_validate.check_overflow_text();
+    }
+
+    const $clear_topic_button = $("#recipient_box_clear_topic_button");
+    if (is_clear_topic_button_triggered || opts.topic.length === 0) {
+        $clear_topic_button.hide();
+    } else {
+        $clear_topic_button.show();
     }
 
     // Show a warning if topic is resolved
@@ -283,7 +307,7 @@ export function cancel() {
         compose_ui.make_compose_box_original_size();
     }
 
-    $("#compose-textarea").height(40 + "px");
+    $("textarea#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
@@ -352,7 +376,7 @@ export function on_topic_narrow() {
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").trigger("focus");
 }
 
 export function on_narrow(opts) {

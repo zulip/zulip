@@ -264,15 +264,15 @@ def build_get_topic_visibility_policy(
         "visibility_policy",
     )
 
-    topic_to_visiblity_policy: Dict[Tuple[int, str], int] = defaultdict(int)
+    topic_to_visibility_policy: Dict[Tuple[int, str], int] = defaultdict(int)
     for row in rows:
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
         visibility_policy = row["visibility_policy"]
-        topic_to_visiblity_policy[(recipient_id, topic_name)] = visibility_policy
+        topic_to_visibility_policy[(recipient_id, topic_name)] = visibility_policy
 
     def get_topic_visibility_policy(recipient_id: int, topic: str) -> int:
-        return topic_to_visiblity_policy[(recipient_id, topic.lower())]
+        return topic_to_visibility_policy[(recipient_id, topic.lower())]
 
     return get_topic_visibility_policy
 

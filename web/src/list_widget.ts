@@ -1,11 +1,13 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
+import render_empty_list_widget_for_table from "../templates/empty_list_widget_for_table.hbs";
+
 import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
 type SortingFunction<T> = (a: T, b: T) => number;
-type GenericSortingFunction<T = Record<string, unknown>> = (prop: string) => SortingFunction<T>;
 
 type ListWidgetMeta<Key = unknown, Item = Key> = {
     sorting_function: SortingFunction<Item> | null;
@@ -57,6 +59,7 @@ type ListWidget<Key = unknown, Item = Key> = {
     get_current_list(): Item[];
     filter_and_sort(): void;
     retain_selected_items(): void;
+    all_rendered(): boolean;
     render(how_many?: number): void;
     render_item(item: Item): void;
     clear(): void;
@@ -122,11 +125,13 @@ export function get_filtered_items<Key, Item>(
     return result;
 }
 
-export const alphabetic_sort: GenericSortingFunction = (prop) =>
-    function (a, b) {
+export function alphabetic_sort<Prop extends string>(
+    prop: Prop,
+): SortingFunction<Record<Prop, string>> {
+    return (a, b) => {
         // The conversion to uppercase helps make the sorting case insensitive.
-        const str1 = (a[prop] as string).toUpperCase();
-        const str2 = (b[prop] as string).toUpperCase();
+        const str1 = a[prop].toUpperCase();
+        const str2 = b[prop].toUpperCase();
 
         if (str1 === str2) {
             return 0;
@@ -136,11 +141,14 @@ export const alphabetic_sort: GenericSortingFunction = (prop) =>
 
         return -1;
     };
+}
 
-export const numeric_sort: GenericSortingFunction = (prop) =>
-    function (a, b) {
-        const a_prop = Number.parseFloat(a[prop] as string);
-        const b_prop = Number.parseFloat(b[prop] as string);
+export function numeric_sort<Prop extends string>(
+    prop: Prop,
+): SortingFunction<Record<Prop, number>> {
+    return (a, b) => {
+        const a_prop = a[prop];
+        const b_prop = b[prop];
 
         if (a_prop > b_prop) {
             return 1;
@@ -150,23 +158,32 @@ export const numeric_sort: GenericSortingFunction = (prop) =>
 
         return -1;
     };
+}
 
-const generic_sorts = {
+type GenericSortKeys = {
+    alphabetic: string;
+    numeric: number;
+};
+
+const generic_sorts: {
+    [GenericFunc in keyof GenericSortKeys]: <Prop extends string>(
+        prop: Prop,
+    ) => SortingFunction<Record<Prop, GenericSortKeys[GenericFunc]>>;
+} = {
     alphabetic: alphabetic_sort,
     numeric: numeric_sort,
 };
 
-export function generic_sort_functions<T extends Record<string, unknown>>(
-    generic_func: keyof typeof generic_sorts,
-    props: string[],
-): Record<string, SortingFunction<T>> {
-    const sorting_functions: Record<string, SortingFunction<T>> = {};
-    for (const prop of props) {
-        const key = `${prop}_${generic_func}`;
-        sorting_functions[key] = generic_sorts[generic_func](prop);
-    }
-
-    return sorting_functions;
+export function generic_sort_functions<
+    GenericFunc extends keyof GenericSortKeys,
+    Prop extends string,
+>(
+    generic_func: GenericFunc,
+    props: Prop[],
+): Record<string, SortingFunction<Record<Prop, GenericSortKeys[GenericFunc]>>> {
+    return Object.fromEntries(
+        props.map((prop) => [`${prop}_${generic_func}`, generic_sorts[generic_func](prop)]),
+    );
 }
 
 function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
@@ -175,6 +192,52 @@ function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
             (scroll_container.scrollTop + scroll_container.clientHeight) <
         10
     );
+}
+
+function get_column_count_for_table($table: JQuery): number {
+    let column_count = 0;
+    const $thead = $table.find("thead");
+    if ($thead.length) {
+        column_count = $thead.find("tr").children().length;
+    }
+    return column_count;
+}
+
+export function render_empty_list_message_if_needed(
+    $container: JQuery,
+    filter_value: string,
+): void {
+    let empty_list_message = $container.data("empty");
+
+    const empty_search_results_message = $container.data("search-results-empty");
+    if (filter_value && empty_search_results_message) {
+        empty_list_message = empty_search_results_message;
+    }
+
+    if (!empty_list_message || $container.children().length) {
+        return;
+    }
+
+    let empty_list_widget;
+
+    if ($container.is("table, tbody")) {
+        let $table = $container;
+        if ($container.is("tbody")) {
+            $table = $container.closest("table");
+        }
+
+        const column_count = get_column_count_for_table($table);
+        empty_list_widget = render_empty_list_widget_for_table({
+            empty_list_message,
+            column_count,
+        });
+    } else {
+        empty_list_widget = render_empty_list_widget_for_list({
+            empty_list_message,
+        });
+    }
+
+    $container.append(empty_list_widget);
 }
 
 // @params
@@ -228,7 +291,9 @@ export function create<Key = unknown, Item = Key>(
             if (items?.selected_items) {
                 const data = items.selected_items;
                 for (const value of data) {
-                    const $list_item = $container.find(`li[data-value = "${value as string}"]`);
+                    const $list_item = $container.find(
+                        `li[data-value="${CSS.escape(String(value))}"]`,
+                    );
                     if ($list_item.length) {
                         const $link_elem = $list_item.find("a").expectOne();
                         $list_item.addClass("checked");
@@ -236,6 +301,11 @@ export function create<Key = unknown, Item = Key>(
                     }
                 }
             }
+        },
+
+        // Returns if all available items are rendered.
+        all_rendered() {
+            return meta.offset >= meta.filtered_list.length;
         },
 
         // Reads the provided list (in the scope directly above)
@@ -248,7 +318,8 @@ export function create<Key = unknown, Item = Key>(
             }
 
             // Stop once the offset reaches the length of the original list.
-            if (meta.offset >= meta.filtered_list.length) {
+            if (this.all_rendered()) {
+                render_empty_list_message_if_needed($container, meta.filter_value);
                 return;
             }
 

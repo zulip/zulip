@@ -14,7 +14,7 @@ from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
 from returns.curry import partial
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from scripts.lib.zulip_tools import (
     TEMPLATE_DATABASE_DIR,
@@ -61,24 +61,29 @@ class TextTestResult(runner.TextTestResult):
     def addInstrumentation(self, test: unittest.TestCase, data: Dict[str, Any]) -> None:
         append_instrumentation_data(data)
 
+    @override
     def startTest(self, test: unittest.TestCase) -> None:
         TestResult.startTest(self, test)
         self.stream.write(f"Running {test.id()}\n")
         self.stream.flush()
 
+    @override
     def addSuccess(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addSuccess(self, *args, **kwargs)
 
+    @override
     def addError(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addError(self, *args, **kwargs)
         test_name = args[0].id()
         self.failed_tests.append(test_name)
 
+    @override
     def addFailure(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addFailure(self, *args, **kwargs)
         test_name = args[0].id()
         self.failed_tests.append(test_name)
 
+    @override
     def addSkip(self, test: unittest.TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
         self.stream.write(f"** Skipping {test.id()}: {reason}\n")
@@ -259,6 +264,7 @@ class Runner(DiscoverRunner):
         self.shallow_tested_templates: Set[str] = set()
         template_rendered.connect(self.on_template_rendered)
 
+    @override
     def get_resultclass(self) -> Optional[Type[TextTestResult]]:
         return TextTestResult
 
@@ -275,6 +281,7 @@ class Runner(DiscoverRunner):
     def get_shallow_tested_templates(self) -> Set[str]:
         return self.shallow_tested_templates
 
+    @override
     def setup_test_environment(self, *args: Any, **kwargs: Any) -> Any:
         settings.DATABASES["default"]["NAME"] = BACKEND_DATABASE_TEMPLATE
         # We create/destroy the test databases in run_tests to avoid
@@ -298,6 +305,7 @@ class Runner(DiscoverRunner):
 
         return super().setup_test_environment(*args, **kwargs)
 
+    @override
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
         # The test environment setup clones the zulip_test_template
         # database, creating databases with names:
@@ -347,6 +355,7 @@ class Runner(DiscoverRunner):
                         break
                 check_import_error(test_name)
 
+    @override
     def run_tests(
         self,
         test_labels: List[str],

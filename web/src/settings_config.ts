@@ -87,7 +87,11 @@ export const web_stream_unreads_count_display_policy_values = {
     },
 };
 
-export const default_view_values = {
+export const web_home_view_values = {
+    inbox: {
+        code: "inbox",
+        description: $t({defaultMessage: "Inbox"}),
+    },
     recent_topics: {
         code: "recent_topics",
         description: $t({defaultMessage: "Recent conversations"}),
@@ -95,10 +99,6 @@ export const default_view_values = {
     all_messages: {
         code: "all_messages",
         description: $t({defaultMessage: "All messages"}),
-    },
-    inbox: {
-        code: "inbox",
-        description: $t({defaultMessage: "Inbox"}),
     },
 };
 
@@ -553,7 +553,7 @@ export const display_settings_labels = {
                 "Display names of reacting users when few users have reacted to a message",
         }),
     ),
-    escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
+    web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     default_language_settings_label: $t({defaultMessage: "Language"}),
 };
 
@@ -604,6 +604,12 @@ export const realm_user_settings_defaults_labels = {
     realm_presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
     realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
+    realm_send_private_typing_notifications: $t({
+        defaultMessage: "Let recipients see when a user is typing direct messages",
+    }),
+    realm_send_stream_typing_notifications: $t({
+        defaultMessage: "Let recipients see when a user is typing stream messages",
+    }),
 };
 
 // NOTIFICATIONS

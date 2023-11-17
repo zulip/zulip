@@ -12,7 +12,7 @@ Organization administrators can always change any user's name.
 
 {start_tabs}
 
-{tab|via-user-card}
+{tab|via-user-profile}
 
 {!manage-this-user.md!}
 
@@ -20,13 +20,7 @@ Organization administrators can always change any user's name.
 
 {!save-changes.md!}
 
-{tab|via-user-profile}
-
-{!manage-this-user-via-user-profile.md!}
-
-1. Under **Full name**, enter a new name.
-
-{!save-changes.md!}
+{!manage-user-tab-tip.md!}
 
 {tab|via-organization-settings}
 

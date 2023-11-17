@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Mapping, Optional
 import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
@@ -72,6 +73,7 @@ TAB_SECTION_LABELS = {
     "stream": "From a stream view",
     "not-stream": "From other views",
     "via-recent-conversations": "Via recent conversations",
+    "via-inbox-view": "Via inbox view",
     "via-left-sidebar": "Via left sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
     "public-streams": "Public streams",
@@ -81,6 +83,7 @@ TAB_SECTION_LABELS = {
     "via-user-profile": "Via user profile",
     "via-organization-settings": "Via organization settings",
     "via-personal-settings": "Via personal settings",
+    "via-stream-settings": "Via stream settings",
     "default-subdomain": "Default subdomain",
     "custom-subdomain": "Custom subdomain",
     "zulip-cloud": "Zulip Cloud",
@@ -95,6 +98,8 @@ TAB_SECTION_LABELS = {
     "user": "User",
     "bot": "Bot",
     "on-sign-up": "On sign-up",
+    "via-paste": "Via paste",
+    "via-drag-and-drop": "Via drag-and-drop",
     "via-markdown": "Via Markdown",
     "via-compose-box-buttons": "Via compose box buttons",
     "stream-compose": "Compose to a stream",
@@ -105,6 +110,7 @@ TAB_SECTION_LABELS = {
 
 
 class TabbedSectionsGenerator(Extension):
+    @override
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             TabbedSectionsPreprocessor(md, self.getConfigs()),
@@ -117,6 +123,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         tab_section = self.parse_tabs(lines)
         while tab_section:

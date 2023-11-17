@@ -43,7 +43,7 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -204,6 +204,7 @@ class BadNarrowOperatorError(JsonableError):
         self.desc: str = desc
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Invalid narrow operator: {desc}")
 
@@ -361,9 +362,13 @@ class NarrowBuilder:
             cond = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
             return query.where(maybe_negate(cond))
         elif operand == "mentioned":
-            cond1 = column("flags", Integer).op("&")(UserMessage.flags.mentioned.mask) != 0
-            cond2 = column("flags", Integer).op("&")(UserMessage.flags.wildcard_mentioned.mask) != 0
-            cond = or_(cond1, cond2)
+            mention_flags_mask = (
+                UserMessage.flags.mentioned.mask
+                | UserMessage.flags.stream_wildcard_mentioned.mask
+                | UserMessage.flags.topic_wildcard_mentioned.mask
+                | UserMessage.flags.group_mentioned.mask
+            )
+            cond = column("flags", Integer).op("&")(mention_flags_mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0

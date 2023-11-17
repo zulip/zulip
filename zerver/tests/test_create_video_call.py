@@ -4,12 +4,14 @@ import orjson
 import responses
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
+from typing_extensions import override
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
 
 
 class TestVideoCall(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user = self.example_user("hamlet")
@@ -68,6 +70,7 @@ class TestVideoCall(ZulipTestCase):
             responses.calls[-1].request.url,
             "https://api.zoom.us/v2/users/me/meetings",
         )
+        assert responses.calls[-1].request.body is not None
         self.assertEqual(
             orjson.loads(responses.calls[-1].request.body),
             {
@@ -102,6 +105,7 @@ class TestVideoCall(ZulipTestCase):
             responses.calls[-1].request.url,
             "https://api.zoom.us/v2/users/me/meetings",
         )
+        assert responses.calls[-1].request.body is not None
         self.assertEqual(
             orjson.loads(responses.calls[-1].request.body),
             {

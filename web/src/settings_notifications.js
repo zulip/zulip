@@ -7,10 +7,10 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
-import * as notifications from "./notifications";
+import * as message_notifications from "./message_notifications";
 import {page_params} from "./page_params";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
-import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
@@ -88,12 +88,13 @@ export function set_notification_batching_ui($container, setting_seconds, force_
 
     $container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
     $edit_elem.val(setting_seconds / 60);
-    settings_org.change_element_block_display_property($edit_elem.attr("id"), show_edit_elem);
+    settings_components.change_element_block_display_property(
+        $edit_elem.attr("id"),
+        show_edit_elem,
+    );
 }
 
-export function set_enable_digest_emails_visibility(settings_panel) {
-    const $container = $(settings_panel.container);
-    const for_realm_settings = settings_panel.for_realm_settings;
+export function set_enable_digest_emails_visibility($container, for_realm_settings) {
     if (page_params.realm_digest_emails_enabled) {
         if (for_realm_settings) {
             $container.find(".other_email_notifications").show();
@@ -138,7 +139,11 @@ function stream_notification_setting_changed(e) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
+    stream_settings_api.set_stream_property(
+        sub,
+        {property: setting, value: e.target.checked},
+        $status_element,
+    );
 }
 
 export function set_up(settings_panel) {
@@ -197,7 +202,7 @@ export function set_up(settings_panel) {
         settings_object.automatically_unmute_topics_in_muted_streams_policy,
     );
 
-    set_enable_digest_emails_visibility(settings_panel);
+    set_enable_digest_emails_visibility($container, for_realm_settings);
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
@@ -216,7 +221,7 @@ export function set_up(settings_panel) {
             return;
         }
         let setting_name = $input_elem.attr("name");
-        let setting_value = settings_org.get_input_element_value(this);
+        let setting_value = settings_components.get_input_element_value(this);
 
         if (setting_name === "email_notifications_batching_period_seconds") {
             if ($input_elem.val() === "custom_period") {
@@ -280,7 +285,7 @@ export function set_up(settings_panel) {
     // intentionally don't let organization administrators set
     // organization-level defaults.
     $container.find(".send_test_notification").on("click", () => {
-        notifications.send_test_notification(
+        message_notifications.send_test_notification(
             $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
     });
@@ -338,16 +343,14 @@ export function update_muted_stream_state(sub) {
         )}']`,
     );
 
-    $row.toggleClass("control-label-disabled", sub.is_muted);
     if (sub.is_muted) {
         $row.find(".unmute_stream").show();
     } else {
         $row.find(".unmute_stream").hide();
     }
-    $row.find("input").prop("disabled", sub.is_muted);
     $row.find('[name="push_notifications"]').prop(
         "disabled",
-        !page_params.realm_push_notifications_enabled || sub.is_muted,
+        !page_params.realm_push_notifications_enabled,
     );
 }
 
@@ -367,8 +370,7 @@ export function initialize() {
 
         stream_settings_api.set_stream_property(
             sub,
-            "is_muted",
-            !sub.is_muted,
+            {property: "is_muted", value: !sub.is_muted},
             $row.closest(".subsection-parent").find(".alert-notification"),
         );
     });

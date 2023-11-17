@@ -9,8 +9,10 @@ import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {$t, $t_html} from "./i18n";
+import * as message_store from "./message_store";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
+import * as rows from "./rows";
 import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -65,7 +67,18 @@ function get_user_group_id_for_mention_button(elem) {
 }
 
 // Helper function to update a mentioned user's name.
-export function set_name_in_mention_element(element, name) {
+export function set_name_in_mention_element(element, name, user_id) {
+    if (user_id !== undefined && people.should_add_guest_user_indicator(user_id)) {
+        let display_text;
+        if (!$(element).hasClass("silent")) {
+            display_text = $t({defaultMessage: "@{name} (guest)"}, {name});
+        } else {
+            display_text = $t({defaultMessage: "{name} (guest)"}, {name});
+        }
+        $(element).text(display_text);
+        return;
+    }
+
     if ($(element).hasClass("silent")) {
         $(element).text(name);
     } else {
@@ -121,8 +134,27 @@ export const update_elements = ($content) => {
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.
-                set_name_in_mention_element(this, person.full_name);
+                set_name_in_mention_element(this, person.full_name, user_id);
             }
+        }
+    });
+
+    $content.find(".topic-mention").each(function () {
+        // TODO: This selector is designed to exclude drafts/scheduled
+        // messages. Arguably those settings should be unconditionally
+        // marked with user-mention-me, but rows.id doesn't support
+        // those elements, and we should address that quirk for
+        // mentions holistically.
+        const $message_row = $content.closest(".message_row");
+        if (!$message_row.length || $message_row.closest(".overlay-message-row").length) {
+            // There's no containing message when rendering a preview.
+            return;
+        }
+        const message_id = rows.id($message_row);
+        const message = message_store.get(message_id);
+
+        if (message.topic_wildcard_mentioned) {
+            $(this).addClass("user-mention-me");
         }
     });
 
@@ -225,7 +257,8 @@ export const update_elements = ($content) => {
         $(this).prepend(toggle_button_html);
     });
 
-    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element.
+    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,
+    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.js`.
     $content.find("div.codehilite").each(function () {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
@@ -263,6 +296,7 @@ export const update_elements = ($content) => {
         clipboard.on("success", () => {
             show_copied_confirmation($copy_button[0]);
         });
+        $codehilite.addClass("zulip-code-block");
     });
 
     // Display emoji (including realm emoji) as text if

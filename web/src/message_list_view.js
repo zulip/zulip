@@ -183,6 +183,28 @@ function set_topic_edit_properties(group, message) {
     }
 }
 
+function get_users_for_recipient_row(message) {
+    const user_ids = people.pm_with_user_ids(message);
+    const users = user_ids.map((user_id) => {
+        let full_name;
+        if (muted_users.is_user_muted(user_id)) {
+            full_name = $t({defaultMessage: "Muted user"});
+        } else {
+            full_name = people.get_full_name(user_id);
+        }
+        return {
+            full_name,
+            should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        };
+    });
+
+    function compare_by_name(a, b) {
+        return a.full_name < b.full_name ? -1 : a.full_name > b.full_name ? 1 : 0;
+    }
+
+    return users.sort(compare_by_name);
+}
+
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
@@ -208,24 +230,21 @@ function populate_group_from_message_container(group, message_container) {
             group.stream_id = -1;
         } else {
             group.stream_id = sub.stream_id;
-            group.stream_muted = sub.is_muted;
         }
         group.is_subscribed = stream_data.is_subscribed(group.stream_id);
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
-        group.topic_muted = user_topics.is_topic_muted(group.stream_id, group.topic);
-        group.topic_unmuted = user_topics.is_topic_unmuted(group.stream_id, group.topic);
         group.visibility_policy = user_topics.get_topic_visibility_policy(
             group.stream_id,
             group.topic,
         );
 
-        // The following two fields are not specific to this group, but this is the
+        // The following field is not specific to this group, but this is the
         // easiest way we've figured out for passing the data to the template rendering.
-        group.development = page_params.development_environment;
         group.all_visibility_policies = user_topics.all_visibility_policies;
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
-        group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
+        group.recipient_users = get_users_for_recipient_row(message_container.msg);
+        group.display_reply_to_for_tooltip = message_store.get_pm_full_names(message_container.msg);
     }
     group.display_recipient = message_container.msg.display_recipient;
     group.topic_links = message_container.msg.topic_links;
@@ -282,6 +301,9 @@ export class MessageListView {
         // what range of messages is currently rendered in the dOM.
         this._render_win_start = 0;
         this._render_win_end = 0;
+
+        // ID of message under the sticky recipient bar if there is one.
+        this.sticky_recipient_message_id = undefined;
     }
 
     // Number of messages to render at a time
@@ -418,6 +440,8 @@ export class MessageListView {
 
         message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
         message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
+        message_container.should_add_guest_indicator_for_sender =
+            people.should_add_guest_user_indicator(message_container.msg.sender_id);
 
         message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
         if (message_container.msg.stream_id) {
@@ -842,7 +866,7 @@ export class MessageListView {
 
             $rendered_groups = this._render_group({
                 message_groups: message_actions.prepend_groups,
-                use_match_properties: this.list.is_search(),
+                use_match_properties: this.list.is_keyword_search(),
                 table_name: this.table_name,
             });
 
@@ -869,7 +893,7 @@ export class MessageListView {
 
                 $rendered_groups = this._render_group({
                     message_groups: [message_group],
-                    use_match_properties: this.list.is_search(),
+                    use_match_properties: this.list.is_keyword_search(),
                     table_name: this.table_name,
                 });
 
@@ -906,7 +930,7 @@ export class MessageListView {
 
             $rendered_groups = this._render_group({
                 message_groups: message_actions.append_groups,
-                use_match_properties: this.list.is_search(),
+                use_match_properties: this.list.is_keyword_search(),
                 table_name: this.table_name,
             });
 
@@ -1096,7 +1120,7 @@ export class MessageListView {
             // the current compose is bigger than the empty, open
             // compose box.
             const compose_textarea_default_height = 42;
-            const compose_textarea_current_height = $("#compose-textarea").height();
+            const compose_textarea_current_height = $("textarea#compose-textarea").height();
             const expected_change =
                 compose_textarea_current_height - compose_textarea_default_height;
             const expected_offset = offset - expected_change;
@@ -1517,7 +1541,7 @@ export class MessageListView {
         const partially_hidden_header_position = visible_top - 1;
 
         function is_sticky(header) {
-            // header has a box-shodow of `1px` at top but since it doesn't impact
+            // header has a box-shadow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
             // This value is dependent upon space between two `recipient_row` message groups.
@@ -1590,14 +1614,23 @@ export class MessageListView {
                 $message_row = $sticky_header.nextAll(".message_row").first();
             }
         }
+        // We expect message information to be available for the message row even for failed or
+        // local echo messages. If for some reason we don't have the data for message row, we can't
+        // update the sticky header date or identify the message under it for other use cases.
+        this.sticky_recipient_message_id = undefined;
         const msg_id = rows.id($message_row);
         if (msg_id === undefined) {
+            blueslip.error(`Missing message id for sticky recipient row.`);
             return;
         }
         const message = message_store.get(msg_id);
         if (!message) {
+            blueslip.error(
+                `Message not found for the message id identified for sticky header: ${msg_id}.`,
+            );
             return;
         }
+        this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
         const today = new Date();
         const rendered_date = timerender.render_date(time, undefined, today);

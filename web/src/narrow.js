@@ -12,9 +12,11 @@ import * as compose_fade from "./compose_fade";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
+import * as feedback_widget from "./feedback_widget";
 import {Filter} from "./filter";
 import * as hash_parser from "./hash_parser";
-import * as hashchange from "./hashchange";
+import * as hash_util from "./hash_util";
+import {$t} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -26,8 +28,10 @@ import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
+import * as message_scroll_state from "./message_scroll_state";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
+import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_history from "./narrow_history";
 import * as narrow_state from "./narrow_state";
@@ -38,6 +42,7 @@ import * as pm_list from "./pm_list";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as resize from "./resize";
+import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
 import * as search from "./search";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
@@ -53,27 +58,7 @@ import * as util from "./util";
 import * as widgetize from "./widgetize";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
-
-export function save_pre_narrow_offset_for_reload() {
-    if (message_lists.current.selected_id() !== -1) {
-        if (message_lists.current.selected_row().length === 0) {
-            blueslip.debug("narrow.activate missing selected row", {
-                selected_id: message_lists.current.selected_id(),
-                selected_idx: message_lists.current.selected_idx(),
-                selected_idx_exact: message_lists.current
-                    .all_messages()
-                    .indexOf(message_lists.current.get(message_lists.current.selected_id())),
-                render_start: message_lists.current.view._render_win_start,
-                render_end: message_lists.current.view._render_win_end,
-            });
-        }
-        message_lists.current.pre_narrow_offset = message_lists.current
-            .selected_row()
-            .get_offset_to_window().top;
-    }
-}
-
-export let has_shown_message_list_view = false;
+export let has_visited_all_messages = false;
 
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
@@ -84,10 +69,20 @@ export function reset_ui_state() {
     unread_ui.reset_unread_banner();
 }
 
-export function handle_middle_pane_transition() {
-    if (compose_state.composing) {
-        compose_recipient.update_narrow_to_recipient_visibility();
+export function changehash(newhash) {
+    if (browser_history.state.changing_hash) {
+        return;
     }
+    message_viewport.stop_auto_scrolling();
+    browser_history.set_hash(newhash);
+}
+
+export function save_narrow(operators) {
+    if (browser_history.state.changing_hash) {
+        return;
+    }
+    const new_hash = hash_util.operators_to_hash(operators);
+    changehash(new_hash);
 }
 
 export function activate(raw_operators, opts) {
@@ -338,7 +333,7 @@ export function activate(raw_operators, opts) {
             // We must instead be switching from another message view.
             // Save the scroll position in that message list, so that
             // we can restore it if/when we later navigate back to that view.
-            save_pre_narrow_offset_for_reload();
+            message_lists.save_pre_narrow_offset_for_reload();
         }
 
         // most users aren't going to send a bunch of a out-of-narrow messages
@@ -375,7 +370,7 @@ export function activate(raw_operators, opts) {
         // populating the new narrow, so we update our narrow_state.
         // From here on down, any calls to the narrow_state API will
         // reflect the upcoming narrow.
-        has_shown_message_list_view = true;
+        narrow_state.set_has_shown_message_list_view();
         narrow_state.set_current_filter(filter);
 
         const excludes_muted_topics = narrow_state.excludes_muted_topics();
@@ -479,7 +474,7 @@ export function activate(raw_operators, opts) {
         // Disabled when the URL fragment was the source
         // of this narrow.
         if (opts.change_hash) {
-            hashchange.save_narrow(operators);
+            save_narrow(operators);
         }
 
         handle_post_view_change(msg_list);
@@ -490,7 +485,7 @@ export function activate(raw_operators, opts) {
 
         // It is important to call this after other important updates
         // like narrow filter and compose recipients happen.
-        handle_middle_pane_transition();
+        compose_recipient.handle_middle_pane_transition();
 
         const post_span = span.startChild({
             op: "function",
@@ -779,7 +774,23 @@ export function narrow_to_next_topic(opts = {}) {
         topic: narrow_state.topic(),
     };
 
-    const next_narrow = topic_generator.get_next_topic(curr_info.stream, curr_info.topic);
+    const next_narrow = topic_generator.get_next_topic(
+        curr_info.stream,
+        curr_info.topic,
+        opts.only_followed_topics,
+    );
+
+    if (!next_narrow && opts.only_followed_topics) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text(
+                    $t({defaultMessage: "You have no unread messages in followed topics."}),
+                );
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
+        return;
+    }
 
     if (!next_narrow) {
         return;
@@ -932,12 +943,15 @@ export function to_compose_target() {
 
 function handle_post_view_change(msg_list) {
     const filter = msg_list.data.filter;
+    scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
 
     if (filter.contains_only_private_messages()) {
         compose_closed_ui.update_buttons_for_private();
+    } else if (filter.is_conversation_view() || filter.includes_full_stream_history()) {
+        compose_closed_ui.update_buttons_for_stream_views();
     } else {
-        compose_closed_ui.update_buttons_for_stream();
+        compose_closed_ui.update_buttons_for_non_stream_views();
     }
     compose_closed_ui.update_reply_recipient_label();
 
@@ -956,9 +970,13 @@ function handle_post_narrow_deactivate_processes(msg_list) {
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
+
+    // We may need to scroll to the selected message after swapping
+    // the currently displayed center panel to zhome.
+    message_viewport.maybe_scroll_to_selected();
 }
 
-export function deactivate(coming_from_all_messages = true, is_actively_scrolling = false) {
+export function deactivate() {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -975,17 +993,33 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
       message_lists.home in it.
      */
     search.clear_search_form();
-    // Both All messages and Recent Conversations have `undefined` filter.
-    // Return if already in the All message narrow.
-    if (narrow_state.filter() === undefined && coming_from_all_messages) {
+
+    const coming_from_recent_view = recent_view_util.is_visible();
+    const coming_from_inbox = inbox_util.is_visible();
+
+    if (coming_from_recent_view) {
+        recent_view_ui.hide();
+    } else if (coming_from_inbox) {
+        inbox_ui.hide();
+    } else if (narrow_state.filter() === undefined && has_visited_all_messages) {
+        // If we're already looking at the All messages view, exit without
+        // doing any work.
         return;
+    } else {
+        // We must instead be switching from another message view.
+        // Save the scroll position in that message list, so that
+        // we can restore it if/when we later navigate back to that view.
+        message_lists.save_pre_narrow_offset_for_reload();
     }
+
+    has_visited_all_messages = true;
+
     blueslip.debug("Unnarrowed");
 
-    if (is_actively_scrolling) {
+    if (message_scroll_state.actively_scrolling) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
-        // on an unnarrow. Wait a bit and try again once the scrolling is over.
+        // on an unnarrow. Wait a bit and try again once the scrolling is likely over.
         setTimeout(deactivate, 50);
         return;
     }
@@ -1008,7 +1042,7 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
         }
 
         narrow_state.reset_current_filter();
-        has_shown_message_list_view = true;
+        narrow_state.set_has_shown_message_list_view();
 
         $("body").removeClass("narrowed_view");
         $("#zfilt").removeClass("focused-message-list");
@@ -1018,8 +1052,8 @@ export function deactivate(coming_from_all_messages = true, is_actively_scrollin
         condense.condense_and_collapse($("#zhome div.message_row"));
 
         reset_ui_state();
-        handle_middle_pane_transition();
-        hashchange.save_narrow();
+        compose_recipient.handle_middle_pane_transition();
+        save_narrow();
 
         if (message_lists.current.selected_id() !== -1) {
             const preserve_pre_narrowing_screen_position =

@@ -1,9 +1,10 @@
 import $ from "jquery";
 
-import * as notifications from "./notifications";
+import * as audible_notifications from "./audible_notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
+import * as settings_components from "./settings_components";
 import * as settings_display from "./settings_display";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
@@ -49,24 +50,24 @@ export function update_page(property) {
     }
 
     const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
-    settings_org.set_input_element_value($input_elem, value);
+    settings_components.set_input_element_value($input_elem, value);
 }
 
 export function set_up() {
     const $container = $(realm_default_settings_panel.container);
-    const $notification_sound_elem = $("#realm-default-notification-sound-audio");
+    const $notification_sound_elem = $("audio#realm-default-notification-sound-audio");
     const $notification_sound_dropdown = $container.find(".setting_notification_sound");
 
     settings_display.set_up(realm_default_settings_panel);
 
-    notifications.update_notification_sound_source(
+    audible_notifications.update_notification_sound_source(
         $notification_sound_elem,
         realm_default_settings_panel.settings_object,
     );
 
     $notification_sound_dropdown.on("change", () => {
         const sound = $notification_sound_dropdown.val().toLowerCase();
-        notifications.update_notification_sound_source($notification_sound_elem, {
+        audible_notifications.update_notification_sound_source($notification_sound_elem, {
             notification_sound: sound,
         });
     });

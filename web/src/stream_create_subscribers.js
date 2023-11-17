@@ -57,8 +57,12 @@ export function create_handlers($container) {
         remove_user_ids([user_id]);
     });
 
+    const button_selector = ".add_subscribers_container button.add-subscriber-button";
     function add_users({pill_user_ids}) {
         add_user_ids(pill_user_ids);
+        // eslint-disable-next-line unicorn/no-array-callback-reference
+        const $pill_widget_button = $container.find(button_selector);
+        $pill_widget_button.prop("disabled", true);
         pill_widget.clear();
     }
 
@@ -66,7 +70,7 @@ export function create_handlers($container) {
         get_pill_widget: () => pill_widget,
         $parent_container: $container,
         pill_selector: ".add_subscribers_container .input",
-        button_selector: ".add_subscribers_container button.add-subscriber-button",
+        button_selector,
         action: add_users,
     });
 }

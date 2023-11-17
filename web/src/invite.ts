@@ -11,9 +11,9 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
@@ -106,8 +106,15 @@ function submit_invitation_form(): void {
         data,
         beforeSend,
         success() {
+            const number_of_invites_sent = $invitee_emails.val()!.split(/[\n,]/).length;
             ui_report.success(
-                $t_html({defaultMessage: "User(s) invited successfully."}),
+                $t_html(
+                    {
+                        defaultMessage:
+                            "{N, plural, one {User invited successfully.} other {Users invited successfully.}}",
+                    },
+                    {N: number_of_invites_sent},
+                ),
                 $invite_status,
             );
             $invitee_emails.val("");
@@ -185,7 +192,16 @@ function generate_multiuse_invite(): void {
         success(data) {
             const copy_link_html = copy_invite_link(data);
             ui_report.success(copy_link_html, $invite_status);
-            new ClipboardJS("#copy_generated_invite_link");
+            const clipboard = new ClipboardJS("#copy_generated_invite_link");
+
+            clipboard.on("success", () => {
+                const tippy_timeout_in_ms = 800;
+                show_copied_confirmation(
+                    $("#copy_generated_invite_link")[0],
+                    () => {},
+                    tippy_timeout_in_ms,
+                );
+            });
         },
         error(xhr) {
             ui_report.error("", xhr, $invite_status);
@@ -275,8 +291,6 @@ function set_streams_to_join_list_visibility(): void {
 function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
     e.stopPropagation();
     e.preventDefault();
-
-    gear_menu.close();
 
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({

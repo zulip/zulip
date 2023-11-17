@@ -5,6 +5,7 @@ import orjson
 from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 from django.test import Client
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.webhooks.common import standardize_headers
@@ -30,6 +31,7 @@ not contain any spaces in them and that you use the precise quoting
 approach shown above.
 """
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "-f", "--fixture", help="The path to the fixture you'd like to send into Zulip"
@@ -61,6 +63,7 @@ approach shown above.
             )
         return standardize_headers(custom_headers_dict)
 
+    @override
     def handle(self, *args: Any, **options: Optional[str]) -> None:
         if options["fixture"] is None or options["url"] is None:
             self.print_help("./manage.py", "send_webhook_fixture_message")

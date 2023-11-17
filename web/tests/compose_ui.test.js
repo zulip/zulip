@@ -6,6 +6,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
+const {page_params} = require("./lib/zpage_params");
 
 const noop = () => {};
 
@@ -80,6 +81,8 @@ function make_textbox(s) {
         return $widget.s;
     };
 
+    $widget.trigger = noop;
+
     return $widget;
 }
 
@@ -99,9 +102,9 @@ run_test("autosize_textarea", ({override}) => {
 });
 
 run_test("insert_syntax_and_focus", ({override}) => {
-    $("#compose-textarea").val("xyz ");
-    $("#compose-textarea").caret = () => 4;
-    $("#compose-textarea")[0] = "compose-textarea";
+    $("textarea#compose-textarea").val("xyz ");
+    $("textarea#compose-textarea").caret = () => 4;
+    $("textarea#compose-textarea")[0] = "compose-textarea";
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
     override(text_field_edit, "insert", (elt, syntax) => {
@@ -185,7 +188,7 @@ run_test("replace_syntax", ({override}) => {
 run_test("compute_placeholder_text", () => {
     let opts = {
         message_type: "stream",
-        stream_id: "",
+        stream_id: undefined,
         topic: "",
         private_message_recipient: "",
     };
@@ -214,7 +217,7 @@ run_test("compute_placeholder_text", () => {
     // direct message narrows
     opts = {
         message_type: "private",
-        stream_id: "",
+        stream_id: undefined,
         topic: "",
         private_message_recipient: "",
     };
@@ -244,7 +247,20 @@ run_test("compute_placeholder_text", () => {
     opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Message Alice, Bob"}),
+        $t({defaultMessage: "Message Alice and Bob"}),
+    );
+
+    alice.is_guest = true;
+    page_params.realm_enable_guest_user_indicator = true;
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message translated: Alice (guest) and Bob"}),
+    );
+
+    page_params.realm_enable_guest_user_indicator = false;
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message Alice and Bob"}),
     );
 });
 
@@ -282,11 +298,11 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     let textarea_val = "";
     let textarea_caret_pos;
 
-    $("#compose-textarea").val = function () {
+    $("textarea#compose-textarea").val = function () {
         return textarea_val;
     };
 
-    $("#compose-textarea").caret = function (arg) {
+    $("textarea#compose-textarea").caret = function (arg) {
         if (arg === undefined) {
             return textarea_caret_pos;
         }
@@ -312,7 +328,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
             return this;
         }
     };
-    $("#compose-textarea")[0] = "compose-textarea";
+    $("textarea#compose-textarea")[0] = "compose-textarea";
     override(text_field_edit, "insert", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
@@ -323,7 +339,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         content = content.slice(0, caret_position) + content.slice(caret_position + 1); // remove the "%"
         textarea_val = content;
         textarea_caret_pos = caret_position;
-        $("#compose-textarea").trigger("focus");
+        $("textarea#compose-textarea").trigger("focus");
     }
 
     function reset_test_state() {
@@ -333,7 +349,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         // Reset compose-box state.
         textarea_val = "";
         textarea_caret_pos = 0;
-        $("#compose-textarea").trigger("blur");
+        $("textarea#compose-textarea").trigger("blur");
     }
 
     function override_with_quote_text(quote_text) {
@@ -379,7 +395,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         // Reset compose state to replicate the re-opening of compose-box.
         textarea_val = "";
         textarea_caret_pos = 0;
-        $("#compose-textarea").trigger("focus");
+        $("textarea#compose-textarea").trigger("focus");
     });
 
     reset_test_state();
@@ -483,41 +499,44 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     assert.ok(!compose_box_top_set);
 });
 
-run_test("format_text", ({override}) => {
-    let set_text = "";
-    let wrap_selection_called = false;
-    let wrap_syntax = "";
+let set_text = "";
+let wrap_selection_called = false;
+let wrap_syntax_start = "";
+let wrap_syntax_end = "";
 
+function reset_state() {
+    set_text = "";
+    wrap_selection_called = false;
+    wrap_syntax_start = "";
+    wrap_syntax_end = "";
+}
+
+const $textarea = $("textarea#compose-textarea");
+$textarea.get = () => ({
+    setSelectionRange(start, end) {
+        $textarea.range = () => ({
+            start,
+            end,
+            text: $textarea.val().slice(start, end),
+            length: end - start,
+        });
+    },
+});
+
+function init_textarea(val, range) {
+    $textarea.val = () => val;
+    $textarea.range = () => range;
+}
+
+run_test("format_text - bold and italic", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
         set_text = text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax) => {
+    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
         wrap_selection_called = true;
-        wrap_syntax = syntax;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end || syntax_start;
     });
-
-    function reset_state() {
-        set_text = "";
-        wrap_selection_called = false;
-        wrap_syntax = "";
-    }
-
-    const $textarea = $("#compose-textarea");
-    $textarea.get = () => ({
-        setSelectionRange(start, end) {
-            $textarea.range = () => ({
-                start,
-                end,
-                text: $textarea.val().slice(start, end),
-                length: end - start,
-            });
-        },
-    });
-
-    function init_textarea(val, range) {
-        $textarea.val = () => val;
-        $textarea.range = () => range;
-    }
 
     const italic_syntax = "*";
     const bold_syntax = "**";
@@ -533,7 +552,8 @@ run_test("format_text", ({override}) => {
     compose_ui.format_text($textarea, "bold");
     assert.equal(set_text, "");
     assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax, bold_syntax);
+    assert.equal(wrap_syntax_start, bold_syntax);
+    assert.equal(wrap_syntax_end, bold_syntax);
 
     // Undo bold selected text, syntax not selected
     reset_state();
@@ -570,7 +590,8 @@ run_test("format_text", ({override}) => {
     compose_ui.format_text($textarea, "italic");
     assert.equal(set_text, "");
     assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax, italic_syntax);
+    assert.equal(wrap_syntax_start, italic_syntax);
+    assert.equal(wrap_syntax_end, italic_syntax);
 
     // Undo italic selected text, syntax not selected
     reset_state();
@@ -766,7 +787,7 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         event.key = "b";
         event.ctrlKey = isCtrl;
         event.metaKey = isCmd;
-        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "bold");
         format_text_type = undefined;
 
@@ -776,7 +797,7 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         // We use event.key = "I" to emulate user using Caps Lock key.
         event.key = "I";
         event.shiftKey = false;
-        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "italic");
         format_text_type = undefined;
 
@@ -785,7 +806,7 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         // Windows/Linux = Ctrl+Shift+L
         event.key = "l";
         event.shiftKey = true;
-        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "link");
         format_text_type = undefined;
     }
@@ -799,17 +820,17 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         event.metaKey = isCmd;
 
         event.key = "b";
-        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, undefined);
 
         event.key = "i";
         event.shiftKey = false;
-        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, undefined);
 
         event.key = "l";
         event.shiftKey = true;
-        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, undefined);
     }
 
@@ -838,7 +859,7 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
 });
 
 run_test("right-to-left", () => {
-    const $textarea = $("#compose-textarea");
+    const $textarea = $("textarea#compose-textarea");
 
     const event = {
         key: "A",
@@ -847,7 +868,7 @@ run_test("right-to-left", () => {
     assert.equal($textarea.hasClass("rtl"), false);
 
     $textarea.val("```quote\nمرحبا");
-    compose_ui.handle_keyup(event, $("#compose-textarea"));
+    compose_ui.handle_keyup(event, $("textarea#compose-textarea"));
 
     assert.equal($textarea.hasClass("rtl"), true);
 
@@ -864,23 +885,23 @@ run_test("get_focus_area", () => {
         get_focus_area("private", {
             private_message_recipient: "bob@example.com",
         }),
-        "#compose-textarea",
+        "textarea#compose-textarea",
     );
     assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget_wrapper");
     assert.equal(
         get_focus_area("stream", {stream_name: "fun", stream_id: 4}),
-        "#stream_message_recipient_topic",
+        "input#stream_message_recipient_topic",
     );
     assert.equal(
         get_focus_area("stream", {stream_name: "fun", stream_id: 4, topic: "more"}),
-        "#compose-textarea",
+        "textarea#compose-textarea",
     );
     assert.equal(
         get_focus_area("stream", {
             stream_id: 4,
             topic: "more",
-            trigger: "new topic button",
+            trigger: "clear topic button",
         }),
-        "#stream_message_recipient_topic",
+        "input#stream_message_recipient_topic",
     );
 });

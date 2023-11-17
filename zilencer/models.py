@@ -1,8 +1,12 @@
+# https://github.com/typeddjango/django-stubs/issues/1698
+# mypy: disable-error-code="explicit-override"
+
 from typing import List, Tuple
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from typing_extensions import override
 
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
@@ -49,6 +53,7 @@ class RemoteZulipServer(models.Model):
     # The current billing plan for the remote server, similar to Realm.plan_type.
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
+    @override
     def __str__(self) -> str:
         return f"{self.hostname} {str(self.uuid)[0:12]}"
 
@@ -74,8 +79,44 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
             ("server", "user_uuid", "kind", "token"),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.user_id}"
+
+
+class RemoteRealm(models.Model):
+    """
+    Each object corresponds to a single remote Realm that is using the
+    Mobile Push Notifications Service via `manage.py register_server`.
+    """
+
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+
+    # The unique UUID and secret for this realm.
+    uuid = models.UUIDField(unique=True)
+    uuid_owner_secret = models.TextField()
+
+    # Value obtained's from the remote server's realm.host.
+    host = models.TextField()
+
+    # The fields below are analogical to RemoteZulipServer fields.
+
+    last_updated = models.DateTimeField("last updated", auto_now=True)
+
+    # Whether the realm registration has been deactivated.
+    registration_deactivated = models.BooleanField(default=False)
+    # Whether the realm has been deactivated on the remote server.
+    realm_deactivated = models.BooleanField(default=False)
+
+    # When the realm was created on the remote server.
+    realm_date_created = models.DateTimeField()
+
+    # Plan types for self-hosted customers
+    PLAN_TYPE_SELF_HOSTED = 1
+    PLAN_TYPE_STANDARD = 102
+
+    # The current billing plan for the remote server, similar to Realm.plan_type.
+    plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED, db_index=True)
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
@@ -90,6 +131,7 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
 
@@ -100,10 +142,15 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     """
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id = models.IntegerField()
-    # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField()
 
+    # For pre-8.0 servers, we might only have the realm ID.
+    realm_id = models.IntegerField()
+    # With newer servers, we can link to the RemoteRealm object.
+    remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
+    # The remote_id field lets us deduplicate data from the remote server
+    remote_id = models.IntegerField(null=True)
+
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
 
@@ -122,11 +169,21 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
         ]
 
 
-class RemoteInstallationCount(BaseCount):
+class BaseRemoteCount(BaseCount):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField(db_index=True)
+    # The remote_id field is the id value of the corresponding *Count object
+    # on the remote server.
+    # It lets us deduplicate data from the remote server.
+    # Note: Some counts don't come from the remote server, but rather
+    # are stats we track on the bouncer server itself, pertaining to the remote server.
+    # E.g. mobile_pushes_received::day. Such counts will set this field to None.
+    remote_id = models.IntegerField(null=True)
 
+    class Meta:
+        abstract = True
+
+
+class RemoteInstallationCount(BaseRemoteCount):
     class Meta:
         unique_together = ("server", "property", "subgroup", "end_time")
         indexes = [
@@ -136,16 +193,21 @@ class RemoteInstallationCount(BaseCount):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.property} {self.subgroup} {self.value}"
 
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
-class RemoteRealmCount(BaseCount):
-    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id = models.IntegerField()
-    # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField()
+class RemoteRealmCount(BaseRemoteCount):
+    realm_id = models.IntegerField(null=True)
+    # Certain RemoteRealmCount will be counts tracked on the bouncer server directly, about
+    # stats pertaining to a realm on a remote server. For such objects, we will link to
+    # the corresponding RemoteRealm object that the remote server registered with us.
+    # In the future we may be able to link all RemoteRealmCount objects to a RemoteRealm,
+    # including the RemoteRealmCount objects are results of just syncing the RealmCount
+    # table from the remote server.
+    remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
@@ -160,6 +222,7 @@ class RemoteRealmCount(BaseCount):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.realm_id} {self.property} {self.subgroup} {self.value}"
 
@@ -178,8 +241,10 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
         self.domain = domain
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:<{self.uuid}>:{self.domain}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return rate_limiter_rules[self.domain]

@@ -41,9 +41,7 @@ const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
     toggle_emoji_popover() {},
 });
-const gear_menu = mock_esm("../src/gear_menu", {
-    is_open: () => false,
-});
+const gear_menu = mock_esm("../src/gear_menu");
 const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
 const message_actions_popover = mock_esm("../src/message_actions_popover");
@@ -55,17 +53,18 @@ const narrow_state = mock_esm("../src/narrow_state", {
     is_message_feed_visible: () => true,
 });
 const navigate = mock_esm("../src/navigate");
+const modals = mock_esm("../src/modals", {
+    any_active: () => false,
+    active_modal: () => undefined,
+});
 const overlays = mock_esm("../src/overlays", {
-    is_active: () => false,
+    any_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
     lightbox_open: () => false,
     drafts_open: () => false,
     scheduled_messages_open: () => false,
     info_overlay_open: () => false,
-    is_modal_open: () => false,
-    active_modal: () => undefined,
-    is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../src/user_card_popover", {
     manage_menu: {
@@ -183,6 +182,7 @@ run_test("mappings", () => {
     assert.equal(map_down(13).name, "enter");
     assert.equal(map_down(46).name, "delete");
     assert.equal(map_down(13, true).name, "enter");
+    assert.equal(map_down(78, true).name, "narrow_to_next_unread_followed_topic");
 
     assert.equal(map_press(47).name, "search"); // slash
     assert.equal(map_press(106).name, "vim_down"); // j
@@ -232,11 +232,15 @@ run_test("mappings", () => {
     navigator.platform = "";
 });
 
-function process(s) {
+function process(s, shiftKey, keydown = false) {
     const e = {
         which: s.codePointAt(0),
+        shiftKey,
     };
     try {
+        if (keydown) {
+            return hotkey.process_keydown(e);
+        }
         return hotkey.process_keypress(e);
     } catch (error) /* istanbul ignore next */ {
         // An exception will be thrown here if a different
@@ -248,9 +252,9 @@ function process(s) {
     }
 }
 
-function assert_mapping(c, module, func_name, shiftKey) {
+function assert_mapping(c, module, func_name, shiftKey, keydown) {
     stubbing(module, func_name, (stub) => {
-        assert.ok(process(c, shiftKey));
+        assert.ok(process(c, shiftKey, keydown));
         assert.equal(stub.num_calls, 1);
     });
 }
@@ -286,14 +290,14 @@ run_test("allow normal typing when processing text", ({override, override_rewire
     override_rewire(hotkey, "processing_text", () => true);
 
     let settings_open;
-    let is_active;
+    let any_active;
     let info_overlay_open;
-    override(overlays, "is_active", () => is_active);
+    override(overlays, "any_active", () => any_active);
     override(overlays, "settings_open", () => settings_open);
     override(overlays, "info_overlay_open", () => info_overlay_open);
 
     for (settings_open of [true, false]) {
-        for (is_active of [true, false]) {
+        for (any_active of [true, false]) {
             for (info_overlay_open of [true, false]) {
                 test_normal_typing();
             }
@@ -306,7 +310,7 @@ run_test("streams", ({override}) => {
     delete settings_data.user_can_create_public_streams;
     delete settings_data.user_can_create_web_public_streams;
     override(overlays, "streams_open", () => true);
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     assert_mapping("S", stream_settings_ui, "keyboard_sub");
     assert_mapping("V", stream_settings_ui, "view_stream");
     assert_mapping("n", stream_settings_ui, "open_create_stream");
@@ -328,28 +332,28 @@ run_test("basic mappings", () => {
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", narrow, "by");
-    assert_mapping("g", gear_menu, "open");
+    assert_mapping("g", gear_menu, "toggle");
 });
 
 run_test("drafts open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
 run_test("drafts closed w/other overlay", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
 run_test("drafts closed launch", ({override}) => {
-    override(overlays, "is_active", () => false);
+    override(overlays, "any_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
 });
 
 run_test("modal open", ({override}) => {
-    override(overlays, "is_modal_open", () => true);
+    override(modals, "any_active", () => true);
     test_normal_typing();
 });
 
@@ -408,19 +412,19 @@ run_test("misc", ({override}) => {
 });
 
 run_test("lightbox overlay open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
 run_test("lightbox closed w/other overlay open", ({override}) => {
-    override(overlays, "is_active", () => true);
+    override(overlays, "any_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
 run_test("v w/no overlays", ({override}) => {
-    override(overlays, "is_active", () => false);
+    override(overlays, "any_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
@@ -441,6 +445,10 @@ run_test("n/p keys", () => {
     assert_mapping("n", narrow, "narrow_to_next_topic");
     assert_mapping("p", narrow, "narrow_to_next_pm_string");
     assert_mapping("n", narrow, "narrow_to_next_topic");
+});
+
+run_test("narrow next unread followed topic", () => {
+    assert_mapping("N", narrow, "narrow_to_next_topic", true, true);
 });
 
 run_test("motion_keys", () => {
@@ -538,10 +546,10 @@ run_test("motion_keys", () => {
     assert_unmapped("spacebar");
     delete overlays.settings_open;
 
-    delete overlays.is_active;
+    delete overlays.any_active;
     overlays.drafts_open = () => true;
     assert_mapping("up_arrow", drafts_overlay_ui, "handle_keyboard_events");
     assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
-    delete overlays.is_active;
+    delete overlays.any_active;
     delete overlays.drafts_open;
 });

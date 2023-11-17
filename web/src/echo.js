@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as local_message from "./local_message";
@@ -11,7 +12,6 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -84,15 +84,13 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
     message.queue_id = page_params.queue_id;
     message.resend = true;
 
-    const local_id = message.local_id;
-
     function on_success(data) {
         const message_id = data.id;
-        const locally_echoed = true;
+        message.locally_echoed = true;
 
         hide_retry_spinner($row);
 
-        on_send_message_success(local_id, message_id, locally_echoed);
+        on_send_message_success(message, data);
 
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);
@@ -363,7 +361,7 @@ export function reify_message_id(local_id, server_id) {
 
     message_store.reify_message_id(opts);
     update_message_lists(opts);
-    notifications.reify_message_id(opts);
+    compose_notifications.reify_message_id(opts);
     recent_view_data.reify_message_id_if_available(opts);
 }
 

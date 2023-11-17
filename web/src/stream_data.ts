@@ -347,7 +347,7 @@ export function get_streams_for_user(user_id: number): {
         }
         if (is_user_subscribed(sub.stream_id, user_id)) {
             subscribed_subs.push(sub);
-        } else if (can_subscribe_others(sub)) {
+        } else if (can_subscribe_user(sub, user_id)) {
             can_subscribe_subs.push(sub);
         }
     }
@@ -502,6 +502,13 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     );
 }
 
+export function can_access_stream_email(sub: StreamSubscription): boolean {
+    return (
+        (sub.subscribed || sub.is_web_public || (!page_params.is_guest && !sub.invite_only)) &&
+        !page_params.is_spectator
+    );
+}
+
 export function can_access_topic_history(sub: StreamSubscription): boolean {
     // Anyone can access topic history for web-public streams and
     // subscriptions; additionally, members can access history for
@@ -530,6 +537,14 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         (!sub.invite_only || sub.subscribed) &&
         settings_data.user_can_subscribe_other_users()
     );
+}
+
+export function can_subscribe_user(sub: StreamSubscription, user_id: number): boolean {
+    if (people.is_my_user_id(user_id)) {
+        return can_toggle_subscription(sub);
+    }
+
+    return can_subscribe_others(sub);
 }
 
 export function can_unsubscribe_others(sub: StreamSubscription): boolean {
@@ -668,7 +683,7 @@ export function is_default_stream_id(stream_id: number): boolean {
 
 export function get_name(stream_name: string): string {
     // This returns the actual name of a stream if we are subscribed to
-    // it (i.e "Denmark" vs. "denmark"), while falling thru to
+    // it (e.g. "Denmark" vs. "denmark"), while falling thru to
     // stream_name if we don't have a subscription.  (Stream names
     // are case-insensitive, but we try to display the actual name
     // when we know it.)

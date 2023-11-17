@@ -24,6 +24,12 @@
         {{~ primary ~}}
     {{/if}}
 </strong>
+{{~#if has_pronouns}}
+    <span class="pronouns">({{pronouns}})</span>
+{{~/if}}
+{{~#if should_add_guest_user_indicator}}
+    <i>({{t 'guest'}})</i>
+{{~/if}}
 {{~#if has_status}}
 {{> status_emoji status_emoji_info}}
 {{~/if}}

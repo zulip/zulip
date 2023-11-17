@@ -6,6 +6,7 @@ from typing import Any
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.management.base import CommandParser
 from django.http import HttpRequest, HttpResponseBase
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.request import RequestNotes
@@ -34,10 +35,12 @@ def profile_request(request: HttpRequest) -> HttpResponseBase:
 
 
 class Command(ZulipBaseCommand):
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("email", metavar="<email>", help="Email address of the user")
         self.add_realm_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         user = self.get_user(options["email"], realm)

@@ -2,7 +2,9 @@ Get Intercom notifications in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to your Intercom account's **Settings** page and click on **Developers**
    on the left sidebar. Click on **Developer Hub** and click **New app**.

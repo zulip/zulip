@@ -17,7 +17,9 @@ mock_esm("../src/resize", {
     resize_stream_filters_container: noop,
 });
 
-const popovers = mock_esm("../src/popovers");
+const popovers = mock_esm("../src/popovers", {
+    hide_all: noop,
+});
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const stream_list = zrequire("stream_list");
@@ -78,11 +80,6 @@ run_test("basics", ({override_rewire}) => {
     }
 
     function verify_focused() {
-        assert.ok(stream_list.searching());
-        assert.ok($input.is_focused());
-    }
-
-    function verify_blurred() {
         assert.ok(stream_list.searching());
         assert.ok($input.is_focused());
     }
@@ -161,8 +158,8 @@ run_test("basics", ({override_rewire}) => {
 
     // Escape a non-empty search.
     $input.val("foo");
-    stream_list.escape_search();
-    verify_blurred();
+    stream_list.clear_and_hide_search();
+    verify_collapsed();
 
     // Expand the widget.
     toggle_filter();
@@ -170,7 +167,7 @@ run_test("basics", ({override_rewire}) => {
 
     // Escape an empty search.
     $input.val("");
-    stream_list.escape_search();
+    stream_list.clear_and_hide_search();
     verify_collapsed();
 });
 
@@ -188,5 +185,9 @@ run_test("expanding_sidebar", () => {
 
     stream_list.initiate_search();
 
-    assert.deepEqual(events, ["popovers.hide_all", "sidebar_ui.show_streamlist_sidebar"]);
+    assert.deepEqual(events, [
+        "popovers.hide_all",
+        "popovers.hide_all",
+        "sidebar_ui.show_streamlist_sidebar",
+    ]);
 });

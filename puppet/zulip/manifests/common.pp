@@ -50,28 +50,28 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.4.4',
-      'goversion' => '1206',
+      'version'   => '2.4.6',
+      'goversion' => '1213',
       'sha256'    => {
-        'amd64'   => 'f726c6e4abfbb0c3cedf05fc0a0b440c2a8056b478d9c62780f682b5a49c6300',
-        'aarch64' => 'a726820e958b827a2801c7f9f13d30757e4d2677276dbd48d998479f21ec06f2',
+        'amd64'   => '41a494c4d071e2cc79b5d3924e585afa2918360362bd8e85ef10de0952ce464d',
+        'aarch64' => '124f9e04b67547048fbdbeaf2c939ac80caa49c2dd48f5f94cbd42f22cb137e7',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.21.0',
+      'version' => '1.21.3',
       'sha256'  => {
-        'amd64'   => 'd0398903a16ba2232b389fb31032ddf57cac34efda306a0eebac34f0965a0742',
-        'aarch64' => 'f3d4548edf9b22f26bbd49720350bbfe59d75b7090a1a2bff1afad8214febaf3',
+        'amd64'   => '1241381b2843fae5a9707eec1f8fb2ef94d827990582c7c7c32f5bdfbfd420c8',
+        'aarch64' => 'fc90fa48ae97ba6368eecb914343590bbb61b388089510d0c56c2dde52987ef3',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '604044bb230850769d34a83881c866e5cc1b0f59',
+      'version' => 'c86310d7000dcb9865fcd25ff3c8455c1603f7fa',
       # Source code, so arch-invariant sha256
-      'sha256'  => '27b754963eef761be482a626627996031b2d743f6b1ec2694576682db4ef6224',
+      'sha256'  => 'db8c6c08bb0c5a88449d0cda5f361f9e6a25427d73eeaab4563b9435665e81b4',
     },
 
     # https://github.com/wal-g/wal-g/releases
@@ -87,19 +87,19 @@ class zulip::common {
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.20.6',
+      'version' => '2.21.2',
       'sha256'  => {
-        'amd64'   => '043c1480ede8e8e093070fa705e2723b2b556763e5c10eaa020e3923fad2da20',
-        'aarch64' => 'ab1d82b6eedf57527cb56d3ec2752f5ebc035e351895d966de4000f0d255a230',
+        'amd64'   => '0016d21b20d6b83fe10d514d10ca1dbed854e8694d71fada9749e702730ed728',
+        'aarch64' => 'aa6085a9b24e349dbcef301127aebc6e8c3adfa8389964df5e91d96b3fb92e08',
       },
     },
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '10.1.1',
+      'version' => '10.2.0',
       'sha256'  => {
-        'amd64'   => '4b8d22ba6419a08d631ddbd543683a774f62b39e257fcda83cd1089063075ec1',
-        'aarch64' => 'd5e2d468583ea8c858186d92967705dd9394add6978ceb06fa5b283e76bd7295',
+        'amd64'   => '284d36e955b194963346a4eaaf2e21f2f9b53485c1eec254b9ccfe5bfb357a81',
+        'aarch64' => 'd4e0d1507bc255994e913a5b8f55931609f0cd41919ad0966a487b0c41ec433c',
       },
     },
 
@@ -138,19 +138,19 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.46.0',
+      'version' => '2.47.2',
       'sha256'  => {
-        'amd64'   => 'd2177ea21a6f60046f9510c828d4f8969628cfd35686780b3898917ef9c268b9',
-        'aarch64' => 'f42513c9ef63d6bed652dfc2e986b49ebec714ed784ccaac78e20e0a2a5535bc',
+        'amd64'   => '6f48cd8d748cbb8e61d0cee825b63e80d8de370dc8ca19ff6eb0326f45f6e525',
+        'aarch64' => 'c8d9bac223b630c3e893e0793c99b3e9d35f6d62719193060cce31cab8a30528',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.53.0',
+      'version' => '1.55.0',
       'sha256'  => {
-        'amd64'   => '85d34fc0ecd4e602da7adf387ebe331688316071b0c2f3847dda5caa97794c48',
-        'aarch64' => '57bea0a929eeaf4688d49ccfc7aa629693569639582a58ada04c17cf144626ea',
+        'amd64'   => '9c0012dff5c0008f07ae126a6db81789e0f93a259c99889485cef9ea33edc585',
+        'aarch64' => '938b774f60b677f72108c2246ebfda23fe803f1c158ff23e049c2c2a7b52937b',
       },
     },
 
@@ -160,6 +160,15 @@ class zulip::common {
       'sha256'  => {
         'amd64'   => 'f83411b508676237bbd1b791c1bdc043a68bf914c7e48e005e2e295255f9245f',
         'aarch64' => 'ab7c9298d2fe5c5f58e3fe7c905929e93979d2b3b11c75eb8ba6ccc7a547238c',
+      },
+    },
+
+    # https://vector.dev/download/
+    'vector' => {
+      'version' => '0.34.0',
+      'sha256'  => {
+        'amd64'   => '3a39e712da43126262db878c3ae7647b23aac88834dea2763cc84269cb3c0206',
+        'aarch64' => '57acc628c495882e2ace787ac804e7bab57e42ae322fcc4e3861cd5a106a1323',
       },
     },
   }

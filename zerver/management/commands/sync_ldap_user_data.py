@@ -5,6 +5,7 @@ from typing import Any, Collection
 from django.conf import settings
 from django.core.management.base import CommandError
 from django.db import transaction
+from typing_extensions import override
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import ZulipBaseCommand
@@ -62,6 +63,7 @@ def sync_ldap_user_data(
 
 
 class Command(ZulipBaseCommand):
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "-f",
@@ -73,6 +75,7 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser)
         self.add_user_list_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         if options.get("realm_id") is not None:
             realm = self.get_realm(options)

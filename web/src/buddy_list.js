@@ -10,7 +10,7 @@ import * as padded_widget from "./padded_widget";
 import * as scroll_util from "./scroll_util";
 
 class BuddyListConf {
-    container_sel = "#user_presences";
+    container_sel = "#buddy-list-users-matching-view";
     scroll_container_sel = "#buddy_list_wrapper";
     item_sel = "li.user_sidebar_entry";
     padding_sel = "#buddy_list_wrapper_padding";
@@ -35,8 +35,7 @@ class BuddyListConf {
         return Number.parseInt(opts.$li.expectOne().attr("data-user-id"), 10);
     }
 
-    get_data_from_keys(opts) {
-        const keys = opts.keys;
+    get_data_from_keys(keys) {
         const data = buddy_data.get_items_for_users(keys);
         return data;
     }
@@ -80,9 +79,7 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        const items = this.get_data_from_keys({
-            keys: more_keys,
-        });
+        const items = this.get_data_from_keys(more_keys);
 
         const html = this.items_to_html({
             items,

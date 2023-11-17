@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from django.http import HttpRequest
 from django.http.response import HttpResponse
+from typing_extensions import override
 
 from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
@@ -145,6 +146,7 @@ class WebhookURLConfigurationTestCase(WebhookTestCase):
     WEBHOOK_DIR_NAME = "helloworld"
     URL_TEMPLATE = "/api/v1/external/helloworld?stream={stream}&api_key={api_key}"
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         stream = self.subscribe(self.test_user, self.STREAM_NAME)
@@ -185,11 +187,13 @@ class MissingEventHeaderTestCase(WebhookTestCase):
     # an actual webhook, instead of just making a mock
     def test_missing_event_header(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)
-        result = self.client_post(
-            self.url,
-            self.get_body("ticket_state_changed"),
-            content_type="application/x-www-form-urlencoded",
-        )
+        with self.assertLogs("zulip.zerver.webhooks.anomalous", level="INFO") as webhook_logs:
+            result = self.client_post(
+                self.url,
+                self.get_body("ticket_state_changed"),
+                content_type="application/x-www-form-urlencoded",
+            )
+        self.assertTrue("Missing the HTTP event header 'X-Groove-Event'" in webhook_logs.output[0])
         self.assert_json_error(result, "Missing the HTTP event header 'X-Groove-Event'")
 
         realm = get_realm("zulip")
@@ -211,5 +215,6 @@ class MissingEventHeaderTestCase(WebhookTestCase):
         self.assertEqual(msg.sender.id, notification_bot.id)
         self.assertEqual(msg.content, expected_message)
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("groove", fixture_name, file_type="json")

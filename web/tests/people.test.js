@@ -241,6 +241,17 @@ const all2 = {
     full_name: "all",
 };
 
+const stewie = {
+    email: "stewie@example.com",
+    user_id: 1204,
+    full_name: "Stewart Gilligan",
+    profile_data: {
+        1: "(888) 888-8888",
+        2: "(555) 555-5555",
+        3: "he/him",
+    },
+};
+
 // This is for error checking--never actually
 // tell people.js about this user.
 const invalid_user = {
@@ -470,16 +481,52 @@ test_people("get_display_full_names", () => {
     people.add_active_user(steven);
     people.add_active_user(bob);
     people.add_active_user(charles);
-    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id];
+    people.add_active_user(guest);
+    page_params.realm_enable_guest_user_indicator = true;
+
+    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
 
     // This doesn't do anything special for the current user. The caller has
     // to take care of such cases and do the appropriate.
-    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "Charles Dickens"]);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "Charles Dickens",
+        "translated: Guest User (guest)",
+    ]);
 
     muted_users.add_muted_user(charles.user_id);
+    page_params.realm_enable_guest_user_indicator = false;
     names = people.get_display_full_names(user_ids);
-    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "translated: Muted user"]);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "Guest User",
+    ]);
+
+    muted_users.add_muted_user(guest.user_id);
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "translated: Muted user",
+    ]);
+
+    page_params.realm_enable_guest_user_indicator = true;
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "translated: Muted user (guest)",
+    ]);
 });
 
 test_people("my_custom_profile_data", () => {
@@ -487,6 +534,45 @@ test_people("my_custom_profile_data", () => {
     person.profile_data = {3: "My address", 4: "My phone number"};
     assert.equal(people.my_custom_profile_data(3), "My address");
     assert.equal(people.my_custom_profile_data(4), "My phone number");
+});
+
+test_people("get_custom_fields_by_type", () => {
+    people.add_active_user(stewie);
+    const person = people.get_by_user_id(stewie.user_id);
+    page_params.custom_profile_field_types = {
+        SHORT_TEXT: {
+            id: 1,
+            name: "Short text",
+        },
+        PRONOUNS: {
+            id: 8,
+            name: "Pronouns",
+        },
+    };
+    page_params.custom_profile_fields = [
+        {
+            id: 1,
+            name: "Phone number (mobile)",
+            type: 1,
+        },
+        {
+            id: 2,
+            name: "Phone number (office)",
+            type: 1,
+        },
+        {
+            id: 3,
+            name: "Pronouns",
+            type: 8,
+        },
+    ];
+    const SHORT_TEXT_ID = 1;
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, SHORT_TEXT_ID), [
+        "(888) 888-8888",
+        "(555) 555-5555",
+    ]);
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 8), ["he/him"]);
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 100), []);
 });
 
 test_people("bot_custom_profile_data", () => {
@@ -1274,6 +1360,19 @@ test_people("get_realm_active_human_users", () => {
     humans = people.get_realm_active_human_users();
     assert.equal(humans.length, 1);
     assert.deepEqual(humans, [me]);
+});
+
+test_people("should_show_guest_user_indicator", () => {
+    people.add_active_user(charles);
+    people.add_active_user(guest);
+
+    page_params.realm_enable_guest_user_indicator = false;
+    assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
+    assert.equal(people.should_add_guest_user_indicator(guest.user_id), false);
+
+    page_params.realm_enable_guest_user_indicator = true;
+    assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
+    assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
 });
 
 // reset to native Date()

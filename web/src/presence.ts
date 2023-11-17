@@ -167,7 +167,7 @@ export function update_info_from_event(
 }
 
 export function set_info(
-    presences: Map<number, Omit<RawPresence, "server_timestamp">>,
+    presences: Record<number, Omit<RawPresence, "server_timestamp">>,
     server_timestamp: number,
 ): void {
     /*
@@ -278,7 +278,7 @@ export function last_active_date(user_id: number): Date | undefined {
 }
 
 export function initialize(params: {
-    presences: Map<number, Omit<RawPresence, "server_timestamp">>;
+    presences: Record<number, Omit<RawPresence, "server_timestamp">>;
     server_timestamp: number;
 }): void {
     set_info(params.presences, params.server_timestamp);

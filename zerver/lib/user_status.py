@@ -7,7 +7,6 @@ from zerver.models import UserStatus
 
 
 class UserInfoDict(TypedDict, total=False):
-    status: int
     status_text: str
     emoji_name: str
     emoji_code: str

@@ -75,7 +75,6 @@ subscription_fields: Sequence[Tuple[str, object]] = [
     ("audible_notifications", OptionalType(bool)),
     ("color", str),
     ("desktop_notifications", OptionalType(bool)),
-    ("email_address", str),
     ("email_notifications", OptionalType(bool)),
     ("in_home_view", bool),
     ("is_muted", bool),
@@ -644,15 +643,6 @@ bot_type_for_remove = DictType(
     ]
 )
 
-realm_bot_remove_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("realm_bot")),
-        ("op", Equals("remove")),
-        ("bot", bot_type_for_remove),
-    ]
-)
-check_realm_bot_remove = make_checker(realm_bot_remove_event)
-
 bot_type_for_update = DictType(
     required_keys=[
         ("user_id", int),
@@ -664,6 +654,7 @@ bot_type_for_update = DictType(
         ("default_events_register_stream", OptionalType(str)),
         ("default_sending_stream", OptionalType(str)),
         ("full_name", str),
+        ("is_active", bool),
         ("owner_id", int),
         ("services", bot_services_type),
     ],
@@ -999,7 +990,8 @@ night_logo_data = DictType(
 )
 
 group_setting_update_data_type = DictType(
-    required_keys=[], optional_keys=[("create_multiuse_invite_group", int)]
+    required_keys=[],
+    optional_keys=[("create_multiuse_invite_group", int), ("can_access_all_users_group", int)],
 )
 
 update_dict_data = UnionType(
@@ -1108,15 +1100,6 @@ removed_user_type = DictType(
     ]
 )
 
-realm_user_remove_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("realm_user")),
-        ("op", Equals("remove")),
-        ("person", removed_user_type),
-    ],
-)
-check_realm_user_remove = make_checker(realm_user_remove_event)
-
 custom_profile_field_type = DictType(
     required_keys=[
         ("id", int),
@@ -1188,6 +1171,12 @@ realm_user_person_types = dict(
             ("user_id", int),
             ("email", str),
             ("timezone", str),
+        ],
+    ),
+    is_active=DictType(
+        required_keys=[
+            ("user_id", int),
+            ("is_active", bool),
         ],
     ),
 )
@@ -1328,9 +1317,6 @@ def check_stream_update(
     if prop == "description":
         assert extra_keys == {"rendered_description"}
         assert isinstance(value, str)
-    elif prop == "email_address":
-        assert extra_keys == set()
-        assert isinstance(value, str)
     elif prop == "invite_only":
         assert extra_keys == {"history_public_to_subscribers", "is_web_public"}
         assert isinstance(value, bool)
@@ -1443,9 +1429,9 @@ typing_person_type = DictType(
     ]
 )
 
-equals_private_or_stream = EnumType(
+equals_direct_or_stream = EnumType(
     [
-        "private",
+        "direct",
         "stream",
     ]
 )
@@ -1454,7 +1440,7 @@ typing_start_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("start")),
-        ("message_type", equals_private_or_stream),
+        ("message_type", equals_direct_or_stream),
         ("sender", typing_person_type),
     ],
     optional_keys=[
@@ -1469,7 +1455,7 @@ typing_stop_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("stop")),
-        ("message_type", equals_private_or_stream),
+        ("message_type", equals_direct_or_stream),
         ("sender", typing_person_type),
     ],
     optional_keys=[

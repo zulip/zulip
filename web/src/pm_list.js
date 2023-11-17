@@ -5,7 +5,6 @@ import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
-import * as topic_zoom from "./topic_zoom";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
 
@@ -22,7 +21,7 @@ let zoomed = false;
 
 function get_private_messages_section_header() {
     return $(
-        ".private_messages_container #private_messages_section #private_messages_section_header",
+        ".direct-messages-container #private_messages_section #private_messages_section_header",
     );
 }
 
@@ -38,7 +37,7 @@ export function close() {
     update_private_messages();
 }
 
-export function _build_private_messages_list() {
+export function _build_direct_messages_list() {
     const conversations = pm_list_data.get_conversations();
     const pm_list_info = pm_list_data.get_list_info(zoomed);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
@@ -59,7 +58,7 @@ export function _build_private_messages_list() {
 }
 
 function set_dom_to(new_dom) {
-    const $container = scroll_util.get_content_element($("#private_messages_list"));
+    const $container = scroll_util.get_content_element($("#direct-messages-list"));
 
     function replace_content(html) {
         $container.html(html);
@@ -87,11 +86,11 @@ export function update_private_messages() {
             set_dom_to(new_dom);
         } else {
             // Otherwise, empty the section.
-            $(".pm-list").empty();
+            $(".dm-list").empty();
             prior_dom = undefined;
         }
     } else {
-        const new_dom = _build_private_messages_list();
+        const new_dom = _build_direct_messages_list();
         set_dom_to(new_dom);
     }
     // Make sure to update the left sidebar heights after updating
@@ -100,11 +99,6 @@ export function update_private_messages() {
 }
 
 export function expand() {
-    // Only one thing can be zoomed at a time.
-    if (topic_zoom.is_zoomed_in()) {
-        topic_zoom.zoom_out();
-    }
-
     private_messages_collapsed = false;
 
     $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
@@ -124,11 +118,11 @@ export function update_dom_with_unread_counts(counts) {
 }
 
 export function highlight_all_private_messages_view() {
-    $(".private_messages_container").addClass("active_private_messages_section");
+    $(".direct-messages-container").addClass("active_private_messages_section");
 }
 
 function unhighlight_all_private_messages_view() {
-    $(".private_messages_container").removeClass("active_private_messages_section");
+    $(".direct-messages-container").removeClass("active_private_messages_section");
 }
 
 function scroll_pm_into_view($target_li) {
@@ -193,11 +187,8 @@ export function toggle_private_messages_section() {
 
 function zoom_in() {
     zoomed = true;
-    if (topic_zoom.is_zoomed_in()) {
-        topic_zoom.zoom_out();
-    }
     update_private_messages();
-    $(".private_messages_container").removeClass("zoom-out").addClass("zoom-in");
+    $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
     $("#streams_list").hide();
     $(".left-sidebar .right-sidebar-items").hide();
 }
@@ -205,20 +196,20 @@ function zoom_in() {
 function zoom_out() {
     zoomed = false;
     update_private_messages();
-    $(".private_messages_container").removeClass("zoom-in").addClass("zoom-out");
+    $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
 }
 
 export function initialize() {
-    $(".private_messages_container").on("click", "#show_more_private_messages", (e) => {
+    $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
         zoom_in();
     });
 
-    $(".private_messages_container").on("click", "#hide_more_private_messages", (e) => {
+    $(".direct-messages-container").on("click", "#hide-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 

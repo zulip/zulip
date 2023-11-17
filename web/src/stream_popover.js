@@ -21,6 +21,7 @@ import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
+import * as stream_settings_components from "./stream_settings_components";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -31,16 +32,6 @@ import * as unread_ops from "./unread_ops";
 let stream_popover_instance = null;
 let stream_widget_value;
 let $stream_header_colorblock;
-
-// Keep the menu icon over which the popover is based off visible.
-function show_left_sidebar_menu_icon(element) {
-    $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
-}
-
-// Remove the class from element when popover is closed
-function hide_left_sidebar_menu_icon() {
-    $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
-}
 
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
@@ -78,7 +69,7 @@ export function is_open() {
 
 export function hide_stream_popover() {
     if (is_open()) {
-        hide_left_sidebar_menu_icon();
+        ui_util.hide_left_sidebar_menu_icon();
         stream_popover_instance.destroy();
         stream_popover_instance = null;
     }
@@ -122,7 +113,7 @@ function build_stream_popover(opts) {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            show_left_sidebar_menu_icon(elt);
+            ui_util.show_left_sidebar_menu_icon(elt);
 
             // Stream settings
             $popper.on("click", ".open_stream_settings", (e) => {
@@ -153,7 +144,10 @@ function build_stream_popover(opts) {
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
-                stream_settings_api.set_stream_property(sub, "is_muted", !sub.is_muted);
+                stream_settings_api.set_stream_property(sub, {
+                    property: "is_muted",
+                    value: !sub.is_muted,
+                });
                 e.stopPropagation();
             });
 
@@ -164,7 +158,7 @@ function build_stream_popover(opts) {
 
                 compose_actions.start("stream", {
                     trigger: "popover new topic button",
-                    stream: sub.name,
+                    stream_id: sub.stream_id,
                     topic: "",
                 });
                 e.preventDefault();
@@ -177,7 +171,7 @@ function build_stream_popover(opts) {
                 $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
                 const sub = stream_popover_sub(e);
-                stream_settings_ui.sub_or_unsub(sub);
+                stream_settings_components.sub_or_unsub(sub);
                 e.preventDefault();
                 e.stopPropagation();
             });

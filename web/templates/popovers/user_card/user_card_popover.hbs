@@ -1,9 +1,9 @@
 {{! Contents of the user card popover }}
-<div class="popover-title no-auto-hide-right-sidebar-overlay"></div>
-<div class="popover-content no-auto-hide-right-sidebar-overlay">
+<div class="user-card-popover-title no-auto-hide-right-sidebar-overlay"></div>
+<div class="user-card-popover-content no-auto-hide-right-sidebar-overlay">
     <ul class="nav nav-list user-card-popover-actions" id="user_card_popover" data-user-id="{{user_id}}">
         <li class="popover_user_name_row">
-            <b class="user_full_name" data-tippy-content="{{user_full_name}}">{{user_full_name}}</b>
+            <b class="user_full_name" data-tippy-content="{{user_full_name}}">{{> ../../user_full_name name=user_full_name}}</b>
             {{#if is_active }}
                 {{#if is_bot}}
                 <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
@@ -78,7 +78,7 @@
                     <span class="status_text">
                         {{status_text}}
                         {{#if is_me}}
-                        <span class="clear_status_button">(<a tabindex="0" class="clear_status">{{t "clear" }}</a>)</span>
+                        <span>(<a tabindex="0" class="user-card-clear-status-button">{{t "clear" }}</a>)</span>
                         {{/if}}
                     </span>
                 </span>

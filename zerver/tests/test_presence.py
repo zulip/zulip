@@ -5,6 +5,7 @@ from unittest import mock
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.presence import format_legacy_presence_dict, get_presence_dict_by_realm
@@ -110,11 +111,13 @@ class UserPresenceModelTests(ZulipTestCase):
 
 
 class UserPresenceTests(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         """
         Create some initial, old presence data to make the intended set up
         simpler for the tests.
         """
+        super().setUp()
         realm = get_realm("zulip")
         now = timezone_now()
         initial_presence = now - timedelta(days=365)

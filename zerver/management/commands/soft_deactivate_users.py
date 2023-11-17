@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import (
@@ -33,6 +34,7 @@ def get_users_from_emails(emails: List[str], filter_kwargs: Dict[str, Realm]) ->
 class Command(ZulipBaseCommand):
     help = """Soft activate/deactivate users. Users are recognised by their emails here."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument(
@@ -54,6 +56,7 @@ class Command(ZulipBaseCommand):
             help="A list of user emails to soft activate/deactivate.",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         if settings.STAGING:
             print("This is a Staging server. Suppressing management command.")

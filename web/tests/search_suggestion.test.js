@@ -95,7 +95,7 @@ test("basic_get_suggestions_for_spectator", () => {
 
     const query = "";
     const suggestions = get_suggestions(query);
-    assert.deepEqual(suggestions.strings, ["", "has:link", "has:image", "has:attachment"]);
+    assert.deepEqual(suggestions.strings, ["has:link", "has:image", "has:attachment"]);
     page_params.is_spectator = false;
 });
 
@@ -419,7 +419,6 @@ test("empty_query_suggestions", () => {
     const suggestions = get_suggestions(query);
 
     const expected = [
-        "",
         "streams:public",
         "is:dm",
         "is:starred",
@@ -853,6 +852,7 @@ test("people_suggestions", ({override, mock_template}) => {
         user_id: 202,
         full_name: "Bob Térry",
         avatar_url: example_avatar_url,
+        is_guest: false,
     };
 
     const alice = {
@@ -916,6 +916,31 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.equal(get_avatar_url("dm:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("dm-including:bob@zulip.com"), expectedString);
+
+    function get_should_add_guest_user_indicator(q) {
+        return suggestions.lookup_table.get(q).user_pill_context.should_add_guest_user_indicator;
+    }
+
+    page_params.realm_enable_guest_user_indicator = true;
+    suggestions = get_suggestions(query);
+
+    assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), false);
+    assert.equal(get_should_add_guest_user_indicator("sender:bob@zulip.com"), false);
+    assert.equal(get_should_add_guest_user_indicator("dm-including:bob@zulip.com"), false);
+
+    bob.is_guest = true;
+    suggestions = get_suggestions(query);
+
+    assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), true);
+    assert.equal(get_should_add_guest_user_indicator("sender:bob@zulip.com"), true);
+    assert.equal(get_should_add_guest_user_indicator("dm-including:bob@zulip.com"), true);
+
+    page_params.realm_enable_guest_user_indicator = false;
+    suggestions = get_suggestions(query);
+
+    assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), false);
+    assert.equal(get_should_add_guest_user_indicator("sender:bob@zulip.com"), false);
+    assert.equal(get_should_add_guest_user_indicator("dm-including:bob@zulip.com"), false);
 
     suggestions = get_suggestions("Ted "); // note space
 

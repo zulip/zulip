@@ -256,24 +256,45 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
         );
     }
 
-    if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+    if (sub.invite_only) {
         const sub_count = peer_data.get_subscriber_count(stream_id);
+        const unsubscribing_other_user = !people.is_my_user_id(target_user_id);
+
+        if (!people.is_my_user_id(target_user_id) && sub_count !== 1) {
+            // We do not show any confirmation modal if any other user is
+            // being unsubscribed and that user is not the last subscriber
+            // of that stream.
+            remove_user_from_private_stream();
+            return;
+        }
+
         const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({
             stream: sub,
         });
 
         const html_body = render_unsubscribe_private_stream_modal({
-            message: $t({
-                defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
-            }),
+            unsubscribing_other_user,
             display_stream_archive_warning: sub_count === 1,
         });
 
-        confirm_dialog.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Unsubscribe from <z-link></z-link>"},
+        let html_heading;
+        if (unsubscribing_other_user) {
+            html_heading = $t_html(
+                {defaultMessage: "Unsubscribe {full_name} from <z-link></z-link>?"},
+                {
+                    full_name: people.get_full_name(target_user_id),
+                    "z-link": () => stream_name_with_privacy_symbol_html,
+                },
+            );
+        } else {
+            html_heading = $t_html(
+                {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
-            ),
+            );
+        }
+
+        confirm_dialog.launch({
+            html_heading,
             html_body,
             on_click: remove_user_from_private_stream,
         });

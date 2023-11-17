@@ -30,7 +30,7 @@ export function handle(opts: {
     });
 }
 
-export function is_enter_event(event: JQuery.KeyDownEvent): boolean {
+export function is_enter_event(event: JQuery.KeyboardEventBase): boolean {
     // In addition to checking whether the key pressed was an Enter
     // key, we need to check whether the keypress was part of an IME
     // composing session, such as selecting a character using a

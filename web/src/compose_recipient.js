@@ -120,7 +120,7 @@ export function get_posting_policy_error_message() {
 export function check_posting_policy_for_compose_box() {
     const banner_text = get_posting_policy_error_message();
     if (banner_text === "") {
-        $(".compose_right_float_container").removeClass("disabled-compose-send-button-container");
+        $(".message-send-controls").removeClass("disabled-message-send-controls");
         compose_banner.clear_errors();
         return;
     }
@@ -129,7 +129,7 @@ export function check_posting_policy_for_compose_box() {
     if (compose_state.selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.private_messages_disabled;
     }
-    $(".compose_right_float_container").addClass("disabled-compose-send-button-container");
+    $(".message-send-controls").addClass("disabled-message-send-controls");
     compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
 }
 
@@ -165,14 +165,14 @@ function update_recipient_label(stream_id) {
 export function update_compose_for_message_type(message_type, opts) {
     if (message_type === "stream") {
         $("#compose-direct-recipient").hide();
-        $("#stream_message_recipient_topic").show();
+        $("#compose_recipient_box").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
         $("#compose-direct-recipient").show();
-        $("#stream_message_recipient_topic").hide();
+        $("#compose_recipient_box").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
@@ -295,13 +295,19 @@ function on_hidden_callback() {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
-        ui_util.place_caret_at_end($("#stream_message_recipient_topic")[0]);
+        ui_util.place_caret_at_end($("input#stream_message_recipient_topic")[0]);
     } else {
         if (compose_state.private_message_recipient().length === 0) {
             $("#private_message_recipient").trigger("focus").trigger("select");
         } else {
-            $("#compose-textarea").trigger("focus");
+            $("textarea#compose-textarea").trigger("focus");
         }
+    }
+}
+
+export function handle_middle_pane_transition() {
+    if (compose_state.composing) {
+        update_narrow_to_recipient_visibility();
     }
 }
 
@@ -333,7 +339,7 @@ export function initialize() {
 
 export function update_placeholder_text() {
     // Change compose placeholder text only if compose box is open.
-    if (!$("#compose-textarea").is(":visible")) {
+    if (!$("textarea#compose-textarea").is(":visible")) {
         return;
     }
 
@@ -346,5 +352,5 @@ export function update_placeholder_text() {
         private_message_recipient: compose_pm_pill.get_emails(),
     };
 
-    $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
+    $("textarea#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
 }

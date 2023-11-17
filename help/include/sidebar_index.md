@@ -10,9 +10,8 @@
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Set up your account](/help/set-up-your-account)
 * [Streams and topics](/help/streams-and-topics)
-* [Finding a topic to read](/help/finding-a-topic-to-read)
-* [Reading topics](/help/reading-topics)
-* [Reading direct messages (DMs)](/help/reading-dms)
+* [Finding a conversation to read](/help/finding-a-conversation-to-read)
+* [Reading conversations](/help/reading-conversations)
 * [Starting a new topic](/help/starting-a-new-topic)
 * [Starting a new direct message](/help/starting-a-new-direct-message)
 * [Replying to messages](/help/replying-to-messages)
@@ -51,7 +50,7 @@
 * [Change your time zone](/help/change-your-timezone)
 * [Change the time format](/help/change-the-time-format)
 * [Configure emoticon translations](/help/configure-emoticon-translations)
-* [Configure default view](/help/configure-default-view)
+* [Configure home view](/help/configure-home-view)
 * [Enable full width display](/help/enable-full-width-display)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 
@@ -67,7 +66,8 @@
 * [Animated GIFs](/help/animated-gifs-from-giphy)
 * [Text emphasis](/help/text-emphasis)
 * [Paragraph and section formatting](/help/paragraph-and-section-formatting)
-* [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
+* [Bulleted lists](/help/bulleted-lists)
+* [Numbered lists](/help/numbered-lists)
 * [Tables](/help/tables)
 * [Code blocks](/help/code-blocks)
 * [LaTeX](/help/latex)
@@ -93,9 +93,9 @@
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
+* [Inbox](/help/inbox)
 * [Recent conversations](/help/recent-conversations)
 * [All messages](/help/all-messages)
-* [Inbox](/help/inbox)
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
@@ -138,6 +138,8 @@
 
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
+* [Topic notifications](/help/topic-notifications)
+* [Follow a topic](/help/follow-a-topic)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute or unmute a topic](/help/mute-a-topic)

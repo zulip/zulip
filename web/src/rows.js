@@ -70,13 +70,13 @@ export function visible_range(start_id, end_id) {
     return rows;
 }
 
-export function is_draft_row($row) {
-    return $row.find("#drafts_table .restore-overlay-message").length >= 1;
+export function is_overlay_row($row) {
+    return $row.closest(".overlay-message-row").length >= 1;
 }
 
 export function id($message_row) {
-    if (is_draft_row($message_row)) {
-        blueslip.error("Drafts have no zid");
+    if (is_overlay_row($message_row)) {
+        blueslip.error("Drafts and scheduled messages have no zid");
         return undefined;
     }
 
@@ -162,7 +162,18 @@ export function recipient_from_group(message_group) {
     return message_store.get(id($(message_group).children(".message_row").first().expectOne()));
 }
 
+export function is_header_of_row_sticky($recipient_row) {
+    return $recipient_row.find(".message_header").hasClass("sticky_header");
+}
+
 export function id_for_recipient_row($recipient_row) {
+    if (is_header_of_row_sticky($recipient_row)) {
+        const msg_id = message_lists.current.view.sticky_recipient_message_id;
+        if (msg_id !== undefined) {
+            return msg_id;
+        }
+    }
+
     const $msg_row = first_message_in_group($recipient_row);
     return id($msg_row);
 }

@@ -34,6 +34,7 @@ function highlight_person(person, highlighter) {
         display_value: new Handlebars.SafeString(highlighted_name),
         has_image: true,
         img_src: avatar_url,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
     };
 }
 
@@ -499,11 +500,6 @@ function get_special_filter_suggestions(last, operators, suggestions) {
             s.description_html.toLowerCase().startsWith(last_string)
         );
     });
-
-    // Only show home if there's an empty bar
-    if (operators.length === 0 && last_string === "") {
-        suggestions.unshift({search_string: "", description_html: "All messages"});
-    }
     return suggestions;
 }
 

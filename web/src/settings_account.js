@@ -17,6 +17,7 @@ import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -361,7 +362,7 @@ export function set_up() {
         $("body").append(render_settings_api_key_modal());
         setup_api_key_modal();
         $("#api_key_status").hide();
-        overlays.open_modal("api_key_modal", {
+        modals.open("api_key_modal", {
             autoremove: true,
             on_show() {
                 $("#get_api_key_password").trigger("focus");
@@ -491,7 +492,7 @@ export function set_up() {
         const opts = {
             success_continuation() {
                 channel.set_password_change_in_progress(false);
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation() {
                 dialog_widget.hide_dialog_spinner();
@@ -540,7 +541,7 @@ export function set_up() {
                         4000,
                     );
                 }
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation() {
                 dialog_widget.hide_dialog_spinner();
@@ -599,7 +600,7 @@ export function set_up() {
                         4000,
                     );
                 }
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error_continuation() {
                 dialog_widget.hide_dialog_spinner();
@@ -696,7 +697,7 @@ export function set_up() {
     );
     $("#user_deactivate_account_button").on("click", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 
@@ -705,7 +706,7 @@ export function set_up() {
                 url: "/json/users/me",
                 success() {
                     dialog_widget.hide_dialog_spinner();
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                     window.location.href = "/login/";
                 },
                 error(xhr) {
@@ -733,7 +734,7 @@ export function set_up() {
                         }
                     }
                     dialog_widget.hide_dialog_spinner();
-                    dialog_widget.close_modal();
+                    dialog_widget.close();
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)

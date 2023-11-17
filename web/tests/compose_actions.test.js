@@ -58,6 +58,9 @@ mock_esm("../src/message_lists", {
 mock_esm("../src/resize", {
     reset_compose_message_max_height: noop,
 });
+mock_esm("../src/popovers", {
+    hide_all: noop,
+});
 
 const people = zrequire("people");
 
@@ -127,14 +130,14 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     // Start stream message
     compose_defaults = {
-        stream_id: "",
+        stream_id: undefined,
         topic: "topic1",
     };
 
     let opts = {};
     start("stream", opts);
 
-    assert_visible("#stream_message_recipient_topic");
+    assert_visible("#compose_recipient_box");
     assert_hidden("#compose-direct-recipient");
 
     assert.equal(compose_state.stream_name(), "");
@@ -152,7 +155,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     stream_data.add_sub(denmark);
 
     compose_defaults = {
-        trigger: "new topic button",
+        trigger: "clear topic button",
     };
 
     opts = {};
@@ -196,11 +199,11 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     start("private", opts);
 
-    assert_hidden("#stream_message_recipient_topic");
+    assert_hidden("input#stream_message_recipient_topic");
     assert_visible("#compose-direct-recipient");
 
     assert.equal(compose_state.private_message_recipient(), "foo@example.com");
-    assert.equal($("#compose-textarea").val(), "hello");
+    assert.equal($("textarea#compose-textarea").val(), "hello");
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
 
@@ -227,7 +230,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     });
 
     compose_actions.register_compose_cancel_hook(compose_setup.abort_xhr);
-    $("#compose-textarea").set_height(50);
+    $("textarea#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");
     cancel();
@@ -408,7 +411,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
         reply_type: "personal",
     };
 
-    $("#compose-textarea").caret = noop;
+    $("textarea#compose-textarea").caret = noop;
 
     replaced = false;
     expected_replacement =
@@ -454,16 +457,16 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 test("focus_in_empty_compose", () => {
     document.activeElement = {id: "compose-textarea"};
     compose_state.set_message_type("stream");
-    $("#compose-textarea").val("");
+    $("textarea#compose-textarea").val("");
     assert.ok(compose_state.focus_in_empty_compose());
 
     compose_state.set_message_type(false);
     assert.ok(!compose_state.focus_in_empty_compose());
 
-    $("#compose-textarea").val("foo");
+    $("textarea#compose-textarea").val("foo");
     assert.ok(!compose_state.focus_in_empty_compose());
 
-    $("#compose-textarea").trigger("blur");
+    $("textarea#compose-textarea").trigger("blur");
     assert.ok(!compose_state.focus_in_empty_compose());
 });
 

@@ -33,11 +33,7 @@
     .overlay-modal {
         padding-bottom: 10px;
 
-        .modal-header h3 {
-            font-weight: 300;
-        }
-
-        .modal-body {
+        .overlay-scroll-container {
             height: 70vh;
             text-align: center;
             outline: none;

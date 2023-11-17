@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, List, Match, Optional, Set, Tuple
 
+from django.conf import settings
 from django.db.models import Q
 
 from zerver.models import UserGroup, UserProfile, get_linkable_streams
@@ -26,6 +27,7 @@ stream_wildcards = frozenset(["all", "everyone", "stream"])
 class FullNameInfo:
     id: int
     full_name: str
+    is_active: bool
 
 
 @dataclass
@@ -91,8 +93,7 @@ class MentionBackend:
 
             rows = (
                 UserProfile.objects.filter(
-                    realm_id=self.realm_id,
-                    is_active=True,
+                    Q(realm_id=self.realm_id) | Q(email__in=settings.CROSS_REALM_BOT_EMAILS),
                 )
                 .filter(
                     functools.reduce(lambda a, b: a | b, q_list),
@@ -100,10 +101,14 @@ class MentionBackend:
                 .only(
                     "id",
                     "full_name",
+                    "is_active",
                 )
             )
 
-            user_list = [FullNameInfo(id=row.id, full_name=row.full_name) for row in rows]
+            user_list = [
+                FullNameInfo(id=row.id, full_name=row.full_name, is_active=row.is_active)
+                for row in rows
+            ]
 
             # We expect callers who take advantage of our cache to supply both
             # id and full_name in the user mentions in their messages.

@@ -2,7 +2,9 @@ Get Zulip notifications for the stories in your Pivotal Tracker project!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to your Pivotal project's **Settings** page, and click on **Webhooks**.
 

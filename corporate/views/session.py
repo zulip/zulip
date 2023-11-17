@@ -5,7 +5,8 @@ import stripe
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from corporate.models import PaymentIntent, Session, get_customer_by_realm
+from corporate.lib.stripe import RealmBillingSession
+from corporate.models import PaymentIntent, Session
 from zerver.decorator import require_billing_access, require_organization_member
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
@@ -16,25 +17,15 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 
 @require_billing_access
-@has_request_variables
 def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) -> HttpResponse:
-    customer = get_customer_by_realm(user.realm)
-    assert customer
-    stripe_session = stripe.checkout.Session.create(
-        cancel_url=f"{user.realm.uri}/billing/",
-        customer=customer.stripe_customer_id,
-        metadata={
-            "type": "card_update",
-            "user_id": user.id,
-        },
-        mode="setup",
-        payment_method_types=["card"],
-        success_url=f"{user.realm.uri}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
-    )
-    Session.objects.create(
-        stripe_session_id=stripe_session.id,
-        customer=customer,
-        type=Session.CARD_UPDATE_FROM_BILLING_PAGE,
+    billing_session = RealmBillingSession(user)
+    assert billing_session.get_customer() is not None
+    metadata = {
+        "type": "card_update",
+        "user_id": user.id,
+    }
+    stripe_session = billing_session.create_stripe_checkout_session(
+        metadata, Session.CARD_UPDATE_FROM_BILLING_PAGE
     )
     return json_success(
         request,
@@ -50,7 +41,8 @@ def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) ->
 def start_retry_payment_intent_session(
     request: HttpRequest, user: UserProfile, stripe_payment_intent_id: str = REQ()
 ) -> HttpResponse:
-    customer = get_customer_by_realm(user.realm)
+    billing_session = RealmBillingSession(user)
+    customer = billing_session.get_customer()
     if customer is None:
         raise JsonableError(_("Please create a customer first."))
 
@@ -75,24 +67,9 @@ def start_retry_payment_intent_session(
         "user_id": user.id,
     }
     metadata.update(stripe_payment_intent.metadata)
-    stripe_session = stripe.checkout.Session.create(
-        cancel_url=f"{user.realm.uri}/upgrade/",
-        customer=customer.stripe_customer_id,
-        metadata=metadata,
-        setup_intent_data={"metadata": metadata},
-        mode="setup",
-        payment_method_types=["card"],
-        success_url=f"{user.realm.uri}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+    stripe_session = billing_session.create_stripe_checkout_session(
+        metadata, Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD, payment_intent
     )
-    session = Session.objects.create(
-        stripe_session_id=stripe_session.id,
-        customer=customer,
-        type=Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD,
-    )
-
-    session.payment_intent = payment_intent
-    session.save(update_fields=["payment_intent"])
-    session.save()
     return json_success(
         request,
         data={

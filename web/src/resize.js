@@ -3,8 +3,8 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import * as message_viewport from "./message_viewport";
-import * as navbar_alerts from "./navbar_alerts";
 
 function get_bottom_whitespace_height() {
     return message_viewport.height() * 0.4;
@@ -18,9 +18,9 @@ function get_new_heights() {
     res.stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        ($("#global_filters").outerHeight(true) ?? 0) -
+        Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
+        Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
+        ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
         ($("#private_messages_sticky_header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view
@@ -91,13 +91,13 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
 
     const compose_height = $("#compose").get(0).getBoundingClientRect().height;
     const compose_textarea_height = Math.max(
-        $("#compose-textarea").get(0).getBoundingClientRect().height,
+        $("textarea#compose-textarea").get(0).getBoundingClientRect().height,
         $("#preview_message_area").get(0).getBoundingClientRect().height,
     );
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
     // We ensure that the last message is not overlapped by compose box.
-    $("#compose-textarea").css(
+    $("textarea#compose-textarea").css(
         "max-height",
         // Because <textarea> max-height includes padding, we subtract
         // 10 for the padding and 10 for the selected message border.
@@ -126,6 +126,41 @@ export function resize_bottom_whitespace() {
     }
 }
 
+export function resize_stream_subscribers_list() {
+    // Calculates the height of the subscribers list in stream settings.
+    // This avoids the stream settings from overflowing the container and
+    // having a scroll bar.
+
+    if (!$("#stream_settings").length === 1) {
+        // Don't run if stream settings (like $subscriptions_info below) is not open.
+        return;
+    }
+
+    const $subscriptions_info = $("#subscription_overlay .subscriptions-container .right");
+    const classes_above_subscribers_list = [
+        ".display-type", // = stream_settings_title
+        ".subscriber_list_settings_container .stream_settings_header",
+        ".subscription_settings .stream_setting_subsection_title",
+        ".subscription_settings .subscriber_list_settings",
+        ".subscription_settings .stream_setting_subsection_title",
+    ];
+    const $classes_above_subscribers_list = $subscriptions_info.find(
+        classes_above_subscribers_list.join(", "),
+    );
+    let total_height_of_classes_above_subscribers_list = 0;
+    $classes_above_subscribers_list.each(function () {
+        total_height_of_classes_above_subscribers_list += $(this).outerHeight(true);
+    });
+    const subscribers_list_header_height = 30;
+    const margin_between_tab_switcher_and_add_subscribers_title = 20;
+    const subscribers_list_height =
+        $subscriptions_info.height() -
+        total_height_of_classes_above_subscribers_list -
+        subscribers_list_header_height -
+        margin_between_tab_switcher_and_add_subscribers_title;
+    $("html").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
+}
+
 export function resize_stream_filters_container() {
     const h = get_new_heights();
     resize_bottom_whitespace();
@@ -140,12 +175,27 @@ export function resize_sidebars() {
 }
 
 export function update_recent_view_filters_height() {
-    const recent_view_filters_height = $("#recent_topics_filter_buttons").outerHeight(true) ?? 0;
+    const recent_view_filters_height = $("#recent_view_filter_buttons").outerHeight(true) ?? 0;
     $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 }
 
+function resize_navbar_alerts() {
+    const navbar_alerts_height = $("#navbar_alerts_wrapper").height();
+    document.documentElement.style.setProperty(
+        "--navbar-alerts-wrapper-height",
+        navbar_alerts_height + "px",
+    );
+
+    // If the compose-box is in expanded state,
+    // reset its height as well.
+    if (compose_ui.is_full_size()) {
+        compose_ui.set_compose_box_top(true);
+    }
+}
+
 export function resize_page_components() {
-    navbar_alerts.resize_app();
+    resize_navbar_alerts();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
+    resize_stream_subscribers_list();
 }

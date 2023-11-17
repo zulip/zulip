@@ -377,6 +377,17 @@ td .button {
     }
 }
 
+/* For consistent custom select dropdowns that match with dropdown-widget */
+select.modal_select,
+select.list_select,
+select.settings_select {
+    appearance: none;
+    background-image: var(--icon-chevron-down);
+    background-repeat: no-repeat;
+    background-position: 98%;
+    background-size: 14px;
+}
+
 #admin-user-list,
 #admin-bot-list {
     .table tr:first-of-type td {
@@ -815,11 +826,6 @@ input[type="checkbox"] {
         width: 325px;
         color: hsl(0deg 0% 33%);
 
-        & i {
-            font-size: 10px;
-            margin-right: -3px;
-        }
-
         &:disabled {
             cursor: not-allowed;
             background-color: hsl(0deg 0% 93%);
@@ -1171,8 +1177,7 @@ $option_title_width: 180px;
         text-align: left;
         white-space: nowrap;
         text-overflow: ellipsis;
-        overflow-x: hidden;
-        overflow-y: visible;
+        overflow: hidden visible;
         position: relative;
 
         .user-name-and-status-text {
@@ -1207,7 +1212,7 @@ $option_title_width: 180px;
     font-size: 1.2em;
 }
 
-.invite-user-link i {
+.invite-user-link .fa-user-plus {
     text-decoration: none;
     margin-right: 5px;
 }
@@ -1722,20 +1727,6 @@ $option_title_width: 180px;
 
 #admin-user-list .last_active {
     width: 100px;
-}
-
-.required-text {
-    &:empty::after {
-        content: attr(data-empty);
-        display: block;
-
-        font-style: italic;
-        color: hsl(0deg 0% 67%);
-    }
-
-    &.thick:empty::after {
-        width: 100%;
-    }
 }
 
 #payload_url_inputbox {

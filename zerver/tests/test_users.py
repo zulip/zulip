@@ -67,7 +67,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
-    UserGroup,
+    SystemGroups,
     UserGroupMembership,
     UserHotspot,
     UserProfile,
@@ -826,7 +826,7 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(92):
+        with self.assert_database_query_count(93):
             with self.assert_memcached_count(23):
                 with self.capture_send_event_calls(expected_num_events=11) as events:
                     fred = do_create_user(
@@ -891,8 +891,8 @@ class BulkCreateUserTest(ZulipTestCase):
 
         now = timezone_now()
         expected_user_group_names = {
-            UserGroup.MEMBERS_GROUP_NAME,
-            UserGroup.FULL_MEMBERS_GROUP_NAME,
+            SystemGroups.MEMBERS,
+            SystemGroups.FULL_MEMBERS,
         }
         create_users(realm, name_list)
         bono = get_user_by_delivery_email("bono@zulip.com", realm)
@@ -1212,7 +1212,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(cordelia, "default_language", "de", acting_user=None)
-        do_change_user_setting(cordelia, "default_view", "all_messages", acting_user=None)
+        do_change_user_setting(cordelia, "web_home_view", "all_messages", acting_user=None)
         do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
         do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(
@@ -1284,7 +1284,7 @@ class UserProfileTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
 
-        realm_user_default.default_view = "recent_topics"
+        realm_user_default.web_home_view = "recent_topics"
         realm_user_default.emojiset = "twitter"
         realm_user_default.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
         realm_user_default.enable_offline_email_notifications = False
@@ -1299,7 +1299,7 @@ class UserProfileTest(ZulipTestCase):
         with self.capture_send_event_calls(expected_num_events=0):
             copy_default_settings(realm_user_default, cordelia)
 
-        self.assertEqual(cordelia.default_view, "recent_topics")
+        self.assertEqual(cordelia.web_home_view, "recent_topics")
         self.assertEqual(cordelia.emojiset, "twitter")
         self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_LIGHT)
         self.assertEqual(cordelia.enable_offline_email_notifications, False)
@@ -2503,6 +2503,83 @@ class GetProfileTest(ZulipTestCase):
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
         self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
+
+    def test_restricted_access_to_users(self) -> None:
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        shiva = self.example_user("shiva")
+        zoe = self.example_user("ZOE")
+        polonius = self.example_user("polonius")
+
+        self.set_up_db_for_testing_user_access()
+
+        self.login("polonius")
+        with self.assert_database_query_count(9):
+            result = orjson.loads(self.client_get("/json/users").content)
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        # The user can access 3 bot users and 7 human users.
+        self.assert_length(accessible_users, 10)
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        # The user can access the following 7 human users -
+        # 1. Hamlet and Iago - they are subscribed to common streams.
+        # 2. Prospero - Because Polonius sent a DM to Prospero when
+        # they were allowed to access all users.
+        # 3. Aaron and Zoe - Because they are particapting in a
+        # group DM with Polonius.
+        # 4. Shiva - Because Shiva sent a DM to Polonius.
+        # 5. Polonius - A user can obviously access themselves.
+        self.assert_length(accessible_human_users, 7)
+        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
+        self.assertCountEqual(
+            accessible_user_ids,
+            [polonius.id, hamlet.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id],
+        )
+
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id])
+
+        do_deactivate_user(hamlet, acting_user=None)
+        do_deactivate_user(aaron, acting_user=None)
+        do_deactivate_user(shiva, acting_user=None)
+        result = orjson.loads(self.client_get("/json/users").content)
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        self.assert_length(accessible_users, 9)
+        # Guests can only access those deactivated users who were involved in
+        # DMs and not those who were subscribed to some common streams.
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        self.assert_length(accessible_human_users, 6)
+        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
+        self.assertCountEqual(
+            accessible_user_ids, [polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id]
+        )
+
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(
+            inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id, hamlet.id]
+        )
 
 
 class DeleteUserTest(ZulipTestCase):

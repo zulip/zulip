@@ -6,6 +6,7 @@ import orjson
 from django.conf import settings
 from django.core import mail
 from django.utils import translation
+from typing_extensions import override
 
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_browser_language_code
@@ -80,6 +81,7 @@ class TranslationTestCase(ZulipTestCase):
     aware.
     """
 
+    @override
     def tearDown(self) -> None:
         translation.activate(settings.LANGUAGE_CODE)
         super().tearDown()
@@ -88,7 +90,7 @@ class TranslationTestCase(ZulipTestCase):
     def fetch(
         self, method: str, url: str, expected_status: int, **kwargs: Any
     ) -> "TestHttpResponse":
-        response = getattr(self.client, method)(url, **kwargs)
+        response = getattr(self, f"client_{method}")(url, **kwargs)
         self.assertEqual(
             response.status_code,
             expected_status,
@@ -164,6 +166,7 @@ class TranslationTestCase(ZulipTestCase):
 
 
 class JsonTranslationTestCase(ZulipTestCase):
+    @override
     def tearDown(self) -> None:
         translation.activate(settings.LANGUAGE_CODE)
         super().tearDown()

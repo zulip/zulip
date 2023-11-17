@@ -34,7 +34,7 @@
         }
     }
 
-    & ul.pm-list,
+    & ul.dm-list,
     & ul.filters {
         color: hsl(0deg 0% 100% / 80%);
 
@@ -59,10 +59,14 @@
     }
 
     /************************* MODAL DARK THEME *******************/
-    .dialog_exit_button {
-        background-color: hsl(211deg 29% 14%);
-        color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(0deg 0% 0% / 60%);
+    .user_profile_manage_own_edit_button,
+    .user_profile_manage_others_edit_button {
+        color: hsl(200deg 100% 50%);
+        cursor: pointer;
+
+        &:hover {
+            color: hsl(200deg 79% 66%);
+        }
     }
 
     .modal__content.simplebar-scrollable-y + .modal__footer {
@@ -79,11 +83,11 @@
         }
     }
 
-    .modal-footer {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
-    .open_enter_sends_dialog,
     .enter_sends_choices {
         color: hsl(236deg 33% 90%);
 
@@ -100,7 +104,7 @@
     }
 
     .modal__btn:disabled,
-    .disabled-compose-send-button-container button {
+    .disabled-message-send-controls button {
         opacity: 1;
         background-color: hsl(0deg 0% 83% / 50%);
     }
@@ -204,7 +208,6 @@
     }
 
     #navbar-middle .column-middle-inner,
-    #userlist-toggle-button,
     .header,
     #message_view_header {
         background-color: var(--color-background-navbar);
@@ -214,7 +217,7 @@
     .app-main,
     .column-middle,
     #streams_header,
-    .private_messages_container {
+    .direct-messages-container {
         background-color: var(--color-background);
     }
 
@@ -412,16 +415,10 @@
         color: inherit;
     }
 
-    .message_reactions .message_reaction_count,
-    .message_reactions .reaction_button i,
-    .message_reactions:hover .message_reaction + .reaction_button {
-        color: inherit !important;
-    }
-
     .active_private_messages_section {
         #private_messages_section,
-        #private_messages_list,
-        #hide_more_private_messages {
+        #direct-messages-list,
+        #hide-more-direct-messages {
             background-color: hsl(199deg 33% 46% / 20%);
         }
     }
@@ -433,11 +430,6 @@
     #org-join-settings .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
-    }
-
-    .sidebar-title {
-        color: inherit;
-        opacity: 0.75;
     }
 
     .rendered_markdown button,
@@ -489,7 +481,8 @@
     .pill-container,
     .user-status-content-wrapper,
     #custom-expiration-time-input,
-    #org-join-settings .dropdown-widget-button {
+    #org-join-settings .dropdown-widget-button,
+    #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -509,13 +502,6 @@
     & select option {
         background-color: var(--color-background);
         color: hsl(236deg 33% 90%);
-    }
-
-    .unread_count,
-    /* The actions_popover unread_count object has its own variable CSS,
-       and thus needs to be repeated here with all three classes for precedence) */
-    .actions_popover .mark_as_unread .unread_count {
-        background-color: hsl(105deg 2% 50% / 50%);
     }
 
     .pill-container {
@@ -569,8 +555,7 @@
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
-    .emoji-popover .reaction.reacted,
-    .message_reactions .message_reaction.reacted {
+    .emoji-popover .reaction.reacted {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
     }
@@ -583,17 +568,6 @@
         color: var(--color-message-action-interactive);
     }
 
-    .message_reactions:hover .message_reaction + .reaction_button,
-    .message_reactions .message_reaction {
-        background-color: transparent;
-        border-color: hsl(0deg 0% 0% / 80%);
-        color: inherit;
-
-        &:hover {
-            border-color: hsl(236deg 33% 90%);
-        }
-    }
-
     .emoji-popover .reaction:focus {
         box-shadow: 0 0 1px hsl(0deg 0% 98%);
     }
@@ -603,11 +577,11 @@
     input[type="number"]:focus,
     textarea:focus,
     textarea.new_message_textarea:focus,
-    .compose_table .recipient_box:focus {
+    #compose_recipient_box:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose_control_buttons_container .divider {
+    .compose-control-buttons-container .divider {
         color: hsl(236deg 33% 90% / 50%);
     }
 
@@ -677,10 +651,7 @@
 
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
-    .dropdown .dropdown-menu,
-    .popover,
-    .popover-title,
-    .popover-content {
+    .dropdown .dropdown-menu {
         background-color: hsl(212deg 32% 14%);
     }
 
@@ -700,24 +671,13 @@
         opacity: 0.2;
     }
 
-    #gear_menu_about_zulip {
-        .white_zulip_icon_without_text {
-            filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
-                brightness(99%) contrast(89%);
-        }
-    }
-
-    #gear-menu {
-        .dark-theme {
+    .spectator-view #gear-menu-dropdown {
+        .gear-menu-select-dark-theme {
             display: none;
         }
 
-        .light-theme {
+        .gear-menu-select-light-theme {
             display: block;
-        }
-
-        .dropdown-menu a:hover {
-            color: hsl(0deg 0% 100%);
         }
     }
 
@@ -753,24 +713,6 @@
         color: hsl(236deg 33% 90%);
     }
 
-    #streamlist-toggle,
-    #userlist-toggle {
-        color: inherit;
-    }
-
-    #streamlist-toggle-button {
-        color: inherit;
-        background-color: inherit;
-    }
-
-    #userlist-toggle-button {
-        color: hsl(221deg 9% 54%);
-
-        &:hover {
-            color: inherit;
-        }
-    }
-
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
@@ -779,13 +721,13 @@
 
     #topics_header {
         .show-all-streams {
-            color: hsl(236deg 33% 90%);
+            color: hsl(0deg 0% 100% / 75%);
             opacity: 0.75;
         }
     }
 
-    #user_presences li:hover,
-    #user_presences li.highlighted_user {
+    #buddy-list-users-matching-view li:hover,
+    #buddy-list-users-matching-view li.highlighted_user {
         background-color: hsl(136deg 25% 73% / 20%);
     }
 
@@ -795,6 +737,25 @@
     .emoji-picker-popover .emoji-popover .emoji-popover-category-tabs,
     .emoji-picker-popover .emoji-popover .emoji-popover-top {
         background-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .stream-row,
+    .group-row {
+        /* This is for coluring the plus sign SVGs in stream-list UI */
+        /* public */
+        .check:not(.checked) svg {
+            fill: hsl(218deg 14% 33%);
+        }
+
+        /* private */
+        .disabled svg {
+            opacity: 0.5;
+        }
+
+        /* public :hover */
+        .check:not(.checked, .disabled):hover svg {
+            fill: hsl(230deg 11% 67%);
+        }
     }
 
     .recent_view_participant_overflow {
@@ -886,8 +847,8 @@
     #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
-    .modal-footer,
-    .modal-bg .modal-header {
+    #subscription_overlay #stream-creation .settings-sticky-footer,
+    #groups_overlay #user-group-creation .settings-sticky-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
     }
@@ -1256,14 +1217,6 @@
         box-shadow: 0 5px 10px hsl(0deg 0% 0% / 40%);
     }
 
-    #invite-user-modal {
-        #clipboard_image {
-            & path {
-                fill: hsl(236deg 33% 90%);
-            }
-        }
-    }
-
     #user-profile-modal {
         #default-section {
             .default-field {
@@ -1523,40 +1476,6 @@
                     color: hsl(0deg 0% 100%);
                 }
             }
-        }
-    }
-
-    .tabs-container {
-        background-color: hsl(0deg 0% 0% / 30%);
-
-        & i {
-            color: hsl(0deg 0% 80%);
-        }
-
-        .selected-tab {
-            background-color: hsl(0deg 0% 17% / 50%);
-            outline: 1px solid hsl(0deg 0% 100% / 12%);
-        }
-
-        .tab-option {
-            &:hover:not(.selected-tab) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                outline: 1px solid hsl(0deg 0% 100% / 12%);
-            }
-        }
-    }
-
-    .visibility_policy_popover {
-        .visibility_policy_option {
-            &:hover:not(.selected_visibility_policy) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                border: 1px solid hsl(0deg 0% 100% / 12%);
-            }
-        }
-
-        .selected_visibility_policy {
-            background-color: hsl(0deg 0% 17% / 50%);
-            border: 1px solid hsl(0deg 0% 100% / 12%);
         }
     }
 }

@@ -36,6 +36,7 @@ const isaac_item = {
     deactivated: false,
     img_src: `http://zulip.zulipdev.com/avatar/${isaac.user_id}?s=50`,
     status_emoji_info: undefined,
+    should_add_guest_user_indicator: false,
 };
 
 let pill_widget = {};

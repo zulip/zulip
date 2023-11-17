@@ -22,6 +22,7 @@ import * as spectators from "./spectators";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
+import * as util from "./util";
 
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
@@ -309,6 +310,7 @@ function is_status_emoji(emoji) {
 function process_enter_while_filtering(e) {
     if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
+        e.stopPropagation();
         const $first_emoji = get_rendered_emoji(0, 0);
         if ($first_emoji) {
             if (is_composition($first_emoji)) {
@@ -672,7 +674,12 @@ function get_default_emoji_popover_options() {
             refill_section_head_offsets($popover);
             show_emoji_catalog();
             register_popover_events($popover);
-            change_focus_to_filter();
+            // Don't focus filter box on mobile since it leads to window resize due
+            // to keyboard being open and scrolls the emoji popover out of view while
+            // still open in Chrome Android and can hide it based on device height in Firefox Android.
+            if (!util.is_mobile()) {
+                change_focus_to_filter();
+            }
         },
         onHidden() {
             hide_emoji_popover();

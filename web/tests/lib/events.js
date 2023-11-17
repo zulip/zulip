@@ -32,6 +32,8 @@ const typing_person2 = {
 
 exports.typing_person1 = typing_person1;
 exports.typing_person2 = typing_person2;
+exports.stream_typing_in_id = 1;
+exports.topic_typing_in = "Typing topic";
 
 const fake_then = 1596710000;
 const fake_now = 1596713966;
@@ -438,15 +440,6 @@ exports.fixtures = {
         },
     },
 
-    realm_bot__remove: {
-        type: "realm_bot",
-        op: "remove",
-        bot: {
-            user_id: 42,
-            full_name: "The Bot",
-        },
-    },
-
     realm_bot__update: {
         type: "realm_bot",
         op: "update",
@@ -566,15 +559,6 @@ exports.fixtures = {
         },
     },
 
-    realm_user__remove: {
-        type: "realm_user",
-        op: "remove",
-        person: {
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
-    },
-
     realm_user__update: {
         type: "realm_user",
         op: "update",
@@ -689,6 +673,24 @@ exports.fixtures = {
         value: "blue",
     },
 
+    stream_typing__start: {
+        type: "typing",
+        op: "start",
+        message_type: "stream",
+        sender: typing_person1,
+        stream_id: this.stream_typing_in_id,
+        topic: this.topic_typing_in,
+    },
+
+    stream_typing__stop: {
+        type: "typing",
+        op: "stop",
+        message_type: "stream",
+        sender: typing_person1,
+        stream_id: this.stream_typing_in_id,
+        topic: this.topic_typing_in,
+    },
+
     submessage: {
         type: "submessage",
         submessage_id: 99,
@@ -707,7 +709,6 @@ exports.fixtures = {
                 audible_notifications: true,
                 color: "blue",
                 desktop_notifications: false,
-                email_address: "whatever",
                 email_notifications: false,
                 in_home_view: false,
                 is_muted: true,
@@ -756,7 +757,7 @@ exports.fixtures = {
     typing__start: {
         type: "typing",
         op: "start",
-        message_type: "private",
+        message_type: "direct",
         sender: typing_person1,
         recipients: [typing_person2],
     },
@@ -764,7 +765,7 @@ exports.fixtures = {
     typing__stop: {
         type: "typing",
         op: "stop",
-        message_type: "private",
+        message_type: "direct",
         sender: typing_person1,
         recipients: [typing_person2],
     },
@@ -893,20 +894,6 @@ exports.fixtures = {
         language_name: "French",
     },
 
-    user_settings__default_view_all_messages: {
-        type: "user_settings",
-        op: "update",
-        property: "default_view",
-        value: "all_messages",
-    },
-
-    user_settings__default_view_recent_topics: {
-        type: "user_settings",
-        op: "update",
-        property: "default_view",
-        value: "recent_topics",
-    },
-
     user_settings__demote_inactive_streams: {
         type: "user_settings",
         op: "update",
@@ -953,13 +940,6 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "enter_sends",
-        value: true,
-    },
-
-    user_settings__escape_navigates_to_default_view: {
-        type: "user_settings",
-        op: "update",
-        property: "escape_navigates_to_default_view",
         value: true,
     },
 
@@ -1026,6 +1006,34 @@ exports.fixtures = {
         value: 2,
     },
 
+    user_settings__web_escape_navigates_to_home_view: {
+        type: "user_settings",
+        op: "update",
+        property: "web_escape_navigates_to_home_view",
+        value: true,
+    },
+
+    user_settings__web_home_view_all_messages: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "all_messages",
+    },
+
+    user_settings__web_home_view_inbox: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "inbox",
+    },
+
+    user_settings__web_home_view_recent_topics: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "recent_topics",
+    },
+
     user_settings__web_mark_read_on_scroll_policy: {
         type: "user_settings",
         op: "update",
@@ -1041,11 +1049,13 @@ exports.fixtures = {
     },
 
     user_status__set_status_emoji: {
+        id: 1,
         type: "user_status",
         user_id: test_user.user_id,
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
+        status_text: "",
     },
 
     user_status__set_status_text: {

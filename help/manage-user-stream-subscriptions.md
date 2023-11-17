@@ -23,6 +23,8 @@ other users to a stream][configure-invites].
 
 {start_tabs}
 
+{tab|via-stream-settings}
+
 {relative|stream|all}
 
 1. Select a stream.
@@ -32,6 +34,17 @@ other users to a stream][configure-invites].
 1. Under **Add subscribers**, enter the user's name or email address.
 
 1. Click **Add**.
+
+{tab|via-user-profile}
+
+{!right-sidebar-view-profile.md!}
+
+1. Select the **Streams** tab.
+
+1. Under **Subscribe user to streams**, select a stream from the
+   dropdown list. You can start typing to filter streams.
+
+1. Click the **Subscribe** button.
 
 {end_tabs}
 
@@ -45,6 +58,21 @@ Anyone can always [unsubscribe themselves from a
 stream](/help/unsubscribe-from-a-stream).
 
 {start_tabs}
+
+{tab|via-stream-settings}
+
+{relative|stream|all}
+
+1. Select a stream.
+
+{!select-stream-view-subscribers.md!}
+
+1. Under **Subscribers**, find the user you would like
+   to remove from the stream.
+
+1. In the **Actions** column, click the **Unsubscribe** button in that row.
+
+{tab|via-user-profile}
 
 {!right-sidebar-view-profile.md!}
 

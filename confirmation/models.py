@@ -16,7 +16,7 @@ from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from confirmation import settings as confirmation_settings
 from zerver.lib.types import UnspecifiedValue
@@ -190,6 +190,7 @@ class Confirmation(models.Model):
     class Meta:
         unique_together = ("type", "confirmation_key")
 
+    @override
     def __str__(self) -> str:
         return f"{self.content_object!r}"
 

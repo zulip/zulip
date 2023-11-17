@@ -54,6 +54,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -567,6 +568,47 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(
             result, "Stream '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist"
         )
+
+    def test_message_to_stream_with_automatically_change_visibility_policy(self) -> None:
+        """
+        Sending a message to a stream with the automatic follow/unmute policy
+        enabled results in including an extra optional parameter in the response.
+        """
+        user = self.example_user("hamlet")
+        do_change_user_setting(
+            user,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+            acting_user=None,
+        )
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        content = self.assert_json_success(result)
+        assert "automatic_new_visibility_policy" in content
+        self.assertEqual(content["automatic_new_visibility_policy"], 3)
+
+        # Hamlet sends another message to the same topic. There will be no change in the visibility
+        # policy, so the 'automatic_new_visibility_policy' parameter should be absent in the result.
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Another Test message",
+                "topic": "Test topic",
+            },
+        )
+        content = self.assert_json_success(result)
+        assert "automatic_new_visibility_policy" not in content
 
     def test_personal_message(self) -> None:
         """
@@ -1869,8 +1911,8 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
 
-    def test_wildcard_mentioned_flag_topic_wildcard_mention(self) -> None:
-        # For topic wildcard mentions, the 'wildcard_mentioned' flag should be
+    def test_topic_wildcard_mentioned_flag(self) -> None:
+        # For topic wildcard mentions, the 'topic_wildcard_mentioned' flag should be
         # set for all the user messages for topic participants, irrespective of
         # their notifications settings.
         cordelia = self.example_user("cordelia")
@@ -1892,7 +1934,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertTrue(
             UserMessage.objects.get(
                 user_profile=cordelia, message=message
-            ).flags.wildcard_mentioned.is_set
+            ).flags.topic_wildcard_mentioned.is_set
         )
 
         self.send_stream_message(hamlet, "Denmark", content="test", topic_name="topic-2")
@@ -1902,7 +1944,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertTrue(
             UserMessage.objects.get(
                 user_profile=hamlet, message=message
-            ).flags.wildcard_mentioned.is_set
+            ).flags.topic_wildcard_mentioned.is_set
         )
 
         do_change_user_setting(iago, "wildcard_mentions_notify", True, acting_user=None)
@@ -1911,7 +1953,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertFalse(
             UserMessage.objects.get(
                 user_profile=iago, message=message
-            ).flags.wildcard_mentioned.is_set
+            ).flags.topic_wildcard_mentioned.is_set
         )
 
     def test_invalid_wildcard_mention_policy(self) -> None:
@@ -1939,7 +1981,7 @@ class StreamMessagesTest(ZulipTestCase):
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
 
         moderators_system_group = UserGroup.objects.get(
-            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 
         content = "Test mentioning user group @*leadership*"

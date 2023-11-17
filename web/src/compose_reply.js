@@ -8,6 +8,8 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as inbox_ui from "./inbox_ui";
+import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
@@ -27,6 +29,18 @@ export function respond_to_message(opts) {
             compose_actions.start("stream", {trigger: "recent_view_nofocus"});
             return;
         }
+    } else if (inbox_util.is_visible()) {
+        const message_opts = inbox_ui.get_focused_row_message();
+        if (message_opts.message === undefined) {
+            // If the user is not focused on inbox header, msg_type
+            // is not defined, so we open empty compose with nothing prefilled.
+            compose_actions.start(message_opts.msg_type ?? "stream", {
+                trigger: "inbox_nofocus",
+                ...message_opts,
+            });
+            return;
+        }
+        message = message_opts.message;
     } else {
         message = message_lists.current.selected_message();
 
@@ -85,16 +99,13 @@ export function respond_to_message(opts) {
     if (msg_type === "stream") {
         stream_id = message.stream_id;
         topic = message.topic;
+    } else if (opts.reply_type === "personal") {
+        // reply_to for direct messages is everyone involved, so for
+        // personals replies we need to set the direct message
+        // recipient to just the sender
+        pm_recipient = people.get_by_user_id(message.sender_id).email;
     } else {
-        pm_recipient = message.reply_to;
-        if (opts.reply_type === "personal") {
-            // reply_to for direct messages is everyone involved, so for
-            // personals replies we need to set the direct message
-            // recipient to just the sender
-            pm_recipient = people.get_by_user_id(message.sender_id).email;
-        } else {
-            pm_recipient = people.pm_reply_to(message);
-        }
+        pm_recipient = people.pm_reply_to(message);
     }
 
     compose_actions.start(msg_type, {
@@ -113,7 +124,7 @@ export function reply_with_mention(opts) {
 }
 
 export function quote_and_reply(opts) {
-    const $textarea = $("#compose-textarea");
+    const $textarea = $("textarea#compose-textarea");
     const message_id = message_lists.current.selected_id();
     const message = message_lists.current.selected_message();
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -148,7 +159,7 @@ export function quote_and_reply(opts) {
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
 
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
-        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_ui.autosize_textarea($("textarea#compose-textarea"));
     }
 
     if (message && message.raw_content) {

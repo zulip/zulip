@@ -24,8 +24,9 @@ import {$t, $t_html} from "./i18n";
 import * as integration_url_modal from "./integration_url_modal";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -74,7 +75,7 @@ function compare_by_name(a, b) {
 }
 
 export function get_user_id_if_user_profile_modal_open() {
-    if (overlays.is_modal_open() && overlays.active_modal() === "#user-profile-modal") {
+    if (modals.any_active() && modals.active_modal() === "#user-profile-modal") {
         const user_id = $("#user-profile-modal").data("user-id");
         return user_id;
     }
@@ -150,8 +151,7 @@ export function get_user_unsub_streams() {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id"), 10);
     return stream_data
         .get_streams_for_user(target_user_id)
-        .can_subscribe.filter((stream) => stream_data.can_subscribe_others(stream))
-        .map((stream) => ({
+        .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id.toString(),
             stream,
@@ -172,6 +172,8 @@ function format_user_stream_list_item_html(stream, user) {
         people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
+    const show_last_user_in_private_stream_unsub_tooltip =
+        stream.invite_only && peer_data.get_subscriber_count(stream.stream_id) === 1;
     return render_user_stream_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
@@ -180,6 +182,7 @@ function format_user_stream_list_item_html(stream, user) {
         is_web_public: stream.is_web_public,
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
+        show_last_user_in_private_stream_unsub_tooltip,
         stream_edit_url: hash_util.stream_edit_url(stream),
     });
 }
@@ -201,10 +204,18 @@ function render_user_stream_list(streams, user) {
         modifier_html(item) {
             return format_user_stream_list_item_html(item, user);
         },
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item && item.name.toLocaleLowerCase().includes(value);
+            },
+            onupdate() {
+                if ($container.find(".empty-table-message").length) {
+                    $container.parent().addClass("empty-list");
+                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -218,6 +229,9 @@ function render_user_group_list(groups, user) {
     ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
+        callback_after_render() {
+            $container.parent().removeClass("empty-list");
+        },
         modifier_html(item) {
             return format_user_group_list_item_html(item);
         },
@@ -294,7 +308,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
 
 export function hide_user_profile() {
     user_streams_list_widget = undefined;
-    overlays.close_modal_if_open("user-profile-modal");
+    modals.close_if_open("user-profile-modal");
 }
 
 function show_manage_user_tab(target) {
@@ -326,7 +340,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
     // Therefore, we also check for that condition.
     const show_user_subscribe_widget =
-        (people.can_admin_user(user) || page_params.is_admin) &&
+        (people.can_admin_user(user) || settings_data.user_can_subscribe_other_users()) &&
         !user.is_system_bot &&
         people.is_person_active(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
@@ -337,24 +351,26 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         !user.is_system_bot &&
         !people.is_my_user_id(user.user_id);
     const args = {
-        user_id: user.user_id,
-        full_name: user.full_name,
-        email: user.delivery_email,
-        profile_data,
-        user_avatar: people.medium_avatar_url_for_person(user),
-        is_me: people.is_current_user(user.email),
-        is_bot: user.is_bot,
+        can_manage_profile,
         date_joined: timerender.get_localized_date_or_time_for_format(
             parseISO(user.date_joined),
             "dayofyear_year",
         ),
-        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+        email: user.delivery_email,
+        full_name: user.full_name,
+        is_active: people.is_person_active(user.user_id),
+        is_bot: user.is_bot,
+        is_me: people.is_current_user(user.email),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
+        profile_data,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        show_user_subscribe_widget,
+        user_avatar: people.medium_avatar_url_for_person(user),
+        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+        user_id: user.user_id,
+        user_is_guest: user.is_guest,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
-        user_is_guest: user.is_guest,
-        show_user_subscribe_widget,
-        can_manage_profile,
     };
 
     if (user.is_bot) {
@@ -370,7 +386,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    overlays.open_modal("user-profile-modal", {autoremove: true});
+    modals.open("user-profile-modal", {autoremove: true});
     $(".tabcontent").hide();
 
     let default_tab = 0;
@@ -861,7 +877,11 @@ export function initialize() {
             ui_report.client_error(error_message, $alert_box, 1200);
         }
 
-        if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+        if (
+            sub.invite_only &&
+            (people.is_my_user_id(target_user_id) ||
+                peer_data.get_subscriber_count(stream_id) === 1)
+        ) {
             const new_hash = hash_util.stream_edit_url(sub);
             hide_user_profile();
             browser_history.go_to_location(new_hash);

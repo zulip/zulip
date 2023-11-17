@@ -8,6 +8,7 @@ import * as hash_util from "./hash_util";
 import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -40,6 +41,13 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         return;
     }
 
+    if (!message_lists.home) {
+        // If we haven't yet initialized the message_lists module,
+        // we can't preserve state across reloads.
+        blueslip.log("Can't preserve state; message_lists not yet initialized.");
+        return;
+    }
+
     let url = "#reload:send_after_reload=" + Number(send_after_reload);
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
@@ -47,7 +55,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         const msg_type = compose_state.get_message_type();
         if (msg_type === "stream") {
             url += "+msg_type=stream";
-            url += "+stream=" + encodeURIComponent(compose_state.stream_name());
+            url += "+stream_id=" + encodeURIComponent(compose_state.stream_id());
             url += "+topic=" + encodeURIComponent(compose_state.topic());
         } else if (msg_type === "private") {
             url += "+msg_type=private";
@@ -279,6 +287,12 @@ window.addEventListener("beforeunload", () => {
 });
 
 reload_state.set_csrf_failed_handler(() => {
+    if (page_params.is_spectator) {
+        // If the user is a spectator, we don't want to reload the page
+        // since it will most likely lead an infinite reload loop.
+        return;
+    }
+
     initiate({
         immediate: true,
         save_pointer: true,

@@ -133,7 +133,7 @@ like the following:
 - `add_typist`
 - `remove_typist`
 - `get_group_typists`
-- `get_all_typists`
+- `get_all_direct_message_typists`
 
 One subtle thing that the client has to do here is to maintain
 timers for typing notifications. The value of

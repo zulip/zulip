@@ -39,6 +39,7 @@ import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
 import markdown.postprocessors
+import markdown.preprocessors
 import markdown.treeprocessors
 import markdown.util
 import re2
@@ -50,7 +51,7 @@ from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from soupsieve import escape as css_escape
 from tlds import tld_set
-from typing_extensions import TypeAlias
+from typing_extensions import Self, TypeAlias, override
 
 from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
@@ -524,6 +525,7 @@ class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
         super().__init__(zmd)
         self.zmd = zmd
 
+    @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_imgs = walk_tree(root, lambda e: e if e.tag == "img" else None)
@@ -553,6 +555,7 @@ class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
         super().__init__(zmd)
         self.zmd = zmd
 
+    @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_videos = walk_tree(root, lambda e: e if e.tag == "video" else None)
@@ -573,6 +576,7 @@ class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     """Return a `<code>` element containing the matching text."""
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -732,7 +736,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.zmd.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
-        # remove HTML URLs which end with image extensions that can not be shorted
+        # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
 
@@ -1234,6 +1238,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
 
+    @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
@@ -1391,6 +1396,7 @@ class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
 
 
 class Timestamp(markdown.inlinepatterns.Pattern):
+    @override
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         time_input_string = match.group("time")
         try:
@@ -1475,6 +1481,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
+    @override
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is None or not db_data.translate_emoticons:
@@ -1490,6 +1497,7 @@ TEXT_PRESENTATION_RE = regex.compile(r"\P{Emoji_Presentation}\u20E3?")
 
 
 class UnicodeEmoji(CompiledInlineProcessor):
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, match: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1515,6 +1523,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
+    @override
     def handleMatch(self, match: Match[str]) -> Optional[Union[str, Element]]:
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
@@ -1543,6 +1552,7 @@ def content_has_emoji_syntax(content: str) -> bool:
 
 
 class Tex(markdown.inlinepatterns.Pattern):
+    @override
     def handleMatch(self, match: Match[str]) -> Union[str, Element]:
         rendered = render_tex(match.group("body"), is_inline=True)
         if rendered is not None:
@@ -1633,6 +1643,7 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 
 
 class AutoLink(CompiledPattern):
+    @override
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group("url")
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1691,6 +1702,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))[ ]{0,3}>[ ]?(.*)")
 
     # run() is very slightly forked from the base class; see notes below.
+    @override
     def run(self, parent: Element, blocks: List[str]) -> None:
         block = blocks.pop(0)
         m = self.RE.search(block)
@@ -1716,6 +1728,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         self.parser.parseChunk(quote, block)
         self.parser.state.reset()
 
+    @override
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
         line = mention.MENTIONS_RE.sub(lambda m: "@_**{}**".format(m.group("match")), line)
@@ -1742,6 +1755,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
 
     LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         """Insert a newline between a paragraph and ulist if missing"""
         inserts = 0
@@ -1799,7 +1813,33 @@ def prepare_linkifier_pattern(source: str) -> str:
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as
     OUTER_CAPTURE_GROUP."""
-    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
+
+    # This NEL character (0x85) is interpolated via a variable,
+    # because r"" strings cannot use backslash escapes.
+    next_line = "\u0085"
+
+    # We use an extended definition of 'whitespace' which is
+    # equivalent to \p{White_Space} -- since \s in re2 only matches
+    # ASCII spaces, and re2 does not support \p{White_Space}.
+    regex = rf"""
+        (?P<{BEFORE_CAPTURE_GROUP}>
+            ^  |
+            \s | {next_line} | \pZ |
+            ['"\(,:<]
+        )
+        (?P<{OUTER_CAPTURE_GROUP}>
+            {source}
+        )
+        (?P<{AFTER_CAPTURE_GROUP}>
+            $ |
+            [^\pL\pN]
+        )
+    """
+    # Strip out the spaces and newlines added to make the above
+    # legible -- re2 does not have the equivalent of the /x modifier
+    # that does this automatically.  Note that we are careful to not
+    # strip _whitespace_, which would strip the literal \u0085 out.
+    return regex.replace(" ", "").replace("\n", "")
 
 
 # Given a regular expression pattern, linkifies groups that match it
@@ -1823,6 +1863,7 @@ class LinkifierPattern(CompiledInlineProcessor):
 
         super().__init__(compiled_re2, zmd)
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
@@ -1843,6 +1884,7 @@ class LinkifierPattern(CompiledInlineProcessor):
 
 
 class UserMentionPattern(CompiledInlineProcessor):
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1880,6 +1922,8 @@ class UserMentionPattern(CompiledInlineProcessor):
                     self.zmd.zulip_rendering_result.mentions_topic_wildcard = True
             elif user is not None:
                 assert isinstance(user, FullNameInfo)
+                if not user.is_active:
+                    silent = True
 
                 if not silent:
                     self.zmd.zulip_rendering_result.mentions_user_ids.add(user.id)
@@ -1906,6 +1950,7 @@ class UserMentionPattern(CompiledInlineProcessor):
 
 
 class UserGroupMentionPattern(CompiledInlineProcessor):
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1946,6 +1991,7 @@ class StreamPattern(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1977,6 +2023,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -2041,6 +2088,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             return True
         return False
 
+    @override
     def run(self, lines: List[str]) -> List[str]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
@@ -2096,6 +2144,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         return el
 
+    @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -2109,11 +2158,11 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
-def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
+def get_sub_registry(r: markdown.util.Registry[T], keys: List[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
     # object instead of removing keys from the existing object.
-    new_r = markdown.util.Registry()
+    new_r = markdown.util.Registry[T]()
     for k in keys:
         new_r.register(r[k], k, r.get_index_for_name(k))
     return new_r
@@ -2156,7 +2205,8 @@ class ZulipMarkdown(markdown.Markdown):
         )
         self.set_output_format("html")
 
-    def build_parser(self) -> markdown.Markdown:
+    @override
+    def build_parser(self) -> Self:
         # Build the parser using selected default features from Python-Markdown.
         # The complete list of all available processors can be found in the
         # super().build_parser() function.
@@ -2172,12 +2222,12 @@ class ZulipMarkdown(markdown.Markdown):
         self.handle_zephyr_mirror()
         return self
 
-    def build_preprocessors(self) -> markdown.util.Registry:
+    def build_preprocessors(self) -> markdown.util.Registry[markdown.preprocessors.Preprocessor]:
         # We disable the following preprocessors from upstream:
         #
         # html_block - insecure
         # reference - references don't make sense in a chat context.
-        preprocessors = markdown.util.Registry()
+        preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
@@ -2217,7 +2267,7 @@ class ZulipMarkdown(markdown.Markdown):
         )
         return parser
 
-    def build_inlinepatterns(self) -> markdown.util.Registry:
+    def build_inlinepatterns(self) -> markdown.util.Registry[markdown.inlinepatterns.Pattern]:
         # We disable the following upstream inline patterns:
         #
         # backtick -        replaced by ours
@@ -2252,7 +2302,7 @@ class ZulipMarkdown(markdown.Markdown):
         # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
-        reg = markdown.util.Registry()
+        reg = markdown.util.Registry[markdown.inlinepatterns.Pattern]()
         reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 105)
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
@@ -2290,7 +2340,9 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(UnicodeEmoji(cast(Pattern[str], POSSIBLE_EMOJI_RE), self), "unicodeemoji", 0)
         return reg
 
-    def register_linkifiers(self, registry: markdown.util.Registry) -> markdown.util.Registry:
+    def register_linkifiers(
+        self, registry: markdown.util.Registry[markdown.inlinepatterns.Pattern]
+    ) -> markdown.util.Registry[markdown.inlinepatterns.Pattern]:
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
             registry.register(
@@ -2300,9 +2352,9 @@ class ZulipMarkdown(markdown.Markdown):
             )
         return registry
 
-    def build_treeprocessors(self) -> markdown.util.Registry:
+    def build_treeprocessors(self) -> markdown.util.Registry[markdown.treeprocessors.Treeprocessor]:
         # Here we build all the processors from upstream, plus a few of our own.
-        treeprocessors = markdown.util.Registry()
+        treeprocessors = markdown.util.Registry[markdown.treeprocessors.Treeprocessor]()
         # We get priority 30 from 'hilite' extension
         treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
         treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
@@ -2315,9 +2367,9 @@ class ZulipMarkdown(markdown.Markdown):
             treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
         return treeprocessors
 
-    def build_postprocessors(self) -> markdown.util.Registry:
+    def build_postprocessors(self) -> markdown.util.Registry[markdown.postprocessors.Postprocessor]:
         # These are the default Python-Markdown processors, unmodified.
-        postprocessors = markdown.util.Registry()
+        postprocessors = markdown.util.Registry[markdown.postprocessors.Postprocessor]()
         postprocessors.register(markdown.postprocessors.RawHtmlPostprocessor(self), "raw_html", 20)
         postprocessors.register(
             markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 15

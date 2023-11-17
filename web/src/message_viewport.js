@@ -3,7 +3,6 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
-import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
 import * as util from "./util";
 
@@ -31,7 +30,7 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
 export const height = make_dimen_wrapper("height", $.fn.height);
 export const width = make_dimen_wrapper("width", $.fn.width);
 
-// TODO: This function let's us use the DOM API instead of jquery
+// TODO: This function lets us use the DOM API instead of jquery
 // (<10x faster) for condense.js, but we want to eventually do a
 // bigger of refactor `height` and `width` above to do the same.
 export function max_message_height() {
@@ -403,7 +402,6 @@ export function maybe_scroll_to_show_message_top() {
     const message_height = $selected_message.outerHeight(true) ?? 0;
     if (message_top < viewport_info.visible_top) {
         set_message_position(message_top, message_height, viewport_info, 0);
-        popover_menus.set_suppress_scroll_hide();
     }
 }
 
@@ -481,6 +479,28 @@ export function keep_pointer_in_view() {
     }
 
     message_lists.current.select_id(rows.id($next_row), {from_scroll: true});
+}
+
+export function scroll_to_selected() {
+    const $selected_row = message_lists.current.selected_row();
+    if ($selected_row && $selected_row.length !== 0) {
+        recenter_view($selected_row);
+    }
+}
+
+export let scroll_to_selected_planned = false;
+
+export function plan_scroll_to_selected() {
+    scroll_to_selected_planned = true;
+}
+
+export function maybe_scroll_to_selected() {
+    // If we have made a plan to scroll to the selected message but
+    // deferred doing so, do so here.
+    if (scroll_to_selected_planned) {
+        scroll_to_selected();
+        scroll_to_selected_planned = false;
+    }
 }
 
 export function initialize() {

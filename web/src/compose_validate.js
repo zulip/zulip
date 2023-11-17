@@ -5,6 +5,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
+import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -79,7 +80,7 @@ function get_stream_id_for_textarea($textarea) {
         return Number.parseInt(stream_id_str, 10);
     }
 
-    return compose_state.stream_id() || undefined;
+    return compose_state.stream_id();
 }
 
 export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
@@ -173,6 +174,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
                 can_subscribe_other_users,
                 name: mentioned.full_name,
                 classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
+                should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             };
 
             const new_row = render_not_subscribed_warning(context);
@@ -339,7 +341,15 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
     return result;
 }
 
-export function wildcard_mention_allowed() {
+function is_recipient_large_stream() {
+    return (
+        compose_state.stream_id() &&
+        peer_data.get_subscriber_count(compose_state.stream_id()) >
+            wildcard_mention_large_stream_threshold
+    );
+}
+
+function wildcard_mention_allowed_in_large_stream() {
     if (
         page_params.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
@@ -383,6 +393,10 @@ export function wildcard_mention_allowed() {
     return !page_params.is_guest;
 }
 
+export function wildcard_mention_allowed() {
+    return !is_recipient_large_stream() || wildcard_mention_allowed_in_large_stream();
+}
+
 export function set_wildcard_mention_large_stream_threshold(value) {
     wildcard_mention_large_stream_threshold = value;
 }
@@ -391,12 +405,13 @@ export function validate_stream_message_mentions(opts) {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
-    // stream, check if they permission to do so.
+    // stream, check if they permission to do so. If yes, warn them
+    // if they haven't acknowledged the wildcard warning yet.
     if (
         opts.wildcard_mention !== null &&
         subscriber_count > wildcard_mention_large_stream_threshold
     ) {
-        if (!wildcard_mention_allowed()) {
+        if (!wildcard_mention_allowed_in_large_stream()) {
             compose_banner.show_error_message(
                 $t({
                     defaultMessage:
@@ -480,7 +495,7 @@ export function validate_stream_message_address_info(stream_name) {
 function validate_stream_message(scheduling_message) {
     const stream_id = compose_state.stream_id();
     const $banner_container = $("#compose_banners");
-    if (stream_id === "") {
+    if (stream_id === undefined) {
         compose_banner.show_error_message(
             $t({defaultMessage: "Please specify a stream."}),
             compose_banner.CLASSNAMES.missing_stream,
@@ -499,7 +514,7 @@ function validate_stream_message(scheduling_message) {
                 $t({defaultMessage: "Topics are required in this organization."}),
                 compose_banner.CLASSNAMES.topic_missing,
                 $banner_container,
-                $("#stream_message_recipient_topic"),
+                $("input#stream_message_recipient_topic"),
             );
             return false;
         }
@@ -618,12 +633,17 @@ export function check_overflow_text() {
     // expensive.
     const text = compose_state.message_content();
     const max_length = page_params.max_message_length;
-    const $indicator = $("#compose_limit_indicator");
+    const $indicator = $("#compose-limit-indicator");
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
-        $("#compose-textarea").addClass("over_limit");
-        $indicator.text(text.length + "/" + max_length);
+        $("textarea#compose-textarea").addClass("over_limit");
+        $indicator.html(
+            render_compose_limit_indicator({
+                text_length: text.length,
+                max_length,
+            }),
+        );
         compose_banner.show_error_message(
             $t(
                 {
@@ -638,14 +658,18 @@ export function check_overflow_text() {
         $("#compose-send-button").prop("disabled", true);
     } else if (text.length > 0.9 * max_length) {
         $indicator.removeClass("over_limit");
-        $("#compose-textarea").removeClass("over_limit");
-        $indicator.text(text.length + "/" + max_length);
-
+        $("textarea#compose-textarea").removeClass("over_limit");
+        $indicator.html(
+            render_compose_limit_indicator({
+                text_length: text.length,
+                max_length,
+            }),
+        );
         $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {
         $indicator.text("");
-        $("#compose-textarea").removeClass("over_limit");
+        $("textarea#compose-textarea").removeClass("over_limit");
 
         $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
@@ -656,8 +680,8 @@ export function check_overflow_text() {
 
 export function validate_message_length() {
     if (compose_state.message_content().length > page_params.max_message_length) {
-        $("#compose-textarea").addClass("flash");
-        setTimeout(() => $("#compose-textarea").removeClass("flash"), 1500);
+        $("textarea#compose-textarea").addClass("flash");
+        setTimeout(() => $("textarea#compose-textarea").removeClass("flash"), 1500);
         return false;
     }
     return true;
@@ -666,7 +690,7 @@ export function validate_message_length() {
 export function validate(scheduling_message) {
     const message_content = compose_state.message_content();
     if (/^\s*$/.test(message_content)) {
-        $("#compose-textarea").toggleClass("invalid", true);
+        $("textarea#compose-textarea").toggleClass("invalid", true);
         return false;
     }
 
@@ -689,4 +713,23 @@ export function validate(scheduling_message) {
         return validate_private_message();
     }
     return validate_stream_message(scheduling_message);
+}
+
+export function convert_mentions_to_silent_in_direct_messages(mention_text, full_name, user_id) {
+    if (compose_state.get_message_type() !== "private") {
+        return mention_text;
+    }
+
+    const recipient_user_id = compose_pm_pill.get_user_ids();
+    if (recipient_user_id.toString() !== user_id.toString()) {
+        return mention_text;
+    }
+
+    const mention_str = people.get_mention_syntax(full_name, user_id, false);
+    const silent_mention_str = people.get_mention_syntax(full_name, user_id, true);
+    mention_text = mention_text.replace(mention_str, silent_mention_str);
+    // also replace other mentions...
+    compose_ui.replace_syntax(mention_str, silent_mention_str);
+
+    return mention_text;
 }

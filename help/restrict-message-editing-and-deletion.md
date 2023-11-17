@@ -13,7 +13,7 @@ Note that if a user can edit a message, they can also "delete" it by removing
 all the message content. This is different from proper message deletion in two
 ways: the original content will still show up in [message edit
 history](/help/view-a-messages-edit-history), and will be included in
-[exports](/help/export-your-organization). Deletion permanently (and
+[data exports](/help/export-your-organization). Deletion permanently (and
 irretrievably) removes the message from Zulip.
 
 ## Configure message editing permissions
@@ -51,6 +51,11 @@ irretrievably) removes the message from Zulip.
 {!save-changes.md!}
 
 {end_tabs}
+
+!!! tip ""
+
+    A user can delete messages sent by [bots that they
+    own](/help/view-your-bots) just like messages they sent themself.
 
 ## Related articles
 

@@ -4,18 +4,19 @@
     <div class="clear-float"></div>
     <div>
         {{t "You are viewing all the bots in this organization." }}
-        {{#if can_create_new_bots}}
+        <span class="add-new-bots" {{#unless can_create_new_bots}}style="display: none;"{{/unless}}>
             {{#tr}}
                 You can <z-link-new-bot>add a new bot</z-link-new-bot> or <z-link-manage-bot>manage</z-link-manage-bot> your own bots.
                 {{#*inline "z-link-new-bot"}}<a class="add-a-new-bot">{{> @partial-block}}</a>{{/inline}}
                 {{#*inline "z-link-manage-bot"}}<a href="/#settings/your-bots">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
-        {{else if has_bots}}
+        </span>
+        <span class="manage-your-bots" {{#unless (and (not can_create_new_bots) has_bots)}}style="display: none;"{{/unless}}>
             {{#tr}}
                 You can <z-link>manage</z-link> your own bots.
                 {{#*inline "z-link"}}<a href="/#settings/your-bots">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
-        {{/if}}
+        </span>
     </div>
     <div class="settings_panel_list_header">
         <h3>{{t "Bots"}}</h3>
@@ -35,8 +36,8 @@
                 <th class="actions">{{t "Actions" }}</th>
                 {{/if}}
             </thead>
-            <tbody id="admin_bots_table" class="admin_bot_table required-text thick"
-              data-empty="{{t 'No bots match your current filter.' }}"></tbody>
+            <tbody id="admin_bots_table" class="admin_bot_table"
+              data-empty="{{t 'No bots found.' }}" data-search-results-empty="{{t 'No bots match your current filter.' }}"></tbody>
         </table>
     </div>
     <div id="admin_page_bots_loading_indicator"></div>

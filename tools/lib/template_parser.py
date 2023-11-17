@@ -1,5 +1,7 @@
 from typing import Callable, List, Optional
 
+from typing_extensions import override
+
 
 class FormattedError(Exception):
     pass
@@ -9,6 +11,7 @@ class TemplateParserError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
 
+    @override
     def __str__(self) -> str:
         return self.message
 
@@ -48,7 +51,7 @@ class Token:
         self.parent_token: Optional[Token] = None
 
 
-def tokenize(text: str) -> List[Token]:
+def tokenize(text: str, template_format: Optional[str] = None) -> List[Token]:
     in_code_block = False
 
     def advance(n: int) -> None:
@@ -70,13 +73,13 @@ def tokenize(text: str) -> List[Token]:
         return looking_at("{{!")
 
     def looking_at_djangocomment() -> bool:
-        return looking_at("{#")
+        return template_format == "django" and looking_at("{#")
 
     def looking_at_handlebars_partial() -> bool:
-        return looking_at("{{>")
+        return template_format == "handlebars" and looking_at("{{>")
 
     def looking_at_handlebars_partial_block() -> bool:
-        return looking_at("{{#>")
+        return template_format == "handlebars" and looking_at("{{#>")
 
     def looking_at_html_start() -> bool:
         return looking_at("<") and not looking_at("</")
@@ -88,29 +91,29 @@ def tokenize(text: str) -> List[Token]:
         return looking_at("{{#") or looking_at("{{^") or looking_at("{{~#")
 
     def looking_at_handlebars_else() -> bool:
-        return looking_at("{{else")
+        return template_format == "handlebars" and looking_at("{{else")
 
     def looking_at_template_var() -> bool:
         return looking_at("{")
 
     def looking_at_handlebars_end() -> bool:
-        return looking_at("{{/") or looking_at("{{~/")
+        return template_format == "handlebars" and (looking_at("{{/") or looking_at("{{~/"))
 
     def looking_at_django_start() -> bool:
-        return looking_at("{% ")
+        return template_format == "django" and looking_at("{% ")
 
     def looking_at_django_else() -> bool:
-        return looking_at("{% else") or looking_at("{% elif")
+        return template_format == "django" and (looking_at("{% else") or looking_at("{% elif"))
 
     def looking_at_django_end() -> bool:
-        return looking_at("{% end")
+        return template_format == "django" and looking_at("{% end")
 
     def looking_at_jinja2_end_whitespace_stripped() -> bool:
-        return looking_at("{%- end")
+        return template_format == "django" and looking_at("{%- end")
 
     def looking_at_jinja2_start_whitespace_stripped_type2() -> bool:
         # This function detects tag like {%- if foo -%}...{% endif %}
-        return looking_at("{%-") and not looking_at("{%- end")
+        return template_format == "django" and looking_at("{%-") and not looking_at("{%- end")
 
     def looking_at_whitespace() -> bool:
         return looking_at("\n") or looking_at(" ")
@@ -343,7 +346,11 @@ def tag_flavor(token: Token) -> Optional[str]:
         raise AssertionError(f"tools programmer neglected to handle {kind} tokens")
 
 
-def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token]:
+def validate(
+    fn: Optional[str] = None,
+    text: Optional[str] = None,
+    template_format: Optional[str] = None,
+) -> List[Token]:
     assert fn or text
 
     if fn is None:
@@ -356,7 +363,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
     lines = text.split("\n")
 
     try:
-        tokens = tokenize(text)
+        tokens = tokenize(text, template_format=template_format)
     except FormattedError as e:
         raise TemplateParserError(
             f"""

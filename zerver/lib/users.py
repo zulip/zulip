@@ -1,33 +1,42 @@
+import itertools
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, TypedDict
+from email.headerregistry import Address
+from operator import itemgetter
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, TypedDict
 
 import dateutil.parser as date_parser
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import QuerySet
-from django.forms.models import model_to_dict
+from django.db.models import Q, QuerySet
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
+from typing_extensions import NotRequired
 from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key, realm_user_dict_fields
+from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
+from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
 )
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, RawUserDict
+from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
+    Message,
     Realm,
+    Recipient,
     Service,
+    Subscription,
     UserMessage,
     UserProfile,
+    get_fake_email_domain,
     get_realm_user_dicts,
     get_user,
     get_user_profile_by_id_in_realm,
@@ -385,14 +394,37 @@ def can_access_delivery_email(
     return False
 
 
+class APIUserDict(TypedDict):
+    email: str
+    user_id: int
+    avatar_version: int
+    is_admin: bool
+    is_owner: bool
+    is_guest: bool
+    is_billing_admin: NotRequired[bool]
+    role: int
+    is_bot: bool
+    full_name: str
+    timezone: NotRequired[str]
+    is_active: bool
+    date_joined: str
+    avatar_url: NotRequired[Optional[str]]
+    delivery_email: Optional[str]
+    bot_type: NotRequired[Optional[int]]
+    bot_owner_id: NotRequired[Optional[int]]
+    profile_data: NotRequired[Optional[Dict[str, Any]]]
+    is_system_bot: NotRequired[bool]
+    max_message_id: NotRequired[int]
+
+
 def format_user_row(
     realm_id: int,
     acting_user: Optional[UserProfile],
-    row: Dict[str, Any],
+    row: RawUserDict,
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     custom_profile_field_data: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+) -> APIUserDict:
     """Formats a user row returned by a database fetch using
     .values(*realm_user_dict_fields) into a dictionary representation
     of that user for API delivery to clients.  The acting_user
@@ -403,7 +435,14 @@ def format_user_row(
     is_owner = row["role"] == UserProfile.ROLE_REALM_OWNER
     is_guest = row["role"] == UserProfile.ROLE_GUEST
     is_bot = row["is_bot"]
-    result = dict(
+
+    delivery_email = None
+    if acting_user is not None and can_access_delivery_email(
+        acting_user, row["id"], row["email_address_visibility"]
+    ):
+        delivery_email = row["delivery_email"]
+
+    result = APIUserDict(
         email=row["email"],
         user_id=row["id"],
         avatar_version=row["avatar_version"],
@@ -417,6 +456,7 @@ def format_user_row(
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
         date_joined=row["date_joined"].isoformat(),
+        delivery_email=delivery_email,
     )
 
     if acting_user is None:
@@ -425,6 +465,7 @@ def format_user_row(
         # Only send day level precision date_joined data to spectators.
         del result["is_billing_admin"]
         del result["timezone"]
+        assert isinstance(result["date_joined"], str)
         result["date_joined"] = str(date_parser.parse(result["date_joined"]).date())
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
@@ -457,13 +498,6 @@ def format_user_row(
             client_gravatar=client_gravatar,
         )
 
-    if acting_user is not None and can_access_delivery_email(
-        acting_user, row["id"], row["email_address_visibility"]
-    ):
-        result["delivery_email"] = row["delivery_email"]
-    else:
-        result["delivery_email"] = None
-
     if is_bot:
         result["bot_type"] = row["bot_type"]
         if is_cross_realm_bot_email(row["email"]):
@@ -476,30 +510,143 @@ def format_user_row(
     return result
 
 
-def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
-    # What we're trying to do is simulate the user_profile having been
-    # fetched from a QuerySet using `.values(*realm_user_dict_fields)`
-    # even though we fetched UserProfile objects.  This is messier
-    # than it seems.
-    #
-    # What we'd like to do is just call model_to_dict(user,
-    # fields=realm_user_dict_fields).  The problem with this is
-    # that model_to_dict has a different convention than
-    # `.values()` in its handling of foreign keys, naming them as
-    # e.g. `bot_owner`, not `bot_owner_id`; we work around that
-    # here.
-    #
-    # This could be potentially simplified in the future by
-    # changing realm_user_dict_fields to name the bot owner with
-    # the less readable `bot_owner` (instead of `bot_owner_id`).
-    user_row = model_to_dict(user_profile, fields=[*realm_user_dict_fields, "bot_owner"])
-    user_row["bot_owner_id"] = user_row["bot_owner"]
-    del user_row["bot_owner"]
-    return user_row
+def check_user_can_access_all_users(acting_user: Optional[UserProfile]) -> bool:
+    if acting_user is None:
+        # We allow spectators to access all users since they
+        # have very limited access to the user already.
+        return True
+
+    if not acting_user.is_guest:
+        return True
+
+    realm = acting_user.realm
+    if is_user_in_group(realm.can_access_all_users_group, acting_user):
+        return True
+
+    return False
+
+
+def get_subscribers_of_target_user_subscriptions(
+    target_users: List[UserProfile],
+) -> Dict[int, Set[int]]:
+    target_user_ids = [user.id for user in target_users]
+    target_user_subscriptions = (
+        Subscription.objects.filter(
+            user_profile__in=target_user_ids,
+            active=True,
+            recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        )
+        .order_by("user_profile_id")
+        .values("user_profile_id", "recipient_id")
+    )
+
+    target_users_subbed_recipient_ids = set()
+    target_user_subscriptions_dict: Dict[int, Set[int]] = defaultdict(set)
+
+    for user_profile_id, sub_rows in itertools.groupby(
+        target_user_subscriptions, itemgetter("user_profile_id")
+    ):
+        recipient_ids = {row["recipient_id"] for row in sub_rows}
+        target_user_subscriptions_dict[user_profile_id] = recipient_ids
+        target_users_subbed_recipient_ids |= recipient_ids
+
+    subs_in_target_user_subscriptions_query = Subscription.objects.filter(
+        recipient_id__in=list(target_users_subbed_recipient_ids),
+        active=True,
+    )
+
+    subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
+        Q(recipient__type=Recipient.STREAM, is_user_active=True)
+        | Q(recipient__type=Recipient.HUDDLE)
+    )
+
+    subs_in_target_user_subscriptions = subs_in_target_user_subscriptions_query.order_by(
+        "recipient_id"
+    ).values("user_profile_id", "recipient_id")
+
+    subscribers_dict_by_recipient_ids: Dict[int, Set[int]] = defaultdict(set)
+    for recipient_id, sub_rows in itertools.groupby(
+        subs_in_target_user_subscriptions, itemgetter("recipient_id")
+    ):
+        user_ids = {row["user_profile_id"] for row in sub_rows}
+        subscribers_dict_by_recipient_ids[recipient_id] = user_ids
+
+    users_subbed_to_target_user_subscriptions_dict: Dict[int, Set[int]] = defaultdict(set)
+    for user_id in target_user_ids:
+        target_user_subbed_recipients = target_user_subscriptions_dict[user_id]
+        for recipient_id in target_user_subbed_recipients:
+            users_subbed_to_target_user_subscriptions_dict[
+                user_id
+            ] |= subscribers_dict_by_recipient_ids[recipient_id]
+
+    return users_subbed_to_target_user_subscriptions_dict
+
+
+def get_users_involved_in_dms_with_target_users(
+    target_users: List[UserProfile], realm: Realm
+) -> Dict[int, Set[int]]:
+    target_user_ids = [user.id for user in target_users]
+
+    direct_messages_recipient_users = (
+        Message.objects.filter(
+            sender_id__in=target_user_ids, realm=realm, recipient__type=Recipient.PERSONAL
+        )
+        .order_by("sender_id")
+        .distinct("sender_id", "recipient__type_id")
+        .values("sender_id", "recipient__type_id")
+    )
+
+    direct_message_participants_dict: Dict[int, Set[int]] = defaultdict(set)
+    for sender_id, message_rows in itertools.groupby(
+        direct_messages_recipient_users, itemgetter("sender_id")
+    ):
+        recipient_user_ids = {row["recipient__type_id"] for row in message_rows}
+        direct_message_participants_dict[sender_id] = recipient_user_ids
+
+    personal_recipient_ids_for_target_users = [user.recipient_id for user in target_users]
+    direct_messages_senders = (
+        Message.objects.filter(
+            realm=realm,
+            recipient_id__in=personal_recipient_ids_for_target_users,
+            recipient__type=Recipient.PERSONAL,
+        )
+        .order_by("recipient__type_id")
+        .distinct("sender_id", "recipient__type_id")
+        .values("sender_id", "recipient__type_id")
+    )
+
+    for recipient_user_id, message_rows in itertools.groupby(
+        direct_messages_senders, itemgetter("recipient__type_id")
+    ):
+        sender_ids = {row["sender_id"] for row in message_rows}
+        direct_message_participants_dict[recipient_user_id] |= sender_ids
+
+    return direct_message_participants_dict
+
+
+def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
+    return RawUserDict(
+        id=user_profile.id,
+        full_name=user_profile.full_name,
+        email=user_profile.email,
+        avatar_source=user_profile.avatar_source,
+        avatar_version=user_profile.avatar_version,
+        is_active=user_profile.is_active,
+        role=user_profile.role,
+        is_billing_admin=user_profile.is_billing_admin,
+        is_bot=user_profile.is_bot,
+        timezone=user_profile.timezone,
+        date_joined=user_profile.date_joined,
+        bot_owner_id=user_profile.bot_owner_id,
+        delivery_email=user_profile.delivery_email,
+        bot_type=user_profile.bot_type,
+        long_term_idle=user_profile.long_term_idle,
+        email_address_visibility=user_profile.email_address_visibility,
+    )
 
 
 @cache_with_key(get_cross_realm_dicts_key)
-def get_cross_realm_dicts() -> List[Dict[str, Any]]:
+def get_cross_realm_dicts() -> List[APIUserDict]:
     user_dict = bulk_get_cross_realm_bots()
     users = sorted(user_dict.values(), key=lambda user: user.full_name)
     result = []
@@ -524,6 +671,74 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
     return result
 
 
+def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
+    fake_email = Address(username=f"user{user_id}", domain=get_fake_email_domain(realm)).addr_spec
+
+    # We just set date_joined field to UNIX epoch.
+    user_date_joined = timestamp_to_datetime(0)
+
+    user_dict = APIUserDict(
+        email=fake_email,
+        user_id=user_id,
+        avatar_version=1,
+        is_admin=False,
+        is_owner=False,
+        is_guest=False,
+        is_billing_admin=False,
+        role=UserProfile.ROLE_MEMBER,
+        is_bot=False,
+        full_name=str(UserProfile.INACCESSIBLE_USER_NAME),
+        timezone="",
+        is_active=True,
+        date_joined=user_date_joined.isoformat(),
+        delivery_email=None,
+        avatar_url=get_avatar_for_inaccessible_user(),
+        profile_data={},
+    )
+    return user_dict
+
+
+def get_accessible_user_ids(realm: Realm, user_profile: UserProfile) -> List[int]:
+    subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
+        [user_profile]
+    )
+    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([user_profile], realm)
+
+    # This does not include bots, because either the caller
+    # wants only human users or it handles bots separately.
+    accessible_user_ids = (
+        {user_profile.id}
+        | subscribers_dict_of_target_user_subscriptions[user_profile.id]
+        | users_involved_in_dms_dict[user_profile.id]
+    )
+
+    return list(accessible_user_ids)
+
+
+def get_user_dicts_in_realm(
+    realm: Realm, user_profile: Optional[UserProfile]
+) -> Tuple[List[RawUserDict], List[APIUserDict]]:
+    group_allowed_to_access_all_users = realm.can_access_all_users_group
+    assert group_allowed_to_access_all_users is not None
+
+    all_user_dicts = get_realm_user_dicts(realm.id)
+    if check_user_can_access_all_users(user_profile):
+        return (all_user_dicts, [])
+
+    assert user_profile is not None
+    accessible_user_ids = get_accessible_user_ids(realm, user_profile)
+
+    accessible_user_dicts: List[RawUserDict] = []
+    inaccessible_user_dicts: List[APIUserDict] = []
+    for user_dict in all_user_dicts:
+        if user_dict["id"] in accessible_user_ids or user_dict["is_bot"]:
+            accessible_user_dicts.append(user_dict)
+        else:
+            inaccessible_user_dicts.append(get_data_for_inaccessible_user(realm, user_dict["id"]))
+
+    return (accessible_user_dicts, inaccessible_user_dicts)
+
+
 def get_custom_profile_field_values(
     custom_profile_field_values: Iterable[CustomProfileFieldValue],
 ) -> Dict[int, Dict[str, Any]]:
@@ -542,7 +757,7 @@ def get_custom_profile_field_values(
     return profiles_by_user_id
 
 
-def get_raw_user_data(
+def get_users_for_api(
     realm: Realm,
     acting_user: Optional[UserProfile],
     *,
@@ -550,7 +765,7 @@ def get_raw_user_data(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
-) -> Dict[int, Dict[str, str]]:
+) -> Dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
     target_user is None, we fetch all users in the realm.
@@ -559,10 +774,12 @@ def get_raw_user_data(
     custom_profile_field_data = None
     # target_user is an optional parameter which is passed when user data of a specific user
     # is required. It is 'None' otherwise.
+    accessible_user_dicts: List[RawUserDict] = []
+    inaccessible_user_dicts: List[APIUserDict] = []
     if target_user is not None:
-        user_dicts = [user_profile_to_user_row(target_user)]
+        accessible_user_dicts = [user_profile_to_user_row(target_user)]
     else:
-        user_dicts = get_realm_user_dicts(realm.id)
+        accessible_user_dicts, inaccessible_user_dicts = get_user_dicts_in_realm(realm, acting_user)
 
     if include_custom_profile_fields:
         base_query = CustomProfileFieldValue.objects.select_related("field")
@@ -574,7 +791,7 @@ def get_raw_user_data(
         profiles_by_user_id = get_custom_profile_field_values(custom_profile_field_values)
 
     result = {}
-    for row in user_dicts:
+    for row in accessible_user_dicts:
         if profiles_by_user_id is not None:
             custom_profile_field_data = profiles_by_user_id.get(row["id"], {})
         client_gravatar_for_user = (
@@ -589,6 +806,13 @@ def get_raw_user_data(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             custom_profile_field_data=custom_profile_field_data,
         )
+
+    for inaccessible_user_row in inaccessible_user_dicts:
+        # We already have the required data for inaccessible users
+        # in row object, so we can just add it to result directly.
+        user_id = inaccessible_user_row["user_id"]
+        result[user_id] = inaccessible_user_row
+
     return result
 
 

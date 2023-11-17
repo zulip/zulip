@@ -20,6 +20,119 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 226**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions): Removed
+  `email_address` field from subscription objects.
+
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Added new endpoint to get email address of a stream.
+
+**Feature level 225**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_access_all_users_group_id`
+  realm setting, which is the ID of the user group whose members can
+  access all the users in the oragnization.
+
+* [`POST /register`](/api/register-queue): Added `allowed_system_groups`
+  field to configuration data object of permission settings passed in
+  `server_supported_permission_settings`.
+
+**Feature level 224**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): The `wildcard_mentioned`
+  flag was deprecated, replaced with `stream_wildcard_mentioned` and
+  `topic_wildcard_mentioned`, but it is still available for backwards compatibility.
+
+**Feature level 223**
+
+* `POST /users/me/apns_device_token`:
+  The `appid` parameter is now required.
+  Previously it defaulted to the server setting `ZULIP_IOS_APP_ID`,
+  defaulting to "org.zulip.Zulip".
+
+* `POST /remotes/server/register`: The `ios_app_id` parameter is now
+  required when `kind` is 1, i.e. when registering an APNs token.
+  Previously it was ignored, and the push bouncer effectively
+  assumed its value was the server setting `APNS_TOPIC`,
+  defaulting to "org.zulip.Zulip".
+
+**Feature level 222**
+
+* [`GET /events`](/api/get-events): When a user is deactivated or
+  reactivated, the server uses `realm_user` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_user` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+* [`GET /events`](/api/get-events): When a bot is deactivated or
+  reactivated, the server sends `realm_bot` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_bot` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+**Feature level 221**
+
+* [`POST /register`](/api/register-queue): Added `server_supported_permission_settings`
+  field in the response which contains configuration data for various permission
+  settings.
+
+**Feature level 220**
+
+* [`GET /events`](/api/get-events): Stream creation events for web-public
+  streams are now sent to all guest users in the organization as well.
+
+* [`GET /events`](/api/get-events): The `subscription` events for `op:
+  "peer_add"` and `op: "peer_remove"` are now sent to subscribed guest
+  users for public streams and to all the guest users for web-public
+  streams; previously, they incorrectly only received these for
+  private streams.
+
+**Feature level 219**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`PATCH /settings`](/api/update-settings): Renamed `default_view` and
+  `escape_navigates_to_default_view` settings to `web_home_view` and
+  `web_escape_navigates_to_home_view` respectively.
+
+**Feature level 218**
+
+* [`POST /messages`](/api/send-message): Added an optional
+  `automatic_new_visibility_policy` enum field in the success response
+  to indicate the new visibility policy value due to the [visibility policy settings](/help/mute-a-topic)
+  during the send message action.
+
+**Feature level 217**
+
+* [`POST /mobile_push/test_notification`](/api/test-notify): Added new endpoint
+  to send a test push notification to a mobile device or devices.
+
+**Feature level 216**:
+
+* `PATCH /realm`, [`POST register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `enable_guest_user_indicator`
+  setting to control whether "(guest)" is added to user names in UI.
+
+**Feature level 215**
+
+* [`GET /events`](/api/get-events): Replaced the value `private`
+  with `direct` in the `message_type` field for the `typing` events
+  sent when a user starts or stops typing a message.
+
+* [`POST /typing`](/api/set-typing-status): Stopped supporting `private`
+  as a valid value for the `type` parameter.
+
+* [`POST /typing`](/api/set-typing-status): Stopped using the `to` parameter
+  for the `"stream"` type. Previously, in the case of the `"stream"` type, it
+  accepted a single-element list containing the ID of the stream. Added an
+  optional parameter, `stream_id`. Now, `to` is used only for `"direct"` type.
+  In the case of `"stream"` type, `stream_id` and `topic` are used.
+
+* Note that stream typing notifications were not enabled in any Zulip client
+  prior to feature level 215.
+
 **Feature level 214**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
@@ -937,7 +1050,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to
-  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  [disable the keyboard shortcut](/help/configure-home-view) for the `Esc` key that
   navigates the app to the default view.
 
 **Feature level 106**
@@ -1439,7 +1552,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/configure-default-view).
+  the user to [set the default view](/help/configure-home-view).
 
 **Feature level 41**
 
