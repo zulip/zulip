@@ -1794,6 +1794,13 @@ td.pointer {
     flex-grow: 1;
     align-items: center;
 
+    .external-topic-link {
+        /* Vertically center the external link
+           icon inside its containing anchor. */
+        display: flex;
+        align-items: center;
+    }
+
     .change_visibility_policy {
         cursor: pointer;
 
