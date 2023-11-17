@@ -2312,12 +2312,21 @@ div.focused-message-list {
             font-size: 16px;
         }
 
+        .fa-envelope {
+            /* The squatter envelope icon appears
+               better vertically centered when aligned
+               to the baseline of the adjacent DM partners. */
+            align-self: baseline;
+        }
+
         @media (width < $sm_min) {
             padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
         & i {
-            margin: 0 3px 0 5px;
+            margin: 0 6px 0 5px;
+            /* Align all icons to center. */
+            align-self: center;
         }
 
         .fa {
@@ -2330,12 +2339,6 @@ div.focused-message-list {
                 font-size: 1.2rem;
                 margin: 0 2px 0 5px;
             }
-        }
-
-        .zulip-icon-inbox,
-        .zulip-icon-star-filled {
-            position: relative;
-            top: 2px;
         }
     }
 
