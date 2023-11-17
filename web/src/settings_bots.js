@@ -390,6 +390,34 @@ export function set_up() {
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
+    $("#active_bots_list").on("click", ".button-copy-email", function() {
+        const $email_button = $(this); // Reference to the clicked button
+        const email = $email_button.attr("email");
+    
+        const clipboardInstance = new ClipboardJS($email_button[0], {
+            text() {
+                return email;
+            }
+        });
+    
+        clipboardInstance.on("success", (e) => {
+            // eslint-disable-next-line no-console
+            console.log("Email copied: " + e.text);
+            // Optionally show a message or perform other actions after successful copy
+        });
+    
+        clipboardInstance.on("error", (e) => {
+            // eslint-disable-next-line no-console
+            console.error("Failed to copy email: " + e.action);
+            // Optionally handle errors if the copy fails
+        });
+    
+        // Manually trigger the click event to copy the email
+        clipboardInstance.onClick({
+            currentTarget: $email_button[0]
+        });
+    });
+
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", (e) => {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         channel.post({
@@ -438,6 +466,34 @@ export function set_up() {
         integration_url_modal.show_generate_integration_url_modal(api_key);
     });
 
+    $("#active_bots_list").on("click", ".button-copy-api-key", function() {
+        const $api_key_button = $(this); // Reference to the clicked button
+        const api_key = $api_key_button.attr("data-api-key");
+    
+        const clipboardInstance = new ClipboardJS($api_key_button[0], {
+            text() {
+                return api_key;
+            }
+        });
+    
+        clipboardInstance.on("success", (e) => {
+            // eslint-disable-next-line no-alert
+            alert("API Key copied: " + e.text);
+            // Optionally show a message or perform other actions after successful copy
+        });
+    
+        clipboardInstance.on("error", (e) => {
+            // eslint-disable-next-line no-alert
+            alert("Failed to copy API Key: " + e.action);
+            // Optionally handle errors if the copy fails
+        });
+    
+        // Manually trigger the click event to copy the API key
+        clipboardInstance.onClick({
+            currentTarget: $api_key_button[0]
+        });
+    });
+
     const clipboard = new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
@@ -447,6 +503,8 @@ export function set_up() {
             return data;
         },
     });
+
+    $("active_bots_list").on("click", "button.open-generate-integration-url")
 
     // Show a tippy tooltip when the bot zuliprc is copied
     clipboard.on("success", (e) => {

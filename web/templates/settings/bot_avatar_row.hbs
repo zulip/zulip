@@ -37,7 +37,12 @@
         <div class="email">
             <div class="field">{{t "Bot email" }}</div>
             <div class="value">{{email}}</div>
-        </div>
+            <div>
+                <button class="button-copy-email">
+                       <i class="fa fa-clipboard" aria-hidden="true">
+                    </i></button>
+
+        </div></div>
         {{#if is_active}}
         <div class="api_key">
             <span class="field">{{t "API key" }}</span>
@@ -47,6 +52,9 @@
                 <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-refresh" aria-hidden="true"></i>
                 </button>
+                <button class="button-copy-api-key">
+                       <i class="fa fa-clipboard" aria-hidden="true">
+                    </i></button>
             </div>
             <div class="api_key_error text-error"></div>
         </div>
