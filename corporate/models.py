@@ -17,8 +17,12 @@ class Customer(models.Model):
     and the active plan, if any.
     """
 
+    # The actual model object that this customer is associated
+    # with. Exactly one of the following will be non-null.
     realm = models.OneToOneField(Realm, on_delete=CASCADE, null=True)
+    remote_realm = models.OneToOneField(RemoteRealm, on_delete=CASCADE, null=True)
     remote_server = models.OneToOneField(RemoteZulipServer, on_delete=CASCADE, null=True)
+
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending = models.BooleanField(default=False)
     # A percentage, like 85.
@@ -30,10 +34,13 @@ class Customer(models.Model):
     exempt_from_license_number_check = models.BooleanField(default=False)
 
     class Meta:
+        # Enforce that at least one of these is set.
         constraints = [
             models.CheckConstraint(
-                check=Q(realm__isnull=False) ^ Q(remote_server__isnull=False),
-                name="cloud_xor_self_hosted",
+                check=Q(realm__isnull=False)
+                | Q(remote_server__isnull=False)
+                | Q(remote_realm__isnull=False),
+                name="has_associated_model_object",
             )
         ]
 
