@@ -205,11 +205,12 @@ def get_realms_info_for_push_bouncer() -> List[RealmDataForAnalytics]:
 
 
 def send_analytics_to_push_bouncer() -> None:
+    logger = logging.getLogger("zulip.analytics")
     # first, check what's latest
     try:
         result = send_to_push_bouncer("GET", "server/analytics/status", {})
     except PushNotificationBouncerRetryLaterError as e:
-        logging.warning(e.msg, exc_info=True)
+        logger.warning(e.msg, exc_info=True)
         return
 
     last_acked_realm_count_id = result["last_realm_count_id"]
@@ -244,7 +245,7 @@ def send_analytics_to_push_bouncer() -> None:
     try:
         send_to_push_bouncer("POST", "server/analytics", request)
     except JsonableError as e:
-        logging.warning(e.msg)
+        logger.warning(e.msg)
 
 
 def send_realms_only_to_push_bouncer() -> None:
