@@ -111,6 +111,9 @@ class DataCollector:
         self.output_table = output_table
         self.pull_function = pull_function
 
+    def depends_on_realm(self) -> bool:
+        return self.output_table in (UserCount, StreamCount)
+
 
 ## CountStat-level operations ##
 
@@ -199,7 +202,7 @@ def do_fill_count_stat_at_hour(
 def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
     if isinstance(stat, LoggingCountStat):
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
-        if stat.data_collector.output_table in [UserCount, StreamCount]:
+        if stat.data_collector.depends_on_realm():
             RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
     else:
         UserCount.objects.filter(property=stat.property, end_time=end_time).delete()
@@ -220,7 +223,7 @@ def do_aggregate_to_summary_table(
     else:
         realm_clause = SQL("")
 
-    if output_table in (UserCount, StreamCount):
+    if stat.data_collector.depends_on_realm():
         realmcount_query = SQL(
             """
             INSERT INTO analytics_realmcount
