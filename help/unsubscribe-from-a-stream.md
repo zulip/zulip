@@ -22,7 +22,7 @@ You can always unsubscribe from any stream in Zulip.
 
 ## Alternate methods to unsubscribe from a stream
 
-### Via manage streams
+### Via subscribed streams
 
 {start_tabs}
 
