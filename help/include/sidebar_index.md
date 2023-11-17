@@ -46,6 +46,7 @@
 
 ## Preferences
 * [Dark theme](/help/dark-theme)
+* [Font size](/help/font-size)
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
 * [Change the time format](/help/change-the-time-format)
