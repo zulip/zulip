@@ -523,7 +523,7 @@ export function setup_page(callback) {
     // so it's too risky a change for now.
     //
     // The history behind setting up the page from scratch every
-    // time we go into "Manage streams" is that we used to have
+    // time we go into "Stream settings" is that we used to have
     // some live-update issues, so being able to re-launch the
     // streams page is kind of a workaround for those bugs, since
     // we will re-populate the widget.
@@ -532,7 +532,7 @@ export function setup_page(callback) {
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
-        // Sort by name by default when opening "Manage streams".
+        // Sort by name by default when opening "Stream settings".
         sort_order = "by-stream-name";
         const sort_toggler = components.toggle({
             values: [
@@ -564,7 +564,7 @@ export function setup_page(callback) {
         $("#streams_overlay_container .list-toggler-container").prepend(sort_toggler.get());
 
         // Reset our internal state to reflect that we're initially in
-        // the "Subscribed" tab if we're reopening "Manage streams".
+        // the "Subscribed" tab if we're reopening "Stream settings".
         stream_ui_updates.set_subscribed_only(true);
         toggler = components.toggle({
             child_wants_focus: true,
