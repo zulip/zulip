@@ -2152,11 +2152,15 @@ paths:
 
                                     - 0 = None. Used to indicate that the user no
                                       longer has a special visibility policy for this topic.
-                                    - 1 = Muted. Used to record muted topics.
+                                    - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
                                     - 2 = Unmuted. Used to record unmuted topics.
+                                    - 3 = Followed. Used to record [followed topics](/help/follow-a-topic).
 
-                                    **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                    **Changes**: In Zulip 7.0 (feature level 219), added followed as
                                     a visibility policy option.
+
+                                    In Zulip 7.0 (feature level 170), added unmuted as a visibility
+                                    policy option.
                               additionalProperties: false
                               example:
                                 {
@@ -9445,9 +9449,13 @@ paths:
             - 0 = None. Removes the visibility policy previously set for the topic.
             - 1 = Muted. [Mutes the topic](/help/mute-a-topic) in a stream.
             - 2 = Unmuted. [Unmutes the topic](/help/mute-a-topic) in a muted stream.
+            - 3 = Followed. [Follows the topic](/help/follow-a-topic).
 
             In an unmuted stream, a topic visibility policy of unmuted will have the
             same effect as the "None" visibility policy.
+
+            **Changes**: In Zulip 7.0 (feature level 219), added followed as
+            a visibility policy option.
           schema:
             type: integer
             enum:
@@ -12871,9 +12879,13 @@ paths:
 
                                 - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
                                 - 2 = Unmuted. Used to record [unmuted topics](/help/mute-a-topic).
+                                - 3 = Followed. Used to record [followed topics](/help/follow-a-topic).
 
-                                **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                **Changes**: In Zulip 7.0 (feature level 219), added followed as
                                 a visibility policy option.
+
+                                In Zulip 7.0 (feature level 170), added unmuted as a visibility
+                                policy option.
                       has_zoom_token:
                         type: boolean
                         description: |

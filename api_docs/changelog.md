@@ -96,6 +96,10 @@ format used by the Zulip server that they are interacting with.
   [`PATCH /settings`](/api/update-settings): Renamed `default_view` and
   `escape_navigates_to_default_view` settings to `web_home_view` and
   `web_escape_navigates_to_home_view` respectively.
+* [`POST /user_topics`](/api/update-user-topic), [`POST
+  register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Added followed as a supported value for visibility policies in
+  `user_topic` objects.
 
 **Feature level 218**
 
