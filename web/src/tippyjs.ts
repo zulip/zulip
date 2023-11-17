@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import tippy, {delegate} from "tippy.js";
 
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
@@ -8,12 +9,16 @@ import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
-function get_tooltip_content(reference) {
-    if ("tooltipTemplateId" in reference.dataset) {
-        const template = document.querySelector(
+function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
+    if (reference instanceof HTMLElement && reference.dataset.tooltipTemplateId !== undefined) {
+        const template = document.querySelector<HTMLTemplateElement>(
             `template#${CSS.escape(reference.dataset.tooltipTemplateId)}`,
         );
-        return template.content.cloneNode(true);
+        if (template !== null) {
+            const fragment = template.content.cloneNode(true);
+            assert(fragment instanceof DocumentFragment);
+            return fragment;
+        }
     }
     return "";
 }
@@ -23,19 +28,19 @@ function get_tooltip_content(reference) {
 // transition, while the "long" version is intended for elements where
 // we want to avoid distracting the user with the tooltip
 // unnecessarily.
-const INSTANT_HOVER_DELAY = [100, 20];
+const INSTANT_HOVER_DELAY: [number, number] = [100, 20];
 // INTERACTIVE_HOVER_DELAY is for elements like the emoji reactions, where
 // the tooltip includes useful information (who reacted?), but that
 // needs a short delay for users who are just tapping a reaction
 // element and not interested in the tooltip's contents.
-export const INTERACTIVE_HOVER_DELAY = [425, 20];
-export const LONG_HOVER_DELAY = [750, 20];
+export const INTERACTIVE_HOVER_DELAY: [number, number] = [425, 20];
+export const LONG_HOVER_DELAY: [number, number] = [750, 20];
 // EXTRA_LONG_HOVER_DELAY is for elements like the compose box send
 // button where the tooltip content is almost exactly the same as the
 // text in the button, and the tooltip exists just to advertise a
 // keyboard shortcut. For these tooltips, it's very important to avoid
 // distracting users unnecessarily.
-export const EXTRA_LONG_HOVER_DELAY = [1500, 20];
+export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -65,7 +70,7 @@ tippy.setDefaultProps({
     content: get_tooltip_content,
 });
 
-export function initialize() {
+export function initialize(): void {
     $("#tooltip-templates-container").html(render_tooltip_templates());
 
     // Our default tooltip configuration. For this, one simply needs to:
@@ -152,9 +157,9 @@ export function initialize() {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onShow(instance) {
-            const $container = instance.popper.querySelector(".views-tooltip-container");
-            if ($($container).data("view-code") === user_settings.web_home_view) {
-                $($container).find(".views-tooltip-home-view-note").removeClass("hide");
+            const $container = $(instance.popper).find(".views-tooltip-container");
+            if ($container.data("view-code") === user_settings.web_home_view) {
+                $container.find(".views-tooltip-home-view-note").removeClass("hide");
             }
         },
         onHidden(instance) {
@@ -188,7 +193,6 @@ export function initialize() {
                 content = $t({defaultMessage: "Deselect draft"});
             }
             instance.setContent(content);
-            return true;
         },
     });
 
@@ -202,7 +206,6 @@ export function initialize() {
                 content = $t({defaultMessage: "No drafts selected"});
             }
             instance.setContent(content);
-            return true;
         },
     });
 
@@ -230,7 +233,7 @@ export function initialize() {
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
             "#copy_generated_invite_link",
-        ],
+        ].join(","),
         appendTo: () => document.body,
     });
 
@@ -238,7 +241,7 @@ export function initialize() {
         target: [
             "#compose_top_right [data-tippy-content]",
             "#compose_top_right [data-tooltip-template-id]",
-        ],
+        ].join(","),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
@@ -251,6 +254,9 @@ export function initialize() {
         appendTo: () => document.body,
         onShow(instance) {
             const title = $(instance.reference).attr("aria-label");
+            if (title === undefined) {
+                return false;
+            }
             const filename = $(instance.reference).prop("data-filename");
             const $markup = $("<span>").text(title);
             if (title !== filename) {
@@ -260,6 +266,7 @@ export function initialize() {
                 $markup.append($("<br>"), $("<span>").text(second_line));
             }
             instance.setContent($markup[0]);
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
@@ -289,7 +296,7 @@ export function initialize() {
             "#profile-field-settings .display_in_profile_summary_tooltip",
             "#edit-custom-profile-field-form-modal .display_in_profile_summary_tooltip",
             "#add-new-custom-profile-field-form .display_in_profile_summary_tooltip",
-        ],
+        ].join(","),
         content: $t({
             defaultMessage: "Only 2 custom profile fields can be displayed on the user card.",
         }),
@@ -304,7 +311,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#full_name_input_container.disabled_setting_tooltip"],
+        target: "#full_name_input_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
                 "Name changes are disabled in this organization. Contact an administrator to change your name.",
@@ -316,7 +323,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#change_email_button_container.disabled_setting_tooltip"],
+        target: "#change_email_button_container.disabled_setting_tooltip",
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -328,7 +335,7 @@ export function initialize() {
         target: [
             "#deactivate_account_container.disabled_setting_tooltip",
             "#edit-user-form .deactivate_user_button_tooltip",
-        ],
+        ].join(","),
         content: $t({
             defaultMessage:
                 "Because you are the only organization owner, you cannot deactivate your account.",
@@ -340,7 +347,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#deactivate_realm_button_container.disabled_setting_tooltip"],
+        target: "#deactivate_realm_button_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage: "Only organization owners may deactivate an organization.",
         }),
@@ -351,7 +358,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: [".settings-radio-input-parent.default_stream_private_tooltip"],
+        target: ".settings-radio-input-parent.default_stream_private_tooltip",
         content: $t({
             defaultMessage: "Default streams for new users cannot be made private.",
         }),
@@ -362,7 +369,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: [".default-stream.default_stream_private_tooltip"],
+        target: ".default-stream.default_stream_private_tooltip",
         content: $t({
             defaultMessage: "Private streams cannot be default streams for new users.",
         }),
@@ -373,7 +380,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#generate_multiuse_invite_radio_container.disabled_setting_tooltip"],
+        target: "#generate_multiuse_invite_radio_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
                 "You do not have permissions to generate invite links in this organization.",
@@ -388,7 +395,7 @@ export function initialize() {
         target: [
             "#api_key_button_container.disabled_setting_tooltip",
             "#user_email_address_dropdown_container.disabled_setting_tooltip",
-        ],
+        ].join(","),
         content: $t({
             defaultMessage: "You must configure your email to access this feature.",
         }),
@@ -399,7 +406,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#email_invite_radio_container.disabled_setting_tooltip"],
+        target: "#email_invite_radio_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
                 "You do not have permissions to send email invitations in this organization.",
@@ -422,7 +429,6 @@ export function initialize() {
             } else {
                 instance.setContent($t({defaultMessage: "Expand views"}));
             }
-            return true;
         },
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -444,14 +450,14 @@ export function initialize() {
             } else {
                 instance.setContent($t({defaultMessage: "Expand direct messages"}));
             }
-            return true;
+            return undefined;
         },
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
 
     delegate("body", {
-        target: ["#stream_creation_form .add_subscribers_disabled"],
+        target: "#stream_creation_form .add_subscribers_disabled",
         content: $t({
             defaultMessage:
                 "You do not have permission to add other users to streams in this organization.",
@@ -463,15 +469,15 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: [".user_row .actions button"],
+        target: ".user_row .actions button",
         trigger: "mouseenter",
         onShow(instance) {
             if ($(instance.reference).hasClass("deactivate")) {
                 instance.setContent($t({defaultMessage: "Deactivate"}));
-                return true;
+                return undefined;
             } else if ($(instance.reference).hasClass("reactivate")) {
                 instance.setContent($t({defaultMessage: "Reactivate"}));
-                return true;
+                return undefined;
             }
             return false;
         },

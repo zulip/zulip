@@ -70,6 +70,31 @@ export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     return translated;
 }
 
+function contains_problematic_linkifier({content, get_linkifier_map}) {
+    // If a linkifier doesn't start with some specified characters
+    // then don't render it locally. It is workaround for the fact that
+    // javascript regex doesn't support lookbehind.
+    for (const re of get_linkifier_map().keys()) {
+        const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
+        const regex = new RegExp(pattern);
+        if (regex.test(content)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function content_contains_backend_only_syntax({content, get_linkifier_map}) {
+    // Try to guess whether or not a message contains syntax that only the
+    // backend Markdown processor can correctly handle.
+    // If it doesn't, we can immediately render it client-side for local echo.
+    return (
+        contains_preview_link(content) ||
+        contains_problematic_linkifier({content, get_linkifier_map})
+    );
+}
+
 function parse_with_options({raw_content, helper_config, options}) {
     // Given the raw markdown content of a message (raw_content)
     // we return the HTML content (content) and flags.
@@ -292,27 +317,13 @@ export function get_topic_links({topic, get_linkifier_map}) {
     let precedence = 0;
 
     for (const [pattern, {url_template, group_number_to_name}] of get_linkifier_map().entries()) {
-        // Strip off the "g" modifier
-        const non_global_pattern = new RegExp(pattern.source, pattern.flags.replace("g", ""));
-        let pos = 0;
-        while (pos < topic.length) {
-            const match = non_global_pattern.exec(topic.slice(pos));
-            if (match === null) {
-                break;
-            }
-            // Advance position to the start of the body of the match, after the index
-            // offset and any leading whitespace (captured in match[1])
-            pos += match.index + match[1].length;
-
-            // match[0] is the entire match, which may have leading or trailing boundary
-            // characters. match[1] is the leading characters, match[2] is the main body of the
-            // match, and user-provided groups start in match[3].  Slice those user-provided groups
-            // off.
-            const user_groups = match.slice(3, -1);
+        let match;
+        while ((match = pattern.exec(topic)) !== null) {
+            const matched_groups = match.slice(1);
             let i = 0;
             const template_context = {};
-            while (i < user_groups.length) {
-                const matched_group = user_groups[i];
+            while (i < matched_groups.length) {
+                const matched_group = matched_groups[i];
                 const current_group = i + 1;
                 template_context[group_number_to_name[current_group]] = matched_group;
                 i += 1;
@@ -320,13 +331,7 @@ export function get_topic_links({topic, get_linkifier_map}) {
             const link_url = url_template.expand(template_context);
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
-            links.push({url: link_url, text: match[2], index: pos, precedence});
-
-            // Adjust the start point of the match for the next iteration -- we already advanced
-            // to the start of the user match, so now only advance by match[2], so that we don't
-            // include the length of any trailing characters. This means that patterns can overlap
-            // their whitespace.
-            pos += match[2].length;
+            links.push({url: link_url, text: match[0], index: match.index, precedence});
         }
         precedence += 1;
     }
@@ -443,10 +448,10 @@ function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
 function handleLinkifier({pattern, matches, get_linkifier_map}) {
     const {url_template, group_number_to_name} = get_linkifier_map().get(pattern);
 
-    const user_groups = matches.slice(1);
     let current_group = 1;
     const template_context = {};
-    for (const match of user_groups) {
+
+    for (const match of matches) {
         template_context[group_number_to_name[current_group]] = match;
         current_group += 1;
     }
@@ -683,7 +688,10 @@ export function add_topic_links(message) {
 }
 
 export function contains_backend_only_syntax(content) {
-    return contains_preview_link(content);
+    return content_contains_backend_only_syntax({
+        content,
+        get_linkifier_map: web_app_helpers.get_linkifier_map,
+    });
 }
 
 export function parse_non_message(raw_content) {
