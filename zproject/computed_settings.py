@@ -763,6 +763,12 @@ LOGGING: Dict[str, Any] = {
                 else []
             ),
         },
+        "analytics_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.WatchedFileHandler",
+            "formatter": "default",
+            "filename": ANALYTICS_LOG_PATH,
+        },
         "auth_file": {
             "level": "DEBUG",
             "class": "logging.handlers.WatchedFileHandler",
@@ -928,6 +934,10 @@ LOGGING: Dict[str, Any] = {
         },
         "zerver.management.commands.deliver_scheduled_messages": {
             "level": "DEBUG",
+        },
+        "zulip.analytics": {
+            "handlers": ["analytics_file", "errors_file"],
+            "propagate": False,
         },
         "zulip.auth": {
             "level": "DEBUG",
