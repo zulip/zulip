@@ -2274,6 +2274,7 @@ div.focused-message-list {
     width: 100%;
     line-height: var(--header-height);
     display: flex;
+    align-items: baseline;
     white-space: nowrap;
     cursor: default;
 
@@ -2293,9 +2294,19 @@ div.focused-message-list {
         text-decoration: none;
         /* Don't yield any space needed for the stream name. */
         flex-shrink: 0;
+        /* Create a flex container for the icon and
+           stream name. */
+        display: flex;
+        /* We want to use baseline alignment so that the
+           stream name and narrow description sit on
+           the same invisible line. */
+        align-items: baseline;
 
         .zulip-icon {
             font-size: 14px;
+            /* Pull the icon out of baseline alignment,
+               and center with stream name. */
+            align-self: center;
         }
 
         @media (width < $sm_min) {
