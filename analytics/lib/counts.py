@@ -19,7 +19,6 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
-from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
 from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
 
@@ -31,10 +30,9 @@ if settings.ZILENCER_ENABLED:
         RemoteZulipServer,
     )
 
-## Logging setup ##
 
-logger = logging.getLogger("zulip.management")
-log_to_file(logger, settings.ANALYTICS_LOG_PATH)
+logger = logging.getLogger("zulip.analytics")
+
 
 # You can't subtract timedelta.max from a datetime, so use this instead
 TIMEDELTA_MAX = timedelta(days=365 * 1000)
