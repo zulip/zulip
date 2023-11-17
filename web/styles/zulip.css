@@ -2272,11 +2272,7 @@ div.focused-message-list {
     height: var(--header-height);
     width: 100%;
     line-height: var(--header-height);
-    font-size: 16px;
     display: flex;
-    align-content: flex-start;
-    flex-wrap: nowrap;
-    margin: 0;
     white-space: nowrap;
     cursor: default;
 
@@ -2286,21 +2282,15 @@ div.focused-message-list {
 
     .message-header-stream-settings-button,
     & > span {
-        white-space: nowrap;
-        list-style-type: none;
-        display: inline-block;
-        vertical-align: top;
-        position: relative;
         font-weight: 600;
         font-size: 16px;
-        line-height: 16px;
         margin: 0 -4px 0 0;
-        padding: 12px 6px;
+        padding: 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
 
         @media (width < $sm_min) {
-            padding: 7px 3.5px; /* based on having ~41.66% decrease */
+            padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
         & i {
@@ -2335,8 +2325,6 @@ div.focused-message-list {
 
         .zulip-icon {
             font-size: 14px;
-            position: relative;
-            top: 1px;
         }
     }
 
@@ -2348,23 +2336,11 @@ div.focused-message-list {
            is chosen such that the narrow description shrinks to close
            before the stream name must begin to shrink */
         flex-shrink: 100;
-        white-space: nowrap;
-        padding: 12px 0;
         padding-left: 10px;
         background: none;
         font-size: 14px;
         color: inherit;
         font-weight: 400;
-        line-height: 20px;
-
-        @media (width < $sm_min) {
-            padding: 7px 0;
-            padding-left: 10px;
-        }
-
-        & > a {
-            padding: 12px 0;
-        }
     }
 
     /* The very last element in the navbar is the search icon, the second
