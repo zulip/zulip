@@ -429,7 +429,7 @@ class HelpTest(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/help/message-a-stream-by-email", subdomain="")
         self.assertEqual(result.status_code, 200)
-        self.assertIn("<strong>Manage streams</strong>", str(result.content))
+        self.assertIn("<strong>Stream settings</strong>", str(result.content))
         self.assertNotIn("/#streams", str(result.content))
 
 

@@ -19,7 +19,7 @@ gear_info = {
     # key is from REGEXP: `{relative|gear|key}`
     # name is what the item is called in the gear menu: `Select **name**.`
     # link is used for relative links: `Select [name](link).`
-    "manage-streams": ['<i class="fa fa-exchange"></i> Manage streams', "/#streams/subscribed"],
+    "stream-settings": ['<i class="fa fa-exchange"></i> Stream settings', "/#streams/subscribed"],
     "settings": ['<i class="fa fa-wrench"></i> Personal Settings', "/#settings/profile"],
     "organization-settings": [
         '<i class="fa fa-bolt"></i> Organization settings',
@@ -92,7 +92,7 @@ stream_instructions_no_link = """
 1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
    right corner of the web or desktop app.
 
-1. Click **Manage streams**.
+1. Click **Stream settings**.
 """
 
 
