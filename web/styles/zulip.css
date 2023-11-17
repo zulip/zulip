@@ -2282,14 +2282,14 @@ div.focused-message-list {
         display: none;
     }
 
-    .message-header-stream-settings-button {
+    .message-header-stream-settings-button,
+    .navbar_title {
         font-weight: 600;
         font-size: 16px;
         margin: 0 -4px 0 0;
         padding: 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
-        text-overflow: clip;
         color: inherit;
         text-decoration: none;
         /* Don't yield any space needed for the stream name. */
@@ -2307,6 +2307,10 @@ div.focused-message-list {
             /* Pull the icon out of baseline alignment,
                and center with stream name. */
             align-self: center;
+        }
+
+        .zulip-icon-inbox {
+            font-size: 16px;
         }
 
         @media (width < $sm_min) {
@@ -2336,6 +2340,11 @@ div.focused-message-list {
         }
     }
 
+    .message-header-navbar-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .narrow_description {
         /* the actual value of flex shrink does not matter, it is the
            ratio of this value to other flex items that determines the
@@ -2357,10 +2366,13 @@ div.focused-message-list {
     /* The very last element in the navbar is the search icon, the second
        last element is either the narrow description (for stream narrows) or
        the "title" (for other narrows). The flex-grow property ensures these
-       elements take up the entirety of the white space. */
+       elements take up the entirety of the white space, while flex-shrink
+       accommodates narrower viewports. Setting flex-basis 0 enables an
+       ellipsis to be displayed, as the 0 takes the place of the max-content
+       default that would otherwise run titles under the search box. */
     .navbar_title,
     .narrow_description {
-        flex-grow: 1;
+        flex: 1 1 0;
         margin: 0;
         /* Calculate right margin so that text can truncate
            and not collide with the search section. */
