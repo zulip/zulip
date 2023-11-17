@@ -12,6 +12,7 @@ import * as rows from "./rows";
 import * as util from "./util";
 
 let is_open = false;
+let is_image = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.
 const asset_map = new Map();
@@ -75,11 +76,15 @@ export class PanZoomControl {
             switch (e.key) {
                 case "Z":
                 case "+":
-                    this.zoomIn();
+                    if (is_image) {
+                        this.zoomIn();
+                    }
                     break;
                 case "z":
                 case "-":
-                    this.zoomOut();
+                    if (is_image) {
+                        this.zoomOut();
+                    }
                     break;
                 case "v":
                     overlays.close_overlay("lightbox");
@@ -348,6 +353,7 @@ export function build_open_media_function(on_close) {
             }
         }
 
+        is_image = payload.type === "image";
         if (payload.type.match("-video")) {
             display_video(payload);
         } else if (payload.type === "image") {
