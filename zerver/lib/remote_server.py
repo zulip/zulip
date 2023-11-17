@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
+from pydantic import BaseModel, ConfigDict
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
@@ -27,6 +28,19 @@ class PushNotificationBouncerError(Exception):
 
 class PushNotificationBouncerRetryLaterError(JsonableError):
     http_status_code = 502
+
+
+class RealmDataForAnalytics(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: int
+    host: str
+    url: str
+    date_created: float
+    deactivated: bool
+
+    uuid: str
+    uuid_owner_secret: str
 
 
 def send_to_push_bouncer(
@@ -172,10 +186,10 @@ def build_analytics_data(
     )
 
 
-def get_realms_info_for_push_bouncer() -> List[Dict[str, Any]]:
+def get_realms_info_for_push_bouncer() -> List[RealmDataForAnalytics]:
     realms = Realm.objects.order_by("id")
-    realm_info_dicts = [
-        dict(
+    realm_info_list = [
+        RealmDataForAnalytics(
             id=realm.id,
             uuid=str(realm.uuid),
             uuid_owner_secret=realm.uuid_owner_secret,
@@ -187,7 +201,7 @@ def get_realms_info_for_push_bouncer() -> List[Dict[str, Any]]:
         for realm in realms
     ]
 
-    return realm_info_dicts
+    return realm_info_list
 
 
 def send_analytics_to_push_bouncer() -> None:
@@ -221,7 +235,9 @@ def send_analytics_to_push_bouncer() -> None:
         "realm_counts": orjson.dumps(realm_count_data).decode(),
         "installation_counts": orjson.dumps(installation_count_data).decode(),
         "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-        "realms": orjson.dumps(get_realms_info_for_push_bouncer()).decode(),
+        "realms": orjson.dumps(
+            [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
+        ).decode(),
         "version": orjson.dumps(ZULIP_VERSION).decode(),
     }
 
@@ -235,7 +251,9 @@ def send_realms_only_to_push_bouncer() -> None:
     request = {
         "realm_counts": "[]",
         "installation_counts": "[]",
-        "realms": orjson.dumps(get_realms_info_for_push_bouncer()).decode(),
+        "realms": orjson.dumps(
+            [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
+        ).decode(),
         "version": orjson.dumps(ZULIP_VERSION).decode(),
     }
 
