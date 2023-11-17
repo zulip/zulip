@@ -1805,7 +1805,6 @@ td.pointer {
         cursor: pointer;
 
         i {
-            font-size: 17px;
             display: block;
         }
     }
