@@ -323,7 +323,8 @@ ul {
    from the right sidebar; otherwise, it will have the
    user-card-popover-root class instead. */
 .user-sidebar-popover-root {
-    width: 240px;
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
 
     margin: -14px;
     padding: 0;
@@ -341,7 +342,8 @@ ul {
 .group-info-popover,
 .message-user-card-popover-root,
 .user-card-popover-root {
-    width: 240px;
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
     padding: 0;
 }
 
