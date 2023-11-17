@@ -938,11 +938,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
         user = self.example_user("hamlet")
         end_time = self.TIME_ZERO
 
-        with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as mock_warning:
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
             resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
             send_analytics_to_push_bouncer()
             self.assertIn(
-                "WARNING:root:ConnectionError while trying to connect to push notification bouncer\nTraceback ",
+                "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer\nTraceback ",
                 mock_warning.output[0],
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
@@ -1173,10 +1175,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             end_time=end_time,
             value=5,
         )
-        with self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs("zulip.analytics", level="WARNING") as warn_log:
             send_analytics_to_push_bouncer()
         self.assertEqual(
-            warn_log.output, ["WARNING:root:Invalid property mobile_pushes_received::day"]
+            warn_log.output,
+            ["WARNING:zulip.analytics:Invalid property mobile_pushes_received::day"],
         )
         # The analytics endpoint call counts increase by 1, but the actual RemoteCounts remain unchanged,
         # since syncing the data failed.
@@ -1241,9 +1244,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(RealmCount.objects.count(), 1)
 
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
-        with self.assertLogs(level="WARNING") as m:
+        with self.assertLogs("zulip.analytics", level="WARNING") as m:
             send_analytics_to_push_bouncer()
-        self.assertEqual(m.output, ["WARNING:root:Invalid property invalid count stat"])
+        self.assertEqual(m.output, ["WARNING:zulip.analytics:Invalid property invalid count stat"])
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
@@ -1278,11 +1281,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED,
         )
 
-        with transaction.atomic(), self.assertLogs(level="WARNING") as m:
+        with transaction.atomic(), self.assertLogs("zulip.analytics", level="WARNING") as m:
             # The usual atomic() wrapper to avoid IntegrityError breaking the test's
             # transaction.
             send_analytics_to_push_bouncer()
-        self.assertEqual(m.output, ["WARNING:root:Duplicate registration detected."])
+        self.assertEqual(m.output, ["WARNING:zulip.analytics:Duplicate registration detected."])
 
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
     # and don't send realmauditlog_rows. Make sure that continues to work.
@@ -1451,7 +1454,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             expected_extra_data={},
         )
         # Invalid extra_data
-        with self.assertLogs(level="WARNING") as m:
+        with self.assertLogs("zulip.analytics", level="WARNING") as m:
             verify_request_with_overridden_extra_data(
                 request_extra_data="{malformedjson:",
                 skip_audit_log_check=True,
