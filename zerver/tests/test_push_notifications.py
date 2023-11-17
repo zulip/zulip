@@ -1493,7 +1493,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         post_data = {
             "realm_counts": "[]",
             "installation_counts": "[]",
-            "realms": orjson.dumps(get_realms_info_for_push_bouncer()).decode(),
+            "realms": orjson.dumps(
+                [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
+            ).decode(),
             "version": orjson.dumps(ZULIP_VERSION).decode(),
         }
         mock_send_to_push_bouncer.assert_called_with(

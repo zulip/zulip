@@ -15,7 +15,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Json
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
@@ -33,23 +33,12 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
+from zerver.lib.remote_server import RealmDataForAnalytics
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import (
-    check_bool,
-    check_capped_string,
-    check_dict,
-    check_dict_only,
-    check_float,
-    check_int,
-    check_list,
-    check_none_or,
-    check_string,
-    check_string_fixed_length,
-    check_union,
-)
+from zerver.lib.validator import check_capped_string, check_int, check_string_fixed_length
 from zerver.views.push_notifications import check_app_id, validate_token
 from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
@@ -601,87 +590,65 @@ def update_remote_realm_data_for_server(
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
-@has_request_variables
+class RealmAuditLogDataForAnalytics(BaseModel):
+    id: int
+    realm: int
+    event_time: float
+    backfilled: bool
+    extra_data: Optional[Union[str, Dict[str, Any]]]
+    event_type: int
+
+
+class RealmCountDataForAnalytics(BaseModel):
+    property: str
+    realm: int
+    id: int
+    end_time: float
+    subgroup: Optional[str]
+    value: int
+
+
+class InstallationCountDataForAnalytics(BaseModel):
+    property: str
+    id: int
+    end_time: float
+    subgroup: Optional[str]
+    value: int
+
+
+@typed_endpoint
 def remote_server_post_analytics(
     request: HttpRequest,
     server: RemoteZulipServer,
-    realm_counts: List[Dict[str, Any]] = REQ(
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("property", check_string),
-                    ("realm", check_int),
-                    ("id", check_int),
-                    ("end_time", check_float),
-                    ("subgroup", check_none_or(check_string)),
-                    ("value", check_int),
-                ]
-            )
-        )
-    ),
-    installation_counts: List[Dict[str, Any]] = REQ(
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("property", check_string),
-                    ("id", check_int),
-                    ("end_time", check_float),
-                    ("subgroup", check_none_or(check_string)),
-                    ("value", check_int),
-                ]
-            )
-        )
-    ),
-    realmauditlog_rows: Optional[List[Dict[str, Any]]] = REQ(
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("id", check_int),
-                    ("realm", check_int),
-                    ("event_time", check_float),
-                    ("backfilled", check_bool),
-                    ("extra_data", check_none_or(check_union([check_string, check_dict()]))),
-                    ("event_type", check_int),
-                ]
-            )
-        ),
-        default=None,
-    ),
-    realms: Optional[List[Dict[str, Any]]] = REQ(
-        # Pre-8.0 servers don't send this data.
-        default=None,
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("id", check_int),
-                    ("uuid", check_string),
-                    ("uuid_owner_secret", check_string),
-                    ("host", check_string),
-                    ("url", check_string),
-                    ("deactivated", check_bool),
-                    ("date_created", check_float),
-                ]
-            )
-        ),
-    ),
+    *,
+    realm_counts: Json[List[RealmCountDataForAnalytics]],
+    installation_counts: Json[List[InstallationCountDataForAnalytics]],
+    realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None,
+    realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
 ) -> HttpResponse:
-    validate_incoming_table_data(server, RemoteRealmCount, realm_counts, True)
-    validate_incoming_table_data(server, RemoteInstallationCount, installation_counts, True)
+    validate_incoming_table_data(
+        server, RemoteRealmCount, [dict(count) for count in realm_counts], True
+    )
+    validate_incoming_table_data(
+        server, RemoteInstallationCount, [dict(count) for count in installation_counts], True
+    )
     if realmauditlog_rows is not None:
-        validate_incoming_table_data(server, RemoteRealmAuditLog, realmauditlog_rows)
+        validate_incoming_table_data(
+            server, RemoteRealmAuditLog, [dict(row) for row in realmauditlog_rows]
+        )
 
     if realms is not None:
-        update_remote_realm_data_for_server(server, realms)
+        update_remote_realm_data_for_server(server, [dict(realm) for realm in realms])
 
     remote_realm_counts = [
         RemoteRealmCount(
-            property=row["property"],
-            realm_id=row["realm"],
-            remote_id=row["id"],
+            property=row.property,
+            realm_id=row.realm,
+            remote_id=row.id,
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row["end_time"], tz=datetime.timezone.utc),
-            subgroup=row["subgroup"],
-            value=row["value"],
+            end_time=datetime.datetime.fromtimestamp(row.end_time, tz=datetime.timezone.utc),
+            subgroup=row.subgroup,
+            value=row.value,
         )
         for row in realm_counts
     ]
@@ -689,12 +656,12 @@ def remote_server_post_analytics(
 
     remote_installation_counts = [
         RemoteInstallationCount(
-            property=row["property"],
-            remote_id=row["id"],
+            property=row.property,
+            remote_id=row.id,
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row["end_time"], tz=datetime.timezone.utc),
-            subgroup=row["subgroup"],
-            value=row["value"],
+            end_time=datetime.datetime.fromtimestamp(row.end_time, tz=datetime.timezone.utc),
+            subgroup=row.subgroup,
+            value=row.value,
         )
         for row in installation_counts
     ]
@@ -704,35 +671,25 @@ def remote_server_post_analytics(
         remote_realm_audit_logs = []
         for row in realmauditlog_rows:
             extra_data = {}
-            # Remote servers that do support JSONField will pass extra_data
-            # as a dict. Otherwise, extra_data will be either a string or None.
-            if isinstance(row["extra_data"], str):
-                # A valid "extra_data" as a str, if present, should always be generated from
-                # orjson.dumps because the POSTed analytics data for RealmAuditLog is restricted
-                # to event types in SYNC_BILLING_EVENTS.
-                # For these event types, we don't create extra_data that requires special
-                # handling to fit into the JSONField.
+            if isinstance(row.extra_data, str):
                 try:
-                    extra_data = orjson.loads(row["extra_data"])
+                    extra_data = orjson.loads(row.extra_data)
                 except orjson.JSONDecodeError:
                     raise JsonableError(_("Malformed audit log data"))
-            elif row["extra_data"] is not None:
-                # This is guaranteed to succeed because row["extra_data"] would be parsed
-                # from JSON with our json validator and validated with check_dict if it
-                # is not a str or None.
-                assert isinstance(row["extra_data"], dict)
-                extra_data = row["extra_data"]
+            elif row.extra_data is not None:
+                assert isinstance(row.extra_data, dict)
+                extra_data = row.extra_data
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
-                    realm_id=row["realm"],
-                    remote_id=row["id"],
+                    realm_id=row.realm,
+                    remote_id=row.id,
                     server=server,
                     event_time=datetime.datetime.fromtimestamp(
-                        row["event_time"], tz=datetime.timezone.utc
+                        row.event_time, tz=datetime.timezone.utc
                     ),
-                    backfilled=row["backfilled"],
+                    backfilled=row.backfilled,
                     extra_data=extra_data,
-                    event_type=row["event_type"],
+                    event_type=row.event_type,
                 )
             )
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
