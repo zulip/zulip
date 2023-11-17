@@ -1,3 +1,4 @@
+import hashlib
 import os
 import time
 from argparse import ArgumentParser
@@ -96,4 +97,13 @@ class Command(BaseCommand):
         logger.info("Finished updating analytics counts through %s", fill_to_time)
 
         if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
+            # Skew 0-10 minutes based on a hash of settings.ZULIP_ORG_ID, so
+            # that each server will report in at a somewhat consistent time.
+            assert settings.ZULIP_ORG_ID
+            delay = int.from_bytes(
+                hashlib.sha256(settings.ZULIP_ORG_ID.encode()).digest(), byteorder="big"
+            ) % (60 * 10)
+            logger.info("Sleeping %d seconds before reporting...", delay)
+            time.sleep(delay)
+
             send_analytics_to_push_bouncer()

@@ -229,7 +229,9 @@ def send_analytics_to_push_bouncer() -> None:
         ),
     )
 
-    if len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data) == 0:
+    record_count = len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data)
+    if record_count == 0:
+        logger.info("No new records to report.")
         return
 
     request = {
@@ -246,6 +248,7 @@ def send_analytics_to_push_bouncer() -> None:
         send_to_push_bouncer("POST", "server/analytics", request)
     except JsonableError as e:
         logger.warning(e.msg)
+    logger.info("Reported %d records", record_count)
 
 
 def send_realms_only_to_push_bouncer() -> None:
