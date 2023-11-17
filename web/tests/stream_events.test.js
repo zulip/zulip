@@ -36,6 +36,8 @@ mock_esm("../src/overlays", {
 const user_profile = mock_esm("../src/user_profile");
 
 const {Filter} = zrequire("../src/filter");
+const activity_ui = zrequire("activity_ui");
+const {buddy_list} = zrequire("buddy_list");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -285,6 +287,8 @@ test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color_events, "update_stream_color", noop);
+    override(buddy_list, "populate", noop);
+    activity_ui.set_cursor_and_filter();
 
     narrow_to_frontend();
 
@@ -421,6 +425,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(unread_ui, "update_unread_counts", noop);
     override(unread_ui, "hide_unread_banner", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    override(buddy_list, "populate", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -449,10 +454,14 @@ test("remove_deactivated_user_from_all_streams", () => {
     assert.equal(subs_stub.num_calls, 1);
 });
 
-test("process_subscriber_update", ({override}) => {
+test("process_subscriber_update", ({override, override_rewire}) => {
     const subsStub = make_stub();
     stream_settings_ui.update_subscribers_ui = subsStub.f;
 
+    let build_user_sidebar_called = false;
+    override_rewire(activity_ui, "build_user_sidebar", () => {
+        build_user_sidebar_called = true;
+    });
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
     // Sample user IDs
     const userIds = [104, 2, 3];
@@ -464,4 +473,12 @@ test("process_subscriber_update", ({override}) => {
 
     // Assert that update_subscribers_ui is called for each stream ID
     assert.equal(subsStub.num_calls, streamIds.length);
+
+    assert.ok(!build_user_sidebar_called);
+
+    // For a stream the user is currently viewing, we rebuild the user sidebar
+    // when someone subscribes to that stream.
+    override_rewire(narrow_state, "stream_id", () => 1);
+    stream_events.process_subscriber_update(userIds, streamIds);
+    assert.ok(build_user_sidebar_called);
 });

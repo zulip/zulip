@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import * as compose_recipient from "./compose_recipient";
@@ -146,6 +147,7 @@ export function mark_subscribed(sub, subscribers, color) {
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         message_lists.current.update_trailing_bookend();
+        activity_ui.build_user_sidebar();
     }
 
     // The new stream in sidebar might need its unread counts
@@ -181,6 +183,8 @@ export function mark_unsubscribed(sub) {
         // This update would likely be better implemented by having it
         // disappear whenever no unread messages remain.
         unread_ui.hide_unread_banner();
+
+        activity_ui.build_user_sidebar();
     }
 
     // Unread messages in the now-unsubscribe stream need to be
@@ -209,4 +213,7 @@ export function process_subscriber_update(user_ids, stream_ids) {
         stream_settings_ui.update_subscribers_ui(sub);
     }
     user_profile.update_user_profile_streams_list_for_users(user_ids);
+    if (stream_ids.includes(narrow_state.stream_id())) {
+        activity_ui.build_user_sidebar();
+    }
 }
