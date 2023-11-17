@@ -16,7 +16,7 @@ export function initialize() {
 
             if (!can_create_streams) {
                 // If the user can't create streams, we directly
-                // navigate them to the Manage streams subscribe UI.
+                // navigate them to the Stream settings subscribe UI.
                 window.location.assign("#streams/all");
                 // Returning false from an onShow handler cancels the show.
                 return false;

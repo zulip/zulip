@@ -12,7 +12,7 @@ in the Zulip app to add more to your repertoire as needed.
 * [Message actions](#message-actions)
 * [Drafts](#drafts)
 * [Menus](#menus)
-* [Streams settings](#streams-settings-page)
+* [Stream settings](#stream-settings)
 
 ## The basics
 
@@ -213,7 +213,7 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Toggle message actions menu**: <kbd>I</kbd>
 
-## Streams settings page
+## Stream settings
 
 * **Scroll through streams**: <kbd class="arrow-key">↑</kbd> and
   <kbd class="arrow-key">↓</kbd>
