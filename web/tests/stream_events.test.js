@@ -36,6 +36,7 @@ mock_esm("../src/overlays", {
 const user_profile = mock_esm("../src/user_profile");
 
 const {Filter} = zrequire("../src/filter");
+const {buddy_list} = zrequire("buddy_list");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -285,6 +286,7 @@ test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color_events, "update_stream_color", noop);
+    override(buddy_list, "populate", noop);
 
     narrow_to_frontend();
 
@@ -324,6 +326,7 @@ test("marked_subscribed (color)", ({override}) => {
     override(stream_list, "add_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
+    override(buddy_list, "populate", noop);
 
     const sub = {
         subscribed: false,
@@ -357,6 +360,7 @@ test("marked_subscribed (emails)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color_events, "update_stream_color", noop);
+    override(buddy_list, "populate", noop);
 
     // Test assigning subscriber emails
     // narrow state is undefined
@@ -394,6 +398,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    override(buddy_list, "populate", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -421,6 +426,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(unread_ui, "update_unread_counts", noop);
     override(unread_ui, "hide_unread_banner", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    override(buddy_list, "populate", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -454,6 +460,7 @@ test("process_subscriber_update", ({override}) => {
     stream_settings_ui.update_subscribers_ui = subsStub.f;
 
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    override(buddy_list, "populate", noop);
     // Sample user IDs
     const userIds = [104, 2, 3];
     // Sample stream IDs
