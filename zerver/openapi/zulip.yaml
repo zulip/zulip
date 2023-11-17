@@ -6046,15 +6046,15 @@ paths:
                       found_newest:
                         type: boolean
                         description: |
-                          Whether the `messages` list includes the very newest messages matching
-                          the narrow (used by clients that paginate their requests to decide
-                          whether there are more messages to fetch).
+                          Whether the server promises that the `messages` list includes the very
+                          newest messages matching the narrow (used by clients that paginate their
+                          requests to decide whether there may be more messages to fetch).
                       found_oldest:
                         type: boolean
                         description: |
-                          Whether the `messages` list includes the very oldest messages matching
-                          the narrow (used by clients that paginate their requests to decide
-                          whether there are more messages to fetch).
+                          Whether the server promises that the `messages` list includes the very
+                          oldest messages matching the narrow (used by clients that paginate their
+                          requests to decide whether there may be more messages to fetch).
                       found_anchor:
                         type: boolean
                         description: |
