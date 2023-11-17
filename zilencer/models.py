@@ -48,7 +48,9 @@ class RemoteZulipServer(models.Model):
 
     # Plan types for self-hosted customers
     PLAN_TYPE_SELF_HOSTED = 1
-    PLAN_TYPE_STANDARD = 102
+    PLAN_TYPE_COMMUNITY = 100
+    PLAN_TYPE_BUSINESS = 101
+    PLAN_TYPE_ENTERPRISE = 102
 
     # The current billing plan for the remote server, similar to Realm.plan_type.
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
@@ -113,10 +115,16 @@ class RemoteRealm(models.Model):
 
     # Plan types for self-hosted customers
     PLAN_TYPE_SELF_HOSTED = 1
-    PLAN_TYPE_STANDARD = 102
+    PLAN_TYPE_COMMUNITY = 100
+    PLAN_TYPE_BUSINESS = 101
+    PLAN_TYPE_ENTERPRISE = 102
 
     # The current billing plan for the remote server, similar to Realm.plan_type.
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED, db_index=True)
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.host} {str(self.uuid)[0:12]}"
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):

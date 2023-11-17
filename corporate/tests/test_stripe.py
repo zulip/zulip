@@ -4429,7 +4429,7 @@ class BillingHelpersTest(ZulipTestCase):
         )
         self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_HOSTED)
 
-        do_change_remote_server_plan_type(remote_server, RemoteZulipServer.PLAN_TYPE_STANDARD)
+        do_change_remote_server_plan_type(remote_server, RemoteZulipServer.PLAN_TYPE_BUSINESS)
 
         remote_server = RemoteZulipServer.objects.get(uuid=server_uuid)
         remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
@@ -4438,10 +4438,10 @@ class BillingHelpersTest(ZulipTestCase):
         assert remote_realm_audit_log is not None
         expected_extra_data = {
             "old_value": RemoteZulipServer.PLAN_TYPE_SELF_HOSTED,
-            "new_value": RemoteZulipServer.PLAN_TYPE_STANDARD,
+            "new_value": RemoteZulipServer.PLAN_TYPE_BUSINESS,
         }
         self.assertEqual(remote_realm_audit_log.extra_data, expected_extra_data)
-        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_STANDARD)
+        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
 
     def test_deactivate_remote_server(self) -> None:
         server_uuid = str(uuid.uuid4())
