@@ -3,6 +3,7 @@
    popovers system in popovers.js. */
 
 import $ from "jquery";
+import type {Instance as PopoverInstance, Props as PopoverProps, ReferenceElement} from "tippy.js";
 import tippy from "tippy.js";
 
 import * as blueslip from "./blueslip";
@@ -12,7 +13,25 @@ import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 import * as util from "./util";
 
-export const popover_instances = {
+type PopoverName =
+    | "compose_control_buttons"
+    | "starred_messages"
+    | "drafts"
+    | "left_sidebar_inbox_popover"
+    | "left_sidebar_all_messages_popover"
+    | "left_sidebar_recent_view_popover"
+    | "top_left_sidebar"
+    | "message_actions"
+    | "stream_settings"
+    | "compose_mobile_button"
+    | "topics_menu"
+    | "send_later"
+    | "change_visibility_policy"
+    | "personal_menu"
+    | "gear_menu"
+    | "help_menu";
+
+export const popover_instances: Record<PopoverName, PopoverInstance | null> = {
     compose_control_buttons: null,
     starred_messages: null,
     drafts: null,
@@ -32,7 +51,7 @@ export const popover_instances = {
 };
 
 /* Keyboard UI functions */
-export function popover_items_handle_keyboard(key, $items) {
+export function popover_items_handle_keyboard(key: string, $items?: JQuery): void {
     if (!$items) {
         return;
     }
@@ -58,7 +77,7 @@ export function popover_items_handle_keyboard(key, $items) {
     $items.eq(index).trigger("focus");
 }
 
-export function focus_first_popover_item($items, index = 0) {
+export function focus_first_popover_item($items: JQuery, index = 0): void {
     if (!$items) {
         return;
     }
@@ -66,56 +85,59 @@ export function focus_first_popover_item($items, index = 0) {
     $items.eq(index).expectOne().trigger("focus");
 }
 
-export function sidebar_menu_instance_handle_keyboard(instance, key) {
+export function sidebar_menu_instance_handle_keyboard(
+    instance: PopoverInstance,
+    key: string,
+): void {
     const items = get_popover_items_for_instance(instance);
     popover_items_handle_keyboard(key, items);
 }
 
-export function get_visible_instance() {
+export function get_visible_instance(): PopoverInstance | null | undefined {
     return Object.values(popover_instances).find(Boolean);
 }
 
-export function get_topic_menu_popover() {
+export function get_topic_menu_popover(): PopoverInstance | null {
     return popover_instances.topics_menu;
 }
 
-export function get_scheduled_messages_popover() {
+export function get_scheduled_messages_popover(): PopoverInstance | null {
     return popover_instances.send_later;
 }
 
-export function is_scheduled_messages_popover_displayed() {
+export function is_scheduled_messages_popover_displayed(): boolean | undefined {
     return popover_instances.send_later?.state.isVisible;
 }
 
-export function get_compose_control_buttons_popover() {
+export function get_compose_control_buttons_popover(): PopoverInstance | null {
     return popover_instances.compose_control_buttons;
 }
 
-export function get_starred_messages_popover() {
+export function get_starred_messages_popover(): PopoverInstance | null {
     return popover_instances.starred_messages;
 }
 
-export function is_personal_menu_popover_displayed() {
+export function is_personal_menu_popover_displayed(): boolean | undefined {
     return popover_instances.personal_menu?.state.isVisible;
 }
 
-export function is_gear_menu_popover_displayed() {
+export function is_gear_menu_popover_displayed(): boolean | undefined {
     return popover_instances.gear_menu?.state.isVisible;
 }
 
-export function get_gear_menu_instance() {
+export function get_gear_menu_instance(): PopoverInstance | null {
     return popover_instances.gear_menu;
 }
 
-export function is_help_menu_popover_displayed() {
+export function is_help_menu_popover_displayed(): boolean | undefined {
     return popover_instances.help_menu?.state.isVisible;
 }
 
-export function is_message_actions_popover_displayed() {
+export function is_message_actions_popover_displayed(): boolean | undefined {
     return popover_instances.message_actions?.state.isVisible;
 }
 
-function get_popover_items_for_instance(instance) {
+function get_popover_items_for_instance(instance: PopoverInstance): JQuery | undefined {
     const $current_elem = $(instance.popper);
     const class_name = $current_elem.attr("class");
 
@@ -127,7 +149,7 @@ function get_popover_items_for_instance(instance) {
     return $current_elem.find("a:visible");
 }
 
-export const default_popover_props = {
+export const default_popover_props: Partial<PopoverProps> = {
     delay: 0,
     appendTo: () => document.body,
     trigger: "click",
@@ -154,7 +176,8 @@ export const default_popover_props = {
                 phase: "beforeWrite",
                 requires: ["$$tippy"],
                 fn({state}) {
-                    const instance = state.elements.reference._tippy;
+                    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                    const instance = (state.elements.reference as ReferenceElement)._tippy!;
                     const $popover = $(state.elements.popper);
                     const $tippy_box = $popover.find(".tippy-box");
                     if ($tippy_box.hasClass("show-when-reference-hidden")) {
@@ -249,7 +272,7 @@ export const left_sidebar_tippy_options = {
     },
 };
 
-export function on_show_prep(instance) {
+export function on_show_prep(instance: PopoverInstance): void {
     $(instance.popper).on("click", (e) => {
         // Popover is not hidden on click inside it unless the click handler for the
         // element explicitly hides the popover when handling the event.
@@ -264,22 +287,19 @@ export function on_show_prep(instance) {
     });
 }
 
-function get_props_for_popover_centering(popover_props) {
+function get_props_for_popover_centering(
+    popover_props: Partial<PopoverProps>,
+): Partial<PopoverProps> {
     return {
         arrow: false,
-        getReferenceClientRect: () => ({
-            width: 0,
-            height: 0,
-            left: 0,
-            top: 0,
-        }),
+        getReferenceClientRect: () => new DOMRect(0, 0, 0, 0),
         placement: "top",
         popperOptions: {
             modifiers: [
                 {
                     name: "offset",
                     options: {
-                        offset({popper}) {
+                        offset({popper}: {popper: DOMRect}) {
                             // Calculate the offset needed to place the reference in the center
                             const x_offset_to_center = window.innerWidth / 2;
                             let y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
@@ -291,7 +311,7 @@ function get_props_for_popover_centering(popover_props) {
                             // is causing a resize (thus calling this `offset` modifier function), in which case
                             // we need to move the popover to the top of the screen.
                             if (util.is_mobile()) {
-                                const $focused_element = $(document.activeElement);
+                                const $focused_element = $(document.activeElement!);
                                 if (
                                     $focused_element.is(
                                         "input[type=text], input[type=number], textarea",
@@ -334,7 +354,11 @@ function get_props_for_popover_centering(popover_props) {
 
 // Toggles a popover menu directly; intended for use in keyboard
 // shortcuts and similar alternative ways to open a popover menu.
-export function toggle_popover_menu(target, popover_props, options) {
+export function toggle_popover_menu(
+    target: ReferenceElement,
+    popover_props: Partial<PopoverProps>,
+    options?: {show_as_overlay_on_mobile: boolean},
+): void {
     const instance = target._tippy;
     if (instance) {
         instance.hide();
@@ -353,7 +377,7 @@ export function toggle_popover_menu(target, popover_props, options) {
 
     if (popover_props.popperOptions?.modifiers) {
         popover_props.popperOptions.modifiers = [
-            ...default_popover_props.popperOptions.modifiers,
+            ...default_popover_props.popperOptions!.modifiers!,
             ...popover_props.popperOptions.modifiers,
         ];
     }
@@ -368,7 +392,7 @@ export function toggle_popover_menu(target, popover_props, options) {
 
 // Main function to define a popover menu, opened via clicking on the
 // target selector.
-export function register_popover_menu(target, popover_props) {
+export function register_popover_menu(target: string, popover_props: Partial<PopoverProps>): void {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
     // parent elements. Tippy's built-in `delegate` method does not
@@ -389,7 +413,7 @@ export function register_popover_menu(target, popover_props) {
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     /* Configure popovers to hide when toggling overlays. */
     overlays.register_pre_open_hook(popovers.hide_all);
     overlays.register_pre_close_hook(popovers.hide_all);
