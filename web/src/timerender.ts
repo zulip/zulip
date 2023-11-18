@@ -43,7 +43,7 @@ type DateOrTimeFormat = DateFormat | TimeFormat | DateWithTimeFormat;
 // for any formats that display the name for a month/weekday, but
 // possibly in more subtle ways for languages with different
 // punctuation schemes for date and times.
-function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeFormatOptions {
+export function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeFormatOptions {
     const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
 
     const time_format_options: Intl.DateTimeFormatOptions = is_twenty_four_hour_time
