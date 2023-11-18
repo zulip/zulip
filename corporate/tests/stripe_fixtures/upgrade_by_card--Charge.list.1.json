@@ -7,7 +7,7 @@
       "application": null,
       "application_fee": null,
       "application_fee_amount": null,
-      "balance_transaction": "txn_NORMALIZED00000000000001",
+      "balance_transaction": "txn_3ODaZQDEQaroqDjs09NyLwix",
       "billing_details": {
         "address": {
           "city": null,
@@ -23,9 +23,9 @@
       },
       "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
       "captured": true,
-      "created": 1010000001,
+      "created": 1700260288,
       "currency": "usd",
-      "customer": "cus_NORMALIZED0001",
+      "customer": "cus_P1drIpeDVBfuR5",
       "description": "Upgrade to Zulip Cloud Standard, $80.0 x 6",
       "destination": null,
       "dispute": null,
@@ -34,7 +34,7 @@
       "failure_code": null,
       "failure_message": null,
       "fraud_details": {},
-      "id": "ch_NORMALIZED00000000000001",
+      "id": "ch_3ODaZQDEQaroqDjs0sPAH1SG",
       "invoice": null,
       "livemode": false,
       "metadata": {
@@ -43,7 +43,7 @@
         "license_management": "automatic",
         "licenses": "6",
         "price_per_license": "8000",
-        "realm_id": "1",
+        "realm_id": "2",
         "realm_str": "zulip",
         "seat_count": "6",
         "type": "upgrade",
@@ -57,13 +57,13 @@
         "network_status": "approved_by_network",
         "reason": null,
         "risk_level": "normal",
-        "risk_score": 0,
+        "risk_score": 56,
         "seller_message": "Payment complete.",
         "type": "authorized"
       },
       "paid": true,
-      "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1OAbgYDEQaroqDjsPkuww2Vr",
+      "payment_intent": "pi_3ODaZQDEQaroqDjs0PP6Agqe",
+      "payment_method": "pm_1ODaZMDEQaroqDjsvpFOJgKh",
       "payment_method_details": {
         "card": {
           "amount_authorized": 48000,
@@ -79,7 +79,7 @@
           "extended_authorization": {
             "status": "disabled"
           },
-          "fingerprint": "NORMALIZED000001",
+          "fingerprint": "9XKsMixKBi6kIIzd",
           "funding": "credit",
           "incremental_authorization": {
             "status": "unavailable"
@@ -105,14 +105,14 @@
       },
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKKGjtKoGMgaXv6MX6j86LBYzcI0gA30952KmmPGhELW4l_8OZMRoJnLjwpNfMsUJFLaFZRb8cZyujASC",
+      "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKMXT36oGMgaWsQERPxI6LBbUTzukeCPRkxo_oNdMDmpjqBFbnMF68YGA0mRGxFcmJ9lwodROkIt9zsnF",
       "refunded": false,
       "refunds": {
         "data": [],
         "has_more": false,
         "object": "list",
         "total_count": 0,
-        "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
+        "url": "/v1/charges/ch_3ODaZQDEQaroqDjs0sPAH1SG/refunds"
       },
       "review": null,
       "shipping": null,

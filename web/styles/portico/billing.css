@@ -489,13 +489,10 @@ input[name="licenses"] {
     background-color: hsl(0deg 70% 40%);
 }
 
-#org-upgrade-button,
-#upgrade-add-card-button {
+#org-upgrade-button {
     margin: 0;
     width: 100%;
-}
 
-#org-upgrade-button {
     &:disabled,
     .permanent-disabled {
         color: hsl(0deg 0% 80%);
@@ -506,6 +503,7 @@ input[name="licenses"] {
     }
 }
 
+#upgrade-page-details #upgrade-add-card-button,
 #billing-page-details .user-stripe-card-update .user-stripe-card-update-button {
     margin: 0;
     width: 150px;
@@ -556,4 +554,44 @@ input[name="licenses"] {
 #billing-success-message-top {
     display: block;
     text-align: center;
+}
+
+.upgrade-page-success {
+    display: none;
+    padding: 8px 0;
+    width: 450px;
+    text-align: center;
+    margin: auto;
+}
+
+#upgrade-payment-info {
+    display: grid;
+    grid-template: auto auto 1fr / 1fr auto;
+    grid-template-areas:
+        "payment-info add-card"
+        "alert-message alert-message";
+    width: 450px;
+    margin: auto;
+    padding-bottom: 25px;
+}
+
+#upgrade-payment-info .alert {
+    grid-area: alert-message;
+}
+
+#upgrade-page-details #upgrade-payment-menthod-wrapper {
+    margin-left: 0;
+    grid-area: payment-info;
+    width: auto;
+}
+
+/* Used class twice to increase specificity */
+#upgrade-payment-info .upgrade-add-card-container.upgrade-add-card-container {
+    grid-area: add-card;
+    width: auto;
+    margin-right: 0;
+}
+
+#upgrade-page-details .upgrade-add-card-container {
+    text-align: left;
 }
