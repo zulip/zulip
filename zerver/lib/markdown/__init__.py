@@ -1195,6 +1195,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return insertion_index
 
     def is_video(self, url: str) -> bool:
+        if not self.zmd.image_preview_enabled:
+            return False
+
         url_type = mimetypes.guess_type(url)[0]
         # Support only video formats (containers) that are supported cross-browser and cross-device. As per
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
