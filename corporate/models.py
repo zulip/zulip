@@ -106,13 +106,9 @@ def get_last_associated_event_by_type(
 class Session(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)
     stripe_session_id = models.CharField(max_length=255, unique=True)
-    payment_intent = models.ForeignKey("PaymentIntent", null=True, on_delete=CASCADE)
 
-    UPGRADE_FROM_BILLING_PAGE = 1
-    RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD = 10
-    FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE = 20
-    FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE = 30
     CARD_UPDATE_FROM_BILLING_PAGE = 40
+    CARD_UPDATE_FROM_UPGRADE_PAGE = 50
     type = models.SmallIntegerField()
 
     CREATED = 1
@@ -124,11 +120,8 @@ class Session(models.Model):
 
     def get_type_as_string(self) -> str:
         return {
-            Session.UPGRADE_FROM_BILLING_PAGE: "upgrade_from_billing_page",
-            Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD: "retry_upgrade_with_another_payment_method",
-            Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE: "free_trial_upgrade_from_billing_page",
-            Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE: "free_trial_upgrade_from_onboarding_page",
             Session.CARD_UPDATE_FROM_BILLING_PAGE: "card_update_from_billing_page",
+            Session.CARD_UPDATE_FROM_UPGRADE_PAGE: "card_update_from_upgrade_page",
         }[self.type]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -136,8 +129,6 @@ class Session(models.Model):
 
         session_dict["status"] = self.get_status_as_string()
         session_dict["type"] = self.get_type_as_string()
-        if self.payment_intent:
-            session_dict["stripe_payment_intent_id"] = self.payment_intent.stripe_payment_intent_id
         event = self.get_last_associated_event()
         if event is not None:
             session_dict["event_handler"] = event.get_event_handler_details_as_dict()
@@ -182,18 +173,15 @@ class PaymentIntent(models.Model):
     def get_last_associated_event(self) -> Optional[Event]:
         if self.status == PaymentIntent.SUCCEEDED:
             event_type = "payment_intent.succeeded"
-        elif self.status == PaymentIntent.REQUIRES_PAYMENT_METHOD:
-            event_type = "payment_intent.payment_failed"
-        else:
-            return None
+        # TODO: Add test for this case. Not sure how to trigger naturally.
+        else:  # nocoverage
+            return None  # nocoverage
         return get_last_associated_event_by_type(self, event_type)
 
     def to_dict(self) -> Dict[str, Any]:
         payment_intent_dict: Dict[str, Any] = {}
         payment_intent_dict["status"] = self.get_status_as_string()
         event = self.get_last_associated_event()
-        if self.last_payment_error:
-            payment_intent_dict["last_payment_error"] = self.last_payment_error
         if event is not None:
             payment_intent_dict["event_handler"] = event.get_event_handler_details_as_dict()
         return payment_intent_dict

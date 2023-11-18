@@ -8,7 +8,7 @@
     "status": null
   },
   "billing_address_collection": null,
-  "cancel_url": "http://zulip.testserver/billing/",
+  "cancel_url": "http://zulip.testserver/upgrade/",
   "client_reference_id": null,
   "client_secret": null,
   "consent": null,
@@ -34,22 +34,13 @@
   },
   "customer_email": null,
   "expires_at": 1000000000,
-  "id": "cs_test_NORMALIZED02caxABicarL64YmdMXxI7HHzUwRHIjqjrigTg0eEKnepG6M",
+  "id": "cs_test_NORMALIZED021NkMCPp6UzQNRA61Gd81ENOU3WTsuOlnVLZqDnwZrdmAAm",
   "invoice": null,
   "invoice_creation": null,
   "livemode": false,
   "locale": null,
   "metadata": {
-    "billing_modality": "charge_automatically",
-    "billing_schedule": "1",
-    "license_management": "automatic",
-    "licenses": "6",
-    "price_per_license": "8000",
-    "realm_id": "1",
-    "realm_str": "zulip",
-    "seat_count": "6",
-    "type": "upgrade",
-    "user_email": "hamlet@zulip.com",
+    "type": "card_update",
     "user_id": "10"
   },
   "mode": "setup",
@@ -67,7 +58,7 @@
     "enabled": false
   },
   "recovered_from": null,
-  "setup_intent": "seti_1OAbiADEQaroqDjsDYD3ea3l",
+  "setup_intent": "seti_1ODh2qDEQaroqDjsqaQ7wTz2",
   "shipping": null,
   "shipping_address_collection": null,
   "shipping_options": [],
@@ -78,5 +69,5 @@
   "success_url": "http://zulip.testserver/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
   "total_details": null,
   "ui_mode": "hosted",
-  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02caxABicarL64YmdMXxI7HHzUwRHIjqjrigTg0eEKnepG6M#fidkdWxOYHwnPyd1blpxYHZxWl1UZjFOczZJXUE2PUpzUWNPV2ZpdlFzUCcpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBaZmppcGhrJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl"
+  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED021NkMCPp6UzQNRA61Gd81ENOU3WTsuOlnVLZqDnwZrdmAAm#fidkdWxOYHwnPyd1blpxYHZxWl1UZjFOczZJXUE2PUpzUWNPV2ZpdlFzUCcpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBaZmppcGhrJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl"
 }
