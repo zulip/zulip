@@ -89,6 +89,10 @@ export function enable_subscriber_management({sub, $parent_container}) {
         get_potential_subscribers,
     });
 
+    $pill_container.find(".input").on("input", () => {
+        $parent_container.find(".stream_subscription_request_result").empty();
+    });
+
     const user_ids = peer_data.get_subscribers(stream_id);
     const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
 
