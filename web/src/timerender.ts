@@ -94,17 +94,6 @@ function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeForma
     }
 }
 
-function get_user_locale(): string {
-    const user_default_language = user_settings.default_language;
-    let locale = "";
-    try {
-        locale = Intl.DateTimeFormat.supportedLocalesOf(user_default_language)[0];
-    } catch {
-        locale = "default";
-    }
-    return locale;
-}
-
 // Common function for all date/time rendering in the project. Handles
 // localization using the user's configured locale and the
 // twenty_four_hour_time setting.
@@ -114,8 +103,10 @@ export function get_localized_date_or_time_for_format(
     date: Date | number,
     format: DateOrTimeFormat,
 ): string {
-    const locale = get_user_locale();
-    return new Intl.DateTimeFormat(locale, get_format_options_for_type(format)).format(date);
+    return new Intl.DateTimeFormat(
+        user_settings.default_language,
+        get_format_options_for_type(format),
+    ).format(date);
 }
 
 // Exported for tests only.
@@ -467,8 +458,7 @@ export function get_full_datetime_clarification(
     time: Date,
     time_format: TimeFormat = "time_sec",
 ): string {
-    const locale = get_user_locale();
-    const date_string = time.toLocaleDateString(locale);
+    const date_string = time.toLocaleDateString(user_settings.default_language);
     let time_string = get_localized_date_or_time_for_format(time, time_format);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
