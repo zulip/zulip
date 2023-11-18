@@ -39,7 +39,7 @@ run_test("get_localized_date_or_time_for_format returns default date with incorr
     const date = date_2019;
     const expectedDate = "Friday, April 12, 2019";
 
-    user_settings.default_language = "invalidLanguageCode";
+    user_settings.default_language = "invalid";
     const actualDate = timerender.get_localized_date_or_time_for_format(
         date,
         "weekday_dayofyear_year",
