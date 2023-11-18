@@ -479,7 +479,14 @@ export function parse_media_data(media) {
     if (is_compose_preview_media) {
         sender_full_name = people.my_full_name();
     } else {
-        const $message = $parent.closest("[zid]");
+        //  To obtain the message corresponding to the media we are parsing, we
+        //  we choose a selector that selects the closest element to parent
+        //  whose id starts with 'zfilt'.
+        //
+        //  We refrain from using a selector which chooses the closest element
+        //  with 'zid' since both the message and non-message elements contain
+        //  zid. However, their id starts with 'zhome' rather.
+        const $message = $parent.closest("[id^='zfilt']");
         const zid = rows.id($message);
         const message = message_store.get(zid);
         if (message === undefined) {
