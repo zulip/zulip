@@ -1,11 +1,23 @@
 import $ from "jquery";
+import {z} from "zod";
+
+import {localstorage} from "../localstorage";
 
 import * as helpers from "./helpers";
 import type {Prices} from "./helpers";
 import {page_params} from "./page_params";
 
-let selected_schedule = "monthly";
+const ls = localstorage();
+const ls_selected_schedule = ls.get("selected_schedule");
+let selected_schedule: string =
+    typeof ls_selected_schedule === "string" ? ls_selected_schedule : "monthly";
 let current_license_count = page_params.seat_count;
+
+const upgrade_response_schema = z.object({
+    stripe_session_url: z.string().optional(),
+    stripe_payment_intent_id: z.string().optional(),
+    organization_upgrade_successful: z.boolean().optional(),
+});
 
 export const initialize = (): void => {
     $("#org-upgrade-button").on("click", (e) => {
@@ -19,8 +31,16 @@ export const initialize = (): void => {
             [],
             "POST",
             (response) => {
-                const response_data = helpers.stripe_session_url_schema.parse(response);
-                window.location.replace(response_data.stripe_session_url);
+                const response_data = upgrade_response_schema.parse(response);
+                if (response_data.stripe_session_url) {
+                    window.location.replace(response_data.stripe_session_url);
+                } else if (response_data.stripe_payment_intent_id) {
+                    window.location.replace(
+                        `/billing/event_status?stripe_payment_intent_id=${response_data.stripe_payment_intent_id}`,
+                    );
+                } else if (response_data.organization_upgrade_successful) {
+                    window.location.replace("/billing");
+                }
             },
             () => {
                 $("#org-upgrade-button-text").show();
@@ -49,8 +69,10 @@ export const initialize = (): void => {
     }
 
     update_due_today(selected_schedule);
+    $("#payment-schedule-select").val(selected_schedule);
     $<HTMLInputElement>("#payment-schedule-select").on("change", function () {
         selected_schedule = this.value;
+        ls.set("selected_schedule", selected_schedule);
         update_due_today(selected_schedule);
     });
 
@@ -80,6 +102,26 @@ export const initialize = (): void => {
 
         current_license_count = license_count;
         update_due_today(selected_schedule);
+    });
+
+    $("#upgrade-add-card-button").on("click", (e) => {
+        $("#upgrade-add-card-button #upgrade-add-card-button-text").hide();
+        $("#upgrade-add-card-button .loader").show();
+        helpers.create_ajax_request(
+            "/json/upgrade/session/start_card_update_session",
+            "upgrade-cardchange",
+            [],
+            "POST",
+            (response) => {
+                const response_data = helpers.stripe_session_url_schema.parse(response);
+                window.location.replace(response_data.stripe_session_url);
+            },
+            () => {
+                $("#upgrade-add-card-button .loader").hide();
+                $("#upgrade-add-card-button #upgrade-add-card-button-text").show();
+            },
+        );
+        e.preventDefault();
     });
 };
 
