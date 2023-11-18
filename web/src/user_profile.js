@@ -464,6 +464,11 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                     render_manage_profile_content(user);
                     break;
             }
+            setTimeout(() => {
+                $(".modal__body .simplebar-content-wrapper").attr("tabindex", "-1");
+                $(".modal__container .ind-tab").attr("tabindex", "-1");
+                $(".modal__container .ind-tab.selected").attr("tabindex", "0");
+            }, 0);
         },
     };
 
