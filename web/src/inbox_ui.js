@@ -676,7 +676,7 @@ function focus_inbox_search() {
     focus_current_id();
 }
 
-function is_list_focused() {
+export function is_list_focused() {
     return ![INBOX_SEARCH_ID, INBOX_FILTERS_DROPDOWN_ID].includes(current_focus_id);
 }
 
@@ -728,6 +728,14 @@ function update_closed_compose_text($row, is_header_row) {
         };
     }
     compose_closed_ui.update_reply_recipient_label(message);
+}
+export function is_focus_row_a_header() {
+    const $all_rows = get_all_rows();
+    const $focused_row = $($all_rows.get(row_focus));
+    if (is_row_a_header($focused_row)) {
+        return true;
+    }
+    return false;
 }
 
 export function get_focused_row_message() {

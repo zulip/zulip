@@ -936,6 +936,22 @@ export function process_hotkey(e, hotkey) {
         case "all_messages":
             browser_history.go_to_location("#all_messages");
             return true;
+        case "toggle_topic_visibility_policy": {
+            if (recent_view_ui.is_in_focus() && recent_view_ui.is_table_focused()) {
+                const recent_msg = recent_view_ui.get_focused_row_message();
+                user_topics_ui.toggle_topic_visibility_policy(recent_msg);
+                return true;
+            }
+            if (
+                inbox_ui.is_in_focus() &&
+                inbox_ui.is_list_focused() &&
+                !inbox_ui.is_focus_row_a_header()
+            ) {
+                const indox_message = inbox_ui.get_focused_row_message();
+                user_topics_ui.toggle_topic_visibility_policy(indox_message.message);
+                return true;
+            }
+        }
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
