@@ -202,6 +202,7 @@
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 20%);
     /* There's no alpha channel here, but this keeps
        the variable names in line. */
     --color-background-unread-counter-no-alpha: var(
@@ -755,6 +756,7 @@
     --color-background-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 50%);
     --color-border-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 90%);
     --color-background-emoji-picker-emoji-reacted-focus: hsl(0deg 0% 20% / 70%);
+    --color-border-add-subscription-button-focus: hsl(0deg 0% 67%);
 }
 
 @media screen {

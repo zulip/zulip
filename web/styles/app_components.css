@@ -157,6 +157,15 @@ input::placeholder {
             background-color: hsl(0deg 0% 95%);
         }
 
+        &.add-subscription-button {
+            &:focus-visible {
+                border: 1px solid;
+                border-color: var(
+                    --color-border-add-subscription-button-focus
+                ) !important;
+            }
+        }
+
         &.sea-green {
             color: hsl(156deg 41% 40%);
             border-color: hsl(156deg 28% 70%);
