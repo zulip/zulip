@@ -112,7 +112,7 @@ export function get_localized_date_or_time_for_format(
 // Exported for tests only.
 export function get_tz_with_UTC_offset(time: number | Date): string {
     const tz_offset = format(time, "xxx");
-    let timezone = new Intl.DateTimeFormat(undefined, {timeZoneName: "short"})
+    let timezone = new Intl.DateTimeFormat(user_settings.default_language, {timeZoneName: "short"})
         .formatToParts(time)
         .find(({type}) => type === "timeZoneName")?.value;
 
