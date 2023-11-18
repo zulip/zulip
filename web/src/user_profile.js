@@ -235,6 +235,8 @@ function render_user_stream_list(streams, user) {
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });
+    $(".ind-tab").attr("tabindex", "-1");
+    $(".modal__body .simplebar-content-wrapper").attr("tabindex", "-1");
 }
 
 function render_user_group_list(groups, user) {
