@@ -2,7 +2,6 @@ import {
     differenceInCalendarDays,
     differenceInHours,
     differenceInMinutes,
-    format,
     formatISO,
     isEqual,
     isValid,
@@ -111,7 +110,6 @@ export function get_localized_date_or_time_for_format(
 
 // Exported for tests only.
 export function get_tz_with_UTC_offset(time: number | Date): string {
-    const tz_offset = format(time, "xxx");
     let timezone = new Intl.DateTimeFormat(user_settings.default_language, {timeZoneName: "short"})
         .formatToParts(time)
         .find(({type}) => type === "timeZoneName")?.value;
@@ -125,7 +123,12 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
 
-    const tz_UTC_offset = `(UTC${tz_offset})`;
+    const tz_offset = new Intl.DateTimeFormat(user_settings.default_language, {
+        timeZoneName: "longOffset",
+    })
+        .formatToParts(time)
+        .find(({type}) => type === "timeZoneName")!.value;
+    const tz_UTC_offset = `(${tz_offset.replace(/^GMT/, "UTC")})`;
 
     if (timezone) {
         return timezone + " " + tz_UTC_offset;
