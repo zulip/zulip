@@ -5,8 +5,12 @@
         <a role="button" class="compose_control_button compose_upload_file fa fa-paperclip notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0></a>
     </div>
     {{/if}}
-    <a role="button" class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0 data-tippy-content="{{t 'Preview' }}"></a>
-    <a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" data-tippy-content="{{t 'Write' }}"></a>
+    <div class="compose_control_button_container" data-tippy-content="{{t 'Preview' }}">
+        <a role="button" class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0></a>
+    </div>
+    <div class="compose_control_button_container" data-tippy-content="{{t 'Write' }}">
+        <a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;"></a>
+    </div>
     <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add voice call' }}">
         <a role="button" class="compose_control_button fa fa-phone audio_link" aria-label="{{t 'Add voice call' }}" tabindex=0></a>
     </div>
