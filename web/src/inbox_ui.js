@@ -1389,4 +1389,10 @@ export function initialize() {
             user_topics.all_visibility_policies.INHERIT,
         );
     });
+
+    $(document).on("compose_canceled.zulip", () => {
+        if (is_visible()) {
+            revive_current_focus();
+        }
+    });
 }
