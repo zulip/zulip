@@ -188,6 +188,7 @@ const me_slash = {
     name: "me",
     aliases: "",
     text: "translated: /me is excited (Display action text)",
+    placeholder: "translated: is …",
 };
 
 const my_slash = {
