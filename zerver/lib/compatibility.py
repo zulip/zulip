@@ -1,6 +1,6 @@
-import datetime
 import os
 import re
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
 from django.conf import settings
@@ -14,8 +14,8 @@ from zerver.signals import get_device_browser
 # LAST_SERVER_UPGRADE_TIME is the last time the server had a version deployed.
 if settings.PRODUCTION:  # nocoverage
     timestamp = os.path.basename(os.path.abspath(settings.DEPLOY_ROOT))
-    LAST_SERVER_UPGRADE_TIME = datetime.datetime.strptime(timestamp, "%Y-%m-%d-%H-%M-%S").replace(
-        tzinfo=datetime.timezone.utc
+    LAST_SERVER_UPGRADE_TIME = datetime.strptime(timestamp, "%Y-%m-%d-%H-%M-%S").replace(
+        tzinfo=timezone.utc
     )
 else:
     LAST_SERVER_UPGRADE_TIME = timezone_now()
@@ -28,18 +28,14 @@ def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
     # someone has upgraded in the last year but to a release more than
     # a year old.
     git_version_path = os.path.join(settings.DEPLOY_ROOT, "version.py")
-    release_build_time = datetime.datetime.fromtimestamp(
-        os.path.getmtime(git_version_path), datetime.timezone.utc
-    )
+    release_build_time = datetime.fromtimestamp(os.path.getmtime(git_version_path), timezone.utc)
 
     version_no_newer_than = min(LAST_SERVER_UPGRADE_TIME, release_build_time)
-    deadline = version_no_newer_than + datetime.timedelta(
-        days=settings.SERVER_UPGRADE_NAG_DEADLINE_DAYS
-    )
+    deadline = version_no_newer_than + timedelta(days=settings.SERVER_UPGRADE_NAG_DEADLINE_DAYS)
 
     if user_profile is None or not user_profile.is_realm_admin:
         # Administrators get warned at the deadline; all users 30 days later.
-        deadline = deadline + datetime.timedelta(days=30)
+        deadline = deadline + timedelta(days=30)
 
     if timezone_now() > deadline:
         return True

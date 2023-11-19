@@ -1,8 +1,7 @@
-import datetime
 import json
 import os
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 from unittest import mock
 
@@ -226,9 +225,7 @@ class RealmTest(ZulipTestCase):
         data = dict(string_id="lear")
         self.login("desdemona")
         realm = get_realm("zulip")
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + datetime.timedelta(
-            days=30
-        )
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
         realm.save()
         result = self.client_patch("/json/realm", data)
         self.assert_json_error(result, "Subdomain already in use. Please choose a different one.")
@@ -334,7 +331,7 @@ class RealmTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             user.realm,
             to_user_ids=[user.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_realm(user.realm, acting_user=None)
@@ -933,7 +930,7 @@ class RealmTest(ZulipTestCase):
         self.assertTrue(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["unspecified"]["id"])
-        self.assertEqual(type(realm.date_created), datetime.datetime)
+        self.assertEqual(type(realm.date_created), datetime)
 
         self.assertTrue(
             RealmAuditLog.objects.filter(
@@ -960,7 +957,7 @@ class RealmTest(ZulipTestCase):
             )
 
     def test_do_create_realm_with_keyword_arguments(self) -> None:
-        date_created = timezone_now() - datetime.timedelta(days=100)
+        date_created = timezone_now() - timedelta(days=100)
         realm = do_create_realm(
             "realm_string_id",
             "realm name",

@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from unittest import mock
 
 import orjson
@@ -488,7 +488,7 @@ class TestMocking(ZulipTestCase):
         # You can also use mock.patch() as a decorator depending on the
         # requirements. Read more at the documentation link provided above.
 
-        time_beyond_edit_limit = message_sent_time + datetime.timedelta(
+        time_beyond_edit_limit = message_sent_time + timedelta(
             seconds=MESSAGE_CONTENT_EDIT_LIMIT + 100
         )  # There's a buffer time applied to the limit, hence the extra 100s.
 

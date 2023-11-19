@@ -1,13 +1,11 @@
-import datetime
+from datetime import datetime
 
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserActivity, UserActivityInterval, UserProfile
 
 
-def do_update_user_activity_interval(
-    user_profile: UserProfile, log_time: datetime.datetime
-) -> None:
+def do_update_user_activity_interval(user_profile: UserProfile, log_time: datetime) -> None:
     effective_end = log_time + UserActivityInterval.MIN_INTERVAL_LENGTH
     # This code isn't perfect, because with various races we might end
     # up creating two overlapping intervals, but that shouldn't happen
@@ -32,7 +30,7 @@ def do_update_user_activity_interval(
 
 
 def do_update_user_activity(
-    user_profile_id: int, client_id: int, query: str, count: int, log_time: datetime.datetime
+    user_profile_id: int, client_id: int, query: str, count: int, log_time: datetime
 ) -> None:
     (activity, created) = UserActivity.objects.get_or_create(
         user_profile_id=user_profile_id,
@@ -47,6 +45,6 @@ def do_update_user_activity(
         activity.save(update_fields=["last_visit", "count"])
 
 
-def update_user_activity_interval(user_profile: UserProfile, log_time: datetime.datetime) -> None:
+def update_user_activity_interval(user_profile: UserProfile, log_time: datetime) -> None:
     event = {"user_profile_id": user_profile.id, "time": datetime_to_timestamp(log_time)}
     queue_json_publish("user_activity_interval", event)

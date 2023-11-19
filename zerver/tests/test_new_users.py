@@ -1,5 +1,5 @@
-import datetime
 import sys
+from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 import time_machine
@@ -37,12 +37,12 @@ class SendLoginEmailTest(ZulipTestCase):
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
             # we don't use the self.login method since we spoof the user-agent
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
+            mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
 
             user = self.example_user("hamlet")
             user.timezone = "US/Pacific"
             user.twenty_four_hour_time = False
-            user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+            user.date_joined = mock_time - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
             user.save()
             password = initial_password(user.delivery_email)
             login_info = dict(
@@ -53,7 +53,7 @@ class SendLoginEmailTest(ZulipTestCase):
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             )
             user_tz = zoneinfo.ZoneInfo(user.timezone)
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
+            mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
             reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M %p %Z")
             with time_machine.travel(mock_time, tick=False):
                 self.client_post(
@@ -108,10 +108,10 @@ class SendLoginEmailTest(ZulipTestCase):
     @override_settings(SEND_LOGIN_EMAILS=True)
     def test_enable_login_emails_user_setting(self) -> None:
         user = self.example_user("hamlet")
-        mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
+        mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
 
         user.timezone = "US/Pacific"
-        user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        user.date_joined = mock_time - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
         user.save()
 
         do_change_user_setting(user, "enable_login_emails", False, acting_user=None)

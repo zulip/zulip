@@ -6,9 +6,9 @@ Nagios plugin to check that our MIT users' Zephyr mirrors are running.
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
-import datetime
 import os
 import sys
+from datetime import timedelta
 from typing import NoReturn, Optional
 
 sys.path.append("/home/zulip/deployments/current")
@@ -47,10 +47,10 @@ def report(
     too_old_data = ""
     if all_users is not None:
         recently_inactive_users = (
-            all_users.filter(last_visit__lt=now - datetime.timedelta(minutes=10))
+            all_users.filter(last_visit__lt=now - timedelta(minutes=10))
             .distinct("user_profile_id")
             .difference(
-                all_users.filter(last_visit__lt=now - datetime.timedelta(minutes=60)).distinct(
+                all_users.filter(last_visit__lt=now - timedelta(minutes=60)).distinct(
                     "user_profile_id"
                 )
             )
@@ -83,14 +83,14 @@ all_users = UserActivity.objects.filter(
     client_id=zephyr_client.id,
 )
 new_inactive_users = (
-    all_users.filter(last_visit__lt=now - datetime.timedelta(minutes=10))
+    all_users.filter(last_visit__lt=now - timedelta(minutes=10))
     .values("user_profile_id")
     .distinct("user_profile_id")
     .count()
 )
 
 old_inactive_users = (
-    all_users.filter(last_visit__lt=now - datetime.timedelta(minutes=60))
+    all_users.filter(last_visit__lt=now - timedelta(minutes=60))
     .values("user_profile_id")
     .distinct("user_profile_id")
     .count()

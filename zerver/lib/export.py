@@ -6,7 +6,6 @@
 # it the lists in `ALL_ZULIP_TABLES` and similar data structures and
 # (2) if it doesn't belong in EXCLUDED_TABLES, add a Config object for
 # it to get_realm_config.
-import datetime
 import glob
 import logging
 import os
@@ -14,6 +13,7 @@ import shutil
 import subprocess
 import tempfile
 from contextlib import suppress
+from datetime import datetime
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
 
@@ -436,7 +436,7 @@ def floatify_datetime_fields(data: TableData, table: TableName) -> None:
             dt = item[field]
             if dt is None:
                 continue
-            assert isinstance(dt, datetime.datetime)
+            assert isinstance(dt, datetime)
             assert not timezone_is_naive(dt)
             item[field] = dt.timestamp()
 

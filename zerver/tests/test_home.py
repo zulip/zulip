@@ -1,7 +1,6 @@
 import calendar
-import datetime
 import urllib
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import TYPE_CHECKING, Any, Dict
 from unittest.mock import patch
 
@@ -307,9 +306,7 @@ class HomeTest(ZulipTestCase):
         # We construct a scheduled deletion date that's definitely in
         # the future, regardless of how long ago the Zulip realm was
         # created.
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + datetime.timedelta(
-            days=1
-        )
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=1)
         realm.save()
         self.login("hamlet")
 
@@ -1022,7 +1019,7 @@ class HomeTest(ZulipTestCase):
         # Check when server_upgrade_nag_deadline > last_server_upgrade_time
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
-        now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=datetime.timezone.utc)
+        now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=timezone.utc)
         with time_machine.travel((now + timedelta(days=10)), tick=False):
             self.assertEqual(is_outdated_server(iago), False)
             self.assertEqual(is_outdated_server(hamlet), False)
@@ -1284,7 +1281,7 @@ class HomeTest(ZulipTestCase):
     def test_realm_push_notifications_enabled_end_timestamp(self) -> None:
         self.login("hamlet")
         realm = get_realm("zulip")
-        end_timestamp = timezone_now() + datetime.timedelta(days=1)
+        end_timestamp = timezone_now() + timedelta(days=1)
         realm.push_notifications_enabled_end_timestamp = end_timestamp
         realm.save()
 

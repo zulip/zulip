@@ -1,7 +1,7 @@
-import datetime
 import re
 import time
 import urllib
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
@@ -4093,7 +4093,7 @@ class UserSignUpTest(ZulipTestCase):
             user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
 
-        expected_deletion_date = realm.date_created + datetime.timedelta(
+        expected_deletion_date = realm.date_created + timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)

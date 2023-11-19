@@ -1,7 +1,7 @@
 import copy
-import datetime
 import zlib
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from typing import (
     Any,
     Collection,
@@ -203,7 +203,7 @@ class SendMessageRequest:
     links_for_embed: Set[str]
     widget_content: Optional[Dict[str, Any]]
     submessages: List[Dict[str, Any]] = field(default_factory=list)
-    deliver_at: Optional[datetime.datetime] = None
+    deliver_at: Optional[datetime] = None
     delivery_type: Optional[str] = None
     limit_unread_user_ids: Optional[Set[int]] = None
     service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
@@ -561,11 +561,11 @@ class MessageDict:
     @staticmethod
     def build_message_dict(
         message_id: int,
-        last_edit_time: Optional[datetime.datetime],
+        last_edit_time: Optional[datetime],
         edit_history_json: Optional[str],
         content: str,
         topic_name: str,
-        date_sent: datetime.datetime,
+        date_sent: datetime,
         rendered_content: Optional[str],
         rendered_content_version: Optional[int],
         sender_id: int,
@@ -1492,7 +1492,7 @@ def add_message_to_unread_msgs(
 
 def estimate_recent_messages(realm: Realm, hours: int) -> int:
     stat = COUNT_STATS["messages_sent:is_bot:hour"]
-    d = timezone_now() - datetime.timedelta(hours=hours)
+    d = timezone_now() - timedelta(hours=hours)
     return (
         RealmCount.objects.filter(property=stat.property, end_time__gt=d, realm=realm).aggregate(
             Sum("value")

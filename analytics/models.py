@@ -1,7 +1,7 @@
 # https://github.com/typeddjango/django-stubs/issues/1698
 # mypy: disable-error-code="explicit-override"
 
-import datetime
+from datetime import datetime
 
 from django.db import models
 from django.db.models import Q, UniqueConstraint
@@ -27,7 +27,7 @@ class FillState(models.Model):
 
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
-def installation_epoch() -> datetime.datetime:
+def installation_epoch() -> datetime:
     earliest_realm_creation = Realm.objects.aggregate(models.Min("date_created"))[
         "date_created__min"
     ]

@@ -1,6 +1,5 @@
 import base64
 import copy
-import datetime
 import json
 import os
 import re
@@ -9,6 +8,7 @@ import time
 import urllib
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
     TYPE_CHECKING,
@@ -1283,7 +1283,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             email=hamlet.delivery_email, name="Full Name"
         )
         self.assert_length(mail.outbox, 0)
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(
+        self.user_profile.date_joined = timezone_now() - timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
         )
         self.user_profile.save()
@@ -1924,7 +1924,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
-        now = timezone_now() + datetime.timedelta(days=3)
+        now = timezone_now() + timedelta(days=3)
 
         subdomain = "zulip"
         realm = get_realm("zulip")
@@ -4500,7 +4500,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
         self.assert_length(mail.outbox, 0)
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(
+        self.user_profile.date_joined = timezone_now() - timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
         )
         self.user_profile.save()
@@ -5643,7 +5643,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_mobile_flow_otp_success_email(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         mobile_flow_otp = "1234abcd" * 8
 
@@ -5692,7 +5692,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
         remote_user = Address(addr_spec=email).username
-        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         mobile_flow_otp = "1234abcd" * 8
 
@@ -5744,7 +5744,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_desktop_flow_otp_success_email(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         desktop_flow_otp = "1234abcd" * 8
 
@@ -5778,7 +5778,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
         remote_user = Address(addr_spec=email).username
-        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.date_joined = timezone_now() - timedelta(seconds=61)
         user_profile.save()
         desktop_flow_otp = "1234abcd" * 8
 

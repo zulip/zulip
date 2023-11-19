@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from email.headerregistry import Address
 
 import time_machine
@@ -78,7 +78,7 @@ class EmailChangeTestCase(ZulipTestCase):
             user_profile=user_profile,
             realm=user_profile.realm,
         )
-        date_sent = now() - datetime.timedelta(days=2)
+        date_sent = now() - timedelta(days=2)
         with time_machine.travel(date_sent, tick=False):
             url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
 
@@ -361,9 +361,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_configure_demo_organization_owner_email(self) -> None:
         desdemona = self.example_user("desdemona")
-        desdemona.realm.demo_organization_scheduled_deletion_date = now() + datetime.timedelta(
-            days=30
-        )
+        desdemona.realm.demo_organization_scheduled_deletion_date = now() + timedelta(days=30)
         desdemona.realm.save()
         assert desdemona.realm.demo_organization_scheduled_deletion_date is not None
 

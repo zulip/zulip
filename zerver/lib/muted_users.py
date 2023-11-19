@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Dict, List, Optional, Set
 
 from zerver.lib.cache import cache_with_key, get_muting_users_cache_key
@@ -21,9 +21,7 @@ def get_user_mutes(user_profile: UserProfile) -> List[Dict[str, int]]:
     ]
 
 
-def add_user_mute(
-    user_profile: UserProfile, muted_user: UserProfile, date_muted: datetime.datetime
-) -> None:
+def add_user_mute(user_profile: UserProfile, muted_user: UserProfile, date_muted: datetime) -> None:
     MutedUser.objects.create(
         user_profile=user_profile,
         muted_user=muted_user,

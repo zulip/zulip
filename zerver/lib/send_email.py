@@ -1,9 +1,9 @@
-import datetime
 import hashlib
 import logging
 import os
 import smtplib
 from contextlib import suppress
+from datetime import timedelta
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
@@ -346,7 +346,7 @@ def send_future_email(
     from_address: Optional[str] = None,
     language: Optional[str] = None,
     context: Mapping[str, Any] = {},
-    delay: datetime.timedelta = datetime.timedelta(0),
+    delay: timedelta = timedelta(0),
 ) -> None:
     template_name = template_prefix.split("/")[-1]
     email_fields = {

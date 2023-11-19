@@ -1,7 +1,6 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
 import cgi
-import datetime
 import html
 import logging
 import mimetypes
@@ -11,6 +10,7 @@ import urllib
 import urllib.parse
 from collections import deque
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from functools import lru_cache
 from typing import (
     Any,
@@ -1403,9 +1403,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
         except ValueError:
             try:
-                timestamp = datetime.datetime.fromtimestamp(
-                    float(time_input_string), tz=datetime.timezone.utc
-                )
+                timestamp = datetime.fromtimestamp(float(time_input_string), tz=timezone.utc)
             except ValueError:
                 timestamp = None
 
@@ -1420,9 +1418,9 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         # Use HTML5 <time> element for valid timestamps.
         time_element = Element("time")
         if timestamp.tzinfo:
-            timestamp = timestamp.astimezone(datetime.timezone.utc)
+            timestamp = timestamp.astimezone(timezone.utc)
         else:
-            timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
         time_element.set("datetime", timestamp.isoformat().replace("+00:00", "Z"))
         # Set text to initial input, so simple clients translating
         # HTML to text will at least display something.

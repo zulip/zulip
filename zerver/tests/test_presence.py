@@ -1,5 +1,4 @@
-import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, Dict
 from unittest import mock
 
@@ -58,7 +57,7 @@ class UserPresenceModelTests(ZulipTestCase):
 
         def back_date(num_weeks: int) -> None:
             user_presence = UserPresence.objects.get(user_profile=user_profile)
-            backdated_timestamp = timezone_now() - datetime.timedelta(weeks=num_weeks)
+            backdated_timestamp = timezone_now() - timedelta(weeks=num_weeks)
             user_presence.last_active_time = backdated_timestamp
             user_presence.last_connected_time = backdated_timestamp
             user_presence.save()
@@ -527,24 +526,24 @@ class SingleUserPresenceTests(ZulipTestCase):
 
 class UserPresenceAggregationTests(ZulipTestCase):
     def _send_presence_for_aggregated_tests(
-        self, user: UserProfile, status: str, validate_time: datetime.datetime
+        self, user: UserProfile, status: str, validate_time: datetime
     ) -> Dict[str, Dict[str, Any]]:
         self.login_user(user)
         # First create some initial, old presence to avoid the details of the edge case of initial
         # presence creation messing with the intended setup.
-        with time_machine.travel((validate_time - datetime.timedelta(days=365)), tick=False):
+        with time_machine.travel((validate_time - timedelta(days=365)), tick=False):
             self.client_post("/json/users/me/presence", {"status": status})
 
-        with time_machine.travel((validate_time - datetime.timedelta(seconds=5)), tick=False):
+        with time_machine.travel((validate_time - timedelta(seconds=5)), tick=False):
             self.client_post("/json/users/me/presence", {"status": status})
-        with time_machine.travel((validate_time - datetime.timedelta(seconds=2)), tick=False):
+        with time_machine.travel((validate_time - timedelta(seconds=2)), tick=False):
             self.api_post(
                 user,
                 "/api/v1/users/me/presence",
                 {"status": status},
                 HTTP_USER_AGENT="ZulipAndroid/1.0",
             )
-        with time_machine.travel((validate_time - datetime.timedelta(seconds=7)), tick=False):
+        with time_machine.travel((validate_time - timedelta(seconds=7)), tick=False):
             latest_result = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -556,7 +555,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             latest_result_dict["presences"][user.email]["aggregated"],
             {
                 "status": status,
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
                 # We no longer store the client information, but keep the field in these dicts,
                 # with the value 'website' for backwards compatibility.
                 "client": "website",
@@ -568,7 +567,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
     def test_aggregated_info(self) -> None:
         user = self.example_user("othello")
-        offset = datetime.timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 1)
+        offset = timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 1)
         validate_time = timezone_now() - offset
         self._send_presence_for_aggregated_tests(user, "active", validate_time)
         with time_machine.travel((validate_time + offset), tick=False):
@@ -596,7 +595,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict["presence"]["aggregated"],
             {
                 "status": "active",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
             },
         )
 
@@ -608,7 +607,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict["presence"]["aggregated"],
             {
                 "status": "idle",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
             },
         )
 
@@ -617,7 +616,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         self.login_user(user)
         validate_time = timezone_now()
         self._send_presence_for_aggregated_tests(user, "idle", validate_time)
-        with time_machine.travel((validate_time - datetime.timedelta(seconds=3)), tick=False):
+        with time_machine.travel((validate_time - timedelta(seconds=3)), tick=False):
             result_dict = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -630,7 +629,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             {
                 "client": "website",
                 "status": "active",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=3)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=3)),
             },
         )
 
@@ -641,7 +640,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         result_dict = self._send_presence_for_aggregated_tests(user, "idle", validate_time)
 
         with time_machine.travel(
-            (validate_time + datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1)),
+            (validate_time + timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1)),
             tick=False,
         ):
             # After settings.OFFLINE_THRESHOLD_SECS + 1 this generated, recent presence data
@@ -653,7 +652,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict["presence"]["aggregated"],
             {
                 "status": "offline",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
             },
         )
 

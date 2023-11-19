@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from operator import itemgetter
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from unittest import mock
@@ -1107,7 +1107,7 @@ class EditMessageTest(EditMessageTestCase):
             self.example_user("iago"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
+        message.date_sent = message.date_sent - timedelta(seconds=180)
         message.save()
 
         # test the various possible message editing settings
@@ -1185,7 +1185,7 @@ class EditMessageTest(EditMessageTestCase):
             self.example_user("hamlet"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
+        message.date_sent = message.date_sent - timedelta(seconds=180)
         message.save()
 
         # Guest user must be subscribed to the stream to access the message.
@@ -1210,9 +1210,9 @@ class EditMessageTest(EditMessageTestCase):
         hamlet = self.example_user("hamlet")
         do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
 
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.date_joined = timezone_now() - timedelta(days=9)
         cordelia.save()
-        hamlet.date_joined = timezone_now() - datetime.timedelta(days=9)
+        hamlet.date_joined = timezone_now() - timedelta(days=9)
         hamlet.save()
         do_edit_message_assert_error(
             id_, "C", "You don't have permission to edit this message", "cordelia"
@@ -1223,9 +1223,9 @@ class EditMessageTest(EditMessageTestCase):
             id_, "C", "You don't have permission to edit this message", "hamlet"
         )
 
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
-        hamlet.date_joined = timezone_now() - datetime.timedelta(days=11)
+        hamlet.date_joined = timezone_now() - timedelta(days=11)
         hamlet.save()
         do_edit_message_assert_success(id_, "C", "cordelia")
         do_edit_message_assert_success(id_, "CD", "hamlet")
@@ -1263,7 +1263,7 @@ class EditMessageTest(EditMessageTestCase):
 
         # non-admin users cannot edit topics sent > 1 week ago including
         # sender of the message.
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
+        message.date_sent = message.date_sent - timedelta(seconds=604900)
         message.save()
         set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")
@@ -2749,15 +2749,15 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - datetime.timedelta(days=10)
+        message.date_sent = message.date_sent - timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - datetime.timedelta(days=8)
+        message.date_sent = message.date_sent - timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - datetime.timedelta(days=5)
+        message.date_sent = message.date_sent - timedelta(days=5)
         message.save()
 
         verona = get_stream("Verona", user_profile.realm)
@@ -2945,19 +2945,19 @@ class EditMessageTest(EditMessageTestCase):
         self.send_stream_message(hamlet, "privatestream", topic_name="topic1")
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - datetime.timedelta(days=10)
+        message.date_sent = message.date_sent - timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - datetime.timedelta(days=9)
+        message.date_sent = message.date_sent - timedelta(days=9)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - datetime.timedelta(days=8)
+        message.date_sent = message.date_sent - timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id4)
-        message.date_sent = message.date_sent - datetime.timedelta(days=6)
+        message.date_sent = message.date_sent - timedelta(days=6)
         message.save()
 
         self.login("hamlet")
@@ -3630,7 +3630,7 @@ class EditMessageTest(EditMessageTestCase):
         # non-admin and non-moderator users cannot move messages sent > 1 week ago
         # including sender of the message.
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
+        message.date_sent = message.date_sent - timedelta(seconds=604900)
         message.save()
         check_move_message_to_stream(
             cordelia,
@@ -4801,7 +4801,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
         msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
+        message.date_sent = message.date_sent - timedelta(seconds=600)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id)
@@ -4814,12 +4814,12 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(Realm.POLICY_EVERYONE, 240)
         msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
+        message.date_sent = message.date_sent - timedelta(seconds=120)
         message.save()
 
         msg_id_2 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_2)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=360)
+        message.date_sent = message.date_sent - timedelta(seconds=360)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id_1)
@@ -4913,7 +4913,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
 
         message = Message.objects.get(id=msg_id)
-        message.date_sent = timezone_now() - datetime.timedelta(seconds=700)
+        message.date_sent = timezone_now() - timedelta(seconds=700)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id)
@@ -4934,13 +4934,13 @@ class DeleteMessageTest(ZulipTestCase):
 
         set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
         message = Message.objects.get(id=msg_id)
-        message.date_sent = timezone_now() - datetime.timedelta(seconds=700)
+        message.date_sent = timezone_now() - timedelta(seconds=700)
         message.save()
 
         result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
         self.assert_json_error(result, "The time limit for deleting this message has passed")
 
-        message.date_sent = timezone_now() - datetime.timedelta(seconds=400)
+        message.date_sent = timezone_now() - timedelta(seconds=400)
         message.save()
         result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
         self.assert_json_success(result)
@@ -4987,12 +4987,12 @@ class DeleteMessageTest(ZulipTestCase):
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         cordelia = self.example_user("cordelia")
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.date_joined = timezone_now() - timedelta(days=9)
         cordelia.save()
         check_delete_message_by_sender(
             "cordelia", "You don't have permission to delete this message"
         )
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
         check_delete_message_by_sender("cordelia")
 

@@ -1,9 +1,9 @@
-import datetime
 import json
 import os
 import shutil
 import uuid
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
 
@@ -94,8 +94,8 @@ from zerver.models import (
 )
 
 
-def make_datetime(val: float) -> datetime.datetime:
-    return datetime.datetime.fromtimestamp(val, tz=datetime.timezone.utc)
+def make_datetime(val: float) -> datetime:
+    return datetime.fromtimestamp(val, tz=timezone.utc)
 
 
 def get_output_dir() -> str:
@@ -832,7 +832,7 @@ class RealmImportExportTest(ExportFile):
             message_to=[Stream.objects.get(name="Denmark", realm=original_realm).id],
             topic_name="test-import",
             message_content="test message",
-            deliver_at=timezone_now() + datetime.timedelta(days=365),
+            deliver_at=timezone_now() + timedelta(days=365),
             realm=original_realm,
         )
         original_scheduled_message = ScheduledMessage.objects.filter(realm=original_realm).last()

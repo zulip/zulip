@@ -1,6 +1,6 @@
-import datetime
 import itertools
 from collections import defaultdict
+from datetime import timedelta
 from typing import AbstractSet, Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from django.conf import settings
@@ -1151,8 +1151,7 @@ def check_time_limit_for_change_all_propagate_mode(
             Message.objects.filter(
                 # Uses index: zerver_message_pkey
                 id__in=accessible_messages_in_topic,
-                date_sent__gt=timezone_now()
-                - datetime.timedelta(seconds=message_move_deadline_seconds),
+                date_sent__gt=timezone_now() - timedelta(seconds=message_move_deadline_seconds),
             )
             .order_by("date_sent")
             .values_list("id", flat=True)
@@ -1164,7 +1163,7 @@ def check_time_limit_for_change_all_propagate_mode(
             .order_by("id")
             .values_list("id", "date_sent")
         )
-        oldest_allowed_message_date = timezone_now() - datetime.timedelta(
+        oldest_allowed_message_date = timezone_now() - timedelta(
             seconds=message_move_deadline_seconds
         )
         messages_allowed_to_move = [
@@ -1235,7 +1234,7 @@ def check_update_message(
     edit_limit_buffer = 20
     if content is not None and user_profile.realm.message_content_edit_limit_seconds is not None:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
-        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     # If there is a change to the topic, check that the user is allowed to
@@ -1250,7 +1249,7 @@ def check_update_message(
         deadline_seconds = (
             user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
         )
-        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed."))
 
     rendering_result = None
@@ -1318,7 +1317,7 @@ def check_update_message(
             deadline_seconds = (
                 user_profile.realm.move_messages_between_streams_limit_seconds + edit_limit_buffer
             )
-            if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+            if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
                 raise JsonableError(
                     _("The time limit for editing this message's stream has passed")
                 )

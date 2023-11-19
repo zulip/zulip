@@ -1,7 +1,7 @@
 import contextlib
-import datetime
 import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import stripe
@@ -304,11 +304,11 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
     if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
         # Create customer plan for these servers for temporary period.
         billing_session = RemoteServerBillingSession(remote_server)
-        renewal_date = datetime.datetime.strptime(
-            customer_profile.renewal_date, TIMESTAMP_FORMAT
-        ).replace(tzinfo=datetime.timezone.utc)
-        end_date = datetime.datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
-            tzinfo=datetime.timezone.utc
+        renewal_date = datetime.strptime(customer_profile.renewal_date, TIMESTAMP_FORMAT).replace(
+            tzinfo=timezone.utc
+        )
+        end_date = datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
+            tzinfo=timezone.utc
         )
         billing_session.add_server_to_legacy_plan(renewal_date, end_date)
     elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:

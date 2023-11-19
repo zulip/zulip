@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
 from django.conf import settings
@@ -162,7 +162,7 @@ def do_create_realm(
     plan_type: Optional[int] = None,
     org_type: Optional[int] = None,
     default_language: Optional[str] = None,
-    date_created: Optional[datetime.datetime] = None,
+    date_created: Optional[datetime] = None,
     is_demo_organization: bool = False,
     enable_read_receipts: Optional[bool] = None,
     enable_spectator_access: Optional[bool] = None,
@@ -223,8 +223,8 @@ def do_create_realm(
     with transaction.atomic():
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
-            realm.demo_organization_scheduled_deletion_date = (
-                realm.date_created + datetime.timedelta(days=settings.DEMO_ORG_DEADLINE_DAYS)
+            realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
+                days=settings.DEMO_ORG_DEADLINE_DAYS
             )
 
         set_realm_permissions_based_on_org_type(realm)

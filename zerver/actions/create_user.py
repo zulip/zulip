@@ -1,5 +1,5 @@
-import datetime
 from collections import defaultdict
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 from django.conf import settings
@@ -65,7 +65,7 @@ MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
 # feel like Zulip is buggy, but in low-traffic or bursty-traffic
 # organizations, it's reasonable for the most recent 20 messages to be
 # several weeks old and still be a good place to start.
-ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=12)
+ONBOARDING_RECENT_TIMEDELTA = timedelta(weeks=12)
 
 DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 

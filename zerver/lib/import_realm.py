@@ -1,8 +1,8 @@
-import datetime
 import logging
 import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from datetime import datetime, timezone
 from mimetypes import guess_type
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -169,9 +169,7 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
             if item[field_name] is not None:
-                item[field_name] = datetime.datetime.fromtimestamp(
-                    item[field_name], tz=datetime.timezone.utc
-                )
+                item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 
 
 def fix_upload_links(data: TableData, message_table: TableName) -> None:

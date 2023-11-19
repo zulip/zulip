@@ -1,8 +1,8 @@
 import asyncio
 import base64
-import datetime
 import uuid
 from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 from unittest import mock, skipUnless
 
@@ -684,7 +684,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "apns_payload": apns_payload,
             "gcm_options": gcm_options,
         }
-        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         with time_machine.travel(time_received, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
         ), mock.patch(
@@ -1009,7 +1009,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
 
 class AnalyticsBouncerTest(BouncerTestCase):
-    TIME_ZERO = datetime.datetime(1988, 3, 14, tzinfo=datetime.timezone.utc)
+    TIME_ZERO = datetime(1988, 3, 14, tzinfo=timezone.utc)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
@@ -1277,13 +1277,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmCount.objects.create(
             realm=user.realm,
             property=realm_stat.property,
-            end_time=end_time + datetime.timedelta(days=1),
+            end_time=end_time + timedelta(days=1),
             value=6,
         )
         RealmCount.objects.create(
             realm=user.realm,
             property=realm_stat.property,
-            end_time=end_time + datetime.timedelta(days=2),
+            end_time=end_time + timedelta(days=2),
             value=9,
         )
         send_analytics_to_push_bouncer()
@@ -1291,7 +1291,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # Test only having new InstallationCount rows
         InstallationCount.objects.create(
-            property=realm_stat.property, end_time=end_time + datetime.timedelta(days=1), value=6
+            property=realm_stat.property, end_time=end_time + timedelta(days=1), value=6
         )
         send_analytics_to_push_bouncer()
         check_counts(7, 7, 3, 2, 7)
@@ -1659,7 +1659,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         dummy_customer_plan = mock.MagicMock()
         dummy_customer_plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-        dummy_date = datetime.datetime(year=2023, month=12, day=3, tzinfo=datetime.timezone.utc)
+        dummy_date = datetime(year=2023, month=12, day=3, tzinfo=timezone.utc)
         with mock.patch(
             "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
         ):
@@ -1881,7 +1881,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 message=message,
             )
 
-        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
@@ -1968,7 +1968,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 message=message,
             )
 
-        time_received = time_sent + datetime.timedelta(seconds=1, milliseconds=234)
+        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,

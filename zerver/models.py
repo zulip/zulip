@@ -1,12 +1,11 @@
 # https://github.com/typeddjango/django-stubs/issues/1698
 # mypy: disable-error-code="explicit-override"
 
-import datetime
 import hashlib
 import secrets
 import time
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from enum import Enum
 from typing import (
@@ -2598,7 +2597,7 @@ def filter_to_valid_prereg_users(
 
     assert invite_expires_in_minutes is not None
     if not isinstance(invite_expires_in_minutes, UnspecifiedValue):
-        lowest_datetime = timezone_now() - datetime.timedelta(minutes=invite_expires_in_minutes)
+        lowest_datetime = timezone_now() - timedelta(minutes=invite_expires_in_minutes)
         return query.filter(invited_at__gte=lowest_datetime)
     else:
         return query.filter(
@@ -2880,9 +2879,7 @@ class UserTopic(models.Model):
     # The default value for last_updated is a few weeks before tracking
     # of when topics were muted was first introduced.  It's designed
     # to be obviously incorrect so that one can tell it's backfilled data.
-    last_updated = models.DateTimeField(
-        default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
-    )
+    last_updated = models.DateTimeField(default=datetime(2020, 1, 1, 0, 0, tzinfo=timezone.utc))
 
     class VisibilityPolicy(models.IntegerChoices):
         # A normal muted topic. No notifications and unreads hidden.
@@ -3979,7 +3976,7 @@ def get_old_unclaimed_attachments(
     or both - depending on whether some, all or none of the messages
     linking to it have been archived.
     """
-    delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
+    delta_weeks_ago = timezone_now() - timedelta(weeks=weeks_ago)
 
     # The Attachment vs ArchivedAttachment queries are asymmetric because only
     # Attachment has the scheduled_messages relation.
@@ -4379,7 +4376,7 @@ class UserActivity(models.Model):
 
 
 class UserActivityInterval(models.Model):
-    MIN_INTERVAL_LENGTH = datetime.timedelta(minutes=15)
+    MIN_INTERVAL_LENGTH = timedelta(minutes=15)
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     start = models.DateTimeField("start time", db_index=True)

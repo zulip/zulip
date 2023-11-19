@@ -1,7 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import base64
 import copy
-import datetime
 import email
 import email.policy
 import logging
@@ -14,6 +13,7 @@ import time
 import urllib
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
+from datetime import timedelta
 from email.message import EmailMessage
 from functools import wraps
 from types import FrameType
@@ -496,7 +496,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=email_language,
                 context=context,
-                delay=datetime.timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
+                delay=timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
             )
 
 
@@ -608,7 +608,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         user_profile_id: int = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
         batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
-        batch_duration = datetime.timedelta(seconds=batch_duration_seconds)
+        batch_duration = timedelta(seconds=batch_duration_seconds)
 
         try:
             pending_email = ScheduledMessageNotificationEmail.objects.filter(

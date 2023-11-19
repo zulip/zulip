@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
@@ -38,17 +38,15 @@ class Command(BaseCommand):
         if renewal_date_str is None:
             renewal_date = timezone_now()
         else:
-            renewal_date = datetime.datetime.strptime(renewal_date_str, TIMESTAMP_FORMAT).replace(
-                tzinfo=datetime.timezone.utc
+            renewal_date = datetime.strptime(renewal_date_str, TIMESTAMP_FORMAT).replace(
+                tzinfo=timezone.utc
             )
 
         end_date_str = options.get("end_date")
         if end_date_str is None:
             raise ValueError("end_date must be provided")
 
-        end_date = datetime.datetime.strptime(end_date_str, TIMESTAMP_FORMAT).replace(
-            tzinfo=datetime.timezone.utc
-        )
+        end_date = datetime.strptime(end_date_str, TIMESTAMP_FORMAT).replace(tzinfo=timezone.utc)
 
         server = RemoteZulipServer.objects.get(id=server_id)
         self.add_server_to_legacy_plan(server, renewal_date, end_date)
@@ -56,8 +54,8 @@ class Command(BaseCommand):
     def add_server_to_legacy_plan(
         self,
         server: RemoteZulipServer,
-        renewal_date: datetime.datetime,
-        end_date: datetime.datetime,
+        renewal_date: datetime,
+        end_date: datetime,
     ) -> None:
         billing_schedule = RemoteServerBillingSession(server)
         billing_schedule.add_server_to_legacy_plan(renewal_date, end_date)

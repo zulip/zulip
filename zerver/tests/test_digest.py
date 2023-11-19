@@ -1,5 +1,5 @@
-import datetime
 import time
+from datetime import datetime, timedelta, timezone
 from typing import List, Set
 from unittest import mock
 
@@ -49,9 +49,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         othello = self.example_user("othello")
         self.subscribe(othello, "Verona")
 
-        one_day_ago = timezone_now() - datetime.timedelta(days=1)
+        one_day_ago = timezone_now() - timedelta(days=1)
         Message.objects.all().update(date_sent=one_day_ago)
-        one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
+        one_hour_ago = timezone_now() - timedelta(seconds=3600)
 
         cutoff = time.mktime(one_hour_ago.timetuple())
 
@@ -169,9 +169,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.subscribe(cordelia, "web_public_stream")
         self.subscribe(polonius, "web_public_stream")
 
-        one_day_ago = timezone_now() - datetime.timedelta(days=1)
+        one_day_ago = timezone_now() - timedelta(days=1)
         Message.objects.all().update(date_sent=one_day_ago)
-        one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
+        one_hour_ago = timezone_now() - timedelta(seconds=3600)
 
         cutoff = time.mktime(one_hour_ago.timetuple())
 
@@ -207,7 +207,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assert_length(RealmAuditLog.objects.all(), startlen + 1)
 
     def test_soft_deactivated_user_multiple_stream_senders(self) -> None:
-        one_day_ago = timezone_now() - datetime.timedelta(days=1)
+        one_day_ago = timezone_now() - timedelta(days=1)
         Message.objects.all().update(date_sent=one_day_ago)
 
         digest_users = [
@@ -236,7 +236,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.simulate_stream_conversation("Scotland", senders)
         self.simulate_stream_conversation("Denmark", senders)
 
-        one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
+        one_hour_ago = timezone_now() - timedelta(seconds=3600)
         cutoff = time.mktime(one_hour_ago.timetuple())
 
         # When this test is run in isolation, one additional query is run which
@@ -298,8 +298,8 @@ class TestDigestEmailMessages(ZulipTestCase):
             data = get_user_stream_map([user.id], one_hour_ago)
             return {Stream.objects.get(id=stream_id) for stream_id in data[user.id]}
 
-        two_hours_ago = timezone_now() - datetime.timedelta(hours=2)
-        one_hour_ago = timezone_now() - datetime.timedelta(hours=1)
+        two_hours_ago = timezone_now() - timedelta(hours=2)
+        one_hour_ago = timezone_now() - timedelta(hours=1)
 
         # Delete all RealmAuditLogs to start with a clean slate.
         RealmAuditLog.objects.all().delete()
@@ -359,7 +359,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         realm = get_realm("zulip")
 
-        cutoff = timezone_now() - datetime.timedelta(days=5)
+        cutoff = timezone_now() - timedelta(days=5)
 
         with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
@@ -387,7 +387,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             do_set_realm_property(
                 realm, "digest_weekday", timezone_now().weekday(), acting_user=None
             )
-            cutoff = timezone_now() - datetime.timedelta(days=0)
+            cutoff = timezone_now() - timedelta(days=0)
             with mock.patch(
                 "zerver.worker.queue_processors.bulk_handle_digest_email"
             ) as queue_mock:
@@ -405,7 +405,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         RealmAuditLog.objects.all().delete()
         # Turn on realm digest emails for all realms
         Realm.objects.update(digest_emails_enabled=True)
-        cutoff = timezone_now() - datetime.timedelta(days=5)
+        cutoff = timezone_now() - timedelta(days=5)
 
         realm = get_realm("zulip")
         users = self.active_human_users(realm)
@@ -419,7 +419,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assert_length(users, num_queued_users)
 
         for user in users:
-            last_visit = timezone_now() - datetime.timedelta(days=1)
+            last_visit = timezone_now() - timedelta(days=1)
             UserActivityInterval.objects.create(
                 start=last_visit,
                 end=last_visit,
@@ -433,7 +433,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(queue_mock.call_count, 0)
 
         # Now, backdate all our users activity.
-        last_visit = timezone_now() - datetime.timedelta(days=7)
+        last_visit = timezone_now() - timedelta(days=7)
         UserActivityInterval.objects.all().update(start=last_visit, end=last_visit)
 
         with mock.patch("zerver.worker.queue_processors.bulk_handle_digest_email") as queue_mock:
@@ -442,15 +442,15 @@ class TestDigestEmailMessages(ZulipTestCase):
         num_queued_users = len(queue_mock.call_args[0][0])
         self.assert_length(users, num_queued_users)
 
-    def tuesday(self) -> datetime.datetime:
-        return datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
+    def tuesday(self) -> datetime:
+        return datetime(year=2016, month=1, day=5, tzinfo=timezone.utc)
 
     @override_settings(SEND_DIGEST_EMAILS=False)
     def test_disabled(self) -> None:
         RealmAuditLog.objects.all().delete()
 
         tuesday = self.tuesday()
-        cutoff = tuesday - datetime.timedelta(days=5)
+        cutoff = tuesday - timedelta(days=5)
 
         with time_machine.travel(tuesday, tick=False):
             with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
@@ -461,8 +461,8 @@ class TestDigestEmailMessages(ZulipTestCase):
     def test_only_enqueue_on_valid_day(self) -> None:
         RealmAuditLog.objects.all().delete()
 
-        not_tuesday = datetime.datetime(year=2016, month=1, day=6, tzinfo=datetime.timezone.utc)
-        cutoff = not_tuesday - datetime.timedelta(days=5)
+        not_tuesday = datetime(year=2016, month=1, day=6, tzinfo=timezone.utc)
+        cutoff = not_tuesday - timedelta(days=5)
 
         with time_machine.travel(not_tuesday, tick=False):
             with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
@@ -473,7 +473,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     def test_no_email_digest_for_bots(self) -> None:
         RealmAuditLog.objects.all().delete()
 
-        cutoff = timezone_now() - datetime.timedelta(days=5)
+        cutoff = timezone_now() - timedelta(days=5)
 
         realm = get_realm("zulip")
         realm.digest_emails_enabled = True
@@ -503,7 +503,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_new_stream_link(self) -> None:
         Stream.objects.all().delete()
-        cutoff = timezone_now() - datetime.timedelta(days=5)
+        cutoff = timezone_now() - timedelta(days=5)
         cordelia = self.example_user("cordelia")
         stream = create_stream_if_needed(cordelia.realm, "New stream")[0]
         stream.date_created = timezone_now()
@@ -537,7 +537,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_count, 1)
 
         # Make the stream appear to be older.
-        stream.date_created = timezone_now() - datetime.timedelta(days=7)
+        stream.date_created = timezone_now() - timedelta(days=7)
         stream.save()
 
         recently_created_streams = get_recently_created_streams(realm, cutoff)

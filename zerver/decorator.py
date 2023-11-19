@@ -1,7 +1,7 @@
 import base64
-import datetime
 import logging
 import urllib
+from datetime import datetime
 from functools import wraps
 from io import BytesIO
 from typing import (
@@ -948,7 +948,7 @@ def internal_notify_view(
     return _wrapped_view_func
 
 
-def to_utc_datetime(var_name: str, timestamp: str) -> datetime.datetime:
+def to_utc_datetime(var_name: str, timestamp: str) -> datetime:
     return timestamp_to_datetime(float(timestamp))
 
 

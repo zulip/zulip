@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import TYPE_CHECKING, Optional
 from unittest import mock
 
@@ -223,7 +223,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # Go to the URL we're redirected to after authentication and make sure
         # we're granted access.
         with time_machine.travel(
-            now + datetime.timedelta(seconds=1),
+            now + timedelta(seconds=1),
             tick=False,
         ):
             result = self.client_get(final_url, subdomain="selfhosting")
@@ -233,7 +233,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # Now go there again, simulating doing this after the session has expired.
         # We should be denied access and redirected to re-auth.
         with time_machine.travel(
-            now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 1),
+            now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 1),
             tick=False,
         ):
             result = self.client_get(final_url, subdomain="selfhosting")
@@ -297,7 +297,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
 
         # Try the case where the identity dict is simultaneously expired.
         with time_machine.travel(
-            now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
+            now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
             tick=False,
         ):
             with self.assertLogs("django.request", "ERROR") as m, self.assertRaises(AssertionError):
@@ -512,7 +512,7 @@ class LegacyServerLoginTest(BouncerTestCase):
 
         # Now we can simulate an expired identity dict in the session.
         with time_machine.travel(
-            now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
+            now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
             tick=False,
         ):
             result = self.client_get(f"/server/{self.uuid}/upgrade/", subdomain="selfhosting")

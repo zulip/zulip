@@ -5,8 +5,8 @@
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
-import datetime
 import time
+from datetime import timedelta
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
 from unittest import mock
@@ -1454,7 +1454,7 @@ class NormalActionsTest(BaseAction):
 
     def test_presence_events_multiple_clients(self) -> None:
         now = timezone_now()
-        initial_presence = now - datetime.timedelta(days=365)
+        initial_presence = now - timedelta(days=365)
         UserPresence.objects.create(
             user_profile=self.user_profile,
             realm=self.user_profile.realm,
@@ -1490,7 +1490,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_presence(
                 self.user_profile,
                 get_client("ZulipAndroid/1.0"),
-                timezone_now() + datetime.timedelta(seconds=301),
+                timezone_now() + timedelta(seconds=301),
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
         )
@@ -1579,7 +1579,7 @@ class NormalActionsTest(BaseAction):
         # event status for a typical user requires settings the user's date_joined
         # further into the past. See test_change_presence_enabled for more details,
         # since it tests that codepath directly.
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.date_joined = timezone_now() - timedelta(days=15)
         self.user_profile.save()
 
         # Set all
@@ -1689,7 +1689,7 @@ class NormalActionsTest(BaseAction):
 
         # Set the date_joined for cordelia here like we did at
         # the start of this test.
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=15)
+        cordelia.date_joined = timezone_now() - timedelta(days=15)
         cordelia.save()
 
         away_val = False
@@ -2500,7 +2500,7 @@ class NormalActionsTest(BaseAction):
         # for backwards compatibility when dealing with a None value. Thus for this test to properly
         # check that the presence event emitted will have "idle" status, we need to simulate
         # the (more realistic) scenario where date_joined is further in the past and not super recent.
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.date_joined = timezone_now() - timedelta(days=15)
         self.user_profile.save()
 
         for val in [True, False]:
@@ -3677,7 +3677,7 @@ class RealmPropertyActionTest(BaseAction):
             num_events=0,
         )
 
-        old_datetime = timezone_now() - datetime.timedelta(days=3)
+        old_datetime = timezone_now() - timedelta(days=3)
         old_timestamp = datetime_to_timestamp(old_datetime)
         now = timezone_now()
         timestamp_now = datetime_to_timestamp(now)

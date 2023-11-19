@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import Iterable, Optional, Union
 
 from django.conf import settings
@@ -404,9 +404,9 @@ def update_scheduled_email_notifications_time(
         user_profile=user_profile
     )
 
-    scheduled_timestamp_change = datetime.timedelta(
-        seconds=new_batching_period
-    ) - datetime.timedelta(seconds=old_batching_period)
+    scheduled_timestamp_change = timedelta(seconds=new_batching_period) - timedelta(
+        seconds=old_batching_period
+    )
 
     existing_scheduled_emails.update(
         scheduled_timestamp=F("scheduled_timestamp") + scheduled_timestamp_change
@@ -566,7 +566,7 @@ def do_change_user_setting(
             # We add a small additional offset as a fudge factor in
             # case of clock skew.
             status = UserPresence.LEGACY_STATUS_IDLE_INT
-            presence_time = timezone_now() - datetime.timedelta(
+            presence_time = timezone_now() - timedelta(
                 seconds=settings.OFFLINE_THRESHOLD_SECS + 120
             )
 

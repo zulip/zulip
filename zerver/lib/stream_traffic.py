@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Optional, Set
 
 from django.db.models import Sum
@@ -15,7 +15,7 @@ def get_streams_traffic(stream_ids: Set[int], realm: Realm) -> Optional[Dict[int
         return None
 
     stat = COUNT_STATS["messages_in_stream:is_bot:day"]
-    traffic_from = timezone_now() - datetime.timedelta(days=28)
+    traffic_from = timezone_now() - timedelta(days=28)
 
     query = StreamCount.objects.filter(
         # The realm_id is important, as it makes this significantly better-indexed
@@ -41,7 +41,7 @@ STREAM_TRAFFIC_CALCULATION_MIN_AGE_DAYS = 7
 
 
 def get_average_weekly_stream_traffic(
-    stream_id: int, stream_date_created: datetime.datetime, recent_traffic: Dict[int, int]
+    stream_id: int, stream_date_created: datetime, recent_traffic: Dict[int, int]
 ) -> Optional[int]:
     try:
         stream_traffic = recent_traffic[stream_id]

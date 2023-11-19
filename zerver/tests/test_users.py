@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 from unittest import mock
@@ -1803,7 +1803,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             user.realm,
             to_user_ids=[user.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user, acting_user=None)
@@ -1816,7 +1816,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(
             ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1
@@ -1832,7 +1832,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         clear_scheduled_emails(hamlet.id)
@@ -1847,7 +1847,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
@@ -1873,7 +1873,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=to_user_ids,
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()

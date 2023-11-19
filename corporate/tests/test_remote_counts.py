@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 
 import time_machine
 from django.utils.timezone import now as timezone_now
@@ -29,7 +29,7 @@ class RemoteCountTest(ZulipTestCase):
         # inconsistent behavior on the boundaries. E.g. does an entry with
         # end_time=now - 30 days belong to the "last 30 days" interval or the 30 days before that?
         # Using now_offset avoids this ambiguity.
-        now_offset = now + datetime.timedelta(hours=1)
+        now_offset = now + timedelta(hours=1)
 
         # First try with absolutely no analytics data.
         with self.assertRaises(MissingDataError):
@@ -44,7 +44,7 @@ class RemoteCountTest(ZulipTestCase):
             remote_id=1,
             property="active_users_audit:is_bot:day",
             value=5,
-            end_time=now_offset - datetime.timedelta(days=4),
+            end_time=now_offset - timedelta(days=4),
         )
 
         # If we're missing any message data (which is the same as message data with 0, because
@@ -61,7 +61,7 @@ class RemoteCountTest(ZulipTestCase):
                 remote_id=1 + t,
                 property="messages_sent:message_type:day",
                 value=100,
-                end_time=now_offset - datetime.timedelta(days=90 + (31 - t)),
+                end_time=now_offset - timedelta(days=90 + (31 - t)),
             )
             for t in range(1, 31)
         )
@@ -74,7 +74,7 @@ class RemoteCountTest(ZulipTestCase):
                 remote_id=31 + t,
                 property="messages_sent:message_type:day",
                 value=20,
-                end_time=now_offset - datetime.timedelta(days=60 + (31 - t)),
+                end_time=now_offset - timedelta(days=60 + (31 - t)),
             )
             for t in range(1, 31)
         )
@@ -86,7 +86,7 @@ class RemoteCountTest(ZulipTestCase):
                 remote_id=61 + t,
                 property="messages_sent:message_type:day",
                 value=30,
-                end_time=now_offset - datetime.timedelta(days=30 + (31 - t)),
+                end_time=now_offset - timedelta(days=30 + (31 - t)),
             )
             for t in range(1, 31)
         )
@@ -98,7 +98,7 @@ class RemoteCountTest(ZulipTestCase):
                 remote_id=91 + t,
                 property="messages_sent:message_type:day",
                 value=10,
-                end_time=now_offset - datetime.timedelta(days=(31 - t)),
+                end_time=now_offset - timedelta(days=(31 - t)),
             )
             for t in range(1, 31)
         )

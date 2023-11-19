@@ -1,6 +1,6 @@
-import datetime
 import logging
 from collections import defaultdict
+from datetime import datetime
 from typing import Callable, Dict, List, Optional, Tuple, TypedDict
 
 from django.db import transaction
@@ -81,7 +81,7 @@ def set_topic_visibility_policy(
     user_profile: UserProfile,
     topics: List[List[str]],
     visibility_policy: int,
-    last_updated: Optional[datetime.datetime] = None,
+    last_updated: Optional[datetime] = None,
 ) -> None:
     """
     This is only used in tests.
@@ -132,7 +132,7 @@ def bulk_set_user_topic_visibility_policy_in_database(
     *,
     visibility_policy: int,
     recipient_id: Optional[int] = None,
-    last_updated: Optional[datetime.datetime] = None,
+    last_updated: Optional[datetime] = None,
 ) -> List[UserProfile]:
     # returns the list of user_profiles whose user_topic row
     # is either deleted, updated, or created.

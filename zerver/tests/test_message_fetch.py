@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
 
@@ -4451,7 +4451,7 @@ class MessageVisibilityTest(ZulipTestCase):
         realm.message_visibility_limit = None
         realm.save()
 
-        end_time = timezone_now() - datetime.timedelta(hours=lookback_hours - 5)
+        end_time = timezone_now() - timedelta(hours=lookback_hours - 5)
         stat = COUNT_STATS["messages_sent:is_bot:hour"]
 
         RealmCount.objects.create(realm=realm, property=stat.property, end_time=end_time, value=5)

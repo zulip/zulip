@@ -1,6 +1,6 @@
-import datetime
 import logging
 from collections import Counter
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
@@ -720,7 +720,7 @@ def remote_server_post_analytics(
             realm_id=row.realm,
             remote_id=row.id,
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row.end_time, tz=datetime.timezone.utc),
+            end_time=datetime.fromtimestamp(row.end_time, tz=timezone.utc),
             subgroup=row.subgroup,
             value=row.value,
         )
@@ -733,7 +733,7 @@ def remote_server_post_analytics(
             property=row.property,
             remote_id=row.id,
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row.end_time, tz=datetime.timezone.utc),
+            end_time=datetime.fromtimestamp(row.end_time, tz=timezone.utc),
             subgroup=row.subgroup,
             value=row.value,
         )
@@ -758,9 +758,7 @@ def remote_server_post_analytics(
                     realm_id=row.realm,
                     remote_id=row.id,
                     server=server,
-                    event_time=datetime.datetime.fromtimestamp(
-                        row.event_time, tz=datetime.timezone.utc
-                    ),
+                    event_time=datetime.fromtimestamp(row.event_time, tz=timezone.utc),
                     backfilled=row.backfilled,
                     extra_data=extra_data,
                     event_type=row.event_type,

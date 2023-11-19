@@ -1,6 +1,6 @@
-import datetime
 import re
 import urllib
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, List, Optional, Sequence, Union
 from unittest.mock import patch
 from urllib.parse import urlencode
@@ -226,7 +226,7 @@ class InviteUserTest(InviteUserBase):
         result = self.invite(invitee, [stream_name])
         self.assert_json_success(result)
 
-        user_profile.date_joined = timezone_now() - datetime.timedelta(days=10)
+        user_profile.date_joined = timezone_now() - timedelta(days=10)
         user_profile.save()
 
         with self.settings(INVITES_MIN_USER_AGE_DAYS=5):
@@ -321,7 +321,7 @@ class InviteUserTest(InviteUserBase):
 
         # We've sent 20 invites.  The realm is exempt from the new realm max
         # (INVITES_NEW_REALM_LIMIT_DAYS) if it is old enough
-        realm.date_created = timezone_now() - datetime.timedelta(days=8)
+        realm.date_created = timezone_now() - timedelta(days=8)
         realm.save()
         result = try_invite(10, default_realm_max=50, new_realm_max=20, realm_max=40)
         self.assert_json_success(result)
@@ -337,7 +337,7 @@ class InviteUserTest(InviteUserBase):
 
         # We've sent 40 invites "today".  Fast-forward 48 hours
         # and ensure that we can invite more people
-        with time_machine.travel(timezone_now() + datetime.timedelta(hours=48), tick=False):
+        with time_machine.travel(timezone_now() + timedelta(hours=48), tick=False):
             result = try_invite(5, default_realm_max=30, new_realm_max=20, realm_max=10)
             self.assert_json_success(result)
             self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(5)], clear=True)
@@ -350,7 +350,7 @@ class InviteUserTest(InviteUserBase):
             # We've sent 5 invites.  Reset the realm to be "recently"
             # created, and ensure that we can trip the whole-server
             # limit
-            realm.date_created = timezone_now() - datetime.timedelta(days=3)
+            realm.date_created = timezone_now() - timedelta(days=3)
             realm.save()
             result = try_invite(10, default_realm_max=50, new_realm_max=10, realm_max=40)
             self.assert_json_error_contains(result, "reached the limit")
@@ -444,7 +444,7 @@ class InviteUserTest(InviteUserBase):
         # Remove some more warning flags
         do_change_realm_subdomain(realm, "reasonable", acting_user=None)
         realm.description = "A real place"
-        realm.date_created = timezone_now() - datetime.timedelta(hours=2)
+        realm.date_created = timezone_now() - timedelta(hours=2)
         realm.save()
 
         # This is now more allowable (5x current 2 users)
@@ -895,9 +895,7 @@ class InviteUserTest(InviteUserBase):
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
 
         hamlet = self.example_user("hamlet")
-        hamlet.date_joined = timezone_now() - datetime.timedelta(
-            days=realm.waiting_period_threshold - 1
-        )
+        hamlet.date_joined = timezone_now() - timedelta(days=realm.waiting_period_threshold - 1)
 
         email = "issac-test@zulip.com"
         email2 = "steven-test@zulip.com"
@@ -1438,7 +1436,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm
         )
-        date_sent = timezone_now() - datetime.timedelta(weeks=3)
+        date_sent = timezone_now() - timedelta(weeks=3)
         with time_machine.travel(date_sent, tick=False):
             url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
 
@@ -1782,7 +1780,7 @@ class InvitationsTestCase(InviteUserBase):
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
-        with time_machine.travel((timezone_now() - datetime.timedelta(days=3)), tick=False):
+        with time_machine.travel((timezone_now() - timedelta(days=3)), tick=False):
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
@@ -1825,7 +1823,7 @@ class InvitationsTestCase(InviteUserBase):
             get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
         ]
 
-        with time_machine.travel((timezone_now() - datetime.timedelta(days=1000)), tick=False):
+        with time_machine.travel((timezone_now() - timedelta(days=1000)), tick=False):
             # Testing the invitation with expiry date set to "None" exists
             # after a large amount of days.
             do_invite_users(
@@ -2274,7 +2272,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.realm.save()
 
     def generate_multiuse_invite_link(
-        self, streams: Optional[List[Stream]] = None, date_sent: Optional[datetime.datetime] = None
+        self, streams: Optional[List[Stream]] = None, date_sent: Optional[datetime] = None
     ) -> str:
         invite = MultiuseInvite(realm=self.realm, referred_by=self.example_user("iago"))
         invite.save()
@@ -2325,7 +2323,7 @@ class MultiuseInviteTest(ZulipTestCase):
         email2 = self.nonreg_email("test1")
         email3 = self.nonreg_email("alice")
 
-        date_sent = timezone_now() - datetime.timedelta(days=1)
+        date_sent = timezone_now() - timedelta(days=1)
         invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
 
         self.check_user_able_to_register(email1, invite_link)
@@ -2334,9 +2332,7 @@ class MultiuseInviteTest(ZulipTestCase):
 
     def test_expired_multiuse_link(self) -> None:
         email = self.nonreg_email("newuser")
-        date_sent = timezone_now() - datetime.timedelta(
-            days=settings.INVITATION_LINK_VALIDITY_DAYS + 1
-        )
+        date_sent = timezone_now() - timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS + 1)
         invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
         result = self.client_post(invite_link, {"email": email})
 
