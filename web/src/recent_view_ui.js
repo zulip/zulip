@@ -1499,4 +1499,10 @@ export function initialize({
             {width: 20},
         );
     });
+
+    $(document).on("compose_canceled.zulip", () => {
+        if (recent_view_util.is_visible()) {
+            revive_current_focus();
+        }
+    });
 }
