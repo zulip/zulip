@@ -1563,11 +1563,11 @@ test("content_highlighter", ({override_rewire}) => {
     fake_this = {completing: "slash"};
     let th_render_slash_command_called = false;
     const me_slash = {
-        text: "/me (Action message)",
+        text: "/me is excited (Display action text)",
     };
     override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {
-            primary: "/me (Action message)",
+            primary: "/me is excited (Display action text)",
         });
         th_render_slash_command_called = true;
     });
