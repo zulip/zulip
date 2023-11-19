@@ -420,7 +420,7 @@ function stub_out_filter_buttons() {
     //
     //       See show_selected_filters() and set_filter() in the
     //       implementation.
-    for (const filter of ["all", "unread", "muted", "participated", "include_private"]) {
+    for (const filter of ["unread", "muted", "participated", "include_private"]) {
         const $stub = $.create(`filter-${filter}-stub`);
         const selector = `[data-filter="${filter}"]`;
         $("#recent_view_filter_buttons").set_find_results(selector, $stub);
@@ -499,11 +499,10 @@ test("test_filter_is_spectator", ({mock_template}) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
-    rt.set_filter("all");
     rt.process_messages([messages[0]]);
 });
 
-test("test_filter_all", ({mock_template}) => {
+test("test_no_filter", ({mock_template}) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
     page_params.is_spectator = false;
@@ -534,7 +533,6 @@ test("test_filter_all", ({mock_template}) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
-    rt.set_filter("all");
     rt.process_messages([messages[0]]);
     assert.equal(
         rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
@@ -794,9 +792,6 @@ test("test_filter_unread", ({mock_template}) => {
     $("#recent_view_filter_buttons").removeClass("btn-recent-selected");
     // reselect "unread" filter
     rt.set_filter("unread");
-
-    // Now clicking "all" filter should have no change to expected data.
-    rt.set_filter("all");
 });
 
 test("test_filter_participated", ({mock_template}) => {
@@ -921,16 +916,12 @@ test("test_filter_participated", ({mock_template}) => {
     ];
 
     rt.process_messages([messages[4]]);
-
-    expected_filter_participated = false;
-    rt.set_filter("all");
 });
 
 test("test_update_unread_count", () => {
     recent_view_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.set_filter("all");
     rt.process_messages(messages);
 
     // update a message
@@ -950,7 +941,6 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.set_default_focus();
-    rt.set_filter("all");
     rt.process_messages(messages);
     let all_topics = rt_data.get_conversations();
 
@@ -1078,7 +1068,6 @@ test("test_reify_local_echo_message", ({mock_template}) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
-    rt.set_filter("all");
     rt.process_messages(messages);
 
     rt_data.process_message({
@@ -1127,7 +1116,6 @@ test("test_delete_messages", ({override}) => {
     recent_view_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.set_filter("all");
     rt.process_messages(messages);
 
     // messages[0] was removed.
@@ -1169,7 +1157,6 @@ test("test_topic_edit", ({override}) => {
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.set_filter("all");
     rt.process_messages(messages);
 
     let all_topics = rt_data.get_conversations();

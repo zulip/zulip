@@ -769,11 +769,7 @@ export function set_filter(filter) {
         `[data-filter="${CSS.escape(filter)}"]`,
     );
 
-    // If user clicks `All`, we clear all filters.
-    if (filter === "all" && filters.size !== 0) {
-        filters = new Set();
-        // If the button was already selected, remove the filter.
-    } else if ($filter_elem.hasClass("btn-recent-selected")) {
+    if ($filter_elem.hasClass("btn-recent-selected")) {
         filters.delete(filter);
         // If the button was not selected, we add the filter.
     } else {
@@ -786,18 +782,11 @@ export function set_filter(filter) {
 function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
-    if (filters.size === 0) {
+    for (const filter of filters) {
         $("#recent_view_filter_buttons")
-            .find('[data-filter="all"]')
+            .find(`[data-filter="${CSS.escape(filter)}"]`)
             .addClass("btn-recent-selected")
             .attr("aria-checked", "true");
-    } else {
-        for (const filter of filters) {
-            $("#recent_view_filter_buttons")
-                .find(`[data-filter="${CSS.escape(filter)}"]`)
-                .addClass("btn-recent-selected")
-                .attr("aria-checked", "true");
-        }
     }
 }
 
