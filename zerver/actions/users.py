@@ -1,14 +1,18 @@
+import ast
 import secrets
+import string
 from collections import defaultdict
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.invites import revoke_invites_generated_by_user
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
@@ -22,6 +26,7 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
+from zerver.lib.types import ProfileData, ProfileDataElement
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_active_bots_owned_by_user
@@ -40,6 +45,7 @@ from zerver.models import (
     get_bot_dicts_in_realm,
     get_bot_services,
     get_fake_email_domain,
+    get_system_bot,
     get_user_profile_by_id,
 )
 from zerver.tornado.django_api import send_event, send_event_on_commit
@@ -372,11 +378,108 @@ def send_stream_events_for_role_update(
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
+def unpack_modified_custom_profile_fields(
+    custom_profile_fields: List[ProfileData],
+) -> List[Dict[str, Tuple[str, str]]]:
+    changed_fields: List[Dict[str, Tuple[Any, Any]]] = []
+    old_custom_data: ProfileData = custom_profile_fields[0]
+    new_custom_data: ProfileData = custom_profile_fields[1]
+
+    def replace_integer_literal_with_text_string(cpf_data_element: ProfileDataElement) -> str:
+        cpf_key: str = str(cpf_data_element["value"])
+        cpf_key = ast.literal_eval(cpf_data_element["field_data"])[cpf_key]["text"]
+        return cpf_key
+
+    def retrive_name_from_user_ids(cpf_data_element: ProfileDataElement) -> str:
+        user_names: List[str] = []
+        u_ids = cpf_data_element["value"]
+        if (
+            u_ids is not None
+            and isinstance(u_ids, list)
+            and all(isinstance(val, int) for val in u_ids)
+        ):
+            # To avoid "incompatible type" error during static type checking
+            user_names = [get_user_profile_by_id(u_id).full_name for u_id in u_ids]
+            string_user_names = ", ".join(user_names)
+            if len(user_names) < 2:
+                string_user_names.replace(",", "")
+
+        return string_user_names
+
+    for old_d, new_d in zip(old_custom_data, new_custom_data):
+        # Replace integer literal values with actual user-facing values if there any
+        if old_d["value"] is not None and old_d["value"] in list(string.digits):
+            old_d["value"] = replace_integer_literal_with_text_string(old_d)
+        if new_d["value"] is not None and new_d["value"] in list(string.digits):
+            new_d["value"] = replace_integer_literal_with_text_string(new_d)
+        # In chat.zulip realm some custom_profile_data, i.e. 'Mentor' maps to a list of user_ids
+        if old_d["value"] is not None and isinstance(old_d["value"], list):
+            old_d["value"] = retrive_name_from_user_ids(old_d)
+        if new_d["value"] is not None and isinstance(new_d["value"], list):
+            new_d["value"] = retrive_name_from_user_ids(new_d)
+
+        # unpack the modified values from ProfileData
+        if old_d["value"] != new_d["value"]:
+            changed_fields.append({old_d["name"]: (old_d["value"], new_d["value"])})
+
+    return changed_fields
+
+
+def send_private_message_for_profile_update(
+    acting_user: UserProfile,
+    target_user: UserProfile,
+    name_field: Optional[List[str]] = None,
+    role_field: Optional[List[str]] = None,
+    custom_profile_fields: Optional[List[ProfileData]] = None,
+) -> None:
+    # we want notifications sent if and only if acting_user is an admin/owner
+    if target_user.is_bot or acting_user == target_user:
+        return
+
+    realm = target_user.realm
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    message = ""
+    if name_field is not None:
+        message += _("@_**{user_full_name}** has changed your profile name.").format(
+            user_full_name=acting_user.full_name,
+        )
+        message += _("\n- **Old `name`:** {old_name}\n- **New `name`:** {new_name}").format(
+            old_name=name_field[0],
+            new_name=name_field[1],
+        )
+    if role_field is not None:
+        message += _("@_**{user_full_name}** has changed your role.").format(
+            user_full_name=acting_user.full_name,
+        )
+        message += _("\n- **Old `role`:** {old_role}\n- **New `role`:** {new_role}").format(
+            old_role=role_field[0],
+            new_role=role_field[1],
+        )
+    if custom_profile_fields is not None:
+        message = _(
+            "@_**{user_full_name}** has made the following changes to your profile."
+        ).format(
+            user_full_name=acting_user.full_name,
+        )
+        changed_fields = unpack_modified_custom_profile_fields(custom_profile_fields)
+        for changed_field in changed_fields:
+            name = next(iter(changed_field))
+            message += _(
+                "\n- **Old `{field_name}`:** {old_field_value}\n- **New `{field_name}`:** {new_field_value}"
+            ).format(
+                field_name=name,
+                old_field_value=changed_field[name][0],
+                new_field_value=changed_field[name][1],
+            )
+    internal_send_private_message(sender=sender, recipient_user=target_user, content=message)
+
+
 @transaction.atomic(savepoint=False)
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.role
+    old_role = user_profile.get_role_name()
     old_system_group = get_system_user_group_for_user(user_profile)
 
     previously_accessible_streams = get_streams_for_user(
@@ -387,6 +490,7 @@ def do_change_user_role(
 
     user_profile.role = value
     user_profile.save(update_fields=["role"])
+    new_role = user_profile.get_role_name()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
         modified_user=user_profile,
@@ -442,6 +546,10 @@ def do_change_user_role(
         )
 
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)
+    if old_role != new_role and acting_user is not None:
+        send_private_message_for_profile_update(
+            acting_user=acting_user, target_user=user_profile, role_field=[old_role, new_role]
+        )
 
 
 def do_make_user_billing_admin(user_profile: UserProfile) -> None:

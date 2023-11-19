@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.presence import do_update_user_presence
+from zerver.actions.users import send_private_message_for_profile_update
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
     cache_delete,
@@ -200,6 +201,7 @@ def do_change_full_name(
     old_name = user_profile.full_name
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
+    new_name = user_profile.full_name
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
@@ -220,6 +222,12 @@ def do_change_full_name(
             user_profile.realm,
             dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
+        )
+    if old_name != new_name and acting_user is not None:
+        send_private_message_for_profile_update(
+            acting_user=acting_user,
+            target_user=user_profile,
+            name_field=[old_name, new_name],
         )
 
 
