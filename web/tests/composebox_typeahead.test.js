@@ -187,8 +187,8 @@ const emoji_list = [...emojis_by_name.values()].map((emoji_dict) => ({
 const me_slash = {
     name: "me",
     aliases: "",
-    text: "translated: /me is excited (Display action text)",
-    placeholder: "translated: is …",
+    text: "translated: /me (Action message)",
+    placeholder: "translated: …",
 };
 
 const my_slash = {
@@ -588,7 +588,7 @@ test("content_typeahead_selected", ({override}) => {
     fake_this.query = "/m";
     fake_this.completing = "slash";
     actual_value = ct.content_typeahead_selected.call(fake_this, me_slash);
-    expected_value = "/me translated: is …";
+    expected_value = "/me …";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/da";
@@ -1564,11 +1564,11 @@ test("content_highlighter", ({override_rewire}) => {
     fake_this = {completing: "slash"};
     let th_render_slash_command_called = false;
     const me_slash = {
-        text: "/me is excited (Display action text)",
+        text: "/me (Action message)",
     };
     override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {
-            primary: "/me is excited (Display action text)",
+            primary: "/me (Action message)",
         });
         th_render_slash_command_called = true;
     });
