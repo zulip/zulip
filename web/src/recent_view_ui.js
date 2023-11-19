@@ -790,14 +790,18 @@ function show_selected_filters() {
     }
 }
 
-export function update_filters_view() {
-    const rendered_filters = render_recent_view_filters({
+function get_recent_view_filters_params() {
+    return {
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
-    });
+    };
+}
+
+export function update_filters_view() {
+    const rendered_filters = render_recent_view_filters(get_recent_view_filters_params());
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
 
@@ -949,12 +953,8 @@ export function complete_rerender() {
     }
 
     const rendered_body = render_recent_view_body({
-        filter_participated: filters.has("participated"),
-        filter_unread: filters.has("unread"),
-        filter_muted: filters.has("include_muted"),
-        filter_pm: filters.has("include_private"),
         search_val: $("#recent_view_search").val() || "",
-        is_spectator: page_params.is_spectator,
+        ...get_recent_view_filters_params(),
     });
     $("#recent_view_table").html(rendered_body);
 
