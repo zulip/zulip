@@ -112,11 +112,9 @@ def do_update_user_presence(
         # The user was never active, so let's consider this large to go over any thresholds
         # we may have.
         time_since_last_active = datetime.timedelta(days=1)
+        time_since_last_connected = datetime.timedelta(days=1)
     if presence.last_connected_time is not None:
         time_since_last_connected = log_time - presence.last_connected_time
-    else:
-        # Same approach as above.
-        time_since_last_connected = datetime.timedelta(days=1)
 
     assert (3 * settings.PRESENCE_PING_INTERVAL_SECS + 20) <= settings.OFFLINE_THRESHOLD_SECS
     now_online = time_since_last_active > datetime.timedelta(
