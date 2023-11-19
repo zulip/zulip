@@ -588,7 +588,7 @@ test("content_typeahead_selected", ({override}) => {
     fake_this.query = "/m";
     fake_this.completing = "slash";
     actual_value = ct.content_typeahead_selected.call(fake_this, me_slash);
-    expected_value = "/me …";
+    expected_value = "/me translated: …";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/da";
