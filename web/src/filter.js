@@ -448,7 +448,7 @@ export class Filter {
         });
     }
 
-    is_search() {
+    is_keyword_search() {
         return this.has_operator("search");
     }
 
@@ -669,10 +669,10 @@ export class Filter {
                 context.icon = "envelope";
                 break;
             case "is-starred":
-                context.icon = "star";
+                context.zulip_icon = "star-filled";
                 break;
             case "is-mentioned":
-                context.icon = "at";
+                context.zulip_icon = "at-sign";
                 break;
             case "dm":
                 context.icon = "envelope";
@@ -803,7 +803,7 @@ export class Filter {
         // Since there can be multiple operators, each block should
         // just return false here.
 
-        if (this.is_search()) {
+        if (this.is_keyword_search()) {
             // The semantics for matching keywords are implemented
             // by database plugins, and we don't have JS code for
             // that, plus search queries tend to go too far back in

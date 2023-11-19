@@ -435,9 +435,9 @@ organization's subdomain. The corresponding value is a list of
 `attribute: value` pair sets such that a user is permitted to access
 the organization if and only if the `attribute: value` pairs in at
 least one of these sets match the user's LDAP attributes. If this
-setting is enabled, organizations not explicitly configured in this
-setting will not be accessible via ldap authentication at all.
-
+setting is enabled, organizations not explicitly configured in it
+will not be affected - they'll allow normal LDAP login, unless restricted
+by other settings.
 This is better illustrated with an example:
 
 ```
@@ -457,8 +457,8 @@ AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = {
 This means that the organization `"zulip"` will be accessible via ldap
 authentication only for users whose ldap attributes either contain
 both `department: main` `employeeType: staff` or just `office:
-Dallas`. LDAP authentication will always fail for all other
-organizations in this configuration.
+Dallas`. LDAP authentication will proceed normally for all other
+organizations.
 
 :::{warning}
 Restricting access using these mechanisms only affects authentication via LDAP,

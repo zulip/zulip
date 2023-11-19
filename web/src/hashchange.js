@@ -12,7 +12,6 @@ import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
@@ -52,13 +51,7 @@ function maybe_hide_inbox() {
 }
 
 function show_all_message_view() {
-    const coming_from_recent_view = maybe_hide_recent_view();
-    const coming_from_inbox = maybe_hide_inbox();
-    const is_actively_scrolling = message_scroll.is_actively_scrolling();
-    narrow.deactivate(!(coming_from_recent_view || coming_from_inbox), is_actively_scrolling);
-    // We need to maybe scroll to the selected message
-    // once we have the proper viewport set up
-    setTimeout(message_viewport.maybe_scroll_to_selected, 0);
+    narrow.deactivate();
 }
 
 export function set_hash_to_home_view() {
@@ -78,13 +71,7 @@ export function set_hash_to_home_view() {
     }
 }
 
-function hide_non_message_list_views() {
-    maybe_hide_inbox();
-    maybe_hide_recent_view();
-}
-
 function show_home_view() {
-    hide_non_message_list_views();
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
@@ -92,14 +79,17 @@ function show_home_view() {
     // rendered without a hash.
     switch (user_settings.web_home_view) {
         case "recent_topics": {
+            maybe_hide_inbox();
             recent_view_ui.show();
             break;
         }
         case "all_messages": {
+            // Hides inbox/recent views internally if open.
             show_all_message_view();
             break;
         }
         case "inbox": {
+            maybe_hide_recent_view();
             inbox_ui.show();
             break;
         }
@@ -126,7 +116,6 @@ function do_hashchange_normal(from_reload) {
 
     switch (hash[0]) {
         case "#narrow": {
-            hide_non_message_list_views();
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.

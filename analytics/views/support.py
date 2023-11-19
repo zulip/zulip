@@ -3,7 +3,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -49,21 +49,24 @@ from zerver.models import (
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.ZILENCER_ENABLED:
+    from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
     from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import approve_sponsorship as do_approve_sponsorship
     from corporate.lib.stripe import (
-        attach_discount_to_realm,
+        RealmBillingSession,
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
-        get_discount_for_realm,
         get_latest_seat_count,
-        make_end_of_cycle_updates_if_needed,
         switch_realm_from_standard_to_plus_plan,
-        update_billing_method_of_current_plan,
-        update_sponsorship_status,
         void_all_open_invoices,
+    )
+    from corporate.lib.support import (
+        approve_realm_sponsorship,
+        attach_discount_to_realm,
+        get_discount_for_realm,
+        update_realm_billing_method,
+        update_realm_sponsorship_status,
     )
     from corporate.models import (
         Customer,
@@ -182,6 +185,8 @@ def support(
         context["success_message"] = request.session["success_message"]
         del request.session["success_message"]
 
+    acting_user = request.user
+    assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
         # We check that request.POST only has two keys in it: The
         # realm_id and a field to change.
@@ -194,8 +199,6 @@ def support(
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
-        acting_user = request.user
-        assert isinstance(acting_user, UserProfile)
         if plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
@@ -237,14 +240,14 @@ def support(
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif billing_method is not None:
             if billing_method == "send_invoice":
-                update_billing_method_of_current_plan(
+                update_realm_billing_method(
                     realm, charge_automatically=False, acting_user=acting_user
                 )
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to pay by invoice."
             elif billing_method == "charge_automatically":
-                update_billing_method_of_current_plan(
+                update_realm_billing_method(
                     realm, charge_automatically=True, acting_user=acting_user
                 )
                 context[
@@ -252,13 +255,13 @@ def support(
                 ] = f"Billing method of {realm.string_id} updated to charge automatically."
         elif sponsorship_pending is not None:
             if sponsorship_pending:
-                update_sponsorship_status(realm, True, acting_user=acting_user)
+                update_realm_sponsorship_status(realm, True, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
             else:
-                update_sponsorship_status(realm, False, acting_user=acting_user)
+                update_realm_sponsorship_status(realm, False, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
         elif approve_sponsorship:
-            do_approve_sponsorship(realm, acting_user=acting_user)
+            approve_realm_sponsorship(realm, acting_user=acting_user)
             context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif modify_plan is not None:
             if modify_plan == "downgrade_at_billing_cycle_end":
@@ -372,7 +375,8 @@ def support(
                 current_plan=current_plan,
             )
             if current_plan is not None:
-                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
+                billing_session = RealmBillingSession(user=None, realm=realm)
+                new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
                     current_plan, timezone_now()
                 )
                 if last_ledger_entry is not None:
@@ -442,10 +446,20 @@ def remote_servers_support(
     remote_servers = get_remote_servers_for_support(
         email_to_search=email_to_search, hostname_to_search=hostname_to_search
     )
+    remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
+    for remote_server in remote_servers:
+        try:
+            remote_server_to_max_monthly_messages[remote_server.id] = compute_max_monthly_messages(
+                remote_server
+            )
+        except MissingDataError:
+            remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
+
     return render(
         request,
         "analytics/remote_server_support.html",
         context=dict(
             remote_servers=remote_servers,
+            remote_server_to_max_monthly_messages=remote_server_to_max_monthly_messages,
         ),
     )

@@ -12,7 +12,7 @@ in the Zulip app to add more to your repertoire as needed.
 * [Message actions](#message-actions)
 * [Drafts](#drafts)
 * [Menus](#menus)
-* [Streams settings](#streams-settings-page)
+* [Stream settings](#stream-settings)
 
 ## The basics
 
@@ -37,6 +37,8 @@ in the Zulip app to add more to your repertoire as needed.
   Also marks all messages in the current view as read.
 
 * **Next unread topic**: <kbd>N</kbd>
+
+* **Next unread followed topic**: <kbd>Shift</kbd> + <kbd>N</kbd>
 
 * **Next unread direct message**: <kbd>P</kbd>
 
@@ -211,7 +213,7 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Toggle message actions menu**: <kbd>I</kbd>
 
-## Streams settings page
+## Stream settings
 
 * **Scroll through streams**: <kbd class="arrow-key">↑</kbd> and
   <kbd class="arrow-key">↓</kbd>
@@ -240,7 +242,13 @@ A summary of the keyboard shortcuts above is available in the Zulip app.
 
 {start_tabs}
 
-{relative|gear|keyboard-shortcuts}
+{tab|desktop-web}
+
+{relative|help|keyboard-shortcuts}
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>?</kbd> to open the keyboard shortcuts reference.
 
 {end_tabs}
 

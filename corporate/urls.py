@@ -4,7 +4,7 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 
-from corporate.views.billing_page import billing_home, update_plan
+from corporate.views.billing_page import billing_home, sponsorship_request, update_plan
 from corporate.views.event_status import event_status, event_status_page
 from corporate.views.portico import (
     app_download_link_redirect,
@@ -32,6 +32,7 @@ i18n_urlpatterns: Any = [
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
     # Billing
     path("billing/", billing_home, name="billing_home"),
+    path("sponsorship/", sponsorship_request, name="sponsorship_request"),
     path("upgrade/", initial_upgrade, name="initial_upgrade"),
     path("support/", support_request),
     path("billing/event_status/", event_status_page, name="event_status_page"),

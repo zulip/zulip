@@ -5,11 +5,9 @@ import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json
 import generated_pygments_data from "../generated/pygments_data.json";
 import * as fenced_code from "../shared/src/fenced_code";
 import render_compose from "../templates/compose.hbs";
-import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
-import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
@@ -92,7 +90,6 @@ import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_view_ui from "./recent_view_ui";
 import * as reload_setup from "./reload_setup";
-import * as rendered_markdown from "./rendered_markdown";
 import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
@@ -103,7 +100,6 @@ import * as scroll_util from "./scroll_util";
 import * as search from "./search";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_display from "./settings_display";
 import * as settings_notifications from "./settings_notifications";
@@ -158,53 +154,6 @@ import * as widgets from "./widgets";
 
 function initialize_bottom_whitespace() {
     $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
-}
-
-function initialize_left_sidebar() {
-    const rendered_sidebar = render_left_sidebar({
-        is_guest: page_params.is_guest,
-        development_environment: page_params.development_environment,
-        is_all_messages_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
-        is_recent_view_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
-    });
-
-    $("#left-sidebar-container").html(rendered_sidebar);
-}
-
-function initialize_right_sidebar() {
-    const rendered_sidebar = render_right_sidebar({
-        realm_rendered_description: page_params.realm_rendered_description,
-    });
-
-    $("#right-sidebar-container").html(rendered_sidebar);
-    sidebar_ui.update_invite_user_option();
-    if (page_params.is_spectator) {
-        rendered_markdown.update_elements(
-            $(".right-sidebar .realm-description .rendered_markdown"),
-        );
-    }
-
-    $("#user_presences").on("mouseenter", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
-        if ($status_emoji.length) {
-            const animated_url = $status_emoji.data("animated-url");
-            if (animated_url) {
-                $status_emoji.attr("src", animated_url);
-            }
-        }
-    });
-
-    $("#user_presences").on("mouseleave", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
-        if ($status_emoji.length) {
-            const still_url = $status_emoji.data("still-url");
-            if (still_url) {
-                $status_emoji.attr("src", still_url);
-            }
-        }
-    });
 }
 
 function initialize_navbar() {
@@ -593,8 +542,8 @@ export function initialize_everything() {
     // expect DOM elements to always exist (As that did before these
     // modules were migrated from Django templates to Handlebars).
     initialize_bottom_whitespace();
-    initialize_left_sidebar();
-    initialize_right_sidebar();
+    sidebar_ui.initialize_left_sidebar();
+    sidebar_ui.initialize_right_sidebar();
     initialize_compose_box();
     settings.initialize();
     initialize_navbar();

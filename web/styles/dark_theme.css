@@ -34,7 +34,7 @@
         }
     }
 
-    & ul.pm-list,
+    & ul.dm-list,
     & ul.filters {
         color: hsl(0deg 0% 100% / 80%);
 
@@ -69,12 +69,6 @@
         }
     }
 
-    .dialog_exit_button {
-        background-color: hsl(211deg 29% 14%);
-        color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(0deg 0% 0% / 60%);
-    }
-
     .modal__content.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 100% / 20%);
     }
@@ -94,7 +88,6 @@
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
-    .open_enter_sends_dialog,
     .enter_sends_choices {
         color: hsl(236deg 33% 90%);
 
@@ -111,7 +104,7 @@
     }
 
     .modal__btn:disabled,
-    .disabled-compose-send-button-container button {
+    .disabled-message-send-controls button {
         opacity: 1;
         background-color: hsl(0deg 0% 83% / 50%);
     }
@@ -224,7 +217,7 @@
     .app-main,
     .column-middle,
     #streams_header,
-    .private_messages_container {
+    .direct-messages-container {
         background-color: var(--color-background);
     }
 
@@ -422,16 +415,10 @@
         color: inherit;
     }
 
-    .message_reactions .message_reaction_count,
-    .message_reactions .reaction_button i,
-    .message_reactions:hover .message_reaction + .reaction_button {
-        color: inherit !important;
-    }
-
     .active_private_messages_section {
         #private_messages_section,
-        #private_messages_list,
-        #hide_more_private_messages {
+        #direct-messages-list,
+        #hide-more-direct-messages {
             background-color: hsl(199deg 33% 46% / 20%);
         }
     }
@@ -443,11 +430,6 @@
     #org-join-settings .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
-    }
-
-    .sidebar-title {
-        color: inherit;
-        opacity: 0.75;
     }
 
     .rendered_markdown button,
@@ -573,8 +555,7 @@
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
-    .emoji-popover .reaction.reacted,
-    .message_reactions .message_reaction.reacted {
+    .emoji-popover .reaction.reacted {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
     }
@@ -585,17 +566,6 @@
 
     .message_time:hover {
         color: var(--color-message-action-interactive);
-    }
-
-    .message_reactions:hover .message_reaction + .reaction_button,
-    .message_reactions .message_reaction {
-        background-color: transparent;
-        border-color: hsl(0deg 0% 0% / 80%);
-        color: inherit;
-
-        &:hover {
-            border-color: hsl(236deg 33% 90%);
-        }
     }
 
     .emoji-popover .reaction:focus {
@@ -611,7 +581,7 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose_control_buttons_container .divider {
+    .compose-control-buttons-container .divider {
         color: hsl(236deg 33% 90% / 50%);
     }
 
@@ -640,13 +610,6 @@
     .spectator_narrow_login_button,
     .top-navbar-border {
         border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    #message_view_header .sub_count {
-        &::before,
-        &::after {
-            color: hsl(0deg 0% 100% / 50%);
-        }
     }
 
     & div.overlay,
@@ -756,8 +719,8 @@
         }
     }
 
-    #user_presences li:hover,
-    #user_presences li.highlighted_user {
+    #buddy-list-users-matching-view li:hover,
+    #buddy-list-users-matching-view li.highlighted_user {
         background-color: hsl(136deg 25% 73% / 20%);
     }
 
@@ -1506,20 +1469,6 @@
                     color: hsl(0deg 0% 100%);
                 }
             }
-        }
-    }
-
-    .visibility_policy_popover {
-        .visibility_policy_option {
-            &:hover:not(.selected_visibility_policy) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                border: 1px solid hsl(0deg 0% 100% / 12%);
-            }
-        }
-
-        .selected_visibility_policy {
-            background-color: hsl(0deg 0% 17% / 50%);
-            border: 1px solid hsl(0deg 0% 100% / 12%);
         }
     }
 }

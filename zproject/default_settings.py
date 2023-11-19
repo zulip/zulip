@@ -309,6 +309,12 @@ TUTORIAL_ENABLED = True
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 
+# The push bouncer expects to get its requests on the root subdomain,
+# but that makes it more of a hassle to test bouncer endpoints in
+# the development environment - so this setting allows us to disable
+# that check.
+DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+
 
 # These settings are not documented in prod_settings_template.py.
 # They should either be documented here, or documented there.
@@ -401,9 +407,12 @@ POST_MIGRATION_CACHE_FLUSHING = False
 # rebuilding the mobile app with a different push notifications
 # server.
 APNS_CERT_FILE: Optional[str] = None
+APNS_TOKEN_KEY_FILE: Optional[str] = None
+APNS_TOKEN_KEY_ID = get_secret("apns_token_key_id", development_only=True)
+APNS_TEAM_ID = get_secret("apns_team_id", development_only=True)
 APNS_SANDBOX = True
-APNS_TOPIC = "org.zulip.Zulip"
-ZULIP_IOS_APP_ID = "org.zulip.Zulip"
+# APNS_TOPIC is obsolete. Clients now pass the APNs topic to use.
+# ZULIP_IOS_APP_ID is obsolete. Clients now pass the iOS app ID to use for APNs.
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
@@ -587,3 +596,8 @@ TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 5000
 # How often a client should send start notifications to the server to
 # indicate that the user is still interacting with the compose UI.
 TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
+
+# The maximum number of subscribers for a stream to have typing
+# notifications enabled. Default is set to avoid excessive Tornado
+# load in large organizations.
+MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100

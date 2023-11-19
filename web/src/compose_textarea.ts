@@ -5,7 +5,7 @@ import $ from "jquery";
 let saved_compose_cursor = 0;
 
 function set_compose_textarea_handlers(): void {
-    $("#compose-textarea").on("blur", function () {
+    $("textarea#compose-textarea").on("blur", function () {
         saved_compose_cursor = $(this).caret();
     });
 
@@ -17,7 +17,7 @@ function set_compose_textarea_handlers(): void {
 }
 
 export function restore_compose_cursor(): void {
-    $("#compose-textarea").trigger("focus").caret(saved_compose_cursor);
+    $("textarea#compose-textarea").trigger("focus").caret(saved_compose_cursor);
 }
 
 export function initialize(): void {

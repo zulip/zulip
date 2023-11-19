@@ -64,6 +64,7 @@ from zerver.models import (
     Message,
     RealmEmoji,
     RealmFilter,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -252,6 +253,7 @@ class MarkdownMiscTest(ZulipTestCase):
             FullNameInfo(
                 full_name="Fred Flintstone",
                 id=fred2.id,
+                is_active=True,
             ),
         )
         self.assertEqual(
@@ -259,6 +261,7 @@ class MarkdownMiscTest(ZulipTestCase):
             FullNameInfo(
                 full_name="Fred Flintstone",
                 id=fred4.id,
+                is_active=True,
             ),
         )
 
@@ -275,6 +278,7 @@ class MarkdownMiscTest(ZulipTestCase):
             FullNameInfo(
                 full_name=hamlet.full_name,
                 id=hamlet.id,
+                is_active=True,
             ),
         )
 
@@ -1303,6 +1307,7 @@ class MarkdownTest(ZulipTestCase):
         assert_conversion("Hello #123World", False)
         assert_conversion("Hello#123 World", False)
         assert_conversion("Hello#123World", False)
+        assert_conversion("Hello\u00A0#123\u00A0World")
         # Ideally, these should be converted, but Markdown doesn't
         # handle word boundary detection in languages that don't use
         # whitespace for that correctly yet.
@@ -2109,6 +2114,48 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
+    def test_mention_deactivated_users(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        change_user_is_active(user_profile, False)
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        user_id = user_profile.id
+
+        content = "@**King Hamlet**"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p><span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+
+    def test_mention_silent_deactivated_users(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        change_user_is_active(user_profile, False)
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        user_id = user_profile.id
+
+        content = "@_**King Hamlet**"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p><span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+
     def test_silent_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(
@@ -2682,7 +2729,7 @@ class MarkdownTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         moderators_group = UserGroup.objects.get(
-            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
         content = "@*role:moderators* @**King Hamlet** test message"
 

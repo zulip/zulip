@@ -67,7 +67,6 @@ const settings_user_groups_legacy = mock_esm("../src/settings_user_groups_legacy
 const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
-const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const stream_list_sort = mock_esm("../src/stream_list_sort");
@@ -603,18 +602,6 @@ run_test("realm_bot add", ({override}) => {
     assert_same(args.bot, event.bot);
 });
 
-run_test("realm_bot remove", ({override}) => {
-    const event = event_fixtures.realm_bot__remove;
-    const bot_stub = make_stub();
-    override(bot_data, "deactivate", bot_stub.f);
-    override(settings_bots, "render_bots", () => {});
-    dispatch(event);
-
-    assert.equal(bot_stub.num_calls, 1);
-    const args = bot_stub.get_args("user_id");
-    assert_same(args.user_id, event.bot.user_id);
-});
-
 run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
@@ -728,16 +715,6 @@ run_test("realm_user", ({override}) => {
 
     assert.ok(people.is_active_user_for_popover(event.person.user_id));
 
-    event = event_fixtures.realm_user__remove;
-    override(stream_events, "remove_deactivated_user_from_all_streams", noop);
-    override(settings_users, "update_view_on_deactivate", noop);
-    dispatch(event);
-
-    // We don't actually remove the person, we just deactivate them.
-    const removed_person = people.get_by_user_id(event.person.user_id);
-    assert.equal(removed_person.full_name, "Test User");
-    assert.ok(!people.is_active_user_for_popover(event.person.user_id));
-
     event = event_fixtures.realm_user__update;
     const stub = make_stub();
     override(user_events, "update_person", stub.f);
@@ -752,12 +729,6 @@ run_test("realm_user", ({override}) => {
     override(settings_users, "redraw_bots_list", add_bot_stub.f);
     dispatch({...event});
     assert.equal(add_bot_stub.num_calls, 1);
-
-    const remove_bot_stub = make_stub();
-    event = event_fixtures.realm_user__remove;
-    override(settings_users, "update_bot_data", remove_bot_stub.f);
-    dispatch(event);
-    assert.equal(remove_bot_stub.num_calls, 1);
 
     const update_bot_stub = make_stub();
     event = event_fixtures.realm_user__update;
@@ -1152,9 +1123,10 @@ run_test("user_status", ({override}) => {
     {
         const stub = make_stub();
         override(activity_ui, "redraw_user", stub.f);
+        override(compose_pm_pill, "get_user_ids", () => [event.user_id]);
         override(pm_list, "update_private_messages", noop);
         dispatch(event);
-        assert.equal(stub.num_calls, 1);
+        assert.equal(stub.num_calls, 2);
         const args = stub.get_args("user_id");
         assert_same(args.user_id, test_user.user_id);
         const emoji_info = user_status.get_status_emoji(test_user.user_id);

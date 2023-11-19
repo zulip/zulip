@@ -440,15 +440,6 @@ exports.fixtures = {
         },
     },
 
-    realm_bot__remove: {
-        type: "realm_bot",
-        op: "remove",
-        bot: {
-            user_id: 42,
-            full_name: "The Bot",
-        },
-    },
-
     realm_bot__update: {
         type: "realm_bot",
         op: "update",
@@ -565,15 +556,6 @@ exports.fixtures = {
             timezone: "America/New_York",
             date_joined: "2020-01-01",
             delivery_email: "test-delivery@example.com",
-        },
-    },
-
-    realm_user__remove: {
-        type: "realm_user",
-        op: "remove",
-        person: {
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
         },
     },
 
@@ -727,7 +709,6 @@ exports.fixtures = {
                 audible_notifications: true,
                 color: "blue",
                 desktop_notifications: false,
-                email_address: "whatever",
                 email_notifications: false,
                 in_home_view: false,
                 is_muted: true,
@@ -1068,11 +1049,13 @@ exports.fixtures = {
     },
 
     user_status__set_status_emoji: {
+        id: 1,
         type: "user_status",
         user_id: test_user.user_id,
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
+        status_text: "",
     },
 
     user_status__set_status_text: {

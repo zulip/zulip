@@ -7,7 +7,7 @@ from django.db.models import CASCADE, Q
 from typing_extensions import override
 
 from zerver.models import Realm, UserProfile
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 
 class Customer(models.Model):
@@ -17,8 +17,12 @@ class Customer(models.Model):
     and the active plan, if any.
     """
 
+    # The actual model object that this customer is associated
+    # with. Exactly one of the following will be non-null.
     realm = models.OneToOneField(Realm, on_delete=CASCADE, null=True)
+    remote_realm = models.OneToOneField(RemoteRealm, on_delete=CASCADE, null=True)
     remote_server = models.OneToOneField(RemoteZulipServer, on_delete=CASCADE, null=True)
+
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending = models.BooleanField(default=False)
     # A percentage, like 85.
@@ -30,20 +34,34 @@ class Customer(models.Model):
     exempt_from_license_number_check = models.BooleanField(default=False)
 
     class Meta:
+        # Enforce that at least one of these is set.
         constraints = [
             models.CheckConstraint(
-                check=Q(realm__isnull=False) ^ Q(remote_server__isnull=False),
-                name="cloud_xor_self_hosted",
+                check=Q(realm__isnull=False)
+                | Q(remote_server__isnull=False)
+                | Q(remote_realm__isnull=False),
+                name="has_associated_model_object",
             )
         ]
 
     @override
     def __str__(self) -> str:
-        return f"{self.realm!r} {self.stripe_customer_id}"
+        if self.realm is not None:
+            return f"{self.realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
+        else:
+            return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
     return Customer.objects.filter(realm=realm).first()
+
+
+def get_customer_by_remote_server(remote_server: RemoteZulipServer) -> Optional[Customer]:
+    return Customer.objects.filter(remote_server=remote_server).first()
+
+
+def get_customer_by_remote_realm(remote_realm: RemoteRealm) -> Optional[Customer]:  # nocoverage
+    return Customer.objects.filter(remote_realm=remote_realm).first()
 
 
 class Event(models.Model):
@@ -213,6 +231,10 @@ class CustomerPlan(models.Model):
 
     ANNUAL = 1
     MONTHLY = 2
+    BILLING_SCHEDULES = {
+        ANNUAL: "Annual",
+        MONTHLY: "Monthly",
+    }
     billing_schedule = models.SmallIntegerField()
 
     # The next date the billing system should go through ledger
@@ -353,3 +375,6 @@ class ZulipSponsorshipRequest(models.Model):
     org_website = models.URLField(max_length=MAX_ORG_URL_LENGTH, blank=True, null=True)
 
     org_description = models.TextField(default="")
+    expected_total_users = models.TextField(default="")
+    paid_users_count = models.TextField(default="")
+    paid_users_description = models.TextField(default="")

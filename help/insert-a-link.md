@@ -10,6 +10,19 @@
 
 {start_tabs}
 
+{tab|via-paste}
+
+{!start-composing.md!}
+
+1. Select the text you want to linkify.
+
+1. Paste a URL to turn the selected text into a named link.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>
+    to insert link formatting.
+
 {tab|via-markdown}
 
 {!start-composing.md!}

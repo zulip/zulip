@@ -6,35 +6,28 @@
       "data": {
         "object": {
           "application": null,
+          "automatic_payment_methods": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1K2ObkHSaWXyvFpKHth3yD4Z_secret_KhoE7zhtCrs9yGGrNJCZWdC1hexgZko",
+          "client_secret": "seti_1OAbiADEQaroqDjsDYD3ea3l_secret_OyYpZDk6bg6U6l5bJQpBZxqV5kieJog",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1K2ObkHSaWXyvFpKHth3yD4Z",
+          "flow_directions": null,
+          "id": "seti_1OAbiADEQaroqDjsDYD3ea3l",
           "last_setup_error": null,
           "latest_attempt": null,
           "livemode": false,
           "mandate": null,
-          "metadata": {
-            "billing_modality": "charge_automatically",
-            "billing_schedule": "1",
-            "license_management": "automatic",
-            "licenses": "6",
-            "price_per_license": "8000",
-            "realm_id": "1",
-            "realm_str": "zulip",
-            "seat_count": "6",
-            "type": "upgrade",
-            "user_email": "hamlet@zulip.com",
-            "user_id": "10"
-          },
+          "metadata": {},
           "next_action": null,
           "object": "setup_intent",
           "on_behalf_of": null,
           "payment_method": null,
+          "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
+              "mandate_options": null,
+              "network": null,
               "request_three_d_secure": "automatic"
             }
           },
@@ -46,13 +39,13 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1K2ObkHSaWXyvFpKA8Wk6IR5",
+      "id": "evt_1OAbiADEQaroqDjs7jKcLDT3",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "7ba5c07d-6251-4423-af13-f3f1f88d8a1b"
+        "idempotency_key": "0fc425d2-bc37-456a-a216-7d7812846ac8"
       },
       "type": "setup_intent.created"
     }

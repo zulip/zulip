@@ -98,6 +98,8 @@ TAB_SECTION_LABELS = {
     "user": "User",
     "bot": "Bot",
     "on-sign-up": "On sign-up",
+    "via-paste": "Via paste",
+    "via-drag-and-drop": "Via drag-and-drop",
     "via-markdown": "Via Markdown",
     "via-compose-box-buttons": "Via compose box buttons",
     "stream-compose": "Compose to a stream",

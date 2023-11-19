@@ -6,11 +6,13 @@
       "data": {
         "object": {
           "account_country": "US",
-          "account_name": "NORMALIZED-1",
+          "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
           "amount_due": 240000,
           "amount_paid": 0,
           "amount_remaining": 240000,
+          "amount_shipping": 0,
+          "application": null,
           "application_fee_amount": null,
           "attempt_count": 0,
           "attempted": false,
@@ -40,16 +42,20 @@
           "discount": null,
           "discounts": [],
           "due_date": null,
+          "effective_at": 1000000000,
           "ending_balance": 0,
           "footer": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9DQmlNcWc3djJzUDYwR3VzeGxvWjQxeXliUDZL0100p5Mfo7z7",
+          "from_invoice": null,
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVluYXpIMG15UXRWMHN5R0ZpWWc4bWRlNU5vQmxqLDkwMDkwMzQw0200DTDRNkNb?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9DQmlNcWc3djJzUDYwR3VzeGxvWjQxeXliUDZL0100p5Mfo7z7/pdf",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVluYXpIMG15UXRWMHN5R0ZpWWc4bWRlNU5vQmxqLDkwMDkwMzQx02000KmAyrSz/pdf?s=ap",
           "last_finalization_error": null,
+          "latest_revision": null,
           "lines": {
             "data": [
               {
                 "amount": 240000,
+                "amount_excluding_tax": 240000,
                 "currency": "usd",
                 "description": "Zulip Cloud Standard - renewal",
                 "discount_amounts": [],
@@ -70,6 +76,7 @@
                   "billing_scheme": "per_unit",
                   "created": 1000000000,
                   "currency": "usd",
+                  "custom_unit_amount": null,
                   "id": "price_NORMALIZED00000000000001",
                   "livemode": false,
                   "lookup_key": null,
@@ -86,11 +93,15 @@
                   "unit_amount_decimal": "8000"
                 },
                 "proration": false,
+                "proration_details": {
+                  "credited_items": null
+                },
                 "quantity": 30,
                 "subscription": null,
                 "tax_amounts": [],
                 "tax_rates": [],
-                "type": "invoiceitem"
+                "type": "invoiceitem",
+                "unit_amount_excluding_tax": "8000"
               }
             ],
             "has_more": false,
@@ -105,8 +116,10 @@
           "object": "invoice",
           "on_behalf_of": null,
           "paid": false,
+          "paid_out_of_band": false,
           "payment_intent": "pi_NORMALIZED00000000000001",
           "payment_settings": {
+            "default_mandate": null,
             "payment_method_options": null,
             "payment_method_types": null
           },
@@ -116,6 +129,15 @@
           "pre_payment_credit_notes_amount": 0,
           "quote": null,
           "receipt_number": null,
+          "rendering": {
+            "amount_tax_display": null,
+            "pdf": {
+              "page_size": "letter"
+            }
+          },
+          "rendering_options": null,
+          "shipping_cost": null,
+          "shipping_details": null,
           "starting_balance": 0,
           "statement_descriptor": "Zulip Cloud Standard",
           "status": "open",
@@ -126,22 +148,28 @@
             "voided_at": null
           },
           "subscription": null,
+          "subscription_details": {
+            "metadata": null
+          },
           "subtotal": 240000,
+          "subtotal_excluding_tax": 240000,
           "tax": null,
+          "test_clock": null,
           "total": 240000,
           "total_discount_amounts": [],
+          "total_excluding_tax": 240000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1K2OaCHSaWXyvFpKXAKJ1f58",
+      "id": "evt_1OAbflDEQaroqDjs0hCgMGQF",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "5016a588-3fef-4826-b7a8-ed762a7159d4"
+        "idempotency_key": "325700cb-0ed6-4261-ad7e-78e152a35252"
       },
       "type": "invoice.finalized"
     }

@@ -5,6 +5,9 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
+import * as blueslip from "./blueslip";
+import * as channel from "./channel";
+import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_validate from "./compose_validate";
 import * as flatpickr from "./flatpickr";
@@ -12,8 +15,12 @@ import * as modals from "./modals";
 import * as popover_menus from "./popover_menus";
 import * as scheduled_messages from "./scheduled_messages";
 import {parse_html} from "./ui_util";
+import {user_settings} from "./user_settings";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
+const ENTER_SENDS_SELECTION_DELAY = 600;
+
+let send_later_popover_keyboard_toggle = false;
 
 function set_compose_box_schedule(element) {
     const selected_send_at_time = element.dataset.sendStamp / 1000;
@@ -110,13 +117,35 @@ export function do_schedule_message(send_at_time) {
     compose.finish(true);
 }
 
+function get_send_later_menu_items() {
+    const $current_schedule_popover_elem = $("[data-tippy-root] #send_later_popover");
+    if (!$current_schedule_popover_elem) {
+        blueslip.error("Trying to get menu items when schedule popover is closed.");
+        return undefined;
+    }
+
+    return $current_schedule_popover_elem.find("li:not(.divider):visible a");
+}
+
+function focus_first_send_later_popover_item() {
+    // It is recommended to only call this when the user opens the menu with a hotkey.
+    // Our popup menus act kind of funny when you mix keyboard and mouse.
+    const $items = get_send_later_menu_items();
+    popover_menus.focus_first_popover_item($items);
+}
+
+export function toggle() {
+    send_later_popover_keyboard_toggle = true;
+    $("#send_later i").trigger("click");
+}
+
 export function initialize() {
     delegate("body", {
         ...popover_menus.default_popover_props,
         target: "#send_later i",
         onUntrigger() {
             // This is only called when the popover is closed by clicking on `target`.
-            $("#compose-textarea").trigger("focus");
+            $("textarea#compose-textarea").trigger("focus");
         },
         onShow(instance) {
             const formatted_send_later_time =
@@ -124,24 +153,58 @@ export function initialize() {
             instance.setContent(
                 parse_html(
                     render_send_later_popover({
+                        enter_sends_true: user_settings.enter_sends,
                         formatted_send_later_time,
                     }),
                 ),
             );
             popover_menus.popover_instances.send_later = instance;
-            $(instance.popper).one("click", instance.hide);
         },
         onMount(instance) {
+            if (send_later_popover_keyboard_toggle) {
+                focus_first_send_later_popover_item();
+                send_later_popover_keyboard_toggle = false;
+            }
             const $popper = $(instance.popper);
+            common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
             $popper.one("click", ".send_later_selected_send_later_time", () => {
                 const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
+                instance.hide();
             });
-            $popper.one("click", ".open_send_later_modal", open_send_later_menu);
+            // Handle clicks on Enter-to-send settings
+            $popper.one("click", ".enter_sends_choice", (e) => {
+                let selected_behaviour = $(e.currentTarget)
+                    .find("input[type='radio']")
+                    .attr("value");
+                selected_behaviour = selected_behaviour === "true"; // Convert to bool
+                user_settings.enter_sends = selected_behaviour;
+                $(`.enter_sends_${!selected_behaviour}`).hide();
+                $(`.enter_sends_${selected_behaviour}`).show();
+
+                // Refocus in the content box so you can continue typing or
+                // press Enter to send.
+                $("textarea#compose-textarea").trigger("focus");
+
+                channel.patch({
+                    url: "/json/settings",
+                    data: {enter_sends: selected_behaviour},
+                });
+                e.stopPropagation();
+                setTimeout(() => {
+                    instance.hide();
+                }, ENTER_SENDS_SELECTION_DELAY);
+            });
+            // Handle Send later clicks
+            $popper.one("click", ".open_send_later_modal", () => {
+                open_send_later_menu();
+                instance.hide();
+            });
         },
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.send_later = undefined;
+            send_later_popover_keyboard_toggle = false;
         },
     });
 }

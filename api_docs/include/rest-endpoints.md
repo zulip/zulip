@@ -47,6 +47,7 @@
 * [Create a stream](/api/create-stream)
 * [Update a stream](/api/update-stream)
 * [Archive a stream](/api/archive-stream)
+* [Get stream's email address](/api/get-stream-email-address)
 * [Get topics in a stream](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
 * [Update personal preferences for a topic](/api/update-user-topic)

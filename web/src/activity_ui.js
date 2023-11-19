@@ -217,7 +217,7 @@ export function initiate_search() {
 
 export function escape_search() {
     if (user_filter) {
-        user_filter.escape_search();
+        user_filter.clear_and_hide_search();
     }
 }
 

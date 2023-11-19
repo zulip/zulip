@@ -25,7 +25,7 @@ const HOTSPOT_LOCATIONS = new Map([
     [
         "intro_streams",
         {
-            element: "#streams_header .sidebar-title",
+            element: "#streams_header .left-sidebar-title",
             offset_x: 1.35,
             offset_y: 0.39,
         },

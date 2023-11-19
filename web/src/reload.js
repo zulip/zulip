@@ -55,7 +55,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         const msg_type = compose_state.get_message_type();
         if (msg_type === "stream") {
             url += "+msg_type=stream";
-            url += "+stream=" + encodeURIComponent(compose_state.stream_name());
+            url += "+stream_id=" + encodeURIComponent(compose_state.stream_id());
             url += "+topic=" + encodeURIComponent(compose_state.topic());
         } else if (msg_type === "private") {
             url += "+msg_type=private";

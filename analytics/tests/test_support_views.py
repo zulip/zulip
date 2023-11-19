@@ -6,7 +6,8 @@ import orjson
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import add_months, update_sponsorship_status
+from corporate.lib.stripe import add_months
+from corporate.lib.support import update_realm_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
@@ -22,6 +23,7 @@ from zerver.models import (
     get_org_type_display_name,
     get_realm,
 )
+from zilencer.lib.remote_counts import MissingDataError
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -62,8 +64,20 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             result,
         )
 
-        result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
+        with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
+            result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
         self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+        self.assert_in_success_response(["<b>Max monthly messages</b>: 1000"], result)
+        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+
+        with mock.patch(
+            "analytics.views.support.compute_max_monthly_messages", side_effect=MissingDataError
+        ):
+            result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
+        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+        self.assert_in_success_response(
+            ["<b>Max monthly messages</b>: Recent data missing"], result
+        )
         self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
 
         result = self.client_get("/activity/remote/support", {"q": "example.com"})
@@ -418,7 +432,7 @@ class TestSupportEndpoint(ZulipTestCase):
             result,
         )
 
-    @mock.patch("analytics.views.support.update_billing_method_of_current_plan")
+    @mock.patch("analytics.views.support.update_realm_billing_method")
     def test_change_billing_method(self, m: mock.Mock) -> None:
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
@@ -558,8 +572,9 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertFalse(customer.sponsorship_pending)
 
     def test_approve_sponsorship(self) -> None:
+        support_admin = self.example_user("iago")
         lear_realm = get_realm("lear")
-        update_sponsorship_status(lear_realm, True, acting_user=None)
+        update_realm_sponsorship_status(lear_realm, True, acting_user=support_admin)
         king_user = self.lear_user("king")
         king_user.role = UserProfile.ROLE_REALM_OWNER
         king_user.save()

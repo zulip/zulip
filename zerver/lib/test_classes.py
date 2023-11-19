@@ -49,7 +49,10 @@ from typing_extensions import override
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -95,6 +98,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
@@ -820,6 +824,7 @@ Output:
         source_realm_id: str = "",
         key: Optional[str] = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_default_language: str = "en",
         enable_marketing_emails: Optional[bool] = None,
         email_address_visibility: Optional[int] = None,
         is_demo_organization: bool = False,
@@ -840,6 +845,7 @@ Output:
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "realm_type": realm_type,
+            "realm_default_language": realm_default_language,
             "key": key if key is not None else find_key_by_email(email),
             "timezone": timezone,
             "terms": True,
@@ -874,12 +880,14 @@ Output:
         realm_subdomain: str,
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_default_language: str = "en",
         realm_in_root_domain: Optional[str] = None,
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
             "realm_name": realm_name,
             "realm_type": realm_type,
+            "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
         }
         if realm_in_root_domain is not None:
@@ -1181,6 +1189,17 @@ Output:
 
         return [subscription.user_profile for subscription in subscriptions]
 
+    def not_long_term_idle_subscriber_ids(self, stream_name: str, realm: Realm) -> Set[int]:
+        stream = Stream.objects.get(name=stream_name, realm=realm)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+
+        subscriptions = Subscription.objects.filter(
+            recipient=recipient, active=True, is_user_active=True
+        ).exclude(user_profile__long_term_idle=True)
+        user_profile_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+
+        return user_profile_ids
+
     def assert_json_success(
         self,
         result: Union["TestHttpResponse", HttpResponse],
@@ -1346,7 +1365,7 @@ Output:
             realm, invite_only, history_public_to_subscribers
         )
         administrators_user_group = UserGroup.objects.get(
-            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
         try:
@@ -1385,14 +1404,18 @@ Output:
 
     # Subscribe to a stream directly
     def subscribe(
-        self, user_profile: UserProfile, stream_name: str, invite_only: bool = False
+        self,
+        user_profile: UserProfile,
+        stream_name: str,
+        invite_only: bool = False,
+        is_web_public: bool = False,
     ) -> Stream:
         realm = user_profile.realm
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(
-                realm, stream_name, invite_only=invite_only
+                realm, stream_name, invite_only=invite_only, is_web_public=is_web_public
             )
         bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
@@ -1921,6 +1944,41 @@ Output:
         do_soft_deactivate_users([user])
         assert user.long_term_idle
 
+    def set_up_db_for_testing_user_access(self) -> None:
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        zoe = self.example_user("ZOE")
+        shiva = self.example_user("shiva")
+        realm = get_realm("zulip")
+        # Polonius is subscribed to "Verona" by default, so we unsubscribe
+        # it so that it becomes easier to test the restricted access.
+        self.unsubscribe(polonius, "Verona")
+
+        self.make_stream("test_stream1")
+        self.make_stream("test_stream2", invite_only=True)
+
+        self.subscribe(othello, "test_stream1")
+        self.send_stream_message(othello, "test_stream1", content="test message", topic_name="test")
+        self.unsubscribe(othello, "test_stream1")
+
+        self.subscribe(polonius, "test_stream1")
+        self.subscribe(polonius, "test_stream2")
+        self.subscribe(hamlet, "test_stream1")
+        self.subscribe(iago, "test_stream2")
+
+        self.send_personal_message(polonius, prospero)
+        self.send_personal_message(shiva, polonius)
+        self.send_huddle_message(aaron, [polonius, zoe])
+
+        members_group = UserGroup.objects.get(name="role:members", realm=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
+
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     @contextmanager
@@ -2268,7 +2326,7 @@ one or more new messages.
         return body
 
 
-class MigrationsTestCase(ZulipTestCase):  # nocoverage
+class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
     """
     Test class for database migrations inspired by this blog post:
        https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
@@ -2286,6 +2344,7 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     @override
     def setUp(self) -> None:
+        super().setUp()
         assert (
             self.migrate_from and self.migrate_to
         ), f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"

@@ -2,14 +2,19 @@
 
 {tab|desktop-web}
 
-1. Click the **New direct message** button at the bottom of the app, or
-   use the <kbd>X</kbd> keyboard shortcut.
+1. Click the **New direct message** button at the bottom of the app, or the
+   **Start new conversation** button if you are in a direct message view.
 
 1. Start typing the name of the person you want to message, and
    select their name from the list of suggestions. You can continue
    adding as many message recipients as you like.
 
 {!compose-and-send-message.md!}
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>X</kbd> keyboard shortcut to start a new direct
+    message conversation.
 
 !!! tip ""
 

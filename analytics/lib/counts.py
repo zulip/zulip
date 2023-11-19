@@ -23,6 +23,14 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
 from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
 
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import (
+        RemoteInstallationCount,
+        RemoteRealm,
+        RemoteRealmCount,
+        RemoteZulipServer,
+    )
+
 ## Logging setup ##
 
 logger = logging.getLogger("zulip.management")
@@ -293,7 +301,7 @@ def do_aggregate_to_summary_table(
 
 # called from zerver.actions; should not throw any errors
 def do_increment_logging_stat(
-    zerver_object: Union[Realm, UserProfile, Stream],
+    model_object_for_bucket: Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"],
     stat: CountStat,
     subgroup: Optional[Union[str, int, bool]],
     event_time: datetime,
@@ -304,19 +312,35 @@ def do_increment_logging_stat(
 
     table = stat.data_collector.output_table
     if table == RealmCount:
-        assert isinstance(zerver_object, Realm)
-        id_args: Dict[str, Union[Realm, UserProfile, Stream]] = {"realm": zerver_object}
+        assert isinstance(model_object_for_bucket, Realm)
+        id_args: Dict[
+            str, Optional[Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"]]
+        ] = {"realm": model_object_for_bucket}
     elif table == UserCount:
-        assert isinstance(zerver_object, UserProfile)
-        id_args = {"realm": zerver_object.realm, "user": zerver_object}
-    else:  # StreamCount
-        assert isinstance(zerver_object, Stream)
-        id_args = {"realm": zerver_object.realm, "stream": zerver_object}
+        assert isinstance(model_object_for_bucket, UserProfile)
+        id_args = {"realm": model_object_for_bucket.realm, "user": model_object_for_bucket}
+    elif table == StreamCount:
+        assert isinstance(model_object_for_bucket, Stream)
+        id_args = {"realm": model_object_for_bucket.realm, "stream": model_object_for_bucket}
+    elif table == RemoteInstallationCount:
+        assert isinstance(model_object_for_bucket, RemoteZulipServer)
+        id_args = {"server": model_object_for_bucket, "remote_id": None}
+    elif table == RemoteRealmCount:
+        assert isinstance(model_object_for_bucket, RemoteRealm)
+        id_args = {
+            "server": model_object_for_bucket.server,
+            "remote_realm": model_object_for_bucket,
+            "remote_id": None,
+        }
+    else:
+        raise AssertionError("Unsupported CountStat output_table")
 
     if stat.frequency == CountStat.DAY:
         end_time = ceiling_to_day(event_time)
-    else:  # CountStat.HOUR:
+    elif stat.frequency == CountStat.HOUR:
         end_time = ceiling_to_hour(event_time)
+    else:
+        raise AssertionError("Unsupported CountStat frequency")
 
     row, created = table._default_manager.get_or_create(
         property=stat.property,
@@ -817,6 +841,12 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         CountStat(
             "minutes_active::day", DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY
         ),
+        # Tracks the number of push notifications requested by the server.
+        LoggingCountStat(
+            "mobile_pushes_sent::day",
+            RealmCount,
+            CountStat.DAY,
+        ),
         # Rate limiting stats
         # Used to limit the number of invitation emails sent by a realm
         LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY),
@@ -831,8 +861,65 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         ),
     ]
 
+    if settings.ZILENCER_ENABLED:
+        # See also the remote_installation versions of these in REMOTE_INSTALLATION_COUNT_STATS.
+        count_stats_.append(
+            LoggingCountStat(
+                "mobile_pushes_received::day",
+                RemoteRealmCount,
+                CountStat.DAY,
+            )
+        )
+        count_stats_.append(
+            LoggingCountStat(
+                "mobile_pushes_forwarded::day",
+                RemoteRealmCount,
+                CountStat.DAY,
+            )
+        )
+
     return OrderedDict((stat.property, stat) for stat in count_stats_)
 
 
+# These properties are tracked by the bouncer itself and therefore syncing them
+# from a remote server should not be allowed - or the server would be able to interfere
+# with our data.
+BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES = [
+    "mobile_pushes_received::day",
+    "mobile_pushes_forwarded::day",
+]
+
 # To avoid refactoring for now COUNT_STATS can be used as before
 COUNT_STATS = get_count_stats()
+
+REMOTE_INSTALLATION_COUNT_STATS = OrderedDict()
+
+if settings.ZILENCER_ENABLED:
+    # REMOTE_INSTALLATION_COUNT_STATS contains duplicates of the
+    # RemoteRealmCount stats declared above; it is necessary because
+    # pre-8.0 servers do not send the fields required to identify a
+    # RemoteRealm.
+
+    # Tracks the number of push notifications requested to be sent
+    # by a remote server.
+    REMOTE_INSTALLATION_COUNT_STATS["mobile_pushes_received::day"] = LoggingCountStat(
+        "mobile_pushes_received::day",
+        RemoteInstallationCount,
+        CountStat.DAY,
+    )
+    # Tracks the number of push notifications successfully sent to
+    # mobile devices, as requested by the remote server. Therefore
+    # this should be less than or equal to mobile_pushes_received -
+    # with potential tiny offsets resulting from a request being
+    # *received* by the bouncer right before midnight, but *sent* to
+    # the mobile device right after midnight. This would cause the
+    # increments to happen to CountStat records for different days.
+    REMOTE_INSTALLATION_COUNT_STATS["mobile_pushes_forwarded::day"] = LoggingCountStat(
+        "mobile_pushes_forwarded::day",
+        RemoteInstallationCount,
+        CountStat.DAY,
+    )
+
+ALL_COUNT_STATS = OrderedDict(
+    list(COUNT_STATS.items()) + list(REMOTE_INSTALLATION_COUNT_STATS.items())
+)

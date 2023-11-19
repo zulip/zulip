@@ -28,6 +28,8 @@ const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
+const rows = zrequire("rows");
+const message_store = zrequire("message_store");
 
 const iago = {
     email: "iago@zulip.com",
@@ -100,6 +102,7 @@ function set_closest_dot_find_result($content, value) {
 const get_content_element = () => {
     const $content = $.create("content-stub");
     $content.set_find_results(".user-mention", $array([]));
+    $content.set_find_results(".topic-mention", $array([]));
     $content.set_find_results(".user-group-mention", $array([]));
     $content.set_find_results("a.stream", $array([]));
     $content.set_find_results("a.stream-topic", $array([]));
@@ -264,6 +267,85 @@ run_test("user-mention (missing)", () => {
     const $mention = $.create("mention");
     $content.set_find_results(".user-mention", $array([$mention]));
 
+    rm.update_elements($content);
+    assert.ok(!$mention.hasClass("user-mention-me"));
+});
+
+run_test("topic-mention", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $content.set_find_results(".topic-mention", $array([$mention]));
+
+    // no message row found
+    $content.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".message_row");
+        return [];
+    };
+    assert.ok(!$mention.hasClass("user-mention-me"));
+    rm.update_elements($content);
+    assert.ok(!$mention.hasClass("user-mention-me"));
+
+    // message row found
+    const $message_row = $.create(".message-row");
+    $content.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".message_row");
+        return $message_row;
+    };
+    $message_row.length = 1;
+    $message_row.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".overlay-message-row");
+        return [];
+    };
+    const message_id = 100;
+    rows.id = (message_row) => {
+        assert.equal(message_row, $message_row);
+        return message_id;
+    };
+    const message = {
+        stream_id: 1,
+        topic_wildcard_mentioned: true,
+    };
+    message_store.get = (message_id_opt) => {
+        assert.equal(message_id_opt, message_id);
+        return message;
+    };
+
+    assert.ok(!$mention.hasClass("user-mention-me"));
+    rm.update_elements($content);
+    assert.ok($mention.hasClass("user-mention-me"));
+});
+
+run_test("topic-mention not topic participant", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $content.set_find_results(".topic-mention", $array([$mention]));
+    const $message_row = $.create(".message-row");
+    $content.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".message_row");
+        return $message_row;
+    };
+    $message_row.length = 1;
+    $message_row.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".overlay-message-row");
+        return [];
+    };
+    const message_id = 100;
+    rows.id = (message_row) => {
+        assert.equal(message_row, $message_row);
+        return message_id;
+    };
+    const message = {
+        stream_id: 1,
+        topic_wildcard_mentioned: false,
+    };
+    message_store.get = (message_id_opt) => {
+        assert.equal(message_id_opt, message_id);
+        return message;
+    };
+
+    assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert.ok(!$mention.hasClass("user-mention-me"));
 });

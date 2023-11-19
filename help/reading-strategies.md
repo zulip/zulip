@@ -34,6 +34,15 @@ in Zulip.
 
 {!reading-conversations.md!}
 
+### Following, muting and unmuting conversations
+
+You can improve your workflow for catching up on messages by taking advantage of
+[following topics](/help/follow-a-topic), as well as muting and unmuting
+[streams](/help/mute-a-stream) and [topics](/help/mute-a-topic). Some example
+workflows:
+
+{!followed-topic-workflows.md!}
+
 ## Combined views
 
 ### All messages

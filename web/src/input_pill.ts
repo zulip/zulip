@@ -17,7 +17,7 @@ export type InputPillItem<T> = {
     type: string;
     img_src?: string;
     deactivated?: boolean;
-    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code: boolean}; // TODO: Move this in user_status.js
+    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean}; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
 } & T;
 
@@ -56,7 +56,7 @@ type InputPillRenderingDetails = {
     img_src?: string;
     deactivated?: boolean;
     has_status?: boolean;
-    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code: boolean};
+    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean};
     should_add_guest_user_indicator?: boolean;
 };
 
@@ -75,22 +75,7 @@ export type InputPillContainer<T> = {
     _get_pills_for_testing: () => InputPill<T>[];
 };
 
-export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> | undefined {
-    if (!opts.$container) {
-        blueslip.error("Pill needs container.");
-        return undefined;
-    }
-
-    if (!opts.create_item_from_text) {
-        blueslip.error("Pill needs create_item_from_text");
-        return undefined;
-    }
-
-    if (!opts.get_text_from_item) {
-        blueslip.error("Pill needs get_text_from_item");
-        return undefined;
-    }
-
+export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> {
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
     const store: InputPillStore<T> = {
@@ -344,9 +329,9 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             // right of the last pill (with or without text in the
             // input), then backspace deletes the last pill.
             if (
-                selection?.type !== "range" &&
                 e.key === "Backspace" &&
-                (funcs.value(e.target).length === 0 || selection?.anchorOffset === 0)
+                (funcs.value(e.target).length === 0 ||
+                    (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
             ) {
                 e.preventDefault();
                 funcs.removeLastPill();

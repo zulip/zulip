@@ -51,7 +51,7 @@ export function initialize() {
 
         try {
             compose_actions.start(vars.msg_type, {
-                stream: vars.stream || "",
+                stream_id: Number.parseInt(vars.stream_id, 10) || undefined,
                 topic: vars.topic || "",
                 private_message_recipient: vars.recipient || "",
                 content: vars.msg || "",

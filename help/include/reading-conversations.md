@@ -14,7 +14,8 @@
 
 !!! keyboard_tip ""
 
-    Use the <kbd>N</kbd> key to go to the next unread topic, or <kbd>P</kbd>
-    to go to the next unread direct message conversation.
+    Use the <kbd>N</kbd> key to go to the next unread topic, or <kbd>Shift</kbd> + <kbd>N</kbd>
+    for the next unread [followed](/help/follow-a-topic) topic, or <kbd>P</kbd> for the next
+    unread direct message conversation.
 
 {end_tabs}

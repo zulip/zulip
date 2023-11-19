@@ -106,8 +106,15 @@ function submit_invitation_form(): void {
         data,
         beforeSend,
         success() {
+            const number_of_invites_sent = $invitee_emails.val()!.split(/[\n,]/).length;
             ui_report.success(
-                $t_html({defaultMessage: "User(s) invited successfully."}),
+                $t_html(
+                    {
+                        defaultMessage:
+                            "{N, plural, one {User invited successfully.} other {Users invited successfully.}}",
+                    },
+                    {N: number_of_invites_sent},
+                ),
                 $invite_status,
             );
             $invitee_emails.val("");

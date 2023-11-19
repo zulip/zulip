@@ -12,8 +12,9 @@ from django.urls import reverse
 from markupsafe import Markup
 from psycopg2.sql import Composable
 
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_encoding import append_url_query_string
-from zerver.models import UserActivity, get_realm
+from zerver.models import Realm, UserActivity
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo
@@ -131,7 +132,8 @@ def realm_support_link(realm_str: str) -> Markup:
 
 
 def realm_url_link(realm_str: str) -> Markup:
-    url = get_realm(realm_str).uri
+    host = Realm.host_for_subdomain(realm_str)
+    url = settings.EXTERNAL_URI_SCHEME + mark_sanitized(host)
     return Markup('<a href="{url}"><i class="fa fa-home"></i></a>').format(url=url)
 
 

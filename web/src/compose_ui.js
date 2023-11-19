@@ -9,13 +9,16 @@ import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
 import {$t} from "./i18n";
 import * as loading from "./loading";
+import * as markdown from "./markdown";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
 export let compose_spinner_visible = false;
+export let shift_pressed = false; // true or false
 let full_size_status = false; // true or false
 
 // Some functions to handle the full size status explicitly
@@ -47,15 +50,15 @@ function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
-        return "#stream_message_recipient_topic";
+        return "input#stream_message_recipient_topic";
     } else if (
         (msg_type === "stream" && opts.stream_id) ||
         (msg_type === "private" && opts.private_message_recipient)
     ) {
         if (opts.trigger === "clear topic button") {
-            return "#stream_message_recipient_topic";
+            return "input#stream_message_recipient_topic";
         }
-        return "#compose-textarea";
+        return "textarea#compose-textarea";
     }
 
     if (msg_type === "stream") {
@@ -159,7 +162,7 @@ export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
 
 export function insert_syntax_and_focus(
     syntax,
-    $textarea = $("#compose-textarea"),
+    $textarea = $("textarea#compose-textarea"),
     mode = "inline",
     padding_newlines,
 ) {
@@ -184,7 +187,7 @@ export function insert_syntax_and_focus(
     }
 }
 
-export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {
+export function replace_syntax(old_syntax, new_syntax, $textarea = $("textarea#compose-textarea")) {
     // The following couple lines are needed to later restore the initial
     // logical position of the cursor after the replacement
     const prev_caret = $textarea.caret();
@@ -249,15 +252,16 @@ export function compute_placeholder_text(opts) {
     // For direct messages
     if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
-        const recipient_names = recipient_list
-            .map((recipient) => {
-                const user = people.get_by_email(recipient);
-                if (people.should_add_guest_user_indicator(user.user_id)) {
-                    return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
-                }
-                return user.full_name;
-            })
-            .join(", ");
+        const recipient_parts = recipient_list.map((recipient) => {
+            const user = people.get_by_email(recipient);
+            if (people.should_add_guest_user_indicator(user.user_id)) {
+                return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+            }
+            return user.full_name;
+        });
+        const recipient_names = Intl.ListFormat
+            ? new Intl.ListFormat(user_settings.default_language).format(recipient_parts)
+            : recipient_parts.join(", ");
 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
@@ -294,7 +298,7 @@ export function make_compose_box_full_size() {
 
     // The autosize should be destroyed for the full size compose
     // box else it will interfere and shrink its size accordingly.
-    autosize.destroy($("#compose-textarea"));
+    autosize.destroy($("textarea#compose-textarea"));
 
     $("#compose").addClass("compose-fullscreen");
 
@@ -304,7 +308,7 @@ export function make_compose_box_full_size() {
     $(".collapse_composebox_button").show();
     $(".expand_composebox_button").hide();
     $("#scroll-to-bottom-button-container").removeClass("show");
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").trigger("focus");
 }
 
 export function make_compose_box_original_size() {
@@ -317,14 +321,17 @@ export function make_compose_box_original_size() {
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
-    autosize($("#compose-textarea"));
+    autosize($("textarea#compose-textarea"));
 
     $(".collapse_composebox_button").hide();
     $(".expand_composebox_button").show();
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").trigger("focus");
 }
 
 export function handle_keydown(event, $textarea) {
+    if (event.key === "Shift") {
+        shift_pressed = true;
+    }
     // The event.key property will have uppercase letter if
     // the "Shift + <key>" combo was used or the Caps Lock
     // key was on. We turn to key to lowercase so the key bindings
@@ -350,8 +357,31 @@ export function handle_keydown(event, $textarea) {
 }
 
 export function handle_keyup(_event, $textarea) {
+    if (_event?.key === "Shift") {
+        shift_pressed = false;
+    }
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
+}
+
+export function cursor_inside_code_block($textarea) {
+    // Returns whether the cursor is at a point that would be inside
+    // a code block on rendering the textarea content as markdown.
+    const cursor_position = $textarea.caret();
+    const current_content = $textarea.val();
+
+    let unique_insert = "UNIQUEINSERT:" + Math.random();
+    while (current_content.includes(unique_insert)) {
+        unique_insert = "UNIQUEINSERT:" + Math.random();
+    }
+    const content =
+        current_content.slice(0, cursor_position) +
+        unique_insert +
+        current_content.slice(cursor_position);
+    const rendered_content = markdown.parse_non_message(content);
+    const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
+    const code_blocks = rendered_html.querySelectorAll("pre > code");
+    return [...code_blocks].some((code_block) => code_block.textContent.includes(unique_insert));
 }
 
 export function format_text($textarea, type, inserted_content) {
@@ -675,7 +705,7 @@ export function format_text($textarea, type, inserted_content) {
 export function hide_compose_spinner() {
     compose_spinner_visible = false;
     $(".compose-submit-button .loader").hide();
-    $(".compose-submit-button span").show();
+    $(".compose-submit-button .zulip-icon-send").show();
     $(".compose-submit-button").removeClass("disable-btn");
 }
 
@@ -683,7 +713,7 @@ export function show_compose_spinner() {
     compose_spinner_visible = true;
     // Always use white spinner.
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
-    $(".compose-submit-button span").hide();
+    $(".compose-submit-button .zulip-icon-send").hide();
     $(".compose-submit-button").addClass("disable-btn");
 }
 

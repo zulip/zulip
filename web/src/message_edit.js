@@ -958,7 +958,8 @@ export function save_message_row_edit($row) {
         changed = old_content !== new_content;
     }
 
-    const already_has_wildcard_mention = message.wildcard_mentioned;
+    const already_has_wildcard_mention =
+        message.stream_wildcard_mentioned || message.topic_wildcard_mentioned;
     if (!already_has_wildcard_mention) {
         const wildcard_mention = util.find_wildcard_mentions(new_content);
         const is_stream_message_mentions_valid = compose_validate.validate_stream_message_mentions({
@@ -1069,15 +1070,20 @@ export function save_message_row_edit($row) {
                 }
 
                 hide_message_edit_spinner($row);
-                const message = channel.xhr_error_message("", xhr);
-                const $container = compose_banner.get_compose_banner_container(
-                    $row.find("textarea"),
-                );
-                compose_banner.show_error_message(
-                    message,
-                    compose_banner.CLASSNAMES.generic_compose_error,
-                    $container,
-                );
+                if (xhr.readyState !== 0) {
+                    const message = channel.xhr_error_message(
+                        $t({defaultMessage: "Error editing message"}),
+                        xhr,
+                    );
+                    const $container = compose_banner.get_compose_banner_container(
+                        $row.find("textarea"),
+                    );
+                    compose_banner.show_error_message(
+                        message,
+                        compose_banner.CLASSNAMES.generic_compose_error,
+                        $container,
+                    );
+                }
             }
         },
     });

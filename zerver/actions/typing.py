@@ -1,9 +1,10 @@
 from typing import List
 
+from django.conf import settings
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.stream_subscription import get_user_ids_for_streams
+from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import Realm, Stream, UserProfile, get_user_by_id_in_realm_including_cross_realm
 from zerver.tornado.django_api import send_event
 
@@ -77,6 +78,21 @@ def do_send_stream_typing_notification(
         topic=topic,
     )
 
-    user_ids_to_notify = get_user_ids_for_streams({stream.id})[stream.id]
+    # We don't notify long_term_idle subscribers.
+    subscriptions_query = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=False
+    )
+
+    total_subscriptions = subscriptions_query.count()
+    if total_subscriptions > settings.MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS:
+        # TODO: Stream typing notifications are disabled in streams
+        # with too many subscribers for performance reasons.
+        return
+
+    user_ids_to_notify = set(
+        subscriptions_query.exclude(user_profile__long_term_idle=True).values_list(
+            "user_profile_id", flat=True
+        )
+    )
 
     send_event(sender.realm, event, user_ids_to_notify)

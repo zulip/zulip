@@ -64,8 +64,11 @@ Zulip friendly and usable.
 ## Frases
 
 - Subscribe/Unsubscribe to a stream - **Suscribir a/Desuscribir de un canal**
-- Narrow to - **Filtrar solo**: this is _filter only_, because there's no other
-  word that's common enough in Spanish for _to narrow_ except for "filtrar".
+- Narrow to - **Buscar solo**: this translates to _search only_. We use this
+  term because there's no other word that's common enough in Spanish for
+  _to narrow_ except for "filtrar", but this word can be incorrectly
+  interpreted as _filter out_. We should stick to a term that we can use
+  unambiguously and consistently for all instances of _Narrow to_.
 - Mute/Unmute - **Silenciar/No silenciar**
 - Deactivate/Reactivate - **Desactivar/Reactivar**
 - Search - **Buscar**

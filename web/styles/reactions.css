@@ -1,38 +1,62 @@
 .message_reactions {
     overflow: hidden;
-
     user-select: none;
 
     .message_reaction {
         display: flex;
-        padding: 0 2px 0 0;
+        padding: 1px 4px 1px 3px;
+        box-sizing: border-box;
+        min-width: 44px;
         cursor: pointer;
-        background-color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(194deg 37% 84%);
-        border-radius: 4px;
+        color: var(--color-message-reaction-text);
+        background-color: var(--color-message-reaction-background);
+        border: 1px solid var(--color-message-reaction-border);
+        border-radius: 21px;
         align-items: center;
+        box-shadow: inset 0 0 5px 0 var(--color-message-reaction-shadow-inner);
+        transition:
+            transform 100ms linear,
+            font-weight 100ms linear;
 
         &.reacted {
-            background-color: hsl(195deg 50% 95%);
+            color: var(--color-message-reaction-text-reacted);
+            background-color: var(--color-message-reaction-background-reacted);
+            border-color: var(--color-message-reaction-border-reacted);
+            font-weight: var(--font-weight-message-reaction);
+            box-shadow: none;
         }
 
         &:hover {
-            border: 1px solid hsl(200deg 100% 40%);
+            background-color: var(--color-message-reaction-background-hover);
+        }
+
+        &:active {
+            transform: scale(var(--scale-message-reaction-active));
         }
 
         + .reaction_button {
             visibility: hidden;
             pointer-events: none;
-            padding: 3px;
+            padding: 4px 6px;
             height: 13px;
-            border-radius: 4px;
-            padding-left: 0.3em;
-            border: 1px solid hsl(0deg 0% 73%);
-            padding-right: 0.3em;
+            border-radius: 21px;
+            color: var(--color-message-reaction-button-text);
+            background-color: var(--color-message-reaction-button-background);
+            border: 1px solid var(--color-message-reaction-button-border);
             /* TODO: Eventually this space will be set on the message
-               box, but for now this preserves the space beneath the
-               reactions area. */
-            margin-bottom: 2px;
+               box, at least in part, but for now this preserves the
+               space beneath the reactions area. */
+            margin-bottom: 4px;
+
+            &:hover {
+                color: var(--color-message-reaction-button-text-hover);
+                background-color: var(
+                    --color-message-reaction-button-background-hover
+                );
+                border-color: var(--color-message-reaction-button-border-hover);
+                box-shadow: inset 0 0 5px 0
+                    var(--color-message-reaction-shadow-inner);
+            }
         }
 
         .emoji {
@@ -60,25 +84,33 @@
     }
 
     .message_reaction_count {
+        /* 90% works out here to 12.6px */
         font-size: 90%;
-        margin: 2px 3px;
-        line-height: 1em;
+        /* No top and bottom margin; just allow
+           flexbox to handle the vertical alignment. */
+        margin: 0 3px;
+        /* Set the 12.6px text on a 13px line;
+           the goal is to have that 13px line
+           center correctly on the vertical with
+           the 17px-square emoji, resulting in
+           2px of space above and below the
+           reaction count/name. */
+        line-height: 13px;
     }
 
     .message_reaction:hover .message_reaction_count {
-        color: hsl(200deg 100% 40%);
+        color: var(--color-message-reaction-button-text-hover);
     }
 
     & i {
         font-size: 1.3em;
         float: left;
-        color: hsl(0deg 0% 33%);
+        color: var(--color-message-reaction-button-text);
     }
 
     &:hover .message_reaction + .reaction_button {
         visibility: visible;
         pointer-events: all;
-        background-color: hsl(0deg 0% 98%);
     }
 
     .reaction_button,
@@ -93,7 +125,7 @@
         }
 
         &:hover i {
-            color: hsl(200deg 100% 40%);
+            color: var(--color-message-reaction-button-text-hover);
         }
 
         /* Configure the reaction button to appear if and only if there's an
@@ -106,31 +138,24 @@
         }
 
         &:hover {
-            border: 1px solid hsl(200deg 100% 40%);
-            background-color: hsl(195deg 50% 95%);
+            border: 1px solid var(--color-message-reaction-button-border-hover);
+            background-color: var(
+                --color-message-reaction-button-background-hover
+            );
             cursor: pointer;
             opacity: 1;
-            color: hsl(200deg 100% 40%);
+            color: var(--color-message-reaction-button-text-hover);
         }
 
         .message_reaction_count {
-            font-size: 1.1em;
-            color: hsl(0deg 0% 33%);
+            font-weight: 700;
+            color: var(--color-message-reaction-button-text);
             margin-right: 0;
         }
 
         &:hover .message_reaction_count {
-            color: hsl(200deg 100% 40%);
+            color: var(--color-message-reaction-button-text-hover);
         }
-    }
-}
-
-.private-message .message_reactions .message_reaction {
-    background-color: hsl(192deg 20% 95%);
-
-    &.reacted {
-        background-color: hsl(196deg 51% 93%);
-        border-color: hsl(193deg 38% 70%);
     }
 }
 
@@ -217,8 +242,7 @@
         .emoji-search-results-container {
             padding: 0;
             position: relative;
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden auto;
             display: block;
             width: 247px;
             padding-left: 3px;

@@ -100,6 +100,7 @@ from zerver.lib.types import (
     ProfileData,
     ProfileDataElementBase,
     ProfileDataElementValue,
+    RawUserDict,
     RealmPlaygroundDict,
     RealmUserValidator,
     UnspecifiedValue,
@@ -258,6 +259,17 @@ def supported_auth_backends() -> List["ModelBackend"]:
 def clear_supported_auth_backends_cache() -> None:
     global supported_backends
     supported_backends = None
+
+
+class SystemGroups:
+    FULL_MEMBERS = "role:fullmembers"
+    EVERYONE_ON_INTERNET = "role:internet"
+    OWNERS = "role:owners"
+    ADMINISTRATORS = "role:administrators"
+    MODERATORS = "role:moderators"
+    MEMBERS = "role:members"
+    EVERYONE = "role:everyone"
+    NOBODY = "role:nobody"
 
 
 class RealmAuthenticationMethod(models.Model):
@@ -430,6 +442,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # UserGroup whose members are allowed to create invite link.
     create_multiuse_invite_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
+    # on_delete field here is set to RESTRICT because we don't want to allow
+    # deleting a user group in case it is referenced by this setting.
+    # We are not using PROTECT since we want to allow deletion of user groups
+    # when realm itself is deleted.
+    can_access_all_users_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
@@ -644,6 +664,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     PLAN_TYPE_STANDARD = 3
     PLAN_TYPE_STANDARD_FREE = 4
     PLAN_TYPE_PLUS = 10
+
+    # Used for creating realms with different plan types.
+    ALL_PLAN_TYPES = {
+        PLAN_TYPE_SELF_HOSTED: "self-hosted-plan",
+        PLAN_TYPE_LIMITED: "limited-plan",
+        PLAN_TYPE_STANDARD: "standard-plan",
+        PLAN_TYPE_STANDARD_FREE: "standard-free-plan",
+        PLAN_TYPE_PLUS: "plus-plan",
+    }
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     # This value is also being used in web/src/settings_bots.bot_creation_policy_values.
@@ -734,9 +763,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Whether clients should display "(guest)" after names of guest users.
     enable_guest_user_indicator = models.BooleanField(default=True)
 
-    # Duplicates of names for system group; TODO: Clean this up.
-    ADMINISTRATORS_GROUP_NAME = "role:administrators"
-
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
@@ -793,8 +819,18 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name=ADMINISTRATORS_GROUP_NAME,
+            default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="create_multiuse_invite_group_id",
+        ),
+        can_access_all_users_group=GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="can_access_all_users_group_id",
+            allowed_system_groups=[SystemGroups.EVERYONE],
         ),
     )
 
@@ -1644,11 +1680,13 @@ class UserBaseSettings(models.Model):
     enable_online_push_notifications = models.BooleanField(default=True)
 
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
-    DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
-    DESKTOP_ICON_COUNT_DISPLAY_NONE = 3
+    DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION_FOLLOWED_TOPIC = 2
+    DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION = 3
+    DESKTOP_ICON_COUNT_DISPLAY_NONE = 4
     DESKTOP_ICON_COUNT_DISPLAY_CHOICES = [
         DESKTOP_ICON_COUNT_DISPLAY_MESSAGES,
-        DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE,
+        DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION,
+        DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION_FOLLOWED_TOPIC,
         DESKTOP_ICON_COUNT_DISPLAY_NONE,
     ]
     desktop_icon_count_display = models.PositiveSmallIntegerField(
@@ -1883,6 +1921,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     # Foreign key to the Recipient object for PERSONAL type messages to this user.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
+    INACCESSIBLE_USER_NAME = gettext_lazy("Unknown user")
     # The user's name.  We prefer the model of a full_name
     # over first+last because cultures vary on how many
     # names one has, whether the family name is first or last, etc.
@@ -2316,12 +2355,12 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     objects: CTEManager = CTEManager()
     name = models.CharField(max_length=MAX_NAME_LENGTH)
     direct_members = models.ManyToManyField(
-        UserProfile, through="UserGroupMembership", related_name="direct_groups"
+        UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
     direct_subgroups = models.ManyToManyField(
         "self",
         symmetrical=False,
-        through="GroupGroupMembership",
+        through="zerver.GroupGroupMembership",
         through_fields=("supergroup", "subgroup"),
         related_name="direct_supergroups",
     )
@@ -2331,38 +2370,28 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
 
     can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
 
-    # Names for system groups.
-    FULL_MEMBERS_GROUP_NAME = "role:fullmembers"
-    EVERYONE_ON_INTERNET_GROUP_NAME = "role:internet"
-    OWNERS_GROUP_NAME = "role:owners"
-    ADMINISTRATORS_GROUP_NAME = "role:administrators"
-    MODERATORS_GROUP_NAME = "role:moderators"
-    MEMBERS_GROUP_NAME = "role:members"
-    EVERYONE_GROUP_NAME = "role:everyone"
-    NOBODY_GROUP_NAME = "role:nobody"
-
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
     # members and spectators.
     SYSTEM_USER_GROUP_ROLE_MAP = {
         UserProfile.ROLE_REALM_OWNER: {
-            "name": OWNERS_GROUP_NAME,
+            "name": SystemGroups.OWNERS,
             "description": "Owners of this organization",
         },
         UserProfile.ROLE_REALM_ADMINISTRATOR: {
-            "name": ADMINISTRATORS_GROUP_NAME,
+            "name": SystemGroups.ADMINISTRATORS,
             "description": "Administrators of this organization, including owners",
         },
         UserProfile.ROLE_MODERATOR: {
-            "name": MODERATORS_GROUP_NAME,
+            "name": SystemGroups.MODERATORS,
             "description": "Moderators of this organization, including administrators",
         },
         UserProfile.ROLE_MEMBER: {
-            "name": MEMBERS_GROUP_NAME,
+            "name": SystemGroups.MEMBERS,
             "description": "Members of this organization, not including guests",
         },
         UserProfile.ROLE_GUEST: {
-            "name": EVERYONE_GROUP_NAME,
+            "name": SystemGroups.EVERYONE,
             "description": "Everyone in this organization, including guests",
         },
     }
@@ -2374,8 +2403,8 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
-            default_group_name=EVERYONE_GROUP_NAME,
-            default_for_system_groups=NOBODY_GROUP_NAME,
+            default_group_name=SystemGroups.EVERYONE,
+            default_for_system_groups=SystemGroups.NOBODY,
             id_field_name="can_mention_group_id",
         ),
     }
@@ -2434,6 +2463,10 @@ class PreregistrationRealm(models.Model):
         default=Realm.ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
     )
+    default_language = models.CharField(
+        default="en",
+        max_length=MAX_LANGUAGE_ID_LENGTH,
+    )
     string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
     email = models.EmailField()
 
@@ -2470,7 +2503,7 @@ class PreregistrationUser(models.Model):
     full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated = models.BooleanField(default=False)
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
-    streams = models.ManyToManyField("Stream")
+    streams = models.ManyToManyField("zerver.Stream")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)
     # Indicates whether the user needs a password.  Users who were
@@ -2540,7 +2573,7 @@ def filter_to_valid_prereg_users(
 
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    streams = models.ManyToManyField("Stream")
+    streams = models.ManyToManyField("zerver.Stream")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
 
@@ -2736,7 +2769,7 @@ class Stream(models.Model):
             allow_owners_group=False,
             allow_nobody_group=False,
             allow_everyone_group=True,
-            default_group_name=UserGroup.ADMINISTRATORS_GROUP_NAME,
+            default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="can_remove_subscribers_group_id",
         ),
     }
@@ -3473,10 +3506,11 @@ class AbstractUserMessage(models.Model):
         "starred",
         "collapsed",
         "mentioned",
-        "wildcard_mentioned",
-        # These next 4 flags are from features that have since been removed.
-        "summarize_in_home",
-        "summarize_in_stream",
+        "stream_wildcard_mentioned",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
+        # These next 2 flags are from features that have since been removed.
+        # We've cleared these 2 flags in migration 0486.
         "force_expand",
         "force_collapse",
         # Whether the message contains any of the user's alert words.
@@ -3503,13 +3537,13 @@ class AbstractUserMessage(models.Model):
         # These flags are bookkeeping and don't make sense to edit.
         "has_alert_word",
         "mentioned",
-        "wildcard_mentioned",
+        "stream_wildcard_mentioned",
+        "topic_wildcard_mentioned",
+        "group_mentioned",
         "historical",
         # Unused flags can't be edited.
         "force_expand",
         "force_collapse",
-        "summarize_in_home",
-        "summarize_in_stream",
     }
     flags: BitHandler = BitField(flags=ALL_FLAGS, default=0)
 
@@ -3602,8 +3636,19 @@ class UserMessage(AbstractUserMessage):
                 "user_profile",
                 "message",
                 condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
-                | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
+                | Q(flags__andnz=AbstractUserMessage.flags.stream_wildcard_mentioned.mask),
                 name="zerver_usermessage_wildcard_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.mentioned.mask
+                    | AbstractUserMessage.flags.stream_wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.topic_wildcard_mentioned.mask
+                    | AbstractUserMessage.flags.group_mentioned.mask
+                ),
+                name="zerver_usermessage_any_mentioned_message_id",
             ),
             models.Index(
                 "user_profile",
@@ -3639,6 +3684,20 @@ class UserMessage(AbstractUserMessage):
         messages as read).
         """
         return UserMessage.objects.select_for_update().order_by("message_id")
+
+    @staticmethod
+    def has_any_mentions(user_profile_id: int, message_id: int) -> bool:
+        # The query uses the 'zerver_usermessage_any_mentioned_message_id' index.
+        return UserMessage.objects.filter(
+            Q(
+                flags__andnz=UserMessage.flags.mentioned.mask
+                | UserMessage.flags.stream_wildcard_mentioned.mask
+                | UserMessage.flags.topic_wildcard_mentioned.mask
+                | UserMessage.flags.group_mentioned.mask
+            ),
+            user_profile_id=user_profile_id,
+            message_id=message_id,
+        ).exists()
 
 
 def get_usermessage_by_message_id(
@@ -3735,7 +3794,7 @@ class Attachment(AbstractAttachment):
 
     # This is only present for Attachment and not ArchiveAttachment.
     # because ScheduledMessage is not subject to archiving.
-    scheduled_messages = models.ManyToManyField("ScheduledMessage")
+    scheduled_messages = models.ManyToManyField("zerver.ScheduledMessage")
 
     def is_claimed(self) -> bool:
         return self.messages.exists() or self.scheduled_messages.exists()
@@ -3997,7 +4056,9 @@ class Subscription(models.Model):
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
-    return UserProfile.objects.select_related("realm", "bot_owner").get(id=user_profile_id)
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -4013,7 +4074,9 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
     try:
-        return UserProfile.objects.select_related("realm", "bot_owner").get(api_key=api_key)
+        return UserProfile.objects.select_related(
+            "realm", "realm__can_access_all_users_group", "bot_owner"
+        ).get(api_key=api_key)
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
         # use case here is that broken API clients may
@@ -4037,9 +4100,9 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS security model.  Use get_user in
     those code paths.
     """
-    return UserProfile.objects.select_related("realm", "bot_owner").get(
-        delivery_email__iexact=email.strip(), realm=realm
-    )
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(delivery_email__iexact=email.strip(), realm=realm)
 
 
 def get_users_by_delivery_email(emails: Set[str], realm: Realm) -> QuerySet[UserProfile]:
@@ -4074,9 +4137,9 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS.  In those code paths, use
     get_user_by_delivery_email.
     """
-    return UserProfile.objects.select_related("realm", "bot_owner").get(
-        email__iexact=email.strip(), realm=realm
-    )
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(email__iexact=email.strip(), realm=realm)
 
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
@@ -4089,7 +4152,9 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
 
 
 def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related("realm", "bot_owner").get(id=uid, realm=realm)
+    return UserProfile.objects.select_related(
+        "realm", "realm__can_access_all_users_group", "bot_owner"
+    ).get(id=uid, realm=realm)
 
 
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
@@ -4137,7 +4202,7 @@ def get_user_by_id_in_realm_including_cross_realm(
 
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
-def get_realm_user_dicts(realm_id: int) -> List[Dict[str, Any]]:
+def get_realm_user_dicts(realm_id: int) -> List[RawUserDict]:
     return list(
         UserProfile.objects.filter(
             realm_id=realm_id,
@@ -4228,10 +4293,6 @@ def get_huddle_hash(id_list: List[int]) -> str:
     return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
-def huddle_hash_cache_key(huddle_hash: str) -> str:
-    return f"huddle_by_hash:{huddle_hash}"
-
-
 def get_or_create_huddle(id_list: List[int]) -> Huddle:
     """
     Takes a list of user IDs and returns the Huddle object for the
@@ -4239,13 +4300,6 @@ def get_or_create_huddle(id_list: List[int]) -> Huddle:
     yet exist, it will be transparently created.
     """
     huddle_hash = get_huddle_hash(id_list)
-    return get_or_create_huddle_backend(huddle_hash, id_list)
-
-
-@cache_with_key(
-    lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600 * 24 * 7
-)
-def get_or_create_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
     with transaction.atomic():
         (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
         if created:
@@ -4389,7 +4443,7 @@ class DefaultStreamGroup(models.Model):
 
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    streams = models.ManyToManyField("Stream")
+    streams = models.ManyToManyField("zerver.Stream")
     description = models.CharField(max_length=1024, default="")
 
     class Meta:
@@ -4754,9 +4808,18 @@ class AbstractRealmAuditLog(models.Model):
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
     # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
-    REMOTE_SERVER_CREATED = 10215
-    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
     REMOTE_SERVER_DEACTIVATED = 10201
+    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
+    REMOTE_SERVER_DISCOUNT_CHANGED = 10209
+    REMOTE_SERVER_SPONSORSHIP_APPROVED = 10210
+    REMOTE_SERVER_BILLING_METHOD_CHANGED = 10211
+    REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
+    REMOTE_SERVER_CREATED = 10215
+
+    # This value is for RemoteRealmAuditLog entries tracking changes to the
+    # RemoteRealm model resulting from modified realm information sent to us
+    # via send_analytics_to_push_bouncer.
+    REMOTE_REALM_VALUE_UPDATED = 20001
 
     event_type = models.PositiveSmallIntegerField()
 

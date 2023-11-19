@@ -23,7 +23,7 @@ export type ProfileData = {
 
 export type User = {
     user_id: number;
-    delivery_email?: string | null;
+    delivery_email: string | null;
     email: string;
     full_name: string;
     date_joined: string;

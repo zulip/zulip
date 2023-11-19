@@ -10,10 +10,13 @@ from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
     Realm,
     RealmAuditLog,
+    Stream,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -169,44 +172,56 @@ def access_user_group_for_setting(
     user_profile: UserProfile,
     *,
     setting_name: str,
-    require_system_group: bool = False,
-    allow_internet_group: bool = False,
-    allow_owners_group: bool = False,
-    allow_nobody_group: bool = True,
-    allow_everyone_group: bool = True,
+    permission_configuration: GroupPermissionSetting,
 ) -> UserGroup:
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
 
-    if require_system_group and not user_group.is_system_group:
+    if permission_configuration.require_system_group and not user_group.is_system_group:
         raise JsonableError(
             _("'{setting_name}' must be a system user group.").format(setting_name=setting_name)
         )
 
-    if not allow_internet_group and user_group.name == UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME:
+    if (
+        not permission_configuration.allow_internet_group
+        and user_group.name == SystemGroups.EVERYONE_ON_INTERNET
+    ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:internet' group.").format(
                 setting_name=setting_name
             )
         )
 
-    if not allow_owners_group and user_group.name == UserGroup.OWNERS_GROUP_NAME:
+    if not permission_configuration.allow_owners_group and user_group.name == SystemGroups.OWNERS:
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
                 setting_name=setting_name
             )
         )
 
-    if not allow_nobody_group and user_group.name == UserGroup.NOBODY_GROUP_NAME:
+    if not permission_configuration.allow_nobody_group and user_group.name == SystemGroups.NOBODY:
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:nobody' group.").format(
                 setting_name=setting_name
             )
         )
 
-    if not allow_everyone_group and user_group.name == UserGroup.EVERYONE_GROUP_NAME:
+    if (
+        not permission_configuration.allow_everyone_group
+        and user_group.name == SystemGroups.EVERYONE
+    ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:everyone' group.").format(
                 setting_name=setting_name
+            )
+        )
+
+    if (
+        permission_configuration.allowed_system_groups
+        and user_group.name not in permission_configuration.allowed_system_groups
+    ):
+        raise JsonableError(
+            _("'{setting_name}' setting cannot be set to '{group_name}' group.").format(
+                setting_name=setting_name, group_name=user_group.name
             )
         )
 
@@ -427,21 +442,21 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         role_system_groups_dict[role] = user_group
 
     full_members_system_group = UserGroup(
-        name=UserGroup.FULL_MEMBERS_GROUP_NAME,
+        name=SystemGroups.FULL_MEMBERS,
         description="Members of this organization, not including new accounts and guests",
         realm=realm,
         is_system_group=True,
         can_mention_group_id=initial_group_setting_value,
     )
     everyone_on_internet_system_group = UserGroup(
-        name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
+        name=SystemGroups.EVERYONE_ON_INTERNET,
         description="Everyone on the Internet",
         realm=realm,
         is_system_group=True,
         can_mention_group_id=initial_group_setting_value,
     )
     nobody_system_group = UserGroup(
-        name=UserGroup.NOBODY_GROUP_NAME,
+        name=SystemGroups.NOBODY,
         description="Nobody",
         realm=realm,
         is_system_group=True,
@@ -536,3 +551,23 @@ def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
         name=system_user_group_name, realm=user_profile.realm, is_system_group=True
     )
     return system_user_group
+
+
+def get_server_supported_permission_settings() -> ServerSupportedPermissionSettings:
+    realm_permission_group_settings: Dict[str, GroupPermissionSetting] = {}
+    for permission_name, permission_config in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        realm_permission_group_settings[permission_name] = permission_config
+
+    stream_permission_group_settings: Dict[str, GroupPermissionSetting] = {}
+    for permission_name, permission_config in Stream.stream_permission_group_settings.items():
+        stream_permission_group_settings[permission_name] = permission_config
+
+    group_permission_settings: Dict[str, GroupPermissionSetting] = {}
+    for permission_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+        group_permission_settings[permission_name] = permission_config
+
+    return ServerSupportedPermissionSettings(
+        realm=realm_permission_group_settings,
+        stream=stream_permission_group_settings,
+        group=group_permission_settings,
+    )

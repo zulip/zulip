@@ -25,6 +25,7 @@
             <h3>{{ remote_server.hostname }}</h3>
             <b>Contact email</b>: {{ remote_server.contact_email }}<br />
             <b>Last updated</b>: {{ remote_server.last_updated|timesince }} ago<br />
+            <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
         </div>
         {% endfor %}
     </div>

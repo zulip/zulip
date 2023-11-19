@@ -47,6 +47,7 @@ from zerver.decorator import (
     require_realm_admin,
 )
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import (
     JsonableError,
     OrganizationOwnerRequiredError,
@@ -375,9 +376,9 @@ def update_stream_backend(
     if stream_post_policy is not None:
         do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
 
-    for setting_name, permissions_configuration in Stream.stream_permission_group_settings.items():
+    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         request_settings_dict = locals()
-        setting_group_id_name = permissions_configuration.id_field_name
+        setting_group_id_name = permission_configuration.id_field_name
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
@@ -394,11 +395,7 @@ def update_stream_backend(
                 user_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permissions_configuration.require_system_group,
-                allow_internet_group=permissions_configuration.allow_internet_group,
-                allow_owners_group=permissions_configuration.allow_owners_group,
-                allow_nobody_group=permissions_configuration.allow_nobody_group,
-                allow_everyone_group=permissions_configuration.allow_everyone_group,
+                permission_configuration=permission_configuration,
             )
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile
@@ -578,12 +575,14 @@ def add_subscriptions_backend(
     color_map = {}
 
     if can_remove_subscribers_group_id is not None:
+        permission_configuration = Stream.stream_permission_group_settings[
+            "can_remove_subscribers_group"
+        ]
         can_remove_subscribers_group = access_user_group_for_setting(
             can_remove_subscribers_group_id,
             user_profile,
             setting_name="can_remove_subscribers_group",
-            require_system_group=True,
-            allow_nobody_group=False,
+            permission_configuration=permission_configuration,
         )
     else:
         can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
@@ -1087,3 +1086,18 @@ def update_subscription_properties_backend(
         )
 
     return json_success(request)
+
+
+@has_request_variables
+def get_stream_email_address(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ("stream", converter=to_non_negative_int, path_only=True),
+) -> HttpResponse:
+    (stream, sub) = access_stream_by_id(
+        user_profile,
+        stream_id,
+    )
+    stream_email = encode_email_address(stream, show_sender=True)
+
+    return json_success(request, data={"email": stream_email})

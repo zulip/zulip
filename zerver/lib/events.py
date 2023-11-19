@@ -47,16 +47,23 @@ from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.streams import do_get_streams, get_web_public_streams
-from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
+from zerver.lib.subscription_info import (
+    build_unsubscribed_sub_from_stream_dict,
+    gather_subscriptions_helper,
+    get_web_public_subs,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.user_groups import user_groups_in_realm_serialized
+from zerver.lib.user_groups import (
+    get_server_supported_permission_settings,
+    user_groups_in_realm_serialized,
+)
 from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
-    get_raw_user_data,
+    get_users_for_api,
     is_administrator_role,
     max_message_id_for_user,
 )
@@ -67,7 +74,9 @@ from zerver.models import (
     Draft,
     Realm,
     RealmUserDefault,
+    Recipient,
     Stream,
+    Subscription,
     UserProfile,
     UserStatus,
     UserTopic,
@@ -254,9 +263,9 @@ def fetch_initial_state_data(
 
         for (
             setting_name,
-            permissions_configuration,
+            permission_configuration,
         ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-            state["realm_" + setting_name] = getattr(realm, permissions_configuration.id_field_name)
+            state["realm_" + setting_name] = getattr(realm, permission_configuration.id_field_name)
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -382,6 +391,8 @@ def fetch_initial_state_data(
         state[
             "server_typing_started_wait_period_milliseconds"
         ] = settings.TYPING_STARTED_WAIT_PERIOD_MILLISECONDS
+
+        state["server_supported_permission_settings"] = get_server_supported_permission_settings()
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
@@ -452,7 +463,7 @@ def fetch_initial_state_data(
             default_language=spectator_requested_language,
         )
     if want("realm_user"):
-        state["raw_users"] = get_raw_user_data(
+        state["raw_users"] = get_users_for_api(
             realm,
             user_profile,
             client_gravatar=client_gravatar,
@@ -860,13 +871,6 @@ def apply_event(
             if not person["is_bot"]:
                 person["profile_data"] = {}
             state["raw_users"][person_user_id] = person
-        elif event["op"] == "remove":
-            state["raw_users"][person_user_id]["is_active"] = False
-            if include_subscribers:
-                for sub in state["subscriptions"]:
-                    sub["subscribers"] = [
-                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
-                    ]
         elif event["op"] == "update":
             is_me = person_user_id == user_profile.id
 
@@ -975,16 +979,17 @@ def apply_event(
 
                 if "new_email" in person:
                     p["email"] = person["new_email"]
+
+                if "is_active" in person and not person["is_active"] and include_subscribers:
+                    for sub in state["subscriptions"]:
+                        sub["subscribers"] = [
+                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
         if event["op"] == "add":
             state["realm_bots"].append(event["bot"])
-        elif event["op"] == "remove":
-            user_id = event["bot"]["user_id"]
-            for bot in state["realm_bots"]:
-                if bot["user_id"] == user_id:
-                    bot["is_active"] = False
         elif event["op"] == "delete":
             state["realm_bots"] = [
                 item for item in state["realm_bots"] if item["user_id"] != event["bot"]["user_id"]
@@ -1006,11 +1011,37 @@ def apply_event(
                 if include_subscribers:
                     stream_data["subscribers"] = []
 
-                # Add stream to never_subscribed (if not invite_only)
-                state["never_subscribed"].append(stream_data)
+                # Here we need to query the database to check whether the
+                # user was previously subscribed. If they were, we need to
+                # include the stream in the unsubscribed list after adding
+                # personal subscription metadata (such as configured stream
+                # color; most of the other personal setting have no effect
+                # when not subscribed).
+                unsubscribed_stream_sub = Subscription.objects.filter(
+                    user_profile=user_profile,
+                    recipient__type_id=stream["stream_id"],
+                    recipient__type=Recipient.STREAM,
+                ).values(
+                    *Subscription.API_FIELDS,
+                    "recipient_id",
+                    "active",
+                )
+
+                if len(unsubscribed_stream_sub) == 1:
+                    unsubscribed_stream_dict = build_unsubscribed_sub_from_stream_dict(
+                        user_profile, unsubscribed_stream_sub[0], stream_data
+                    )
+                    if include_subscribers:
+                        unsubscribed_stream_dict["subscribers"] = []
+                    state["unsubscribed"].append(unsubscribed_stream_dict)
+                else:
+                    assert len(unsubscribed_stream_sub) == 0
+                    state["never_subscribed"].append(stream_data)
+
                 if "streams" in state:
                     state["streams"].append(stream)
 
+            state["unsubscribed"].sort(key=lambda elt: elt["name"])
             state["never_subscribed"].sort(key=lambda elt: elt["name"])
             if "streams" in state:
                 state["streams"].sort(key=lambda elt: elt["name"])
@@ -1021,6 +1052,13 @@ def apply_event(
                 state["streams"] = [
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
+
+            state["unsubscribed"] = [
+                stream
+                for stream in state["unsubscribed"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
             state["never_subscribed"] = [
                 stream
                 for stream in state["never_subscribed"]

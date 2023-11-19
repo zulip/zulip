@@ -21,7 +21,7 @@
         "name": null,
         "phone": null
       },
-      "calculated_statement_descriptor": "ZULIP STANDARD",
+      "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
       "captured": true,
       "created": 1000000000,
       "currency": "usd",
@@ -30,6 +30,7 @@
       "destination": null,
       "dispute": null,
       "disputed": false,
+      "failure_balance_transaction": null,
       "failure_code": null,
       "failure_message": null,
       "fraud_details": {},
@@ -62,9 +63,10 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000002",
-      "payment_method": "pm_1K2ObHHSaWXyvFpK8W8qDeEO",
+      "payment_method": "pm_1OAbhRDEQaroqDjsm5LHZfsl",
       "payment_method_details": {
         "card": {
+          "amount_authorized": 184000,
           "brand": "visa",
           "checks": {
             "address_line1_check": null,
@@ -72,13 +74,30 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 3,
-          "exp_year": 2033,
+          "exp_month": 11,
+          "exp_year": 2024,
+          "extended_authorization": {
+            "status": "disabled"
+          },
           "fingerprint": "NORMALIZED000002",
           "funding": "credit",
+          "incremental_authorization": {
+            "status": "unavailable"
+          },
           "installments": null,
           "last4": "4242",
+          "mandate": null,
+          "multicapture": {
+            "status": "unavailable"
+          },
           "network": "visa",
+          "network_token": {
+            "used": false
+          },
+          "overcapture": {
+            "maximum_amount_capturable": 184000,
+            "status": "unavailable"
+          },
           "three_d_secure": null,
           "wallet": null
         },
@@ -86,7 +105,7 @@
       },
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000002/rcpt_NORMALIZED000000000000000000001",
+      "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNajtKoGMgYPxikw_zY6LBY61FgNdUSIb96JcfePc_Zy0ufAjhMwJn1U8D9KcoQgc64j8UXZlQg3yLA2",
       "refunded": false,
       "refunds": {
         "data": [],
@@ -126,7 +145,7 @@
         "name": null,
         "phone": null
       },
-      "calculated_statement_descriptor": "ZULIP STANDARD",
+      "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
       "captured": false,
       "created": 1000000000,
       "currency": "usd",
@@ -135,6 +154,7 @@
       "destination": null,
       "dispute": null,
       "disputed": false,
+      "failure_balance_transaction": null,
       "failure_code": "card_declined",
       "failure_message": "Your card was declined.",
       "fraud_details": {},
@@ -167,9 +187,10 @@
       },
       "paid": false,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1K2Ob7HSaWXyvFpKia7kC5ud",
+      "payment_method": "pm_1OAbhGDEQaroqDjs4Izpyl7P",
       "payment_method_details": {
         "card": {
+          "amount_authorized": null,
           "brand": "visa",
           "checks": {
             "address_line1_check": null,
@@ -177,13 +198,30 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 3,
-          "exp_year": 2033,
+          "exp_month": 11,
+          "exp_year": 2024,
+          "extended_authorization": {
+            "status": "disabled"
+          },
           "fingerprint": "NORMALIZED000001",
           "funding": "credit",
+          "incremental_authorization": {
+            "status": "unavailable"
+          },
           "installments": null,
           "last4": "0341",
+          "mandate": null,
+          "multicapture": {
+            "status": "unavailable"
+          },
           "network": "visa",
+          "network_token": {
+            "used": false
+          },
+          "overcapture": {
+            "maximum_amount_capturable": 48000,
+            "status": "unavailable"
+          },
           "three_d_secure": null,
           "wallet": null
         },

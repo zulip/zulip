@@ -95,7 +95,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.types import Validator
 from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.users import get_all_api_keys, get_api_key, get_raw_user_data
+from zerver.lib.users import get_all_api_keys, get_api_key, get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -4985,7 +4985,8 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
         self.remove_ldap_user_attr("hamlet", "department")
 
-        # Test wrong configuration
+        # Test a realm that's not configured in the setting. Such a realm should not be affected,
+        # and just allow normal ldap login.
         with override_settings(
             AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={"not_zulip": [{"department": "zulip"}]}
         ):
@@ -4993,7 +4994,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_error(result, "Your username or password is incorrect", 401)
+            self.assert_json_success(result)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
@@ -7219,7 +7220,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
         self.realm = get_realm("zulip")
         self.user_profile = get_user_by_delivery_email(self.email, self.realm)
         self.api_key = get_api_key(self.user_profile)
-        self.raw_user_data = get_raw_user_data(
+        self.raw_user_data = get_users_for_api(
             self.user_profile.realm,
             self.user_profile,
             target_user=self.user_profile,

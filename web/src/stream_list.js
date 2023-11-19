@@ -817,7 +817,7 @@ export function set_event_handlers({on_stream_click}) {
         const scroll_position = $(
             "#left_sidebar_scroll_container .simplebar-content-wrapper",
         ).scrollTop();
-        const pm_list_height = $("#private_messages_list").height();
+        const pm_list_height = $("#direct-messages-list").height();
         if (scroll_position > pm_list_height) {
             $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
             $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
@@ -874,16 +874,6 @@ export function searching() {
     return $(".stream-list-filter").expectOne().is(":focus");
 }
 
-export function escape_search() {
-    const $filter = $(".stream-list-filter").expectOne();
-    if ($filter.val() === "") {
-        clear_and_hide_search();
-        return;
-    }
-    $filter.val("");
-    update_streams_for_search();
-}
-
 export function clear_search(e) {
     e.stopPropagation();
     const $filter = $(".stream-list-filter").expectOne();
@@ -897,11 +887,13 @@ export function clear_search(e) {
 }
 
 export function show_search_section() {
+    $("#streams_header").addClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().removeClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
 
 export function hide_search_section() {
+    $("#streams_header").removeClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().addClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
@@ -926,7 +918,7 @@ export function initiate_search() {
 }
 
 export function clear_and_hide_search() {
-    const $filter = $(".stream-list-filter");
+    const $filter = $(".stream-list-filter").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
         update_streams_for_search();

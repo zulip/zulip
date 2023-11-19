@@ -27,11 +27,7 @@ organization](/help/deactivate-your-organization) instead).
 
 1. Click **Save changes**. The new permissions will take effect immediately.
 
-!!! tip ""
-
-    You can also access the **Manage user** tab by clicking the **pencil and
-    paper** (<i class="fa fa-edit"></i>) icon at the top of the [user
-    profile](/help/view-someones-profile).
+{!manage-user-tab-tip.md!}
 
 {tab|via-organization-settings}
 

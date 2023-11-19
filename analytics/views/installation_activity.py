@@ -1,9 +1,5 @@
-import itertools
-import time
 from collections import defaultdict
-from contextlib import suppress
-from datetime import timedelta
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 from django.conf import settings
 from django.db import connection
@@ -26,13 +22,12 @@ from analytics.views.activity_common import (
 from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
-from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Realm, UserActivityInterval, get_org_type_display_name
+from zerver.models import Realm, get_org_type_display_name
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import (
+    from corporate.lib.analytics import (
         estimate_annual_recurring_revenue_by_realm,
-        get_realms_to_default_discount_dict,
+        get_realms_with_default_discount_dict,
     )
 
 
@@ -92,7 +87,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
     return result
 
 
-def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
+def realm_summary_table() -> str:
     now = timezone_now()
 
     query = SQL(
@@ -203,7 +198,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     total_arr = 0
     if settings.BILLING_ENABLED:
         estimated_arrs = estimate_annual_recurring_revenue_by_realm()
-        realms_to_default_discount = get_realms_to_default_discount_dict()
+        realms_with_default_discount = get_realms_with_default_discount_dict()
 
         for row in rows:
             row["plan_type_string"] = get_plan_name(row["plan_type"])
@@ -214,14 +209,14 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 row["arr"] = estimated_arrs[string_id]
 
             if row["plan_type"] in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
-                row["effective_rate"] = 100 - int(realms_to_default_discount.get(string_id, 0))
+                row["effective_rate"] = 100 - int(realms_with_default_discount.get(string_id, 0))
             elif row["plan_type"] == Realm.PLAN_TYPE_STANDARD_FREE:
                 row["effective_rate"] = 0
             elif (
                 row["plan_type"] == Realm.PLAN_TYPE_LIMITED
-                and string_id in realms_to_default_discount
+                and string_id in realms_with_default_discount
             ):
-                row["effective_rate"] = 100 - int(realms_to_default_discount[string_id])
+                row["effective_rate"] = 100 - int(realms_with_default_discount[string_id])
             else:
                 row["effective_rate"] = ""
 
@@ -229,17 +224,6 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     for row in rows:
         row["org_type_string"] = get_org_type_display_name(row["org_type"])
-
-    # augment data with realm_minutes
-    total_hours = 0.0
-    for row in rows:
-        string_id = row["string_id"]
-        minutes = realm_minutes.get(string_id, 0.0)
-        hours = minutes / 60.0
-        total_hours += hours
-        row["hours"] = str(int(hours))
-        with suppress(Exception):
-            row["hours_per_user"] = "{:.1f}".format(hours / row["dau_count"])
 
     # formatting
     for row in rows:
@@ -275,7 +259,6 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
-        hours=int(total_hours),
         wau_count=total_wau_count,
     )
 
@@ -293,79 +276,16 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     return content
 
 
-def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
-    day_end = timestamp_to_datetime(time.time())
-    day_start = day_end - timedelta(hours=24)
-
-    output = Markup()
-    output += "Per-user online duration for the last 24 hours:\n"
-    total_duration = timedelta(0)
-
-    all_intervals = (
-        UserActivityInterval.objects.filter(
-            end__gte=day_start,
-            start__lte=day_end,
-        )
-        .select_related(
-            "user_profile",
-            "user_profile__realm",
-        )
-        .only(
-            "start",
-            "end",
-            "user_profile__delivery_email",
-            "user_profile__realm__string_id",
-        )
-        .order_by(
-            "user_profile__realm__string_id",
-            "user_profile__delivery_email",
-        )
-    )
-
-    by_string_id = lambda row: row.user_profile.realm.string_id
-    by_email = lambda row: row.user_profile.delivery_email
-
-    realm_minutes = {}
-
-    for string_id, realm_intervals in itertools.groupby(all_intervals, by_string_id):
-        realm_duration = timedelta(0)
-        output += Markup("<hr>") + f"{string_id}\n"
-        for email, intervals in itertools.groupby(realm_intervals, by_email):
-            duration = timedelta(0)
-            for interval in intervals:
-                start = max(day_start, interval.start)
-                end = min(day_end, interval.end)
-                duration += end - start
-
-            total_duration += duration
-            realm_duration += duration
-            output += f"  {email:<37}{duration}\n"
-
-        realm_minutes[string_id] = realm_duration.total_seconds() / 60
-
-    output += f"\nTotal duration:                      {total_duration}\n"
-    output += f"\nTotal duration in minutes:           {total_duration.total_seconds() / 60.}\n"
-    output += f"Total duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}"
-    content = Markup("<pre>{}</pre>").format(output)
-    return content, realm_minutes
-
-
 @require_server_admin
 @has_request_variables
 def get_installation_activity(request: HttpRequest) -> HttpResponse:
-    duration_content, realm_minutes = user_activity_intervals()
-    counts_content: str = realm_summary_table(realm_minutes)
-    data = [
-        ("Counts", counts_content),
-        ("Durations", duration_content),
-    ]
-
-    title = "Activity"
+    content: str = realm_summary_table()
+    title = "Installation activity"
 
     return render(
         request,
-        "analytics/activity.html",
-        context=dict(data=data, title=title, is_home=True),
+        "analytics/activity_details_template.html",
+        context=dict(data=content, title=title, is_home=True),
     )
 
 
