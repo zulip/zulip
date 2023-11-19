@@ -6,6 +6,7 @@ const MockDate = require("mockdate");
 
 const {set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const blueslip = require("./lib/zblueslip");
 
 let time = 0;
 let checker;
@@ -58,6 +59,20 @@ run_test("basics", () => {
     advance_secs(21);
     watchdog.check_for_unsuspend();
     assert.equal(num_times_called_back, 1);
+
+    // Error while executing callback
+    num_times_called_back = 0;
+    advance_secs(21);
+    watchdog.on_unsuspend(() => {
+        num_times_called_back += 1;
+        throw new Error("Some error while executing");
+    });
+    blueslip.expect(
+        "error",
+        `Error while executing callback 'Anonymous function' from unsuspend_callbacks.`,
+    );
+    watchdog.check_for_unsuspend();
+    assert.equal(num_times_called_back, 2);
 });
 
 run_test("suspect_offline", () => {
