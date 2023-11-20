@@ -63,6 +63,14 @@
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css"
     ],
+    "plans-page": [
+        "./src/bundles/hello",
+        "./src/portico/landing-page",
+        "./src/portico/header",
+        "./styles/portico/hello.css",
+        "./styles/portico/navbar.css",
+        "./styles/portico/footer.css"
+    ],
     "integrations": [
         "./src/bundles/portico",
         "./src/portico/integrations",
