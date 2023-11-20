@@ -1,5 +1,5 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/base.html" %}
+{% set entrypoint = "landing-page-hello" %}
 
 {% set PAGE_TITLE = "Zulip plans and pricing" %}
 
@@ -11,12 +11,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {% endblock %}
 
-{% block portico_content %}
+{% block content %}
 
-{% include 'zerver/gradients.html' %}
 {% include 'zerver/landing_nav.html' %}
 
-<div class="portico-landing plans">
+<div class="portico-pricing plans">
     <div class="main">
         {% include "corporate/pricing_model.html" %}
         <div class="plans_top_faq plans_faq_questions">
@@ -53,13 +52,13 @@
 
     <div class="discounts-section">
         <header>
-            <h1>Discounts?</h1>
+            <h2>Discounts?</h2>
             <p>
                 We sponsor hundreds of worthy organizations
             </p>
         </header>
         <div class="discounted-community-plan">
-            <h2>Community plan</h2>
+            <h3>Community plan</h3>
             <ul>
                 <li>
                     <a href="/for/open-source/">Open source projects</a>
@@ -73,7 +72,7 @@
             </ul>
         </div>
         <div class="discounted-business-plan">
-            <h2>Business plan with 85% discount</h2>
+            <h3>Business plan with 85% discount</h3>
             <ul>
                 <li>
                     <a href="/for/education/">Education</a> (online or in-person)

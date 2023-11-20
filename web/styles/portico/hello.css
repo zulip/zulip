@@ -1060,3 +1060,41 @@ ul {
         }
     }
 }
+
+.portico-pricing {
+    .padded-content {
+        padding: 102px 0;
+    }
+
+    h1 {
+        font-weight: 500;
+        font-size: 58px;
+        line-height: 110%;
+        text-align: center;
+        margin: 10px;
+    }
+
+    .h1-subheader {
+        font-family: var(--font-ops);
+        font-weight: 400;
+        font-size: 20px;
+        line-height: 145%;
+        text-align: center;
+        font-feature-settings:
+            "pnum" on,
+            "lnum" on;
+        color: hsl(0deg 0% 100%);
+        max-width: 560px;
+        margin: 0 auto;
+
+        & a {
+            border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
+            transition: border 0.4s ease-out;
+
+            &:hover {
+                border-bottom: 2px solid hsl(0deg 0% 100%);
+                transition: none;
+            }
+        }
+    }
+}
