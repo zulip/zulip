@@ -26,6 +26,9 @@ export type RealmDefaultSettings = {
     enable_followed_topic_push_notifications: boolean;
     enable_followed_topic_email_notifications: boolean;
     enable_followed_topic_wildcard_mentions_notify: boolean;
+    enable_dm_reactions_notifications: boolean;
+    enable_followed_topics_reactions_notifications: boolean;
+    enable_unmuted_topic_reactions_notifications: boolean;
     enter_sends: boolean;
     web_escape_navigates_to_home_view: boolean;
     fluid_layout_width: boolean;

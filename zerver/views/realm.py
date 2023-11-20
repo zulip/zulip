@@ -520,6 +520,15 @@ def update_realm_user_settings_defaults(
     enable_followed_topic_push_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),
+    enable_dm_reactions_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topics_reactions_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_unmuted_topic_reactions_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     enable_followed_topic_audible_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),

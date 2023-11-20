@@ -558,6 +558,15 @@ export const display_settings_labels = {
 };
 
 export const notification_settings_labels = {
+    enable_dm_reactions_notifications: $t({
+        defaultMessage: "Notify me about reactions to my DMs",
+    }),
+    enable_followed_topics_reactions_notifications: $t({
+        defaultMessage: "Notify me about reactions to my message in topics I'm following",
+    }),
+    enable_unmuted_topic_reactions_notifications: $t({
+        defaultMessage: "Notify me about reactions to my message in topics I haven't muted",
+    }),
     enable_online_push_notifications: $t({
         defaultMessage: "Send mobile notifications even if I'm online",
     }),
@@ -690,6 +699,12 @@ export const followed_topic_notification_settings: (keyof FollowedTopicNotificat
     "enable_followed_topic_wildcard_mentions_notify",
 ];
 
+const reaction_notification_settings = [
+    "enable_dm_reactions_notifications",
+    "enable_followed_topics_reactions_notifications",
+    "enable_unmuted_topic_reactions_notifications",
+];
+
 const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
 const mobile_notification_settings = ["enable_online_push_notifications"];
@@ -747,6 +762,7 @@ const email_notification_settings = [
 ];
 
 const other_notification_settings = [
+    ...reaction_notification_settings,
     ...desktop_notification_settings,
     "desktop_icon_count_display",
     ...mobile_notification_settings,
@@ -807,6 +823,7 @@ export function get_notifications_table_row_data(
 export type AllNotifications = {
     general_settings: {label: string; notification_settings: NotificationSettingCheckbox[]}[];
     settings: {
+        reaction_notification_settings: string[];
         desktop_notification_settings: string[];
         mobile_notification_settings: string[];
         email_message_notification_settings: string[];
@@ -843,6 +860,7 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
         },
     ],
     settings: {
+        reaction_notification_settings,
         desktop_notification_settings,
         mobile_notification_settings,
         email_message_notification_settings,

@@ -9,6 +9,7 @@ import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import {received_reaction} from "./reaction_notifications";
 import * as spectators from "./spectators";
 import {user_settings} from "./user_settings";
 
@@ -263,6 +264,10 @@ export function add_reaction(event) {
         update_user_fields(clean_reaction_object, message.clean_reactions);
         view.insert_new_reaction(clean_reaction_object, message, user_id);
     }
+    message.current_user_reacted = user_id === page_params.user_id;
+    message.reaction_label = clean_reaction_object.label;
+    message.reacted_by = people.get_full_name(user_id);
+    received_reaction(message);
 }
 
 view.update_existing_reaction = function (clean_reaction_object, message, acting_user_id) {

@@ -16,6 +16,11 @@ import * as user_topics from "./user_topics";
 
 function get_notification_content(message) {
     let content;
+
+    if (message.reaction_label) {
+        return message.reaction_label;
+    }
+
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
     ui_util.replace_emoji_with_text($content);
@@ -95,6 +100,10 @@ function remove_sender_from_list_of_recipients(message) {
 function get_notification_title(message, content, msg_count) {
     let title = message.sender_full_name;
     let other_recipients;
+
+    if (message.reacted_by) {
+        title = message.reacted_by;
+    }
 
     if (msg_count > 1) {
         title = msg_count + " messages from " + title;

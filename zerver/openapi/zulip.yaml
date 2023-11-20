@@ -10364,6 +10364,27 @@ paths:
           schema:
             type: boolean
           example: false
+        - name: enable_dm_reactions_notifications
+          in: query
+          description: |
+            Enable push notifications for direct messages reaction.
+          schema:
+            type: boolean
+          example: false
+        - name: enable_followed_topics_reactions_notifications
+          in: query
+          description: |
+            Enable push notifications for messages reaction sent to followed topics.
+          schema:
+            type: boolean
+          example: false
+        - name: enable_unmuted_topic_reactions_notifications
+          in: query
+          description: |
+            Enable push notifications for messages reaction sent to muted topics.
+          schema:
+            type: boolean
+          example: false
         - name: enable_followed_topic_audible_notifications
           in: query
           description: |
@@ -12667,6 +12688,18 @@ paths:
                               Enable audible desktop notifications for messages sent to followed topics.
 
                               **Changes**: New in Zulip 8.0 (feature level 189).
+                          enable_dm_reactions_notifications:
+                            type: boolean
+                            description: |
+                              Enable push notifications for direct messages reaction.
+                          enable_followed_topics_reactions_notifications:
+                            type: boolean
+                            description: |
+                              Enable push notifications for messages reaction sent to followed topics.
+                          enable_unmuted_topic_reactions_notifications:
+                            type: boolean
+                            description: |
+                              Enable push notifications for messages reaction sent to muted topics.
                           email_notifications_batching_period_seconds:
                             type: integer
                             description: |
@@ -14875,6 +14908,18 @@ paths:
                               Enable audible desktop notifications for messages sent to followed topics.
 
                               **Changes**: New in Zulip 8.0 (feature level 189).
+                          enable_dm_reactions_notifications:
+                            type: boolean
+                            description: |
+                              Enable push notifications for direct messages reaction.
+                          enable_followed_topics_reactions_notifications:
+                            type: boolean
+                            description: |
+                              Enable push notifications for messages reaction sent to followed topics.
+                          enable_unmuted_topic_reactions_notifications:
+                            type: boolean
+                            description: |
+                              Enable push notifications for messages reaction sent to muted topics.
                           enable_digest_emails:
                             type: boolean
                             description: |
@@ -16118,6 +16163,27 @@ paths:
             Enable audible desktop notifications for messages sent to followed topics.
 
             **Changes**: New in Zulip 8.0 (feature level 189).
+          schema:
+            type: boolean
+          example: false
+        - name: enable_dm_reactions_notifications
+          in: query
+          description: |
+            Enable push notifications for direct messages reaction.
+          schema:
+            type: boolean
+          example: false
+        - name: enable_followed_topics_reactions_notifications
+          in: query
+          description: |
+            Enable push notifications for messages reaction sent to followed topics.
+          schema:
+            type: boolean
+          example: false
+        - name: enable_unmuted_topic_reactions_notifications
+          in: query
+          description: |
+            Enable push notifications for messages reaction sent to muted topics.
           schema:
             type: boolean
           example: false

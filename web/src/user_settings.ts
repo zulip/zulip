@@ -58,6 +58,9 @@ export type UserSettings = (StreamNotificationSettings &
     send_read_receipts: boolean;
     automatically_follow_topics_policy: number;
     automatically_unmute_topics_in_muted_streams_policy: number;
+    enable_dm_reactions_notifications: boolean;
+    enable_followed_topics_reactions_notifications: boolean;
+    enable_unmuted_topic_reactions_notifications: boolean;
 };
 
 export let user_settings: UserSettings;

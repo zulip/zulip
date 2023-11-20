@@ -80,6 +80,23 @@
         </div>
     </div>
 
+    <div
+      class="reaction_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header inline-block">
+            <h3>{{t "Reaction notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="reaction-notifications-settings" show_only_indicator=(not
+              for_realm_settings) }}
+        </div>
+
+        {{#each notification_settings.reaction_notification_settings}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../settings_object this)
+              label=(lookup ../settings_label this)
+              prefix=../prefix}}
+        {{/each}}
+    </div>
+
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
