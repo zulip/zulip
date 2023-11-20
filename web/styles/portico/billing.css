@@ -458,6 +458,7 @@ input[name="licenses"] {
     bottom: 15px;
 }
 
+#billing-page #org-billing-frequency-confirm-button,
 #billing-page .license-count-update-button {
     margin: 0 auto;
     font-size: 1.1rem;
@@ -465,8 +466,17 @@ input[name="licenses"] {
     width: 100px;
 }
 
+#billing-page #org-billing-frequency-confirm-button.hide,
 #billing-page .license-count-update-button.hide {
     display: none;
+}
+
+#billing-page #org-billing-frequency-confirm-button {
+    margin: 0;
+    display: block;
+    position: absolute;
+    top: 25px;
+    right: 0;
 }
 
 #billing-page #current-license-change-form,
@@ -535,6 +545,7 @@ input[name="licenses"] {
     }
 }
 
+#billing-page-details .billing-frequency-message.not-editable-realm-field,
 #upgrade-page-details #onboarding-free-trial-not-ready,
 #onboarding-go-to-org .not-editable-realm-field,
 #free-trial-top-banner .not-editable-realm-field,
@@ -592,6 +603,13 @@ input[name="licenses"] {
     margin-right: 0;
 }
 
+#billing-page-details
+    .org-billing-frequency-wrapper.input-box
+    .billing-frequency-select {
+    width: 150px;
+}
+
+#billing-page-details .org-billing-frequency-wrapper.billing-page-field,
 #upgrade-page-details .upgrade-add-card-container {
     text-align: left;
 }

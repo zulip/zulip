@@ -132,6 +132,7 @@ def update_plan(
                 CustomerPlan.ACTIVE,
                 CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
                 CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+                CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE,
                 CustomerPlan.ENDED,
             ]
         ),
@@ -160,14 +161,23 @@ def update_plan(
 
     if status is not None:
         if status == CustomerPlan.ACTIVE:
-            assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+            assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
             do_change_plan_status(plan, status)
         elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
-            assert plan.status == CustomerPlan.ACTIVE
+            assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
             downgrade_at_the_end_of_billing_cycle(user.realm)
         elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
             assert plan.billing_schedule == CustomerPlan.MONTHLY
-            assert plan.status == CustomerPlan.ACTIVE
+            assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
+            # Customer needs to switch to an active plan first to avoid unexpected behavior.
+            assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+            assert plan.fixed_price is None
+            do_change_plan_status(plan, status)
+        elif status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE:
+            assert plan.billing_schedule == CustomerPlan.ANNUAL
+            assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
+            # Customer needs to switch to an active plan first to avoid unexpected behavior.
+            assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
             assert plan.fixed_price is None
             do_change_plan_status(plan, status)
         elif status == CustomerPlan.ENDED:
