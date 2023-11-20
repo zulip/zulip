@@ -461,6 +461,7 @@ class AuditLogEventType(Enum):
     SPONSORSHIP_PENDING_STATUS_CHANGED = 6
     BILLING_METHOD_CHANGED = 7
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 8
+    CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 9
 
 
 class BillingSessionAuditLogEventError(Exception):
@@ -1015,6 +1016,54 @@ class BillingSession(ABC):
                 )
                 return new_plan, new_plan_ledger_entry
 
+            if plan.status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE:
+                if plan.fixed_price is not None:  # nocoverage
+                    raise BillingError("Customer is already on monthly fixed plan.")
+
+                plan.status = CustomerPlan.ENDED
+                plan.save(update_fields=["status"])
+
+                discount = plan.customer.default_discount or plan.discount
+                _, _, _, price_per_license = compute_plan_parameters(
+                    tier=plan.tier,
+                    automanage_licenses=plan.automanage_licenses,
+                    billing_schedule=CustomerPlan.MONTHLY,
+                    discount=plan.discount,
+                )
+
+                new_plan = CustomerPlan.objects.create(
+                    customer=plan.customer,
+                    billing_schedule=CustomerPlan.MONTHLY,
+                    automanage_licenses=plan.automanage_licenses,
+                    charge_automatically=plan.charge_automatically,
+                    price_per_license=price_per_license,
+                    discount=discount,
+                    billing_cycle_anchor=next_billing_cycle,
+                    tier=plan.tier,
+                    status=CustomerPlan.ACTIVE,
+                    next_invoice_date=next_billing_cycle,
+                    invoiced_through=None,
+                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                )
+
+                new_plan_ledger_entry = LicenseLedger.objects.create(
+                    plan=new_plan,
+                    is_renewal=True,
+                    event_time=next_billing_cycle,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+
+                self.write_to_audit_log(
+                    event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN,
+                    event_time=event_time,
+                    extra_data={
+                        "annual_plan_id": plan.id,
+                        "monthly_plan_id": new_plan.id,
+                    },
+                )
+                return new_plan, new_plan_ledger_entry
+
             if plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
                 standard_plan = plan
                 standard_plan.end_date = next_billing_cycle
@@ -1079,8 +1128,12 @@ class BillingSession(ABC):
                 switch_to_annual_at_end_of_cycle = (
                     plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
                 )
+                switch_to_monthly_at_end_of_cycle = (
+                    plan.status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE
+                )
                 licenses = last_ledger_entry.licenses
                 licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+                assert licenses_at_next_renewal is not None
                 seat_count = self.current_count_for_billed_licenses()
 
                 # Should do this in JavaScript, using the user's time zone
@@ -1092,7 +1145,30 @@ class BillingSession(ABC):
                         dt=start_of_next_billing_cycle(plan, now)
                     )
 
-                renewal_cents = renewal_amount(plan, now, last_ledger_entry)
+                billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+
+                if switch_to_annual_at_end_of_cycle:
+                    annual_price_per_license = get_price_per_license(
+                        plan.tier, CustomerPlan.ANNUAL, customer.default_discount
+                    )
+                    renewal_cents = annual_price_per_license * licenses_at_next_renewal
+                    price_per_license = format_money(annual_price_per_license / 12)
+                elif switch_to_monthly_at_end_of_cycle:
+                    monthly_price_per_license = get_price_per_license(
+                        plan.tier, CustomerPlan.MONTHLY, customer.default_discount
+                    )
+                    renewal_cents = monthly_price_per_license * licenses_at_next_renewal
+                    price_per_license = format_money(monthly_price_per_license)
+                else:
+                    renewal_cents = renewal_amount(plan, now, last_ledger_entry)
+
+                    if plan.price_per_license is None:
+                        price_per_license = ""
+                    elif billing_frequency == "Annual":
+                        price_per_license = format_money(plan.price_per_license / 12)
+                    else:
+                        price_per_license = format_money(plan.price_per_license)
+
                 charge_automatically = plan.charge_automatically
                 assert customer.stripe_customer_id is not None  # for mypy
                 stripe_customer = stripe_get_customer(customer.stripe_customer_id)
@@ -1107,15 +1183,6 @@ class BillingSession(ABC):
                     else None
                 )
 
-                billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
-
-                if plan.price_per_license is None:
-                    price_per_license = ""
-                elif billing_frequency == "Annual":
-                    price_per_license = format_money(plan.price_per_license / 12)
-                else:
-                    price_per_license = format_money(plan.price_per_license)
-
                 context = {
                     "plan_name": plan.name,
                     "has_active_plan": True,
@@ -1123,6 +1190,7 @@ class BillingSession(ABC):
                     "downgrade_at_end_of_cycle": downgrade_at_end_of_cycle,
                     "automanage_licenses": plan.automanage_licenses,
                     "switch_to_annual_at_end_of_cycle": switch_to_annual_at_end_of_cycle,
+                    "switch_to_monthly_at_end_of_cycle": switch_to_monthly_at_end_of_cycle,
                     "licenses": licenses,
                     "licenses_at_next_renewal": licenses_at_next_renewal,
                     "seat_count": seat_count,
@@ -1245,6 +1313,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.REALM_BILLING_METHOD_CHANGED
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
             return RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
+            return RealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         else:
             raise BillingSessionAuditLogEventError(event_type)
 

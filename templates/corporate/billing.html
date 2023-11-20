@@ -29,15 +29,44 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="input-box billing-page-field no-validation">
-                    <label for="org-billing-frequency" class="inline-block label-title">Billing frequency</label>
-                    <div id="org-billing-frequency" class="not-editable-realm-field">
+                <div class="input-box billing-page-field no-validation org-billing-frequency-wrapper"
+                  data-current-billing-frequency="{{ billing_frequency }}"
+                  {%if free_trial %}data-free-trial="true"{% endif %}
+                  {%if downgrade_at_end_of_cycle %}data-downgrade-eoc="true"{% endif %}
+                  {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
+                  {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
+                    <label for="org-billing-frequency">Billing frequency</label>
+                    {% if free_trial or downgrade_at_end_of_cycle %}
+                    <div class="not-editable-realm-field">
                         {{ billing_frequency }}
-                        {% if switch_to_annual_at_end_of_cycle %}
-                        <br />
-                        Your plan will switch to annual billing on {{ renewal_date }}.
-                        {% endif %}
                     </div>
+                    {% elif switch_to_annual_at_end_of_cycle %}
+                    <select name="schedule" id="org-billing-frequency-annual" class="billing-frequency-select">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Annual" selected>Annual</option>
+                    </select>
+                    <div class="billing-frequency-message not-editable-realm-field">
+                        Your plan will switch to annual billing on {{ renewal_date }}.
+                    </div>
+                    {%elif switch_to_monthly_at_end_of_cycle %}
+                    <select name="schedule" id="org-billing-frequency-monthly" class="billing-frequency-select">
+                        <option value="Monthly" selected>Monthly</option>
+                        <option value="Annual">Annual</option>
+                    </select>
+                    <div class="billing-frequency-message not-editable-realm-field">
+                        Your plan will switch to monthly billing on {{ renewal_date }}.
+                    </div>
+                    {% else %}
+                    <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select">
+                        <option value="Monthly" {% if billing_frequency == "Monthly" %}selected{% endif %}>Monthly</option>
+                        <option value="Annual" {% if billing_frequency == "Annual" %}selected{% endif %}>Annual</option>
+                    </select>
+                    {% endif %}
+                    <button id="org-billing-frequency-confirm-button" class="hide">
+                        <span class="billing-button-text">Update</span>
+                        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                    </button>
+                    <div id="org-billing-frequency-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
                 {% if automanage_licenses %}
                 <div class="input-box billing-page-field no-validation">
@@ -130,7 +159,14 @@
                             <br />
                             Expected charge: <strong>${{ renewal_amount }}</strong>
                             {% if not fixed_price %}
-                                (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x {{ "1 month" if billing_frequency == "Monthly" else "12 months" }})
+                                (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
+                                {% if switch_to_annual_at_end_of_cycle %}
+                                    12 months
+                                {% elif switch_to_monthly_at_end_of_cycle %}
+                                    1 month
+                                {% else %}
+                                    {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
+                                {% endif %})
                             {% endif %}
                             {% endif %}
                         {% else %}
