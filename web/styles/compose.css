@@ -1015,16 +1015,35 @@ textarea.new_message_textarea,
 
         .compose_control_menu {
             opacity: 1;
+            display: none;
+
+            /* The media queries below handle the hiding and showing of the
+            vdot menu icon, so that it is hidden when all compose buttons fit
+            in the main row below the compose box. So, these are opposite of
+            the media queries for .show_popover_buttons. */
+
+            @media (((width < $mc_min) and (width >= $md_min)) or (width < $sm_min)) {
+                display: flex;
+            }
+
+            &.show-lg {
+                @media (width < $lg_min) {
+                    display: flex;
+                }
+            }
         }
     }
 
-    .hide-sm,
     .hide-lg {
         display: flex;
         align-items: center;
         gap: 4px;
         padding: 0;
         margin: 0;
+
+        @media (width < $lg_min) {
+            display: none;
+        }
     }
 
     .divider {
@@ -1045,6 +1064,23 @@ textarea.new_message_textarea,
     .compose_help_button {
         font-size: 20px;
         line-height: 17px;
+    }
+
+    .show_popover_buttons {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* We use this class for the div containing those compose buttons,
+        which we hide and show in a popover instead when they no longer fit
+        in a single row (and related divider elements). The media queries
+        below handle the hiding and showing of the buttons from the main row
+        of compose buttons below the compose box. */
+
+        @media (((width < $mc_min) and (width >= $md_min)) or (width < $sm_min)) {
+            display: none;
+        }
     }
 }
 
