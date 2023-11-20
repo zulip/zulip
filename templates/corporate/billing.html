@@ -20,8 +20,8 @@
         <div class="white-box">
             <div id="billing-page-details">
                 <div class="input-box billing-page-field no-validation">
-                    <label for="org_current_plan" class="inline-block label-title">Your plan</label>
-                    <div id="org_current_plan" class="not-editable-realm-field">
+                    <label for="org-current-plan" class="inline-block label-title">Your plan</label>
+                    <div id="org-current-plan" class="not-editable-realm-field">
                         {% if free_trial %}
                         {{ plan_name }} Free Trial
                         {% else %}
@@ -30,8 +30,8 @@
                     </div>
                 </div>
                 <div class="input-box billing-page-field no-validation">
-                    <label for="org_billing_freqency" class="inline-block label-title">Billing frequency</label>
-                    <div id="org_billing_freqency" class="not-editable-realm-field">
+                    <label for="org-billing-frequency" class="inline-block label-title">Billing frequency</label>
+                    <div id="org-billing-frequency" class="not-editable-realm-field">
                         {{ billing_frequency }}
                         {% if switch_to_annual_at_end_of_cycle %}
                         <br />
