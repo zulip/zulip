@@ -1,20 +1,27 @@
 <div class="pricing-model">
     <div class="padded-content">
-        <h1>Get started today.</h1>
-
+        <h1>Pricing</h1>
+        <p>
+            You can <a href="https://zulip.com/help/zulip-cloud-or-self-hosting">move
+                freely</a> between <a href="/plans/">Zulip Cloud</a>
+            hosting and your own servers with our high quality <a
+                href="/help/export-your-organization">export</a> and
+            <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html">import
+            </a> tools.
+        </p>
         <div class="pricing-container">
             <div class="block">
                 <div class="plan-title responsive-title">
-                    Zulip Cloud
+                    <h2>Cloud</h2>
+                    <p>
+                        Always updated to the latest version of Zulip.
+                        Simple managed solution, with no setup or maintenance.
+                    </p>
                 </div>
 
                 <div class="price-box" tabindex="-1">
                     <div class="text-content">
                         <h2>Free</h2>
-                        <div class="description">
-                            Best for light use.
-                        </div>
-                        <hr />
                         <ul class="feature-list">
                             <li>10,000 messages of search history</li>
                             <li>File storage up to 5 GB total</li>
@@ -27,9 +34,6 @@
                     <div class="bottom">
                         <div class="text-content">
                             {% if not realm or realm.plan_type == realm.PLAN_TYPE_SELF_HOSTED %}
-                            <div class="pricing-details">
-                                Free cloud service
-                            </div>
                             <a href="/new/" class="button green">
                                 Create organization
                             </a>
@@ -46,10 +50,6 @@
                 <div class="price-box" tabindex="-1">
                     <div class="text-content">
                         <h2>Standard</h2>
-                        <div class="description">
-                            Your team's collaboration hub.
-                        </div>
-                        <hr />
                         <ul class="feature-list">
                             <li>Unlimited search history</li>
                             <li>File storage up to 10 GB per user</li>
@@ -62,13 +62,12 @@
                     <div class="bottom">
                         <div class="text-content">
                             <div class="standard-price-box">
-                                <div class="price">6<span class="price-cents">.67</span></div>
+                                <div class="price"><span class="currency-symbol">$</span>6.67</div>
                                 <div class="details">
-                                    <span class="pricing-period">per user per month</span>
-                                    <br />
-                                    with annual billing discount
-                                    <br />
-                                    $8/month billed monthly
+                                    <p>
+                                        /user/month billed annually or
+                                        <b>$8</b> billed monthly
+                                    </p>
                                 </div>
                             </div>
                             {% if not realm %}
@@ -107,16 +106,16 @@
 
             <div class="block">
                 <div class="plan-title responsive-title">
-                    Self-host Zulip
+                    <h2>Self-hosted</h2>
+                    <p>
+                        Retain full control over your data and simplify compliance by self-hosting.
+                        Customize Zulip for all your needs.
+                    </p>
                 </div>
 
                 <div class="price-box" tabindex="-1">
                     <div class="text-content">
                         <h2>Free</h2>
-                        <div class="description">
-                            Retain full control over your data.
-                        </div>
-                        <hr />
                         <ul class="feature-list">
                             <li>All Zulip Cloud features included</li>
                             <li>Friendly community support</li>
@@ -129,10 +128,6 @@
                     </div>
                     <div class="bottom">
                         <div class="text-content">
-                            <div class="pricing-details multi-line">
-                                Zulip is 100% free and open
-                                source, with no proprietary version. <br />
-                            </div>
                             <a href="/self-hosting/" class="button green">
                                 Self-host Zulip
                             </a>
@@ -143,10 +138,6 @@
                 <div class="price-box" tabindex="-1">
                     <div class="text-content">
                         <h2>Enterprise</h2>
-                        <div class="description">
-                            For mission-critical installations.
-                        </div>
-                        <hr />
                         <ul class="feature-list">
                             <li>All Free features included</li>
                             <li>Professional support with SLAs</li>
@@ -158,9 +149,6 @@
                     </div>
                     <div class="bottom">
                         <div class="text-content">
-                            <div class="pricing-details multi-line">
-                                Affordable pricing depends on support required.
-                            </div>
                             <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="no-action button green">
                                 Contact sales
                             </a>
