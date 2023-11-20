@@ -853,15 +853,6 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        .subscribe-button.unsubscribed {
-            color: hsl(156deg 39% 54%);
-            border-color: hsl(156deg 39% 77%);
-
-            &:active {
-                background-color: hsl(156deg 39% 54% / 20%);
-            }
-        }
-
         .large-icon {
             display: inline-block;
             vertical-align: top;
