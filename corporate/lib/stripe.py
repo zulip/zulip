@@ -1138,7 +1138,7 @@ class BillingSession(ABC):
                 }
         return context
 
-    def do_initial_upgrade(
+    def get_initial_upgrade_context(
         self, initial_upgrade_request: InitialUpgradeRequest
     ) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
         customer = self.get_customer()

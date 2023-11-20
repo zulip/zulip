@@ -96,7 +96,7 @@ def initial_upgrade(
         manual_license_management=manual_license_management,
     )
     billing_session = RealmBillingSession(user)
-    redirect_url, context = billing_session.do_initial_upgrade(initial_upgrade_request)
+    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
 
     if redirect_url:
         return HttpResponseRedirect(redirect_url)
