@@ -1062,9 +1062,7 @@ ul {
 }
 
 .portico-pricing {
-    .padded-content {
-        padding: 102px 0;
-    }
+    padding: 102px 0 58px;
 
     h1 {
         font-weight: 500;
@@ -1096,5 +1094,48 @@ ul {
                 transition: none;
             }
         }
+    }
+
+    .pricing-container {
+        display: grid;
+        grid-template:
+            ".       cloud-title  self-hosted-title .      " auto
+            "pricing pricing      pricing           pricing" auto / 30px minmax(
+                0,
+                1fr
+            ) minmax(0, 1fr) 30px;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    .cloud-plan-title {
+        grid-area: cloud-title;
+    }
+
+    .cloud-plan-pricing {
+        grid-area: pricing;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        grid-template-rows: auto;
+    }
+
+    .self-hosted-plan-title {
+        grid-area: self-hosted-title;
+    }
+
+    .self-hosted-plan-pricing {
+        grid-area: pricing;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        grid-template-rows: auto;
+    }
+
+    .additional-pricing-information {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto;
+        column-gap: 32px;
+        max-width: 912px;
+        margin: 0 auto;
     }
 }

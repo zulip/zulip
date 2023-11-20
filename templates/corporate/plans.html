@@ -18,12 +18,56 @@
 <div class="portico-pricing plans">
     <div class="main">
         {% include "corporate/pricing_model.html" %}
-        <div class="plans_top_faq plans_faq_questions">
-            <h2>Other questions?</h2>
-            <p>
-                See our <a href="/help/zulip-cloud-billing">billing help page</a> for
-                additional details
-            </p>
+    </div>
+
+    <div class="additional-pricing-information">
+        <div class="discounts-section">
+            <header>
+                <h2>Discounts?</h2>
+                <p>
+                    We sponsor hundreds of worthy organizations
+                </p>
+            </header>
+            <div class="discounted-community-plan">
+                <h3>Community plan</h3>
+                <ul>
+                    <li>
+                        <a href="/for/open-source/">Open source projects</a>
+                    </li>
+                    <li>
+                        <a href="/for/research/">Research groups or departments</a>
+                    </li>
+                    <li>
+                        <a href="/for/events/">Academic conferences and most other non-profit events</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="discounted-business-plan">
+                <h3>Business plan with 85% discount</h3>
+                <ul>
+                    <li>
+                        <a href="/for/education/">Education</a> (online or in-person)
+                    </li>
+                    <li>
+                        <a href="/for/communities/">Non-profits and communities</a>
+                    </li>
+                </ul>
+                <a href="{{ sponsorship_url }}">Request sponsorship</a>
+                <p>
+                    If you don’t have a Zulip account yet, contact us via
+                    <a href="mailto:contact@zulip.com">contact@zulip.com</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <header>
+                <h2>Other questions?</h2>
+                <p>
+                    See our <a href="/help/zulip-cloud-billing">billing help page</a> for
+                    additional details
+                </p>
+            </header>
             <ul>
                 <li>
                     <a href="/help/zulip-cloud-billing#differences-between-zulip-cloud-plans">Differences between Zulip Cloud plans</a>
@@ -49,44 +93,7 @@
             </p>
         </div>
     </div>
-
-    <div class="discounts-section">
-        <header>
-            <h2>Discounts?</h2>
-            <p>
-                We sponsor hundreds of worthy organizations
-            </p>
-        </header>
-        <div class="discounted-community-plan">
-            <h3>Community plan</h3>
-            <ul>
-                <li>
-                    <a href="/for/open-source/">Open source projects</a>
-                </li>
-                <li>
-                    <a href="/for/research/">Research groups or departments</a>
-                </li>
-                <li>
-                    <a href="/for/events/">Academic conferences and most other non-profit events</a>
-                </li>
-            </ul>
-        </div>
-        <div class="discounted-business-plan">
-            <h3>Business plan with 85% discount</h3>
-            <ul>
-                <li>
-                    <a href="/for/education/">Education</a> (online or in-person)
-                </li>
-                <li>
-                    <a href="/for/communities/">Non-profits and communities</a>
-                </li>
-            </ul>
-            <a href="{{ sponsorship_url }}">Request sponsorship</a>
-            <p>
-                If you don’t have a Zulip account yet, contact us via
-                <a href="mailto:contact@zulip.com">contact@zulip.com</a>
-            </p>
-        </div>
-    </div>
 </div>
+
+{% include 'zerver/footer.html' %}
 {% endblock %}
