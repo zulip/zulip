@@ -1593,6 +1593,20 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self.assertEqual(actual_output, expected_output)
 
+    def test_latex_math_formulas_in_email(self) -> None:
+        msg_id = self.send_stream_message(
+            self.example_user("iago"), "Denmark", "Equation: $$d^* = +\\infty$$ is correct."
+        )
+        verify_body_include = ["Equation: <span>$$d^* = +\\infty$$</span> is correct"]
+        email_subject = "#Denmark > test"
+        self._test_cases(
+            msg_id,
+            verify_body_include,
+            email_subject,
+            verify_html_body=True,
+            trigger=NotificationTriggers.STREAM_EMAIL,
+        )
+
     def test_empty_backticks_in_missed_message(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
