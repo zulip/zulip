@@ -1448,10 +1448,7 @@ class StripeTest(StripeTestCase):
         new_seat_count = 23
         # Change the seat count while the user is going through the upgrade flow
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count):
-            with patch(
-                "corporate.views.upgrade.get_latest_seat_count", return_value=self.seat_count
-            ):
-                self.upgrade()
+            self.upgrade()
         customer = Customer.objects.first()
         assert customer is not None
         stripe_customer_id: str = assert_is_not_none(customer.stripe_customer_id)
@@ -1714,8 +1711,7 @@ class StripeTest(StripeTestCase):
 
         # Try again, with a valid card, after they added a few users
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=23):
-            with patch("corporate.views.upgrade.get_latest_seat_count", return_value=23):
-                response = self.upgrade()
+            response = self.upgrade()
         [second_payment_intent, _] = PaymentIntent.objects.all().order_by("-id")
         assert second_payment_intent.stripe_payment_intent_id is not None
         response_dict = self.assert_json_success(response)
