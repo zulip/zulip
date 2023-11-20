@@ -1,18 +1,67 @@
 import _ from "lodash";
 
 import * as channel from "./channel";
+import {localstorage} from "./localstorage";
 import * as starred_messages from "./starred_messages";
 
-export function send_flag_update_for_messages(msg_ids, flag, op) {
-    channel.post({
-        url: "/json/messages/flags",
-        data: {
-            messages: JSON.stringify(msg_ids),
-            flag,
-            op,
-        },
-    });
+export function send_flag_update_for_messages(msg_ids, flag, op, status = "tracked") {
+    channel
+        .post({
+            url: "/json/messages/flags",
+            data: {
+                messages: JSON.stringify(msg_ids),
+                flag,
+                op,
+            },
+        })
+        ?.done(() => {
+            if (status === "untracked" && localstorage.supported()) {
+                const ls = localstorage();
+                const expiry = 604800000;
+                let untracked_flagged_msg = ls.get("untracked_flagged_msg");
+                if (untracked_flagged_msg?.length > 1) {
+                    const untracked_flagged_msg_index = untracked_flagged_msg.indexOf({
+                        msg_ids,
+                        flag,
+                        op,
+                    });
+                    untracked_flagged_msg = untracked_flagged_msg.splice(
+                        untracked_flagged_msg_index,
+                        1,
+                    );
+                    ls.setExpiry(expiry, true).set("untracked_flagged_msg", untracked_flagged_msg);
+                } else {
+                    ls.remove("untracked_flagged_msg");
+                }
+            }
+        })
+        ?.fail(() => {
+            if (status === "tracked" && localstorage.supported()) {
+                const ls = localstorage();
+                //  set expiry of 7 days to the localstorage.
+                const expiry = 604800000;
+                const untracked_flagged_msg = ls.get("untracked_flagged_msg");
+                if (untracked_flagged_msg !== undefined) {
+                    const failed_flag = {msg_ids, flag, op};
+                    untracked_flagged_msg.push(failed_flag);
+                    ls.setExpiry(expiry, true).set("untracked_flagged_msg", untracked_flagged_msg);
+                } else {
+                    ls.setExpiry(expiry, true).set("untracked_flagged_msg", [{msg_ids, flag, op}]);
+                }
+            }
+        });
 }
+
+export function send_flag_update_for_untracked_messages() {
+    const ls = localstorage();
+    const untracked_flagged_msg = ls.get("untracked_flagged_msg");
+    if (untracked_flagged_msg) {
+        for (const message of untracked_flagged_msg) {
+            send_flag_update_for_messages(message.msg_ids, message.flag, message.op, "untracked");
+        }
+    }
+}
+
 export const _unread_batch_size = 1000;
 
 export const send_read = (function () {

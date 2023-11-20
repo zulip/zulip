@@ -59,6 +59,7 @@ import * as markdown_config from "./markdown_config";
 import * as message_actions_popover from "./message_actions_popover";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
+import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
@@ -694,6 +695,7 @@ export function initialize_everything() {
     drafts_overlay_ui.initialize();
     hotspots.initialize();
     typing.initialize();
+    message_flags.send_flag_update_for_untracked_messages();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
