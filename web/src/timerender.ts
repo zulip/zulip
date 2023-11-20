@@ -55,7 +55,12 @@ export function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTi
           };
 
     const weekday_format_options: Intl.DateTimeFormatOptions = {weekday: "long"};
-    const full_format_options: Intl.DateTimeFormatOptions = {dateStyle: "full"};
+    const full_format_options: Intl.DateTimeFormatOptions = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    };
 
     const dayofyear_format_options: Intl.DateTimeFormatOptions = {day: "numeric", month: "short"};
     const dayofyear_year_format_options: Intl.DateTimeFormatOptions = {
