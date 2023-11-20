@@ -32,7 +32,7 @@ messages you receive.
 1. Select a language.
 
 1. Tap the **arrow**
-   (<img src="/static/images/help/mobile-chevron-left.svg" alt="back" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-chevron-left.svg" alt="back" class="help-center-icon"/>)
    in the upper left corner of the app to exit the language selection menu.
 
 {end_tabs}

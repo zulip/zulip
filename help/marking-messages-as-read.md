@@ -91,7 +91,7 @@ stream or topic as read**.
 {tab|mobile}
 
 1. Tap a stream, topic, or the **All messages**
-   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
    tab.
 
 2. Tap **Mark stream as read**, **Mark topic as read**, or **Mark all as read**

@@ -26,7 +26,7 @@
 1. Scroll through the list of streams.
 
 1. Tap the **plus**
-   (<img src="/static/images/help/mobile-plus-icon.svg" alt="plus" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-plus-icon.svg" alt="plus" class="help-center-icon"/>)
    icon to the right of a stream to subscribe to it.
 
 !!! tip ""

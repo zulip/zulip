@@ -41,7 +41,7 @@ and do not appear in your list of streams.
 {tab|mobile}
 
 1. Tap the **Direct messages**
-   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="mobile-icon"/> )
+   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="help-center-icon"/> )
    tab at the bottom of the app.
 
 1. Tap the **New DM** button at the top of the app.
@@ -50,7 +50,7 @@ and do not appear in your list of streams.
    select their name from the list of suggestions.
 
 1. Compose your message, and tap the **send**
-   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="help-center-icon"/>)
    button in the bottom right corner of the app.
 
 !!! tip ""
@@ -90,7 +90,7 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 {tab|mobile}
 
 1. Tap the **Direct messages**
-   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="mobile-icon"/> )
+   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="help-center-icon"/> )
    tab at the bottom of the app.
 
 {end_tabs}
