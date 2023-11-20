@@ -65,9 +65,9 @@ and you can click on a thumbnail to [view the full image](/help/view-and-browse-
 1. Navigate to a stream, topic, or direct message view.
 
 1. Tap the
-   **paperclip** (<img src="/static/images/help/mobile-paperclip-icon.svg" alt="paperclip" class="mobile-icon"/>),
-   **image** (<img src="/static/images/help/mobile-image-icon.svg" alt="image" class="mobile-icon"/>),
-   or **camera** (<img src="/static/images/help/mobile-camera-icon.svg" alt="camera" class="mobile-icon"/>)
+   **paperclip** (<img src="/static/images/help/mobile-paperclip-icon.svg" alt="paperclip" class="help-center-icon"/>),
+   **image** (<img src="/static/images/help/mobile-image-icon.svg" alt="image" class="help-center-icon"/>),
+   or **camera** (<img src="/static/images/help/mobile-camera-icon.svg" alt="camera" class="help-center-icon"/>)
    button at the bottom of the app to select one or more files. Zulip will
    upload the files, and insert named links using
    [Markdown formatting](/help/format-your-message-using-markdown#links):
@@ -90,7 +90,7 @@ You can share files from other apps on Zulip.
 {tab|android}
 
 1. Select one or more files and tap the **Zulip**
-   (<img src="/static/images/logo/zulip-icon-circle.svg" alt="logo" class="mobile-icon"/>)
+   (<img src="/static/images/logo/zulip-icon-circle.svg" alt="logo" class="help-center-icon"/>)
    logo.
 
 1. Select a stream name and topic name, or tap the

@@ -29,7 +29,7 @@
 {tab|mobile}
 
 1. Tap the **Streams**
-   (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="help-center-icon"/>)
    tab at the bottom of the app.
 
 1. Tap on the desired stream.
@@ -40,7 +40,7 @@
    used topics.
 
 1. Compose your message, and tap the **send**
-   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="help-center-icon"/>)
    button in the bottom right corner of the app.
 
 {end_tabs}
