@@ -51,13 +51,11 @@ function handle_session_complete_event(session: StripeSession): void {
     let redirect_to = "";
     switch (session.type) {
         case "card_update_from_billing_page":
-            message =
-                "Your card has been updated. You would be redirected to the billing page soon.";
+            message = "Card successfully updated! Returning to billing…";
             redirect_to = "/billing#payment-method";
             break;
         case "card_update_from_upgrade_page":
-            message =
-                "Your card has been updated. You would be redirected to the upgrade page soon.";
+            message = "Card successfully added! Returning to billing…";
             redirect_to = "/upgrade/";
             break;
     }
