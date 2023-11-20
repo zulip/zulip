@@ -3,9 +3,7 @@
 
 {% set PAGE_TITLE = "Plans and pricing | Zulip" %}
 
-{% set PAGE_DESCRIPTION = "Choose between Zulip Cloud Free and Zulip Cloud
-  Standard, or self-host our open-source software for free. Support contracts
-  available." %}
+{% set PAGE_DESCRIPTION = "Sign up for a managed cloud solution, or self-host our 100\x25 open-source software. Get started for free." %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,40 +18,74 @@
     <div class="main">
         {% include "corporate/pricing_model.html" %}
         <div class="plans_top_faq plans_faq_questions">
+            <h2>Other questions?</h2>
             <p>
-                You can <a href="https://zulip.com/help/zulip-cloud-or-self-hosting">move
-                    freely</a> between <a href="/plans/">Zulip Cloud</a>
-                hosting and your own servers with our high quality <a
-                    href="/help/export-your-organization">export</a> and
-                <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html">import
-                </a> tools.
+                See our <a href="/help/zulip-cloud-billing">billing help page</a> for
+                additional details
             </p>
+            <ul>
+                <li>
+                    <a href="/help/zulip-cloud-billing#differences-between-zulip-cloud-plans">Differences between Zulip Cloud plans</a>
+                </li>
+                <li>
+                    <a href="/help/zulip-cloud-billing#payment-methods">Payment methods</a>
+                </li>
+                <li>
+                    <a href="/help/zulip-cloud-billing#temporary-users-and-guests">Temporary users and guests</a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <a href="/help/migrating-from-other-chat-tools">Migrating from other chat tools</a>
+                </li>
+                <li>
+                    <a href="https://zulip.com/help/trying-out-zulip">Trying out Zulip</a>
+                </li>
+            </ul>
             <p>
-                Questions? See our <a href="/help/zulip-cloud-billing">billing help page</a> for
-                additional details, or contact us at <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
+                If you have any other questions, please don’t hesitate to reach out to
+                <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
             </p>
         </div>
     </div>
 
     <div class="discounts-section">
         <header>
-            <h1>Special Zulip Cloud Standard pricing</h1>
+            <h1>Discounts?</h1>
+            <p>
+                We sponsor hundreds of worthy organizations
+            </p>
         </header>
-        <div class="register-buttons">
-            <a href="/for/open-source/" class="register-now button">Open source <p>Free</p></a>
-            <a href="/for/education/" class="register-now button">Education <p>85%+ OFF</p></a>
-            <a href="/for/research/" class="register-now button">Research <p>Free</p></a>
-            <a href="/for/events/" class="register-now button">Academic conferences<p>Free</p></a>
-            <a href="/for/communities/" class="register-now button">Non-profits and communities <p>85%+ OFF</p></a>
+        <div class="discounted-community-plan">
+            <h2>Community plan</h2>
+            <ul>
+                <li>
+                    <a href="/for/open-source/">Open source projects</a>
+                </li>
+                <li>
+                    <a href="/for/research/">Research groups or departments</a>
+                </li>
+                <li>
+                    <a href="/for/events/">Academic conferences and most other non-profit events</a>
+                </li>
+            </ul>
+        </div>
+        <div class="discounted-business-plan">
+            <h2>Business plan with 85% discount</h2>
+            <ul>
+                <li>
+                    <a href="/for/education/">Education</a> (online or in-person)
+                </li>
+                <li>
+                    <a href="/for/communities/">Non-profits and communities</a>
+                </li>
+            </ul>
+            <a href="{{ sponsorship_url }}">Request sponsorship</a>
+            <p>
+                If you don’t have a Zulip account yet, contact us via
+                <a href="mailto:contact@zulip.com">contact@zulip.com</a>
+            </p>
         </div>
     </div>
-    <div class="plans_faq_questions">
-        <p>
-            Zulip sponsors free Zulip Cloud Standard for hundreds of worthy
-            organizations. <a href="{{ sponsorship_url }}">Request sponsorship</a>.
-        </p>
-    </div>
-    <br />
-    {% include "corporate/compare.html" %}
 </div>
 {% endblock %}
