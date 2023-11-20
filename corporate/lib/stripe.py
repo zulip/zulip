@@ -446,6 +446,12 @@ class UpgradeRequest:
     licenses: Optional[int]
 
 
+@dataclass
+class InitialUpgradeRequest:
+    onboarding: bool
+    manual_license_management: bool
+
+
 class AuditLogEventType(Enum):
     STRIPE_CUSTOMER_CREATED = 1
     STRIPE_CARD_CHANGED = 2
@@ -523,6 +529,14 @@ class BillingSession(ABC):
 
     @abstractmethod
     def approve_sponsorship(self) -> None:
+        pass
+
+    @abstractmethod
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        pass
+
+    @abstractmethod
+    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
         pass
 
     @catch_stripe_errors
@@ -1091,6 +1105,55 @@ class BillingSession(ABC):
                 }
         return context
 
+    def do_initial_upgrade(
+        self, initial_upgrade_request: InitialUpgradeRequest
+    ) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
+        customer = self.get_customer()
+
+        if self.is_sponsored_or_pending(customer):
+            return reverse("sponsorship_request"), None
+
+        onboarding = initial_upgrade_request.onboarding
+        billing_page_url = reverse("billing_home")
+        if customer is not None and (
+            get_current_plan_by_customer(customer) is not None or onboarding
+        ):
+            if onboarding:
+                billing_page_url = f"{billing_page_url}?onboarding=true"
+            return billing_page_url, None
+
+        percent_off = Decimal(0)
+        if customer is not None and customer.default_discount is not None:
+            percent_off = customer.default_discount
+
+        exempt_from_license_number_check = (
+            customer is not None and customer.exempt_from_license_number_check
+        )
+
+        seat_count = self.current_count_for_billed_licenses()
+        signed_seat_count, salt = sign_string(str(seat_count))
+        context: Dict[str, Any] = {
+            "seat_count": seat_count,
+            "signed_seat_count": signed_seat_count,
+            "salt": salt,
+            "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
+            "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+            "exempt_from_license_number_check": exempt_from_license_number_check,
+            "plan": "Zulip Cloud Standard",
+            "free_trial_days": settings.FREE_TRIAL_DAYS,
+            "onboarding": onboarding,
+            "page_params": {
+                "seat_count": seat_count,
+                "annual_price": 8000,
+                "monthly_price": 800,
+                "percent_off": float(percent_off),
+            },
+            "manual_license_management": initial_upgrade_request.manual_license_management,
+        }
+        self.update_context_initial_upgrade(context)
+
+        return None, context
+
 
 class RealmBillingSession(BillingSession):
     def __init__(self, user: Optional[UserProfile] = None, realm: Optional[Realm] = None) -> None:
@@ -1292,6 +1355,28 @@ class RealmBillingSession(BillingSession):
                     end_link="](/help/linking-to-zulip-website)",
                 )
                 internal_send_private_message(notification_bot, user, message)
+
+    @override
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        if (
+            customer is not None and customer.sponsorship_pending
+        ) or self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE:
+            return True
+        return False
+
+    @override
+    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+        assert self.user is not None
+        data = {
+            "realm": self.realm,
+            "email": self.user.delivery_email,
+            "is_demo_organization": self.realm.demo_organization_scheduled_deletion_date
+            is not None,
+        }
+        context.update(data)
+        context["page_params"][
+            "demo_organization_scheduled_deletion_date"
+        ] = self.realm.demo_organization_scheduled_deletion_date
 
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
@@ -1624,6 +1709,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # TODO: Write audit log entry
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
+
+    @override
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        # TBD
+        return False
+
+    @override
+    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+        # TBD
+        pass
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
