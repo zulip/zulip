@@ -33,7 +33,7 @@ formatted, or to copy the Markdown source for a reply.
    menu option for editable messages that you have sent.
 
 1. Click the **Copy and close**
-   ( <img src="/static/images/help/copy_to_clipboard.svg" alt="copy" class="mobile-icon"/>)
+   ( <img src="/static/images/help/copy_to_clipboard.svg" alt="copy" class="help-center-icon"/>)
    widget in the upper right corner of the message.
 
 !!! keyboard_tip ""

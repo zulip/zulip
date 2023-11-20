@@ -24,7 +24,7 @@
 1. Navigate to a stream, topic, or direct message view.
 
 1. Tap the **video camera**
-   (<img src="/static/images/help/mobile-video-icon.svg" alt="video" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-video-icon.svg" alt="video" class="help-center-icon"/>)
    button at the bottom of the app. This will insert a **Click to join video call**
    link into your message.
 
