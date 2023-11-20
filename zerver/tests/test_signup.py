@@ -2042,6 +2042,12 @@ class RealmCreationTest(ZulipTestCase):
                 ["Subdomain reserved. Please choose a different one."], result
             )
 
+        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
+            result = self.client_get("/json/realm/subdomain/zulipselfhosting")
+            self.assert_in_success_response(
+                ["Subdomain reserved. Please choose a different one."], result
+            )
+
         result = self.client_get("/json/realm/subdomain/hufflepuff")
         self.assert_in_success_response(["available"], result)
         self.assert_not_in_success_response(["already in use"], result)
