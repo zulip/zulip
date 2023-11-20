@@ -2628,6 +2628,182 @@ class StripeTest(StripeTestCase):
         for key, value in annual_plan_invoice_item_params.items():
             self.assertEqual(invoice_item[key], value)
 
+    @mock_stripe()
+    def test_switch_from_annual_plan_to_monthly_plan_for_automatic_license_management(
+        self, *mocks: Mock
+    ) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        self.add_card_and_upgrade(user, schedule="annual")
+        annual_plan = get_current_plan_by_realm(user.realm)
+        assert annual_plan is not None
+        self.assertEqual(annual_plan.automanage_licenses, True)
+        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.ANNUAL)
+
+        stripe_customer_id = Customer.objects.get(realm=user.realm).id
+        new_plan = get_current_plan_by_realm(user.realm)
+        assert new_plan is not None
+
+        with self.assertLogs("corporate.stripe", "INFO") as m:
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+                response = self.client_patch(
+                    "/json/billing/plan",
+                    {"status": CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE},
+                )
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE}"
+                self.assertEqual(m.output[0], expected_log)
+                self.assert_json_success(response)
+        annual_plan.refresh_from_db()
+        self.assertEqual(annual_plan.status, CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE)
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            response = self.client_get("/billing/")
+        self.assert_in_success_response(
+            ["Your plan will switch to monthly billing on January 2, 2013"], response
+        )
+
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
+            update_license_ledger_if_needed(user.realm, self.now)
+        self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 2)
+        self.assertEqual(
+            LicenseLedger.objects.order_by("-id")
+            .values_list("licenses", "licenses_at_next_renewal")
+            .first(),
+            (20, 20),
+        )
+
+        # Check that we don't switch to monthly plan at next invoice date (which is used to charge user for
+        # additional licenses) but at the end of current billing cycle.
+        self.assertEqual(annual_plan.next_invoice_date, self.next_month)
+        with patch("corporate.lib.stripe.timezone_now", return_value=annual_plan.next_invoice_date):
+            with patch("corporate.lib.stripe.get_latest_seat_count", return_value=25):
+                assert annual_plan.next_invoice_date is not None
+                update_license_ledger_if_needed(user.realm, annual_plan.next_invoice_date)
+
+        annual_plan.refresh_from_db()
+        self.assertEqual(annual_plan.status, CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE)
+        self.assertEqual(annual_plan.next_invoice_date, self.next_month)
+        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 3)
+
+        invoice_plans_as_needed(self.next_month + timedelta(days=1))
+
+        annual_plan.refresh_from_db()
+        self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 1))
+        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.DONE)
+        self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 3)
+
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        assert customer.stripe_customer_id
+        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
+        [invoice_item1, invoice_item2] = iter(invoice0.lines)
+        annual_plan_invoice_item_params = {
+            "amount": 7322 * 5,
+            "description": "Additional license (Feb 2, 2012 - Jan 2, 2013)",
+            "plan": None,
+            "quantity": 5,
+            "subscription": None,
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.next_month),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+        }
+
+        for key, value in annual_plan_invoice_item_params.items():
+            self.assertEqual(invoice_item1[key], value)
+
+        annual_plan_invoice_item_params = {
+            "amount": 14 * 80 * 1 * 100,
+            "description": "Additional license (Jan 2, 2012 - Jan 2, 2013)",
+            "plan": None,
+            "quantity": 14,
+            "subscription": None,
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+        }
+
+        for key, value in annual_plan_invoice_item_params.items():
+            self.assertEqual(invoice_item2[key], value)
+
+        # Check that we switch to monthly plan at the end of current billing cycle.
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.next_year):
+            with patch("corporate.lib.stripe.get_latest_seat_count", return_value=25):
+                update_license_ledger_if_needed(user.realm, self.next_year)
+        self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 3)
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        annual_plan.refresh_from_db()
+        self.assertEqual(annual_plan.status, CustomerPlan.ENDED)
+        self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 1))
+        monthly_plan = get_current_plan_by_realm(user.realm)
+        assert monthly_plan is not None
+        self.assertEqual(monthly_plan.status, CustomerPlan.ACTIVE)
+        self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.MONTHLY)
+        self.assertEqual(monthly_plan.invoicing_status, CustomerPlan.INITIAL_INVOICE_TO_BE_SENT)
+        self.assertEqual(monthly_plan.billing_cycle_anchor, self.next_year)
+        self.assertEqual(monthly_plan.next_invoice_date, self.next_year)
+        self.assertEqual(monthly_plan.invoiced_through, None)
+        monthly_ledger_entries = LicenseLedger.objects.filter(plan=monthly_plan).order_by("id")
+        self.assert_length(monthly_ledger_entries, 2)
+        self.assertEqual(monthly_ledger_entries[0].is_renewal, True)
+        self.assertEqual(
+            monthly_ledger_entries.values_list("licenses", "licenses_at_next_renewal")[0], (25, 25)
+        )
+        self.assertEqual(monthly_ledger_entries[1].is_renewal, False)
+        self.assertEqual(
+            monthly_ledger_entries.values_list("licenses", "licenses_at_next_renewal")[1], (25, 25)
+        )
+        audit_log = RealmAuditLog.objects.get(
+            event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+        )
+        self.assertEqual(audit_log.realm, user.realm)
+        self.assertEqual(audit_log.extra_data["annual_plan_id"], annual_plan.id)
+        self.assertEqual(audit_log.extra_data["monthly_plan_id"], monthly_plan.id)
+
+        invoice_plans_as_needed(self.next_year)
+
+        monthly_ledger_entries = LicenseLedger.objects.filter(plan=monthly_plan).order_by("id")
+        self.assert_length(monthly_ledger_entries, 2)
+        monthly_plan.refresh_from_db()
+        self.assertEqual(monthly_plan.invoicing_status, CustomerPlan.DONE)
+        self.assertEqual(monthly_plan.invoiced_through, monthly_ledger_entries[1])
+        self.assertEqual(monthly_plan.billing_cycle_anchor, self.next_year)
+        self.assertEqual(monthly_plan.next_invoice_date, add_months(self.next_year, 1))
+        annual_plan.refresh_from_db()
+        self.assertEqual(annual_plan.next_invoice_date, None)
+
+        assert customer.stripe_customer_id
+        [invoice0, invoice1, invoice2] = iter(
+            stripe.Invoice.list(customer=customer.stripe_customer_id)
+        )
+
+        [invoice_item0] = iter(invoice0.lines)
+
+        monthly_plan_invoice_item_params = {
+            "amount": 25 * 8 * 100,
+            "description": "Zulip Cloud Standard - renewal",
+            "plan": None,
+            "quantity": 25,
+            "subscription": None,
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.next_year),
+                "end": datetime_to_timestamp(add_months(self.next_year, 1)),
+            },
+        }
+        for key, value in monthly_plan_invoice_item_params.items():
+            self.assertEqual(invoice_item0[key], value)
+
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            response = self.client_get("/billing/")
+        self.assert_not_in_success_response(
+            ["Your plan will switch to annual billing on February 2, 2012"], response
+        )
+
     def test_reupgrade_after_plan_status_changed_to_downgrade_at_end_of_cycle(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
