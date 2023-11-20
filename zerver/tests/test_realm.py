@@ -75,10 +75,14 @@ class RealmTest(ZulipTestCase):
                 ["INFO:root:Server not yet initialized. Creating the internal realm first."],
             )
 
-    def test_realm_creation_on_social_auth_subdomain_disallowed(self) -> None:
+    def test_realm_creation_on_special_subdomains_disallowed(self) -> None:
         with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
             with self.assertRaises(AssertionError):
                 do_create_realm("zulipauth", "Test Realm")
+
+        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
+            with self.assertRaises(AssertionError):
+                do_create_realm("zulipselfhosting", "Test Realm")
 
     def test_permission_for_education_non_profit_organization(self) -> None:
         realm = do_create_realm(

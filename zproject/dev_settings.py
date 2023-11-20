@@ -204,6 +204,8 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
     }
 }
 
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
+
 # You can uncomment these lines to use the development environment
 # server as a dummy push bouncer for itself, to test functionalities
 # such as register_server or update_analytics_counts management commands

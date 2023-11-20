@@ -444,6 +444,9 @@ ROOT_SUBDOMAIN_ALIASES = ["www"]
 # Whether the root domain is a landing page or can host a realm.
 ROOT_DOMAIN_LANDING_PAGE = False
 
+# Subdomain for serving endpoints to users from self-hosted deployments.
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN: Optional[str] = None
+
 # If using the Zephyr mirroring supervisord configuration, the
 # hostname to connect to in order to transfer credentials from webathena.
 PERSONAL_ZMIRROR_SERVER: Optional[str] = None
