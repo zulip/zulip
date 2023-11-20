@@ -30,6 +30,7 @@ class RemoteZulipServer(models.Model):
     UUID_LENGTH = 36
     API_KEY_LENGTH = 64
     HOSTNAME_MAX_LENGTH = 128
+    VERSION_MAX_LENGTH = 128
 
     # The unique UUID (`zulip_org_id`) and API key (`zulip_org_key`)
     # for this remote server registration.
@@ -42,6 +43,7 @@ class RemoteZulipServer(models.Model):
     hostname = models.CharField(max_length=HOSTNAME_MAX_LENGTH)
     contact_email = models.EmailField(blank=True, null=False)
     last_updated = models.DateTimeField("last updated", auto_now=True)
+    last_version = models.CharField(max_length=VERSION_MAX_LENGTH, null=True)
 
     # Whether the server registration has been deactivated.
     deactivated = models.BooleanField(default=False)

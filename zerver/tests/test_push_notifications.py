@@ -952,9 +952,19 @@ class AnalyticsBouncerTest(BouncerTestCase):
         audit_log = RealmAuditLog.objects.all().order_by("id").last()
         assert audit_log is not None
         audit_log_max_id = audit_log.id
+
+        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        assert remote_server is not None
+        assert remote_server.last_version is None
+
         send_analytics_to_push_bouncer()
         self.assertTrue(responses.assert_call_count(ANALYTICS_STATUS_URL, 1))
+
+        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        assert remote_server.last_version == ZULIP_VERSION
+
         remote_audit_log_count = RemoteRealmAuditLog.objects.count()
+
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
         self.assertEqual(RemoteInstallationCount.objects.count(), 0)
 
