@@ -28,7 +28,9 @@ export function fetch_and_render_message_history(message) {
             let prev_stream_item = null;
 
             const date_time_format = new Intl.DateTimeFormat(user_settings.default_language, {
-                dateStyle: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
             });
             for (const [index, msg] of data.message_history.entries()) {
                 // Format times and dates nicely for display
