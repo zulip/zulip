@@ -166,8 +166,10 @@ def do_create_realm(
     enable_spectator_access: Optional[bool] = None,
     prereg_realm: Optional[PreregistrationRealm] = None,
 ) -> Realm:
-    if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
-        raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
+    if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
+        raise AssertionError(
+            "Creating a realm on SOCIAL_AUTH_SUBDOMAIN or SOCIAL_AUTH_SUBDOMAIN is not allowed!"
+        )
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
     if not server_initialized():

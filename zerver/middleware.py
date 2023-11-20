@@ -549,8 +549,11 @@ class HostDomainMiddleware(MiddlewareMixin):
             return None
 
         subdomain = get_subdomain(request)
-        if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
-            # Realms are not supposed to exist on SOCIAL_AUTH_SUBDOMAIN.
+        if subdomain in [
+            settings.SOCIAL_AUTH_SUBDOMAIN,
+            settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN,
+        ]:
+            # Realms are not supposed to exist on these subdomains.
             return None
 
         request_notes = RequestNotes.get_notes(request)
