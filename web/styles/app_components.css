@@ -28,48 +28,14 @@ kbd {
     user-select: none;
 }
 
-@media (width < $mc_min) {
-    .hide-mc {
-        display: none !important;
-    }
-
-    .show-mc {
-        display: block !important;
-    }
-}
-
-@media (width < $md_min) {
-    .hide-md {
-        display: none !important;
-    }
-
-    .show-md {
-        display: flex !important;
-    }
-}
-
 @media (width < $sm_min) {
     .hide-sm {
         display: none !important;
     }
 
-    .show-sm {
-        display: block !important;
-    }
-
     #settings_page .save-button-controls {
         display: block;
         margin: 10px 0 0;
-    }
-}
-
-@media (width < $lg_min) {
-    .hide-lg {
-        display: none !important;
-    }
-
-    .show-lg {
-        display: block !important;
     }
 }
 

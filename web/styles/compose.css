@@ -975,10 +975,6 @@ textarea.new_message_textarea,
     /* We use the selector in this manner to maintain specificity. */
     .compose_control_button_container .compose_gif_icon {
         font-size: 22px;
-
-        /* Remove top and bottom padding. This is necessary
-         * because `compose_gif_icon` is no longer a flex item.  */
-        padding: 0 5px;
     }
 
     .compose_control_button {
@@ -1015,16 +1011,17 @@ textarea.new_message_textarea,
 
         .compose_control_menu {
             opacity: 1;
-        }
-    }
+            display: none;
 
-    .hide-sm,
-    .hide-lg {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 0;
-        margin: 0;
+            /* The media query below handles the hiding and showing of the
+            vdot menu icon, so that it is hidden when all compose buttons fit
+            in the main row below the compose box. So, this is the same as
+            the media query for .show_popover_buttons. */
+
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb3_min)) {
+                display: flex;
+            }
+        }
     }
 
     .divider {
@@ -1045,6 +1042,22 @@ textarea.new_message_textarea,
     .compose_help_button {
         font-size: 20px;
         line-height: 17px;
+    }
+
+    .show_popover_buttons {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* We use this class for the div containing those compose buttons, which
+        we hide and show in a popover instead when they no longer fit in a
+        single row. The media query below handles the hiding and showing of the
+        buttons from the main row of compose buttons below the compose box. */
+
+        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb3_min)) {
+            display: none;
+        }
     }
 }
 
