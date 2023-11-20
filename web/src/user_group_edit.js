@@ -158,13 +158,13 @@ export function handle_member_edit_event(group_id, user_ids) {
     // update display of check-mark.
     if (is_group_already_present(group)) {
         const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
-        const $sub_unsub_button = row_for_group_id(group_id).find(".sub_unsub_button");
+        const $join_leave_button = row_for_group_id(group_id).find(".join_leave_button");
         if (is_member) {
-            $sub_unsub_button.removeClass("disabled");
-            $sub_unsub_button.addClass("checked");
+            $join_leave_button.removeClass("disabled");
+            $join_leave_button.addClass("checked");
         } else {
-            $sub_unsub_button.removeClass("checked");
-            $sub_unsub_button.addClass("disabled");
+            $join_leave_button.removeClass("checked");
+            $join_leave_button.addClass("disabled");
         }
     }
 
