@@ -558,6 +558,7 @@ function redraw_left_panel(tab_name) {
     groups_list_data.sort(compare_by_name);
     group_list_widget.replace_list_data(groups_list_data);
     update_empty_left_panel_message();
+    maybe_reset_right_panel(groups_list_data);
 }
 
 export function redraw_user_group_list() {
@@ -591,6 +592,20 @@ export function add_or_remove_from_group(group) {
             success() {},
             error() {},
         });
+    }
+}
+
+export function maybe_reset_right_panel(groups_list_data) {
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    const group_ids = new Set(groups_list_data.map((group) => group.id));
+    if (!group_ids.has(active_group_id)) {
+        $(".right .settings").hide();
+        $(".nothing-selected").show();
+        $(".group-row.active").removeClass("active");
+        reset_active_group_id();
     }
 }
 
