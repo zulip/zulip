@@ -68,7 +68,7 @@ export function redraw_user(user_id) {
     const info = buddy_data.get_item(user_id);
 
     buddy_list.insert_or_move({
-        key: user_id,
+        user_id,
         item: info,
     });
 }
@@ -95,13 +95,13 @@ export function build_user_sidebar() {
 
     const filter_text = get_filter_text();
 
-    const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
+    const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
-    buddy_list.populate({keys: user_ids});
+    buddy_list.populate({all_user_ids});
 
     render_empty_user_list_message_if_needed(buddy_list.$container);
 
-    return user_ids; // for testing
+    return all_user_ids; // for testing
 }
 
 function do_update_users_for_search() {
@@ -155,7 +155,7 @@ export function reset_users() {
 }
 
 export function narrow_for_user(opts) {
-    const user_id = buddy_list.get_key_from_li({$li: opts.$li});
+    const user_id = buddy_list.get_user_id_from_li({$li: opts.$li});
     return narrow_for_user_id({user_id});
 }
 

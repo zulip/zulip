@@ -109,7 +109,7 @@ function fade_messages() {
 
 const user_fade_config = {
     get_user_id($li) {
-        return buddy_list.get_key_from_li({$li});
+        return buddy_list.get_user_id_from_li({$li});
     },
     fade($li) {
         return $li.addClass("user-fade");
