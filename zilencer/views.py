@@ -617,6 +617,7 @@ class InstallationCountDataForAnalytics(BaseModel):
 
 
 @typed_endpoint
+@transaction.atomic
 def remote_server_post_analytics(
     request: HttpRequest,
     server: RemoteZulipServer,
@@ -627,6 +628,10 @@ def remote_server_post_analytics(
     realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
     version: Optional[Json[str]] = None,
 ) -> HttpResponse:
+    # Lock the server, preventing this from racing with other
+    # duplicate submissions of the data
+    server = RemoteZulipServer.objects.select_for_update().get(id=server.id)
+
     if version is not None:
         version = version[0 : RemoteZulipServer.VERSION_MAX_LENGTH]
     if version != server.last_version:
