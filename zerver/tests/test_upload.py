@@ -216,9 +216,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # without being logged in.
         self.logout()
         self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
-        # The original url shouldn't work when logged out:
+        # The original url shouldn't work when logged out -- it redirects to the login page
         result = self.client_get(url)
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result.headers["Location"].endswith(f"/login/?next={url}"))
 
     def test_serve_file_unauthed(self) -> None:
         self.login("hamlet")
@@ -237,7 +238,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
             self.logout()
             response = self.client_get(url)
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
 
             # Allow file access for web-public stream
             self.login("hamlet")
@@ -253,7 +255,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Deny file access since rate limited
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(url)
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
 
         # Check that the /download/ variant works as well
         download_url = url.replace("/user_uploads/", "/user_uploads/download/")
@@ -262,7 +265,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(response.status_code, 200)
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(download_url)
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.headers["Location"].endswith(f"/login/?next={download_url}"))
 
         # Deny random file access
         response = self.client_get(
@@ -323,8 +327,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.logout()
         response = self.client_get(url)
-        self.assertEqual(response.status_code, 403)
-        self.assert_in_response("<p>You are not authorized to view this file.</p>", response)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
 
     def test_image_download_unauthed(self) -> None:
         """
@@ -687,7 +691,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Verify that cross-realm access to files for spectators is denied.
         self.logout()
         response = self.client_get(url, subdomain=test_subdomain)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
 
     def test_file_download_authorization_invite_only(self) -> None:
         hamlet = self.example_user("hamlet")

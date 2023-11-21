@@ -25,6 +25,7 @@ from django.utils.http import content_disposition_header
 from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
+from zerver.decorator import zulip_redirect_to_login
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
@@ -215,6 +216,8 @@ def serve_file(
     if not is_authorized:
         if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
             response = serve_image_error(403, "images/errors/image-no-auth.png")
+        elif isinstance(maybe_user_profile, AnonymousUser):
+            response = zulip_redirect_to_login(request)
         else:
             response = HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
         patch_vary_headers(response, ("Accept",))
