@@ -413,18 +413,22 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(stream_id, 101);
         return 16;
     });
-    let wildcard_warning_rendered = false;
+    let stream_wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
-    mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
-        wildcard_warning_rendered = true;
+    mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
+        stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
     });
 
-    override_rewire(compose_validate, "wildcard_mention_allowed_in_large_stream", () => true);
+    override_rewire(
+        compose_validate,
+        "stream_wildcard_mention_allowed_in_large_stream",
+        () => true,
+    );
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(wildcard_warning_rendered);
+    assert.ok(stream_wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -433,12 +437,16 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
             data.banner_text,
             $t({
                 defaultMessage:
-                    "You do not have permission to use wildcard mentions in this stream.",
+                    "You do not have permission to use stream wildcard mentions in this stream.",
             }),
         );
         wildcards_not_allowed_rendered = true;
     });
-    override_rewire(compose_validate, "wildcard_mention_allowed_in_large_stream", () => false);
+    override_rewire(
+        compose_validate,
+        "stream_wildcard_mention_allowed_in_large_stream",
+        () => false,
+    );
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });
