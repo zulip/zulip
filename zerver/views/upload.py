@@ -3,7 +3,7 @@ import binascii
 import os
 from datetime import timedelta
 from mimetypes import guess_type
-from typing import Optional, Union
+from typing import List, Optional, Union
 from urllib.parse import quote, urlparse
 
 from django.conf import settings
@@ -20,13 +20,14 @@ from django.http import (
 )
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils.cache import patch_cache_control
+from django.utils.cache import patch_cache_control, patch_vary_headers
 from django.utils.http import content_disposition_header
 from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
+from zerver.lib.storage import static_path
 from zerver.lib.upload import (
     check_upload_within_quota,
     get_public_upload_root_url,
@@ -167,6 +168,23 @@ def serve_file_url_backend(
     return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
 
 
+def preferred_accept(request: HttpRequest, served_types: List[str]) -> Optional[str]:
+    # Returns the first of the served_types which the browser will
+    # accept, based on the browser's stated quality preferences.
+    # Returns None if none of the served_types are accepted by the
+    # browser.
+    accepted_types = sorted(
+        request.accepted_types,
+        key=lambda e: float(e.params.get("q", "1.0")),
+        reverse=True,
+    )
+    for potential_type in accepted_types:
+        for served_type in served_types:
+            if potential_type.match(served_type):
+                return served_type
+    return None
+
+
 def serve_file(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
@@ -179,10 +197,28 @@ def serve_file(
     realm = get_valid_realm_from_request(request)
     is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
 
+    def serve_image_error(status: int, image_path: str) -> HttpResponseBase:
+        # We cannot use X-Accel-Redirect to offload the serving of
+        # this image to nginx, because it does not preserve the status
+        # code of this response, nor the Vary: header.
+        return FileResponse(open(static_path(image_path), "rb"), status=status)  # noqa: SIM115
+
     if is_authorized is None:
-        return HttpResponseNotFound(_("<p>This file does not exist or has been deleted.</p>"))
+        if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
+            response = serve_image_error(404, "images/errors/image-not-exist.png")
+        else:
+            response = HttpResponseNotFound(
+                _("<p>This file does not exist or has been deleted.</p>")
+            )
+        patch_vary_headers(response, ("Accept",))
+        return response
     if not is_authorized:
-        return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
+        if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
+            response = serve_image_error(403, "images/errors/image-no-auth.png")
+        else:
+            response = HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
+        patch_vary_headers(response, ("Accept",))
+        return response
     if url_only:
         url = generate_unauthed_file_access_url(path_id)
         return json_success(request, data=dict(url=url))

@@ -326,6 +326,26 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("<p>You are not authorized to view this file.</p>", response)
 
+    def test_image_download_unauthed(self) -> None:
+        """
+        As the above, but with an Accept header that prefers images.
+        """
+        self.login("hamlet")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        response_dict = self.assert_json_success(result)
+        url = response_dict["uri"]
+
+        self.logout()
+        response = self.client_get(
+            url,
+            # This is what Chrome sends for <img> tags
+            headers={"Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"},
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.headers["Content-Type"], "image/png")
+
     def test_removed_file_download(self) -> None:
         """
         Trying to download deleted files should return 404 error
@@ -352,6 +372,29 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.py"
         )
         self.assertEqual(response.status_code, 404)
+        self.assert_in_response("This file does not exist or has been deleted.", response)
+
+    def test_non_existing_image_download(self) -> None:
+        """
+        As the above method, but with an Accept header that prefers images to text
+        """
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        response = self.client_get(
+            f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.png",
+            # This is what Chrome sends for <img> tags
+            headers={"Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.headers["Content-Type"], "image/png")
+
+        response = self.client_get(
+            f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.png",
+            # Ask for something neither image nor text -- you get text as a default
+            headers={"Accept": "audio/*,application/octet-stream"},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
         self.assert_in_response("This file does not exist or has been deleted.", response)
 
     def test_attachment_url_without_upload(self) -> None:
