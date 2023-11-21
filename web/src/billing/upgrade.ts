@@ -59,7 +59,21 @@ function update_license_count(license_count: number): void {
     update_due_today(selected_schedule);
 }
 
+function restore_manual_license_count(): void {
+    const $manual_license_count_input = $("#manual_license_count");
+    // Only present on the manual license management page.
+    if ($manual_license_count_input.length) {
+        const ls_manual_license_count = ls.get("manual_license_count");
+        if (typeof ls_manual_license_count === "number") {
+            $manual_license_count_input.val(ls_manual_license_count);
+            update_license_count(ls_manual_license_count);
+        }
+    }
+}
+
 export const initialize = (): void => {
+    restore_manual_license_count();
+
     $("#org-upgrade-button").on("click", (e) => {
         e.preventDefault();
 
