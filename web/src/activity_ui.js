@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 
@@ -8,7 +9,6 @@ import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
-import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -21,6 +21,9 @@ import * as util from "./util";
 
 export let user_cursor;
 export let user_filter;
+
+// Function initialized from `ui_init` to avoid importing narrow.js and causing circular imports.
+let narrow_by_email;
 
 function get_pm_list_item(user_id) {
     return buddy_list.find_li({
@@ -111,7 +114,9 @@ function do_update_users_for_search() {
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
 
-export function initialize() {
+export function initialize(opts) {
+    narrow_by_email = opts.narrow_by_email;
+
     set_cursor_and_filter();
 
     build_user_sidebar();
@@ -158,7 +163,8 @@ export function narrow_for_user_id(opts) {
     const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
-    narrow.by("dm", email, {trigger: "sidebar"});
+    assert(narrow_by_email);
+    narrow_by_email(email);
     user_filter.clear_and_hide_search();
 }
 

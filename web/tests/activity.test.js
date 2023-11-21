@@ -20,7 +20,6 @@ const _document = {
 
 const channel = mock_esm("../src/channel");
 const compose_state = mock_esm("../src/compose_state");
-const narrow = mock_esm("../src/narrow");
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
@@ -41,6 +40,7 @@ const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
 const activity = zrequire("activity");
 const activity_ui = zrequire("activity_ui");
+const util = zrequire("util");
 
 const me = {
     email: "me@zulip.com",
@@ -271,7 +271,7 @@ test("direct_message_update_dom_counts", () => {
     assert.equal($count.text(), "");
 });
 
-test("handlers", ({override, mock_template}) => {
+test("handlers", ({override, override_rewire, mock_template}) => {
     let filter_key_handlers;
 
     mock_template("presence_rows.hbs", false, () => {});
@@ -294,17 +294,22 @@ test("handlers", ({override, mock_template}) => {
 
     let narrowed;
 
-    override(narrow, "by", (_method, email) => {
+    function narrow_by_email(email) {
         assert.equal(email, "alice@zulip.com");
         narrowed = true;
-    });
+    }
 
     function init() {
         $.clear_all_elements();
         buddy_list.populate({
             keys: [me.user_id, alice.user_id, fred.user_id],
         });
-        activity_ui.set_cursor_and_filter();
+
+        buddy_list.start_scroll_handler = () => {};
+        override_rewire(util, "call_function_periodically", () => {});
+        override_rewire(activity, "send_presence_to_server", () => {});
+        activity_ui.initialize({narrow_by_email});
+
         $("#buddy-list-users-matching-view").empty = () => {};
 
         $me_li = $.create("me stub");
@@ -683,7 +688,7 @@ test("initialize", ({override, mock_template}) => {
     });
 
     activity.initialize();
-    activity_ui.initialize();
+    activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: true,
         presences: {},
@@ -707,7 +712,7 @@ test("initialize", ({override, mock_template}) => {
 
     $(window).off("focus");
     activity.initialize();
-    activity_ui.initialize();
+    activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: false,
         presences: {},

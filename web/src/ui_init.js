@@ -667,7 +667,11 @@ export function initialize_everything() {
 
     initialize_unread_ui();
     activity.initialize();
-    activity_ui.initialize();
+    activity_ui.initialize({
+        narrow_by_email(email) {
+            narrow.by("dm", email, {trigger: "sidebar"});
+        },
+    });
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
