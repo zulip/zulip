@@ -16,7 +16,8 @@ html {
 }
 
 #app-loading.loaded {
-    display: none !important; /* We are now loaded, by definition. */
+    display: none !important;
+    /* We are now loaded, by definition. */
 }
 
 body {
@@ -36,6 +37,7 @@ body {
     }
 
     &.fluid_layout_width {
+
         .header-main,
         .app .app-main,
         #compose-container {
@@ -77,9 +79,7 @@ body {
     window width / language, we sync its height in navbar_alerts.js
     */
     --navbar-alerts-wrapper-height: 0px;
-    --navbar-fixed-height: calc(
-        var(--header-height) + var(--navbar-alerts-wrapper-height)
-    );
+    --navbar-fixed-height: calc(var(--header-height) + var(--navbar-alerts-wrapper-height));
     /* Keep content from colliding with the search box. */
     --navbar-content-righthand-offset: 5px;
 
@@ -213,12 +213,8 @@ body {
     --color-background-unread-counter: hsl(105deg 2% 50%);
     /* There's no alpha channel here, but this keeps
        the variable names in line. */
-    --color-background-unread-counter-no-alpha: var(
-        --color-background-unread-counter
-    );
-    --color-background-unread-counter-dot: var(
-        --color-background-unread-counter
-    );
+    --color-background-unread-counter-no-alpha: var(--color-background-unread-counter);
+    --color-background-unread-counter-dot: var(--color-background-unread-counter);
     --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
@@ -236,26 +232,16 @@ body {
     --color-compose-send-control-button: hsl(240deg 30% 50% / 80%);
     --color-compose-send-control-button-background: transparent;
     --color-compose-send-control-button-interactive: hsl(240deg 30% 50%);
-    --color-compose-send-control-button-background-interactive: hsl(
-        240deg 100% 30% / 5%
-    );
-    --color-compose-send-control-button-focus-shadow: var(
-        --color-compose-send-button-focus-shadow
-    );
+    --color-compose-send-control-button-background-interactive: hsl(240deg 100% 30% / 5%);
+    --color-compose-send-control-button-focus-shadow: var(--color-compose-send-button-focus-shadow);
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
-    --color-compose-collapsed-reply-button-area-background-interactive: var(
-        --color-compose-collapsed-reply-button-area-background
-    );
+    --color-compose-collapsed-reply-button-area-background-interactive: var(--color-compose-collapsed-reply-button-area-background);
     --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 80%);
-    --color-compose-collapsed-reply-button-area-border-interactive: hsl(
-        0deg 0% 60%
-    );
+    --color-compose-collapsed-reply-button-area-border-interactive: hsl(0deg 0% 60%);
     --color-compose-embedded-button-text-color: hsl(231deg 20% 55%);
     --color-compose-embedded-button-text-color-hover: hsl(231deg 20% 30%);
     --color-compose-embedded-button-background: transparent;
-    --color-compose-embedded-button-background-hover: hsl(
-        231deg 100% 90% / 50%
-    );
+    --color-compose-embedded-button-background-hover: hsl(231deg 100% 90% / 50%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -287,9 +273,7 @@ body {
     --color-vdots-hint: hsl(0deg 0% 0% / 30%);
     --color-vdots-visible: hsl(0deg 0% 0% / 53%);
     --color-vdots-hover: hsl(0deg 0% 0%);
-    --color-left-sidebar-header-vdots-visible: var(
-        --color-left-sidebar-navigation-icon
-    );
+    --color-left-sidebar-header-vdots-visible: var(--color-left-sidebar-navigation-icon);
     --color-tab-picker-icon: hsl(200deg 100% 40%);
 
     /* Reaction container colors */
@@ -302,17 +286,11 @@ body {
     --color-message-reaction-text: hsl(210deg 20% 25% / 100%);
     --color-message-reaction-text-reacted: hsl(210deg 20% 20% / 100%);
     --color-message-reaction-button-text: hsl(210deg 20% 20% / 60%);
-    --color-message-reaction-button-text-hover: var(
-        --color-message-reaction-text
-    );
+    --color-message-reaction-button-text-hover: var(--color-message-reaction-text);
     --color-message-reaction-button-background: inherit;
-    --color-message-reaction-button-background-hover: var(
-        --color-message-reaction-background
-    );
+    --color-message-reaction-button-background-hover: var(--color-message-reaction-background);
     --color-message-reaction-button-border: transparent;
-    --color-message-reaction-button-border-hover: var(
-        --color-message-reaction-border
-    );
+    --color-message-reaction-button-border-hover: var(--color-message-reaction-border);
     --font-weight-message-reaction: 600;
 
     /* Message feed loading indicator colors */
@@ -350,12 +328,10 @@ body {
     --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);
     --color-box-shadow-inbox-search-focus: hsl(228deg 9.8% 20% / 30%);
     --color-background-inbox-row: hsl(0deg 0% 100%);
-    --color-background-inbox-row-hover: linear-gradient(
-            0deg,
-            hsl(0deg 0% 0% / 5%) 0%,
-            hsl(0deg 0% 0% / 5%) 100%
-        ),
-        hsl(0deg 0% 100%);
+    --color-background-inbox-row-hover: linear-gradient(0deg,
+        hsl(0deg 0% 0% / 5%) 0%,
+        hsl(0deg 0% 0% / 5%) 100%),
+    hsl(0deg 0% 100%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
     --color-icons-inbox: hsl(0deg 0% 0%);
@@ -363,17 +339,17 @@ body {
 
     /* Navbar dropdown menu constants - Values from Figma design */
     --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
-        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
-        0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
-        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
-        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
-        0 41px 80px 0 hsl(0deg 0% 0% / 13%);
+    0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
+    0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
+    0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
+    0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
+    0 41px 80px 0 hsl(0deg 0% 0% / 13%);
     --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
-        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
-        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
-        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
-        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
-        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+    0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+    0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+    0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+    0 41px 80px 0 hsl(0deg 0% 0% / 20%);
     --color-navbar-icon: hsl(240deg 20% 50%);
     --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
     --color-gear-menu-blue-text: hsl(217deg 100% 50%);
@@ -394,19 +370,15 @@ body {
        --color-background-navbar. We use the value
        directly so that this gets compiled down to
        an rgb() value by PostCSS Preset Env. */
-    --color-header-button-hover-no-alpha: color-mix(
-        in srgb,
+    --color-header-button-hover-no-alpha: color-mix(in srgb,
         hsl(0deg 0% 0%) 5%,
-        hsl(0deg 0% 97%)
-    );
+        hsl(0deg 0% 97%));
     --color-header-button-focus: hsl(0deg 0% 0% / 8%);
     /* The second color value aligns with
        --color-background-navbar */
-    --color-header-button-focus-no-alpha: color-mix(
-        in srgb,
+    --color-header-button-focus-no-alpha: color-mix(in srgb,
         hsl(0deg 0% 0%) 8%,
-        hsl(0deg 0% 97%)
-    );
+        hsl(0deg 0% 97%));
     --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
     --color-fill-user-invite-copy-icon: hsl(0deg 0% 46.7%);
     --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23333333'/%3E%3C/svg%3E%0A");
@@ -462,17 +434,13 @@ body {
        --color-background. We use the value
        directly so that this gets compiled down to
        an rgb() value by PostCSS Preset Env. */
-    --color-background-unread-counter-no-alpha: color-mix(
-        in srgb,
-        hsl(105deg 2% 50%) 50%,
-        hsl(0deg 0% 11%)
-    );
+    --color-background-unread-counter-no-alpha: color-mix(in srgb,
+            hsl(105deg 2% 50%) 50%,
+            hsl(0deg 0% 11%));
     --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
-    --color-border-unread-counter-popover-menu: var(
-        --color-border-unread-counter
-    );
+    --color-border-unread-counter-popover-menu: var(--color-border-unread-counter);
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
@@ -482,31 +450,17 @@ body {
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
     --color-compose-send-control-button: hsl(240deg 30% 70%);
     --color-compose-send-control-button-background: transparent;
-    --color-compose-send-control-button-interactive: var(
-        --color-compose-send-control-button
-    );
-    --color-compose-send-control-button-background-interactive: hsl(
-        235deg 100% 70% / 11%
-    );
-    --color-compose-send-control-button-focus-shadow: var(
-        --color-compose-send-button-focus-shadow
-    );
-    --color-compose-collapsed-reply-button-area-background: hsl(
-        0deg 0% 0% / 20%
-    );
-    --color-compose-collapsed-reply-button-area-background-interactive: hsl(
-        0deg 0% 0% / 15%
-    );
+    --color-compose-send-control-button-interactive: var(--color-compose-send-control-button);
+    --color-compose-send-control-button-background-interactive: hsl(235deg 100% 70% / 11%);
+    --color-compose-send-control-button-focus-shadow: var(--color-compose-send-button-focus-shadow);
+    --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 0% / 20%);
+    --color-compose-collapsed-reply-button-area-background-interactive: hsl(0deg 0% 0% / 15%);
     --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 0% / 60%);
-    --color-compose-collapsed-reply-button-area-border-interactive: var(
-        --color-compose-collapsed-reply-button-area-border
-    );
+    --color-compose-collapsed-reply-button-area-border-interactive: var(--color-compose-collapsed-reply-button-area-border);
     --color-compose-embedded-button-text-color: hsl(231deg 30% 65%);
     --color-compose-embedded-button-text-color-hover: hsl(231deg 30% 70%);
     --color-compose-embedded-button-background: transparent;
-    --color-compose-embedded-button-background-hover: hsl(
-        235deg 100% 70% / 11%
-    );
+    --color-compose-embedded-button-background-hover: hsl(235deg 100% 70% / 11%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -533,11 +487,9 @@ body {
        We use color-mix here to avoid defining a separate, compounding
        `opacity` property, and also to preserve a record of the
        relationship of the color of sidebar headings to other colors. */
-    --color-text-sidebar-heading: color-mix(
-        in srgb,
-        hsl(0deg 0% 75%) 75%,
-        hsl(0deg 0% 11%)
-    );
+    --color-text-sidebar-heading: color-mix(in srgb,
+            hsl(0deg 0% 75%) 75%,
+            hsl(0deg 0% 11%));
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
@@ -547,9 +499,7 @@ body {
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
     --color-vdots-hover: hsl(0deg 0% 100%);
-    --color-left-sidebar-header-vdots-visible: var(
-        --color-left-sidebar-navigation-icon
-    );
+    --color-left-sidebar-header-vdots-visible: var(--color-left-sidebar-navigation-icon);
     --color-tab-picker-icon: hsl(0deg 0% 80%);
 
     /* Reaction container colors */
@@ -563,17 +513,11 @@ body {
     --color-message-reaction-text: hsl(0deg 0% 100% / 75%);
     --color-message-reaction-text-reacted: hsl(0deg 0% 100% / 85%);
     --color-message-reaction-button-text: var(--color-message-reaction-text);
-    --color-message-reaction-button-text-hover: var(
-        --color-message-reaction-text-reacted
-    );
+    --color-message-reaction-button-text-hover: var(--color-message-reaction-text-reacted);
     --color-message-reaction-button-background: inherit;
-    --color-message-reaction-button-background-hover: var(
-        --color-message-reaction-background-hover
-    );
+    --color-message-reaction-button-background-hover: var(--color-message-reaction-background-hover);
     --color-message-reaction-button-border: transparent;
-    --color-message-reaction-button-border-hover: var(
-        --color-message-reaction-border
-    );
+    --color-message-reaction-button-border-hover: var(--color-message-reaction-border);
     --font-weight-message-reaction: 550;
 
     /* Message feed loading indicator colors */
@@ -608,11 +552,9 @@ body {
     --color-border-inbox-search-focus: hsl(0deg 0% 100% / 50%);
     --color-box-shadow-inbox-search-focus: hsl(0deg 0% 100% / 40%);
     --color-background-inbox-row: hsl(0deg 0% 14%);
-    --color-background-inbox-row-hover: linear-gradient(
-            0deg,
+    --color-background-inbox-row-hover: linear-gradient(0deg,
             hsl(0deg 0% 100% / 5%) 0%,
-            hsl(0deg 0% 100% / 5%) 100%
-        ),
+            hsl(0deg 0% 100% / 5%) 100%),
         hsl(0deg 0% 14.12%);
     --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
     --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
@@ -632,19 +574,15 @@ body {
     --color-header-button-hover: hsl(0deg 0% 100% / 4%);
     /* The second color value aligns with
        --color-background-navbar */
-    --color-header-button-hover-no-alpha: color-mix(
-        in srgb,
-        hsl(0deg 0% 100%) 4%,
-        hsl(0deg 0% 13%)
-    );
+    --color-header-button-hover-no-alpha: color-mix(in srgb,
+            hsl(0deg 0% 100%) 4%,
+            hsl(0deg 0% 13%));
     --color-header-button-focus: hsl(0deg 0% 100% / 7%);
     /* The second color value aligns with
        --color-background-navbar */
-    --color-header-button-focus-no-alpha: color-mix(
-        in srgb,
-        hsl(0deg 0% 100%) 7%,
-        hsl(0deg 0% 13%)
-    );
+    --color-header-button-focus-no-alpha: color-mix(in srgb,
+            hsl(0deg 0% 100%) 7%,
+            hsl(0deg 0% 13%));
     --color-fill-user-invite-copy-icon: hsl(236deg 33% 90%);
     --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23FFFFFFBF'/%3E%3C/svg%3E%0A");
 
@@ -975,6 +913,7 @@ p.n-margin {
 }
 
 body.has-overlay-scrollbar {
+
     /* Move simplebar scrollbar to the left so that
        browser scrollbar doesn't overlap with it. */
     .column-right .simplebar-track.simplebar-vertical {
@@ -1072,9 +1011,7 @@ body.has-overlay-scrollbar {
 #message_feed_container,
 .column-left .left-sidebar,
 .column-right .right-sidebar {
-    padding-top: calc(
-        var(--navbar-fixed-height) + var(--header-padding-bottom)
-    );
+    padding-top: calc(var(--navbar-fixed-height) + var(--header-padding-bottom));
 }
 
 .app-main {
@@ -1106,9 +1043,7 @@ body.has-overlay-scrollbar {
 .column-middle,
 #compose-content {
     margin-right: var(--right-sidebar-width);
-    margin-left: calc(
-        var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter)
-    );
+    margin-left: calc(var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter));
     position: relative;
 }
 
@@ -1127,7 +1062,7 @@ label {
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
 a:not(:active):focus,
 button:focus,
-.new-style label.checkbox input[type="checkbox"]:focus ~ span,
+.new-style label.checkbox input[type="checkbox"]:focus~span,
 i.fa:focus,
 i.zulip-icon:focus-visible,
 [role="button"]:focus {
@@ -1137,6 +1072,7 @@ i.zulip-icon:focus-visible,
 
 /* List of text-like input types taken from Bootstrap */
 input {
+
     &[type="text"],
     &[type="password"],
     &[type="datetime"],
@@ -1339,11 +1275,9 @@ strong {
                 color: hsl(0deg 0% 100%);
                 text-decoration: none;
                 background-color: hsl(200deg 100% 38%);
-                background-image: linear-gradient(
-                    to bottom,
-                    hsl(200deg 100% 40%),
-                    hsl(200deg 100% 35%)
-                );
+                background-image: linear-gradient(to bottom,
+                        hsl(200deg 100% 40%),
+                        hsl(200deg 100% 35%));
             }
 
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
@@ -1362,15 +1296,13 @@ strong {
         }
     }
 
-    .active > a {
+    .active>a {
         color: hsl(0deg 0% 100%);
         text-decoration: none;
         background-color: hsl(200deg 100% 38%);
-        background-image: linear-gradient(
-            to bottom,
-            hsl(200deg 100% 40%),
-            hsl(200deg 100% 35%)
-        );
+        background-image: linear-gradient(to bottom,
+                hsl(200deg 100% 40%),
+                hsl(200deg 100% 35%));
         outline: 0;
 
         .user_circle_empty {
@@ -1378,13 +1310,13 @@ strong {
         }
     }
 
-    .active > a:hover {
+    .active>a:hover {
         text-decoration: none;
     }
 }
 
 /* Copied from bootstrap 2.1.1 CSS for dropdown-menu li > a:focus */
-li.actual-dropdown-menu > a:focus {
+li.actual-dropdown-menu>a:focus {
     color: hsl(0deg 0% 100%);
     text-decoration: none;
     background-color: transparent;
@@ -1461,6 +1393,7 @@ td.pointer {
     opacity: 0.8;
     color: var(--color-text-default);
     letter-spacing: 0.02em;
+
     /* Disable blue link styling for the message timestamp link. */
     &:hover {
         text-decoration: none;
@@ -1485,6 +1418,7 @@ td.pointer {
     display: flex;
     align-items: baseline;
     font-size: 16px;
+
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
        doesn't disturb the layout.  Usually that would be just
@@ -1548,7 +1482,7 @@ td.pointer {
         word-wrap: unset;
     }
 
-    > .view_read_receipts {
+    >.view_read_receipts {
         font-size: 14px;
         height: 16px;
 
@@ -1558,6 +1492,7 @@ td.pointer {
     }
 
     .edit_content {
+
         /* Icons for editing content are determined on message hover;
            we set an empty `.edit_content` to have 0 height in order to
            preserve the layout of the other icons prior to any hovering. */
@@ -1719,7 +1654,7 @@ td.pointer {
             }
         }
 
-        .message_header + .message_row {
+        .message_header+.message_row {
             .messagebox {
                 padding-top: 5px;
             }
@@ -1819,7 +1754,8 @@ td.pointer {
     align-items: center;
     font-style: normal;
     font-weight: 600;
-    line-height: 17px; /* identical to box height, or 131% */
+    line-height: 17px;
+    /* identical to box height, or 131% */
     letter-spacing: 0.04em;
     text-transform: uppercase;
     padding-top: 1px;
@@ -2182,7 +2118,7 @@ div.focused-message-list {
             vertical-align: baseline;
         }
 
-        & + label.checkbox {
+        &+label.checkbox {
             margin-top: 10px;
         }
     }
@@ -2211,15 +2147,11 @@ div.focused-message-list {
         font-variant: all-small-caps;
 
         &:hover {
-            background-color: var(
-                --color-show-more-less-button-background-hover
-            );
+            background-color: var(--color-show-more-less-button-background-hover);
         }
 
         &:active {
-            background-color: var(
-                --color-show-more-less-button-background-active
-            );
+            background-color: var(--color-show-more-less-button-background-active);
             scale: 0.98;
         }
     }
@@ -2326,7 +2258,8 @@ div.focused-message-list {
         }
 
         @media (width < $sm_min) {
-            padding: 0 3.5px; /* based on having ~41.66% decrease */
+            padding: 0 3.5px;
+            /* based on having ~41.66% decrease */
         }
 
         & i {
@@ -2384,9 +2317,7 @@ div.focused-message-list {
         margin: 0;
         /* Calculate right margin so that text can truncate
            and not collide with the search section. */
-        margin-right: calc(
-            var(--search-box-width) + var(--navbar-content-righthand-offset)
-        );
+        margin-right: calc(var(--search-box-width) + var(--navbar-content-righthand-offset));
     }
 }
 
@@ -3025,6 +2956,7 @@ select.invite-as {
     white-space: nowrap;
     overflow: hidden;
     transition: all 0.4s ease;
+    text-wrap: wrap;
 
     & i {
         cursor: pointer;
@@ -3045,6 +2977,7 @@ select.invite-as {
 }
 
 .flatpickr-calendar {
+
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
         display: none;
@@ -3123,6 +3056,7 @@ select.invite-as {
 }
 
 @media (width < $xl_min) {
+
     .app-main,
     .header-main {
         min-width: 750px;
@@ -3264,6 +3198,7 @@ select.invite-as {
 }
 
 @media (width < $sm_min) {
+
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
@@ -3547,7 +3482,7 @@ select.invite-as {
     display: flex !important;
     justify-content: space-between;
 
-    > strong {
+    >strong {
         margin-right: 14px;
     }
 }

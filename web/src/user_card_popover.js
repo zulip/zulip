@@ -290,6 +290,7 @@ function get_user_card_popover_data(
         date_joined,
         spectator_view,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        is_imported_protouser: user.is_imported_protouser,
     };
 
     if (user.is_bot) {
