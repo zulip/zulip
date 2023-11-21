@@ -1104,9 +1104,10 @@ ul {
             "pricing pricing      pricing           pricing" auto / 30px minmax(
                 0,
                 1fr
-            ) minmax(0, 1fr) 30px;
+            )
+            minmax(0, 1fr) 30px;
         max-width: 960px;
-        margin: 0 auto;
+        margin: 50px auto 38px;
     }
 
     .cloud-plan-title {
@@ -1131,6 +1132,67 @@ ul {
         grid-template-rows: auto;
     }
 
+    .pricing-tab {
+        h2 {
+            font-family: var(--font-ops);
+            font-weight: 550;
+            font-size: 30px;
+            line-height: 32px;
+            margin: 0;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        p {
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 125%;
+            margin: 0;
+            text-align: center;
+        }
+    }
+
+    .pricing-pane {
+        padding: 20px;
+
+        h2 {
+            font-weight: 550;
+            font-size: 28px;
+            line-height: 1;
+            margin: 8px 0 16px;
+        }
+
+        ul {
+            font-family: var(--font-ops);
+            font-weight: 400;
+            font-size: 15px;
+            line-height: 21px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .price-box {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bottom {
+            /* Push to the bottom of the price box. */
+            margin-top: auto;
+        }
+
+        .button {
+            display: block;
+            font-weight: 550;
+            font-size: 15px;
+            text-align: center;
+            padding: 8px 10px;
+        }
+    }
+
     .additional-pricing-information {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1138,5 +1200,57 @@ ul {
         column-gap: 32px;
         max-width: 912px;
         margin: 0 auto;
+
+        header {
+            h2 {
+                font-family: var(--font-ops);
+                font-weight: 500;
+                font-size: 30px;
+                line-height: 38px;
+                margin: 0;
+            }
+
+            p {
+                font-weight: 400;
+                font-size: 16px;
+                margin: 0;
+                margin-bottom: 6px;
+            }
+        }
+
+        h3 {
+            margin: 0 0 6px;
+            font-weight: 500;
+            font-size: 22px;
+            line-height: 28px;
+        }
+
+        ul {
+            margin-bottom: 12px;
+        }
+
+        li {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        .sponsorship-button {
+            display: block;
+            font-weight: 550;
+            font-size: 15px;
+            line-height: 20px;
+            text-align: center;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+        }
+
+        .contact-note {
+            font-weight: 400;
+            font-size: 14px;
+        }
     }
 }
