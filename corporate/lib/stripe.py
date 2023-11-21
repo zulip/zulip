@@ -639,10 +639,15 @@ class BillingSession(ABC):
         self,
         metadata: Dict[str, Any],
         session_type: int,
+        manual_license_management: bool,
     ) -> stripe.checkout.Session:
         customer = self.update_or_create_stripe_customer()
+        cancel_url = f"{self.billing_session_url}/upgrade/"
+        if manual_license_management:
+            cancel_url = f"{self.billing_session_url}/upgrade/?manual_license_management=true"
+
         stripe_session = stripe.checkout.Session.create(
-            cancel_url=f"{self.billing_session_url}/upgrade/",
+            cancel_url=cancel_url,
             customer=customer.stripe_customer_id,
             metadata=metadata,
             mode="setup",
@@ -653,6 +658,7 @@ class BillingSession(ABC):
             stripe_session_id=stripe_session.id,
             customer=customer,
             type=session_type,
+            is_manual_license_management_upgrade_session=manual_license_management,
         )
         return stripe_session
 
