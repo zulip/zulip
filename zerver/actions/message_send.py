@@ -39,7 +39,9 @@ from zerver.lib.exceptions import (
     JsonableError,
     MarkdownRenderingError,
     StreamDoesNotExistError,
+    StreamWildcardMentionNotAllowedError,
     StreamWithIDDoesNotExistError,
+    TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
 from zerver.lib.markdown import MessageRenderingResult
@@ -52,9 +54,10 @@ from zerver.lib.message import (
     normalize_body,
     render_markdown,
     set_visibility_policy_possible,
+    stream_wildcard_mention_allowed,
+    topic_wildcard_mention_allowed,
     truncate_topic,
     visibility_policy_for_send_message,
-    wildcard_mention_allowed,
 )
 from zerver.lib.muted_users import get_muting_users
 from zerver.lib.notification_data import (
@@ -1710,12 +1713,18 @@ def check_message(
 
     if (
         stream is not None
-        and message_send_dict.rendering_result.has_wildcard_mention()
-        and not wildcard_mention_allowed(sender, stream, realm)
+        and message_send_dict.rendering_result.mentions_stream_wildcard
+        and not stream_wildcard_mention_allowed(sender, stream, realm)
     ):
-        raise JsonableError(
-            _("You do not have permission to use wildcard mentions in this stream.")
-        )
+        raise StreamWildcardMentionNotAllowedError
+
+    topic_participant_count = len(message_send_dict.topic_participant_user_ids)
+    if (
+        stream is not None
+        and message_send_dict.rendering_result.mentions_topic_wildcard
+        and not topic_wildcard_mention_allowed(sender, topic_participant_count, realm)
+    ):
+        raise TopicWildcardMentionNotAllowedError
 
     if message_send_dict.rendering_result.mentions_user_group_ids:
         mentioned_group_ids = list(message_send_dict.rendering_result.mentions_user_group_ids)

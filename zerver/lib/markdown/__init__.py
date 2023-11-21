@@ -134,9 +134,6 @@ class MessageRenderingResult:
     user_ids_with_alert_words: Set[int]
     potential_attachment_path_ids: List[str]
 
-    def has_wildcard_mention(self) -> bool:
-        return self.mentions_stream_wildcard or self.mentions_topic_wildcard
-
 
 @dataclass
 class DbData:

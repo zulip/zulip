@@ -5,6 +5,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -180,16 +181,26 @@ export function send_message(request = create_message_object()) {
         send_message_success(request, data);
     }
 
-    function error(response) {
-        // If we're not local echo'ing messages, or if this message was not
-        // locally echoed, show error in compose box
+    function error(response, server_error_code) {
+        // Error callback for failed message send attempts.
         if (!locally_echoed) {
-            compose_banner.show_error_message(
-                response,
-                compose_banner.CLASSNAMES.generic_compose_error,
-                $("#compose_banners"),
-                $("textarea#compose-textarea"),
-            );
+            if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
+                // The topic wildcard mention permission code path has
+                // a special error.
+                const new_row = render_wildcard_mention_not_allowed_error({
+                    banner_type: compose_banner.ERROR,
+                    classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                });
+                compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
+            } else {
+                compose_banner.show_error_message(
+                    response,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $("#compose_banners"),
+                    $("textarea#compose-textarea"),
+                );
+            }
+
             // For messages that were not locally echoed, we're
             // responsible for hiding the compose spinner to restore
             // the compose box so one can send a next message.

@@ -22,7 +22,12 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
-from zerver.lib.exceptions import JsonableError, MessageMoveError
+from zerver.lib.exceptions import (
+    JsonableError,
+    MessageMoveError,
+    StreamWildcardMentionNotAllowedError,
+    TopicWildcardMentionNotAllowedError,
+)
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -31,9 +36,10 @@ from zerver.lib.message import (
     bulk_access_messages,
     check_user_group_mention_allowed,
     normalize_body,
+    stream_wildcard_mention_allowed,
+    topic_wildcard_mention_allowed,
     truncate_topic,
     update_to_dict_cache,
-    wildcard_mention_allowed,
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
@@ -51,6 +57,7 @@ from zerver.lib.topic import (
     TOPIC_LINKS,
     TOPIC_NAME,
     messages_for_topic,
+    participants_for_topic,
     save_message_for_edit_use_case,
     update_edit_history,
     update_messages_for_topic_edit,
@@ -1274,12 +1281,19 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
-        if message.is_stream_message() and rendering_result.has_wildcard_mention():
+        if message.is_stream_message() and rendering_result.mentions_stream_wildcard:
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
-            if not wildcard_mention_allowed(message.sender, stream, message.realm):
-                raise JsonableError(
-                    _("You do not have permission to use wildcard mentions in this stream.")
-                )
+            if not stream_wildcard_mention_allowed(message.sender, stream, message.realm):
+                raise StreamWildcardMentionNotAllowedError
+
+        if message.is_stream_message() and rendering_result.mentions_topic_wildcard:
+            topic_participant_count = len(
+                participants_for_topic(message.realm.id, message.recipient.id, message.topic_name())
+            )
+            if not topic_wildcard_mention_allowed(
+                message.sender, topic_participant_count, message.realm
+            ):
+                raise TopicWildcardMentionNotAllowedError
 
         if rendering_result.mentions_user_group_ids:
             mentioned_group_ids = list(rendering_result.mentions_user_group_ids)
