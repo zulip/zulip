@@ -26,13 +26,8 @@ const stripe_response_schema = z.object({
 
 type StripeSession = z.infer<typeof stripe_response_schema>["session"];
 
-function update_status_and_redirect(status_message: string, redirect_to: string): void {
-    $("#webhook-loading").hide();
-    $("#webhook-success").show();
-    $("#webhook-success").text(status_message);
-    setTimeout(() => {
-        window.location.replace(redirect_to);
-    }, 5000);
+function update_status_and_redirect(redirect_to: string): void {
+    window.location.replace(redirect_to);
 }
 
 function show_error_message(message: string): void {
@@ -48,15 +43,12 @@ function show_html_error_message(rendered_message: string): void {
 }
 
 function handle_session_complete_event(session: StripeSession): void {
-    let message = "";
     let redirect_to = "";
     switch (session.type) {
         case "card_update_from_billing_page":
-            message = "Card successfully updated! Returning to billing…";
-            redirect_to = "/billing#payment-method";
+            redirect_to = "/billing/";
             break;
         case "card_update_from_upgrade_page":
-            message = "Card successfully added! Returning to billing…";
             if (session.is_manual_license_management_upgrade_session) {
                 redirect_to = "/upgrade/?manual_license_management=true";
             } else {
@@ -64,7 +56,7 @@ function handle_session_complete_event(session: StripeSession): void {
             }
             break;
     }
-    update_status_and_redirect(message, redirect_to);
+    update_status_and_redirect(redirect_to);
 }
 
 async function stripe_checkout_session_status_check(stripe_session_id: string): Promise<boolean> {
@@ -153,8 +145,10 @@ export async function stripe_payment_intent_status_check(
         case "succeeded":
             if (response_data.payment_intent.event_handler!.status === "succeeded") {
                 update_status_and_redirect(
-                    "Charge created successfully. Your organization has been upgraded. Redirecting to billing page...",
-                    "/billing/",
+                    "/billing/?success_message=" +
+                        encodeURIComponent(
+                            "Your organization has been upgraded to Zulip Cloud Standard.",
+                        ),
                 );
                 return true;
             }
