@@ -83,11 +83,7 @@ def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
     # This query runs on home page load, so we want to avoid
     # hitting the database if possible. So, we only run it for the user
     # types that can actually see the billing info.
-    if (
-        settings.CORPORATE_ENABLED
-        and user_profile is not None
-        and (user_profile.has_billing_access or user_profile.is_realm_owner)
-    ):
+    if settings.CORPORATE_ENABLED and user_profile is not None and user_profile.has_billing_access:
         from corporate.models import CustomerPlan, get_customer_by_realm
 
         customer = get_customer_by_realm(user_profile.realm)
