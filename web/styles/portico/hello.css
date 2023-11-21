@@ -1132,6 +1132,8 @@ ul {
     }
 
     .pricing-tab {
+        cursor: pointer;
+
         h2 {
             font-family: var(--font-ops);
             font-weight: 550;
@@ -1250,6 +1252,18 @@ ul {
         .contact-note {
             font-weight: 400;
             font-size: 14px;
+        }
+    }
+
+    &.showing-cloud {
+        .self-hosted-plan-pricing {
+            display: none;
+        }
+    }
+
+    &.showing-self-hosted {
+        .cloud-plan-pricing {
+            display: none;
         }
     }
 }
