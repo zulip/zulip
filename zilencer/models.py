@@ -6,6 +6,7 @@ from typing import List, Tuple
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 from typing_extensions import override
 
 from analytics.models import BaseCount
@@ -195,7 +196,18 @@ class BaseRemoteCount(BaseCount):
 
 class RemoteInstallationCount(BaseRemoteCount):
     class Meta:
-        unique_together = ("server", "property", "subgroup", "end_time")
+        constraints = [
+            UniqueConstraint(
+                fields=["server", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name="unique_remote_installation_count",
+            ),
+            UniqueConstraint(
+                fields=["server", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name="unique_remote_installation_count_null_subgroup",
+            ),
+        ]
         indexes = [
             models.Index(
                 fields=["server", "remote_id"],
@@ -220,7 +232,18 @@ class RemoteRealmCount(BaseRemoteCount):
     remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
 
     class Meta:
-        unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
+        constraints = [
+            UniqueConstraint(
+                fields=["server", "realm_id", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name="unique_remote_realm_installation_count",
+            ),
+            UniqueConstraint(
+                fields=["server", "realm_id", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name="unique_remote_realm_installation_count_null_subgroup",
+            ),
+        ]
         indexes = [
             models.Index(
                 fields=["property", "end_time"],
