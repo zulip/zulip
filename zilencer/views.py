@@ -625,13 +625,21 @@ def remote_server_post_analytics(
     installation_counts: Json[List[InstallationCountDataForAnalytics]],
     realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None,
     realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
+    version: Optional[Json[str]] = None,
 ) -> HttpResponse:
+    if version is not None:
+        version = version[0 : RemoteZulipServer.VERSION_MAX_LENGTH]
+    if version != server.last_version:
+        server.last_version = version
+        server.save(update_fields=["last_version"])
+
     validate_incoming_table_data(
         server, RemoteRealmCount, [dict(count) for count in realm_counts], True
     )
     validate_incoming_table_data(
         server, RemoteInstallationCount, [dict(count) for count in installation_counts], True
     )
+
     if realmauditlog_rows is not None:
         validate_incoming_table_data(
             server, RemoteRealmAuditLog, [dict(row) for row in realmauditlog_rows]

@@ -17,7 +17,7 @@ from corporate.views.portico import (
 )
 from corporate.views.session import (
     start_card_update_stripe_session,
-    start_retry_payment_intent_session,
+    start_card_update_stripe_session_for_realm_upgrade,
 )
 from corporate.views.support import support_request
 from corporate.views.upgrade import initial_upgrade, sponsorship, upgrade
@@ -45,8 +45,8 @@ v1_api_and_json_patterns = [
     rest_path("billing/plan", PATCH=update_plan),
     rest_path("billing/session/start_card_update_session", POST=start_card_update_stripe_session),
     rest_path(
-        "billing/session/start_retry_payment_intent_session",
-        POST=start_retry_payment_intent_session,
+        "upgrade/session/start_card_update_session",
+        POST=start_card_update_stripe_session_for_realm_upgrade,
     ),
     rest_path("billing/event/status", GET=event_status),
 ]

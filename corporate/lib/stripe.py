@@ -446,6 +446,12 @@ class UpgradeRequest:
     licenses: Optional[int]
 
 
+@dataclass
+class InitialUpgradeRequest:
+    onboarding: bool
+    manual_license_management: bool
+
+
 class AuditLogEventType(Enum):
     STRIPE_CUSTOMER_CREATED = 1
     STRIPE_CARD_CHANGED = 2
@@ -525,6 +531,14 @@ class BillingSession(ABC):
     def approve_sponsorship(self) -> None:
         pass
 
+    @abstractmethod
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        pass
+
+    @abstractmethod
+    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+        pass
+
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
         stripe_customer_data = self.get_data_for_stripe_customer()
@@ -581,33 +595,72 @@ class BillingSession(ABC):
 
     def create_stripe_payment_intent(
         self, price_per_license: int, licenses: int, metadata: Dict[str, Any]
-    ) -> PaymentIntent:
+    ) -> str:
+        # NOTE: This charges users immediately.
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
         payment_intent_data = self.get_data_for_stripe_payment_intent(price_per_license, licenses)
-        stripe_payment_intent = stripe.PaymentIntent.create(
-            amount=payment_intent_data.amount,
-            currency="usd",
-            customer=customer.stripe_customer_id,
-            description=payment_intent_data.description,
-            receipt_email=payment_intent_data.email,
-            confirm=False,
-            statement_descriptor=payment_intent_data.plan_name,
-            metadata=metadata,
-        )
-        payment_intent = PaymentIntent.objects.create(
+        # Ensure customers have a default payment method set.
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        if not stripe_customer_has_credit_card_as_default_payment_method(stripe_customer):
+            raise BillingError(
+                "no payment method",
+                "Please add a credit card before upgrading.",
+            )
+
+        assert stripe_customer.invoice_settings is not None
+        assert stripe_customer.invoice_settings.default_payment_method is not None
+        try:
+            # Try to charge user immediately, and if that fails, we inform the user about the failure.
+            stripe_payment_intent = stripe.PaymentIntent.create(
+                amount=payment_intent_data.amount,
+                currency="usd",
+                customer=customer.stripe_customer_id,
+                description=payment_intent_data.description,
+                receipt_email=payment_intent_data.email,
+                confirm=True,
+                statement_descriptor=payment_intent_data.plan_name,
+                metadata=metadata,
+                off_session=True,
+                payment_method=stripe_customer.invoice_settings.default_payment_method,
+            )
+        except stripe.error.CardError as e:
+            raise StripeCardError("card error", e.user_message)
+
+        PaymentIntent.objects.create(
             customer=customer,
             stripe_payment_intent_id=stripe_payment_intent.id,
             status=PaymentIntent.get_status_integer_from_status_text(stripe_payment_intent.status),
         )
-        return payment_intent
+        return stripe_payment_intent.id
+
+    def create_stripe_update_card_for_realm_upgrade_session(
+        self,
+        metadata: Dict[str, Any],
+        session_type: int,
+    ) -> stripe.checkout.Session:
+        customer = self.update_or_create_stripe_customer()
+        stripe_session = stripe.checkout.Session.create(
+            cancel_url=f"{self.billing_session_url}/upgrade/",
+            customer=customer.stripe_customer_id,
+            metadata=metadata,
+            mode="setup",
+            payment_method_types=["card"],
+            success_url=f"{self.billing_session_url}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+        )
+        Session.objects.create(
+            stripe_session_id=stripe_session.id,
+            customer=customer,
+            type=session_type,
+        )
+        return stripe_session
 
     def create_stripe_checkout_session(
         self,
         metadata: Dict[str, Any],
         session_type: int,
-        payment_intent: Optional[PaymentIntent] = None,
     ) -> stripe.checkout.Session:
+        # Create checkout sessions for adding and updating exiting cards.
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
         stripe_session = stripe.checkout.Session.create(
@@ -618,15 +671,11 @@ class BillingSession(ABC):
             payment_method_types=["card"],
             success_url=f"{self.billing_session_url}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
         )
-        session = Session.objects.create(
+        Session.objects.create(
             stripe_session_id=stripe_session.id,
             customer=customer,
             type=session_type,
         )
-        if payment_intent is not None:
-            session.payment_intent = payment_intent
-            session.save(update_fields=["payment_intent"])
-            session.save()
         return stripe_session
 
     def attach_discount_to_customer(self, discount: Decimal) -> None:
@@ -676,7 +725,7 @@ class BillingSession(ABC):
                     extra_data={"charge_automatically": charge_automatically},
                 )
 
-    def setup_upgrade_checkout_session_and_payment_intent(
+    def setup_upgrade_payment_intent_and_charge(
         self,
         plan_tier: int,
         seat_count: int,
@@ -684,11 +733,9 @@ class BillingSession(ABC):
         license_management: str,
         billing_schedule: int,
         billing_modality: str,
-        onboarding: bool,
-    ) -> stripe.checkout.Session:
+    ) -> str:
         customer = self.update_or_create_stripe_customer()
         assert customer is not None  # for mypy
-        free_trial = is_free_trial_offer_enabled()
         price_per_license = get_price_per_license(
             plan_tier, billing_schedule, customer.default_discount
         )
@@ -704,21 +751,10 @@ class BillingSession(ABC):
         updated_metadata = self.update_data_for_checkout_session_and_payment_intent(
             general_metadata
         )
-        if free_trial:
-            if onboarding:
-                session_type = Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE
-            else:
-                session_type = Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE
-            payment_intent = None
-        else:
-            session_type = Session.UPGRADE_FROM_BILLING_PAGE
-            payment_intent = self.create_stripe_payment_intent(
-                price_per_license, licenses, updated_metadata
-            )
-        stripe_session = self.create_stripe_checkout_session(
-            updated_metadata, session_type, payment_intent
+        stripe_payment_intent_id = self.create_stripe_payment_intent(
+            price_per_license, licenses, updated_metadata
         )
-        return stripe_session
+        return stripe_payment_intent_id
 
     # Only used for cloud signups
     @catch_stripe_errors
@@ -768,6 +804,18 @@ class BillingSession(ABC):
             }
             if free_trial:
                 plan_params["status"] = CustomerPlan.FREE_TRIAL
+
+                if charge_automatically:
+                    # Ensure free trial customers not paying via invoice have a default payment method set
+                    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+                    if not stripe_customer_has_credit_card_as_default_payment_method(
+                        stripe_customer
+                    ):
+                        raise BillingError(
+                            "no payment method",
+                            _("Please add a credit card before starting your free trial."),
+                        )
+
             plan = CustomerPlan.objects.create(
                 customer=customer, next_invoice_date=next_invoice_date, **plan_params
             )
@@ -853,29 +901,28 @@ class BillingSession(ABC):
             schedule
         ]
         data: Dict[str, Any] = {}
-        if charge_automatically:
-            stripe_checkout_session = self.setup_upgrade_checkout_session_and_payment_intent(
+        free_trial = is_free_trial_offer_enabled()
+        # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
+        if free_trial or not charge_automatically:
+            self.process_initial_upgrade(
+                CustomerPlan.STANDARD,
+                licenses,
+                automanage_licenses,
+                billing_schedule,
+                charge_automatically,
+                is_free_trial_offer_enabled(),
+            )
+            data["organization_upgrade_successful"] = True
+        else:
+            stripe_payment_intent_id = self.setup_upgrade_payment_intent_and_charge(
                 CustomerPlan.STANDARD,
                 seat_count,
                 licenses,
                 license_management,
                 billing_schedule,
                 billing_modality,
-                upgrade_request.onboarding,
             )
-            data = {
-                "stripe_session_url": stripe_checkout_session.url,
-                "stripe_session_id": stripe_checkout_session.id,
-            }
-        else:
-            self.process_initial_upgrade(
-                CustomerPlan.STANDARD,
-                licenses,
-                automanage_licenses,
-                billing_schedule,
-                False,
-                is_free_trial_offer_enabled(),
-            )
+            data["stripe_payment_intent_id"] = stripe_payment_intent_id
         return data
 
     # event_time should roughly be timezone_now(). Not designed to handle
@@ -1091,6 +1138,65 @@ class BillingSession(ABC):
                 }
         return context
 
+    def get_initial_upgrade_context(
+        self, initial_upgrade_request: InitialUpgradeRequest
+    ) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
+        customer = self.get_customer()
+
+        if self.is_sponsored_or_pending(customer):
+            return reverse("sponsorship_request"), None
+
+        onboarding = initial_upgrade_request.onboarding
+        billing_page_url = reverse("billing_home")
+        if customer is not None and (
+            get_current_plan_by_customer(customer) is not None or onboarding
+        ):
+            if onboarding:
+                billing_page_url = f"{billing_page_url}?onboarding=true"
+            return billing_page_url, None
+
+        percent_off = Decimal(0)
+        if customer is not None and customer.default_discount is not None:
+            percent_off = customer.default_discount
+
+        exempt_from_license_number_check = (
+            customer is not None and customer.exempt_from_license_number_check
+        )
+
+        seat_count = self.current_count_for_billed_licenses()
+        signed_seat_count, salt = sign_string(str(seat_count))
+        context: Dict[str, Any] = {
+            "seat_count": seat_count,
+            "signed_seat_count": signed_seat_count,
+            "salt": salt,
+            "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
+            "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+            "exempt_from_license_number_check": exempt_from_license_number_check,
+            "plan": "Zulip Cloud Standard",
+            "free_trial_days": settings.FREE_TRIAL_DAYS,
+            "onboarding": onboarding,
+            "page_params": {
+                "seat_count": seat_count,
+                "annual_price": 8000,
+                "monthly_price": 800,
+                "percent_off": float(percent_off),
+            },
+            "manual_license_management": initial_upgrade_request.manual_license_management,
+        }
+
+        # Check if user was successful in adding a card and we are rendering the page again.
+        if customer is not None and customer_has_credit_card_as_default_payment_method(customer):
+            assert customer.stripe_customer_id is not None
+            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+            payment_method = payment_method_string(stripe_customer)
+            if "ending in" in payment_method:
+                # Show "Update card" button if user has already added a card.
+                context["payment_method"] = payment_method
+
+        self.update_context_initial_upgrade(context)
+
+        return None, context
+
 
 class RealmBillingSession(BillingSession):
     def __init__(self, user: Optional[UserProfile] = None, realm: Optional[Realm] = None) -> None:
@@ -1292,6 +1398,28 @@ class RealmBillingSession(BillingSession):
                     end_link="](/help/linking-to-zulip-website)",
                 )
                 internal_send_private_message(notification_bot, user, message)
+
+    @override
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        if (
+            customer is not None and customer.sponsorship_pending
+        ) or self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE:
+            return True
+        return False
+
+    @override
+    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+        assert self.user is not None
+        data = {
+            "realm": self.realm,
+            "email": self.user.delivery_email,
+            "is_demo_organization": self.realm.demo_organization_scheduled_deletion_date
+            is not None,
+        }
+        context.update(data)
+        context["page_params"][
+            "demo_organization_scheduled_deletion_date"
+        ] = self.realm.demo_organization_scheduled_deletion_date
 
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
@@ -1624,6 +1752,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # TODO: Write audit log entry
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
+
+    @override
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        # TBD
+        return False
+
+    @override
+    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+        # TBD
+        pass
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(

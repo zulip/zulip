@@ -134,10 +134,35 @@
                         </p>
                     </div>
                     {% endif %}
+                    {% if not is_demo_organization %}
+                    <div {% if payment_method %} id="upgrade-payment-info"{% endif %}>
+                        {% if payment_method %}
+                        <div class="input-box upgrade-page-field no-validation" id="upgrade-payment-menthod-wrapper">
+                            <label for="customer-payment-method-for-upgrade" class="inline-block label-title">Payment method</label>
+                            <div id="customer-payment-method-for-upgrade" class="not-editable-realm-field">
+                                {{ payment_method }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="upgrade-add-card-container input-box upgrade-page-field">
+                            <button id="upgrade-add-card-button" {% if payment_method %}class="update-card-button"{% endif %}>
+                                <span id="upgrade-add-card-button-text">
+                                    {% if payment_method %}
+                                    Update card
+                                    {% else %}
+                                    Add card
+                                    {% endif %}
+                                </span>
+                                <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                        <div id="upgrade-cardchange-error" class="alert alert-danger upgrade-page-error"></div>
+                    </div>
+                    {% endif %}
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
-                        <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}">
-                            <span id="org-upgrade-button-span">
+                        <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not payment_method %}disabled{% endif %}>
+                            <span id="org-upgrade-button-text">
                                 {% if free_trial_days %}
                                     Start {{ free_trial_days }} day free trial
                                 {% else %}

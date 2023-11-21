@@ -140,9 +140,10 @@ export function by_conversation_and_time_url(message: Message): string {
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_url(sub: StreamSubscription): string {
-    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}`;
-    return hash;
+export function stream_edit_url(sub: StreamSubscription, right_side_tab: string): string {
+    return `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(
+        sub.name,
+    )}/${right_side_tab}`;
 }
 
 export function group_edit_url(group: UserGroup): string {

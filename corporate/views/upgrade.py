@@ -1,33 +1,23 @@
 import logging
-from decimal import Decimal
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from django import forms
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse
 
 from corporate.lib.stripe import (
-    DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-    MIN_INVOICED_LICENSES,
     VALID_BILLING_MODALITY_VALUES,
     VALID_BILLING_SCHEDULE_VALUES,
     VALID_LICENSE_MANAGEMENT_VALUES,
     BillingError,
+    InitialUpgradeRequest,
     RealmBillingSession,
     UpgradeRequest,
-    get_latest_seat_count,
-    sign_string,
 )
 from corporate.lib.support import get_support_url
-from corporate.models import (
-    ZulipSponsorshipRequest,
-    get_current_plan_by_customer,
-    get_customer_by_realm,
-)
-from corporate.views.billing_page import billing_home
+from corporate.models import ZulipSponsorshipRequest
 from zerver.actions.users import do_change_is_billing_admin
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
@@ -101,50 +91,15 @@ def initial_upgrade(
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)
 
-    customer = get_customer_by_realm(user.realm)
-    if (
-        customer is not None and customer.sponsorship_pending
-    ) or user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
-        return HttpResponseRedirect(reverse("sponsorship_request"))
-
-    billing_page_url = reverse(billing_home)
-    if customer is not None and (get_current_plan_by_customer(customer) is not None or onboarding):
-        if onboarding:
-            billing_page_url = f"{billing_page_url}?onboarding=true"
-        return HttpResponseRedirect(billing_page_url)
-
-    percent_off = Decimal(0)
-    if customer is not None and customer.default_discount is not None:
-        percent_off = customer.default_discount
-
-    exempt_from_license_number_check = (
-        customer is not None and customer.exempt_from_license_number_check
+    initial_upgrade_request = InitialUpgradeRequest(
+        onboarding=onboarding,
+        manual_license_management=manual_license_management,
     )
+    billing_session = RealmBillingSession(user)
+    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
 
-    seat_count = get_latest_seat_count(user.realm)
-    signed_seat_count, salt = sign_string(str(seat_count))
-    context: Dict[str, Any] = {
-        "realm": user.realm,
-        "email": user.delivery_email,
-        "seat_count": seat_count,
-        "signed_seat_count": signed_seat_count,
-        "salt": salt,
-        "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
-        "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-        "exempt_from_license_number_check": exempt_from_license_number_check,
-        "plan": "Zulip Cloud Standard",
-        "free_trial_days": settings.FREE_TRIAL_DAYS,
-        "onboarding": onboarding,
-        "page_params": {
-            "seat_count": seat_count,
-            "annual_price": 8000,
-            "monthly_price": 800,
-            "percent_off": float(percent_off),
-            "demo_organization_scheduled_deletion_date": user.realm.demo_organization_scheduled_deletion_date,
-        },
-        "is_demo_organization": user.realm.demo_organization_scheduled_deletion_date is not None,
-        "manual_license_management": manual_license_management,
-    }
+    if redirect_url:
+        return HttpResponseRedirect(redirect_url)
 
     response = render(request, "corporate/upgrade.html", context=context)
     return response

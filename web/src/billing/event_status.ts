@@ -50,25 +50,14 @@ function handle_session_complete_event(session: StripeSession): void {
     let message = "";
     let redirect_to = "";
     switch (session.type) {
-        case "upgrade_from_billing_page":
-        case "retry_upgrade_with_another_payment_method":
-            message = "We have received your billing details. Attempting to create charge...";
-            redirect_to = `/billing/event_status?stripe_payment_intent_id=${session.stripe_payment_intent_id!}`;
-            break;
-        case "free_trial_upgrade_from_billing_page":
-            message =
-                "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.";
-            redirect_to = "/billing/";
-            break;
-        case "free_trial_upgrade_from_onboarding_page":
-            message =
-                "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.";
-            redirect_to = "/billing?onboarding=true";
-            break;
         case "card_update_from_billing_page":
-            message =
-                "Your card has been updated. You would be redirected to the billing page soon.";
+            message = "Card successfully updated! Returning to billing…";
             redirect_to = "/billing#payment-method";
+            break;
+        case "card_update_from_upgrade_page":
+            message = "Card successfully added! Returning to billing…";
+            redirect_to = "/upgrade/";
+            break;
     }
     update_status_and_redirect(message, redirect_to);
 }

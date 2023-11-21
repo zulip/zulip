@@ -11,7 +11,6 @@ from stripe.webhook import Webhook
 from corporate.lib.stripe import STRIPE_API_VERSION
 from corporate.lib.stripe_event_handler import (
     handle_checkout_session_completed_event,
-    handle_payment_intent_payment_failed_event,
     handle_payment_intent_succeeded_event,
 )
 from corporate.models import Event, PaymentIntent, Session
@@ -52,7 +51,6 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
     if stripe_event.type not in [
         "checkout.session.completed",
         "payment_intent.succeeded",
-        "payment_intent.payment_failed",
     ]:
         return HttpResponse(status=200)
 
@@ -87,19 +85,7 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
         event.object_id = payment_intent.id
         event.save()
         handle_payment_intent_succeeded_event(stripe_payment_intent, event)
-    elif stripe_event.type == "payment_intent.payment_failed":
-        stripe_payment_intent = stripe_event.data.object
-        try:
-            assert isinstance(stripe_payment_intent, stripe.PaymentIntent)
-            payment_intent = PaymentIntent.objects.get(
-                stripe_payment_intent_id=stripe_payment_intent.id
-            )
-        except PaymentIntent.DoesNotExist:
-            # PaymentIntent that was not manually created from the billing system.
-            # Could be an Invoice getting paid which is not an event we are interested in.
-            return HttpResponse(status=200)
-        event.content_type = ContentType.objects.get_for_model(PaymentIntent)
-        event.object_id = payment_intent.id
-        event.save()
-        handle_payment_intent_payment_failed_event(stripe_payment_intent, event)
+    # We don't need to process failed payments via webhooks since we directly charge users
+    # when they click on "Purchase" button and immediately provide feedback for failed payments.
+    # If the feedback is not immediate, our event_status handler checks for payment status and informs the user.
     return HttpResponse(status=200)

@@ -2,7 +2,6 @@ import {
     differenceInCalendarDays,
     differenceInHours,
     differenceInMinutes,
-    format,
     formatISO,
     isEqual,
     isValid,
@@ -44,7 +43,7 @@ type DateOrTimeFormat = DateFormat | TimeFormat | DateWithTimeFormat;
 // for any formats that display the name for a month/weekday, but
 // possibly in more subtle ways for languages with different
 // punctuation schemes for date and times.
-function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeFormatOptions {
+export function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeFormatOptions {
     const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
 
     const time_format_options: Intl.DateTimeFormatOptions = is_twenty_four_hour_time
@@ -94,17 +93,6 @@ function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeForma
     }
 }
 
-function get_user_locale(): string {
-    const user_default_language = user_settings.default_language;
-    let locale = "";
-    try {
-        locale = Intl.DateTimeFormat.supportedLocalesOf(user_default_language)[0];
-    } catch {
-        locale = "default";
-    }
-    return locale;
-}
-
 // Common function for all date/time rendering in the project. Handles
 // localization using the user's configured locale and the
 // twenty_four_hour_time setting.
@@ -114,14 +102,15 @@ export function get_localized_date_or_time_for_format(
     date: Date | number,
     format: DateOrTimeFormat,
 ): string {
-    const locale = get_user_locale();
-    return new Intl.DateTimeFormat(locale, get_format_options_for_type(format)).format(date);
+    return new Intl.DateTimeFormat(
+        user_settings.default_language,
+        get_format_options_for_type(format),
+    ).format(date);
 }
 
 // Exported for tests only.
 export function get_tz_with_UTC_offset(time: number | Date): string {
-    const tz_offset = format(time, "xxx");
-    let timezone = new Intl.DateTimeFormat(undefined, {timeZoneName: "short"})
+    let timezone = new Intl.DateTimeFormat(user_settings.default_language, {timeZoneName: "short"})
         .formatToParts(time)
         .find(({type}) => type === "timeZoneName")?.value;
 
@@ -134,7 +123,12 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
 
-    const tz_UTC_offset = `(UTC${tz_offset})`;
+    const tz_offset = new Intl.DateTimeFormat(user_settings.default_language, {
+        timeZoneName: "longOffset",
+    })
+        .formatToParts(time)
+        .find(({type}) => type === "timeZoneName")!.value;
+    const tz_UTC_offset = `(${tz_offset.replace(/^GMT/, "UTC")})`;
 
     if (timezone) {
         return timezone + " " + tz_UTC_offset;
@@ -467,8 +461,7 @@ export function get_full_datetime_clarification(
     time: Date,
     time_format: TimeFormat = "time_sec",
 ): string {
-    const locale = get_user_locale();
-    const date_string = time.toLocaleDateString(locale);
+    const date_string = time.toLocaleDateString(user_settings.default_language);
     let time_string = get_localized_date_or_time_for_format(time, time_format);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);

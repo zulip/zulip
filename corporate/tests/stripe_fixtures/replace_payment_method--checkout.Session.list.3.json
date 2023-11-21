@@ -36,7 +36,7 @@
       },
       "customer_email": null,
       "expires_at": 1000000000,
-      "id": "cs_test_NORMALIZED05bNL5sYVVEAnJVd8jOtzB46s5oQwNOb3y9y6nHz9MDL5k6Z",
+      "id": "cs_test_NORMALIZED05wzwBduNX3uS7SIimgArgoeONFHL2ahVt5YYznlwrUw5XYu",
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
@@ -60,7 +60,7 @@
         "enabled": false
       },
       "recovered_from": null,
-      "setup_intent": "seti_1OAbf0DEQaroqDjsVcgavnHC",
+      "setup_intent": "seti_1ODZa5DEQaroqDjsnToh0SIX",
       "shipping": null,
       "shipping_address_collection": null,
       "shipping_options": [],
@@ -71,7 +71,7 @@
       "success_url": "http://zulip.testserver/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
-      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED05bNL5sYVVEAnJVd8jOtzB46s5oQwNOb3y9y6nHz9MDL5k6Z#fidkdWxOYHwnPyd1blpxYHZxWl1UZjFOczZJXUE2PUpzUWNPV2ZpdlFzUCcpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBaZmppcGhrJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl"
+      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED05wzwBduNX3uS7SIimgArgoeONFHL2ahVt5YYznlwrUw5XYu#fidkdWxOYHwnPyd1blpxYHZxWl1UZjFOczZJXUE2PUpzUWNPV2ZpdlFzUCcpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBaZmppcGhrJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl"
     }
   ],
   "has_more": true,

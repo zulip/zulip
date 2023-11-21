@@ -29,7 +29,7 @@
 <div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
     <div class="inner-box">
 
-        <div class="general_settings stream_section">
+        <div class="stream_section" data-stream-section="general">
             {{#with sub}}
             <div class="stream-settings-tip-container">
                 {{> stream_settings_tip}}
@@ -94,7 +94,7 @@
             </div>
         </div>
 
-        <div id="personal-stream-settings" class="personal_settings stream_section">
+        <div id="personal-stream-settings" class="stream_section" data-stream-section="personal">
             <div class="subsection-header">
                 <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
                 <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
@@ -141,7 +141,7 @@
             </div>
         </div>
 
-        <div class="subscriber_settings stream_section">
+        <div class="stream_section" data-stream-section="subscribers">
             {{#with sub}}
             <div class="edit_subscribers_for_stream">
                 {{> stream_members}}

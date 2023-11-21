@@ -245,7 +245,29 @@ export function activate(raw_operators, opts) {
                 // to where the message is located now.
                 const narrow_topic = filter.operands("topic")[0];
                 const narrow_stream_name = filter.operands("stream")[0];
-                const narrow_stream_id = stream_data.get_sub(narrow_stream_name).stream_id;
+                const narrow_stream_data = stream_data.get_sub(narrow_stream_name);
+                if (!narrow_stream_data) {
+                    // The id of the target message is correct but the stream name is
+                    // incorrect in the URL. We reconstruct the narrow with the correct
+                    // stream name and narrow.
+                    const adjusted_operators = adjusted_operators_if_moved(
+                        raw_operators,
+                        target_message,
+                    );
+
+                    if (adjusted_operators === null) {
+                        blueslip.error("adjusted_operators impossibly null");
+                        return;
+                    }
+
+                    activate(adjusted_operators, {
+                        ...opts,
+                        // Update the URL fragment to reflect the redirect.
+                        change_hash: true,
+                    });
+                    return;
+                }
+                const narrow_stream_id = narrow_stream_data.stream_id;
                 const narrow_dict = {stream_id: narrow_stream_id, topic: narrow_topic};
 
                 const narrow_exists_in_edit_history =
