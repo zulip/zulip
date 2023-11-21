@@ -182,6 +182,7 @@
 * [Roles and permissions](/help/roles-and-permissions)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
+* [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Custom profile fields](/help/custom-profile-fields)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
