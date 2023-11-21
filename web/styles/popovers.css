@@ -1344,7 +1344,7 @@ ul {
             }
 
             .navbar-dropdown-menu-link {
-                padding: 2px 0;
+                padding: 2px 10px;
                 flex-grow: 1;
                 text-align: center;
                 text-decoration: none;
@@ -1369,6 +1369,7 @@ ul {
 
         .org-url {
             margin-bottom: 7px;
+            padding: 0 10px;
         }
 
         .org-name,
@@ -1380,6 +1381,7 @@ ul {
             font-size: 17px;
             font-weight: 600;
             line-height: 22px;
+            padding: 0 10px;
         }
 
         .org-plan,
