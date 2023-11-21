@@ -208,7 +208,9 @@ def get_file_path_id_from_token(token: str) -> Optional[str]:
     signer = TimestampSigner(salt=USER_UPLOADS_ACCESS_TOKEN_SALT)
     try:
         signed_data = base64.b16decode(token).decode()
-        path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
+        path_id = signer.unsign(
+            signed_data, max_age=timedelta(seconds=settings.SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS)
+        )
     except (BadSignature, binascii.Error):
         return None
 

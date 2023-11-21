@@ -608,3 +608,7 @@ MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 # installations with thousands of users with many guests limited in
 # this way, pending further optimization of the relevant code paths.
 CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
+
+# General expiry time for signed tokens we may generate
+# in some places through the codebase.
+SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
