@@ -2,12 +2,12 @@ import $ from "jquery";
 
 export function update_padding(opts: {
     content_sel: string;
-    padding_sel: string;
+    padding_selector: string;
     total_rows: number;
     shown_rows: number;
 }): void {
     const $content = $(opts.content_sel);
-    const $padding = $(opts.padding_sel);
+    const $padding = $(opts.padding_selector);
     const total_rows = opts.total_rows;
     const shown_rows = opts.shown_rows;
     const hidden_rows = total_rows - shown_rows;
