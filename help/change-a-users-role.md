@@ -46,3 +46,4 @@ organization](/help/deactivate-your-organization) instead).
 
 * [Change a user's name](/help/change-a-users-name)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Manage a user](/help/manage-a-user)
