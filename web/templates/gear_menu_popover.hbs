@@ -26,7 +26,7 @@
                         {{/if}}
                     </li>
                 {{/if}}
-                {{#if (and user_has_billing_access (not is_plan_standard_sponsored_for_free)) }}
+                {{#if (and (not is_self_hosted) user_has_billing_access (not is_plan_standard_sponsored_for_free)) }}
                     {{#if sponsorship_pending }}
                     <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
                         <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Sponsorship request pending" }}</a>
