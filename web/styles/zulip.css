@@ -3278,16 +3278,8 @@ select.invite-as {
         margin-top: 10px;
     }
 
-    .column-left.expanded {
-        .left-sidebar {
-            #streams_header {
-                padding-right: 10px;
-            }
-        }
-
-        .left-sidebar-navigation-area {
-            margin-top: 10px;
-        }
+    .column-left.expanded .left-sidebar-navigation-area {
+        margin-top: 10px;
     }
 
     .spectator-view {
