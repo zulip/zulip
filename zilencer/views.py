@@ -504,19 +504,25 @@ def batch_create_table_data(
     model: Type[ModelT],
     row_objects: List[ModelT],
 ) -> None:
-    BATCH_SIZE = 1000
-    while len(row_objects) > 0:
-        try:
-            model._default_manager.bulk_create(row_objects[:BATCH_SIZE])
-        except IntegrityError:
-            logging.warning(
-                "Invalid data saving %s for server %s/%s",
-                model._meta.db_table,
-                server.hostname,
-                server.uuid,
-            )
-            raise JsonableError(_("Invalid data."))
-        row_objects = row_objects[BATCH_SIZE:]
+    # We ignore previously-existing data, in case it was truncated and
+    # re-created on the remote server.  `ignore_concflicts=True`
+    # cannot return the ids, or count thereof, of the new inserts,
+    # (see https://code.djangoproject.com/ticket/0138) so we rely on
+    # having a lock to accurately count them before and after.  This
+    # query is also well-indexed.
+    before_count = model._default_manager.filter(server=server).count()
+    model._default_manager.bulk_create(row_objects, batch_size=1000, ignore_conflicts=True)
+    after_count = model._default_manager.filter(server=server).count()
+    inserted_count = after_count - before_count
+    if inserted_count < len(row_objects):
+        logging.warning(
+            "Dropped %d duplicated rows while saving %d rows of %s for server %s/%s",
+            len(row_objects) - inserted_count,
+            len(row_objects),
+            model._meta.db_table,
+            server.hostname,
+            server.uuid,
+        )
 
 
 def update_remote_realm_data_for_server(
