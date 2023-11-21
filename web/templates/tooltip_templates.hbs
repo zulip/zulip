@@ -80,8 +80,11 @@
     {{tooltip_hotkey_hints "G" "←"}}
 </template>
 <template id="all-message-tooltip-template">
+    <div class="all_message_container">
+        <span>You have X unread messages.</span>
+        <span class="unread_count"></span>
+    </div>
     <div class="views-tooltip-container" data-view-code="all_messages">
-        <div>{{t 'All messages' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "A"}}
@@ -101,7 +104,10 @@
     {{tooltip_hotkey_hints "Shift" "I"}}
 </template>
 <template id="drafts-tooltip-template">
-    {{t 'Drafts' }}
+    <div class="draft_container">
+        <span>You have X drafts.</span>
+        <span class="unread_count"></span>
+    </div>
     {{tooltip_hotkey_hints "D"}}
 </template>
 <template id="show-all-pms-template">
@@ -109,10 +115,22 @@
     {{tooltip_hotkey_hints "Shift" "P"}}
 </template>
 <template id="mentions-tooltip-template">
-    {{t 'Mentions' }}
+    <div class="mentions_container">
+        <span>You have X unread mentions.</span>
+        <span class="unread_count"></span>
+    </div>
 </template>
 <template id="starred-tooltip-template">
-    {{t 'Starred messages' }}
+    <div class="starred_container">
+        <span>You have X starred messages.</span>
+        <span class="unread_count"></span>
+    </div>
+</template>
+<template id="scheduled-tooltip-template">
+    <div class="scheduled_container">
+        <span>You have X scheduled messages.</span>
+        <span class="unread_count"></span>
+    </div>
 </template>
 <template id="filter-streams-tooltip-template">
     {{t 'Filter streams' }}

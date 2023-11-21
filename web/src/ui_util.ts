@@ -3,6 +3,8 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as keydown_util from "./keydown_util";
 
+import {initialize} from "./tippyjs";
+
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
 
@@ -58,6 +60,7 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
 
     $unread_count_span.removeClass("hide");
     $unread_count_span.text(count);
+    initialize();
 }
 
 export function update_unread_mention_info_in_dom(
@@ -73,6 +76,7 @@ export function update_unread_mention_info_in_dom(
 
     $unread_mention_info_span.show();
     $unread_mention_info_span.text("@");
+    initialize();
 }
 
 /**

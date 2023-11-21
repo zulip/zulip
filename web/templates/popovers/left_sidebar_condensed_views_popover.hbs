@@ -12,7 +12,11 @@
     </li>
     {{#if has_scheduled_messages }}
     <li class="condensed-views-popover-menu-scheduled-messages">
-        <a tabindex="0" href="#scheduled" class="left-sidebar-popover-icon-label-count">
+        <a 
+            tabindex="0" href="#scheduled" 
+            class="left-sidebar-popover-icon-label-count tippy-left-sidebar-tooltip"
+            data-tooltip-template-id="scheduled-tooltip-template"
+        >
             <span class="filter-icon">
                 <i class="zulip-icon zulip-icon-scheduled-messages" aria-hidden="true"></i>
             </span>

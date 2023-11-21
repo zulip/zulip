@@ -4,6 +4,7 @@
         "paths": {
             "*": ["web/src/types/*"],
         },
+        "allowJs": true,
         "types": ["@types/jquery.validation"],
 
         /* TypeScript 3.4 added the --incremental flag but its API is not

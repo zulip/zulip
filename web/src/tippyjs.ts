@@ -7,6 +7,11 @@ import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import {$t} from "./i18n";
 import {user_settings} from "./user_settings";
 
+import * as unread from "./unread";
+import * as starred_message from "./starred_messages";
+import * as drafts from "./drafts";
+import * as scheduled from "./scheduled_messages"
+
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
 function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
@@ -116,6 +121,43 @@ export function initialize(): void {
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onShow(instance){
+            
+            const $popper = $(instance.popper);
+            console.log("DEU CERTO!", $popper.find(".all_message_container"))
+
+            let $element;
+            let count = 0;
+            const counts = unread.get_counts()
+
+            if($popper.find(".all_message_container").length > 0){
+                $element = $popper.find(".all_message_container");
+                count = counts.home_unread_messages
+                console.log("ALOOO", count)
+            }
+            else if($popper.find(".mentions_container").length > 0){
+                $element = $popper.find(".mentions_container");
+                count = counts.mentioned_message_count
+            }
+            else if($popper.find(".starred_container").length > 0){
+                $element = $popper.find(".starred_container");
+                count = starred_message.get_count();
+            }
+            else if($popper.find(".draft_container").length > 0){
+                $element = $popper.find(".draft_container");
+                count = drafts.draft_model.getDraftCount();
+            }
+            
+            else if($popper.find(".scheduled_container").length > 0){
+                $element = $popper.find(".scheduled_container");
+                count = scheduled.get_count()
+            }
+
+            const $count_span = $element?.find(".unread_count");
+            $count_span?.text(count);
+            // count === 0 ? $count_span?.addClass("hide"): $count_span?.removeClass("hide");
+
+        },
         popperOptions: {
             modifiers: [
                 {
