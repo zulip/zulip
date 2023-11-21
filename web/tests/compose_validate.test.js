@@ -431,15 +431,9 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     assert.ok(stream_wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+    mock_template("compose_banner/wildcard_mention_not_allowed_error.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage:
-                    "You do not have permission to use stream wildcard mentions in this stream.",
-            }),
-        );
+        assert.equal(data.stream_wildcard_mention, "all");
         wildcards_not_allowed_rendered = true;
     });
     override_rewire(
