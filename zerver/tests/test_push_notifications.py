@@ -1201,30 +1201,23 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Data is out of order.")
 
-        with mock.patch("zilencer.views.validate_incoming_table_data"), self.assertLogs(
-            level="WARNING"
-        ) as warn_log:
-            # We need to wrap a transaction here to avoid the
-            # IntegrityError that will be thrown in here from breaking
-            # the unittest transaction.
-            with transaction.atomic():
-                result = self.uuid_post(
-                    self.server_uuid,
-                    "/api/v1/remotes/server/analytics",
-                    {
-                        "realm_counts": orjson.dumps(realm_count_data).decode(),
-                        "installation_counts": orjson.dumps(installation_count_data).decode(),
-                        "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-                    },
-                    subdomain="",
-                )
-            self.assert_json_error(result, "Invalid data.")
-            self.assertEqual(
-                warn_log.output,
-                [
-                    "WARNING:root:Invalid data saving zilencer_remoteinstallationcount for server demo.example.com/6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-                ],
-            )
+        # Adjust the id of all existing rows so that they get re-sent.
+        # This is equivalent to running `./manage.py clear_analytics_tables`
+        RealmCount.objects.all().update(id=F("id") + RealmCount.objects.latest("id").id)
+        InstallationCount.objects.all().update(
+            id=F("id") + InstallationCount.objects.latest("id").id
+        )
+        with self.assertLogs(level="WARNING") as warn_log:
+            send_analytics_to_push_bouncer()
+        self.assertEqual(
+            warn_log.output,
+            [
+                f"WARNING:root:Dropped 3 duplicated rows while saving 3 rows of zilencer_remoterealmcount for server demo.example.com/{self.server_uuid}",
+                f"WARNING:root:Dropped 2 duplicated rows while saving 2 rows of zilencer_remoteinstallationcount for server demo.example.com/{self.server_uuid}",
+            ],
+        )
+        # Only the request counts go up -- all of the other rows' duplicates are dropped
+        check_counts(10, 8, 3, 2, 5)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
