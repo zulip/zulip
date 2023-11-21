@@ -22,7 +22,7 @@ from zerver.models import (
 
 def bulk_create_users(
     realm: Realm,
-    users_raw: Set[Tuple[str, str, bool]],
+    users_raw: Set[Tuple[str, str, bool, bool]],
     bot_type: Optional[int] = None,
     bot_owner: Optional[UserProfile] = None,
     tos_version: Optional[str] = None,
@@ -47,7 +47,7 @@ def bulk_create_users(
 
     # Now create user_profiles
     profiles_to_create: List[UserProfile] = []
-    for email, full_name, active in users:
+    for email, full_name, active, imported in users:
         profile = create_user_profile(
             realm,
             email,
@@ -57,7 +57,7 @@ def bulk_create_users(
             full_name,
             bot_owner,
             False,
-            False,
+            imported,
             False,
             tos_version,
             timezone,
@@ -250,5 +250,6 @@ def create_users(
 ) -> None:
     user_set = set()
     for full_name, email in name_list:
-        user_set.add((email, full_name, True))
+        is_imported = email == "imported_user@example.com"
+        user_set.add((email, full_name, not is_imported, is_imported))
     bulk_create_users(realm, user_set, bot_type)

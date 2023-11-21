@@ -315,3 +315,6 @@ class RawUserDict(TypedDict):
     bot_type: Optional[int]
     long_term_idle: bool
     email_address_visibility: int
+    is_imported_protouser: bool
+    is_mirror_protouser: bool
+    is_deleted_protouser: bool

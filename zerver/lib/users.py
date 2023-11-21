@@ -415,6 +415,9 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[Optional[Dict[str, Any]]]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    is_imported_protouser: NotRequired[bool]
+    is_mirror_protouser: NotRequired[bool]
+    is_deleted_protouser: NotRequired[bool]
 
 
 def format_user_row(
@@ -507,6 +510,13 @@ def format_user_row(
         result["bot_owner_id"] = row["bot_owner_id"]
     elif custom_profile_field_data is not None:
         result["profile_data"] = custom_profile_field_data
+
+    if row["is_imported_protouser"]:
+        result["is_imported_protouser"] = True
+    elif row["is_mirror_protouser"]:
+        result["is_mirror_protouser"] = True
+    elif row["is_deleted_protouser"]:
+        result["is_deleted_protouser"] = True
     return result
 
 
@@ -642,6 +652,9 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         bot_type=user_profile.bot_type,
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
+        is_imported_protouser=user_profile.is_imported_protouser,
+        is_mirror_protouser=user_profile.is_mirror_protouser,
+        is_deleted_protouser=user_profile.is_deleted_protouser,
     )
 
 

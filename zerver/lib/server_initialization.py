@@ -82,7 +82,8 @@ def create_users(
 ) -> None:
     user_set = set()
     for full_name, email in name_list:
-        user_set.add((email, full_name, True))
+        is_imported = email == "imported_user@example.com"
+        user_set.add((email, full_name, not is_imported, is_imported))
     bulk_create_users(
         realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version
     )

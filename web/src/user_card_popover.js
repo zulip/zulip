@@ -240,7 +240,7 @@ function get_user_card_popover_data(
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
     const spectator_view = page_params.is_spectator;
-
+    console.log("USER", user);
     const show_manage_menu = !spectator_view && !is_me;
 
     let date_joined;
