@@ -5,6 +5,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
 import * as channel from "./channel";
@@ -446,14 +447,12 @@ export function validate_stream_message_mentions(opts) {
         subscriber_count > stream_wildcard_mention_large_stream_threshold
     ) {
         if (!stream_wildcard_mention_allowed_in_large_stream()) {
-            compose_banner.show_error_message(
-                $t({
-                    defaultMessage:
-                        "You do not have permission to use stream wildcard mentions in this stream.",
-                }),
-                compose_banner.CLASSNAMES.wildcards_not_allowed,
-                opts.$banner_container,
-            );
+            const new_row = render_wildcard_mention_not_allowed_error({
+                banner_type: compose_banner.ERROR,
+                classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                stream_wildcard_mention: opts.stream_wildcard_mention,
+            });
+            compose_banner.append_compose_banner_to_banner_list(new_row, opts.$banner_container);
             return false;
         }
 
