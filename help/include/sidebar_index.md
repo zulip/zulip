@@ -228,6 +228,7 @@
 ## Bots & integrations
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Generate integration URL](/help/generate-integration-url)
 * [Edit a bot](/help/edit-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Request an integration](/help/request-an-integration)
