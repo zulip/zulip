@@ -10,6 +10,7 @@ const stripe_response_schema = z.object({
         type: z.string(),
         stripe_payment_intent_id: z.string().optional(),
         status: z.string(),
+        is_manual_license_management_upgrade_session: z.boolean().optional(),
         event_handler: z
             .object({
                 status: z.string(),
@@ -56,7 +57,11 @@ function handle_session_complete_event(session: StripeSession): void {
             break;
         case "card_update_from_upgrade_page":
             message = "Card successfully added! Returning to billing…";
-            redirect_to = "/upgrade/";
+            if (session.is_manual_license_management_upgrade_session) {
+                redirect_to = "/upgrade/?manual_license_management=true";
+            } else {
+                redirect_to = "/upgrade/";
+            }
             break;
     }
     update_status_and_redirect(message, redirect_to);
