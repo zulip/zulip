@@ -23,6 +23,11 @@ export const initialize = (): void => {
     $("#org-upgrade-button").on("click", (e) => {
         e.preventDefault();
 
+        // Clear the error box in case this is a repeat request.
+        const $error_box = $("#autopay-error");
+        $error_box.text("");
+        $error_box.hide();
+
         $("#org-upgrade-button-text").hide();
         $("#org-upgrade-button .upgrade-button-loader").show();
         helpers.create_ajax_request(
@@ -45,7 +50,6 @@ export const initialize = (): void => {
             () => {
                 $("#org-upgrade-button-text").show();
                 $("#org-upgrade-button .upgrade-button-loader").hide();
-                const $error_box = $("#autopay-error");
                 const error_text = $error_box.text();
                 $error_box.text(`${error_text} Please fix this issue or use a different card.`);
             },
