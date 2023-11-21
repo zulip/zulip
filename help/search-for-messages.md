@@ -82,7 +82,7 @@ Zulip offers the following filters based on the location of the message.
 !!! tip ""
 
     You can also [view](/help/manage-your-uploaded-files) all the files you
-    have uploaded or [browse](/help/view-and-browse-images) all the images and
+    have uploaded or [browse](/help/view-images-and-videos) all the images and
     videos in the current view.
 
 ### Search your important messages

@@ -22,3 +22,9 @@ prevent images from being used to track Zulip users.
 {!save-changes.md!}
 
 {end_tabs}
+
+## Related articles
+
+* [Manage your uploaded files](/help/manage-your-uploaded-files)
+* [Share and upload files](/help/share-and-upload-files)
+* [View images and videos](/help/view-images-and-videos)

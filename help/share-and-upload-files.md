@@ -6,7 +6,7 @@ after you upload them.
 
 For images and videos, a small preview will be shown directly in the message.
 People reading the message can click on the preview to
-[view the full-size image or video](/help/view-and-browse-images).
+[view the full-size image or video](/help/view-images-and-videos).
 
 ## Uploading files
 
@@ -125,5 +125,6 @@ This limit can be changed by the server administrator.
 ## Related articles
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
-* [View images and videos](/help/view-and-browse-images)
+* [View images and videos](/help/view-images-and-videos)
+* [Block image and link previews](/help/allow-image-link-previews)
 * [Animated GIFs](/help/animated-gifs-from-giphy)

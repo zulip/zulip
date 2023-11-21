@@ -68,3 +68,4 @@ the image browser will show all images in messages that matched that search.
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [Share and upload files](/help/share-and-upload-files)
+* [Block image and link previews](/help/allow-image-link-previews)
