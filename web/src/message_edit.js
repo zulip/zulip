@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
@@ -1070,12 +1071,22 @@ export function save_message_row_edit($row) {
 
                 hide_message_edit_spinner($row);
                 if (xhr.readyState !== 0) {
+                    const $container = compose_banner.get_compose_banner_container(
+                        $row.find("textarea"),
+                    );
+
+                    if (xhr.responseJSON?.code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
+                        const new_row = render_wildcard_mention_not_allowed_error({
+                            banner_type: compose_banner.ERROR,
+                            classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                        });
+                        compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+                        return;
+                    }
+
                     const message = channel.xhr_error_message(
                         $t({defaultMessage: "Error editing message"}),
                         xhr,
-                    );
-                    const $container = compose_banner.get_compose_banner_container(
-                        $row.find("textarea"),
                     );
                     compose_banner.show_error_message(
                         message,

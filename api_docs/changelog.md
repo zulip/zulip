@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 229**
+
+* [`PATCH /messages/{message_id}`](/api/update-message), [`POST
+  /messages`](/api/send-message): Topic wildcard mentions involving
+  large numbers of participants are now restricted by
+  `wildcard_mention_policy`. The server now uses the
+  `STREAM_WILDCARD_MENTION_NOT_ALLOWED` and
+  `TOPIC_WILDCARD_MENTION_NOT_ALLOWED` error codes when a message is
+  rejected because of `wildcard_mention_policy`.
+
 **Feature level 228**
 
 * [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
