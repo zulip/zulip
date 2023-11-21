@@ -613,3 +613,8 @@ input[name="licenses"] {
 #upgrade-page-details .upgrade-add-card-container {
     text-align: left;
 }
+
+#autopay-error {
+    font-weight: 400;
+    margin-left: 0;
+}
