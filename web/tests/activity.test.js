@@ -91,7 +91,7 @@ people.initialize_current_user(me.user_id);
 
 function clear_buddy_list() {
     buddy_list.populate({
-        keys: [],
+        all_user_ids: [],
     });
 }
 
@@ -302,7 +302,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     function init() {
         $.clear_all_elements();
         buddy_list.populate({
-            keys: [me.user_id, alice.user_id, fred.user_id],
+            all_user_ids: [me.user_id, alice.user_id, fred.user_id],
         });
 
         buddy_list.start_scroll_handler = () => {};
