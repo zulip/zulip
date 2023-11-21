@@ -216,12 +216,12 @@ export class BuddyList extends BuddyListConf {
     }
 
     insert_new_html(opts) {
-        const new_key = opts.new_key;
+        const key_following_insertion = opts.new_key;
         const html = opts.html;
-        const pos = opts.pos;
+        const new_pos_in_all_users = opts.pos;
 
-        if (new_key === undefined) {
-            if (pos === this.render_count) {
+        if (key_following_insertion === undefined) {
+            if (new_pos_in_all_users === this.render_count) {
                 this.render_count += 1;
                 this.$container.append(html);
                 this.update_padding();
@@ -229,9 +229,9 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        if (pos < this.render_count) {
+        if (new_pos_in_all_users < this.render_count) {
             this.render_count += 1;
-            const $li = this.find_li({key: new_key});
+            const $li = this.find_li({key: key_following_insertion});
             $li.before(html);
             this.update_padding();
         }
