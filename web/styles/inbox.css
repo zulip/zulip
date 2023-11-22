@@ -565,6 +565,24 @@
 }
 
 .inbox-filter-dropdown-list-container .dropdown-list-wrapper {
-    width: var(--width-inbox-filters-dropdown);
+    width: 100%;
     min-width: unset;
+}
+
+.inbox-filter-dropdown-list-container .dropdown-list-item-common-styles {
+    padding: 5px 10px;
+}
+
+.inbox-filter-dropdown-list-container .dropdown-list-item-name {
+    white-space: nowrap;
+    font-weight: 500;
+    padding: 0;
+    margin: 0;
+}
+
+.inbox-filter-dropdown-list-container .dropdown-list-item-description {
+    white-space: nowrap;
+    font-weight: 400;
+    opacity: 0.8;
+    padding: 0;
 }
