@@ -1057,13 +1057,17 @@ export function process_hotkey(e, hotkey) {
         // ':': open reactions to message
         case "toggle_reactions_popover": {
             const $row = message_lists.current.selected_row();
-            emoji_picker.toggle_emoji_popover(
-                msg.sent_by_me
-                    ? $row.find(".message-actions-menu-button")[0]
-                    : $row.find(".emoji-message-control-button-container")[0],
-                msg.id,
-                {placement: "bottom"},
-            );
+            const $emoji_icon = $row.find(".emoji-message-control-button-container");
+            let emoji_picker_reference;
+            if ($emoji_icon.is(":visible")) {
+                emoji_picker_reference = $emoji_icon[0];
+            } else {
+                emoji_picker_reference = $row.find(".message-actions-menu-button")[0];
+            }
+
+            emoji_picker.toggle_emoji_popover(emoji_picker_reference, msg.id, {
+                placement: "bottom",
+            });
             return true;
         }
         case "thumbs_up_emoji": {
