@@ -375,13 +375,13 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__synchronized_with_body", TOPIC_PR, expected_message)
 
     def test_pull_request_assigned_msg(self) -> None:
-        expected_message = "baxterthehacker assigned [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker."
+        expected_message = "baxterthehacker assigned baxterthehacker to [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__assigned", TOPIC_PR, expected_message)
 
     def test_pull_request_assigned_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "baxterthehacker assigned [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker."
+        expected_message = "baxterthehacker assigned baxterthehacker to [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__assigned", expected_topic, expected_message)
 
     def test_pull_request_unassigned_msg(self) -> None:
