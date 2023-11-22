@@ -508,7 +508,7 @@ function filters_dropdown_options() {
         },
         {
             unique_id: views_util.FILTERS.UNMUTED_TOPICS,
-            name: $t({defaultMessage: "Unmuted topics"}),
+            name: $t({defaultMessage: "Standard view"}),
             bold_current_selection:
                 filters_dropdown_widget &&
                 filters_dropdown_widget.current_value === views_util.FILTERS.UNMUTED_TOPICS,
