@@ -17,7 +17,7 @@ from corporate.lib.stripe import (
     UpgradeRequest,
 )
 from corporate.lib.support import get_support_url
-from corporate.models import ZulipSponsorshipRequest
+from corporate.models import CustomerPlan, ZulipSponsorshipRequest
 from zerver.actions.users import do_change_is_billing_admin
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
@@ -94,6 +94,7 @@ def initial_upgrade(
     initial_upgrade_request = InitialUpgradeRequest(
         onboarding=onboarding,
         manual_license_management=manual_license_management,
+        tier=CustomerPlan.STANDARD,
     )
     billing_session = RealmBillingSession(user)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
