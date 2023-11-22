@@ -43,8 +43,8 @@ export class DropdownWidget {
         // NOTE: Any value other than `null` will be rendered when class is initialized.
         default_id = null,
         unique_id_type = null,
-        // Show disabled state if the default_id is not in `get_options()`.
-        show_disabled_if_current_value_not_in_options = false,
+        // Text to show if the current value is not in `get_options()`.
+        text_if_current_value_not_in_options = null,
         hide_search_box = false,
     }) {
         this.widget_name = widget_name;
@@ -67,8 +67,7 @@ export class DropdownWidget {
         this.current_value = default_id;
         this.unique_id_type = unique_id_type;
         this.$events_container = $events_container;
-        this.show_disabled_if_current_value_not_in_options =
-            show_disabled_if_current_value_not_in_options;
+        this.text_if_current_value_not_in_options = text_if_current_value_not_in_options;
         this.hide_search_box = hide_search_box;
     }
 
@@ -295,11 +294,12 @@ export class DropdownWidget {
         }
 
         const all_options = this.get_options();
-        let option = all_options.find((option) => option.unique_id === this.current_value);
+        const option = all_options.find((option) => option.unique_id === this.current_value);
 
-        // Show disabled if cannot find current option.
-        if (!option && this.show_disabled_if_current_value_not_in_options) {
-            option = all_options.find((option) => option.is_setting_disabled === true);
+        // If provided, show custom text if cannot find current option.
+        if (!option && this.text_if_current_value_not_in_options) {
+            $(this.widget_value_selector).text(this.text_if_current_value_not_in_options);
+            return;
         }
 
         if (!option) {
