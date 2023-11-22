@@ -207,11 +207,14 @@ class RemoteInstallationCount(BaseRemoteCount):
                 condition=Q(subgroup__isnull=True),
                 name="unique_remote_installation_count_null_subgroup",
             ),
-        ]
-        indexes = [
-            models.Index(
+            UniqueConstraint(
                 fields=["server", "remote_id"],
-                name="zilencer_remoteinstallat_server_id_remote_id_f72e4c30_idx",
+                # As noted above, remote_id may be null, so we only
+                # enforce uniqueness if it isn't.  This is not
+                # technically necessary, since null != null, but it
+                # makes the property more explicit.
+                condition=Q(remote_id__isnull=False),
+                name="unique_remote_installation_count_server_id_remote_id",
             ),
         ]
 
@@ -243,15 +246,20 @@ class RemoteRealmCount(BaseRemoteCount):
                 condition=Q(subgroup__isnull=True),
                 name="unique_remote_realm_installation_count_null_subgroup",
             ),
+            UniqueConstraint(
+                fields=["server", "remote_id"],
+                # As with RemoteInstallationCount above, remote_id may
+                # be null; since null != null, this condition is not
+                # strictly necessary, but serves to make the property
+                # more explicit.
+                condition=Q(remote_id__isnull=False),
+                name="unique_remote_realm_installation_count_server_id_remote_id",
+            ),
         ]
         indexes = [
             models.Index(
                 fields=["property", "end_time"],
                 name="zilencer_remoterealmcount_property_end_time_506a0b38_idx",
-            ),
-            models.Index(
-                fields=["server", "remote_id"],
-                name="zilencer_remoterealmcount_server_id_remote_id_de1573d8_idx",
             ),
         ]
 
