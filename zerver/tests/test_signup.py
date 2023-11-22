@@ -1789,12 +1789,10 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assertEqual(
-            result["Location"], "http://custom-test.testserver/upgrade/?onboarding=true"
-        )
+        self.assertEqual(result["Location"], "http://custom-test.testserver/upgrade/")
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assert_in_success_response(["Not ready to start your trial?"], result)
+        self.assert_in_success_response(["You won't be charged during the free trial."], result)
 
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)

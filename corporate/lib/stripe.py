@@ -441,14 +441,12 @@ class UpgradeRequest:
     schedule: str
     signed_seat_count: str
     salt: str
-    onboarding: bool
     license_management: Optional[str]
     licenses: Optional[int]
 
 
 @dataclass
 class InitialUpgradeRequest:
-    onboarding: bool
     manual_license_management: bool
     tier: int
 
@@ -1221,13 +1219,8 @@ class BillingSession(ABC):
         if self.is_sponsored_or_pending(customer):
             return reverse("sponsorship_request"), None
 
-        onboarding = initial_upgrade_request.onboarding
         billing_page_url = reverse("billing_home")
-        if customer is not None and (
-            get_current_plan_by_customer(customer) is not None or onboarding
-        ):
-            if onboarding:
-                billing_page_url = f"{billing_page_url}?onboarding=true"
+        if customer is not None and (get_current_plan_by_customer(customer) is not None):
             return billing_page_url, None
 
         percent_off = Decimal(0)
@@ -1250,7 +1243,6 @@ class BillingSession(ABC):
             "exempt_from_license_number_check": exempt_from_license_number_check,
             "plan": "Zulip Cloud Standard",
             "free_trial_days": settings.FREE_TRIAL_DAYS,
-            "onboarding": onboarding,
             "page_params": {
                 "seat_count": seat_count,
                 "annual_price": get_price_per_license(tier, CustomerPlan.ANNUAL, percent_off),
