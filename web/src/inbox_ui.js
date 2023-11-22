@@ -500,11 +500,11 @@ function show_empty_inbox_text(has_visible_unreads) {
 function filters_dropdown_options() {
     return [
         {
-            unique_id: views_util.FILTERS.ALL_TOPICS,
-            name: $t({defaultMessage: "All topics"}),
+            unique_id: views_util.FILTERS.FOLLOWED_TOPICS,
+            name: $t({defaultMessage: "Followed topics"}),
             bold_current_selection:
                 filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === views_util.FILTERS.ALL_TOPICS,
+                filters_dropdown_widget.current_value === views_util.FILTERS.FOLLOWED_TOPICS,
         },
         {
             unique_id: views_util.FILTERS.UNMUTED_TOPICS,
@@ -514,11 +514,11 @@ function filters_dropdown_options() {
                 filters_dropdown_widget.current_value === views_util.FILTERS.UNMUTED_TOPICS,
         },
         {
-            unique_id: views_util.FILTERS.FOLLOWED_TOPICS,
-            name: $t({defaultMessage: "Followed topics"}),
+            unique_id: views_util.FILTERS.ALL_TOPICS,
+            name: $t({defaultMessage: "All topics"}),
             bold_current_selection:
                 filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === views_util.FILTERS.FOLLOWED_TOPICS,
+                filters_dropdown_widget.current_value === views_util.FILTERS.ALL_TOPICS,
         },
     ];
 }
