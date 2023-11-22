@@ -626,7 +626,7 @@ export function init_dropdown_widgets() {
         const disabled_option = {
             is_setting_disabled: true,
             unique_id: DISABLED_STATE_ID,
-            name: $t({defaultMessage: "Cannot view stream"}),
+            name: $t({defaultMessage: "Disabled"}),
         };
 
         options.unshift(disabled_option);
@@ -649,7 +649,7 @@ export function init_dropdown_widgets() {
         },
         default_id: page_params.realm_notifications_stream_id,
         unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
-        show_disabled_if_current_value_not_in_options: true,
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
     });
     settings_components.set_notifications_stream_widget(notifications_stream_widget);
     notifications_stream_widget.setup();
@@ -670,7 +670,7 @@ export function init_dropdown_widgets() {
         },
         default_id: page_params.realm_signup_notifications_stream_id,
         unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
-        show_disabled_if_current_value_not_in_options: true,
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
     });
     settings_components.set_signup_notifications_stream_widget(signup_notifications_stream_widget);
     signup_notifications_stream_widget.setup();
