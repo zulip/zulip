@@ -32,6 +32,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserProfile,
     active_user_ids,
@@ -147,7 +148,7 @@ def do_set_push_notifications_enabled_end_timestamp(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_realm_permission_group_setting(
     realm: Realm, setting_name: str, user_group: UserGroup, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -519,6 +520,21 @@ def do_change_realm_plan_type(
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         # We do not allow public access on limited plans.
         do_set_realm_property(realm, "enable_spectator_access", False, acting_user=acting_user)
+
+    if old_value in [Realm.PLAN_TYPE_PLUS, Realm.PLAN_TYPE_SELF_HOSTED] and plan_type not in [
+        Realm.PLAN_TYPE_PLUS,
+        Realm.PLAN_TYPE_SELF_HOSTED,
+    ]:
+        # If downgrading to a plan that no longer has access to change
+        # can_access_all_users_group, set it back to the default
+        # value.
+        everyone_system_group = UserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        if realm.can_access_all_users_group_id != everyone_system_group.id:
+            do_change_realm_permission_group_setting(
+                realm, "can_access_all_users_group", everyone_system_group, acting_user=acting_user
+            )
 
     realm.plan_type = plan_type
     realm.save(update_fields=["plan_type"])

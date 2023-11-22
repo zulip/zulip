@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
@@ -254,6 +255,23 @@ export function build_page() {
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
+
+    const is_plan_plus = page_params.realm_plan_type === 10;
+    const is_plan_self_hosted = page_params.realm_plan_type === 1;
+    if (
+        page_params.development_environment &&
+        page_params.is_admin &&
+        !(is_plan_plus || is_plan_self_hosted)
+    ) {
+        $("#realm_can_access_all_users_group_widget").prop("disabled", true);
+        const opts = {
+            content: $t({
+                defaultMessage: "This feature is available on Zulip Cloud Plus. Upgrade to access.",
+            }),
+        };
+
+        tippy($("#realm_can_access_all_users_group_widget_container")[0], opts);
+    }
 }
 
 export function launch(section) {

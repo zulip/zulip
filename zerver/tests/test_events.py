@@ -2628,6 +2628,10 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
+        members_group = UserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
 
         state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_SELF_HOSTED)
@@ -2637,10 +2641,11 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_realm_plan_type(
                 realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile
             ),
-            num_events=2,
+            num_events=3,
         )
         check_realm_update("events[0]", events[0], "enable_spectator_access")
-        check_realm_update("events[1]", events[1], "plan_type")
+        check_realm_update_dict("events[1]", events[1])
+        check_realm_update("events[2]", events[2], "plan_type")
 
         state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)
