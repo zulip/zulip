@@ -967,7 +967,6 @@ textarea.new_message_textarea,
 }
 
 .compose-control-buttons-container {
-    margin-right: auto;
     display: flex;
     align-items: center;
 
@@ -1070,6 +1069,29 @@ textarea.new_message_textarea,
 
         @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb3_min)) {
             display: none;
+        }
+    }
+
+    .show_popover_buttons_2 {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* This is similar to show_popover_buttons, but it's only for those
+        compose buttons that we hide, and show in the popover only when the
+        screen gets extremely narrow. */
+
+        @media (width < $cb4_min) {
+            display: none;
+        }
+    }
+
+    &.show_cb4 {
+        display: none;
+
+        @media (width < $cb4_min) {
+            display: flex;
         }
     }
 }

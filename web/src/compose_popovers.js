@@ -77,6 +77,7 @@ export function initialize() {
                     render_compose_control_buttons_popover({
                         giphy_enabled: giphy.is_giphy_enabled(),
                         preview_mode_on,
+                        inside_popover: true,
                     }),
                 ),
             );
