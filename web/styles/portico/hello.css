@@ -1062,7 +1062,27 @@ ul {
 }
 
 .portico-pricing {
+    --color-background-box: hsl(0deg 0% 100% / 80%);
+    --color-background-box-muted: hsl(0deg 0% 100% / 50%);
+    --color-plan-tab-header: hsl(223deg 40% 30%);
+    --color-plan-tab-copy: hsl(223deg 40% 25% / 70%);
+    --color-box-header: hsl(223deg 43% 25%);
+    --color-box-copy: hsl(223deg 43% 25%);
+
     padding: 102px 0 58px;
+    background: linear-gradient(
+        180deg,
+        hsl(209deg 40% 50) 0%,
+        hsl(210deg 48% 69%) 100%
+    );
+
+    @media (prefers-color-scheme: dark) {
+        background: linear-gradient(
+            180deg,
+            hsl(209deg 63% 40%) 30%,
+            hsl(238deg 28% 50%) 100%
+        );
+    }
 
     h1 {
         font-weight: 500;
@@ -1134,8 +1154,10 @@ ul {
 
     .pricing-tab {
         cursor: pointer;
+        background: var(--color-background-box);
 
         h2 {
+            color: var(--color-plan-tab-header);
             font-family: var(--font-ops);
             font-weight: 550;
             font-size: 30px;
@@ -1146,6 +1168,7 @@ ul {
         }
 
         p {
+            color: var(--color-plan-tab-copy);
             font-weight: 400;
             font-size: 16px;
             line-height: 125%;
@@ -1156,6 +1179,8 @@ ul {
 
     .pricing-pane {
         padding: 20px;
+        color: var(--color-box-copy);
+        background: var(--color-background-box);
 
         h2 {
             font-weight: 550;
@@ -1220,6 +1245,12 @@ ul {
             }
         }
 
+        .text-content {
+            color: var(--color-box-copy);
+            background: var(--color-background-box);
+            padding: 20px 32px;
+        }
+
         h3 {
             margin: 0 0 6px;
             font-weight: 500;
@@ -1261,12 +1292,20 @@ ul {
         .self-hosted-additional-pricing {
             display: none;
         }
+
+        .self-hosted-plan-title {
+            background-color: var(--color-background-box-muted);
+        }
     }
 
     &.showing-self-hosted {
         .cloud-plan-pricing,
         .cloud-additional-pricing {
             display: none;
+        }
+
+        .cloud-plan-title {
+            background-color: var(--color-background-box-muted);
         }
     }
 }
