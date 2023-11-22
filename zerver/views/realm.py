@@ -239,6 +239,8 @@ def update_realm(
         # Remove this when the feature is ready for production.
         assert settings.DEVELOPMENT
 
+        realm.can_enable_restricted_user_access_for_guests()
+
     data: Dict[str, Any] = {}
 
     message_content_delete_limit_seconds: Optional[int] = None

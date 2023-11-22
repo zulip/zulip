@@ -49,6 +49,7 @@ IGNORED_PHRASES = [
     r"Zulip Security",
     r"Zulip Cloud",
     r"Zulip Cloud Standard",
+    r"Zulip Cloud Plus",
     r"BigBlueButton",
     # Code things
     r"\.zuliprc",

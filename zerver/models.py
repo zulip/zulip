@@ -685,6 +685,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Cloud Standard. Upgrade to access.")
+    UPGRADE_TEXT_PLUS = gettext_lazy("Available on Zulip Cloud Plus. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -1046,6 +1047,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def ensure_not_on_limited_plan(self) -> None:
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             raise JsonableError(str(self.UPGRADE_TEXT_STANDARD))
+
+    def can_enable_restricted_user_access_for_guests(self) -> None:
+        if self.plan_type not in [Realm.PLAN_TYPE_PLUS, Realm.PLAN_TYPE_SELF_HOSTED]:
+            raise JsonableError(str(self.UPGRADE_TEXT_PLUS))
 
     @property
     def subdomain(self) -> str:
