@@ -1258,6 +1258,29 @@ ul {
             margin-top: auto;
         }
 
+        .standard-price-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            min-height: 56px;
+            margin-top: 24px;
+
+            .price {
+                font-size: 38px;
+                line-height: 1;
+                letter-spacing: -1px;
+            }
+
+            .currency-symbol {
+                opacity: 0.5;
+            }
+
+            .details p {
+                margin: 2px 0 0;
+                line-height: 17px;
+            }
+        }
+
         .button {
             display: block;
             font-weight: 550;
