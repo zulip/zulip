@@ -9,14 +9,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name="remoteinstallationcount",
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name="remoterealmcount",
-            unique_together=set(),
-        ),
         migrations.AddConstraint(
             model_name="remoteinstallationcount",
             constraint=models.UniqueConstraint(
@@ -48,5 +40,13 @@ class Migration(migrations.Migration):
                 fields=("server", "realm_id", "property", "end_time"),
                 name="unique_remote_realm_installation_count_null_subgroup",
             ),
+        ),
+        migrations.AlterUniqueTogether(
+            name="remoteinstallationcount",
+            unique_together=set(),
+        ),
+        migrations.AlterUniqueTogether(
+            name="remoterealmcount",
+            unique_together=set(),
         ),
     ]
