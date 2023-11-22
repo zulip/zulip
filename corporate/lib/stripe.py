@@ -451,6 +451,13 @@ class InitialUpgradeRequest:
     tier: int
 
 
+@dataclass
+class UpdatePlanRequest:
+    status: Optional[int]
+    licenses: Optional[int]
+    licenses_at_next_renewal: Optional[int]
+
+
 class AuditLogEventType(Enum):
     STRIPE_CUSTOMER_CREATED = 1
     STRIPE_CARD_CHANGED = 2
@@ -1263,6 +1270,134 @@ class BillingSession(ABC):
         self.update_context_initial_upgrade(context)
 
         return None, context
+
+    def downgrade_at_the_end_of_billing_cycle(self, plan: Optional[CustomerPlan] = None) -> None:
+        if plan is None:  # nocoverage
+            # TODO: Add test coverage. Right now, this logic is used
+            # in production but mocked in tests.
+            customer = self.get_customer()
+            assert customer is not None
+            plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        do_change_plan_status(plan, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+
+    # During realm deactivation we instantly downgrade the plan to Limited.
+    # Extra users added in the final month are not charged. Also used
+    # for the cancellation of Free Trial.
+    def downgrade_now_without_creating_additional_invoices(
+        self,
+        plan: Optional[CustomerPlan] = None,
+    ) -> None:
+        if plan is None:
+            customer = self.get_customer()
+            if customer is None:
+                return
+            plan = get_current_plan_by_customer(customer)
+            if plan is None:
+                return  # nocoverage
+
+        self.process_downgrade(plan)
+        plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by("id").last()
+        plan.next_invoice_date = next_invoice_date(plan)
+        plan.save(update_fields=["invoiced_through", "next_invoice_date"])
+
+    def do_update_plan(self, update_plan_request: UpdatePlanRequest) -> None:
+        customer = self.get_customer()
+        assert customer is not None
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None  # for mypy
+
+        new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, timezone_now())
+        if new_plan is not None:
+            raise JsonableError(
+                _(
+                    "Unable to update the plan. The plan has been expired and replaced with a new plan."
+                )
+            )
+
+        if last_ledger_entry is None:
+            raise JsonableError(_("Unable to update the plan. The plan has ended."))
+
+        status = update_plan_request.status
+        if status is not None:
+            if status == CustomerPlan.ACTIVE:
+                assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
+                do_change_plan_status(plan, status)
+            elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+                assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
+                self.downgrade_at_the_end_of_billing_cycle(plan=plan)
+            elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
+                assert plan.billing_schedule == CustomerPlan.MONTHLY
+                assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
+                # Customer needs to switch to an active plan first to avoid unexpected behavior.
+                assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                assert plan.fixed_price is None
+                do_change_plan_status(plan, status)
+            elif status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE:
+                assert plan.billing_schedule == CustomerPlan.ANNUAL
+                assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
+                # Customer needs to switch to an active plan first to avoid unexpected behavior.
+                assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                assert plan.fixed_price is None
+                do_change_plan_status(plan, status)
+            elif status == CustomerPlan.ENDED:
+                assert plan.is_free_trial()
+                self.downgrade_now_without_creating_additional_invoices(plan=plan)
+            return
+
+        licenses = update_plan_request.licenses
+        if licenses is not None:
+            if plan.automanage_licenses:
+                raise JsonableError(
+                    _(
+                        "Unable to update licenses manually. Your plan is on automatic license management."
+                    )
+                )
+            if last_ledger_entry.licenses == licenses:
+                raise JsonableError(
+                    _(
+                        "Your plan is already on {licenses} licenses in the current billing period."
+                    ).format(licenses=licenses)
+                )
+            if last_ledger_entry.licenses > licenses:
+                raise JsonableError(
+                    _("You cannot decrease the licenses in the current billing period.")
+                )
+            validate_licenses(
+                plan.charge_automatically,
+                licenses,
+                self.current_count_for_billed_licenses(),
+                plan.customer.exempt_from_license_number_check,
+            )
+            update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
+            return
+
+        licenses_at_next_renewal = update_plan_request.licenses_at_next_renewal
+        if licenses_at_next_renewal is not None:
+            if plan.automanage_licenses:
+                raise JsonableError(
+                    _(
+                        "Unable to update licenses manually. Your plan is on automatic license management."
+                    )
+                )
+            if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
+                raise JsonableError(
+                    _(
+                        "Your plan is already scheduled to renew with {licenses_at_next_renewal} licenses."
+                    ).format(licenses_at_next_renewal=licenses_at_next_renewal)
+                )
+            validate_licenses(
+                plan.charge_automatically,
+                licenses_at_next_renewal,
+                self.current_count_for_billed_licenses(),
+                plan.customer.exempt_from_license_number_check,
+            )
+            update_license_ledger_for_manual_plan(
+                plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
+            )
+            return
+
+        raise JsonableError(_("Nothing to change."))
 
 
 class RealmBillingSession(BillingSession):
@@ -2174,27 +2309,6 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
     )
 
 
-# During realm deactivation we instantly downgrade the plan to Limited.
-# Extra users added in the final month are not charged. Also used
-# for the cancellation of Free Trial.
-def downgrade_now_without_creating_additional_invoices(realm: Realm) -> None:
-    plan = get_current_plan_by_realm(realm)
-    if plan is None:
-        return
-
-    billing_session = RealmBillingSession(user=None, realm=realm)
-    billing_session.process_downgrade(plan)
-    plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by("id").last()
-    plan.next_invoice_date = next_invoice_date(plan)
-    plan.save(update_fields=["invoiced_through", "next_invoice_date"])
-
-
-def downgrade_at_the_end_of_billing_cycle(realm: Realm) -> None:
-    plan = get_current_plan_by_realm(realm)
-    assert plan is not None
-    do_change_plan_status(plan, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
-
-
 def get_all_invoices_for_customer(customer: Customer) -> Generator[stripe.Invoice, None, None]:
     if customer.stripe_customer_id is None:
         return
@@ -2251,8 +2365,8 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
                 continue
 
             # We've now decided to downgrade this customer and void all invoices, and the below will execute this.
-
-            downgrade_now_without_creating_additional_invoices(realm)
+            billing_session = RealmBillingSession(user=None, realm=realm)
+            billing_session.downgrade_now_without_creating_additional_invoices()
             void_all_open_invoices(realm)
             context: Dict[str, Union[str, Realm]] = {
                 "upgrade_url": f"{realm.uri}{reverse('initial_upgrade')}",

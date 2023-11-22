@@ -55,8 +55,6 @@ if settings.ZILENCER_ENABLED:
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
         RealmBillingSession,
-        downgrade_at_the_end_of_billing_cycle,
-        downgrade_now_without_creating_additional_invoices,
         get_latest_seat_count,
         switch_realm_from_standard_to_plus_plan,
         void_all_open_invoices,
@@ -264,18 +262,21 @@ def support(
             approve_realm_sponsorship(realm, acting_user=acting_user)
             context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif modify_plan is not None:
+            billing_session = RealmBillingSession(
+                user=acting_user, realm=realm, support_session=True
+            )
             if modify_plan == "downgrade_at_billing_cycle_end":
-                downgrade_at_the_end_of_billing_cycle(realm)
+                billing_session.downgrade_at_the_end_of_billing_cycle()
                 context[
                     "success_message"
                 ] = f"{realm.string_id} marked for downgrade at the end of billing cycle"
             elif modify_plan == "downgrade_now_without_additional_licenses":
-                downgrade_now_without_creating_additional_invoices(realm)
+                billing_session.downgrade_now_without_creating_additional_invoices()
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded without creating additional invoices"
             elif modify_plan == "downgrade_now_void_open_invoices":
-                downgrade_now_without_creating_additional_invoices(realm)
+                billing_session.downgrade_now_without_creating_additional_invoices()
                 voided_invoices_count = void_all_open_invoices(realm)
                 context[
                     "success_message"
