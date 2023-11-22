@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
-from pydantic import BaseModel, ConfigDict
+from pydantic import UUID4, BaseModel, ConfigDict
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
@@ -39,7 +39,7 @@ class RealmDataForAnalytics(BaseModel):
     date_created: float
     deactivated: bool
 
-    uuid: str
+    uuid: UUID4
     uuid_owner_secret: str
 
 
@@ -191,7 +191,7 @@ def get_realms_info_for_push_bouncer() -> List[RealmDataForAnalytics]:
     realm_info_list = [
         RealmDataForAnalytics(
             id=realm.id,
-            uuid=str(realm.uuid),
+            uuid=realm.uuid,
             uuid_owner_secret=realm.uuid_owner_secret,
             host=realm.host,
             url=realm.uri,
