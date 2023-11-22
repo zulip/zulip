@@ -502,6 +502,7 @@ function filters_dropdown_options() {
         {
             unique_id: views_util.FILTERS.FOLLOWED_TOPICS,
             name: $t({defaultMessage: "Followed topics"}),
+            description: $t({defaultMessage: "Only topics you follow"}),
             bold_current_selection:
                 filters_dropdown_widget &&
                 filters_dropdown_widget.current_value === views_util.FILTERS.FOLLOWED_TOPICS,
@@ -509,6 +510,7 @@ function filters_dropdown_options() {
         {
             unique_id: views_util.FILTERS.UNMUTED_TOPICS,
             name: $t({defaultMessage: "Standard view"}),
+            description: $t({defaultMessage: "All unmuted topics"}),
             bold_current_selection:
                 filters_dropdown_widget &&
                 filters_dropdown_widget.current_value === views_util.FILTERS.UNMUTED_TOPICS,
@@ -516,6 +518,7 @@ function filters_dropdown_options() {
         {
             unique_id: views_util.FILTERS.ALL_TOPICS,
             name: $t({defaultMessage: "All topics"}),
+            description: $t({defaultMessage: "Includes muted topics and streams"}),
             bold_current_selection:
                 filters_dropdown_widget &&
                 filters_dropdown_widget.current_value === views_util.FILTERS.ALL_TOPICS,
