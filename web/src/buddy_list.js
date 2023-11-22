@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_section_header from "../templates/buddy_list/section_header.hbs";
 import render_view_all_subscribers from "../templates/buddy_list/view_all_subscribers.hbs";
@@ -9,6 +10,7 @@ import render_presence_rows from "../templates/presence_rows.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import {media_breakpoints_num} from "./css_variables";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
@@ -18,6 +20,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
+import {INTERACTIVE_HOVER_DELAY} from "./tippyjs";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -86,6 +89,77 @@ export class BuddyList extends BuddyListConf {
     all_user_ids = [];
     users_matching_view_ids = [];
     other_user_ids = [];
+    tooltips_initialized = false;
+
+    initialize_tooltips() {
+        $("#right-sidebar").on("mouseenter", ".buddy-list-heading", (e) => {
+            e.stopPropagation();
+            const $elem = $(e.currentTarget);
+            let placement = "left";
+            if (window.innerWidth < media_breakpoints_num.md) {
+                // On small devices display tooltips based on available space.
+                // This will default to "bottom" placement for this tooltip.
+                placement = "auto";
+            }
+            const get_total_subscriber_count = this.total_subscriber_count;
+            tippy($elem[0], {
+                // Because the buddy list subheadings are potential click targets for purposes
+                // having nothing to do with the subscriber count (collapsing/expanding), we
+                // delay showing the tooltip until the user lingers a bit longer.
+                delay: INTERACTIVE_HOVER_DELAY,
+                // Don't show tooltip on touch devices (99% mobile) since touch pressing on users in the left or right
+                // sidebar leads to narrow being changed and the sidebar is hidden. So, there is no user displayed
+                // to show tooltip for. It is safe to show the tooltip on long press but it not worth
+                // the inconvenience of having a tooltip hanging around on a small mobile screen if anything going wrong.
+                touch: false,
+                arrow: true,
+                placement,
+                showOnCreate: true,
+                onShow(instance) {
+                    let tooltip_text;
+                    const current_sub = narrow_state.stream_sub();
+                    const pm_ids_set = narrow_state.pm_ids_set();
+                    const subscriber_count = get_total_subscriber_count(current_sub, pm_ids_set);
+                    const elem_id = $elem.attr("id");
+                    if (elem_id === "buddy-list-users-matching-view-section-heading") {
+                        if (current_sub) {
+                            tooltip_text = $t(
+                                {
+                                    defaultMessage:
+                                        "{N, plural, one {# subscriber} other {# subscribers}}",
+                                },
+                                {N: subscriber_count},
+                            );
+                        } else {
+                            tooltip_text = $t(
+                                {
+                                    defaultMessage:
+                                        "{N, plural, one {# participant} other {# participants}}",
+                                },
+                                {N: subscriber_count},
+                            );
+                        }
+                    } else {
+                        const total_user_count = people.get_active_human_count();
+                        const other_users_count = total_user_count - subscriber_count;
+                        tooltip_text = $t(
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {# other user} other {# other users}}",
+                            },
+                            {N: other_users_count},
+                        );
+                    }
+                    instance.setContent(tooltip_text);
+                },
+                onHidden(instance) {
+                    instance.destroy();
+                },
+                appendTo: () => document.body,
+            });
+        });
+        this.tooltips_initialized = true;
+    }
 
     populate(opts) {
         this.render_count = 0;
@@ -99,6 +173,9 @@ export class BuddyList extends BuddyListConf {
         this.all_user_ids = opts.all_user_ids;
 
         this.fill_screen_with_content();
+        if (!this.tooltips_initialized) {
+            this.initialize_tooltips();
+        }
 
         // We do a handful of things once we're done rendering all the users,
         // and each of these tasks need shared data that we'll compute first.
@@ -189,20 +266,10 @@ export class BuddyList extends BuddyListConf {
         $("#userlist-title").text(default_userlist_title);
 
         let header_text;
-        let tooltip_text;
-
         if (current_sub) {
             header_text = $t({defaultMessage: "In this stream"});
-            tooltip_text = $t(
-                {defaultMessage: "{N, plural, one {# subscriber} other {# subscribers}}"},
-                {N: subscriber_count},
-            );
         } else {
             header_text = $t({defaultMessage: "In this conversation"});
-            tooltip_text = $t(
-                {defaultMessage: "{N, plural, one {# participant} other {# participants}}"},
-                {N: subscriber_count},
-            );
         }
 
         $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").append(
@@ -210,7 +277,6 @@ export class BuddyList extends BuddyListConf {
                 id: "buddy-list-users-matching-view-section-heading",
                 header_text,
                 user_count: get_formatted_sub_count(subscriber_count),
-                tooltip_text,
                 toggle_class: "toggle-users-matching-view",
             }),
         );
@@ -220,10 +286,6 @@ export class BuddyList extends BuddyListConf {
                 id: "buddy-list-other-users-section-heading",
                 header_text: $t({defaultMessage: "Others"}),
                 user_count: get_formatted_sub_count(other_users_count),
-                tooltip_text: $t(
-                    {defaultMessage: "{N, plural, one {# other user} other {# other users}}"},
-                    {N: other_users_count},
-                ),
                 toggle_class: "toggle-other-users",
             }),
         );
