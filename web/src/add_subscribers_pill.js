@@ -60,7 +60,7 @@ export function create({$pill_container, get_potential_subscribers}) {
     set_up_pill_typeahead({pill_widget, $pill_container, get_users});
 
     const $pill_widget_input = $pill_container.find(".input");
-    const $pill_widget_button = $pill_container.parent().find(".add-subscriber-button");
+    const $pill_widget_button = $pill_container.parent().find(".add-users-button");
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
