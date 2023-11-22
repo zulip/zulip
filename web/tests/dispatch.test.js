@@ -49,7 +49,6 @@ const scheduled_messages_ui = mock_esm("../src/scheduled_messages_ui");
 const scroll_bar = mock_esm("../src/scroll_bar");
 const settings_account = mock_esm("../src/settings_account");
 const settings_bots = mock_esm("../src/settings_bots");
-const settings_display = mock_esm("../src/settings_display");
 const settings_emoji = mock_esm("../src/settings_emoji");
 const settings_exports = mock_esm("../src/settings_exports");
 const settings_invites = mock_esm("../src/settings_invites");
@@ -58,6 +57,7 @@ const settings_playgrounds = mock_esm("../src/settings_playgrounds");
 const settings_notifications = mock_esm("../src/settings_notifications");
 const settings_org = mock_esm("../src/settings_org");
 const settings_profile_fields = mock_esm("../src/settings_profile_fields");
+const settings_preferences = mock_esm("../src/settings_preferences");
 const settings_realm_user_settings_defaults = mock_esm(
     "../src/settings_realm_user_settings_defaults",
 );
@@ -830,10 +830,10 @@ run_test("stream_typing", ({override}) => {
 });
 
 run_test("user_settings", ({override}) => {
-    settings_display.set_default_language_name = () => {};
+    settings_preferences.set_default_language_name = () => {};
     let event = event_fixtures.user_settings__default_language;
     user_settings.default_language = "en";
-    override(settings_display, "update_page", noop);
+    override(settings_preferences, "update_page", noop);
     override(overlays, "settings_open", () => true);
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
@@ -950,7 +950,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__emojiset;
         called = false;
-        override(settings_display, "report_emojiset_change", stub.f);
+        override(settings_preferences, "report_emojiset_change", stub.f);
         override(activity_ui, "build_user_sidebar", noop);
         user_settings.emojiset = "text";
         dispatch(event);
@@ -994,7 +994,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__user_list_style;
-        override(settings_display, "report_user_list_style_change", stub.f);
+        override(settings_preferences, "report_user_list_style_change", stub.f);
         user_settings.user_list_style = 1;
         override(activity_ui, "build_user_sidebar", stub.f);
         dispatch(event);
