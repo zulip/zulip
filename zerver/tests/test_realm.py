@@ -494,6 +494,15 @@ class RealmTest(ZulipTestCase):
         assert realm.notifications_stream is not None
         self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
 
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_notif_stream_id = self.make_stream("private_stream", invite_only=True).id
+        req = dict(notifications_stream_id=orjson.dumps(new_notif_stream_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.notifications_stream is not None
+        self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
+
         invalid_notif_stream_id = 1234
         req = dict(notifications_stream_id=orjson.dumps(invalid_notif_stream_id).decode())
         result = self.client_patch("/json/realm", req)
@@ -553,6 +562,18 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.signup_notifications_stream, None)
 
         new_signup_notifications_stream_id = Stream.objects.get(name="Denmark").id
+        req = dict(
+            signup_notifications_stream_id=orjson.dumps(new_signup_notifications_stream_id).decode()
+        )
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.signup_notifications_stream is not None
+        self.assertEqual(realm.signup_notifications_stream.id, new_signup_notifications_stream_id)
+
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_signup_notifications_stream_id = self.make_stream("private_stream", invite_only=True).id
         req = dict(
             signup_notifications_stream_id=orjson.dumps(new_signup_notifications_stream_id).decode()
         )
