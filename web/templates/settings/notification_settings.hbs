@@ -13,7 +13,7 @@
                     <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{/if}}">
                         {{t "Mobile"}}
                         {{#if (not realm_push_notifications_enabled) }}
-                        <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
+                        <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tooltip-template-id="mobile-push-notification-tooltip-template"></i>
                         {{/if}}
                     </th>
                     <th rowspan="2" width="14%">{{t "Email"}}</th>
