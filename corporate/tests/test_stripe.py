@@ -1127,12 +1127,11 @@ class StripeTest(StripeTestCase):
                 response = self.client_get("/billing/")
             self.assert_not_in_success_response(["Pay annually"], response)
             for substring in [
-                "Zulip Cloud Standard",
-                "Free Trial",
+                "Zulip Cloud Standard <i>(free trial)</i>",
                 str(self.seat_count),
                 "Number of licenses",
                 f"{self.seat_count} (managed automatically)",
-                "Your plan will be upgraded to",
+                "Your plan will automatically renew on",
                 "March 2, 2012",
                 f"${80 * self.seat_count}.00",
                 "Visa ending in 4242",
@@ -1387,11 +1386,11 @@ class StripeTest(StripeTestCase):
                 response = self.client_get("/billing/")
             self.assert_not_in_success_response(["Pay annually"], response)
             for substring in [
-                "Zulip Cloud Standard Free Trial",
+                "Zulip Cloud Standard <i>(free trial)</i>",
                 str(self.seat_count),
                 "Number of licenses for current billing period",
                 f"{self.seat_count} in use",
-                "Your plan will be upgraded to",
+                "Your next invoice is due on",
                 "March 2, 2012",
                 f"{80 * 123:,.2f}",
                 "Billed by invoice",
