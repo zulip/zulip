@@ -15,6 +15,7 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -303,6 +304,33 @@ export function setup_group_list_tab_hash(tab_key_value) {
     }
 }
 
+function display_membership_toggle_spinner(group_row) {
+    /* Prevent sending multiple requests by removing the button class. */
+    $(group_row).find(".check").removeClass("join_leave_button");
+
+    /* Hide the tick. */
+    const $tick = $(group_row).find("svg");
+    $tick.addClass("hide");
+
+    /* Add a spinner to show the request is in process. */
+    const $spinner = $(group_row).find(".join_leave_status").expectOne();
+    $spinner.show();
+    loading.make_indicator($spinner);
+}
+
+function hide_membership_toggle_spinner(group_row) {
+    /* Re-enable the button to handle requests. */
+    $(group_row).find(".check").addClass("join_leave_button");
+
+    /* Show the tick. */
+    const $tick = $(group_row).find("svg");
+    $tick.removeClass("hide");
+
+    /* Destroy the spinner. */
+    const $spinner = $(group_row).find(".join_leave_status").expectOne();
+    loading.destroy_indicator($spinner);
+}
+
 export const show_user_group_settings_pane = {
     nothing_selected() {
         $("#groups_overlay .settings, #user-group-creation").hide();
@@ -576,21 +604,29 @@ export function switch_group_tab(tab_name) {
     setup_group_list_tab_hash(tab_name);
 }
 
-export function add_or_remove_from_group(group) {
+export function add_or_remove_from_group(group, group_row) {
     const user_id = people.my_current_user_id();
+    function success_callback() {
+        hide_membership_toggle_spinner(group_row);
+    }
+
+    function error_callback() {
+        hide_membership_toggle_spinner(group_row);
+    }
+    display_membership_toggle_spinner(group_row);
     if (user_groups.is_direct_member_of(user_id, group.id)) {
         user_group_edit_members.edit_user_group_membership({
             group,
             removed: [user_id],
-            success() {},
-            error() {},
+            success_callback,
+            error_callback,
         });
     } else {
         user_group_edit_members.edit_user_group_membership({
             group,
             added: [user_id],
-            success() {},
-            error() {},
+            success_callback,
+            error_callback,
         });
     }
 }
@@ -840,7 +876,8 @@ export function initialize() {
 
         const user_group_id = get_user_group_id(e.target);
         const user_group = user_groups.get_user_group_from_id(user_group_id);
-        add_or_remove_from_group(user_group);
+        const $group_row = row_for_group_id(user_group_id);
+        add_or_remove_from_group(user_group, $group_row);
     });
 }
 
