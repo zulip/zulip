@@ -531,7 +531,7 @@ def update_remote_realm_data_for_server(
     uuids = [realm["uuid"] for realm in server_realms_info]
     already_registered_remote_realms = RemoteRealm.objects.filter(uuid__in=uuids, server=server)
     already_registered_uuids = {
-        str(remote_realm.uuid) for remote_realm in already_registered_remote_realms
+        remote_realm.uuid for remote_realm in already_registered_remote_realms
     }
 
     new_remote_realms = [
