@@ -12,6 +12,12 @@ import * as search from "./search";
 import * as stream_list from "./stream_list";
 import * as unread_ui from "./unread_ui";
 
+export const FILTERS = {
+    ALL_TOPICS: "all_topics",
+    UNMUTED_TOPICS: "unmuted_topics",
+    FOLLOWED_TOPICS: "followed_topics",
+};
+
 export function show(opts) {
     if (narrow_state.has_shown_message_list_view) {
         message_lists.save_pre_narrow_offset_for_reload();
