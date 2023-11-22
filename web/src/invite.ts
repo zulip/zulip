@@ -442,8 +442,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         const invite_tips_data = generate_invite_tips_data();
 
         const context = {
-            banner_type: compose_banner.WARNING,
-            classname: "setup_tips_warning",
+            banner_type: compose_banner.INFO,
+            classname: "setup_tips_banner",
             banner_html: "",
             ...invite_tips_data,
         };

@@ -14,6 +14,7 @@ export function set_scroll_to_message_banner_message_id(val: number | null): voi
 export const WARNING = "warning";
 export const ERROR = "error";
 export const SUCCESS = "success";
+export const INFO = "info";
 
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
