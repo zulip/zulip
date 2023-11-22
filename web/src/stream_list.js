@@ -787,7 +787,7 @@ export function initialize({on_stream_click}) {
 }
 
 export function set_event_handlers({on_stream_click}) {
-    $("#stream_filters").on("click", "li .subscription_block", (e) => {
+    $("#stream_filters").on("click", "li .subscription_block a", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
         }

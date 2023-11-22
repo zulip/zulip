@@ -933,6 +933,14 @@ li.top_left_scheduled_messages {
            definition. */
         height: auto;
     }
+
+    .fa {
+        color: var(--color-left-sidebar-navigation-icon);
+    }
+
+    .fa:hover {
+        color: var(--color-text-message-header);
+    }
 }
 
 .bottom_left_row .sidebar-menu-icon {
