@@ -23,7 +23,7 @@
                     <label for="org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="org-current-plan" class="not-editable-realm-field">
                         {% if free_trial %}
-                        {{ plan_name }} Free Trial
+                        {{ plan_name }} <i>(free trial)</i>
                         {% else %}
                         {{ plan_name }}
                         {% endif %}
@@ -143,10 +143,7 @@
                 <div class="input-box billing-page-field no-validation">
                     <div class="next-payment-info not-editable-realm-field">
                         {% if renewal_amount %}
-                            {% if free_trial %}
-                            Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
-                            <strong>${{ renewal_amount }}</strong>.
-                            {% elif downgrade_at_end_of_cycle %}
+                            {% if downgrade_at_end_of_cycle %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                             period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
                             <a href="/plans/">other features</a> of your current plan.
