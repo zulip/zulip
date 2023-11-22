@@ -104,7 +104,7 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
         title=pull_request["title"].tame(check_string) if include_title else None,
     )
     if assignee:
-        return f"{base_message[:-1]} to {stringified_assignee}."
+        return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
     return base_message
 
 
