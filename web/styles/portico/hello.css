@@ -1125,6 +1125,34 @@ ul {
         }
     }
 
+    li {
+        list-style-type: none;
+        display: flex;
+        align-items: flex-start;
+        /* Prevent flexbox from collapsing
+           whitespace around links and other
+           inline elements. */
+        gap: 0.3em;
+
+        &::before {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 16px;
+            /* 0.5333em, roughly 8px given the
+               15px font-size on list items, will
+               keep the bullet vertically centered
+               with the first line of a list item
+               as the page's text scales. */
+            margin: 0.5333em 4px 0 0;
+            /* Prevent "bullets" from being distorted
+               on a multiline bullet point. */
+            flex: 0 0 auto;
+            background: currentcolor;
+            opacity: 0.3;
+        }
+    }
+
     a {
         color: var(--color-link);
         text-decoration: underline;
