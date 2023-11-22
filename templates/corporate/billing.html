@@ -212,11 +212,6 @@
                     {% endif %}
                 </form>
                 <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
-                {% if onboarding %}
-                <div id="onboarding-go-to-org" class="input-box upgrade-page-field">
-                    <a class="not-editable-realm-field" href="/"><b>Go to your Zulip organization</b></a>
-                </div>
-                {% endif %}
             </div>
         </div>
         <hr />

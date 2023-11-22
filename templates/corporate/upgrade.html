@@ -25,13 +25,6 @@
                     <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}" />
                     <input type="hidden" name="salt" value="{{ salt }}" />
                     <input type="hidden" name="billing_modality" value="charge_automatically" />
-                    {% if onboarding %}
-                    <input type="hidden" name="onboarding" value="true" />
-                    {% endif %}
-                    {% if onboarding and free_trial_days %}
-                    <p id="onboarding-free-trial-not-ready" class="not-editable-realm-field"><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
-                    <hr/>
-                    {% endif %}
 
                     <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if free_trial_days %}

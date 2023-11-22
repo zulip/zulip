@@ -38,7 +38,6 @@ def upgrade(
     schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
     signed_seat_count: str = REQ(),
     salt: str = REQ(),
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
     license_management: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
     ),
@@ -50,7 +49,6 @@ def upgrade(
             schedule=schedule,
             signed_seat_count=signed_seat_count,
             salt=salt,
-            onboarding=onboarding,
             license_management=license_management,
             licenses=licenses,
         )
@@ -82,7 +80,6 @@ def upgrade(
 @has_request_variables
 def initial_upgrade(
     request: HttpRequest,
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
     manual_license_management: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     user = request.user
@@ -92,7 +89,6 @@ def initial_upgrade(
         return render(request, "404.html", status=404)
 
     initial_upgrade_request = InitialUpgradeRequest(
-        onboarding=onboarding,
         manual_license_management=manual_license_management,
         tier=CustomerPlan.STANDARD,
     )
