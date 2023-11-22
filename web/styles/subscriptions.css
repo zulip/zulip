@@ -541,7 +541,8 @@ h4.user_group_setting_subsection_title {
             cursor: not-allowed;
         }
 
-        .sub_unsub_status {
+        .sub_unsub_status,
+        .join_leave_status {
             display: inline-block !important;
             height: auto !important;
             width: auto !important;
