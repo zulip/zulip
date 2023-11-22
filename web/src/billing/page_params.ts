@@ -6,7 +6,6 @@ import $ from "jquery";
 export const page_params: {
     annual_price: number;
     monthly_price: number;
-    percent_off: number;
     seat_count: number;
 } = $("#page-params").data("params");
 

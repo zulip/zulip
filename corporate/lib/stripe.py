@@ -450,6 +450,7 @@ class UpgradeRequest:
 class InitialUpgradeRequest:
     onboarding: bool
     manual_license_management: bool
+    tier: int
 
 
 class AuditLogEventType(Enum):
@@ -1239,6 +1240,7 @@ class BillingSession(ABC):
 
         seat_count = self.current_count_for_billed_licenses()
         signed_seat_count, salt = sign_string(str(seat_count))
+        tier = initial_upgrade_request.tier
         context: Dict[str, Any] = {
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
@@ -1251,9 +1253,8 @@ class BillingSession(ABC):
             "onboarding": onboarding,
             "page_params": {
                 "seat_count": seat_count,
-                "annual_price": 8000,
-                "monthly_price": 800,
-                "percent_off": float(percent_off),
+                "annual_price": get_price_per_license(tier, CustomerPlan.ANNUAL, percent_off),
+                "monthly_price": get_price_per_license(tier, CustomerPlan.MONTHLY, percent_off),
             },
             "manual_license_management": initial_upgrade_request.manual_license_management,
         }

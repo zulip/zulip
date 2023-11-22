@@ -8,8 +8,8 @@ import type {Prices} from "./helpers";
 import {page_params} from "./page_params";
 
 const prices: Prices = {
-    annual: page_params.annual_price * (1 - page_params.percent_off / 100),
-    monthly: page_params.monthly_price * (1 - page_params.percent_off / 100),
+    annual: page_params.annual_price,
+    monthly: page_params.monthly_price,
 };
 
 const ls = localstorage();
