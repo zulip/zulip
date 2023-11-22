@@ -160,14 +160,14 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issues", expected_topic, expected_message)
 
     def test_issue_assigned(self) -> None:
-        expected_message = "sbansal1999 assigned [issue #7](https://github.com/sbansal1999/testing-gh/issues/7) to sbansal1999."
-        expected_topic = "testing-gh / issue #7 Sample Issue testing something"
+        expected_message = "sbansal1999 assigned sbansal1999 to [issue #7](https://github.com/sbansal1999/testing-gh/issues/7)."
+        expected_topic = "testing-gh / issue #7 Testing when issue assigned!"
         self.check_webhook("issues__assigned", expected_topic, expected_message)
 
     def test_issue_assigned_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "sbansal1999 assigned [issue #7 Sample Issue testing something](https://github.com/sbansal1999/testing-gh/issues/7) to sbansal1999."
+        expected_message = "sbansal1999 assigned sbansal1999 to [issue #7 Testing when issue assigned!](https://github.com/sbansal1999/testing-gh/issues/7)"
         self.check_webhook("issues__assigned", expected_topic, expected_message)
 
     def test_issue_unassigned(self) -> None:
