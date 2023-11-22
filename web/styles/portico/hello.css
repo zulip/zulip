@@ -1257,13 +1257,15 @@ ul {
     }
 
     &.showing-cloud {
-        .self-hosted-plan-pricing {
+        .self-hosted-plan-pricing,
+        .self-hosted-additional-pricing {
             display: none;
         }
     }
 
     &.showing-self-hosted {
-        .cloud-plan-pricing {
+        .cloud-plan-pricing,
+        .cloud-additional-pricing {
             display: none;
         }
     }
