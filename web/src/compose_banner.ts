@@ -132,6 +132,12 @@ export function show_error_message(
     $container: JQuery,
     $bad_input?: JQuery,
 ): void {
+    // Important: This API intentionally does not support passing an
+    // HTML message; doing so creates unnecessary XSS risk. If you
+    // want HTML in your compose banner, use a partial subclassing
+    // compose_banner and the append_compose_banner_to_banner_list
+    // API; See, for example, automatic_new_visibility_policy_banner.
+    //
     // To prevent the same banner from appearing twice,
     // we remove the banner with a matched classname.
     $container.find(`.${CSS.escape(classname)}`).remove();
