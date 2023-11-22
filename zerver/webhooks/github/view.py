@@ -170,9 +170,9 @@ def get_issue_body(helper: Helper) -> str:
     if has_assignee:
         stringified_assignee = payload["assignee"]["login"].tame(check_string)
         if action == "assigned":
-            return f"{base_message[:-1]} to {stringified_assignee}."
+            return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
         elif action == "unassigned":
-            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from")
+            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from", 1)
 
     return base_message
 
