@@ -3458,13 +3458,6 @@ select.invite-as {
         }
     }
 
-    .dropdown-list-item-common-styles {
-        padding: 3px 10px 3px 8px;
-        font-weight: 400;
-        line-height: 20px;
-        white-space: normal;
-    }
-
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -3478,34 +3471,38 @@ select.invite-as {
                 background-color: hsl(220deg 12% 4.9% / 5%);
                 outline: none;
             }
+        }
 
-            .list-item a {
-                display: block;
-                color: hsl(0deg 0% 20%);
-
-                .stream-privacy-type-icon {
-                    font-size: 13px;
-                    width: 13px;
-                    height: 13px;
-                    padding-right: 2px;
-                }
-
-                &:hover {
-                    text-decoration: none;
-                    background-color: hsl(220deg 12% 4.9% / 5%);
-                }
-
-                &:focus {
-                    text-decoration: none;
-                    outline: none;
-                }
-            }
+        .no-dropdown-items {
+            color: hsl(0deg 0% 60%);
+            display: none;
         }
     }
+}
 
-    .no-dropdown-items {
-        color: hsl(0deg 0% 60%);
-        display: none;
+.dropdown-list-container .dropdown-list-item-common-styles {
+    display: block;
+    color: hsl(0deg 0% 20%);
+    padding: 3px 10px 3px 8px;
+    font-weight: 400;
+    line-height: 20px;
+    white-space: normal;
+
+    .stream-privacy-type-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        padding-right: 2px;
+    }
+
+    &:hover {
+        text-decoration: none;
+        background-color: hsl(220deg 12% 4.9% / 5%);
+    }
+
+    &:focus {
+        text-decoration: none;
+        outline: none;
     }
 }
 
