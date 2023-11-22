@@ -32,6 +32,10 @@
     <div class="compose_control_button_container {{#unless giphy_enabled }}hide{{/unless}} preview_mode_disabled" data-tippy-content="{{t 'Add GIF' }}">
         <a role="button" class="compose_control_button compose_gif_icon zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
     </div>
+    <div class="show_popover_buttons_2">
+        <div class="divider">|</div>
+        {{> popovers/compose_control_buttons/compose_control_buttons_in_popover_2}}
+    </div>
     <div class="show_popover_buttons">
         <div class="divider">|</div>
         {{> popovers/compose_control_buttons/compose_control_buttons_in_popover}}
