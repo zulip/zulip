@@ -1,5 +1,12 @@
 # Generate URL for an integration
 
+Many [Zulip integrations](/integrations/) are webhooks. A webhook integration
+allows a third-party service, such as an [issue
+tracker](/integrations/doc/github) or an [alerting
+tool](/integrations/doc/pagerduty), to post updates into Zulip. To configure
+where these updates will be posted, you need to generate a special Zulip
+integration URL.
+
 {start_tabs}
 
 {tab|via-personal-settings}
