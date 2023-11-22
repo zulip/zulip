@@ -40,18 +40,18 @@ def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
     UserProfile = apps.get_model("zerver", "UserProfile")
 
     UserProfile.objects.filter(
-        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_NONE
-    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_NONE)
+        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION
+    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION)
     RealmUserDefault.objects.filter(
-        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_NONE
-    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_NONE)
+        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION
+    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION)
 
     UserProfile.objects.filter(
-        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION
-    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION)
+        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_NONE
+    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_NONE)
     RealmUserDefault.objects.filter(
-        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION
-    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION)
+        desktop_icon_count_display=NEW_DESKTOP_ICON_COUNT_DISPLAY_NONE
+    ).update(desktop_icon_count_display=OLD_DESKTOP_ICON_COUNT_DISPLAY_NONE)
 
 
 class Migration(migrations.Migration):
