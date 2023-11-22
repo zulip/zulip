@@ -39,7 +39,7 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import downgrade_now_without_creating_additional_invoices
+    from corporate.lib.stripe import RealmBillingSession
 
 
 def active_humans_in_realm(realm: Realm) -> QuerySet[UserProfile]:
@@ -309,7 +309,8 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     realm.save(update_fields=["deactivated"])
 
     if settings.BILLING_ENABLED:
-        downgrade_now_without_creating_additional_invoices(realm)
+        billing_session = RealmBillingSession(user=acting_user, realm=realm)
+        billing_session.downgrade_now_without_creating_additional_invoices()
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -389,7 +390,8 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
 
 def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     if settings.BILLING_ENABLED:
-        downgrade_now_without_creating_additional_invoices(realm)
+        billing_session = RealmBillingSession(user=acting_user, realm=realm)
+        billing_session.downgrade_now_without_creating_additional_invoices()
 
     users = UserProfile.objects.filter(realm=realm)
     for user in users:

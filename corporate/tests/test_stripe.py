@@ -2185,7 +2185,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2299,7 +2299,7 @@ class StripeTest(StripeTestCase):
         assert new_plan is not None
 
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
@@ -2488,7 +2488,7 @@ class StripeTest(StripeTestCase):
         new_plan = get_current_plan_by_realm(user.realm)
         assert new_plan is not None
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
@@ -2602,7 +2602,7 @@ class StripeTest(StripeTestCase):
         assert new_plan is not None
 
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE},
@@ -2767,7 +2767,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2781,7 +2781,7 @@ class StripeTest(StripeTestCase):
         assert plan is not None
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 response = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
                 expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
                 self.assertEqual(m.output[0], expected_log)
@@ -2807,7 +2807,7 @@ class StripeTest(StripeTestCase):
             stripe_customer_id = Customer.objects.get(realm=user.realm).id
             new_plan = get_current_plan_by_realm(user.realm)
             assert new_plan is not None
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2848,7 +2848,7 @@ class StripeTest(StripeTestCase):
 
             self.login_user(user)
 
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 self.client_patch("/json/billing/plan", {"status": CustomerPlan.ENDED})
 
             plan.refresh_from_db()
@@ -2880,7 +2880,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(user)
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2935,38 +2935,38 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.upgrade(invoice=True, licenses=100)
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 100})
             self.assert_json_error_contains(
                 result, "Your plan is already on 100 licenses in the current billing period."
             )
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 100})
             self.assert_json_error_contains(
                 result, "Your plan is already scheduled to renew with 100 licenses."
             )
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 50})
             self.assert_json_error_contains(
                 result, "You cannot decrease the licenses in the current billing period."
             )
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 25})
             self.assert_json_error_contains(
                 result,
                 "You must purchase licenses for all active users in your organization (minimum 30).",
             )
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 2000})
             self.assert_json_error_contains(
                 result, "Invoices with more than 1000 licenses can't be processed from this page."
             )
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 150})
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year)
@@ -3016,7 +3016,7 @@ class StripeTest(StripeTestCase):
         for key, value in line_item_params.items():
             self.assertEqual(extra_license_item.get(key), value)
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.next_year):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.next_year):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 120})
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year + timedelta(days=365))
@@ -3069,7 +3069,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(100, False, CustomerPlan.ANNUAL, True, False)
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch(
                 "/json/billing/plan",
                 {"licenses_at_next_renewal": get_latest_seat_count(user.realm) - 2},
@@ -3115,11 +3115,11 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 100})
             self.assert_json_error_contains(result, "Your plan is on automatic license management.")
 
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 100})
             self.assert_json_error_contains(result, "Your plan is on automatic license management.")
 
@@ -3139,7 +3139,7 @@ class StripeTest(StripeTestCase):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         self.login_user(self.example_user("hamlet"))
-        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             response = self.client_patch("/json/billing/plan", {})
         self.assert_json_error_contains(response, "Nothing to change")
 
@@ -3149,7 +3149,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 result = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -3171,7 +3171,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 result = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}
                 )

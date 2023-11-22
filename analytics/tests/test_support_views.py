@@ -701,7 +701,9 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        with mock.patch("analytics.views.support.downgrade_at_the_end_of_billing_cycle") as m:
+        with mock.patch(
+            "analytics.views.support.RealmBillingSession.downgrade_at_the_end_of_billing_cycle"
+        ) as m:
             result = self.client_post(
                 "/activity/support",
                 {
@@ -709,13 +711,13 @@ class TestSupportEndpoint(ZulipTestCase):
                     "modify_plan": "downgrade_at_billing_cycle_end",
                 },
             )
-            m.assert_called_once_with(get_realm("zulip"))
+            m.assert_called_once()
             self.assert_in_success_response(
                 ["zulip marked for downgrade at the end of billing cycle"], result
             )
 
         with mock.patch(
-            "analytics.views.support.downgrade_now_without_creating_additional_invoices"
+            "analytics.views.support.RealmBillingSession.downgrade_now_without_creating_additional_invoices"
         ) as m:
             result = self.client_post(
                 "/activity/support",
@@ -724,13 +726,13 @@ class TestSupportEndpoint(ZulipTestCase):
                     "modify_plan": "downgrade_now_without_additional_licenses",
                 },
             )
-            m.assert_called_once_with(get_realm("zulip"))
+            m.assert_called_once()
             self.assert_in_success_response(
                 ["zulip downgraded without creating additional invoices"], result
             )
 
         with mock.patch(
-            "analytics.views.support.downgrade_now_without_creating_additional_invoices"
+            "analytics.views.support.RealmBillingSession.downgrade_now_without_creating_additional_invoices"
         ) as m1:
             with mock.patch("analytics.views.support.void_all_open_invoices", return_value=1) as m2:
                 result = self.client_post(
@@ -740,7 +742,7 @@ class TestSupportEndpoint(ZulipTestCase):
                         "modify_plan": "downgrade_now_void_open_invoices",
                     },
                 )
-                m1.assert_called_once_with(get_realm("zulip"))
+                m1.assert_called_once()
                 m2.assert_called_once_with(get_realm("zulip"))
                 self.assert_in_success_response(
                     ["zulip downgraded and voided 1 open invoices"], result
