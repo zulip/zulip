@@ -557,3 +557,8 @@
         outline: 2px solid var(--color-outline-focus);
     }
 }
+
+#recent-view-filter_widget.disabled-for-spectators {
+    cursor: not-allowed;
+    opacity: 0.5;
+}

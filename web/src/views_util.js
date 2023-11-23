@@ -29,6 +29,7 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     unique_id_type: dropdown_widget.DATA_TYPES.STRING,
     hide_search_box: true,
     bold_current_selection: true,
+    disable_for_spectators: true,
 };
 
 export function filters_dropdown_options() {
