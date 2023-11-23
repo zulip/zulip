@@ -1194,7 +1194,6 @@ class BillingSession(ABC):
                     if plan.fixed_price is not None
                     else None
                 )
-
                 context = {
                     "plan_name": plan.name,
                     "has_active_plan": True,
@@ -1215,6 +1214,7 @@ class BillingSession(ABC):
                     "billing_frequency": billing_frequency,
                     "fixed_price": fixed_price,
                     "price_per_license": price_per_license,
+                    "is_sponsorship_pending": customer.sponsorship_pending,
                 }
         return context
 

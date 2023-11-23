@@ -578,11 +578,14 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#billing-sponsorship-pending-message-top,
 #sponsorship-status-success-message-top,
 #billing-success-message-top {
     display: block;
     text-align: center;
     font-weight: 400;
+    padding: 10px 20px;
+    width: 600px;
 }
 
 .upgrade-page-success {

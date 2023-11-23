@@ -1739,6 +1739,19 @@ class StripeTest(StripeTestCase):
 
         self.assert_json_success(response)
 
+    @mock_stripe()
+    def test_sponsorship_access_for_realms_on_paid_plan(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        self.add_card_and_upgrade(user)
+        response = self.client_get("/sponsorship/")
+        self.assert_in_success_response(
+            [
+                "How many paid staff does your organization have?",
+            ],
+            response,
+        )
+
     def test_support_request(self) -> None:
         user = self.example_user("hamlet")
         self.assertIsNone(get_customer_by_realm(user.realm))
@@ -1835,13 +1848,7 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
             [
-                'This organization has requested sponsorship for a free or discounted <a href="/plans/">Zulip Cloud Standard</a> plan.'
-            ],
-            response,
-        )
-        self.assert_in_success_response(
-            [
-                'Please feel free to <a href="mailto:support@zulip.com">contact Zulip support</a> with any questions or updates to your request.'
+                'This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.'
             ],
             response,
         )
@@ -1853,13 +1860,19 @@ class StripeTest(StripeTestCase):
             response,
         )
 
+        user.realm.plan_type = Realm.PLAN_TYPE_PLUS
+        user.realm.save()
+        response = self.client_get("/sponsorship/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/billing/")
+
         user.realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         user.realm.save()
         self.login_user(self.example_user("hamlet"))
         response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
             [
-                'Zulip is sponsoring free <a href="/plans/">Zulip Cloud Standard</a> hosting for this organization.'
+                'Zulip is sponsoring a free <a href="/plans/">Zulip Cloud Standard</a> plan for this organization. 🎉'
             ],
             response,
         )
