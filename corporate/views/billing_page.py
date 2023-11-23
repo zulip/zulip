@@ -15,6 +15,15 @@ from zerver.models import Realm, UserProfile
 
 billing_logger = logging.getLogger("corporate.stripe")
 
+PAID_PLANS = [
+    Realm.PLAN_TYPE_STANDARD,
+    Realm.PLAN_TYPE_PLUS,
+]
+
+
+def is_realm_on_paid_plan(realm: Realm) -> bool:
+    return realm.plan_type in PAID_PLANS
+
 
 def add_sponsorship_info_to_context(context: Dict[str, Any], user_profile: UserProfile) -> None:
     def key_helper(d: Any) -> int:
@@ -78,15 +87,10 @@ def billing_home(
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         return HttpResponseRedirect(reverse("sponsorship_request"))
 
-    PAID_PLANS = [
-        Realm.PLAN_TYPE_STANDARD,
-        Realm.PLAN_TYPE_PLUS,
-    ]
-
     customer = get_customer_by_realm(user.realm)
     if customer is not None and customer.sponsorship_pending:
         # Don't redirect to sponsorship page if the realm is on a paid plan
-        if user.realm.plan_type not in PAID_PLANS:
+        if not is_realm_on_paid_plan(user.realm):
             return HttpResponseRedirect(reverse("sponsorship_request"))
         # If the realm is on a paid plan, show the sponsorship pending message
         # TODO: Add a sponsorship pending message to the billing page
