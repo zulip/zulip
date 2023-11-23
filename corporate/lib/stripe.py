@@ -2525,7 +2525,7 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
         standard_plan.customer.stripe_customer_id,
         amount=-1 * amount_to_credit_back_to_realm,
         currency="usd",
-        description="Credit from early termination of Standard plan",
+        description="Credit from early termination of active plan",
     )
     switch_plan_tier(standard_plan, CustomerPlan.PLUS)
     invoice_plan(standard_plan, plan_switch_time)
