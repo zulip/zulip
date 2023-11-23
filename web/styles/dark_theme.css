@@ -648,7 +648,6 @@
 
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
-    .dropdown .dropdown-menu {
         background-color: hsl(212deg 32% 14%);
     }
 
@@ -661,7 +660,6 @@
         color: inherit;
     }
 
-    .dropdown .dropdown-menu li.divider,
     .popover hr,
     hr {
         color: hsl(212deg 28% 18%);
