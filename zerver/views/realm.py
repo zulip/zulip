@@ -1,5 +1,6 @@
 from typing import Any, Dict, Mapping, Optional, Union
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -231,6 +232,10 @@ def update_realm(
 
     if enable_spectator_access:
         realm.ensure_not_on_limited_plan()
+
+    if can_access_all_users_group_id is not None:
+        # Remove this when the feature is ready for production.
+        assert settings.DEVELOPMENT
 
     data: Dict[str, Any] = {}
 

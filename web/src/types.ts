@@ -203,4 +203,5 @@ export type GroupPermissionSetting = {
     default_group_name: string;
     id_field_name: string;
     default_for_system_groups: string | null;
+    allowed_system_groups: string[];
 };

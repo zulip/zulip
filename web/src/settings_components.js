@@ -239,6 +239,7 @@ export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 export let create_multiuse_invite_group_widget = null;
 export let can_remove_subscribers_group_widget = null;
+export let can_access_all_users_group_widget = null;
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
@@ -252,6 +253,8 @@ export function get_widget_for_dropdown_list_settings(property_name) {
             return create_multiuse_invite_group_widget;
         case "can_remove_subscribers_group":
             return can_remove_subscribers_group_widget;
+        case "realm_can_access_all_users_group":
+            return can_access_all_users_group_widget;
         default:
             blueslip.error("No dropdown list widget for property", {property_name});
             return null;
@@ -276,6 +279,10 @@ export function set_create_multiuse_invite_group_widget(widget) {
 
 export function set_can_remove_subscribers_group_widget(widget) {
     can_remove_subscribers_group_widget = widget;
+}
+
+export function set_can_access_all_users_group_widget(widget) {
+    can_access_all_users_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(property_name, value) {

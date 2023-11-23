@@ -240,6 +240,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         allow_owners_group,
         allow_nobody_group,
         allow_everyone_group,
+        allowed_system_groups,
     } = group_setting_config;
 
     const system_user_groups = settings_config.system_user_groups_list
@@ -257,6 +258,10 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             }
 
             if (!allow_everyone_group && group.name === "role:everyone") {
+                return false;
+            }
+
+            if (allowed_system_groups.length && !allowed_system_groups.includes(group.name)) {
                 return false;
             }
 
