@@ -170,15 +170,16 @@ management command:
 This will sync the fields declared in `AUTH_LDAP_USER_ATTR_MAP` for
 all of your users.
 
-We recommend running this command in a **regular cron job**, to pick
-up changes made on your LDAP server.
+We recommend running this command in a **regular cron job** at
+whatever frequency your organization prefers for synchronizing changes
+made on your LDAP server to Zulip.
 
 All of these data synchronization options have the same model:
 
 - New users will be populated automatically with the
   name/avatar/etc. from LDAP (as configured) on account creation.
-- The `manage.py sync_ldap_user_data` cron job will automatically
-  update existing users with any changes that were made in LDAP.
+- `manage.py sync_ldap_user_data` will automatically update existing
+  users with any changes that were made in LDAP.
 - You can easily test your configuration using `manage.py query_ldap`.
   Once you're happy with the configuration, remember to restart the
   Zulip server with
@@ -321,12 +322,12 @@ or `NO` otherwise. You can configure a mapping for `deactivated` in
 `AUTH_LDAP_USER_ATTR_MAP`. For example, `"deactivated": "nsAccountLock",` is a correct mapping for a
 [FreeIPA](https://www.freeipa.org/) LDAP database.
 
-Disabled users will be immediately unable to log in
-to Zulip, since Zulip queries the LDAP/Active Directory server on
-every login attempt. The user will be fully deactivated the next time
-your `manage.py sync_ldap_user_data` cron job runs (at which point
-they will be forcefully logged out from all active browser sessions,
-appear as deactivated in the Zulip UI, etc.).
+Users who are disabled in LDAP will be immediately unable to log in to
+Zulip using LDAP authentication, since Zulip queries the LDAP/Active
+Directory server on every login attempt. The user will be fully
+deactivated the next time you run `manage.py sync_ldap_user_data` (at
+which point they will be forcibly logged out from all active browser
+sessions, appear as deactivated in the Zulip UI, etc.).
 
 This feature works by checking for the `ACCOUNTDISABLE` flag on the
 `userAccountControl` field in Active Directory. See
@@ -335,15 +336,15 @@ for details on the various `userAccountControl` flags.
 
 #### Deactivating non-matching users
 
-Zulip supports automatically deactivating
-users if they are not found by the `AUTH_LDAP_USER_SEARCH` query
-(either because the user is no longer in LDAP/Active Directory, or
-because the user no longer matches the query). This feature is
-enabled by default if LDAP is the only authentication backend
-configured on the Zulip server. Otherwise, you can enable this
-feature by setting `LDAP_DEACTIVATE_NON_MATCHING_USERS` to `True` in
+Zulip supports automatically deactivating users if they are not found
+by the `AUTH_LDAP_USER_SEARCH` query (either because the user is no
+longer in LDAP/Active Directory, or because the user no longer matches
+the query). This feature is enabled by default if LDAP is the only
+authentication backend configured on the Zulip server. Otherwise, you
+can enable this feature by setting
+`LDAP_DEACTIVATE_NON_MATCHING_USERS` to `True` in
 `/etc/zulip/settings.py`. Nonmatching users will be fully deactivated
-the next time your `manage.py sync_ldap_user_data` cron job runs.
+the next time you run `manage.py sync_ldap_user_data`.
 
 #### Other fields
 
