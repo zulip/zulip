@@ -1123,6 +1123,7 @@ div.overlay {
     }
 }
 
+.dropdown-current-value-not-in-options,
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);
 
