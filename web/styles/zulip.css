@@ -226,6 +226,7 @@ body {
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
+    --color-background-popover: hsl(0deg 0% 100%);
 
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
@@ -507,6 +508,7 @@ body {
     --color-compose-embedded-button-background-hover: hsl(
         235deg 100% 70% / 11%
     );
+    --color-background-popover: hsl(212deg 32% 14%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
