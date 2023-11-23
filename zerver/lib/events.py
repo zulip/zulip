@@ -39,7 +39,6 @@ from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import check_narrow_for_events, read_stop_words
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
-from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
@@ -329,6 +328,13 @@ def fetch_initial_state_data(
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
 
+        if realm.push_notifications_enabled_end_timestamp is not None:
+            state["realm_push_notifications_enabled_end_timestamp"] = datetime_to_timestamp(
+                realm.push_notifications_enabled_end_timestamp
+            )
+        else:
+            state["realm_push_notifications_enabled_end_timestamp"] = None
+
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
@@ -345,8 +351,7 @@ def fetch_initial_state_data(
             "event_queue_longpoll_timeout_seconds"
         ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
 
-        # TODO: Should these have the realm prefix replaced with server_?
-        state["realm_push_notifications_enabled"] = push_notifications_configured()
+        # TODO: This probably belongs on the server object.
         state["realm_default_external_accounts"] = get_default_external_accounts()
 
         server_default_jitsi_server_url = (

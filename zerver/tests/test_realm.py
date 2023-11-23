@@ -1360,8 +1360,10 @@ class RealmAPITest(ZulipTestCase):
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
-            with self.subTest(property=prop):
-                self.do_test_realm_update_api(prop)
+            # push_notifications_enabled is maintained by the server, not via the API.
+            if prop != "push_notifications_enabled":
+                with self.subTest(property=prop):
+                    self.do_test_realm_update_api(prop)
 
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):

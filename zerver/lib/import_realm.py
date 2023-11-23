@@ -27,6 +27,7 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
@@ -973,6 +974,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # import the supporting data structures, which may take a bit.
     realm_properties = dict(**data["zerver_realm"][0])
     realm_properties["deactivated"] = True
+
+    # Initialize whether we expect push notifications to work.
+    realm_properties["push_notifications_enabled"] = sends_notifications_directly()
 
     with transaction.atomic(durable=True):
         realm = Realm(**realm_properties)

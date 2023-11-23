@@ -14,6 +14,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
 )
 from zerver.lib.bulk_create import create_users
+from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import ensure_stream, get_signups_stream
@@ -215,6 +216,9 @@ def do_create_realm(
         kwargs["enable_read_receipts"] = (
             invite_required is None or invite_required is True or emails_restricted_to_domains
         )
+    # Initialize this property correctly in the case that no network activity
+    # is required to do so correctly.
+    kwargs["push_notifications_enabled"] = sends_notifications_directly()
 
     with transaction.atomic():
         realm = Realm(string_id=string_id, name=name, **kwargs)

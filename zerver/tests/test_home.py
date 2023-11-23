@@ -24,6 +24,7 @@ from zerver.lib.home import (
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, queries_captured
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     DefaultStream,
     Draft,
@@ -178,6 +179,7 @@ class HomeTest(ZulipTestCase):
         "realm_presence_disabled",
         "realm_private_message_policy",
         "realm_push_notifications_enabled",
+        "realm_push_notifications_enabled_end_timestamp",
         "realm_send_welcome_emails",
         "realm_signup_notifications_stream_id",
         "realm_upload_quota_mib",
@@ -1278,3 +1280,17 @@ class HomeTest(ZulipTestCase):
         # +2 for what's already in the test DB.
         for draft in page_params["drafts"]:
             self.assertNotEqual(draft["timestamp"], base_time)
+
+    def test_realm_push_notifications_enabled_end_timestamp(self) -> None:
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        end_timestamp = timezone_now() + datetime.timedelta(days=1)
+        realm.push_notifications_enabled_end_timestamp = end_timestamp
+        realm.save()
+
+        result = self._get_home_page(stream="Denmark")
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            page_params["realm_push_notifications_enabled_end_timestamp"],
+            datetime_to_timestamp(end_timestamp),
+        )

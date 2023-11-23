@@ -737,6 +737,65 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, "Invalid APNS token")
 
+    def test_initialize_push_notifications(self) -> None:
+        realm = get_realm("zulip")
+        realm.push_notifications_enabled = False
+        realm.save()
+
+        from zerver.lib.push_notifications import initialize_push_notifications
+
+        with mock.patch(
+            "zerver.lib.push_notifications.sends_notifications_directly", return_value=True
+        ):
+            initialize_push_notifications()
+
+            realm = get_realm("zulip")
+            self.assertTrue(realm.push_notifications_enabled)
+
+        with mock.patch(
+            "zerver.lib.push_notifications.push_notifications_configured", return_value=False
+        ), self.assertLogs("zerver.lib.push_notifications", level="WARNING") as warn_log:
+            initialize_push_notifications()
+
+            not_configured_warn_log = (
+                "WARNING:zerver.lib.push_notifications:"
+                "Mobile push notifications are not configured.\n  "
+                "See https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html"
+            )
+            realm = get_realm("zulip")
+            self.assertFalse(realm.push_notifications_enabled)
+            self.assertEqual(
+                warn_log.output[0],
+                not_configured_warn_log,
+            )
+
+        with mock.patch(
+            "zerver.lib.push_notifications.uses_notification_bouncer", return_value=True
+        ):
+            realms_response = {realm.uuid: {"can_push": True, "expected_end_timestamp": None}}
+            with mock.patch(
+                "zerver.lib.push_notifications.send_realms_only_to_push_bouncer",
+                return_value=realms_response,
+            ):
+                initialize_push_notifications()
+
+                realm = get_realm("zulip")
+                self.assertTrue(realm.push_notifications_enabled)
+                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+
+            with mock.patch(
+                "zerver.lib.push_notifications.send_realms_only_to_push_bouncer",
+                side_effect=Exception,
+            ), self.assertLogs("zerver.lib.push_notifications", level="ERROR") as exception_log:
+                initialize_push_notifications()
+
+                realm = get_realm("zulip")
+                self.assertFalse(realm.push_notifications_enabled)
+                self.assertIn(
+                    "ERROR:zerver.lib.push_notifications:Exception while sending realms only data to push bouncer",
+                    exception_log.output[0],
+                )
+
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
     def test_register_token_realm_uuid_belongs_to_different_server(self) -> None:
