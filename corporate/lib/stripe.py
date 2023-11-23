@@ -1266,20 +1266,27 @@ class BillingSession(ABC):
 
 
 class RealmBillingSession(BillingSession):
-    def __init__(self, user: Optional[UserProfile] = None, realm: Optional[Realm] = None) -> None:
+    def __init__(
+        self,
+        user: Optional[UserProfile] = None,
+        realm: Optional[Realm] = None,
+        *,
+        support_session: bool = False,
+    ) -> None:
         self.user = user
         assert user is not None or realm is not None
+        if support_session:
+            assert user is not None and user.is_staff
+        self.support_session = support_session
+
         if user is not None and realm is not None:
-            assert user.is_staff
+            assert user.is_staff or user.realm == realm
             self.realm = realm
-            self.support_session = True
         elif user is not None:
             self.realm = user.realm
-            self.support_session = False
         else:
             assert realm is not None  # for mypy
             self.realm = realm
-            self.support_session = False
 
     @override
     @property
