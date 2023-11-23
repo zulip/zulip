@@ -3512,11 +3512,11 @@ class StripeTest(StripeTestCase):
         iago = self.example_user("iago")
         realm = iago.realm
 
-        # Test upgrading to Plus when realm has no Standard subscription
+        # Test upgrading to Plus when realm has no active subscription
         with self.assertRaises(BillingError) as billing_context:
             switch_realm_from_standard_to_plus_plan(realm)
         self.assertEqual(
-            "Organization does not have an active Standard plan",
+            "Organization does not have an active plan",
             billing_context.exception.error_description,
         )
 

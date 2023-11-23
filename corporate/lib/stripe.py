@@ -2435,12 +2435,8 @@ def switch_plan_tier(current_plan: CustomerPlan, new_plan_tier: int) -> None:
 def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     standard_plan = get_current_plan_by_realm(realm)
 
-    if (
-        not standard_plan
-        or standard_plan.status != CustomerPlan.ACTIVE
-        or standard_plan.tier != CustomerPlan.STANDARD
-    ):
-        raise BillingError("Organization does not have an active Standard plan")
+    if not standard_plan or standard_plan.status != CustomerPlan.ACTIVE:
+        raise BillingError("Organization does not have an active plan")
 
     if not standard_plan.customer.stripe_customer_id:
         raise BillingError("Organization missing Stripe customer.")
