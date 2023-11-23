@@ -11,10 +11,9 @@
         </div>
         <div class="pricing-container">
             <div id="cloud" class="cloud-plan-title pricing-tab">
-                <h2>Cloud</h2>
+                <h2>Zulip Cloud</h2>
                 <p>
-                    Always updated to the latest version of Zulip.
-                    Simple managed solution, with no setup or maintenance.
+                    Simple managed solution.<br />Always up to date.
                 </p>
             </div>
 
@@ -56,7 +55,7 @@
                             <li><a href="/help/message-retention-policy">Message retention policies</a></li>
                             <li>Brand Zulip with your logo</li>
                             <li>Priority commercial support</li>
-                            <li>Funds the Zulip open source project</li>
+                            <li><a href="/help/public-access-option">Public access option</a></li>
                         </ul>
                     </div>
                     <div class="bottom">
@@ -73,7 +72,7 @@
                             {% if not realm %}
                             <a href="/upgrade/" class="button green">
                                 {% if free_trial_days %}
-                                Start {{ free_trial_days }} day free trial
+                                Start {{ free_trial_days }}-day free trial
                                 {% else %}
                                 Upgrade to Standard
                                 {% endif %}
@@ -93,7 +92,7 @@
                             {% else %}
                             <a href="/upgrade/" class="button green">
                                 {% if free_trial_days %}
-                                Start {{ free_trial_days }} day free trial
+                                Start {{ free_trial_days }}-day free trial
                                 {% else %}
                                 Upgrade to Standard
                                 {% endif %}
@@ -106,16 +105,25 @@
                     <div class="text-content">
                         <h2>Plus</h2>
                         <ul class="feature-list">
-                            <li>All Zulip Standard features</li>
+                            <li>All Standard plan features</li>
+                            <li><a href="/help/saml-authentication">SSO with SAML</a> (Okta, OneLogIn, etc.)</li>
+                            <li><a href="/help/scim">SCIM user sync</a></li>
                             <li>Custom domain</li>
-                            <li>SSO with SAML (Okta, OneLogIn, etc.)</li>
-                            <li>SCIM user sync</li>
-                            <li>Limited guest role</li>
+                            <li>Limit user list access for <a href="/help/guest-users">guests</a></li>
                             <li>Priority commercial support</li>
                         </ul>
                     </div>
                     <div class="bottom">
                         <div class="text-content">
+                            <div class="standard-price-box">
+                                <div class="price"><span class="currency-symbol">$</span>13.34</div>
+                                <div class="details">
+                                    <p>
+                                        /user/month billed annually or
+                                        <b>$16</b> billed monthly
+                                    </p>
+                                </div>
+                            </div>
                             <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="no-action button green">
                                 Contact sales
                             </a>
@@ -127,8 +135,7 @@
             <div id="self-hosted" class="self-hosted-plan-title pricing-tab">
                 <h2>Self-hosted</h2>
                 <p>
-                    Retain full control over your data and simplify compliance by self-hosting.
-                    Customize Zulip for all your needs.
+                    Retain full control over your data.<br />100% open-source software.
                 </p>
             </div>
 

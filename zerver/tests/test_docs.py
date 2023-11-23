@@ -575,7 +575,7 @@ class PlansPageTest(ZulipTestCase):
 
         with self.settings(FREE_TRIAL_DAYS=60):
             result = self.client_get("/plans/", subdomain="zulip")
-            self.assert_in_success_response([current_plan, "Start 60 day free trial"], result)
+            self.assert_in_success_response([current_plan, "Start 60-day free trial"], result)
             self.assert_not_in_success_response(
                 [sign_up_now, sponsorship_pending, upgrade_to_standard], result
             )
