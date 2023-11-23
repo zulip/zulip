@@ -304,6 +304,28 @@ def renewal_amount(
     return plan.price_per_license * last_ledger_entry.licenses_at_next_renewal
 
 
+def get_amount_to_credit_for_plan_tier_change(
+    current_plan: CustomerPlan, plan_change_date: datetime
+) -> int:
+    last_renewal_ledger = (
+        LicenseLedger.objects.filter(is_renewal=True, plan=current_plan).order_by("id").last()
+    )
+    assert last_renewal_ledger is not None
+    assert current_plan.price_per_license is not None
+
+    next_renewal_date = start_of_next_billing_cycle(current_plan, plan_change_date)
+
+    last_renewal_amount = last_renewal_ledger.licenses * current_plan.price_per_license
+    last_renewal_date = last_renewal_ledger.event_time
+
+    prorated_fraction = 1 - (plan_change_date - last_renewal_date) / (
+        next_renewal_date - last_renewal_date
+    )
+    amount_to_credit_back = math.ceil(last_renewal_amount * prorated_fraction)
+
+    return amount_to_credit_back
+
+
 def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
     if settings.TEST_SUITE:
         return None
@@ -2423,22 +2445,8 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
 
     do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
 
-    standard_plan_next_renewal_date = start_of_next_billing_cycle(standard_plan, plan_switch_time)
-
-    standard_plan_last_renewal_ledger = (
-        LicenseLedger.objects.filter(is_renewal=True, plan=standard_plan).order_by("id").last()
-    )
-    assert standard_plan_last_renewal_ledger is not None
-    assert standard_plan.price_per_license is not None
-    standard_plan_last_renewal_amount = (
-        standard_plan_last_renewal_ledger.licenses * standard_plan.price_per_license
-    )
-    standard_plan_last_renewal_date = standard_plan_last_renewal_ledger.event_time
-    unused_proration_fraction = 1 - (plan_switch_time - standard_plan_last_renewal_date) / (
-        standard_plan_next_renewal_date - standard_plan_last_renewal_date
-    )
-    amount_to_credit_back_to_realm = math.ceil(
-        standard_plan_last_renewal_amount * unused_proration_fraction
+    amount_to_credit_back_to_realm = get_amount_to_credit_for_plan_tier_change(
+        standard_plan, plan_switch_time
     )
     stripe.Customer.create_balance_transaction(
         standard_plan.customer.stripe_customer_id,
