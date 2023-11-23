@@ -265,7 +265,7 @@ class CustomerPlan(models.Model):
     DOWNGRADE_AT_END_OF_CYCLE = 2
     FREE_TRIAL = 3
     SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
-    SWITCH_NOW_FROM_STANDARD_TO_PLUS = 5
+    SWITCH_PLAN_TIER_NOW = 5
     SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.

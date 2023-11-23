@@ -986,7 +986,7 @@ class BillingSession(ABC):
         assert last_ledger_renewal is not None
         last_renewal = last_ledger_renewal.event_time
 
-        if plan.is_free_trial() or plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
+        if plan.is_free_trial():
             assert plan.next_invoice_date is not None
             next_billing_cycle = plan.next_invoice_date
         else:
@@ -1110,49 +1110,6 @@ class BillingSession(ABC):
                     },
                 )
                 return new_plan, new_plan_ledger_entry
-
-            if plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
-                standard_plan = plan
-                standard_plan.end_date = next_billing_cycle
-                standard_plan.status = CustomerPlan.ENDED
-                standard_plan.save(update_fields=["status", "end_date"])
-
-                (_, _, _, plus_plan_price_per_license) = compute_plan_parameters(
-                    CustomerPlan.PLUS,
-                    standard_plan.automanage_licenses,
-                    standard_plan.billing_schedule,
-                    standard_plan.customer.default_discount,
-                )
-                plus_plan_billing_cycle_anchor = standard_plan.end_date.replace(microsecond=0)
-
-                plus_plan = CustomerPlan.objects.create(
-                    customer=standard_plan.customer,
-                    status=CustomerPlan.ACTIVE,
-                    automanage_licenses=standard_plan.automanage_licenses,
-                    charge_automatically=standard_plan.charge_automatically,
-                    price_per_license=plus_plan_price_per_license,
-                    discount=standard_plan.customer.default_discount,
-                    billing_schedule=standard_plan.billing_schedule,
-                    tier=CustomerPlan.PLUS,
-                    billing_cycle_anchor=plus_plan_billing_cycle_anchor,
-                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
-                    next_invoice_date=plus_plan_billing_cycle_anchor,
-                )
-
-                standard_plan_last_ledger = (
-                    LicenseLedger.objects.filter(plan=standard_plan).order_by("id").last()
-                )
-                assert standard_plan_last_ledger is not None
-                licenses_for_plus_plan = standard_plan_last_ledger.licenses_at_next_renewal
-                assert licenses_for_plus_plan is not None
-                plus_plan_ledger_entry = LicenseLedger.objects.create(
-                    plan=plus_plan,
-                    is_renewal=True,
-                    event_time=plus_plan_billing_cycle_anchor,
-                    licenses=licenses_for_plus_plan,
-                    licenses_at_next_renewal=licenses_for_plus_plan,
-                )
-                return plus_plan, plus_plan_ledger_entry
 
             if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
                 self.process_downgrade(plan)
@@ -2225,7 +2182,12 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
 
     realm = plan.customer.realm
     billing_session = RealmBillingSession(user=None, realm=realm)
-    billing_session.make_end_of_cycle_updates_if_needed(plan, event_time)
+
+    # Updating a CustomerPlan with a status to switch the plan tier,
+    # is done via switch_plan_tier, so we do not need to make end of
+    # cycle updates for that case.
+    if plan.status is not CustomerPlan.SWITCH_PLAN_TIER_NOW:
+        billing_session.make_end_of_cycle_updates_if_needed(plan, event_time)
 
     if plan.invoicing_status == CustomerPlan.INITIAL_INVOICE_TO_BE_SENT:
         invoiced_through_id = -1
@@ -2422,6 +2384,54 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
                 void_all_open_invoices(realm)
 
 
+def switch_plan_tier(current_plan: CustomerPlan, new_plan_tier: int) -> None:
+    assert current_plan.status == CustomerPlan.SWITCH_PLAN_TIER_NOW
+    assert current_plan.next_invoice_date is not None
+    next_billing_cycle = current_plan.next_invoice_date
+
+    # TODO: When moved to BillingSession, create child class validation
+    # for valid CustomerPlan tier changes.
+    assert current_plan.tier != new_plan_tier
+    assert current_plan.tier == CustomerPlan.STANDARD
+    assert new_plan_tier == CustomerPlan.PLUS
+
+    current_plan.end_date = next_billing_cycle
+    current_plan.status = CustomerPlan.ENDED
+    current_plan.save(update_fields=["status", "end_date"])
+
+    new_price_per_license = get_price_per_license(
+        new_plan_tier, current_plan.billing_schedule, current_plan.customer.default_discount
+    )
+
+    new_plan_billing_cycle_anchor = current_plan.end_date.replace(microsecond=0)
+
+    new_plan = CustomerPlan.objects.create(
+        customer=current_plan.customer,
+        status=CustomerPlan.ACTIVE,
+        automanage_licenses=current_plan.automanage_licenses,
+        charge_automatically=current_plan.charge_automatically,
+        price_per_license=new_price_per_license,
+        discount=current_plan.customer.default_discount,
+        billing_schedule=current_plan.billing_schedule,
+        tier=new_plan_tier,
+        billing_cycle_anchor=new_plan_billing_cycle_anchor,
+        invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+        next_invoice_date=new_plan_billing_cycle_anchor,
+    )
+
+    current_plan_last_ledger = LicenseLedger.objects.filter(plan=current_plan).order_by("id").last()
+    assert current_plan_last_ledger is not None
+    licenses_for_new_plan = current_plan_last_ledger.licenses_at_next_renewal
+    assert licenses_for_new_plan is not None
+    LicenseLedger.objects.create(
+        plan=new_plan,
+        is_renewal=True,
+        event_time=new_plan_billing_cycle_anchor,
+        licenses=licenses_for_new_plan,
+        licenses_at_next_renewal=licenses_for_new_plan,
+    )
+
+
 def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     standard_plan = get_current_plan_by_realm(realm)
 
@@ -2437,7 +2447,7 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
 
     plan_switch_time = timezone_now()
 
-    standard_plan.status = CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS
+    standard_plan.status = CustomerPlan.SWITCH_PLAN_TIER_NOW
     standard_plan.next_invoice_date = plan_switch_time
     standard_plan.save(update_fields=["status", "next_invoice_date"])
 
@@ -2454,6 +2464,7 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
         currency="usd",
         description="Credit from early termination of Standard plan",
     )
+    switch_plan_tier(standard_plan, CustomerPlan.PLUS)
     invoice_plan(standard_plan, plan_switch_time)
     plus_plan = get_current_plan_by_realm(realm)
     assert plus_plan is not None  # for mypy
