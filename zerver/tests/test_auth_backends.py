@@ -5248,7 +5248,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ("zulip_version", check_string),
                     ("zulip_merge_base", check_string),
                     ("zulip_feature_level", check_int),
-                    ("push_notifications_enabled", check_bool),
+                    ("push_notifications_configured", check_bool),
                     ("realm_web_public_access_enabled", check_bool),
                     ("msg", check_string),
                     ("result", check_string),

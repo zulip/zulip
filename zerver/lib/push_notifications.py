@@ -710,7 +710,7 @@ def clear_push_device_tokens(user_profile_id: int) -> None:
 #
 
 
-def push_notifications_enabled() -> bool:
+def push_notifications_configured() -> bool:
     """True just if this server has configured a way to send push notifications."""
     if (
         uses_notification_bouncer()
@@ -735,7 +735,7 @@ def push_notifications_enabled() -> bool:
 
 
 def initialize_push_notifications() -> None:
-    if not push_notifications_enabled():
+    if not push_notifications_configured():
         if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
             # Avoid unnecessary spam on development environment startup
             return
@@ -1037,7 +1037,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     mobile app, when the message is read on the server, to remove the
     message from the notification.
     """
-    if not push_notifications_enabled():
+    if not push_notifications_configured():
         return
 
     user_profile = get_user_profile_by_id(user_profile_id)
@@ -1116,7 +1116,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     missed_message is the event received by the
     zerver.worker.queue_processors.PushNotificationWorker.consume function.
     """
-    if not push_notifications_enabled():
+    if not push_notifications_configured():
         return
     user_profile = get_user_profile_by_id(user_profile_id)
 

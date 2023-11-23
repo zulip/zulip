@@ -620,7 +620,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # push notifications or message notification emails.
         self.assert_length(info["queue_messages"], 0)
 
-    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_clear_notification_when_mention_removed(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
@@ -640,7 +640,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
-    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_clear_notification_when_group_mention_removed(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
@@ -663,7 +663,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(group_mentioned_user), 0)
 
-    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_not_clear_notification_when_mention_removed_but_stream_notified(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:

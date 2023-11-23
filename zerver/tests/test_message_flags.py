@@ -171,8 +171,8 @@ class UnreadCountTests(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         with mock.patch(
-            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
-        ) as mock_push_notifications_enabled:
+            "zerver.lib.push_notifications.push_notifications_configured", return_value=True
+        ) as mock_push_notifications_configured:
             self.unread_msg_ids = [
                 self.send_personal_message(
                     self.example_user("iago"), self.example_user("hamlet"), "hello"
@@ -181,7 +181,7 @@ class UnreadCountTests(ZulipTestCase):
                     self.example_user("iago"), self.example_user("hamlet"), "hello2"
                 ),
             ]
-            mock_push_notifications_enabled.assert_called()
+            mock_push_notifications_configured.assert_called()
 
     # Sending a new message results in unread UserMessages being created
     # for users other than sender.
@@ -580,7 +580,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             .values_list("message_id", flat=True)
         )
 
-    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_track_active_mobile_push_notifications(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
