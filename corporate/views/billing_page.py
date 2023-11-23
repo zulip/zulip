@@ -51,6 +51,9 @@ def sponsorship_request(request: HttpRequest) -> HttpResponse:
 
     customer = get_customer_by_realm(user.realm)
     if customer is not None and customer.sponsorship_pending:
+        if is_realm_on_paid_plan(user.realm):
+            return HttpResponseRedirect(reverse("billing_home"))
+
         context["is_sponsorship_pending"] = True
 
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
