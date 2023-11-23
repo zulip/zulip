@@ -5,12 +5,16 @@
 
 {% block portico_content %}
 
-{% if is_sponsored %}
+{% if is_sponsored or is_sponsorship_pending %}
 
 <div class="register-account flex full-page sponsorship-status-page">
     <div class="center-block new-style">
         <div class="alert alert-success sponsorship-page-success" id="sponsorship-status-success-message-top">
-            Zulip is sponsoring a free <a href="https://github.com/plans/">Zulip Cloud Standard</a> plan for this organization. 🎉
+            {% if is_sponsored %}
+            Zulip is sponsoring a free <a href="/plans/">Zulip Cloud Standard</a> plan for this organization. 🎉
+            {% else %}
+            This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            {% endif %}
         </div>
         <div class="pitch">
             <h1>Zulip Cloud billing for {{realm_name}}</h1>
@@ -29,28 +33,14 @@
                 </div>
             </div>
         </div>
+        {% if is_sponsored %}
         <hr />
         <div class="support-link">
             <p>
                 To make changes to your plan or view your billing history <a href="mailto:support@zulip.com">contact Zulip support</a>.
             </p>
         </div>
-    </div>
-</div>
-
-{% elif is_sponsorship_pending %}
-
-<div class="flex full-page thanks-page sponsorship-status-page">
-    <div class="center-block new-style">
-        <div class="pitch">
-            <h1>Sponsorship request pending for {{realm_name}}</h1>
-        </div>
-        <div class="white-box">
-            <p> This organization has requested sponsorship for a free or discounted <a href="/plans/">Zulip Cloud Standard</a> plan.</p>
-            <p>
-                Please feel free to <a href="mailto:support@zulip.com">contact Zulip support</a> with any questions or updates to your request.
-            </p>
-        </div>
+        {% endif %}
     </div>
 </div>
 
