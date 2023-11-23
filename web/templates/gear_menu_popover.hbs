@@ -143,6 +143,7 @@
                 {{/if}}
             </ul>
         </li>
+        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator show_webathena)}}
         <li class="navbar-dropdown-menu-outer-list-item">
             <ul class="navbar-dropdown-menu-inner-list">
                 {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
@@ -166,5 +167,6 @@
                 </li>
             </ul>
         </li>
+        {{/if}}
     </ul>
 </div>
