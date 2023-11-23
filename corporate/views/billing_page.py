@@ -64,6 +64,8 @@ def sponsorship_request(request: HttpRequest) -> HttpResponse:
         if plan is not None:
             context["plan_name"] = plan.name
             context["free_trial"] = plan.is_free_trial()
+        else:
+            context["plan_name"] = "Zulip Cloud Free"
 
     add_sponsorship_info_to_context(context, user)
     return render(request, "corporate/sponsorship.html", context=context)
