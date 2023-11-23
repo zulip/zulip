@@ -830,7 +830,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             id_field_name="can_access_all_users_group_id",
-            allowed_system_groups=[SystemGroups.EVERYONE],
+            allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
     )
 
