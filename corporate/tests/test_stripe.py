@@ -3577,7 +3577,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(cb_txn.amount, -7200)
         self.assertEqual(
             cb_txn.description,
-            "Credit from early termination of Standard plan",
+            "Credit from early termination of active plan",
         )
         self.assertEqual(cb_txn.type, "adjustment")
 
