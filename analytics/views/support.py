@@ -56,13 +56,13 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
         RealmBillingSession,
         get_latest_seat_count,
-        switch_realm_from_standard_to_plus_plan,
         void_all_open_invoices,
     )
     from corporate.lib.support import (
         approve_realm_sponsorship,
         attach_discount_to_realm,
         get_discount_for_realm,
+        switch_realm_from_standard_to_plus_plan,
         update_realm_billing_method,
         update_realm_sponsorship_status,
     )
