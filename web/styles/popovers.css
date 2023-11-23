@@ -4,6 +4,8 @@
   popovers. (Tippy tooltips are defined in tooltips.css).
 */
 .tippy-box[data-theme="light-border"] {
+    background-color: var(--color-background-popover);
+
     .sp-input {
         /* Override incorrect color for text in dark theme. */
         color: var(--color-text-default) !important;
@@ -27,6 +29,38 @@
         /* Override bootstrap defaults */
         .nav-list > li > a {
             padding: 3px 15px;
+        }
+    }
+
+    &[data-placement^="top"] {
+        > .tippy-arrow {
+            &::before {
+                border-top-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="bottom"] {
+        > .tippy-arrow {
+            &::before {
+                border-bottom-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="left"] {
+        > .tippy-arrow {
+            &::before {
+                border-left-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="right"] {
+        > .tippy-arrow {
+            &::before {
+                border-right-color: var(--color-background-popover);
+            }
         }
     }
 }
