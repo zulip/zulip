@@ -78,7 +78,7 @@ def upgrade(
 
 @zulip_login_required
 @has_request_variables
-def initial_upgrade(
+def upgrade_page(
     request: HttpRequest,
     manual_license_management: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
