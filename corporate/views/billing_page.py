@@ -105,14 +105,14 @@ def billing_home(
         return HttpResponseRedirect(reverse("plans"))
 
     if customer is None:
-        from corporate.views.upgrade import initial_upgrade
+        from corporate.views.upgrade import upgrade_page
 
-        return HttpResponseRedirect(reverse(initial_upgrade))
+        return HttpResponseRedirect(reverse(upgrade_page))
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
-        from corporate.views.upgrade import initial_upgrade
+        from corporate.views.upgrade import upgrade_page
 
-        return HttpResponseRedirect(reverse(initial_upgrade))
+        return HttpResponseRedirect(reverse(upgrade_page))
 
     billing_session = RealmBillingSession(user=None, realm=user.realm)
     main_context = billing_session.get_billing_page_context()
