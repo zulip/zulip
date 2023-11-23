@@ -1,6 +1,7 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
+import render_dropdown_current_value_not_in_options from "../templates/dropdown_current_value_not_in_options.hbs";
 import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.hbs";
 import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
@@ -311,7 +312,11 @@ export class DropdownWidget {
 
         // If provided, show custom text if cannot find current option.
         if (!option && this.text_if_current_value_not_in_options) {
-            $(this.widget_value_selector).text(this.text_if_current_value_not_in_options);
+            $(this.widget_value_selector).html(
+                render_dropdown_current_value_not_in_options({
+                    name: this.text_if_current_value_not_in_options,
+                }),
+            );
             return;
         }
 
