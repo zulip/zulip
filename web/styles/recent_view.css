@@ -543,3 +543,17 @@
     display: none;
     position: relative;
 }
+
+#recent-view-filter_widget {
+    display: inline-flex;
+    width: 150px;
+    margin: 0 5px 10px 0;
+
+    &:hover {
+        background-color: var(--color-background-inbox-search-hover);
+    }
+
+    &:focus {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
