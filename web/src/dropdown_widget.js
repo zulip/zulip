@@ -8,6 +8,7 @@ import render_inline_decorated_stream_name from "../templates/inline_decorated_s
 
 import * as blueslip from "./blueslip";
 import * as ListWidget from "./list_widget";
+import {page_params} from "./page_params";
 import {default_popover_props} from "./popover_menus";
 import {parse_html} from "./ui_util";
 
@@ -46,6 +47,8 @@ export class DropdownWidget {
         // Show disabled state if the default_id is not in `get_options()`.
         show_disabled_if_current_value_not_in_options = false,
         hide_search_box = false,
+        // Disable the widget for spectators.
+        disable_for_spectators = false,
     }) {
         this.widget_name = widget_name;
         this.widget_id = `#${CSS.escape(widget_name)}_widget`;
@@ -70,6 +73,7 @@ export class DropdownWidget {
         this.show_disabled_if_current_value_not_in_options =
             show_disabled_if_current_value_not_in_options;
         this.hide_search_box = hide_search_box;
+        this.disable_for_spectators = disable_for_spectators;
     }
 
     init() {
@@ -88,6 +92,15 @@ export class DropdownWidget {
                 }
             },
         );
+
+        if (this.disable_for_spectators && page_params.is_spectator) {
+            const $widget = $(this.widget_id);
+            $widget.addClass("disabled-for-spectators");
+            $widget.on("click", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+            });
+        }
     }
 
     show_empty_if_no_items($popper) {
