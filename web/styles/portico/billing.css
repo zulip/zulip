@@ -368,7 +368,7 @@ input[name="licenses"] {
 
 #sponsorship-discount-details {
     font-weight: normal;
-    margin: 2px;
+    margin: 2px 14px;
     padding-top: 0;
     text-align: left;
     overflow-wrap: break-word;
@@ -448,6 +448,8 @@ input[name="licenses"] {
     text-align: left;
 }
 
+.sponsorship-page .pitch,
+.sponsorship-status-page .pitch,
 #upgrade-page .pitch,
 #billing-page .pitch {
     width: 600px;
@@ -633,4 +635,12 @@ input[name="licenses"] {
 #autopay-error {
     font-weight: 400;
     margin-left: 0;
+}
+
+#sponsorship-status-page-details .input-box.sponsorship-form-field {
+    margin: 20px;
+}
+
+#sponsorship-form #sponsorship-button {
+    width: 100%;
 }
