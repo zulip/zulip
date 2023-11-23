@@ -821,7 +821,8 @@ input[type="checkbox"] {
     margin: 20px 0 0;
 }
 
-#org-join-settings {
+#org-join-settings,
+#org-guest-settings {
     .dropdown-widget-button {
         width: 325px;
         color: hsl(0deg 0% 33%);

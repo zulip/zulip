@@ -477,6 +477,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
+        case "realm_can_access_all_users_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -737,6 +738,33 @@ export function init_dropdown_widgets() {
         create_multiuse_invite_group_widget,
     );
     create_multiuse_invite_group_widget.setup();
+
+    const can_access_all_users_group_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "realm_can_access_all_users_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "can_access_all_users_group",
+                "realm",
+            ),
+        $events_container: $("#settings_overlay_container #organization-permissions"),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            settings_components.can_access_all_users_group_widget.render();
+            settings_components.save_discard_widget_status_handler($("#org-guest-settings"));
+        },
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: page_params.realm_can_access_all_users_group,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    settings_components.set_can_access_all_users_group_widget(can_access_all_users_group_widget);
+    can_access_all_users_group_widget.setup();
 }
 
 export function populate_data_for_request(subsection, for_realm_default_settings, sub) {
