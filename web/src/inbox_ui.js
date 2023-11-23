@@ -11,7 +11,6 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -497,35 +496,6 @@ function show_empty_inbox_text(has_visible_unreads) {
     }
 }
 
-function filters_dropdown_options() {
-    return [
-        {
-            unique_id: views_util.FILTERS.FOLLOWED_TOPICS,
-            name: $t({defaultMessage: "Followed topics"}),
-            description: $t({defaultMessage: "Only topics you follow"}),
-            bold_current_selection:
-                filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === views_util.FILTERS.FOLLOWED_TOPICS,
-        },
-        {
-            unique_id: views_util.FILTERS.UNMUTED_TOPICS,
-            name: $t({defaultMessage: "Standard view"}),
-            description: $t({defaultMessage: "All unmuted topics"}),
-            bold_current_selection:
-                filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === views_util.FILTERS.UNMUTED_TOPICS,
-        },
-        {
-            unique_id: views_util.FILTERS.ALL_TOPICS,
-            name: $t({defaultMessage: "All topics"}),
-            description: $t({defaultMessage: "Includes muted topics and streams"}),
-            bold_current_selection:
-                filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === views_util.FILTERS.ALL_TOPICS,
-        },
-    ];
-}
-
 function filter_click_handler(event, dropdown, widget) {
     event.preventDefault();
     event.stopPropagation();
@@ -567,18 +537,11 @@ export function complete_rerender() {
     }, 0);
 
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         widget_name: "inbox-filter",
-        get_options: filters_dropdown_options,
         item_click_callback: filter_click_handler,
         $events_container: $("#inbox-main"),
-        tippy_props: {
-            placement: "bottom-start",
-            offset: [0, 2],
-        },
-        unique_id_type: dropdown_widget.DATA_TYPES.STRING,
         default_id: filters.values().next().value,
-        hide_search_box: true,
-        bold_current_selection: true,
     });
     filters_dropdown_widget.setup();
 }
