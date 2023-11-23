@@ -1194,7 +1194,7 @@ textarea.new_message_textarea,
     & ul {
         list-style: none;
         margin: 0;
-        background: hsl(0deg 0% 100%);
+        background-color: var(--color-background-popover);
     }
 
     .typeahead-header {
