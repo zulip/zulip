@@ -67,7 +67,6 @@ from corporate.lib.stripe import (
     sign_string,
     stripe_customer_has_credit_card_as_default_payment_method,
     stripe_get_customer,
-    switch_realm_from_standard_to_plus_plan,
     unsign_string,
     update_license_ledger_for_automanaged_plan,
     update_license_ledger_for_manual_plan,
@@ -78,6 +77,7 @@ from corporate.lib.support import (
     approve_realm_sponsorship,
     attach_discount_to_realm,
     get_discount_for_realm,
+    switch_realm_from_standard_to_plus_plan,
     update_realm_billing_method,
     update_realm_sponsorship_status,
 )
@@ -3508,13 +3508,15 @@ class StripeTest(StripeTestCase):
             self.assertEqual(row.email_expected_to_be_sent, email_found)
 
     @mock_stripe()
-    def test_switch_realm_from_standard_to_plus_plan(self, *mock: Mock) -> None:
+    def test_change_plan_tier_from_standard_to_plus(self, *mock: Mock) -> None:
         iago = self.example_user("iago")
         realm = iago.realm
+        iago_billing_session = RealmBillingSession(iago)
+        iago_billing_session.update_or_create_customer()
 
         # Test upgrading to Plus when realm has no active subscription
         with self.assertRaises(BillingError) as billing_context:
-            switch_realm_from_standard_to_plus_plan(realm)
+            iago_billing_session.do_change_plan_to_new_tier(CustomerPlan.PLUS)
         self.assertEqual(
             "Organization does not have an active plan",
             billing_context.exception.error_description,
@@ -3525,14 +3527,15 @@ class StripeTest(StripeTestCase):
         )
         # Test upgrading to Plus when realm has no stripe_customer_id
         with self.assertRaises(BillingError) as billing_context:
-            switch_realm_from_standard_to_plus_plan(realm)
+            iago_billing_session.do_change_plan_to_new_tier(CustomerPlan.PLUS)
         self.assertEqual(
             "Organization missing Stripe customer.", billing_context.exception.error_description
         )
 
         king = self.lear_user("king")
         realm = king.realm
-        customer = RealmBillingSession(king).update_or_create_stripe_customer()
+        king_billing_session = RealmBillingSession(king)
+        customer = king_billing_session.update_or_create_stripe_customer()
         plan = CustomerPlan.objects.create(
             customer=customer,
             automanage_licenses=True,
@@ -3553,7 +3556,13 @@ class StripeTest(StripeTestCase):
         plan.price_per_license = get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY)
         plan.save(update_fields=["invoiced_through", "price_per_license"])
 
-        switch_realm_from_standard_to_plus_plan(realm)
+        with self.assertRaises(BillingError) as billing_context:
+            king_billing_session.do_change_plan_to_new_tier(CustomerPlan.STANDARD)
+        self.assertEqual(
+            "Invalid change of customer plan tier.", billing_context.exception.error_description
+        )
+
+        king_billing_session.do_change_plan_to_new_tier(CustomerPlan.PLUS)
 
         plan.refresh_from_db()
         self.assertEqual(plan.status, CustomerPlan.ENDED)
@@ -4838,3 +4847,20 @@ class TestSupportBillingHelpers(StripeTestCase):
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+    @mock_stripe()
+    def test_switch_realm_from_standard_to_plus_plan(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        self.add_card_and_upgrade(user)
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        original_plan = get_current_plan_by_customer(customer)
+        assert original_plan is not None
+        self.assertEqual(original_plan.tier, CustomerPlan.STANDARD)
+
+        switch_realm_from_standard_to_plus_plan(user.realm)
+        customer.refresh_from_db()
+        new_plan = get_current_plan_by_customer(customer)
+        assert new_plan is not None
+        self.assertEqual(new_plan.tier, CustomerPlan.PLUS)

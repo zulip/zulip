@@ -6,7 +6,7 @@ from django.conf import settings
 from django.urls import reverse
 
 from corporate.lib.stripe import RealmBillingSession
-from corporate.models import get_customer_by_realm
+from corporate.models import CustomerPlan, get_customer_by_realm
 from zerver.models import Realm, UserProfile, get_realm
 
 
@@ -48,3 +48,8 @@ def update_realm_billing_method(
 ) -> None:
     billing_session = RealmBillingSession(acting_user, realm, support_session=True)
     billing_session.update_billing_method_of_current_plan(charge_automatically)
+
+
+def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
+    billing_session = RealmBillingSession(realm=realm)
+    billing_session.do_change_plan_to_new_tier(new_plan_tier=CustomerPlan.PLUS)
