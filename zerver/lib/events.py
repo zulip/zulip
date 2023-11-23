@@ -39,7 +39,7 @@ from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import check_narrow_for_events, read_stop_words
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
-from zerver.lib.push_notifications import push_notifications_enabled
+from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
@@ -346,7 +346,7 @@ def fetch_initial_state_data(
         ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
 
         # TODO: Should these have the realm prefix replaced with server_?
-        state["realm_push_notifications_enabled"] = push_notifications_enabled()
+        state["realm_push_notifications_enabled"] = push_notifications_configured()
         state["realm_default_external_accounts"] = get_default_external_accounts()
 
         server_default_jitsi_server_url = (

@@ -57,7 +57,7 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
-from zerver.lib.push_notifications import push_notifications_enabled
+from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -1109,7 +1109,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         zulip_version=ZULIP_VERSION,
         zulip_merge_base=ZULIP_MERGE_BASE,
         zulip_feature_level=API_FEATURE_LEVEL,
-        push_notifications_enabled=push_notifications_enabled(),
+        push_notifications_configured=push_notifications_configured(),
         is_incompatible=check_server_incompatibility(request),
     )
     context = zulip_default_context(request)
