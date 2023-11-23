@@ -146,7 +146,7 @@ class APNsContext:
     loop: asyncio.AbstractEventLoop
 
 
-def apns_enabled() -> bool:
+def has_apns_credentials() -> bool:
     return settings.APNS_TOKEN_KEY_FILE is not None or settings.APNS_CERT_FILE is not None
 
 
@@ -156,7 +156,7 @@ def get_apns_context() -> Optional[APNsContext]:
     # import time.
     import aioapns
 
-    if not apns_enabled():  # nocoverage
+    if not has_apns_credentials():  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
@@ -374,7 +374,7 @@ else:
     gcm_client = None
 
 
-def gcm_enabled() -> bool:  # nocoverage
+def has_gcm_credentials() -> bool:  # nocoverage
     return gcm_client is not None
 
 
@@ -722,12 +722,12 @@ def push_notifications_configured() -> bool:
         # works -- e.g., that we have ever successfully sent to the bouncer --
         # but this is a good start.
         return True
-    if settings.DEVELOPMENT and (apns_enabled() or gcm_enabled()):  # nocoverage
+    if settings.DEVELOPMENT and (has_apns_credentials() or has_gcm_credentials()):  # nocoverage
         # Since much of the notifications logic is platform-specific, the mobile
         # developers often work on just one platform at a time, so we should
         # only require one to be configured.
         return True
-    elif apns_enabled() and gcm_enabled():  # nocoverage
+    elif has_apns_credentials() and has_gcm_credentials():  # nocoverage
         # We have the needed configuration to send through APNs and GCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
