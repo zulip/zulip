@@ -382,6 +382,11 @@ input[name="licenses"] {
         margin: -50px;
     }
 
+    .sponsorship-status-page {
+        transform: scale(0.8);
+        margin: -10px -50px -50px;
+    }
+
     #upgrade-page {
         transform: scale(0.8);
         margin: -50px 0;
@@ -396,6 +401,11 @@ input[name="licenses"] {
         margin: -150px -100px;
     }
 
+    .sponsorship-status-page {
+        transform: scale(0.6);
+        margin: -50px -150px -100px;
+    }
+
     #upgrade-page {
         transform: scale(0.6);
         margin: -150px 0;
@@ -406,9 +416,14 @@ input[name="licenses"] {
     width: 100%;
 }
 
-.billing-status-page,
+.billing-status-page {
+    font-weight: 400;
+}
+
 .sponsorship-status-page .white-box {
     font-weight: 400;
+    margin: 30px;
+    padding: 0;
 }
 
 .billing-status-page p:last-child,
@@ -524,11 +539,12 @@ input[name="licenses"] {
     padding-top: 0;
 }
 
-#upgrade-page-details .input-box.billing-page-field:first-child,
+#sponsorship-status-page-details .input-box.sponsorship-form-field:first-child,
 #billing-page-details .input-box.billing-page-field:first-child {
     margin-top: 10px;
 }
 
+.sponsorship-status-page .support-link,
 #billing-page .support-link {
     text-align: center;
 }
@@ -560,9 +576,11 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#sponsorship-status-success-message-top,
 #billing-success-message-top {
     display: block;
     text-align: center;
+    font-weight: 400;
 }
 
 .upgrade-page-success {

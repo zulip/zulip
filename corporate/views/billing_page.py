@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from corporate.lib.stripe import RealmBillingSession, UpdatePlanRequest
-from corporate.models import CustomerPlan, get_customer_by_realm
+from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -46,6 +46,12 @@ def sponsorship_request(request: HttpRequest) -> HttpResponse:
 
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         context["is_sponsored"] = True
+
+    if customer is not None:
+        plan = get_current_plan_by_customer(customer)
+        if plan is not None:
+            context["plan_name"] = plan.name
+            context["free_trial"] = plan.is_free_trial()
 
     add_sponsorship_info_to_context(context, user)
     return render(request, "corporate/sponsorship.html", context=context)

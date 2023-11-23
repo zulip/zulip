@@ -482,6 +482,7 @@ html {
                 .alert-info,
                 .billing-page-success,
                 .upgrade-page-success,
+                .sponsorship-page-success,
                 #autopay-error
             ) {
             padding: 0;
@@ -925,6 +926,7 @@ button#register_auth_button_gitlab {
 #upgrade-page-details,
 #billing-page-details,
 #sponsorship-form,
+#sponsorship-status-page-details,
 #registration,
 #new-realm-creation {
     width: auto;
