@@ -87,6 +87,9 @@
                                 {{ 'user' if seat_count == 1 else 'users' }}
                             </span> x
                             <span class="due-today-duration"></span>
+                            {% if discount_percent %}
+                            <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
+                            {% endif %}
                             <h1>$<span class="due-today-price"></span></h1>
                         </div>
                     </div>

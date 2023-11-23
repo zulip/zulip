@@ -99,6 +99,19 @@ def format_money(cents: float) -> str:
     return f"{dollars:.{precision}f}"
 
 
+def format_discount_percentage(discount: Optional[Decimal]) -> Optional[str]:
+    if type(discount) is not Decimal:
+        return None
+
+    # Even though it looks like /activity/support only finds integers valid,
+    # this will look good for any custom discounts that we apply.
+    if discount * 100 % 100 == 0:
+        precision = 0
+    else:
+        precision = 2  # nocoverage
+    return f"{discount:.{precision}f}"
+
+
 def get_latest_seat_count(realm: Realm) -> int:
     return get_seat_count(realm, extra_non_guests_count=0, extra_guests_count=0)
 
@@ -1215,6 +1228,7 @@ class BillingSession(ABC):
                     "fixed_price": fixed_price,
                     "price_per_license": price_per_license,
                     "is_sponsorship_pending": customer.sponsorship_pending,
+                    "discount_percent": format_discount_percentage(customer.default_discount),
                 }
         return context
 
@@ -1256,6 +1270,7 @@ class BillingSession(ABC):
                 "monthly_price": get_price_per_license(tier, CustomerPlan.MONTHLY, percent_off),
             },
             "manual_license_management": initial_upgrade_request.manual_license_management,
+            "discount_percent": format_discount_percentage(percent_off),
         }
 
         # Check if user was successful in adding a card and we are rendering the page again.
