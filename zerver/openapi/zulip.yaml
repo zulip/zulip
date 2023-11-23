@@ -4581,6 +4581,27 @@ paths:
                                         system group.
 
                                         **Changes**: New in Zulip 8.0 (feature level 225).
+                                    push_notifications_enabled:
+                                      type: boolean
+                                      description: |
+                                        Whether push notifications are enabled for this organization. Typically
+                                        `true` for Zulip Cloud and self-hosted realms that have a valid
+                                        registration for the [Mobile push notifications
+                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                                        and `false` for self-hosted servers that do not.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
+                                        Previously, this value was never updated via events.
+                                    push_notifications_enabled_end_timestamp:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        If the server expects the realm's push notifications access to end at a
+                                        definite time in the future, the time at which this is expected to happen.
+                                        Mobile clients should use this field to display warnings to users when the
+                                        indicated timestamp is near.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
                                   additionalProperties: false
                               example:
                                 {
@@ -14425,8 +14446,26 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether push notifications are enabled for this organization. Typically
-                          `false` for self-hosted servers that have not configured the
-                          [Mobile push notifications service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html).
+                          `true` for Zulip Cloud and self-hosted realms that have a valid
+                          registration for the [Mobile push notifications
+                          service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                          and `false` for self-hosted servers that do not.
+
+                          **Changes**: Before Zulip 8.0 (feature level 231), this incorrectly was
+                          `true` for servers that were partly configured to use the Mobile Push
+                          Notifications Service but not properly registered.
+                      realm_push_notifications_enabled_end_timestamp:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          If the server expects the realm's push notifications access to end at a
+                          definite time in the future, the time at which this is expected to happen.
+                          Mobile clients should use this field to display warnings to users when the
+                          indicated timestamp is near.
+
+                          **Changes**: New in Zulip 8.0 (feature level 231).
                       realm_upload_quota_mib:
                         type: integer
                         nullable: true

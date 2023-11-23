@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 231**
+
+* [`POST /register`](/api/register-queue):
+  `realm_push_notifications_enabled` now represents more accurately
+  whether push notifications are actually enabled via the mobile push
+  notifications service. Added
+  `realm_push_notifications_enabled_end_timestamp` field to realm
+  data.
+
+* [`GET /events`](/api/get-events): A `realm` update event is now sent
+  whenever `push_notifications_enabled` or
+  `push_notifications_enabled_end_timestamp` changes.
+
 **Feature level 230**
 
 * [`GET /events`](/api/get-events): Added `has_trigger` field in

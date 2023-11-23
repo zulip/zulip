@@ -76,6 +76,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
     do_deactivate_realm,
+    do_set_push_notifications_enabled_end_timestamp,
     do_set_realm_authentication_methods,
     do_set_realm_notifications_stream,
     do_set_realm_property,
@@ -216,7 +217,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
-from zerver.lib.timestamp import convert_to_UTC
+from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.models import (
@@ -3659,6 +3660,58 @@ class RealmPropertyActionTest(BaseAction):
             if prop == "default_language":
                 continue
             self.do_set_realm_user_default_setting_test(prop)
+
+    def test_do_set_push_notifications_enabled_end_timestamp(self) -> None:
+        realm = self.user_profile.realm
+
+        # Default value of 'push_notifications_enabled_end_timestamp' is None.
+        # Verify that no event is sent when the new value is the same as existing value.
+        new_timestamp = None
+        self.verify_action(
+            lambda: do_set_push_notifications_enabled_end_timestamp(
+                realm=realm,
+                value=new_timestamp,
+                acting_user=None,
+            ),
+            state_change_expected=False,
+            num_events=0,
+        )
+
+        old_datetime = timezone_now() - datetime.timedelta(days=3)
+        old_timestamp = datetime_to_timestamp(old_datetime)
+        now = timezone_now()
+        timestamp_now = datetime_to_timestamp(now)
+
+        realm.push_notifications_enabled_end_timestamp = old_datetime
+        realm.save(update_fields=["push_notifications_enabled_end_timestamp"])
+
+        event = self.verify_action(
+            lambda: do_set_push_notifications_enabled_end_timestamp(
+                realm=realm,
+                value=timestamp_now,
+                acting_user=None,
+            ),
+            state_change_expected=True,
+            num_events=1,
+        )[0]
+        self.assertEqual(event["type"], "realm")
+        self.assertEqual(event["op"], "update")
+        self.assertEqual(event["property"], "push_notifications_enabled_end_timestamp")
+        self.assertEqual(event["value"], timestamp_now)
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                acting_user=None,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_timestamp,
+                    RealmAuditLog.NEW_VALUE: timestamp_now,
+                    "property": "push_notifications_enabled_end_timestamp",
+                },
+            ).count(),
+            1,
+        )
 
 
 class UserDisplayActionTest(BaseAction):

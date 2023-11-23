@@ -229,6 +229,7 @@ export function dispatch_normal_event(event) {
                 notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: noop,
+                push_notifications_enabled: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
