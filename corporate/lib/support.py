@@ -27,24 +27,24 @@ def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
 
 
 def attach_discount_to_realm(realm: Realm, discount: Decimal, *, acting_user: UserProfile) -> None:
-    billing_session = RealmBillingSession(acting_user, realm)
+    billing_session = RealmBillingSession(acting_user, realm, support_session=True)
     billing_session.attach_discount_to_customer(discount)
 
 
 def approve_realm_sponsorship(realm: Realm, *, acting_user: UserProfile) -> None:
-    billing_session = RealmBillingSession(acting_user, realm)
+    billing_session = RealmBillingSession(acting_user, realm, support_session=True)
     billing_session.approve_sponsorship()
 
 
 def update_realm_sponsorship_status(
     realm: Realm, sponsorship_pending: bool, *, acting_user: UserProfile
 ) -> None:
-    billing_session = RealmBillingSession(acting_user, realm)
+    billing_session = RealmBillingSession(acting_user, realm, support_session=True)
     billing_session.update_customer_sponsorship_status(sponsorship_pending)
 
 
 def update_realm_billing_method(
     realm: Realm, charge_automatically: bool, *, acting_user: UserProfile
 ) -> None:
-    billing_session = RealmBillingSession(acting_user, realm)
+    billing_session = RealmBillingSession(acting_user, realm, support_session=True)
     billing_session.update_billing_method_of_current_plan(charge_automatically)
