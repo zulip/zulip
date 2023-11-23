@@ -169,6 +169,11 @@
                                 {% else %}
                                     {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
                                 {% endif %})
+                                {% if discount_percent %}
+                                <br />
+                                <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
+                                {% endif %}
+
                             {% endif %}
                             {% endif %}
                         {% else %}

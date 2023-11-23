@@ -647,3 +647,8 @@ input[name="licenses"] {
 #sponsorship-form #sponsorship-button {
     width: 100%;
 }
+
+.billing-page-discount {
+    opacity: 0.8;
+    font-weight: 400;
+}
