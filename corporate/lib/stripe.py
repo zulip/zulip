@@ -616,6 +616,10 @@ class BillingSession(ABC):
     ) -> UpgradePageSessionTypeSpecificContext:
         pass
 
+    @abstractmethod
+    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
+        pass
+
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
         stripe_customer_data = self.get_data_for_stripe_customer()
@@ -1434,6 +1438,86 @@ class BillingSession(ABC):
 
         raise JsonableError(_("Nothing to change."))
 
+    def switch_plan_tier(self, current_plan: CustomerPlan, new_plan_tier: int) -> None:
+        assert current_plan.status == CustomerPlan.SWITCH_PLAN_TIER_NOW
+        assert current_plan.next_invoice_date is not None
+        next_billing_cycle = current_plan.next_invoice_date
+
+        current_plan.end_date = next_billing_cycle
+        current_plan.status = CustomerPlan.ENDED
+        current_plan.save(update_fields=["status", "end_date"])
+
+        new_price_per_license = get_price_per_license(
+            new_plan_tier, current_plan.billing_schedule, current_plan.customer.default_discount
+        )
+
+        new_plan_billing_cycle_anchor = current_plan.end_date.replace(microsecond=0)
+
+        new_plan = CustomerPlan.objects.create(
+            customer=current_plan.customer,
+            status=CustomerPlan.ACTIVE,
+            automanage_licenses=current_plan.automanage_licenses,
+            charge_automatically=current_plan.charge_automatically,
+            price_per_license=new_price_per_license,
+            discount=current_plan.customer.default_discount,
+            billing_schedule=current_plan.billing_schedule,
+            tier=new_plan_tier,
+            billing_cycle_anchor=new_plan_billing_cycle_anchor,
+            invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+            next_invoice_date=new_plan_billing_cycle_anchor,
+        )
+
+        current_plan_last_ledger = (
+            LicenseLedger.objects.filter(plan=current_plan).order_by("id").last()
+        )
+        assert current_plan_last_ledger is not None
+        licenses_for_new_plan = current_plan_last_ledger.licenses_at_next_renewal
+        assert licenses_for_new_plan is not None
+        LicenseLedger.objects.create(
+            plan=new_plan,
+            is_renewal=True,
+            event_time=new_plan_billing_cycle_anchor,
+            licenses=licenses_for_new_plan,
+            licenses_at_next_renewal=licenses_for_new_plan,
+        )
+
+    def do_change_plan_to_new_tier(self, new_plan_tier: int) -> None:
+        customer = self.get_customer()
+        assert customer is not None
+        current_plan = get_current_plan_by_customer(customer)
+
+        if not current_plan or current_plan.status != CustomerPlan.ACTIVE:
+            raise BillingError("Organization does not have an active plan")
+
+        if not current_plan.customer.stripe_customer_id:
+            raise BillingError("Organization missing Stripe customer.")
+
+        if not self.is_valid_plan_tier_switch(current_plan.tier, new_plan_tier):
+            raise BillingError("Invalid change of customer plan tier.")
+
+        plan_switch_time = timezone_now()
+
+        current_plan.status = CustomerPlan.SWITCH_PLAN_TIER_NOW
+        current_plan.next_invoice_date = plan_switch_time
+        current_plan.save(update_fields=["status", "next_invoice_date"])
+
+        self.do_change_plan_type(tier=new_plan_tier)
+
+        amount_to_credit_for_early_termination = get_amount_to_credit_for_plan_tier_change(
+            current_plan, plan_switch_time
+        )
+        stripe.Customer.create_balance_transaction(
+            current_plan.customer.stripe_customer_id,
+            amount=-1 * amount_to_credit_for_early_termination,
+            currency="usd",
+            description="Credit from early termination of active plan",
+        )
+        self.switch_plan_tier(current_plan, new_plan_tier)
+        invoice_plan(current_plan, plan_switch_time)
+        new_plan = get_current_plan_by_customer(customer)
+        assert new_plan is not None  # for mypy
+        invoice_plan(new_plan, plan_switch_time)
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -1666,6 +1750,14 @@ class RealmBillingSession(BillingSession):
             is_self_hosting=False,
         )
 
+    @override
+    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
+        if current_plan_tier == CustomerPlan.STANDARD:
+            return new_plan_tier == CustomerPlan.PLUS
+        else:  # nocoverage, not currently implemented
+            assert current_plan_tier == CustomerPlan.PLUS
+            return new_plan_tier == CustomerPlan.STANDARD
+
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
@@ -1854,6 +1946,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
 
+    @override
+    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
+        # TBD
+        return False
+
 
 class RemoteServerBillingSession(BillingSession):  # nocoverage
     """Billing session for pre-8.0 servers that do not yet support
@@ -2034,6 +2131,11 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
         )
+
+    @override
+    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
+        # TBD
+        return False
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
@@ -2449,86 +2551,3 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
         else:
             if customer_has_last_n_invoices_open(customer, 1):
                 void_all_open_invoices(realm)
-
-
-def switch_plan_tier(current_plan: CustomerPlan, new_plan_tier: int) -> None:
-    assert current_plan.status == CustomerPlan.SWITCH_PLAN_TIER_NOW
-    assert current_plan.next_invoice_date is not None
-    next_billing_cycle = current_plan.next_invoice_date
-
-    # TODO: When moved to BillingSession, create child class validation
-    # for valid CustomerPlan tier changes.
-    assert current_plan.tier != new_plan_tier
-    assert current_plan.tier == CustomerPlan.STANDARD
-    assert new_plan_tier == CustomerPlan.PLUS
-
-    current_plan.end_date = next_billing_cycle
-    current_plan.status = CustomerPlan.ENDED
-    current_plan.save(update_fields=["status", "end_date"])
-
-    new_price_per_license = get_price_per_license(
-        new_plan_tier, current_plan.billing_schedule, current_plan.customer.default_discount
-    )
-
-    new_plan_billing_cycle_anchor = current_plan.end_date.replace(microsecond=0)
-
-    new_plan = CustomerPlan.objects.create(
-        customer=current_plan.customer,
-        status=CustomerPlan.ACTIVE,
-        automanage_licenses=current_plan.automanage_licenses,
-        charge_automatically=current_plan.charge_automatically,
-        price_per_license=new_price_per_license,
-        discount=current_plan.customer.default_discount,
-        billing_schedule=current_plan.billing_schedule,
-        tier=new_plan_tier,
-        billing_cycle_anchor=new_plan_billing_cycle_anchor,
-        invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
-        next_invoice_date=new_plan_billing_cycle_anchor,
-    )
-
-    current_plan_last_ledger = LicenseLedger.objects.filter(plan=current_plan).order_by("id").last()
-    assert current_plan_last_ledger is not None
-    licenses_for_new_plan = current_plan_last_ledger.licenses_at_next_renewal
-    assert licenses_for_new_plan is not None
-    LicenseLedger.objects.create(
-        plan=new_plan,
-        is_renewal=True,
-        event_time=new_plan_billing_cycle_anchor,
-        licenses=licenses_for_new_plan,
-        licenses_at_next_renewal=licenses_for_new_plan,
-    )
-
-
-def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
-    standard_plan = get_current_plan_by_realm(realm)
-
-    if not standard_plan or standard_plan.status != CustomerPlan.ACTIVE:
-        raise BillingError("Organization does not have an active plan")
-
-    if not standard_plan.customer.stripe_customer_id:
-        raise BillingError("Organization missing Stripe customer.")
-
-    plan_switch_time = timezone_now()
-
-    standard_plan.status = CustomerPlan.SWITCH_PLAN_TIER_NOW
-    standard_plan.next_invoice_date = plan_switch_time
-    standard_plan.save(update_fields=["status", "next_invoice_date"])
-
-    from zerver.actions.realm_settings import do_change_realm_plan_type
-
-    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
-
-    amount_to_credit_back_to_realm = get_amount_to_credit_for_plan_tier_change(
-        standard_plan, plan_switch_time
-    )
-    stripe.Customer.create_balance_transaction(
-        standard_plan.customer.stripe_customer_id,
-        amount=-1 * amount_to_credit_back_to_realm,
-        currency="usd",
-        description="Credit from early termination of active plan",
-    )
-    switch_plan_tier(standard_plan, CustomerPlan.PLUS)
-    invoice_plan(standard_plan, plan_switch_time)
-    plus_plan = get_current_plan_by_realm(realm)
-    assert plus_plan is not None  # for mypy
-    invoice_plan(plus_plan, plan_switch_time)
