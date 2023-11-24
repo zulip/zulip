@@ -22,7 +22,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
     warn_if_topic_resolved: noop,
-    wildcard_mention_allowed: () => true,
+    stream_wildcard_mention_allowed: () => true,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
@@ -82,10 +82,16 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
     assert.equal(mention_topic.special_item_text, "topic (translated: Notify topic)");
 
-    compose_validate.wildcard_mention_allowed = () => false;
+    compose_validate.stream_wildcard_mention_allowed = () => false;
+    compose_validate.topic_wildcard_mention_allowed = () => true;
+    const mention_topic_only = ct.broadcast_mentions()[0];
+    assert.equal(mention_topic_only.full_name, "topic");
+
+    compose_validate.stream_wildcard_mention_allowed = () => false;
+    compose_validate.topic_wildcard_mention_allowed = () => false;
     const mentionNobody = ct.broadcast_mentions();
     assert.equal(mentionNobody.length, 0);
-    compose_validate.wildcard_mention_allowed = () => true;
+    compose_validate.stream_wildcard_mention_allowed = () => true;
 });
 
 run_test("verify wildcard mentions typeahead for direct message", () => {

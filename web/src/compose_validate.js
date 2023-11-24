@@ -14,9 +14,12 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
+import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as reactions from "./reactions";
+import * as recent_senders from "./recent_senders";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
@@ -383,6 +386,55 @@ function is_recipient_large_stream() {
     );
 }
 
+export function topic_participant_count_more_than_threshold(stream_id, topic) {
+    // Topic participants:
+    // Users who either sent or reacted to the messages in the topic.
+    const participant_ids = new Set();
+
+    const sender_ids = recent_senders.get_topic_recent_senders(stream_id, topic);
+    for (const id of sender_ids) {
+        participant_ids.add(id);
+    }
+
+    // If senders count is greater than threshold, no need to calculate reactors.
+    if (participant_ids.size > wildcard_mention_threshold) {
+        return true;
+    }
+
+    for (const sender_id of sender_ids) {
+        const message_ids = recent_senders.get_topic_message_ids_for_sender(
+            stream_id,
+            topic,
+            sender_id,
+        );
+        for (const message_id of message_ids) {
+            const message = message_store.get(message_id);
+            if (message) {
+                const message_reactions = reactions.get_message_reactions(message);
+                const reactor_ids = message_reactions.flatMap((obj) => obj.user_ids);
+                for (const id of reactor_ids) {
+                    participant_ids.add(id);
+                }
+                if (participant_ids.size > wildcard_mention_threshold) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+function is_recipient_large_topic() {
+    return (
+        compose_state.stream_id() &&
+        topic_participant_count_more_than_threshold(
+            compose_state.stream_id(),
+            compose_state.topic(),
+        )
+    );
+}
+
 function wildcard_mention_policy_authorizes_user() {
     if (
         page_params.realm_wildcard_mention_policy ===
@@ -427,8 +479,12 @@ function wildcard_mention_policy_authorizes_user() {
     return !page_params.is_guest;
 }
 
-export function wildcard_mention_allowed() {
+export function stream_wildcard_mention_allowed() {
     return !is_recipient_large_stream() || wildcard_mention_policy_authorizes_user();
+}
+
+export function topic_wildcard_mention_allowed() {
+    return !is_recipient_large_topic() || wildcard_mention_policy_authorizes_user();
 }
 
 export function set_wildcard_mention_threshold(value) {
