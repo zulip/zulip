@@ -28,7 +28,7 @@ let upload_in_progress = false;
 let message_too_long = false;
 let recipient_disallowed = false;
 
-export let stream_wildcard_mention_large_stream_threshold = 15;
+export let wildcard_mention_threshold = 15;
 
 export function set_upload_in_progress(status) {
     upload_in_progress = status;
@@ -379,12 +379,11 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
 function is_recipient_large_stream() {
     return (
         compose_state.stream_id() &&
-        peer_data.get_subscriber_count(compose_state.stream_id()) >
-            stream_wildcard_mention_large_stream_threshold
+        peer_data.get_subscriber_count(compose_state.stream_id()) > wildcard_mention_threshold
     );
 }
 
-function stream_wildcard_mention_allowed_in_large_stream() {
+function wildcard_mention_policy_authorizes_user() {
     if (
         page_params.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
@@ -429,11 +428,11 @@ function stream_wildcard_mention_allowed_in_large_stream() {
 }
 
 export function wildcard_mention_allowed() {
-    return !is_recipient_large_stream() || stream_wildcard_mention_allowed_in_large_stream();
+    return !is_recipient_large_stream() || wildcard_mention_policy_authorizes_user();
 }
 
-export function set_stream_wildcard_mention_large_stream_threshold(value) {
-    stream_wildcard_mention_large_stream_threshold = value;
+export function set_wildcard_mention_threshold(value) {
+    wildcard_mention_threshold = value;
 }
 
 export function validate_stream_message_mentions(opts) {
@@ -442,11 +441,8 @@ export function validate_stream_message_mentions(opts) {
     // If the user is attempting to do a wildcard mention in a large
     // stream, check if they permission to do so. If yes, warn them
     // if they haven't acknowledged the wildcard warning yet.
-    if (
-        opts.stream_wildcard_mention !== null &&
-        subscriber_count > stream_wildcard_mention_large_stream_threshold
-    ) {
-        if (!stream_wildcard_mention_allowed_in_large_stream()) {
+    if (opts.stream_wildcard_mention !== null && subscriber_count > wildcard_mention_threshold) {
+        if (!wildcard_mention_policy_authorizes_user()) {
             const new_row = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
