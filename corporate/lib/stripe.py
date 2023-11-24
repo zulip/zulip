@@ -1847,6 +1847,14 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         pass
 
     @override
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        if (
+            customer is not None and customer.sponsorship_pending
+        ) or self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY:
+            return True
+        return False
+
+    @override
     def get_upgrade_page_session_type_specific_context(
         self,
     ) -> UpgradePageSessionTypeSpecificContext:
