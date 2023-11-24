@@ -508,7 +508,6 @@ export function get_user_card_popover_manage_menu_items() {
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
 function toggle_user_card_popover_for_message(element, user, message, on_mount) {
-    message_lists.current.select_id(message.id);
     const $elt = $(element);
     if (!message_user_card.is_open()) {
         if (user === undefined) {
