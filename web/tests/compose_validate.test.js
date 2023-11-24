@@ -420,11 +420,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(data.subscriber_count, 16);
     });
 
-    override_rewire(
-        compose_validate,
-        "stream_wildcard_mention_allowed_in_large_stream",
-        () => true,
-    );
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -436,11 +432,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(data.stream_wildcard_mention, "all");
         wildcards_not_allowed_rendered = true;
     });
-    override_rewire(
-        compose_validate,
-        "stream_wildcard_mention_allowed_in_large_stream",
-        () => false,
-    );
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => false);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });
