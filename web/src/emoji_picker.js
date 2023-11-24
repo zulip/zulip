@@ -11,7 +11,6 @@ import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
-import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
@@ -283,7 +282,7 @@ function filter_emojis() {
 }
 
 function toggle_reaction(emoji_name, event) {
-    const message_id = message_lists.current.selected_id();
+    const message_id = current_message_id;
     const message = message_store.get(message_id);
     if (!message) {
         blueslip.error("reactions: Bad message id", {message_id});
@@ -641,9 +640,6 @@ function get_default_emoji_popover_options() {
             ],
         },
         onCreate(instance) {
-            if (current_message_id) {
-                message_lists.current.select_id(current_message_id);
-            }
             emoji_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
