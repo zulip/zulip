@@ -815,6 +815,12 @@ export function narrow_to_next_topic(opts = {}) {
     }
 
     if (!next_narrow) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text($t({defaultMessage: "You have no more unread topics."}));
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
         return;
     }
 
@@ -832,6 +838,12 @@ export function narrow_to_next_pm_string(opts = {}) {
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
 
     if (!next_direct_message) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text($t({defaultMessage: "You have no more unread direct messages."}));
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
         return;
     }
 
