@@ -387,13 +387,15 @@ function get_wildcard_string(mention) {
 }
 
 export function broadcast_mentions() {
-    if (!compose_validate.wildcard_mention_allowed()) {
-        return [];
+    let wildcard_mention_array = [];
+    if (compose_state.get_message_type() === "private") {
+        wildcard_mention_array = ["all", "everyone"];
+    } else if (compose_validate.stream_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["all", "everyone", "stream", "topic"];
+    } else if (compose_validate.topic_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["topic"];
     }
-    const wildcard_mention_array = ["all", "everyone"];
-    if (compose_state.get_message_type() === "stream") {
-        wildcard_mention_array.push("stream", "topic");
-    }
+
     return wildcard_mention_array.map((mention, idx) => ({
         special_item_text: `${mention} (${get_wildcard_string(mention)})`,
         email: mention,
