@@ -37,9 +37,6 @@ export function create_ajax_request(
     const form_error = `#${CSS.escape(form_name)}-error`;
     const form_loading = `#${CSS.escape(form_name)}-loading`;
 
-    const zulip_limited_section = "#zulip-limited-section";
-    const free_trial_alert_message = "#free-trial-alert-message";
-
     loading.make_indicator($(form_loading_indicator), {
         text: "Processing ...",
         abs_positioned: true,
@@ -47,8 +44,6 @@ export function create_ajax_request(
     $(form_input_section).hide();
     $(form_error).hide();
     $(form_loading).show();
-    $(zulip_limited_section).hide();
-    $(free_trial_alert_message).hide();
 
     const data: FormDataObject = {};
 
@@ -82,8 +77,6 @@ export function create_ajax_request(
                 $(form_error).show().text(xhr.responseJSON.msg);
             }
             $(form_input_section).show();
-            $(zulip_limited_section).show();
-            $(free_trial_alert_message).show();
             error_callback(xhr);
         },
     });
