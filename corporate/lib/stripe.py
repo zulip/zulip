@@ -489,6 +489,39 @@ class BillingSessionAuditLogEventError(Exception):
         super().__init__(self.message)
 
 
+class UpgradePageParams(TypedDict):
+    annual_price: int
+    demo_organization_scheduled_deletion_date: Optional[datetime]
+    monthly_price: int
+    seat_count: int
+
+
+class UpgradePageSessionTypeSpecificContext(TypedDict):
+    customer_name: str
+    email: str
+    is_demo_organization: bool
+    demo_organization_scheduled_deletion_date: Optional[datetime]
+    is_self_hosting: bool
+
+
+class UpgradePageContext(TypedDict):
+    customer_name: str
+    default_invoice_days_until_due: int
+    discount_percent: Optional[str]
+    email: str
+    exempt_from_license_number_check: bool
+    free_trial_days: Optional[int]
+    is_demo_organization: bool
+    manual_license_management: bool
+    min_invoiced_licenses: int
+    page_params: UpgradePageParams
+    payment_method: Optional[str]
+    plan: str
+    salt: str
+    seat_count: int
+    signed_seat_count: str
+
+
 class BillingSession(ABC):
     @property
     @abstractmethod
@@ -556,7 +589,9 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def get_upgrade_page_session_type_specific_context(self, context: Dict[str, Any]) -> None:
+    def get_upgrade_page_session_type_specific_context(
+        self,
+    ) -> UpgradePageSessionTypeSpecificContext:
         pass
 
     @catch_stripe_errors
@@ -1234,7 +1269,7 @@ class BillingSession(ABC):
 
     def get_initial_upgrade_context(
         self, initial_upgrade_request: InitialUpgradeRequest
-    ) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
+    ) -> Tuple[Optional[str], Optional[UpgradePageContext]]:
         customer = self.get_customer()
 
         if self.is_sponsored_or_pending(customer):
@@ -1252,37 +1287,43 @@ class BillingSession(ABC):
             customer is not None and customer.exempt_from_license_number_check
         )
 
+        # Check if user was successful in adding a card and we are rendering the page again.
+        current_payment_method = None
+        if customer is not None and customer_has_credit_card_as_default_payment_method(customer):
+            assert customer.stripe_customer_id is not None
+            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+            payment_method = payment_method_string(stripe_customer)
+            # Show "Update card" button if user has already added a card.
+            current_payment_method = None if "ending in" not in payment_method else payment_method
+
+        customer_specific_context = self.get_upgrade_page_session_type_specific_context()
         seat_count = self.current_count_for_billed_licenses()
         signed_seat_count, salt = sign_string(str(seat_count))
         tier = initial_upgrade_request.tier
-        context: Dict[str, Any] = {
+        context: UpgradePageContext = {
+            "customer_name": customer_specific_context["customer_name"],
             "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
             "discount_percent": format_discount_percentage(percent_off),
+            "email": customer_specific_context["email"],
             "exempt_from_license_number_check": exempt_from_license_number_check,
             "free_trial_days": settings.FREE_TRIAL_DAYS,
+            "is_demo_organization": customer_specific_context["is_demo_organization"],
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "page_params": {
                 "annual_price": get_price_per_license(tier, CustomerPlan.ANNUAL, percent_off),
+                "demo_organization_scheduled_deletion_date": customer_specific_context[
+                    "demo_organization_scheduled_deletion_date"
+                ],
                 "monthly_price": get_price_per_license(tier, CustomerPlan.MONTHLY, percent_off),
                 "seat_count": seat_count,
             },
+            "payment_method": current_payment_method,
             "plan": "Zulip Cloud Standard",
             "salt": salt,
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
         }
-
-        # Check if user was successful in adding a card and we are rendering the page again.
-        if customer is not None and customer_has_credit_card_as_default_payment_method(customer):
-            assert customer.stripe_customer_id is not None
-            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-            payment_method = payment_method_string(stripe_customer)
-            if "ending in" in payment_method:
-                # Show "Update card" button if user has already added a card.
-                context["payment_method"] = payment_method
-
-        self.get_upgrade_page_session_type_specific_context(context)
 
         return None, context
 
@@ -1634,18 +1675,17 @@ class RealmBillingSession(BillingSession):
         return False
 
     @override
-    def get_upgrade_page_session_type_specific_context(self, context: Dict[str, Any]) -> None:
+    def get_upgrade_page_session_type_specific_context(
+        self,
+    ) -> UpgradePageSessionTypeSpecificContext:
         assert self.user is not None
-        data = {
-            "customer_name": self.realm.name,
-            "email": self.user.delivery_email,
-            "is_demo_organization": self.realm.demo_organization_scheduled_deletion_date
-            is not None,
-        }
-        context.update(data)
-        context["page_params"][
-            "demo_organization_scheduled_deletion_date"
-        ] = self.realm.demo_organization_scheduled_deletion_date
+        return UpgradePageSessionTypeSpecificContext(
+            customer_name=self.realm.name,
+            email=self.user.delivery_email,
+            is_demo_organization=self.realm.demo_organization_scheduled_deletion_date is not None,
+            demo_organization_scheduled_deletion_date=self.realm.demo_organization_scheduled_deletion_date,
+            is_self_hosting=False,
+        )
 
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
@@ -1805,6 +1845,18 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def approve_sponsorship(self) -> None:
         # TBD
         pass
+
+    @override
+    def get_upgrade_page_session_type_specific_context(
+        self,
+    ) -> UpgradePageSessionTypeSpecificContext:
+        return UpgradePageSessionTypeSpecificContext(
+            customer_name=self.remote_realm.host,
+            email=self.remote_realm.server.contact_email,
+            is_demo_organization=False,
+            demo_organization_scheduled_deletion_date=None,
+            is_self_hosting=True,
+        )
 
     @override
     def process_downgrade(self, plan: CustomerPlan) -> None:
@@ -1985,9 +2037,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return False
 
     @override
-    def get_upgrade_page_session_type_specific_context(self, context: Dict[str, Any]) -> None:
-        # TBD
-        pass
+    def get_upgrade_page_session_type_specific_context(
+        self,
+    ) -> UpgradePageSessionTypeSpecificContext:
+        return UpgradePageSessionTypeSpecificContext(
+            customer_name=self.remote_server.hostname,
+            email=self.remote_server.contact_email,
+            is_demo_organization=False,
+            demo_organization_scheduled_deletion_date=None,
+            is_self_hosting=True,
+        )
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
