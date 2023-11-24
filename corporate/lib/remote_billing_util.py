@@ -4,6 +4,9 @@ from typing import Optional, TypedDict
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 
+from zerver.lib.exceptions import JsonableError
+from zilencer.models import RemoteRealm
+
 billing_logger = logging.getLogger("corporate.stripe")
 
 
@@ -28,3 +31,35 @@ def get_identity_dict_from_session(
         return identity_dicts.get(authed_uuid)
 
     return None
+
+
+def get_remote_realm_from_session(
+    request: HttpRequest,
+    realm_uuid: Optional[str],
+    server_uuid: Optional[str] = None,
+) -> RemoteRealm:
+    identity_dict = get_identity_dict_from_session(request, realm_uuid, server_uuid)
+
+    if identity_dict is None:
+        raise JsonableError(_("User not authenticated"))
+
+    remote_server_uuid = identity_dict["remote_server_uuid"]
+    remote_realm_uuid = identity_dict["remote_realm_uuid"]
+
+    try:
+        remote_realm = RemoteRealm.objects.get(
+            uuid=remote_realm_uuid, server__uuid=remote_server_uuid
+        )
+    except RemoteRealm.DoesNotExist:
+        raise AssertionError(
+            "The remote realm is missing despite being in the RemoteBillingIdentityDict"
+        )
+
+    if (
+        remote_realm.registration_deactivated
+        or remote_realm.realm_deactivated
+        or remote_realm.server.deactivated
+    ):
+        raise JsonableError(_("Registration is deactivated"))
+
+    return remote_realm

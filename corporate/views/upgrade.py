@@ -6,7 +6,9 @@ from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from pydantic import Json
 
+from corporate.lib.remote_billing_util import get_remote_realm_from_session
 from corporate.lib.stripe import (
     VALID_BILLING_MODALITY_VALUES,
     VALID_BILLING_SCHEDULE_VALUES,
@@ -14,15 +16,21 @@ from corporate.lib.stripe import (
     BillingError,
     InitialUpgradeRequest,
     RealmBillingSession,
+    RemoteRealmBillingSession,
     UpgradeRequest,
 )
 from corporate.lib.support import get_support_url
 from corporate.models import CustomerPlan, ZulipSponsorshipRequest
 from zerver.actions.users import do_change_is_billing_admin
-from zerver.decorator import require_organization_member, zulip_login_required
+from zerver.decorator import (
+    require_organization_member,
+    self_hosting_management_endpoint,
+    zulip_login_required,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import UserProfile, get_org_type_display_name
 
@@ -93,6 +101,29 @@ def upgrade_page(
         tier=CustomerPlan.STANDARD,
     )
     billing_session = RealmBillingSession(user)
+    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+
+    if redirect_url:
+        return HttpResponseRedirect(redirect_url)
+
+    response = render(request, "corporate/upgrade.html", context=context)
+    return response
+
+
+@self_hosting_management_endpoint
+@typed_endpoint
+def remote_realm_upgrade_page(
+    request: HttpRequest,
+    *,
+    realm_uuid: PathOnly[str],
+    manual_license_management: Json[bool] = False,
+) -> HttpResponse:  # nocoverage
+    remote_realm = get_remote_realm_from_session(request, realm_uuid)
+    initial_upgrade_request = InitialUpgradeRequest(
+        manual_license_management=manual_license_management,
+        tier=CustomerPlan.STANDARD,
+    )
+    billing_session = RemoteRealmBillingSession(remote_realm)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
 
     if redirect_url:

@@ -27,7 +27,7 @@ from corporate.views.session import (
     start_card_update_stripe_session_for_realm_upgrade,
 )
 from corporate.views.support import support_request
-from corporate.views.upgrade import sponsorship, upgrade, upgrade_page
+from corporate.views.upgrade import remote_realm_upgrade_page, sponsorship, upgrade, upgrade_page
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
@@ -168,4 +168,5 @@ urlpatterns += [
     ),
     path("realm/<realm_uuid>/billing", remote_billing_page_realm, name="remote_billing_page_realm"),
     path("server/<server_uuid>/", remote_billing_page_server, name="remote_billing_page_server"),
+    path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
 ]
