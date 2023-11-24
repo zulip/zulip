@@ -1058,7 +1058,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if self.is_account_realm_access_forbidden(ldap_user, self._realm):
             raise ZulipLDAPError("User not allowed to access realm")
 
-        if ldap_should_sync_active_status():  # nocoverage
+        if ldap_should_sync_active_status():
             ldap_disabled = self.is_user_disabled_in_ldap(ldap_user)
             if ldap_disabled:
                 # Treat disabled users as deactivated in Zulip.

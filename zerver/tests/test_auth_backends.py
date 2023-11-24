@@ -6425,6 +6425,26 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertIs(user_profile, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_login_failure_user_account_control(self) -> None:
+        self.change_ldap_user_attr("hamlet", "userAccountControl", "2")
+
+        with self.settings(
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_USER_ATTR_MAP={"userAccountControl": "userAccountControl"},
+        ), self.assertLogs("django_auth_ldap", "DEBUG") as debug_log:
+            user_profile = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=self.example_email("hamlet"),
+                password=self.ldap_password("hamlet"),
+                realm=get_realm("zulip"),
+            )
+            self.assertIs(user_profile, None)
+            self.assertIn(
+                "DEBUG:django_auth_ldap:Authentication failed for hamlet: User has been deactivated",
+                debug_log.output,
+            )
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     @override_settings(
         AUTH_LDAP_USER_ATTR_MAP={
             "full_name": "cn",
