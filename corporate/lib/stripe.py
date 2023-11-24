@@ -1256,21 +1256,21 @@ class BillingSession(ABC):
         signed_seat_count, salt = sign_string(str(seat_count))
         tier = initial_upgrade_request.tier
         context: Dict[str, Any] = {
-            "seat_count": seat_count,
-            "signed_seat_count": signed_seat_count,
-            "salt": salt,
-            "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+            "discount_percent": format_discount_percentage(percent_off),
             "exempt_from_license_number_check": exempt_from_license_number_check,
-            "plan": "Zulip Cloud Standard",
             "free_trial_days": settings.FREE_TRIAL_DAYS,
+            "manual_license_management": initial_upgrade_request.manual_license_management,
+            "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "page_params": {
-                "seat_count": seat_count,
                 "annual_price": get_price_per_license(tier, CustomerPlan.ANNUAL, percent_off),
                 "monthly_price": get_price_per_license(tier, CustomerPlan.MONTHLY, percent_off),
+                "seat_count": seat_count,
             },
-            "manual_license_management": initial_upgrade_request.manual_license_management,
-            "discount_percent": format_discount_percentage(percent_off),
+            "plan": "Zulip Cloud Standard",
+            "salt": salt,
+            "seat_count": seat_count,
+            "signed_seat_count": signed_seat_count,
         }
 
         # Check if user was successful in adding a card and we are rendering the page again.
