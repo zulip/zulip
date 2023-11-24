@@ -1839,7 +1839,7 @@ class StripeTest(StripeTestCase):
 
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/sponsorship/")
+        self.assertEqual(response["Location"], "http://zulip.testserver/sponsorship")
 
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
@@ -1943,7 +1943,7 @@ class StripeTest(StripeTestCase):
         user.realm.save()
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/sponsorship/")
+        self.assertEqual(response["Location"], "http://zulip.testserver/sponsorship")
 
         # Avoid contacting stripe as we only want to check redirects here.
         with patch(
