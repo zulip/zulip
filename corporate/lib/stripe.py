@@ -1637,7 +1637,7 @@ class RealmBillingSession(BillingSession):
     def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
         assert self.user is not None
         data = {
-            "realm": self.realm,
+            "customer_name": self.realm.name,
             "email": self.user.delivery_email,
             "is_demo_organization": self.realm.demo_organization_scheduled_deletion_date
             is not None,
