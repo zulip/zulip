@@ -1273,7 +1273,7 @@ class BillingSession(ABC):
         customer = self.get_customer()
 
         if self.is_sponsored_or_pending(customer):
-            return reverse("sponsorship_request"), None
+            return f"{self.billing_session_url}/sponsorship", None
 
         billing_page_url = reverse("billing_home")
         if customer is not None and (get_current_plan_by_customer(customer) is not None):
@@ -1702,7 +1702,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @override
     @property
     def billing_session_url(self) -> str:
-        return "TBD"
+        return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/realm/{self.remote_realm.uuid}"
 
     @override
     def get_customer(self) -> Optional[Customer]:
