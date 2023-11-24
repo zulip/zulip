@@ -556,7 +556,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+    def get_upgrade_page_session_type_specific_context(self, context: Dict[str, Any]) -> None:
         pass
 
     @catch_stripe_errors
@@ -1282,7 +1282,7 @@ class BillingSession(ABC):
                 # Show "Update card" button if user has already added a card.
                 context["payment_method"] = payment_method
 
-        self.update_context_initial_upgrade(context)
+        self.get_upgrade_page_session_type_specific_context(context)
 
         return None, context
 
@@ -1634,7 +1634,7 @@ class RealmBillingSession(BillingSession):
         return False
 
     @override
-    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+    def get_upgrade_page_session_type_specific_context(self, context: Dict[str, Any]) -> None:
         assert self.user is not None
         data = {
             "customer_name": self.realm.name,
@@ -1985,7 +1985,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return False
 
     @override
-    def update_context_initial_upgrade(self, context: Dict[str, Any]) -> None:
+    def get_upgrade_page_session_type_specific_context(self, context: Dict[str, Any]) -> None:
         # TBD
         pass
 
