@@ -2839,7 +2839,7 @@ class StripeTest(StripeTestCase):
         self.assertIsNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
 
-    def test_downgrade_free_trial(self) -> None:
+    def test_end_free_trial(self) -> None:
         user = self.example_user("hamlet")
 
         free_trial_end_date = self.now + timedelta(days=60)
@@ -2886,6 +2886,172 @@ class StripeTest(StripeTestCase):
             with patch("corporate.lib.stripe.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_year)
             mocked.assert_not_called()
+
+    def test_downgrade_at_end_of_free_trial(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        free_trial_end_date = self.now + timedelta(days=60)
+        with self.settings(FREE_TRIAL_DAYS=60):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, True)
+            plan = get_current_plan_by_realm(user.realm)
+            assert plan is not None
+            self.assertEqual(plan.next_invoice_date, free_trial_end_date)
+            self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertEqual(plan.status, CustomerPlan.FREE_TRIAL)
+            self.assertEqual(plan.licenses(), self.seat_count)
+            self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
+
+            # Schedule downgrade
+            with self.assertLogs("corporate.stripe", "INFO") as m:
+                with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                    response = self.client_patch(
+                        "/json/billing/plan",
+                        {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
+                    )
+                    stripe_customer_id = Customer.objects.get(realm=user.realm).id
+                    new_plan = get_current_plan_by_realm(user.realm)
+                    assert new_plan is not None
+                    expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
+                    self.assertEqual(m.output[0], expected_log)
+                    self.assert_json_success(response)
+            plan.refresh_from_db()
+            self.assertEqual(plan.next_invoice_date, free_trial_end_date)
+            self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL)
+            self.assertEqual(plan.licenses(), self.seat_count)
+            self.assertEqual(plan.licenses_at_next_renewal(), None)
+
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                mock_customer = Mock(email=user.delivery_email)
+                mock_customer.invoice_settings.default_payment_method = Mock(
+                    spec=stripe.PaymentMethod, type=Mock()
+                )
+                with patch("corporate.lib.stripe.stripe_get_customer", return_value=mock_customer):
+                    response = self.client_get("/billing/")
+                    self.assert_in_success_response(
+                        [
+                            "Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the free trial",
+                            "<strong>March 2, 2012</strong>",
+                        ],
+                        response,
+                    )
+
+            # Verify that we still write LicenseLedger rows during the remaining
+            # part of the cycle
+            with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
+                update_license_ledger_if_needed(user.realm, self.now)
+            self.assertEqual(
+                LicenseLedger.objects.order_by("-id")
+                .values_list("licenses", "licenses_at_next_renewal")
+                .first(),
+                (20, 20),
+            )
+
+            # Verify that we don't invoice them for the additional users during free trial.
+            from stripe import Invoice
+
+            Invoice.create = lambda **args: None  # type: ignore[assignment] # cleaner than mocking
+            Invoice.finalize_invoice = lambda *args: None  # type: ignore[assignment] # cleaner than mocking
+            with patch("stripe.InvoiceItem.create") as mocked:
+                invoice_plans_as_needed(self.next_month)
+            mocked.assert_not_called()
+
+            # Check that we downgrade properly if the cycle is over
+            with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
+                update_license_ledger_if_needed(user.realm, free_trial_end_date)
+            plan = CustomerPlan.objects.first()
+            assert plan is not None
+            self.assertIsNone(plan.next_invoice_date)
+            self.assertEqual(plan.status, CustomerPlan.ENDED)
+            self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_LIMITED)
+            self.assertEqual(
+                LicenseLedger.objects.order_by("-id")
+                .values_list("licenses", "licenses_at_next_renewal")
+                .first(),
+                (20, 20),
+            )
+
+            # Verify that we don't write LicenseLedger rows once we've downgraded
+            with patch("corporate.lib.stripe.get_latest_seat_count", return_value=40):
+                update_license_ledger_if_needed(user.realm, self.next_year)
+            self.assertEqual(
+                LicenseLedger.objects.order_by("-id")
+                .values_list("licenses", "licenses_at_next_renewal")
+                .first(),
+                (20, 20),
+            )
+
+            self.login_user(user)
+            response = self.client_get("/billing/")
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual("/plans/", response["Location"])
+
+            # The extra users added in the final month are not charged
+            with patch("corporate.lib.stripe.invoice_plan") as mocked:
+                invoice_plans_as_needed(self.next_month)
+            mocked.assert_not_called()
+
+            # The plan is not renewed after an year
+            with patch("corporate.lib.stripe.invoice_plan") as mocked:
+                invoice_plans_as_needed(self.next_year)
+            mocked.assert_not_called()
+
+    def test_cancel_downgrade_at_end_of_free_trial(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        free_trial_end_date = self.now + timedelta(days=60)
+        with self.settings(FREE_TRIAL_DAYS=60):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, True)
+            plan = get_current_plan_by_realm(user.realm)
+            assert plan is not None
+            self.assertEqual(plan.next_invoice_date, free_trial_end_date)
+            self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertEqual(plan.status, CustomerPlan.FREE_TRIAL)
+            self.assertEqual(plan.licenses(), self.seat_count)
+            self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
+
+            # Schedule downgrade
+            with self.assertLogs("corporate.stripe", "INFO") as m:
+                with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                    response = self.client_patch(
+                        "/json/billing/plan",
+                        {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
+                    )
+                    stripe_customer_id = Customer.objects.get(realm=user.realm).id
+                    new_plan = get_current_plan_by_realm(user.realm)
+                    assert new_plan is not None
+                    expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
+                    self.assertEqual(m.output[0], expected_log)
+                    self.assert_json_success(response)
+            plan.refresh_from_db()
+            self.assertEqual(plan.next_invoice_date, free_trial_end_date)
+            self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL)
+            self.assertEqual(plan.licenses(), self.seat_count)
+            self.assertEqual(plan.licenses_at_next_renewal(), None)
+
+            # Cancel downgrade
+            with self.assertLogs("corporate.stripe", "INFO") as m:
+                with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                    response = self.client_patch(
+                        "/json/billing/plan", {"status": CustomerPlan.FREE_TRIAL}
+                    )
+                    stripe_customer_id = Customer.objects.get(realm=user.realm).id
+                    new_plan = get_current_plan_by_realm(user.realm)
+                    assert new_plan is not None
+                    expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.FREE_TRIAL}"
+                    self.assertEqual(m.output[0], expected_log)
+                    self.assert_json_success(response)
+            plan.refresh_from_db()
+            self.assertEqual(plan.next_invoice_date, free_trial_end_date)
+            self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertEqual(plan.status, CustomerPlan.FREE_TRIAL)
+            self.assertEqual(plan.licenses(), self.seat_count)
+            self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
 
     def test_reupgrade_by_billing_admin_after_downgrade(self) -> None:
         user = self.example_user("hamlet")

@@ -1047,7 +1047,10 @@ class BillingSession(ABC):
         assert last_ledger_renewal is not None
         last_renewal = last_ledger_renewal.event_time
 
-        if plan.is_free_trial():
+        if plan.status in (
+            CustomerPlan.FREE_TRIAL,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ):
             assert plan.next_invoice_date is not None
             next_billing_cycle = plan.next_invoice_date
         else:
@@ -1172,6 +1175,9 @@ class BillingSession(ABC):
                 )
                 return new_plan, new_plan_ledger_entry
 
+            if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL:
+                self.downgrade_now_without_creating_additional_invoices(plan)
+
             if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
                 self.process_downgrade(plan)
             return None, None
@@ -1190,6 +1196,9 @@ class BillingSession(ABC):
                     plan = new_plan
                 assert plan is not None  # for mypy
                 downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                downgrade_at_end_of_free_trial = (
+                    plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
+                )
                 switch_to_annual_at_end_of_cycle = (
                     plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
                 )
@@ -1202,7 +1211,7 @@ class BillingSession(ABC):
                 seat_count = self.current_count_for_billed_licenses()
 
                 # Should do this in JavaScript, using the user's time zone
-                if plan.is_free_trial():
+                if plan.is_free_trial() or downgrade_at_end_of_free_trial:
                     assert plan.next_invoice_date is not None
                     renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
                 else:
@@ -1252,6 +1261,7 @@ class BillingSession(ABC):
                     "has_active_plan": True,
                     "free_trial": plan.is_free_trial(),
                     "downgrade_at_end_of_cycle": downgrade_at_end_of_cycle,
+                    "downgrade_at_end_of_free_trial": downgrade_at_end_of_free_trial,
                     "automanage_licenses": plan.automanage_licenses,
                     "switch_to_annual_at_end_of_cycle": switch_to_annual_at_end_of_cycle,
                     "switch_to_monthly_at_end_of_cycle": switch_to_monthly_at_end_of_cycle,
@@ -1407,8 +1417,15 @@ class BillingSession(ABC):
                 assert plan.fixed_price is None
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.ENDED:
+                # Not used right now on billing page but kept in case we need it.
                 assert plan.is_free_trial()
                 self.downgrade_now_without_creating_additional_invoices(plan=plan)
+            elif status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL:
+                assert plan.is_free_trial()
+                do_change_plan_status(plan, status)
+            elif status == CustomerPlan.FREE_TRIAL:
+                assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
+                do_change_plan_status(plan, status)
             return
 
         licenses = update_plan_request.licenses
