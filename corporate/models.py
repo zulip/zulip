@@ -290,6 +290,8 @@ class CustomerPlan(models.Model):
             self.ACTIVE: "Active",
             self.DOWNGRADE_AT_END_OF_CYCLE: "Scheduled for downgrade at end of cycle",
             self.FREE_TRIAL: "Free trial",
+            self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled for switch to annual at end of cycle",
+            self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled for switch to monthly at end of cycle",
             self.ENDED: "Ended",
             self.NEVER_STARTED: "Never started",
         }[self.status]
