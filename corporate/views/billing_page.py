@@ -99,6 +99,8 @@ def update_plan(
                 CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
                 CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
                 CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE,
+                CustomerPlan.FREE_TRIAL,
+                CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
                 CustomerPlan.ENDED,
             ]
         ),

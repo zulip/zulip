@@ -267,6 +267,7 @@ class CustomerPlan(models.Model):
     SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
     SWITCH_PLAN_TIER_NOW = 5
     SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6
+    DOWNGRADE_AT_END_OF_FREE_TRIAL = 7
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10
@@ -292,6 +293,7 @@ class CustomerPlan(models.Model):
             self.FREE_TRIAL: "Free trial",
             self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled for switch to annual at end of cycle",
             self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled for switch to monthly at end of cycle",
+            self.DOWNGRADE_AT_END_OF_FREE_TRIAL: "Scheduled for downgrade at end of free trial",
             self.ENDED: "Ended",
             self.NEVER_STARTED: "Never started",
         }[self.status]
@@ -302,7 +304,10 @@ class CustomerPlan(models.Model):
         return ledger_entry.licenses
 
     def licenses_at_next_renewal(self) -> Optional[int]:
-        if self.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+        if self.status in (
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ):
             return None
         ledger_entry = LicenseLedger.objects.filter(plan=self).order_by("id").last()
         assert ledger_entry is not None
