@@ -145,6 +145,7 @@ function bot_info(bot_user_id) {
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
     info.user_role_text = people.get_user_type(bot_user_id);
+    info.img_src = people.small_avatar_url_for_person(bot_user);
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
@@ -154,6 +155,10 @@ function bot_info(bot_user_id) {
     if (!info.bot_owner_full_name) {
         info.no_owner = true;
         info.bot_owner_full_name = $t({defaultMessage: "No owner"});
+    }
+
+    if (owner_id){
+        info.owner_img_src = people.small_avatar_url_for_person(people.get_by_user_id(owner_id));
     }
 
     info.is_current_user = false;
@@ -190,6 +195,7 @@ function human_info(person) {
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !page_params.is_owner);
     info.display_email = person.delivery_email;
+    info.img_src = people.small_avatar_url_for_person(person);
 
     if (info.is_active) {
         // TODO: We might just want to show this

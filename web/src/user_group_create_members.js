@@ -100,11 +100,13 @@ export function build_widgets() {
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         modifier_html(user) {
+            const img_src = people.small_avatar_url_for_person(user);
             const item = {
                 email: user.delivery_email,
                 user_id: user.user_id,
                 full_name: user.full_name,
                 is_current_user: user.user_id === current_user_id,
+                img_src,
             };
             return render_new_user_group_user(item);
         },

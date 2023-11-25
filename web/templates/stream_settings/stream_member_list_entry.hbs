@@ -1,7 +1,10 @@
 <tr data-subscriber-id="{{user_id}}">
-    <td class="subscriber-name">
-        <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">{{name}}</a>
+    <td class="subscriber-name pill_container">
+        <a data-user-id="{{user_id}}" class="view_user_profile pill-value" tabindex="0">
+        <img class="pill-image" src="{{img_src}}" />
+        <span class="pill-value">{{name}}</span>
         {{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
+        {{!-- <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i> --}}
     </td>
     {{#if email}}
     <td class="subscriber-email">{{email}}</td>

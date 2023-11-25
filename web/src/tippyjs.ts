@@ -128,6 +128,19 @@ export function initialize(): void {
         },
     });
 
+    delegate("body", {
+        target: ".view_user_profile .pill-value",
+        appendTo: () => document.body,
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference)[0].textContent;
+            instance.setContent($elem);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     // Variant of .tippy-left-sidebar-tooltip configuration. Since
     // this element doesn't have an always visible label, and
     // thus hovering it is a way to find out what it does, give

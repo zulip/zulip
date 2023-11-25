@@ -27,13 +27,18 @@ let current_stream_id;
 let subscribers_list_widget;
 
 function format_member_list_elem(person, user_can_remove_subscribers) {
-    return render_stream_member_list_entry({
+    const img_src = people.small_avatar_url_for_person(person);
+
+    const info = {
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
         email: person.delivery_email,
         can_remove_subscribers: user_can_remove_subscribers,
-    });
+        img_src,
+    };
+
+    return render_stream_member_list_entry(info);
 }
 
 function get_sub(stream_id) {

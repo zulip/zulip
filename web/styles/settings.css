@@ -2110,3 +2110,37 @@ $option_title_width: 180px;
         margin-top: -10px;
     }
 }
+
+.pill_container {
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+    border: 1px solid hsl(0deg 0% 0% / 15%);
+    background-color: hsl(0deg 0% 0% / 7%);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px;
+
+    &:hover {
+        border: 1px solid hsl(0deg 0% 20%);
+    }
+
+    .pill-image {
+        height: 20px;
+        width: 20px;
+        border-radius: 4px 0 0 4px;
+        
+    }
+
+    .pill-value {
+        margin: 0 5px;
+        color: hsl(0deg 0% 15%);
+        text-decoration: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        /* display: inline-flex; 
+        align-items: center; */
+    }
+
+}

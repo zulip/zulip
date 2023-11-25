@@ -86,17 +86,20 @@ export function build_widgets() {
     stream_create_subscribers_data.initialize_with_current_user();
     const current_user_id = page_params.user_id;
 
+    
     all_users_list_widget = ListWidget.create($("#create_stream_subscribers"), [current_user_id], {
         name: "new_stream_add_users",
         get_item: people.get_by_user_id,
         $parent_container: $add_people_container,
         modifier_html(user) {
+            const img_src = people.small_avatar_url_for_person(user);
             const item = {
                 email: user.delivery_email,
                 user_id: user.user_id,
                 full_name: user.full_name,
                 is_current_user: user.user_id === current_user_id,
                 disabled: stream_create_subscribers_data.must_be_subscribed(user.user_id),
+                img_src,
             };
             return render_new_stream_user(item);
         },

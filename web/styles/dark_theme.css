@@ -175,6 +175,19 @@
         }
     }
 
+    .pill_container {
+        background-color: hsl(0deg 0% 0% / 30%);
+
+        &:hover {
+            color: hsl(0deg 0% 100%);
+            border: 1px solid hsl(176deg 78% 28%);
+        }
+
+        .pill-value {
+            color: hsl(0deg 0% 100%);
+        }
+    }
+
     #navbar-middle .column-middle-inner,
     .header,
     #message_view_header {
