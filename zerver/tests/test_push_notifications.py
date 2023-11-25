@@ -1458,7 +1458,6 @@ class AnalyticsBouncerTest(BouncerTestCase):
     @responses.activate
     def test_send_realms_only_to_push_bouncer(self) -> None:
         self.add_mock_response()
-        self.example_user("hamlet")
 
         send_realms_only_to_push_bouncer()
 
