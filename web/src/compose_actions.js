@@ -87,6 +87,7 @@ function clear_box() {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
+    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
 }
 
 export function autosize_message_content() {
@@ -263,6 +264,7 @@ export function start(msg_type, opts) {
     // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {
         compose_state.message_content(opts.content);
+        $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
     }
 
     compose_state.set_message_type(msg_type);
