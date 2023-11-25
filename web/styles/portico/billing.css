@@ -561,6 +561,10 @@ input[name="licenses"] {
     }
 }
 
+#upgrade-page-details #free-trial-top-banner {
+    margin-top: 10px;
+}
+
 #billing-page-details .billing-frequency-message.not-editable-realm-field,
 #free-trial-top-banner .not-editable-realm-field,
 #upgrade-page-details .license-management-section .not-editable-realm-field {

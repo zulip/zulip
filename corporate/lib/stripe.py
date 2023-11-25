@@ -539,6 +539,7 @@ class UpgradePageContext(TypedDict):
     email: str
     exempt_from_license_number_check: bool
     free_trial_days: Optional[int]
+    free_trial_end_date: Optional[str]
     is_demo_organization: bool
     manual_license_management: bool
     min_invoiced_licenses: int
@@ -1315,13 +1316,23 @@ class BillingSession(ABC):
         seat_count = self.current_count_for_billed_licenses()
         signed_seat_count, salt = sign_string(str(seat_count))
         tier = initial_upgrade_request.tier
+
+        free_trial_days = settings.FREE_TRIAL_DAYS
+        free_trial_end_date = None
+        if free_trial_days is not None:
+            _, _, free_trial_end, _ = compute_plan_parameters(
+                CustomerPlan.STANDARD, False, CustomerPlan.ANNUAL, None, True
+            )
+            free_trial_end_date = f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
+
         context: UpgradePageContext = {
             "customer_name": customer_specific_context["customer_name"],
             "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
             "discount_percent": format_discount_percentage(percent_off),
             "email": customer_specific_context["email"],
             "exempt_from_license_number_check": exempt_from_license_number_check,
-            "free_trial_days": settings.FREE_TRIAL_DAYS,
+            "free_trial_days": free_trial_days,
+            "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),

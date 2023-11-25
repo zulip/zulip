@@ -9,11 +9,11 @@
 <div id="upgrade-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Upgrade {{ customer_name }} to
+            <h1>
                 {% if free_trial_days %}
-                    Zulip Cloud Standard free trial
+                Start free trial of Zulip Cloud Standard
                 {% else %}
-                    {{ plan }}
+                Upgrade {{ customer_name }} to {{ plan }}
                 {% endif %}
             </h1>
         </div>
@@ -28,11 +28,9 @@
 
                     <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if free_trial_days %}
-                        <div id="free-trial-alert-message" class="alert alert-info">
-                            Upgrade now to start your {{ free_trial_days }} day free trial
-                            of Zulip Cloud Standard!
-                        </div>
                         <div class="not-editable-realm-field">
+                            Start your {{ free_trial_days }}-day free trial, with no upfront payment.
+                            <br /><br />
                             You won't be charged during the free trial. You can also downgrade to
                             Zulip Cloud Free, our forever free plan, at any time.
                         </div>
@@ -71,9 +69,9 @@
                     <div class="input-box upgrade-page-field no-validation">
                         <label for="due-today" class="inline-block label-title">Due
                             {% if free_trial_days %}
-                                after free trial
+                            on {{ free_trial_end_date }}
                             {% else %}
-                                today
+                            today
                             {% endif %}
                         </label>
                         <div id="due-today" class="not-editable-realm-field">
@@ -160,7 +158,7 @@
                         <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not payment_method %}disabled{% endif %}>
                             <span id="org-upgrade-button-text">
                                 {% if free_trial_days %}
-                                    Start {{ free_trial_days }} day free trial
+                                    Start {{ free_trial_days }}-day free trial
                                 {% else %}
                                     Purchase Zulip Cloud Standard
                                 {% endif %}
