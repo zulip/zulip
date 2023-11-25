@@ -551,9 +551,7 @@ input[name="licenses"] {
     text-align: center;
 }
 
-#confirm-licenses-modal-decrease,
-#confirm-licenses-modal-increase,
-#confirm-cancel-subscription-modal {
+.micromodal {
     .modal__title {
         font-weight: 600;
     }
