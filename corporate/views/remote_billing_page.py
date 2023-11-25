@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, TypedDict
+from typing import Optional
 
 from django.conf import settings
 from django.core import signing
@@ -10,6 +10,10 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
+from corporate.lib.remote_billing_util import (
+    RemoteBillingIdentityDict,
+    get_identity_dict_from_session,
+)
 from zerver.decorator import self_hosting_management_endpoint
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
@@ -18,14 +22,6 @@ from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zilencer.models import RemoteRealm, RemoteZulipServer
 
 billing_logger = logging.getLogger("corporate.stripe")
-
-
-class RemoteBillingIdentityDict(TypedDict):
-    user_uuid: str
-    user_email: str
-    user_full_name: str
-    remote_server_uuid: str
-    remote_realm_uuid: str
 
 
 @csrf_exempt
@@ -93,14 +89,9 @@ def remote_server_billing_finalize_login(
 def render_tmp_remote_billing_page(
     request: HttpRequest, realm_uuid: Optional[str], server_uuid: Optional[str]
 ) -> HttpResponse:
-    authed_uuid = realm_uuid or server_uuid
-    assert authed_uuid is not None
-
-    identity_dict = None
-
-    identity_dicts = request.session.get("remote_billing_identities")
-    if identity_dicts is not None:
-        identity_dict = identity_dicts.get(authed_uuid)
+    identity_dict = get_identity_dict_from_session(
+        request, realm_uuid=realm_uuid, server_uuid=server_uuid
+    )
 
     if identity_dict is None:
         raise JsonableError(_("User not authenticated"))

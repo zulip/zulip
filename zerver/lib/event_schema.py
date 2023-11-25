@@ -338,6 +338,7 @@ _hotspot = DictType(
         ("title", str),
         ("description", str),
         ("delay", NumberType()),
+        ("has_trigger", bool),
     ]
 )
 

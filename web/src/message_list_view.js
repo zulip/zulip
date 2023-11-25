@@ -417,7 +417,16 @@ export class MessageListView {
             // message didn't include a user mention, then it was a usergroup/wildcard
             // mention (which is the only other option for `mentioned` being true).
             if (message_container.msg.mentioned_me_directly && is_user_mention) {
-                message_container.mention_classname = "direct_mention";
+                // Highlight messages having personal mentions only in DMs and subscribed streams.
+                if (
+                    message_container.msg.type === "private" ||
+                    stream_data.is_user_subscribed(
+                        message_container.msg.stream_id,
+                        people.my_current_user_id(),
+                    )
+                ) {
+                    message_container.mention_classname = "direct_mention";
+                }
             } else {
                 message_container.mention_classname = "group_mention";
             }

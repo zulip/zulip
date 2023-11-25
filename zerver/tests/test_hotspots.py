@@ -2,7 +2,7 @@ from typing_extensions import override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.hotspots import do_mark_hotspot_as_read
-from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, get_next_hotspots
+from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, NON_INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserHotspot, UserProfile, get_realm
 
@@ -29,11 +29,16 @@ class TestGetNextHotspots(ZulipTestCase):
         self.assert_length(hotspots, 1)
         self.assertEqual(hotspots[0]["name"], "intro_topics")
 
-    def test_all_intro_hotspots_done(self) -> None:
+    def test_all_hotspots_done(self) -> None:
         with self.settings(TUTORIAL_ENABLED=True):
             self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
+            for hotspot in NON_INTRO_HOTSPOTS:  # nocoverage
+                do_mark_hotspot_as_read(self.user, hotspot.name)
+
+            self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
             for hotspot in INTRO_HOTSPOTS:
-                do_mark_hotspot_as_read(self.user, hotspot)
+                do_mark_hotspot_as_read(self.user, hotspot.name)
+
             self.assertEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
             self.assertEqual(get_next_hotspots(self.user), [])
 
