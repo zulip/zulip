@@ -1385,6 +1385,7 @@ class BillingSession(ABC):
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+                assert not plan.is_free_trial()
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 self.downgrade_at_the_end_of_billing_cycle(plan=plan)
             elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
@@ -1392,6 +1393,8 @@ class BillingSession(ABC):
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 # Customer needs to switch to an active plan first to avoid unexpected behavior.
                 assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                # Switching billing frequency for free trial should happen instantly.
+                assert not plan.is_free_trial()
                 assert plan.fixed_price is None
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE:
@@ -1399,6 +1402,8 @@ class BillingSession(ABC):
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 # Customer needs to switch to an active plan first to avoid unexpected behavior.
                 assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                # Switching billing frequency for free trial should happen instantly.
+                assert not plan.is_free_trial()
                 assert plan.fixed_price is None
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.ENDED:
