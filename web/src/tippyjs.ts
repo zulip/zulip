@@ -28,7 +28,7 @@ function get_tooltip_content(reference: Element): string | Element | DocumentFra
 // transition, while the "long" version is intended for elements where
 // we want to avoid distracting the user with the tooltip
 // unnecessarily.
-const INSTANT_HOVER_DELAY: [number, number] = [100, 20];
+export const INSTANT_HOVER_DELAY: [number, number] = [100, 20];
 // INTERACTIVE_HOVER_DELAY is for elements like the emoji reactions, where
 // the tooltip includes useful information (who reacted?), but that
 // needs a short delay for users who are just tapping a reaction
