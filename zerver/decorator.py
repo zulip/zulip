@@ -65,6 +65,7 @@ from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
+from django.shortcuts import render
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
@@ -72,6 +73,21 @@ webhook_anomalous_payloads_logger = logging.getLogger("zulip.zerver.webhooks.ano
 
 ParamT = ParamSpec("ParamT")
 ReturnT = TypeVar("ReturnT")
+
+
+def self_hosting_management_endpoint(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:  # nocoverage
+    @wraps(view_func)
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
+        subdomain = get_subdomain(request)
+        if not settings.DEVELOPMENT or subdomain != settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN:
+            return render(request, "404.html", status=404)
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view_func
 
 
 def update_user_activity(

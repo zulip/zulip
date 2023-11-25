@@ -30,7 +30,6 @@
     "css-loader": "^6.2.0",
     "css-minimizer-webpack-plugin": "^5.0.0",
     "date-fns": "^2.16.1",
-    "date-fns-tz": "^2.0.0",
     "email-addresses": "^5.0.0",
     "emoji-datasource-google": "^15.0.1",
     "emoji-datasource-google-blob": "npm:emoji-datasource-google@^3.0.0",

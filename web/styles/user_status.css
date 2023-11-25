@@ -23,7 +23,7 @@
         .status-emoji-wrapper {
             padding: 4px 8px;
             border-right: 1px solid;
-            border-color: inherit;
+            border-color: hsl(0deg 0% 0% / 60%);
             cursor: pointer;
 
             .selected-emoji {
@@ -61,7 +61,8 @@
         padding-top: 15px;
         padding-left: 2px;
 
-        & button.user-status-value:hover {
+        & button.user-status-value:hover,
+        & button.user-status-value:focus {
             /* Important is required for generic night them styling to not
                have precedence over this. */
             color: hsl(200deg 100% 40%) !important;

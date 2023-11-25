@@ -368,7 +368,7 @@ input[name="licenses"] {
 
 #sponsorship-discount-details {
     font-weight: normal;
-    margin: 2px;
+    margin: 2px 14px;
     padding-top: 0;
     text-align: left;
     overflow-wrap: break-word;
@@ -380,6 +380,11 @@ input[name="licenses"] {
     .sponsorship-page {
         transform: scale(0.8);
         margin: -50px;
+    }
+
+    .sponsorship-status-page {
+        transform: scale(0.8);
+        margin: -10px -50px -50px;
     }
 
     #upgrade-page {
@@ -396,6 +401,11 @@ input[name="licenses"] {
         margin: -150px -100px;
     }
 
+    .sponsorship-status-page {
+        transform: scale(0.6);
+        margin: -50px -150px -100px;
+    }
+
     #upgrade-page {
         transform: scale(0.6);
         margin: -150px 0;
@@ -406,9 +416,14 @@ input[name="licenses"] {
     width: 100%;
 }
 
-.billing-status-page,
+.billing-status-page {
+    font-weight: 400;
+}
+
 .sponsorship-status-page .white-box {
     font-weight: 400;
+    margin: 30px;
+    padding: 0;
 }
 
 .billing-status-page p:last-child,
@@ -433,6 +448,8 @@ input[name="licenses"] {
     text-align: left;
 }
 
+.sponsorship-page .pitch,
+.sponsorship-status-page .pitch,
 #upgrade-page .pitch,
 #billing-page .pitch {
     width: 600px;
@@ -458,6 +475,7 @@ input[name="licenses"] {
     bottom: 15px;
 }
 
+#billing-page #org-billing-frequency-confirm-button,
 #billing-page .license-count-update-button {
     margin: 0 auto;
     font-size: 1.1rem;
@@ -465,8 +483,17 @@ input[name="licenses"] {
     width: 100px;
 }
 
+#billing-page #org-billing-frequency-confirm-button.hide,
 #billing-page .license-count-update-button.hide {
     display: none;
+}
+
+#billing-page #org-billing-frequency-confirm-button {
+    margin: 0;
+    display: block;
+    position: absolute;
+    top: 25px;
+    right: 0;
 }
 
 #billing-page #current-license-change-form,
@@ -489,13 +516,10 @@ input[name="licenses"] {
     background-color: hsl(0deg 70% 40%);
 }
 
-#org-upgrade-button,
-#upgrade-add-card-button {
+#org-upgrade-button {
     margin: 0;
     width: 100%;
-}
 
-#org-upgrade-button {
     &:disabled,
     .permanent-disabled {
         color: hsl(0deg 0% 80%);
@@ -506,6 +530,7 @@ input[name="licenses"] {
     }
 }
 
+#upgrade-page-details #upgrade-add-card-button,
 #billing-page-details .user-stripe-card-update .user-stripe-card-update-button {
     margin: 0;
     width: 150px;
@@ -516,11 +541,12 @@ input[name="licenses"] {
     padding-top: 0;
 }
 
-#upgrade-page-details .input-box.billing-page-field:first-child,
+#sponsorship-status-page-details .input-box.sponsorship-form-field:first-child,
 #billing-page-details .input-box.billing-page-field:first-child {
     margin-top: 10px;
 }
 
+.sponsorship-status-page .support-link,
 #billing-page .support-link {
     text-align: center;
 }
@@ -537,8 +563,7 @@ input[name="licenses"] {
     }
 }
 
-#upgrade-page-details #onboarding-free-trial-not-ready,
-#onboarding-go-to-org .not-editable-realm-field,
+#billing-page-details .billing-frequency-message.not-editable-realm-field,
 #free-trial-top-banner .not-editable-realm-field,
 #upgrade-page-details .license-management-section .not-editable-realm-field {
     padding-top: 0;
@@ -553,7 +578,77 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#billing-sponsorship-pending-message-top,
+#sponsorship-status-success-message-top,
 #billing-success-message-top {
     display: block;
     text-align: center;
+    font-weight: 400;
+    padding: 10px 20px;
+    width: 600px;
+}
+
+.upgrade-page-success {
+    display: none;
+    padding: 8px 0;
+    width: 450px;
+    text-align: center;
+    margin: auto;
+}
+
+#upgrade-payment-info {
+    display: grid;
+    grid-template: auto auto 1fr / 1fr auto;
+    grid-template-areas:
+        "payment-info add-card"
+        "alert-message alert-message";
+    width: 450px;
+    margin: auto;
+    padding-bottom: 25px;
+}
+
+#upgrade-payment-info .alert {
+    grid-area: alert-message;
+}
+
+#upgrade-page-details #upgrade-payment-menthod-wrapper {
+    margin-left: 0;
+    grid-area: payment-info;
+    width: auto;
+}
+
+/* Used class twice to increase specificity */
+#upgrade-payment-info .upgrade-add-card-container.upgrade-add-card-container {
+    grid-area: add-card;
+    width: auto;
+    margin-right: 0;
+}
+
+#billing-page-details
+    .org-billing-frequency-wrapper.input-box
+    .billing-frequency-select {
+    width: 150px;
+}
+
+#billing-page-details .org-billing-frequency-wrapper.billing-page-field,
+#upgrade-page-details .upgrade-add-card-container {
+    text-align: left;
+}
+
+#autopay-error {
+    font-weight: 400;
+    margin-left: 0;
+}
+
+#sponsorship-status-page-details .input-box.sponsorship-form-field {
+    margin: 20px;
+}
+
+#sponsorship-form #sponsorship-button {
+    width: 100%;
+}
+
+.billing-page-discount {
+    opacity: 0.8;
+    font-weight: 400;
 }

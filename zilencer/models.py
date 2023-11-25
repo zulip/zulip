@@ -6,6 +6,7 @@ from typing import List, Tuple
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 from typing_extensions import override
 
 from analytics.models import BaseCount
@@ -30,6 +31,7 @@ class RemoteZulipServer(models.Model):
     UUID_LENGTH = 36
     API_KEY_LENGTH = 64
     HOSTNAME_MAX_LENGTH = 128
+    VERSION_MAX_LENGTH = 128
 
     # The unique UUID (`zulip_org_id`) and API key (`zulip_org_key`)
     # for this remote server registration.
@@ -42,13 +44,16 @@ class RemoteZulipServer(models.Model):
     hostname = models.CharField(max_length=HOSTNAME_MAX_LENGTH)
     contact_email = models.EmailField(blank=True, null=False)
     last_updated = models.DateTimeField("last updated", auto_now=True)
+    last_version = models.CharField(max_length=VERSION_MAX_LENGTH, null=True)
 
     # Whether the server registration has been deactivated.
     deactivated = models.BooleanField(default=False)
 
     # Plan types for self-hosted customers
     PLAN_TYPE_SELF_HOSTED = 1
-    PLAN_TYPE_STANDARD = 102
+    PLAN_TYPE_COMMUNITY = 100
+    PLAN_TYPE_BUSINESS = 101
+    PLAN_TYPE_ENTERPRISE = 102
 
     # The current billing plan for the remote server, similar to Realm.plan_type.
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
@@ -113,10 +118,16 @@ class RemoteRealm(models.Model):
 
     # Plan types for self-hosted customers
     PLAN_TYPE_SELF_HOSTED = 1
-    PLAN_TYPE_STANDARD = 102
+    PLAN_TYPE_COMMUNITY = 100
+    PLAN_TYPE_BUSINESS = 101
+    PLAN_TYPE_ENTERPRISE = 102
 
     # The current billing plan for the remote server, similar to Realm.plan_type.
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED, db_index=True)
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.host} {str(self.uuid)[0:12]}"
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
@@ -185,7 +196,18 @@ class BaseRemoteCount(BaseCount):
 
 class RemoteInstallationCount(BaseRemoteCount):
     class Meta:
-        unique_together = ("server", "property", "subgroup", "end_time")
+        constraints = [
+            UniqueConstraint(
+                fields=["server", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name="unique_remote_installation_count",
+            ),
+            UniqueConstraint(
+                fields=["server", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name="unique_remote_installation_count_null_subgroup",
+            ),
+        ]
         indexes = [
             models.Index(
                 fields=["server", "remote_id"],
@@ -210,7 +232,18 @@ class RemoteRealmCount(BaseRemoteCount):
     remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
 
     class Meta:
-        unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
+        constraints = [
+            UniqueConstraint(
+                fields=["server", "realm_id", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name="unique_remote_realm_installation_count",
+            ),
+            UniqueConstraint(
+                fields=["server", "realm_id", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name="unique_remote_realm_installation_count_null_subgroup",
+            ),
+        ]
         indexes = [
             models.Index(
                 fields=["property", "end_time"],

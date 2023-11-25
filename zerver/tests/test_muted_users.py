@@ -364,3 +364,34 @@ class MutedUsersTests(ZulipTestCase):
             # `maybe_enqueue_notifications` wasn't called for Hamlet after message edit which mentioned him,
             # because the sender (Cordelia) was muted.
             m.assert_not_called()
+
+    def test_muting_and_unmuting_restricted_users(self) -> None:
+        # NOTE: It is a largely unintended side effect of how we use
+        # the access_user_by_id API that limited guests can't mute
+        # inaccessible users. These tests verify the expected
+        # behavior.
+
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
+        result = self.api_post(polonius, url)
+        self.assert_json_error(result, "Insufficient permission")
+
+        url = f"/api/v1/users/me/muted_users/{iago.id}"
+        result = self.api_post(polonius, url)
+        self.assert_json_success(result)
+        muted_users = get_user_mutes(polonius)
+        self.assert_length(muted_users, 1)
+
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
+        result = self.api_delete(polonius, url)
+        self.assert_json_error(result, "Insufficient permission")
+
+        url = f"/api/v1/users/me/muted_users/{iago.id}"
+        result = self.api_delete(polonius, url)
+        self.assert_json_success(result)
+        muted_users = get_user_mutes(polonius)
+        self.assert_length(muted_users, 0)

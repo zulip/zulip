@@ -97,6 +97,11 @@ run_test("paste_handler_converter", () => {
         "* bulleted\n* nested\n  * nested level 1\n  * nested level 1 continue\n    * nested level 2\n    * nested level 2 continue",
     );
 
+    // 2 paragraphs with line break/s in between
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>paragraph 1</p><br><p>paragraph 2</p>';
+    assert.equal(copy_and_paste.paste_handler_converter(input), "paragraph 1\n\nparagraph 2");
+
     // Pasting from external sources
     // Pasting list from GitHub
     input =

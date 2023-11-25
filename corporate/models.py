@@ -7,7 +7,7 @@ from django.db.models import CASCADE, Q
 from typing_extensions import override
 
 from zerver.models import Realm, UserProfile
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 
 class Customer(models.Model):
@@ -17,8 +17,12 @@ class Customer(models.Model):
     and the active plan, if any.
     """
 
+    # The actual model object that this customer is associated
+    # with. Exactly one of the following will be non-null.
     realm = models.OneToOneField(Realm, on_delete=CASCADE, null=True)
+    remote_realm = models.OneToOneField(RemoteRealm, on_delete=CASCADE, null=True)
     remote_server = models.OneToOneField(RemoteZulipServer, on_delete=CASCADE, null=True)
+
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending = models.BooleanField(default=False)
     # A percentage, like 85.
@@ -30,10 +34,13 @@ class Customer(models.Model):
     exempt_from_license_number_check = models.BooleanField(default=False)
 
     class Meta:
+        # Enforce that at least one of these is set.
         constraints = [
             models.CheckConstraint(
-                check=Q(realm__isnull=False) ^ Q(remote_server__isnull=False),
-                name="cloud_xor_self_hosted",
+                check=Q(realm__isnull=False)
+                | Q(remote_server__isnull=False)
+                | Q(remote_realm__isnull=False),
+                name="has_associated_model_object",
             )
         ]
 
@@ -47,6 +54,14 @@ class Customer(models.Model):
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
     return Customer.objects.filter(realm=realm).first()
+
+
+def get_customer_by_remote_server(remote_server: RemoteZulipServer) -> Optional[Customer]:
+    return Customer.objects.filter(remote_server=remote_server).first()
+
+
+def get_customer_by_remote_realm(remote_realm: RemoteRealm) -> Optional[Customer]:  # nocoverage
+    return Customer.objects.filter(remote_realm=remote_realm).first()
 
 
 class Event(models.Model):
@@ -91,29 +106,25 @@ def get_last_associated_event_by_type(
 class Session(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)
     stripe_session_id = models.CharField(max_length=255, unique=True)
-    payment_intent = models.ForeignKey("PaymentIntent", null=True, on_delete=CASCADE)
 
-    UPGRADE_FROM_BILLING_PAGE = 1
-    RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD = 10
-    FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE = 20
-    FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE = 30
     CARD_UPDATE_FROM_BILLING_PAGE = 40
+    CARD_UPDATE_FROM_UPGRADE_PAGE = 50
     type = models.SmallIntegerField()
 
     CREATED = 1
     COMPLETED = 10
     status = models.SmallIntegerField(default=CREATED)
 
+    # Did the user opt to manually manage licenses before clicking on update button?
+    is_manual_license_management_upgrade_session = models.BooleanField(default=False)
+
     def get_status_as_string(self) -> str:
         return {Session.CREATED: "created", Session.COMPLETED: "completed"}[self.status]
 
     def get_type_as_string(self) -> str:
         return {
-            Session.UPGRADE_FROM_BILLING_PAGE: "upgrade_from_billing_page",
-            Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD: "retry_upgrade_with_another_payment_method",
-            Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE: "free_trial_upgrade_from_billing_page",
-            Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE: "free_trial_upgrade_from_onboarding_page",
             Session.CARD_UPDATE_FROM_BILLING_PAGE: "card_update_from_billing_page",
+            Session.CARD_UPDATE_FROM_UPGRADE_PAGE: "card_update_from_upgrade_page",
         }[self.type]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -121,8 +132,9 @@ class Session(models.Model):
 
         session_dict["status"] = self.get_status_as_string()
         session_dict["type"] = self.get_type_as_string()
-        if self.payment_intent:
-            session_dict["stripe_payment_intent_id"] = self.payment_intent.stripe_payment_intent_id
+        session_dict[
+            "is_manual_license_management_upgrade_session"
+        ] = self.is_manual_license_management_upgrade_session
         event = self.get_last_associated_event()
         if event is not None:
             session_dict["event_handler"] = event.get_event_handler_details_as_dict()
@@ -167,18 +179,15 @@ class PaymentIntent(models.Model):
     def get_last_associated_event(self) -> Optional[Event]:
         if self.status == PaymentIntent.SUCCEEDED:
             event_type = "payment_intent.succeeded"
-        elif self.status == PaymentIntent.REQUIRES_PAYMENT_METHOD:
-            event_type = "payment_intent.payment_failed"
-        else:
-            return None
+        # TODO: Add test for this case. Not sure how to trigger naturally.
+        else:  # nocoverage
+            return None  # nocoverage
         return get_last_associated_event_by_type(self, event_type)
 
     def to_dict(self) -> Dict[str, Any]:
         payment_intent_dict: Dict[str, Any] = {}
         payment_intent_dict["status"] = self.get_status_as_string()
         event = self.get_last_associated_event()
-        if self.last_payment_error:
-            payment_intent_dict["last_payment_error"] = self.last_payment_error
         if event is not None:
             payment_intent_dict["event_handler"] = event.get_event_handler_details_as_dict()
         return payment_intent_dict
@@ -257,6 +266,7 @@ class CustomerPlan(models.Model):
     FREE_TRIAL = 3
     SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
     SWITCH_NOW_FROM_STANDARD_TO_PLUS = 5
+    SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10

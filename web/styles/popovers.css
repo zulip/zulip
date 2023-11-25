@@ -4,6 +4,8 @@
   popovers. (Tippy tooltips are defined in tooltips.css).
 */
 .tippy-box[data-theme="light-border"] {
+    background-color: var(--color-background-popover);
+
     .sp-input {
         /* Override incorrect color for text in dark theme. */
         color: var(--color-text-default) !important;
@@ -27,6 +29,38 @@
         /* Override bootstrap defaults */
         .nav-list > li > a {
             padding: 3px 15px;
+        }
+    }
+
+    &[data-placement^="top"] {
+        > .tippy-arrow {
+            &::before {
+                border-top-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="bottom"] {
+        > .tippy-arrow {
+            &::before {
+                border-bottom-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="left"] {
+        > .tippy-arrow {
+            &::before {
+                border-left-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="right"] {
+        > .tippy-arrow {
+            &::before {
+                border-right-color: var(--color-background-popover);
+            }
         }
     }
 }
@@ -323,7 +357,8 @@ ul {
    from the right sidebar; otherwise, it will have the
    user-card-popover-root class instead. */
 .user-sidebar-popover-root {
-    width: 240px;
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
 
     margin: -14px;
     padding: 0;
@@ -341,7 +376,8 @@ ul {
 .group-info-popover,
 .message-user-card-popover-root,
 .user-card-popover-root {
-    width: 240px;
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
     padding: 0;
 }
 

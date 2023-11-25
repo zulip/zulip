@@ -20,6 +20,55 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 230**
+
+* [`GET /events`](/api/get-events): Added `has_trigger` field in
+  hotspots events to identify if a hotspot will activate only when
+  some specific event occurs.
+
+**Feature level 229**
+
+* [`PATCH /messages/{message_id}`](/api/update-message), [`POST
+  /messages`](/api/send-message): Topic wildcard mentions involving
+  large numbers of participants are now restricted by
+  `wildcard_mention_policy`. The server now uses the
+  `STREAM_WILDCARD_MENTION_NOT_ALLOWED` and
+  `TOPIC_WILDCARD_MENTION_NOT_ALLOWED` error codes when a message is
+  rejected because of `wildcard_mention_policy`.
+
+**Feature level 228**
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
+  are now only sent to users who can access the modified user.
+
+* [`GET /events`](/api/get-events): `presence` events are now only sent to
+  users who can access the user who comes back online if the
+  `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server setting is set
+  to `true`.
+
+* [`GET /events`](/api/get-events): `user_status` events are now only
+  sent to users who can access the modified user.
+
+* [`GET /realm/presence`](/api/get-presence): The endpoint now returns
+  presence information of accessible users only if the
+  `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server setting is set
+  to `true`.
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "add"`
+  are now also sent when a guest user gains access to a user.
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "remove"`
+  are now also sent when a guest user loses access to a user.
+
+**Feature level 227**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added `DMs, mentions, and followed topics` option for `desktop_icon_count_display`
+  setting, and renumbered the options.
+  The total unread count of DMs, mentions, and followed topics appears in
+  desktop sidebar and browser tab when this option is configured.
+
 **Feature level 226**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
@@ -96,6 +145,10 @@ format used by the Zulip server that they are interacting with.
   [`PATCH /settings`](/api/update-settings): Renamed `default_view` and
   `escape_navigates_to_default_view` settings to `web_home_view` and
   `web_escape_navigates_to_home_view` respectively.
+* [`POST /user_topics`](/api/update-user-topic), [`POST
+  register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Added followed as a supported value for visibility policies in
+  `user_topic` objects.
 
 **Feature level 218**
 

@@ -1,6 +1,8 @@
 import $ from "jquery";
 
 import * as compose_recipient from "./compose_recipient";
+import * as dropdown_widget from "./dropdown_widget";
+import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
@@ -11,6 +13,49 @@ import * as resize from "./resize";
 import * as search from "./search";
 import * as stream_list from "./stream_list";
 import * as unread_ui from "./unread_ui";
+
+export const FILTERS = {
+    ALL_TOPICS: "all_topics",
+    UNMUTED_TOPICS: "unmuted_topics",
+    FOLLOWED_TOPICS: "followed_topics",
+};
+
+export const COMMON_DROPDOWN_WIDGET_PARAMS = {
+    get_options: filters_dropdown_options,
+    tippy_props: {
+        placement: "bottom-start",
+        offset: [0, 2],
+    },
+    unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+    hide_search_box: true,
+    bold_current_selection: true,
+    disable_for_spectators: true,
+};
+
+export function filters_dropdown_options() {
+    return [
+        {
+            unique_id: FILTERS.FOLLOWED_TOPICS,
+            name: $t({defaultMessage: "Followed topics"}),
+            description: $t({defaultMessage: "Only topics you follow"}),
+            bold_current_selection: this.current_value === FILTERS.FOLLOWED_TOPICS,
+        },
+        {
+            unique_id: FILTERS.UNMUTED_TOPICS,
+            name: $t({defaultMessage: "Standard view"}),
+            description: $t({defaultMessage: "All unmuted topics"}),
+            bold_current_selection: this.current_value === FILTERS.UNMUTED_TOPICS,
+        },
+        {
+            unique_id: FILTERS.ALL_TOPICS,
+            name: $t({defaultMessage: "All topics"}),
+            description: $t({
+                defaultMessage: "Includes muted streams and topics",
+            }),
+            bold_current_selection: this.current_value === FILTERS.ALL_TOPICS,
+        },
+    ];
+}
 
 export function show(opts) {
     if (narrow_state.has_shown_message_list_view) {

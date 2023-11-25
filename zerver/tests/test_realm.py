@@ -75,10 +75,14 @@ class RealmTest(ZulipTestCase):
                 ["INFO:root:Server not yet initialized. Creating the internal realm first."],
             )
 
-    def test_realm_creation_on_social_auth_subdomain_disallowed(self) -> None:
+    def test_realm_creation_on_special_subdomains_disallowed(self) -> None:
         with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
             with self.assertRaises(AssertionError):
                 do_create_realm("zulipauth", "Test Realm")
+
+        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
+            with self.assertRaises(AssertionError):
+                do_create_realm("zulipselfhosting", "Test Realm")
 
     def test_permission_for_education_non_profit_organization(self) -> None:
         realm = do_create_realm(
@@ -494,6 +498,15 @@ class RealmTest(ZulipTestCase):
         assert realm.notifications_stream is not None
         self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
 
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_notif_stream_id = self.make_stream("private_stream", invite_only=True).id
+        req = dict(notifications_stream_id=orjson.dumps(new_notif_stream_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.notifications_stream is not None
+        self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
+
         invalid_notif_stream_id = 1234
         req = dict(notifications_stream_id=orjson.dumps(invalid_notif_stream_id).decode())
         result = self.client_patch("/json/realm", req)
@@ -553,6 +566,18 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.signup_notifications_stream, None)
 
         new_signup_notifications_stream_id = Stream.objects.get(name="Denmark").id
+        req = dict(
+            signup_notifications_stream_id=orjson.dumps(new_signup_notifications_stream_id).decode()
+        )
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.signup_notifications_stream is not None
+        self.assertEqual(realm.signup_notifications_stream.id, new_signup_notifications_stream_id)
+
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_signup_notifications_stream_id = self.make_stream("private_stream", invite_only=True).id
         req = dict(
             signup_notifications_stream_id=orjson.dumps(new_signup_notifications_stream_id).decode()
         )
@@ -1311,6 +1336,30 @@ class RealmAPITest(ZulipTestCase):
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
+
+    def test_update_can_access_all_users_group_setting(self) -> None:
+        realm = get_realm("zulip")
+        self.login("iago")
+        members_group = UserGroup.objects.get(realm=realm, name=SystemGroups.MEMBERS)
+
+        with self.settings(DEVELOPMENT=False):
+            with self.assertRaises(AssertionError), self.assertLogs(
+                "django.request", "ERROR"
+            ) as error_log:
+                self.client_patch("/json/realm", {"can_access_all_users_group": members_group.id})
+
+        self.assertTrue(
+            "ERROR:django.request:Internal Server Error: /json/realm" in error_log.output[0]
+        )
+        self.assertTrue("AssertionError" in error_log.output[0])
+
+        with self.settings(DEVELOPMENT=True):
+            result = self.client_patch(
+                "/json/realm", {"can_access_all_users_group": members_group.id}
+            )
+            self.assert_json_success(result)
+            realm = get_realm("zulip")
+            self.assertEqual(realm.can_access_all_users_group_id, members_group.id)
 
     # Not in Realm.property_types because org_type has
     # a unique RealmAuditLog event_type.

@@ -777,6 +777,75 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, f"'{othello.email}' is no longer using Zulip.")
 
+    def test_personal_message_to_inaccessible_users(self) -> None:
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test direct message",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to access some of the recipients."
+        )
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test direct message",
+                "to": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.content, "Test direct message")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test group direct message",
+                "to": orjson.dumps([othello.id, cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to access some of the recipients."
+        )
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test group direct message",
+                "to": orjson.dumps([hamlet.id, cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to access some of the recipients."
+        )
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "content": "Test group direct message",
+                "to": orjson.dumps([hamlet.id, iago.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.content, "Test group direct message")
+
     def test_invalid_type(self) -> None:
         """
         Sending a message of unknown type returns error JSON.
@@ -1714,11 +1783,14 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertTrue(user_message.flags.mentioned)
 
     def send_and_verify_topic_wildcard_mention_message(
-        self, sender_name: str, test_fails: bool = False, sub_count: int = 16
+        self, sender_name: str, test_fails: bool = False, topic_participant_count: int = 20
     ) -> None:
         sender = self.example_user(sender_name)
         content = "@**topic** test topic wildcard mention"
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=sub_count):
+        participants_user_ids = set(range(topic_participant_count))
+        with mock.patch(
+            "zerver.actions.message_send.participants_for_topic", return_value=participants_user_ids
+        ):
             if not test_fails:
                 msg_id = self.send_stream_message(sender, "test_stream", content)
                 result = self.api_get(sender, "/api/v1/messages/" + str(msg_id))
@@ -1727,7 +1799,7 @@ class StreamMessagesTest(ZulipTestCase):
             else:
                 with self.assertRaisesRegex(
                     JsonableError,
-                    "You do not have permission to use wildcard mentions in this stream.",
+                    "You do not have permission to use topic wildcard mentions in this topic.",
                 ):
                     self.send_stream_message(sender, "test_stream", content)
 
@@ -1759,8 +1831,8 @@ class StreamMessagesTest(ZulipTestCase):
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
-        # There is no restriction on small streams.
-        self.send_and_verify_topic_wildcard_mention_message("polonius", sub_count=10)
+        # There is no restriction on topics with less than 'Realm.WILDCARD_MENTION_THRESHOLD' participants.
+        self.send_and_verify_topic_wildcard_mention_message("polonius", topic_participant_count=10)
         self.send_and_verify_topic_wildcard_mention_message("cordelia")
 
         do_set_realm_property(
@@ -1777,7 +1849,7 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
-        self.send_and_verify_topic_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", topic_participant_count=10)
         # Administrators and moderators can use wildcard mentions even if they are new.
         self.send_and_verify_topic_wildcard_mention_message("iago")
         self.send_and_verify_topic_wildcard_mention_message("shiva")
@@ -1793,7 +1865,7 @@ class StreamMessagesTest(ZulipTestCase):
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
-        self.send_and_verify_topic_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", topic_participant_count=10)
         self.send_and_verify_topic_wildcard_mention_message("shiva")
 
         cordelia.date_joined = timezone_now()
@@ -1802,15 +1874,15 @@ class StreamMessagesTest(ZulipTestCase):
             realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
         )
         self.send_and_verify_topic_wildcard_mention_message("shiva", test_fails=True)
-        # There is no restriction on small streams.
-        self.send_and_verify_topic_wildcard_mention_message("shiva", sub_count=10)
+        # There is no restriction on topics with less than 'Realm.WILDCARD_MENTION_THRESHOLD' participants.
+        self.send_and_verify_topic_wildcard_mention_message("shiva", topic_participant_count=10)
         self.send_and_verify_topic_wildcard_mention_message("iago")
 
         do_set_realm_property(
             realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
         )
         self.send_and_verify_topic_wildcard_mention_message("iago", test_fails=True)
-        self.send_and_verify_topic_wildcard_mention_message("iago", sub_count=10)
+        self.send_and_verify_topic_wildcard_mention_message("iago", topic_participant_count=10)
 
     def send_and_verify_stream_wildcard_mention_message(
         self, sender_name: str, test_fails: bool = False, sub_count: int = 16
@@ -1826,7 +1898,7 @@ class StreamMessagesTest(ZulipTestCase):
             else:
                 with self.assertRaisesRegex(
                     JsonableError,
-                    "You do not have permission to use wildcard mentions in this stream.",
+                    "You do not have permission to use stream wildcard mentions in this stream.",
                 ):
                     self.send_stream_message(sender, "test_stream", content)
 

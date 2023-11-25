@@ -1,16 +1,17 @@
 import logging
 import urllib
-from typing import Any, Dict, List, Mapping, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import orjson
 import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
+from pydantic import UUID4, BaseModel, ConfigDict
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.models import Realm, RealmAuditLog
@@ -27,6 +28,25 @@ class PushNotificationBouncerError(Exception):
 
 class PushNotificationBouncerRetryLaterError(JsonableError):
     http_status_code = 502
+
+
+class RealmDataForAnalytics(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: int
+    host: str
+    url: str
+    date_created: float
+    deactivated: bool
+
+    uuid: UUID4
+    uuid_owner_secret: str
+
+
+class UserDataForRemoteBilling(BaseModel):
+    uuid: UUID4
+    email: str
+    full_name: str
 
 
 def send_to_push_bouncer(
@@ -103,6 +123,14 @@ def send_to_push_bouncer(
             from zerver.lib.push_notifications import InvalidRemotePushDeviceTokenError
 
             raise InvalidRemotePushDeviceTokenError
+        elif (
+            endpoint == "server/billing"
+            and "code" in result_dict
+            and result_dict["code"] == "MISSING_REMOTE_REALM"
+        ):  # nocoverage
+            # The callers requesting this endpoint want the exception to propagate
+            # so they can catch it.
+            raise MissingRemoteRealmError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)
@@ -172,12 +200,15 @@ def build_analytics_data(
     )
 
 
-def get_realms_info_for_push_bouncer() -> List[Dict[str, Any]]:
+def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[RealmDataForAnalytics]:
     realms = Realm.objects.order_by("id")
-    realm_info_dicts = [
-        dict(
+    if realm_id is not None:  # nocoverage
+        realms = realms.filter(id=realm_id)
+
+    realm_info_list = [
+        RealmDataForAnalytics(
             id=realm.id,
-            uuid=str(realm.uuid),
+            uuid=realm.uuid,
             uuid_owner_secret=realm.uuid_owner_secret,
             host=realm.host,
             url=realm.uri,
@@ -187,15 +218,16 @@ def get_realms_info_for_push_bouncer() -> List[Dict[str, Any]]:
         for realm in realms
     ]
 
-    return realm_info_dicts
+    return realm_info_list
 
 
 def send_analytics_to_push_bouncer() -> None:
+    logger = logging.getLogger("zulip.analytics")
     # first, check what's latest
     try:
         result = send_to_push_bouncer("GET", "server/analytics/status", {})
     except PushNotificationBouncerRetryLaterError as e:
-        logging.warning(e.msg, exc_info=True)
+        logger.warning(e.msg, exc_info=True)
         return
 
     last_acked_realm_count_id = result["last_realm_count_id"]
@@ -214,18 +246,38 @@ def send_analytics_to_push_bouncer() -> None:
         ),
     )
 
-    if len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data) == 0:
+    record_count = len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data)
+    if record_count == 0:
+        logger.info("No new records to report.")
         return
 
     request = {
         "realm_counts": orjson.dumps(realm_count_data).decode(),
         "installation_counts": orjson.dumps(installation_count_data).decode(),
         "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-        "realms": orjson.dumps(get_realms_info_for_push_bouncer()).decode(),
+        "realms": orjson.dumps(
+            [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
+        ).decode(),
         "version": orjson.dumps(ZULIP_VERSION).decode(),
     }
 
     try:
         send_to_push_bouncer("POST", "server/analytics", request)
     except JsonableError as e:
-        logging.warning(e.msg)
+        logger.warning(e.msg)
+    logger.info("Reported %d records", record_count)
+
+
+def send_realms_only_to_push_bouncer() -> None:
+    request = {
+        "realm_counts": "[]",
+        "installation_counts": "[]",
+        "realms": orjson.dumps(
+            [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
+        ).decode(),
+        "version": orjson.dumps(ZULIP_VERSION).decode(),
+    }
+
+    # We don't catch JsonableError here, because we want it to propagate further
+    # to either explicitly, loudly fail or be error-handled by the caller.
+    send_to_push_bouncer("POST", "server/analytics", request)

@@ -773,7 +773,8 @@ li.top_left_scheduled_messages {
 }
 
 #private_messages_section_header,
-#streams_header {
+#streams_header,
+#topics_header {
     display: grid;
     align-items: center;
     /* This extends the general pattern of left sidebar rows, but includes a
@@ -1139,12 +1140,14 @@ li.topic-list-item {
     position: sticky;
     top: 0;
     z-index: 2;
-    margin-right: 10px;
+    grid-template-columns: 0 0 minmax(0, 1fr) max-content 0 42px;
+    grid-template-rows: 24px;
     padding-top: $sections_vertical_gutter;
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
 
     .show-all-streams {
+        grid-area: row-content;
         color: inherit;
         text-decoration: none;
         text-transform: uppercase;
@@ -1156,6 +1159,10 @@ li.topic-list-item {
             top: 1px;
         }
     }
+
+    .unread_count {
+        grid-area: markers-and-controls;
+    }
 }
 
 #streams_header {
@@ -1165,6 +1172,8 @@ li.topic-list-item {
     cursor: pointer;
     padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
     position: sticky;
+    /* Keep sticky within SimpleBar context. */
+    top: 0;
     background-color: var(--color-background);
     /* Ideally, 0px should work here, but maybe simplebar is doing something
        that is creating `0.5px` extra gap in zoomed-in windows. */
@@ -1334,6 +1343,7 @@ li.topic-list-item {
         background-color: var(--color-background);
     }
 
+    #streams_header,
     #subscribe-to-more-streams,
     .show-more-topics {
         display: none;

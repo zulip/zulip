@@ -25,6 +25,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
+from version import ZULIP_VERSION
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.realm_settings import do_deactivate_realm
@@ -59,7 +60,9 @@ from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     build_analytics_data,
+    get_realms_info_for_push_bouncer,
     send_analytics_to_push_bouncer,
+    send_realms_only_to_push_bouncer,
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_response_from_error
@@ -935,11 +938,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
         user = self.example_user("hamlet")
         end_time = self.TIME_ZERO
 
-        with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as mock_warning:
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
             resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
             send_analytics_to_push_bouncer()
             self.assertIn(
-                "WARNING:root:ConnectionError while trying to connect to push notification bouncer\nTraceback ",
+                "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer\nTraceback ",
                 mock_warning.output[0],
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
@@ -949,9 +954,19 @@ class AnalyticsBouncerTest(BouncerTestCase):
         audit_log = RealmAuditLog.objects.all().order_by("id").last()
         assert audit_log is not None
         audit_log_max_id = audit_log.id
+
+        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        assert remote_server is not None
+        assert remote_server.last_version is None
+
         send_analytics_to_push_bouncer()
         self.assertTrue(responses.assert_call_count(ANALYTICS_STATUS_URL, 1))
+
+        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        assert remote_server.last_version == ZULIP_VERSION
+
         remote_audit_log_count = RemoteRealmAuditLog.objects.count()
+
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
         self.assertEqual(RemoteInstallationCount.objects.count(), 0)
 
@@ -1160,10 +1175,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             end_time=end_time,
             value=5,
         )
-        with self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs("zulip.analytics", level="WARNING") as warn_log:
             send_analytics_to_push_bouncer()
         self.assertEqual(
-            warn_log.output, ["WARNING:root:Invalid property mobile_pushes_received::day"]
+            warn_log.output,
+            ["WARNING:zulip.analytics:Invalid property mobile_pushes_received::day"],
         )
         # The analytics endpoint call counts increase by 1, but the actual RemoteCounts remain unchanged,
         # since syncing the data failed.
@@ -1185,30 +1201,23 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Data is out of order.")
 
-        with mock.patch("zilencer.views.validate_incoming_table_data"), self.assertLogs(
-            level="WARNING"
-        ) as warn_log:
-            # We need to wrap a transaction here to avoid the
-            # IntegrityError that will be thrown in here from breaking
-            # the unittest transaction.
-            with transaction.atomic():
-                result = self.uuid_post(
-                    self.server_uuid,
-                    "/api/v1/remotes/server/analytics",
-                    {
-                        "realm_counts": orjson.dumps(realm_count_data).decode(),
-                        "installation_counts": orjson.dumps(installation_count_data).decode(),
-                        "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-                    },
-                    subdomain="",
-                )
-            self.assert_json_error(result, "Invalid data.")
-            self.assertEqual(
-                warn_log.output,
-                [
-                    "WARNING:root:Invalid data saving zilencer_remoteinstallationcount for server demo.example.com/6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-                ],
-            )
+        # Adjust the id of all existing rows so that they get re-sent.
+        # This is equivalent to running `./manage.py clear_analytics_tables`
+        RealmCount.objects.all().update(id=F("id") + RealmCount.objects.latest("id").id)
+        InstallationCount.objects.all().update(
+            id=F("id") + InstallationCount.objects.latest("id").id
+        )
+        with self.assertLogs(level="WARNING") as warn_log:
+            send_analytics_to_push_bouncer()
+        self.assertEqual(
+            warn_log.output,
+            [
+                f"WARNING:root:Dropped 3 duplicated rows while saving 3 rows of zilencer_remoterealmcount for server demo.example.com/{self.server_uuid}",
+                f"WARNING:root:Dropped 2 duplicated rows while saving 2 rows of zilencer_remoteinstallationcount for server demo.example.com/{self.server_uuid}",
+            ],
+        )
+        # Only the request counts go up -- all of the other rows' duplicates are dropped
+        check_counts(10, 8, 3, 2, 5)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
@@ -1228,9 +1237,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(RealmCount.objects.count(), 1)
 
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
-        with self.assertLogs(level="WARNING") as m:
+        with self.assertLogs("zulip.analytics", level="WARNING") as m:
             send_analytics_to_push_bouncer()
-        self.assertEqual(m.output, ["WARNING:root:Invalid property invalid count stat"])
+        self.assertEqual(m.output, ["WARNING:zulip.analytics:Invalid property invalid count stat"])
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
@@ -1265,11 +1274,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED,
         )
 
-        with transaction.atomic(), self.assertLogs(level="WARNING") as m:
+        with transaction.atomic(), self.assertLogs("zulip.analytics", level="WARNING") as m:
             # The usual atomic() wrapper to avoid IntegrityError breaking the test's
             # transaction.
             send_analytics_to_push_bouncer()
-        self.assertEqual(m.output, ["WARNING:root:Duplicate registration detected."])
+        self.assertEqual(m.output, ["WARNING:zulip.analytics:Duplicate registration detected."])
 
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
     # and don't send realmauditlog_rows. Make sure that continues to work.
@@ -1438,12 +1447,68 @@ class AnalyticsBouncerTest(BouncerTestCase):
             expected_extra_data={},
         )
         # Invalid extra_data
-        with self.assertLogs(level="WARNING") as m:
+        with self.assertLogs("zulip.analytics", level="WARNING") as m:
             verify_request_with_overridden_extra_data(
                 request_extra_data="{malformedjson:",
                 skip_audit_log_check=True,
             )
         self.assertIn("Malformed audit log data", m.output[0])
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_send_realms_only_to_push_bouncer(self) -> None:
+        self.add_mock_response()
+        self.example_user("hamlet")
+
+        send_realms_only_to_push_bouncer()
+
+        self.assertEqual(
+            list(
+                RemoteRealm.objects.order_by("id").values(
+                    "server_id",
+                    "uuid",
+                    "uuid_owner_secret",
+                    "host",
+                    "realm_date_created",
+                    "registration_deactivated",
+                    "realm_deactivated",
+                    "plan_type",
+                )
+            ),
+            [
+                {
+                    "server_id": self.server.id,
+                    "uuid": realm.uuid,
+                    "uuid_owner_secret": realm.uuid_owner_secret,
+                    "host": realm.host,
+                    "realm_date_created": realm.date_created,
+                    "registration_deactivated": False,
+                    "realm_deactivated": False,
+                    "plan_type": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                }
+                for realm in Realm.objects.order_by("id")
+            ],
+        )
+
+        # Use a mock to assert exactly the data that gets sent.
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer"
+        ) as mock_send_to_push_bouncer:
+            send_realms_only_to_push_bouncer()
+
+        post_data = {
+            "realm_counts": "[]",
+            "installation_counts": "[]",
+            "realms": orjson.dumps(
+                [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
+            ).decode(),
+            "version": orjson.dumps(ZULIP_VERSION).decode(),
+        }
+        mock_send_to_push_bouncer.assert_called_with(
+            "POST",
+            "server/analytics",
+            post_data,
+        )
 
 
 class PushNotificationTest(BouncerTestCase):

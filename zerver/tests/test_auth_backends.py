@@ -4985,7 +4985,8 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
         self.remove_ldap_user_attr("hamlet", "department")
 
-        # Test wrong configuration
+        # Test a realm that's not configured in the setting. Such a realm should not be affected,
+        # and just allow normal ldap login.
         with override_settings(
             AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={"not_zulip": [{"department": "zulip"}]}
         ):
@@ -4993,7 +4994,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_error(result, "Your username or password is incorrect", 401)
+            self.assert_json_success(result)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
@@ -6422,6 +6423,26 @@ class TestLDAP(ZulipLDAPTestCase):
                 realm=get_realm("zulip"),
             )
             self.assertIs(user_profile, None)
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_login_failure_user_account_control(self) -> None:
+        self.change_ldap_user_attr("hamlet", "userAccountControl", "2")
+
+        with self.settings(
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_USER_ATTR_MAP={"userAccountControl": "userAccountControl"},
+        ), self.assertLogs("django_auth_ldap", "DEBUG") as debug_log:
+            user_profile = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=self.example_email("hamlet"),
+                password=self.ldap_password("hamlet"),
+                realm=get_realm("zulip"),
+            )
+            self.assertIs(user_profile, None)
+            self.assertIn(
+                "DEBUG:django_auth_ldap:Authentication failed for hamlet: User has been deactivated",
+                debug_log.output,
+            )
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     @override_settings(

@@ -3,8 +3,8 @@
 // Puppeteer tests.  It should not be used in the code itself.
 
 export {
-    set_wildcard_mention_large_stream_threshold,
-    wildcard_mention_large_stream_threshold,
+    set_stream_wildcard_mention_large_stream_threshold,
+    stream_wildcard_mention_large_stream_threshold,
 } from "./compose_validate";
 export {private_message_recipient} from "./compose_state";
 export {current as current_msg_list} from "./message_lists";

@@ -1,5 +1,4 @@
 import logging
-from contextlib import suppress
 from typing import Any, Callable, Dict, Union
 
 import stripe
@@ -81,36 +80,9 @@ def handle_checkout_session_completed_event(
     assert isinstance(payment_method, (str, type(None)))
 
     if session.type in [
-        Session.UPGRADE_FROM_BILLING_PAGE,
-        Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD,
+        Session.CARD_UPDATE_FROM_BILLING_PAGE,
+        Session.CARD_UPDATE_FROM_UPGRADE_PAGE,
     ]:
-        ensure_customer_does_not_have_active_plan(session.customer)
-        billing_session.update_or_create_stripe_customer(payment_method)
-        assert session.payment_intent is not None
-        session.payment_intent.status = PaymentIntent.PROCESSING
-        session.payment_intent.last_payment_error = ()
-        session.payment_intent.save(update_fields=["status", "last_payment_error"])
-        with suppress(stripe.error.CardError):
-            stripe.PaymentIntent.confirm(
-                session.payment_intent.stripe_payment_intent_id,
-                payment_method=payment_method,
-                off_session=True,
-            )
-    elif session.type in [
-        Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE,
-        Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE,
-    ]:
-        ensure_customer_does_not_have_active_plan(session.customer)
-        billing_session.update_or_create_stripe_customer(payment_method)
-        billing_session.process_initial_upgrade(
-            CustomerPlan.STANDARD,
-            int(stripe_session.metadata["licenses"]),
-            stripe_session.metadata["license_management"] == "automatic",
-            int(stripe_session.metadata["billing_schedule"]),
-            charge_automatically=True,
-            free_trial=True,
-        )
-    elif session.type in [Session.CARD_UPDATE_FROM_BILLING_PAGE]:
         billing_session.update_or_create_stripe_customer(payment_method)
 
 
@@ -163,28 +135,3 @@ def handle_payment_intent_succeeded_event(
         True,
         False,
     )
-
-
-@error_handler
-def handle_payment_intent_payment_failed_event(
-    stripe_payment_intent: stripe.PaymentIntent, payment_intent: PaymentIntent
-) -> None:
-    assert stripe_payment_intent.last_payment_error is not None
-    payment_intent.status = PaymentIntent.get_status_integer_from_status_text(
-        stripe_payment_intent.status
-    )
-    assert payment_intent.customer.realm is not None
-    billing_logger.info(
-        "Stripe payment intent failed: %s %s %s %s",
-        payment_intent.customer.realm.string_id,
-        stripe_payment_intent.last_payment_error.get("type"),
-        stripe_payment_intent.last_payment_error.get("code"),
-        stripe_payment_intent.last_payment_error.get("param"),
-    )
-    payment_intent.last_payment_error = {
-        "description": stripe_payment_intent.last_payment_error.get("type"),
-    }
-    payment_intent.last_payment_error["message"] = stripe_payment_intent.last_payment_error.get(
-        "message"
-    )
-    payment_intent.save(update_fields=["status", "last_payment_error"])

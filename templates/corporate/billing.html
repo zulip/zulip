@@ -9,6 +9,11 @@
 <div id="billing-page" class="register-account flex full-page">
     <div class="center-block new-style">
         {% if admin_access and has_active_plan %}
+        {% if is_sponsorship_pending %}
+        <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
+            This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+        </div>
+        {% endif %}
         {% if success_message %}
         <div class="alert alert-success billing-page-success" id="billing-success-message-top">{{ success_message }}</div>
         {% endif %}
@@ -20,24 +25,53 @@
         <div class="white-box">
             <div id="billing-page-details">
                 <div class="input-box billing-page-field no-validation">
-                    <label for="org_current_plan" class="inline-block label-title">Your plan</label>
-                    <div id="org_current_plan" class="not-editable-realm-field">
+                    <label for="org-current-plan" class="inline-block label-title">Your plan</label>
+                    <div id="org-current-plan" class="not-editable-realm-field">
                         {% if free_trial %}
-                        {{ plan_name }} Free Trial
+                        {{ plan_name }} <i>(free trial)</i>
                         {% else %}
                         {{ plan_name }}
                         {% endif %}
                     </div>
                 </div>
-                <div class="input-box billing-page-field no-validation">
-                    <label for="org_billing_freqency" class="inline-block label-title">Billing frequency</label>
-                    <div id="org_billing_freqency" class="not-editable-realm-field">
+                <div class="input-box billing-page-field no-validation org-billing-frequency-wrapper"
+                  data-current-billing-frequency="{{ billing_frequency }}"
+                  {%if free_trial %}data-free-trial="true"{% endif %}
+                  {%if downgrade_at_end_of_cycle %}data-downgrade-eoc="true"{% endif %}
+                  {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
+                  {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
+                    <label for="org-billing-frequency">Billing frequency</label>
+                    {% if free_trial or downgrade_at_end_of_cycle %}
+                    <div class="not-editable-realm-field">
                         {{ billing_frequency }}
-                        {% if switch_to_annual_at_end_of_cycle %}
-                        <br />
-                        Your plan will switch to annual billing on {{ renewal_date }}.
-                        {% endif %}
                     </div>
+                    {% elif switch_to_annual_at_end_of_cycle %}
+                    <select name="schedule" id="org-billing-frequency-annual" class="billing-frequency-select">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Annual" selected>Annual</option>
+                    </select>
+                    <div class="billing-frequency-message not-editable-realm-field">
+                        Your plan will switch to annual billing on {{ renewal_date }}.
+                    </div>
+                    {%elif switch_to_monthly_at_end_of_cycle %}
+                    <select name="schedule" id="org-billing-frequency-monthly" class="billing-frequency-select">
+                        <option value="Monthly" selected>Monthly</option>
+                        <option value="Annual">Annual</option>
+                    </select>
+                    <div class="billing-frequency-message not-editable-realm-field">
+                        Your plan will switch to monthly billing on {{ renewal_date }}.
+                    </div>
+                    {% else %}
+                    <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select">
+                        <option value="Monthly" {% if billing_frequency == "Monthly" %}selected{% endif %}>Monthly</option>
+                        <option value="Annual" {% if billing_frequency == "Annual" %}selected{% endif %}>Annual</option>
+                    </select>
+                    {% endif %}
+                    <button id="org-billing-frequency-confirm-button" class="hide">
+                        <span class="billing-button-text">Update</span>
+                        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                    </button>
+                    <div id="org-billing-frequency-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
                 {% if automanage_licenses %}
                 <div class="input-box billing-page-field no-validation">
@@ -114,10 +148,7 @@
                 <div class="input-box billing-page-field no-validation">
                     <div class="next-payment-info not-editable-realm-field">
                         {% if renewal_amount %}
-                            {% if free_trial %}
-                            Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
-                            <strong>${{ renewal_amount }}</strong>.
-                            {% elif downgrade_at_end_of_cycle %}
+                            {% if downgrade_at_end_of_cycle %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                             period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
                             <a href="/plans/">other features</a> of your current plan.
@@ -130,7 +161,19 @@
                             <br />
                             Expected charge: <strong>${{ renewal_amount }}</strong>
                             {% if not fixed_price %}
-                                (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x {{ "1 month" if billing_frequency == "Monthly" else "12 months" }})
+                                (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
+                                {% if switch_to_annual_at_end_of_cycle %}
+                                    12 months
+                                {% elif switch_to_monthly_at_end_of_cycle %}
+                                    1 month
+                                {% else %}
+                                    {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
+                                {% endif %})
+                                {% if discount_percent %}
+                                <br />
+                                <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
+                                {% endif %}
+
                             {% endif %}
                             {% endif %}
                         {% else %}
@@ -179,11 +222,6 @@
                     {% endif %}
                 </form>
                 <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
-                {% if onboarding %}
-                <div id="onboarding-go-to-org" class="input-box upgrade-page-field">
-                    <a class="not-editable-realm-field" href="/"><b>Go to your Zulip organization</b></a>
-                </div>
-                {% endif %}
             </div>
         </div>
         <hr />

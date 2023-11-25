@@ -413,32 +413,34 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(stream_id, 101);
         return 16;
     });
-    let wildcard_warning_rendered = false;
+    let stream_wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
-    mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
-        wildcard_warning_rendered = true;
+    mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
+        stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
     });
 
-    override_rewire(compose_validate, "wildcard_mention_allowed_in_large_stream", () => true);
+    override_rewire(
+        compose_validate,
+        "stream_wildcard_mention_allowed_in_large_stream",
+        () => true,
+    );
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(wildcard_warning_rendered);
+    assert.ok(stream_wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+    mock_template("compose_banner/wildcard_mention_not_allowed_error.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage:
-                    "You do not have permission to use wildcard mentions in this stream.",
-            }),
-        );
+        assert.equal(data.stream_wildcard_mention, "all");
         wildcards_not_allowed_rendered = true;
     });
-    override_rewire(compose_validate, "wildcard_mention_allowed_in_large_stream", () => false);
+    override_rewire(
+        compose_validate,
+        "stream_wildcard_mention_allowed_in_large_stream",
+        () => false,
+    );
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });
@@ -561,7 +563,6 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
 
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
-    const $send_button = $("#compose-send-button");
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
@@ -585,7 +586,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.equal(limit_indicator_html, "10001&ZeroWidthSpace;/10000\n");
     assert.ok($textarea.hasClass("over_limit"));
     assert.ok(banner_rendered);
-    assert.ok($send_button.prop("disabled"));
+    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator should show orange colored text
     banner_rendered = false;
@@ -594,7 +595,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "9001&ZeroWidthSpace;/10000\n");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!$send_button.prop("disabled"));
+    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(!banner_rendered);
 
     // Indicator must be empty

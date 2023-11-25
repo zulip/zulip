@@ -1,38 +1,36 @@
 import logging
-from decimal import Decimal
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from django import forms
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse
+from pydantic import Json
 
+from corporate.lib.remote_billing_util import get_remote_realm_from_session
 from corporate.lib.stripe import (
-    DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-    MIN_INVOICED_LICENSES,
     VALID_BILLING_MODALITY_VALUES,
     VALID_BILLING_SCHEDULE_VALUES,
     VALID_LICENSE_MANAGEMENT_VALUES,
     BillingError,
+    InitialUpgradeRequest,
     RealmBillingSession,
+    RemoteRealmBillingSession,
     UpgradeRequest,
-    get_latest_seat_count,
-    sign_string,
 )
 from corporate.lib.support import get_support_url
-from corporate.models import (
-    ZulipSponsorshipRequest,
-    get_current_plan_by_customer,
-    get_customer_by_realm,
-)
-from corporate.views.billing_page import billing_home
+from corporate.models import CustomerPlan, ZulipSponsorshipRequest
 from zerver.actions.users import do_change_is_billing_admin
-from zerver.decorator import require_organization_member, zulip_login_required
+from zerver.decorator import (
+    require_organization_member,
+    self_hosting_management_endpoint,
+    zulip_login_required,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import UserProfile, get_org_type_display_name
 
@@ -48,7 +46,6 @@ def upgrade(
     schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
     signed_seat_count: str = REQ(),
     salt: str = REQ(),
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
     license_management: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
     ),
@@ -60,7 +57,6 @@ def upgrade(
             schedule=schedule,
             signed_seat_count=signed_seat_count,
             salt=salt,
-            onboarding=onboarding,
             license_management=license_management,
             licenses=licenses,
         )
@@ -90,9 +86,8 @@ def upgrade(
 
 @zulip_login_required
 @has_request_variables
-def initial_upgrade(
+def upgrade_page(
     request: HttpRequest,
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
     manual_license_management: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     user = request.user
@@ -101,50 +96,38 @@ def initial_upgrade(
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)
 
-    customer = get_customer_by_realm(user.realm)
-    if (
-        customer is not None and customer.sponsorship_pending
-    ) or user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
-        return HttpResponseRedirect(reverse("sponsorship_request"))
-
-    billing_page_url = reverse(billing_home)
-    if customer is not None and (get_current_plan_by_customer(customer) is not None or onboarding):
-        if onboarding:
-            billing_page_url = f"{billing_page_url}?onboarding=true"
-        return HttpResponseRedirect(billing_page_url)
-
-    percent_off = Decimal(0)
-    if customer is not None and customer.default_discount is not None:
-        percent_off = customer.default_discount
-
-    exempt_from_license_number_check = (
-        customer is not None and customer.exempt_from_license_number_check
+    initial_upgrade_request = InitialUpgradeRequest(
+        manual_license_management=manual_license_management,
+        tier=CustomerPlan.STANDARD,
     )
+    billing_session = RealmBillingSession(user)
+    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
 
-    seat_count = get_latest_seat_count(user.realm)
-    signed_seat_count, salt = sign_string(str(seat_count))
-    context: Dict[str, Any] = {
-        "realm": user.realm,
-        "email": user.delivery_email,
-        "seat_count": seat_count,
-        "signed_seat_count": signed_seat_count,
-        "salt": salt,
-        "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
-        "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-        "exempt_from_license_number_check": exempt_from_license_number_check,
-        "plan": "Zulip Cloud Standard",
-        "free_trial_days": settings.FREE_TRIAL_DAYS,
-        "onboarding": onboarding,
-        "page_params": {
-            "seat_count": seat_count,
-            "annual_price": 8000,
-            "monthly_price": 800,
-            "percent_off": float(percent_off),
-            "demo_organization_scheduled_deletion_date": user.realm.demo_organization_scheduled_deletion_date,
-        },
-        "is_demo_organization": user.realm.demo_organization_scheduled_deletion_date is not None,
-        "manual_license_management": manual_license_management,
-    }
+    if redirect_url:
+        return HttpResponseRedirect(redirect_url)
+
+    response = render(request, "corporate/upgrade.html", context=context)
+    return response
+
+
+@self_hosting_management_endpoint
+@typed_endpoint
+def remote_realm_upgrade_page(
+    request: HttpRequest,
+    *,
+    realm_uuid: PathOnly[str],
+    manual_license_management: Json[bool] = False,
+) -> HttpResponse:  # nocoverage
+    remote_realm = get_remote_realm_from_session(request, realm_uuid)
+    initial_upgrade_request = InitialUpgradeRequest(
+        manual_license_management=manual_license_management,
+        tier=CustomerPlan.STANDARD,
+    )
+    billing_session = RemoteRealmBillingSession(remote_realm)
+    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+
+    if redirect_url:
+        return HttpResponseRedirect(redirect_url)
 
     response = render(request, "corporate/upgrade.html", context=context)
     return response

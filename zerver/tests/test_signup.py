@@ -935,7 +935,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(103), self.assert_memcached_count(18):
+        with self.assert_database_query_count(104), self.assert_memcached_count(18):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -1789,12 +1789,10 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assertEqual(
-            result["Location"], "http://custom-test.testserver/upgrade/?onboarding=true"
-        )
+        self.assertEqual(result["Location"], "http://custom-test.testserver/upgrade/")
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assert_in_success_response(["Not ready to start your trial?"], result)
+        self.assert_in_success_response(["You won't be charged during the free trial."], result)
 
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)
@@ -2040,6 +2038,12 @@ class RealmCreationTest(ZulipTestCase):
 
         with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
             result = self.client_get("/json/realm/subdomain/zulipauth")
+            self.assert_in_success_response(
+                ["Subdomain reserved. Please choose a different one."], result
+            )
+
+        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
+            result = self.client_get("/json/realm/subdomain/zulipselfhosting")
             self.assert_in_success_response(
                 ["Subdomain reserved. Please choose a different one."], result
             )

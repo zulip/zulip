@@ -7,10 +7,12 @@ import assert from "minimalistic-assert";
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
+import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as channel from "./channel";
 import * as common from "./common";
+import * as compose_banner from "./compose_banner";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
@@ -288,6 +290,18 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
+function generate_invite_tips_data(): Record<string, boolean> {
+    const {realm_description, realm_icon_source, custom_profile_fields} = page_params;
+
+    return {
+        realm_has_description:
+            realm_description !== "" &&
+            !/^Organization imported from [A-Za-z]+[!.]$/.test(realm_description),
+        realm_has_user_set_icon: realm_icon_source !== "G",
+        realm_has_custom_profile_fields: custom_profile_fields.length > 0,
+    };
+}
+
 function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
     e.stopPropagation();
     e.preventDefault();
@@ -328,6 +342,15 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         set_custom_time_inputs_visibility();
         set_expires_on_text();
         set_streams_to_join_list_visibility();
+
+        $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
+            dialog_widget.close();
+        });
+
+        $("#invite-user-modal").on("click", ".main-view-banner-close-button", (e) => {
+            e.preventDefault();
+            $(e.target).parent().remove();
+        });
 
         function toggle_invite_submit_button(): void {
             $("#invite-user-modal .dialog_submit_button").prop(
@@ -415,6 +438,16 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $("#generate_multiuse_invite_radio").prop("checked", true);
             $("#generate_multiuse_invite_radio").trigger("change");
         }
+
+        const invite_tips_data = generate_invite_tips_data();
+
+        const context = {
+            banner_type: compose_banner.INFO,
+            classname: "setup_tips_banner",
+            ...invite_tips_data,
+        };
+
+        $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
     }
 
     function invite_users(): void {

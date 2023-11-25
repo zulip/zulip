@@ -15,7 +15,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Json
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
@@ -33,23 +33,12 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
+from zerver.lib.remote_server import RealmDataForAnalytics
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import (
-    check_bool,
-    check_capped_string,
-    check_dict,
-    check_dict_only,
-    check_float,
-    check_int,
-    check_list,
-    check_none_or,
-    check_string,
-    check_string_fixed_length,
-    check_union,
-)
+from zerver.lib.validator import check_capped_string, check_int, check_string_fixed_length
 from zerver.views.push_notifications import check_app_id, validate_token
 from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
@@ -515,19 +504,25 @@ def batch_create_table_data(
     model: Type[ModelT],
     row_objects: List[ModelT],
 ) -> None:
-    BATCH_SIZE = 1000
-    while len(row_objects) > 0:
-        try:
-            model._default_manager.bulk_create(row_objects[:BATCH_SIZE])
-        except IntegrityError:
-            logging.warning(
-                "Invalid data saving %s for server %s/%s",
-                model._meta.db_table,
-                server.hostname,
-                server.uuid,
-            )
-            raise JsonableError(_("Invalid data."))
-        row_objects = row_objects[BATCH_SIZE:]
+    # We ignore previously-existing data, in case it was truncated and
+    # re-created on the remote server.  `ignore_concflicts=True`
+    # cannot return the ids, or count thereof, of the new inserts,
+    # (see https://code.djangoproject.com/ticket/0138) so we rely on
+    # having a lock to accurately count them before and after.  This
+    # query is also well-indexed.
+    before_count = model._default_manager.filter(server=server).count()
+    model._default_manager.bulk_create(row_objects, batch_size=1000, ignore_conflicts=True)
+    after_count = model._default_manager.filter(server=server).count()
+    inserted_count = after_count - before_count
+    if inserted_count < len(row_objects):
+        logging.warning(
+            "Dropped %d duplicated rows while saving %d rows of %s for server %s/%s",
+            len(row_objects) - inserted_count,
+            len(row_objects),
+            model._meta.db_table,
+            server.hostname,
+            server.uuid,
+        )
 
 
 def update_remote_realm_data_for_server(
@@ -536,7 +531,7 @@ def update_remote_realm_data_for_server(
     uuids = [realm["uuid"] for realm in server_realms_info]
     already_registered_remote_realms = RemoteRealm.objects.filter(uuid__in=uuids, server=server)
     already_registered_uuids = {
-        str(remote_realm.uuid) for remote_realm in already_registered_remote_realms
+        remote_realm.uuid for remote_realm in already_registered_remote_realms
     }
 
     new_remote_realms = [
@@ -601,87 +596,78 @@ def update_remote_realm_data_for_server(
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
-@has_request_variables
+class RealmAuditLogDataForAnalytics(BaseModel):
+    id: int
+    realm: int
+    event_time: float
+    backfilled: bool
+    extra_data: Optional[Union[str, Dict[str, Any]]]
+    event_type: int
+
+
+class RealmCountDataForAnalytics(BaseModel):
+    property: str
+    realm: int
+    id: int
+    end_time: float
+    subgroup: Optional[str]
+    value: int
+
+
+class InstallationCountDataForAnalytics(BaseModel):
+    property: str
+    id: int
+    end_time: float
+    subgroup: Optional[str]
+    value: int
+
+
+@typed_endpoint
+@transaction.atomic
 def remote_server_post_analytics(
     request: HttpRequest,
     server: RemoteZulipServer,
-    realm_counts: List[Dict[str, Any]] = REQ(
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("property", check_string),
-                    ("realm", check_int),
-                    ("id", check_int),
-                    ("end_time", check_float),
-                    ("subgroup", check_none_or(check_string)),
-                    ("value", check_int),
-                ]
-            )
-        )
-    ),
-    installation_counts: List[Dict[str, Any]] = REQ(
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("property", check_string),
-                    ("id", check_int),
-                    ("end_time", check_float),
-                    ("subgroup", check_none_or(check_string)),
-                    ("value", check_int),
-                ]
-            )
-        )
-    ),
-    realmauditlog_rows: Optional[List[Dict[str, Any]]] = REQ(
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("id", check_int),
-                    ("realm", check_int),
-                    ("event_time", check_float),
-                    ("backfilled", check_bool),
-                    ("extra_data", check_none_or(check_union([check_string, check_dict()]))),
-                    ("event_type", check_int),
-                ]
-            )
-        ),
-        default=None,
-    ),
-    realms: Optional[List[Dict[str, Any]]] = REQ(
-        # Pre-8.0 servers don't send this data.
-        default=None,
-        json_validator=check_list(
-            check_dict_only(
-                [
-                    ("id", check_int),
-                    ("uuid", check_string),
-                    ("uuid_owner_secret", check_string),
-                    ("host", check_string),
-                    ("url", check_string),
-                    ("deactivated", check_bool),
-                    ("date_created", check_float),
-                ]
-            )
-        ),
-    ),
+    *,
+    realm_counts: Json[List[RealmCountDataForAnalytics]],
+    installation_counts: Json[List[InstallationCountDataForAnalytics]],
+    realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None,
+    realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
+    version: Optional[Json[str]] = None,
 ) -> HttpResponse:
-    validate_incoming_table_data(server, RemoteRealmCount, realm_counts, True)
-    validate_incoming_table_data(server, RemoteInstallationCount, installation_counts, True)
+    # Lock the server, preventing this from racing with other
+    # duplicate submissions of the data
+    server = RemoteZulipServer.objects.select_for_update().get(id=server.id)
+
+    if version is not None:
+        version = version[0 : RemoteZulipServer.VERSION_MAX_LENGTH]
+    if version != server.last_version:
+        server.last_version = version
+        server.save(update_fields=["last_version"])
+
+    validate_incoming_table_data(
+        server, RemoteRealmCount, [dict(count) for count in realm_counts], True
+    )
+    validate_incoming_table_data(
+        server, RemoteInstallationCount, [dict(count) for count in installation_counts], True
+    )
+
     if realmauditlog_rows is not None:
-        validate_incoming_table_data(server, RemoteRealmAuditLog, realmauditlog_rows)
+        validate_incoming_table_data(
+            server, RemoteRealmAuditLog, [dict(row) for row in realmauditlog_rows]
+        )
 
     if realms is not None:
-        update_remote_realm_data_for_server(server, realms)
+        update_remote_realm_data_for_server(server, [dict(realm) for realm in realms])
 
     remote_realm_counts = [
         RemoteRealmCount(
-            property=row["property"],
-            realm_id=row["realm"],
-            remote_id=row["id"],
+            property=row.property,
+            realm_id=row.realm,
+            remote_id=row.id,
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row["end_time"], tz=datetime.timezone.utc),
-            subgroup=row["subgroup"],
-            value=row["value"],
+            end_time=datetime.datetime.fromtimestamp(row.end_time, tz=datetime.timezone.utc),
+            subgroup=row.subgroup,
+            value=row.value,
         )
         for row in realm_counts
     ]
@@ -689,12 +675,12 @@ def remote_server_post_analytics(
 
     remote_installation_counts = [
         RemoteInstallationCount(
-            property=row["property"],
-            remote_id=row["id"],
+            property=row.property,
+            remote_id=row.id,
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row["end_time"], tz=datetime.timezone.utc),
-            subgroup=row["subgroup"],
-            value=row["value"],
+            end_time=datetime.datetime.fromtimestamp(row.end_time, tz=datetime.timezone.utc),
+            subgroup=row.subgroup,
+            value=row.value,
         )
         for row in installation_counts
     ]
@@ -704,35 +690,25 @@ def remote_server_post_analytics(
         remote_realm_audit_logs = []
         for row in realmauditlog_rows:
             extra_data = {}
-            # Remote servers that do support JSONField will pass extra_data
-            # as a dict. Otherwise, extra_data will be either a string or None.
-            if isinstance(row["extra_data"], str):
-                # A valid "extra_data" as a str, if present, should always be generated from
-                # orjson.dumps because the POSTed analytics data for RealmAuditLog is restricted
-                # to event types in SYNC_BILLING_EVENTS.
-                # For these event types, we don't create extra_data that requires special
-                # handling to fit into the JSONField.
+            if isinstance(row.extra_data, str):
                 try:
-                    extra_data = orjson.loads(row["extra_data"])
+                    extra_data = orjson.loads(row.extra_data)
                 except orjson.JSONDecodeError:
                     raise JsonableError(_("Malformed audit log data"))
-            elif row["extra_data"] is not None:
-                # This is guaranteed to succeed because row["extra_data"] would be parsed
-                # from JSON with our json validator and validated with check_dict if it
-                # is not a str or None.
-                assert isinstance(row["extra_data"], dict)
-                extra_data = row["extra_data"]
+            elif row.extra_data is not None:
+                assert isinstance(row.extra_data, dict)
+                extra_data = row.extra_data
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
-                    realm_id=row["realm"],
-                    remote_id=row["id"],
+                    realm_id=row.realm,
+                    remote_id=row.id,
                     server=server,
                     event_time=datetime.datetime.fromtimestamp(
-                        row["event_time"], tz=datetime.timezone.utc
+                        row.event_time, tz=datetime.timezone.utc
                     ),
-                    backfilled=row["backfilled"],
+                    backfilled=row.backfilled,
                     extra_data=extra_data,
-                    event_type=row["event_type"],
+                    event_type=row.event_type,
                 )
             )
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)

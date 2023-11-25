@@ -54,6 +54,10 @@ not_yet_fully_covered = [
     "analytics/views/installation_activity.py",
     "analytics/views/stats.py",
     "analytics/views/support.py",
+    # TODO: This is a work in progress and therefore without
+    # tests yet.
+    "corporate/views/remote_billing_page.py",
+    "corporate/lib/remote_billing_util.py",
     # Major lib files should have 100% coverage
     "zerver/actions/presence.py",
     "zerver/lib/addressee.py",

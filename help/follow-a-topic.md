@@ -60,6 +60,11 @@ You can use followed topics for a variety of workflows:
 
 ## Configure notifications for followed topics
 
+You can configure custom notifications for followed topics. You can also
+[configure the unread count
+badge](/help/desktop-notifications#unread-count-badge) to include unread
+messages just in followed topics, without counting other stream messages.
+
 {!configure-notifications-for-followed-topics.md!}
 
 ## Automatically follow topics

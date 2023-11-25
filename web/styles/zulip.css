@@ -226,6 +226,7 @@ body {
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
+    --color-background-popover: hsl(0deg 0% 100%);
 
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
@@ -507,6 +508,7 @@ body {
     --color-compose-embedded-button-background-hover: hsl(
         235deg 100% 70% / 11%
     );
+    --color-background-popover: hsl(212deg 32% 14%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -1304,6 +1306,7 @@ strong {
 .buddy_list_tooltip_content {
     text-align: left;
     word-wrap: break-word;
+    max-width: 280px;
 }
 
 #change_visibility_policy_button_tooltip {
@@ -1793,11 +1796,17 @@ td.pointer {
     flex-grow: 1;
     align-items: center;
 
+    .external-topic-link {
+        /* Vertically center the external link
+           icon inside its containing anchor. */
+        display: flex;
+        align-items: center;
+    }
+
     .change_visibility_policy {
         cursor: pointer;
 
         i {
-            font-size: 17px;
             display: block;
         }
     }
@@ -2272,11 +2281,8 @@ div.focused-message-list {
     height: var(--header-height);
     width: 100%;
     line-height: var(--header-height);
-    font-size: 16px;
     display: flex;
-    align-content: flex-start;
-    flex-wrap: nowrap;
-    margin: 0;
+    align-items: baseline;
     white-space: nowrap;
     cursor: default;
 
@@ -2284,28 +2290,51 @@ div.focused-message-list {
         display: none;
     }
 
-    .sub_count,
     .message-header-stream-settings-button,
-    & > span {
-        white-space: nowrap;
-        list-style-type: none;
-        display: inline-block;
-        vertical-align: top;
-        position: relative;
+    .navbar_title {
         font-weight: 600;
         font-size: 16px;
-        line-height: 16px;
-        margin: 0 -4px 0 0;
-        padding: 12px 6px;
+        padding: 0 2px 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: inherit;
+        text-decoration: none;
+        /* Don't yield any space needed for the stream name. */
+        flex-shrink: 0;
+        /* Create a flex container for the icon and
+           stream name. */
+        display: flex;
+        /* We want to use baseline alignment so that the
+           stream name and narrow description sit on
+           the same invisible line. */
+        align-items: baseline;
+
+        .zulip-icon {
+            font-size: 14px;
+            /* Pull the icon out of baseline alignment,
+               and center with stream name. */
+            align-self: center;
+        }
+
+        .zulip-icon-inbox {
+            font-size: 16px;
+        }
+
+        .fa-envelope {
+            /* The squatter envelope icon appears
+               better vertically centered when aligned
+               to the baseline of the adjacent DM partners. */
+            align-self: baseline;
+        }
 
         @media (width < $sm_min) {
-            padding: 7px 3.5px; /* based on having ~41.66% decrease */
+            padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
         & i {
-            margin: 0 3px 0 5px;
+            margin: 0 6px 0 5px;
+            /* Align all icons to center. */
+            align-self: center;
         }
 
         .fa {
@@ -2319,83 +2348,11 @@ div.focused-message-list {
                 margin: 0 2px 0 5px;
             }
         }
-
-        .zulip-icon-inbox,
-        .zulip-icon-star-filled {
-            position: relative;
-            top: 2px;
-        }
     }
 
-    .message-header-stream-settings-button {
-        text-overflow: clip;
-        color: inherit;
-        text-decoration: none;
-        /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
-        padding-right: calc(3px + 10px);
-        /* Don't yield any space needed for the stream name. */
-        flex-shrink: 0;
-
-        .zulip-icon {
-            font-size: 14px;
-            position: relative;
-            top: 1px;
-        }
-    }
-
-    .divider {
-        color: hsl(0deg 0% 88%);
-        font-size: 20px;
-        margin: 0 3px;
-    }
-
-    .sub_count,
-    .narrow_description {
-        background: none;
-        font-size: 14px;
-        color: inherit;
-        font-weight: 400;
-        line-height: 20px;
-    }
-
-    .sub_count {
-        padding-left: 10px;
-        margin-left: 1px;
-        padding-right: 10px;
-        margin-right: 1px;
-        overflow: visible;
-
-        .fa.fa-user-o {
-            margin-left: 0;
-        }
-
-        &::before,
-        &::after {
-            content: "|";
-            position: absolute;
-            top: 25%;
-            height: 50%;
-            color: hsl(0deg 0% 88%);
-            font-size: 20px;
-
-            @media (width < $sm_min) {
-                top: 10%;
-            }
-        }
-
-        &::before {
-            left: -3px;
-
-            @media (width < $sm_min) {
-                /* this ensures the before "|" doesn't overlap
-                   with the stream name text on small narrows */
-                left: 0;
-            }
-        }
-
-        &::after {
-            right: -3px;
-        }
+    .message-header-navbar-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .narrow_description {
@@ -2406,27 +2363,26 @@ div.focused-message-list {
            is chosen such that the narrow description shrinks to close
            before the stream name must begin to shrink */
         flex-shrink: 100;
-        white-space: nowrap;
-        padding: 12px 0;
+        background: none;
+        font-size: 14px;
+        color: inherit;
+        font-weight: 400;
+        padding: 0 6px;
         padding-left: 10px;
-
-        @media (width < $sm_min) {
-            padding: 7px 0;
-            padding-left: 10px;
-        }
-
-        & > a {
-            padding: 12px 0;
-        }
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     /* The very last element in the navbar is the search icon, the second
        last element is either the narrow description (for stream narrows) or
        the "title" (for other narrows). The flex-grow property ensures these
-       elements take up the entirety of the white space. */
+       elements take up the entirety of the white space, while flex-shrink
+       accommodates narrower viewports. Setting flex-basis 0 enables an
+       ellipsis to be displayed, as the 0 takes the place of the max-content
+       default that would otherwise run titles under the search box. */
     .navbar_title,
     .narrow_description {
-        flex-grow: 1;
+        flex: 1 1 0;
         margin: 0;
         /* Calculate right margin so that text can truncate
            and not collide with the search section. */
@@ -2844,6 +2800,7 @@ select.invite-as {
 .empty-feed-notice-title {
     font-size: 1.5em;
     font-weight: 400;
+    word-wrap: break-word;
 }
 
 .empty-feed-notice-description {
@@ -3323,16 +3280,8 @@ select.invite-as {
         margin-top: 10px;
     }
 
-    .column-left.expanded {
-        .left-sidebar {
-            #streams_header {
-                padding-right: 10px;
-            }
-        }
-
-        .left-sidebar-navigation-area {
-            margin-top: 10px;
-        }
+    .column-left.expanded .left-sidebar-navigation-area {
+        margin-top: 10px;
     }
 
     .spectator-view {
@@ -3511,13 +3460,6 @@ select.invite-as {
         }
     }
 
-    .dropdown-list-item-common-styles {
-        padding: 3px 10px 3px 8px;
-        font-weight: 400;
-        line-height: 20px;
-        white-space: normal;
-    }
-
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -3531,34 +3473,38 @@ select.invite-as {
                 background-color: hsl(220deg 12% 4.9% / 5%);
                 outline: none;
             }
+        }
 
-            .list-item a {
-                display: block;
-                color: hsl(0deg 0% 20%);
-
-                .stream-privacy-type-icon {
-                    font-size: 13px;
-                    width: 13px;
-                    height: 13px;
-                    padding-right: 2px;
-                }
-
-                &:hover {
-                    text-decoration: none;
-                    background-color: hsl(220deg 12% 4.9% / 5%);
-                }
-
-                &:focus {
-                    text-decoration: none;
-                    outline: none;
-                }
-            }
+        .no-dropdown-items {
+            color: hsl(0deg 0% 60%);
+            display: none;
         }
     }
+}
 
-    .no-dropdown-items {
-        color: hsl(0deg 0% 60%);
-        display: none;
+.dropdown-list-container .dropdown-list-item-common-styles {
+    display: block;
+    color: hsl(0deg 0% 20%);
+    padding: 3px 10px 3px 8px;
+    font-weight: 400;
+    line-height: 20px;
+    white-space: normal;
+
+    .stream-privacy-type-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        padding-right: 2px;
+    }
+
+    &:hover {
+        text-decoration: none;
+        background-color: hsl(220deg 12% 4.9% / 5%);
+    }
+
+    &:focus {
+        text-decoration: none;
+        outline: none;
     }
 }
 

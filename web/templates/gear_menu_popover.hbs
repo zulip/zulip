@@ -26,7 +26,7 @@
                         {{/if}}
                     </li>
                 {{/if}}
-                {{#if (and user_has_billing_access (not is_plan_standard_sponsored_for_free)) }}
+                {{#if (and (not is_self_hosted) user_has_billing_access (not is_plan_standard_sponsored_for_free)) }}
                     {{#if sponsorship_pending }}
                     <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
                         <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Sponsorship request pending" }}</a>
@@ -56,7 +56,7 @@
             <ul class="navbar-dropdown-menu-inner-list">
                 <li class="link-item navbar-dropdown-menu-inner-list-item hidden-for-spectators">
                     <a href="#streams/subscribed" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i> {{t 'Manage streams' }}
+                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i> {{t 'Stream settings' }}
                     </a>
                 </li>
                 <li class="link-item navbar-dropdown-menu-inner-list-item hidden-for-spectators">
@@ -115,6 +115,14 @@
                 {{#if show_billing}}
                 <li class="link-item navbar-dropdown-menu-inner-list-item">
                     <a href="/billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
+                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if (and is_development_environment show_remote_billing) }}
+                {{! This is only shown in development environment until the UI is ready.}}
+                <li class="link-item navbar-dropdown-menu-inner-list-item">
+                    <a href="/self-hosted-billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
                         <i class="navbar-dropdown-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
                     </a>
                 </li>

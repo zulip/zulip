@@ -10,20 +10,12 @@ import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
 
-function get_formatted_sub_count(sub_count) {
-    if (sub_count >= 1000) {
-        // parseInt() is used to floor the value of division to an integer
-        sub_count = Number.parseInt(sub_count / 1000, 10) + "k";
-    }
-    return sub_count;
-}
-
 function make_message_view_header(filter) {
     const message_view_header = {};
     if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
-            icon: "clock-o",
+            zulip_icon: "clock",
         };
     }
     if (inbox_util.is_visible()) {
@@ -35,7 +27,7 @@ function make_message_view_header(filter) {
     if (filter === undefined) {
         return {
             title: $t({defaultMessage: "All messages"}),
-            icon: "align-left",
+            zulip_icon: "all-messages",
         };
     }
     message_view_header.title = filter.get_title();
@@ -56,12 +48,7 @@ function make_message_view_header(filter) {
         message_view_header.rendered_narrow_description = current_stream.rendered_description;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
         message_view_header.sub_count = sub_count;
-        message_view_header.formatted_sub_count = get_formatted_sub_count(sub_count);
-        // the "title" is passed as a variable and doesn't get translated (nor should it)
-        message_view_header.sub_count_tooltip_text = $t(
-            {defaultMessage: "This stream has {count} subscribers."},
-            {count: message_view_header.sub_count},
-        );
+        message_view_header.stream = current_stream;
         message_view_header.stream_settings_link =
             "#streams/" + current_stream.stream_id + "/" + current_stream.name;
     }

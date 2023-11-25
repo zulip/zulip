@@ -379,8 +379,11 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent generally to all users in an organization for changes
-                                in the set of users or those users metadata.
+                                Event sent generally to all users who can access the modified
+                                user for changes in the set of users or those users metadata.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event
+                                was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1033,8 +1036,13 @@ paths:
                             - type: object
                               description: |
                                 Event sent to all users in a Zulip organization when a new
-                                user joins. Processing this event is important to being able
-                                to display basic details on other users given only their ID.
+                                user joins or when a guest user gains access to a user.
+                                Processing this event is important to being able to display
+                                basic details on other users given only their ID.
+
+                                **Changes**: Starting with Zulip 8.0 (feature level 228),
+                                this event is also sent when a guest user gains access to
+                                a user.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1077,7 +1085,9 @@ paths:
                                 }
                             - type: object
                               description: |
-                                No longer sent by modern Zulip servers.
+                                Event sent to guest users when they lose access to a user.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event was deprecated.
 
                                 **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
 
@@ -1130,6 +1140,13 @@ paths:
                                 confusing users when someone comes online and immediately sends
                                 a message (one wouldn't want them to still appear offline at
                                 that point!).
+
+                                If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
+                                setting is set to `true`, then the event is only sent to users
+                                who can access the user who came back online.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event
+                                was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1699,8 +1716,11 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the
-                                status of a user changes.
+                                Event sent to all users who can access the modified
+                                user when the status of a user changes.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228),
+                                this event was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2152,11 +2172,15 @@ paths:
 
                                     - 0 = None. Used to indicate that the user no
                                       longer has a special visibility policy for this topic.
-                                    - 1 = Muted. Used to record muted topics.
+                                    - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
                                     - 2 = Unmuted. Used to record unmuted topics.
+                                    - 3 = Followed. Used to record [followed topics](/help/follow-a-topic).
 
-                                    **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                    **Changes**: In Zulip 7.0 (feature level 219), added followed as
                                     a visibility policy option.
+
+                                    In Zulip 7.0 (feature level 170), added unmuted as a visibility
+                                    policy option.
                               additionalProperties: false
                               example:
                                 {
@@ -2262,6 +2286,7 @@ paths:
                                         "title": "Catch up on a stream",
                                         "description": "Messages sent to a stream are seen by everyone subscribed to that stream. Try clicking on one of the stream links below.",
                                         "delay": 0.5,
+                                        "has_trigger": false,
                                       },
                                     ],
                                   "id": 0,
@@ -6380,6 +6405,38 @@ paths:
                         description: |
                           A typical failed JSON response for when a direct message is sent to a user
                           that does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use stream wildcard mentions in this stream.",
+                            "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          of the organization's `wildcard_mention_policy` and large number of
+                          subscribers to the stream.
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use topic wildcard mentions in this topic.",
+                            "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          the message contains a topic wildcard mention, but the user doesn't have
+                          permission to use such a mention in this topic due to the
+                          `wildcard_mention_policy` (and large number of participants in this
+                          specific topic).
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
+                          `wildcard_mention_policy` was not enforced for topic mentions.
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
@@ -7644,6 +7701,38 @@ paths:
                           dialog.
 
                           **Changes**: New in Zulip 7.0 (feature level 172).
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use stream wildcard mentions in this stream.",
+                            "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          of the organization's `wildcard_mention_policy` and large number of
+                          subscribers to the stream.
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use topic wildcard mentions in this topic.",
+                            "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          the message contains a topic wildcard mention, but the user doesn't have
+                          permission to use such a mention in this topic due to the
+                          `wildcard_mention_policy` (and large number of participants in this
+                          specific topic).
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
+                          `wildcard_mention_policy` was not enforced for topic mentions.
     delete:
       operationId: delete-message
       summary: Delete a message
@@ -9445,9 +9534,13 @@ paths:
             - 0 = None. Removes the visibility policy previously set for the topic.
             - 1 = Muted. [Mutes the topic](/help/mute-a-topic) in a stream.
             - 2 = Unmuted. [Unmutes the topic](/help/mute-a-topic) in a muted stream.
+            - 3 = Followed. [Follows the topic](/help/follow-a-topic).
 
             In an unmuted stream, a topic visibility policy of unmuted will have the
             same effect as the "None" visibility policy.
+
+            **Changes**: In Zulip 7.0 (feature level 219), added followed as
+            a visibility policy option.
           schema:
             type: integer
             enum:
@@ -9749,6 +9842,10 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         Get the presence information of all the users in an organization.
+
+        If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
+        setting is set to `true`, presence information of only accessible
+        users are returned.
 
         See [Zulip's developer documentation][subsystems-presence]
         for details on the data model for presence in Zulip.
@@ -10453,15 +10550,20 @@ paths:
           description: |
             Unread count badge (appears in desktop sidebar and browser tab)
 
-            - 1 - All unreads
-            - 2 - Direct messages and mentions
-            - 3 - None
+            - 1 - All unread messages
+            - 2 - DMs, mentions, and followed topics
+            - 3 - DMs and mentions
+            - 4 - None
+
+            **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+            topics` option, renumbering the options to insert it in order.
           schema:
             type: integer
             enum:
               - 1
               - 2
               - 3
+              - 4
           example: 1
         - name: realm_name_in_email_notifications_policy
           in: query
@@ -12734,9 +12836,14 @@ paths:
                             description: |
                               Unread count badge (appears in desktop sidebar and browser tab)
 
-                              - 1 - All unreads
-                              - 2 - Direct messages and mentions
-                              - 3 - None
+                              - 1 - All unread messages
+                              - 2 - DMs, mentions, and followed topics
+                              - 3 - DMs and mentions
+                              - 4 - None
+
+                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              and followed topics` option, renumbering the options to insert it in
+                              order.
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
@@ -12871,9 +12978,13 @@ paths:
 
                                 - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
                                 - 2 = Unmuted. Used to record [unmuted topics](/help/mute-a-topic).
+                                - 3 = Followed. Used to record [followed topics](/help/follow-a-topic).
 
-                                **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                **Changes**: In Zulip 7.0 (feature level 219), added followed as
                                 a visibility policy option.
+
+                                In Zulip 7.0 (feature level 170), added unmuted as a visibility
+                                policy option.
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -14922,9 +15033,14 @@ paths:
                             description: |
                               Unread count badge (appears in desktop sidebar and browser tab)
 
-                              - 1 - All unreads
-                              - 2 - Direct messages and mentions
-                              - 3 - None
+                              - 1 - All unread messages
+                              - 2 - DMs, mentions, and followed topics
+                              - 3 - DMs and mentions
+                              - 4 - None
+
+                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              and followed topics` option, renumbering the options to insert it in
+                              order.
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
@@ -16207,18 +16323,23 @@ paths:
           description: |
             Unread count badge (appears in desktop sidebar and browser tab)
 
-            - 1 - All unreads
-            - 2 - Direct messages and mentions
-            - 3 - None
+            - 1 - All unread messages
+            - 2 - DMs, mentions, and followed topics
+            - 3 - DMs and mentions
+            - 4 - None
 
-            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-            the `PATCH /settings/notifications` endpoint.
+            **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+            topics` option, renumbering the options to insert it in order.
+
+            Before Zulip 5.0 (feature level 80), this setting was managed by the
+            `PATCH /settings/notifications` endpoint.
           schema:
             type: integer
             enum:
               - 1
               - 2
               - 3
+              - 4
           example: 1
         - name: realm_name_in_email_notifications_policy
           in: query
@@ -18376,6 +18497,13 @@ components:
           description: |
             The description of the hotspot, as will be displayed to the
             user.
+        has_trigger:
+          type: boolean
+          description: |
+            The has_trigger is used to identify if the hotspot will activate
+            only when some specific event occurs.
+
+            **Changes**: New in Zulip 8.0 (feature level 230).
     RealmEmoji:
       type: object
       additionalProperties: false

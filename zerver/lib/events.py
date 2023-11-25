@@ -63,6 +63,7 @@ from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
+    get_data_for_inaccessible_user,
     get_users_for_api,
     is_administrator_role,
     max_message_id_for_user,
@@ -231,7 +232,9 @@ def fetch_initial_state_data(
 
     if want("presence"):
         state["presences"] = (
-            {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
+            {}
+            if user_profile is None
+            else get_presences_for_realm(realm, slim_presence, user_profile)
         )
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
@@ -652,7 +655,9 @@ def fetch_initial_state_data(
     if want("user_status"):
         # We require creating an account to access statuses.
         state["user_status"] = (
-            {} if user_profile is None else get_user_status_dict(realm_id=realm.id)
+            {}
+            if user_profile is None
+            else get_user_status_dict(realm=realm, user_profile=user_profile)
         )
 
     if want("user_topic"):
@@ -985,6 +990,18 @@ def apply_event(
                         sub["subscribers"] = [
                             user_id for user_id in sub["subscribers"] if user_id != person_user_id
                         ]
+        elif event["op"] == "remove":
+            if person_user_id in state["raw_users"]:
+                inaccessible_user_dict = get_data_for_inaccessible_user(
+                    user_profile.realm, person_user_id
+                )
+                state["raw_users"][person_user_id] = inaccessible_user_dict
+
+            if include_subscribers:
+                for sub in state["subscriptions"]:
+                    sub["subscribers"] = [
+                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                    ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
@@ -1052,6 +1069,12 @@ def apply_event(
                 state["streams"] = [
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
+
+            state["subscriptions"] = [
+                stream
+                for stream in state["subscriptions"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
 
             state["unsubscribed"] = [
                 stream

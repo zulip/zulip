@@ -130,38 +130,6 @@
                 color: hsl(200deg 79% 66%);
             }
         }
-
-        &[data-placement^="top"] {
-            > .tippy-arrow {
-                &::before {
-                    border-top-color: hsl(235deg 18% 7%);
-                }
-            }
-        }
-
-        &[data-placement^="bottom"] {
-            > .tippy-arrow {
-                &::before {
-                    border-bottom-color: hsl(235deg 18% 7%);
-                }
-            }
-        }
-
-        &[data-placement^="left"] {
-            > .tippy-arrow {
-                &::before {
-                    border-left-color: hsl(235deg 18% 7%);
-                }
-            }
-        }
-
-        &[data-placement^="right"] {
-            > .tippy-arrow {
-                &::before {
-                    border-right-color: hsl(235deg 18% 7%);
-                }
-            }
-        }
     }
 
     .tippy-box:not([data-theme]) {
@@ -582,7 +550,11 @@
     }
 
     .compose-control-buttons-container .divider {
-        color: hsl(236deg 33% 90% / 50%);
+        color: hsl(236deg 33% 90% / 25%);
+    }
+
+    .compose_control_button:hover {
+        background-color: hsl(0deg 0% 100% / 10%);
     }
 
     #compose-content {
@@ -610,13 +582,6 @@
     .spectator_narrow_login_button,
     .top-navbar-border {
         border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    #message_view_header .sub_count {
-        &::before,
-        &::after {
-            color: hsl(0deg 0% 100% / 50%);
-        }
     }
 
     & div.overlay,
@@ -649,12 +614,6 @@
         }
     }
 
-    .tippy-box[data-theme~="light-border"],
-    .dropdown-menu ul,
-    .dropdown .dropdown-menu {
-        background-color: hsl(212deg 32% 14%);
-    }
-
     /* Undo default dropdown background color for dark mode. */
     #searchbox_form .dropdown-menu ul {
         background-color: unset;
@@ -664,7 +623,6 @@
         color: inherit;
     }
 
-    .dropdown .dropdown-menu li.divider,
     .popover hr,
     hr {
         color: hsl(212deg 28% 18%);

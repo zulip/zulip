@@ -120,17 +120,13 @@ function render_group_display_date(group, message_container) {
 }
 
 function update_group_date(group, message_container, prev) {
-    const time = new Date(message_container.msg.timestamp * 1000);
-    const today = new Date();
-
-    // Show the date in the recipient bar if the previous message was from a different day.
+    // Mark whether we should display a date marker because this
+    // message has a different date than the previous one.
     group.date_unchanged = same_day(message_container, prev);
-    group.group_date_html = timerender.render_date(time, today)[0].outerHTML;
 }
 
 function clear_group_date(group) {
     group.date_unchanged = false;
-    group.group_date_html = undefined;
 }
 
 function clear_message_date_divider(msg) {
@@ -421,7 +417,16 @@ export class MessageListView {
             // message didn't include a user mention, then it was a usergroup/wildcard
             // mention (which is the only other option for `mentioned` being true).
             if (message_container.msg.mentioned_me_directly && is_user_mention) {
-                message_container.mention_classname = "direct_mention";
+                // Highlight messages having personal mentions only in DMs and subscribed streams.
+                if (
+                    message_container.msg.type === "private" ||
+                    stream_data.is_user_subscribed(
+                        message_container.msg.stream_id,
+                        people.my_current_user_id(),
+                    )
+                ) {
+                    message_container.mention_classname = "direct_mention";
+                }
             } else {
                 message_container.mention_classname = "group_mention";
             }

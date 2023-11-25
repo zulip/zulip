@@ -209,6 +209,7 @@ class SendMessageRequest:
     service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: Optional[int] = None
+    recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -1663,14 +1664,13 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     return recipient_map
 
 
-def wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
-    # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
-    # allow sending.  In the future, we may want to make this behavior
-    # a default, and also just allow explicitly setting whether this
-    # applies to a stream as an override.
-    if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
-        return True
-
+def wildcard_mention_policy_authorizes_user(sender: UserProfile, realm: Realm) -> bool:
+    """Helper function for 'topic_wildcard_mention_allowed' and
+    'stream_wildcard_mention_allowed' to check if the sender is allowed to use
+    wildcard mentions based on the 'wildcard_mention_policy' setting of that realm.
+    This check is used only if the participants count in the topic or the subscribers
+    count in the stream is greater than 'Realm.WILDCARD_MENTION_THRESHOLD'.
+    """
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_NOBODY:
         return False
 
@@ -1690,6 +1690,24 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) 
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
+
+
+def topic_wildcard_mention_allowed(
+    sender: UserProfile, topic_participant_count: int, realm: Realm
+) -> bool:
+    if topic_participant_count <= Realm.WILDCARD_MENTION_THRESHOLD:
+        return True
+    return wildcard_mention_policy_authorizes_user(sender, realm)
+
+
+def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
+    # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
+    # allow sending.  In the future, we may want to make this behavior
+    # a default, and also just allow explicitly setting whether this
+    # applies to a stream as an override.
+    if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
+        return True
+    return wildcard_mention_policy_authorizes_user(sender, realm)
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[int]) -> None:

@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const fake_buddy_list = {
-    scroll_container_sel: "#whatever",
+    scroll_container_selector: "#whatever",
     $container: {
         data() {},
     },
@@ -84,14 +84,14 @@ test("clear_search", ({override}) => {
 
     // Empty because no users match this search string.
     override(fake_buddy_list, "populate", (user_ids) => {
-        assert.deepEqual(user_ids, {keys: []});
+        assert.deepEqual(user_ids, {all_user_ids: []});
     });
     set_input_val("somevalue");
     assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 
     // Now we're clearing the search string and everyone shows up again.
     override(fake_buddy_list, "populate", (user_ids) => {
-        assert.deepEqual(user_ids, {keys: ordered_user_ids});
+        assert.deepEqual(user_ids, {all_user_ids: ordered_user_ids});
     });
     $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
@@ -166,7 +166,7 @@ test("filter_user_ids", ({override}) => {
             expected_user_ids,
         );
 
-        override(fake_buddy_list, "populate", ({keys: user_ids}) => {
+        override(fake_buddy_list, "populate", ({all_user_ids: user_ids}) => {
             assert.deepEqual(user_ids, expected_user_ids);
         });
 

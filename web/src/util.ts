@@ -192,8 +192,8 @@ export class CachedValue<T> {
     }
 }
 
-export function find_wildcard_mentions(message_content: string): string | null {
-    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream|topic)\*{2})($|\s)/);
+export function find_stream_wildcard_mentions(message_content: string): string | null {
+    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
     if (mention === null) {
         return null;
     }

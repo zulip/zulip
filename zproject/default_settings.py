@@ -309,6 +309,12 @@ TUTORIAL_ENABLED = True
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 
+# The push bouncer expects to get its requests on the root subdomain,
+# but that makes it more of a hassle to test bouncer endpoints in
+# the development environment - so this setting allows us to disable
+# that check.
+DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+
 
 # These settings are not documented in prod_settings_template.py.
 # They should either be documented here, or documented there.
@@ -437,6 +443,9 @@ FIND_TEAM_LINK_DISABLED = True
 ROOT_SUBDOMAIN_ALIASES = ["www"]
 # Whether the root domain is a landing page or can host a realm.
 ROOT_DOMAIN_LANDING_PAGE = False
+
+# Subdomain for serving endpoints to users from self-hosted deployments.
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN: Optional[str] = None
 
 # If using the Zephyr mirroring supervisord configuration, the
 # hostname to connect to in order to transfer credentials from webathena.
@@ -595,3 +604,14 @@ TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
 # notifications enabled. Default is set to avoid excessive Tornado
 # load in large organizations.
 MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
+
+# Limiting guest access to other users via the
+# can_access_all_users_group setting makes presence queries much more
+# expensive. This can be a significant performance problem for
+# installations with thousands of users with many guests limited in
+# this way, pending further optimization of the relevant code paths.
+CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
+
+# General expiry time for signed tokens we may generate
+# in some places through the codebase.
+SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60

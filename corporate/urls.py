@@ -15,12 +15,19 @@ from corporate.views.portico import (
     plans_view,
     team_view,
 )
+from corporate.views.remote_billing_page import (
+    remote_billing_page_realm,
+    remote_billing_page_server,
+    remote_billing_plans_realm,
+    remote_billing_plans_server,
+    remote_server_billing_finalize_login,
+)
 from corporate.views.session import (
     start_card_update_stripe_session,
-    start_retry_payment_intent_session,
+    start_card_update_stripe_session_for_realm_upgrade,
 )
 from corporate.views.support import support_request
-from corporate.views.upgrade import initial_upgrade, sponsorship, upgrade
+from corporate.views.upgrade import remote_realm_upgrade_page, sponsorship, upgrade, upgrade_page
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
@@ -33,7 +40,7 @@ i18n_urlpatterns: Any = [
     # Billing
     path("billing/", billing_home, name="billing_home"),
     path("sponsorship/", sponsorship_request, name="sponsorship_request"),
-    path("upgrade/", initial_upgrade, name="initial_upgrade"),
+    path("upgrade/", upgrade_page, name="upgrade_page"),
     path("support/", support_request),
     path("billing/event_status/", event_status_page, name="event_status_page"),
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
@@ -45,8 +52,8 @@ v1_api_and_json_patterns = [
     rest_path("billing/plan", PATCH=update_plan),
     rest_path("billing/session/start_card_update_session", POST=start_card_update_stripe_session),
     rest_path(
-        "billing/session/start_retry_payment_intent_session",
-        POST=start_retry_payment_intent_session,
+        "upgrade/session/start_card_update_session",
+        POST=start_card_update_stripe_session_for_realm_upgrade,
     ),
     rest_path("billing/event/status", GET=event_status),
 ]
@@ -146,4 +153,20 @@ urlpatterns = list(i18n_urlpatterns)
 urlpatterns += [
     path("api/v1/", include(v1_api_and_json_patterns)),
     path("json/", include(v1_api_and_json_patterns)),
+]
+
+urlpatterns += [
+    path(
+        "remote-billing-login/<signed_billing_access_token>", remote_server_billing_finalize_login
+    ),
+    # Remote server billling endpoints.
+    path("realm/<realm_uuid>/plans", remote_billing_plans_realm, name="remote_billing_plans_realm"),
+    path(
+        "server/<server_uuid>/plans",
+        remote_billing_plans_server,
+        name="remote_billing_plans_server",
+    ),
+    path("realm/<realm_uuid>/billing", remote_billing_page_realm, name="remote_billing_page_realm"),
+    path("server/<server_uuid>/", remote_billing_page_server, name="remote_billing_page_server"),
+    path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
 ]

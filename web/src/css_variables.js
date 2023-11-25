@@ -17,6 +17,13 @@ const ms = 320; // Mobile small
 // Breakpoints for middle column
 const mc = 849; // Middle column as wide as it appears after the `sm` breakpoint
 
+// Breakpoints for showing and hiding compose buttons which do not always fit in
+// a single row below the compose box
+const cb1 = 1240;
+const cb2 = 998;
+const cb3 = 676;
+const cb4 = 448;
+
 module.exports = {
     media_breakpoints: {
         xs_min: xs + "px",
@@ -28,6 +35,10 @@ module.exports = {
         ml_min: ml + "px",
         mm_min: mm + "px",
         ms_min: ms + "px",
+        cb1_min: cb1 + "px",
+        cb2_min: cb2 + "px",
+        cb3_min: cb3 + "px",
+        cb4_min: cb4 + "px",
     },
 
     media_breakpoints_num: {

@@ -2,6 +2,7 @@ import logging
 from functools import wraps
 from typing import Any, Callable
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.urls import path
 from django.urls.resolvers import URLPattern
@@ -81,8 +82,11 @@ def validate_remote_server(
 
     if remote_server.deactivated:
         raise RemoteServerDeactivatedError
-
-    if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+    if (
+        get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        and not settings.DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK
+    ):
+        # Sometimes we may want to test push bouncer logic in development.
         raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
     RequestNotes.get_notes(request).remote_server = remote_server
     process_client(request)

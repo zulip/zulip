@@ -35,8 +35,7 @@ from zerver.models import UserProfile
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
-DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n```quote\n### {title}\n{body}\n```"
-DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussion #{discussion_id}]({discussion_url}):\n```quote\n{body}\n```"
+DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~"
 
 
 class Helper:
@@ -104,7 +103,7 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
         title=pull_request["title"].tame(check_string) if include_title else None,
     )
     if assignee:
-        return f"{base_message[:-1]} to {stringified_assignee}."
+        return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
     return base_message
 
 
@@ -170,9 +169,9 @@ def get_issue_body(helper: Helper) -> str:
     if has_assignee:
         stringified_assignee = payload["assignee"]["login"].tame(check_string)
         if action == "assigned":
-            return f"{base_message[:-1]} to {stringified_assignee}."
+            return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
         elif action == "unassigned":
-            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from")
+            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from", 1)
 
     return base_message
 
@@ -180,23 +179,17 @@ def get_issue_body(helper: Helper) -> str:
 def get_issue_comment_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
-    action = payload["action"].tame(check_string)
     comment = payload["comment"]
     issue = payload["issue"]
 
-    if action == "created":
-        action = "[commented]"
-    else:
-        action = f"{action} a [comment]"
-    action += "({}) on".format(comment["html_url"].tame(check_string))
-
-    return get_issue_event_message(
+    return get_pull_request_event_message(
         user_name=get_sender_name(payload),
-        action=action,
+        action=get_comment_action(payload),
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
         message=comment["body"].tame(check_string),
         title=issue["title"].tame(check_string) if include_title else None,
+        type="PR" if is_pull_request_comment_event(payload) else "issue",
     )
 
 
@@ -330,13 +323,25 @@ def get_discussion_body(helper: Helper) -> str:
 
 def get_discussion_comment_body(helper: Helper) -> str:
     payload = helper.payload
-    return DISCUSSION_COMMENT_TEMPLATE.format(
-        author=get_sender_name(payload),
-        body=payload["comment"]["body"].tame(check_string),
-        discussion_url=payload["discussion"]["html_url"].tame(check_string),
-        comment_url=payload["comment"]["html_url"].tame(check_string),
-        discussion_id=payload["discussion"]["number"].tame(check_int),
+    return get_pull_request_event_message(
+        user_name=get_sender_name(payload),
+        action=get_comment_action(payload),
+        url=payload["discussion"]["html_url"].tame(check_string),
+        number=payload["discussion"]["number"].tame(check_int),
+        message=payload["comment"]["body"].tame(check_string),
+        title=payload["discussion"]["title"].tame(check_string) if helper.include_title else None,
+        type="discussion",
     )
+
+
+def get_comment_action(payload: WildValue) -> str:
+    action = payload["action"].tame(check_string)
+    if action == "created":
+        action = "[commented]"
+    else:
+        action = f"{action} a [comment]"
+    action += "({}) on".format(payload["comment"]["html_url"].tame(check_string))
+    return action
 
 
 def get_public_body(helper: Helper) -> str:
@@ -395,7 +400,7 @@ def get_team_body(helper: Helper) -> str:
     if "description" in changes:
         actor = get_sender_name(payload)
         new_description = payload["team"]["description"].tame(check_string)
-        return f"**{actor}** changed the team description to:\n```quote\n{new_description}\n```"
+        return f"**{actor}** changed the team description to:\n\n~~~ quote\n{new_description}\n~~~"
     if "name" in changes:
         original_name = changes["name"]["from"].tame(check_string)
         new_name = payload["team"]["name"].tame(check_string)
@@ -666,6 +671,15 @@ def is_merge_queue_push_event(payload: WildValue) -> bool:
     return payload["ref"].tame(check_string).startswith("refs/heads/gh-readonly-queue/")
 
 
+def is_pull_request_comment_event(payload: WildValue) -> bool:
+    # When a comment is made on a PR, the event still has the header
+    # "issue_comment", but the payload has a "pull_request" key.
+    # This is just a workaround to get the correct topic.
+    if "pull_request" in payload["issue"]:
+        return True
+    return False
+
+
 def get_topic_based_on_type(payload: WildValue, event: str) -> str:
     if "pull_request" in event:
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
@@ -675,9 +689,10 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
             title=payload["pull_request"]["title"].tame(check_string),
         )
     elif event.startswith("issue"):
+        type_for_topic = "PR" if is_pull_request_comment_event(payload) else "issue"
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
-            type="issue",
+            type=type_for_topic,
             id=payload["issue"]["number"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
         )

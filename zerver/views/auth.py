@@ -394,7 +394,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
         from corporate.lib.stripe import is_free_trial_offer_enabled
 
         if is_free_trial_offer_enabled():
-            redirect_to = "{}?onboarding=true".format(reverse("initial_upgrade"))
+            redirect_to = reverse("upgrade_page")
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)

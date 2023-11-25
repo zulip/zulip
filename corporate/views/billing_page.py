@@ -4,27 +4,25 @@ from typing import Any, Dict, Optional
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 
-from corporate.lib.stripe import (
-    RealmBillingSession,
-    do_change_plan_status,
-    downgrade_at_the_end_of_billing_cycle,
-    downgrade_now_without_creating_additional_invoices,
-    get_latest_seat_count,
-    update_license_ledger_for_manual_plan,
-    validate_licenses,
-)
-from corporate.models import CustomerPlan, get_current_plan_by_realm, get_customer_by_realm
+from corporate.lib.stripe import RealmBillingSession, UpdatePlanRequest
+from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.decorator import require_billing_access, zulip_login_required
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_bool, check_int, check_int_in, check_string
+from zerver.lib.validator import check_int, check_int_in, check_string
 from zerver.models import Realm, UserProfile
 
 billing_logger = logging.getLogger("corporate.stripe")
+
+PAID_PLANS = [
+    Realm.PLAN_TYPE_STANDARD,
+    Realm.PLAN_TYPE_PLUS,
+]
+
+
+def is_realm_on_paid_plan(realm: Realm) -> bool:
+    return realm.plan_type in PAID_PLANS
 
 
 def add_sponsorship_info_to_context(context: Dict[str, Any], user_profile: UserProfile) -> None:
@@ -53,10 +51,21 @@ def sponsorship_request(request: HttpRequest) -> HttpResponse:
 
     customer = get_customer_by_realm(user.realm)
     if customer is not None and customer.sponsorship_pending:
+        if is_realm_on_paid_plan(user.realm):
+            return HttpResponseRedirect(reverse("billing_home"))
+
         context["is_sponsorship_pending"] = True
 
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         context["is_sponsored"] = True
+
+    if customer is not None:
+        plan = get_current_plan_by_customer(customer)
+        if plan is not None:
+            context["plan_name"] = plan.name
+            context["free_trial"] = plan.is_free_trial()
+        else:
+            context["plan_name"] = "Zulip Cloud Free"
 
     add_sponsorship_info_to_context(context, user)
     return render(request, "corporate/sponsorship.html", context=context)
@@ -66,7 +75,6 @@ def sponsorship_request(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def billing_home(
     request: HttpRequest,
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
     success_message: str = REQ(default="", str_validator=check_string),
 ) -> HttpResponse:
     user = request.user
@@ -84,15 +92,10 @@ def billing_home(
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         return HttpResponseRedirect(reverse("sponsorship_request"))
 
-    PAID_PLANS = [
-        Realm.PLAN_TYPE_STANDARD,
-        Realm.PLAN_TYPE_PLUS,
-    ]
-
     customer = get_customer_by_realm(user.realm)
     if customer is not None and customer.sponsorship_pending:
         # Don't redirect to sponsorship page if the realm is on a paid plan
-        if user.realm.plan_type not in PAID_PLANS:
+        if not is_realm_on_paid_plan(user.realm):
             return HttpResponseRedirect(reverse("sponsorship_request"))
         # If the realm is on a paid plan, show the sponsorship pending message
         # TODO: Add a sponsorship pending message to the billing page
@@ -102,20 +105,20 @@ def billing_home(
         return HttpResponseRedirect(reverse("plans"))
 
     if customer is None:
-        from corporate.views.upgrade import initial_upgrade
+        from corporate.views.upgrade import upgrade_page
 
-        return HttpResponseRedirect(reverse(initial_upgrade))
+        return HttpResponseRedirect(reverse(upgrade_page))
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
-        from corporate.views.upgrade import initial_upgrade
+        from corporate.views.upgrade import upgrade_page
 
-        return HttpResponseRedirect(reverse(initial_upgrade))
+        return HttpResponseRedirect(reverse(upgrade_page))
 
     billing_session = RealmBillingSession(user=None, realm=user.realm)
     main_context = billing_session.get_billing_page_context()
     if main_context:
         context.update(main_context)
-        context.update({"onboarding": onboarding, "success_message": success_message})
+        context["success_message"] = success_message
 
     return render(request, "corporate/billing.html", context=context)
 
@@ -132,6 +135,7 @@ def update_plan(
                 CustomerPlan.ACTIVE,
                 CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
                 CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+                CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE,
                 CustomerPlan.ENDED,
             ]
         ),
@@ -142,87 +146,11 @@ def update_plan(
         "licenses_at_next_renewal", json_validator=check_int, default=None
     ),
 ) -> HttpResponse:
-    plan = get_current_plan_by_realm(user.realm)
-    assert plan is not None  # for mypy
-
-    realm = plan.customer.realm
-    billing_session = RealmBillingSession(user=None, realm=realm)
-    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-        plan, timezone_now()
+    update_plan_request = UpdatePlanRequest(
+        status=status,
+        licenses=licenses,
+        licenses_at_next_renewal=licenses_at_next_renewal,
     )
-    if new_plan is not None:
-        raise JsonableError(
-            _("Unable to update the plan. The plan has been expired and replaced with a new plan.")
-        )
-
-    if last_ledger_entry is None:
-        raise JsonableError(_("Unable to update the plan. The plan has ended."))
-
-    if status is not None:
-        if status == CustomerPlan.ACTIVE:
-            assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-            do_change_plan_status(plan, status)
-        elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
-            assert plan.status == CustomerPlan.ACTIVE
-            downgrade_at_the_end_of_billing_cycle(user.realm)
-        elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
-            assert plan.billing_schedule == CustomerPlan.MONTHLY
-            assert plan.status == CustomerPlan.ACTIVE
-            assert plan.fixed_price is None
-            do_change_plan_status(plan, status)
-        elif status == CustomerPlan.ENDED:
-            assert plan.is_free_trial()
-            downgrade_now_without_creating_additional_invoices(user.realm)
-        return json_success(request)
-
-    if licenses is not None:
-        if plan.automanage_licenses:
-            raise JsonableError(
-                _(
-                    "Unable to update licenses manually. Your plan is on automatic license management."
-                )
-            )
-        if last_ledger_entry.licenses == licenses:
-            raise JsonableError(
-                _(
-                    "Your plan is already on {licenses} licenses in the current billing period."
-                ).format(licenses=licenses)
-            )
-        if last_ledger_entry.licenses > licenses:
-            raise JsonableError(
-                _("You cannot decrease the licenses in the current billing period.")
-            )
-        validate_licenses(
-            plan.charge_automatically,
-            licenses,
-            get_latest_seat_count(user.realm),
-            plan.customer.exempt_from_license_number_check,
-        )
-        update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
-        return json_success(request)
-
-    if licenses_at_next_renewal is not None:
-        if plan.automanage_licenses:
-            raise JsonableError(
-                _(
-                    "Unable to update licenses manually. Your plan is on automatic license management."
-                )
-            )
-        if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
-            raise JsonableError(
-                _(
-                    "Your plan is already scheduled to renew with {licenses_at_next_renewal} licenses."
-                ).format(licenses_at_next_renewal=licenses_at_next_renewal)
-            )
-        validate_licenses(
-            plan.charge_automatically,
-            licenses_at_next_renewal,
-            get_latest_seat_count(user.realm),
-            plan.customer.exempt_from_license_number_check,
-        )
-        update_license_ledger_for_manual_plan(
-            plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
-        )
-        return json_success(request)
-
-    raise JsonableError(_("Nothing to change."))
+    billing_session = RealmBillingSession(user=user)
+    billing_session.do_update_plan(update_plan_request)
+    return json_success(request)

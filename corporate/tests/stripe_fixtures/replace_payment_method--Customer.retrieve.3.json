@@ -1,16 +1,16 @@
 {
   "address": null,
   "balance": 0,
-  "created": 1000000000,
-  "currency": "usd",
-  "default_currency": "usd",
+  "created": 1700592386,
+  "currency": null,
+  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_NORMALIZED0001",
-  "invoice_prefix": "NORMA01",
+  "id": "cus_P358SWUcASaSWt",
+  "invoice_prefix": "69DA5EF9",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": {
@@ -28,7 +28,7 @@
         "phone": null
       },
       "card": {
-        "brand": "mastercard",
+        "brand": "visa",
         "checks": {
           "address_line1_check": null,
           "address_postal_code_check": null,
@@ -37,13 +37,13 @@
         "country": "US",
         "exp_month": 11,
         "exp_year": 2024,
-        "fingerprint": "NORMALIZED000002",
+        "fingerprint": "9XKsMixKBi6kIIzd",
         "funding": "credit",
         "generated_from": null,
-        "last4": "4444",
+        "last4": "4242",
         "networks": {
           "available": [
-            "mastercard"
+            "visa"
           ],
           "preferred": null
         },
@@ -52,9 +52,9 @@
         },
         "wallet": null
       },
-      "created": 1000000000,
-      "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OAbf2DEQaroqDjs6O4LRU3U",
+      "created": 1700592389,
+      "customer": "cus_P358SWUcASaSWt",
+      "id": "pm_1OEyxsDEQaroqDjsklOoFXrh",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -65,11 +65,11 @@
   },
   "livemode": false,
   "metadata": {
-    "realm_id": "1",
+    "realm_id": "2",
     "realm_str": "zulip"
   },
   "name": null,
-  "next_invoice_sequence": 3,
+  "next_invoice_sequence": 1,
   "object": "customer",
   "phone": null,
   "preferred_locales": [],

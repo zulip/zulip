@@ -203,3 +203,12 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
         "name_formatted_included": True,
     }
 }
+
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
+
+# You can uncomment these lines to use the development environment
+# server as a dummy push bouncer for itself, to test functionalities
+# such as register_server or update_analytics_counts management commands
+# or others involving new bouncer-side logic.
+# DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
+# PUSH_NOTIFICATION_BOUNCER_URL = "http://localhost:9991"

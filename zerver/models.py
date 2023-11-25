@@ -830,7 +830,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             id_field_name="can_access_all_users_group_id",
-            allowed_system_groups=[SystemGroups.EVERYONE],
+            allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
     )
 
@@ -1680,11 +1680,13 @@ class UserBaseSettings(models.Model):
     enable_online_push_notifications = models.BooleanField(default=True)
 
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
-    DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
-    DESKTOP_ICON_COUNT_DISPLAY_NONE = 3
+    DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION_FOLLOWED_TOPIC = 2
+    DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION = 3
+    DESKTOP_ICON_COUNT_DISPLAY_NONE = 4
     DESKTOP_ICON_COUNT_DISPLAY_CHOICES = [
         DESKTOP_ICON_COUNT_DISPLAY_MESSAGES,
-        DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE,
+        DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION,
+        DESKTOP_ICON_COUNT_DISPLAY_DM_MENTION_FOLLOWED_TOPIC,
         DESKTOP_ICON_COUNT_DISPLAY_NONE,
     ]
     desktop_icon_count_display = models.PositiveSmallIntegerField(
@@ -2048,6 +2050,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     avatar_version = models.PositiveSmallIntegerField(default=1)
     avatar_hash = models.CharField(null=True, max_length=64)
 
+    # TODO: TUTORIAL_STATUS was originally an optimization designed to
+    # allow us to skip querying the UserHotspot table when loading
+    # /. This optimization is no longer effective, so it's possible we
+    # should delete it.
     TUTORIAL_WAITING = "W"
     TUTORIAL_STARTED = "S"
     TUTORIAL_FINISHED = "F"
@@ -4780,6 +4786,7 @@ class AbstractRealmAuditLog(models.Model):
     CUSTOMER_CREATED = 501
     CUSTOMER_PLAN_CREATED = 502
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 503
+    CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 504
 
     STREAM_CREATED = 601
     STREAM_DEACTIVATED = 602
@@ -4806,9 +4813,13 @@ class AbstractRealmAuditLog(models.Model):
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
     # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
-    REMOTE_SERVER_CREATED = 10215
-    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
     REMOTE_SERVER_DEACTIVATED = 10201
+    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
+    REMOTE_SERVER_DISCOUNT_CHANGED = 10209
+    REMOTE_SERVER_SPONSORSHIP_APPROVED = 10210
+    REMOTE_SERVER_BILLING_METHOD_CHANGED = 10211
+    REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
+    REMOTE_SERVER_CREATED = 10215
 
     # This value is for RemoteRealmAuditLog entries tracking changes to the
     # RemoteRealm model resulting from modified realm information sent to us

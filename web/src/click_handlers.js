@@ -346,6 +346,9 @@ export function initialize() {
         const row_id = rows.id($(this).closest(".message_row"));
         $(`#edit_form_${CSS.escape(row_id)} .file_input`).trigger("click");
     });
+    $("body").on("focus", ".message_edit_form .message_edit_content", (e) => {
+        compose_state.set_last_focused_compose_type_input(e.target);
+    });
 
     $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
@@ -697,6 +700,10 @@ export function initialize() {
 
     $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
+    });
+
+    $("body").on("focus", "#compose-textarea", (e) => {
+        compose_state.set_last_focused_compose_type_input(e.target);
     });
 
     // LEFT SIDEBAR

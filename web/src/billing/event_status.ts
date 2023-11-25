@@ -10,6 +10,7 @@ const stripe_response_schema = z.object({
         type: z.string(),
         stripe_payment_intent_id: z.string().optional(),
         status: z.string(),
+        is_manual_license_management_upgrade_session: z.boolean().optional(),
         event_handler: z
             .object({
                 status: z.string(),
@@ -25,13 +26,8 @@ const stripe_response_schema = z.object({
 
 type StripeSession = z.infer<typeof stripe_response_schema>["session"];
 
-function update_status_and_redirect(status_message: string, redirect_to: string): void {
-    $("#webhook-loading").hide();
-    $("#webhook-success").show();
-    $("#webhook-success").text(status_message);
-    setTimeout(() => {
-        window.location.replace(redirect_to);
-    }, 5000);
+function update_status_and_redirect(redirect_to: string): void {
+    window.location.replace(redirect_to);
 }
 
 function show_error_message(message: string): void {
@@ -47,30 +43,20 @@ function show_html_error_message(rendered_message: string): void {
 }
 
 function handle_session_complete_event(session: StripeSession): void {
-    let message = "";
     let redirect_to = "";
     switch (session.type) {
-        case "upgrade_from_billing_page":
-        case "retry_upgrade_with_another_payment_method":
-            message = "We have received your billing details. Attempting to create charge...";
-            redirect_to = `/billing/event_status?stripe_payment_intent_id=${session.stripe_payment_intent_id!}`;
-            break;
-        case "free_trial_upgrade_from_billing_page":
-            message =
-                "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.";
+        case "card_update_from_billing_page":
             redirect_to = "/billing/";
             break;
-        case "free_trial_upgrade_from_onboarding_page":
-            message =
-                "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.";
-            redirect_to = "/billing?onboarding=true";
+        case "card_update_from_upgrade_page":
+            if (session.is_manual_license_management_upgrade_session) {
+                redirect_to = "/upgrade/?manual_license_management=true";
+            } else {
+                redirect_to = "/upgrade/";
+            }
             break;
-        case "card_update_from_billing_page":
-            message =
-                "Your card has been updated. You would be redirected to the billing page soon.";
-            redirect_to = "/billing#payment-method";
     }
-    update_status_and_redirect(message, redirect_to);
+    update_status_and_redirect(redirect_to);
 }
 
 async function stripe_checkout_session_status_check(stripe_session_id: string): Promise<boolean> {
@@ -159,8 +145,10 @@ export async function stripe_payment_intent_status_check(
         case "succeeded":
             if (response_data.payment_intent.event_handler!.status === "succeeded") {
                 update_status_and_redirect(
-                    "Charge created successfully. Your organization has been upgraded. Redirecting to billing page...",
-                    "/billing/",
+                    "/billing/?success_message=" +
+                        encodeURIComponent(
+                            "Your organization has been upgraded to Zulip Cloud Standard.",
+                        ),
                 );
                 return true;
             }

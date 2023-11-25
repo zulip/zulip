@@ -36,7 +36,7 @@ edit the content of a message sent by another user.
 1. Edit the content of the message.
 
 1. Approve by tapping the **checkmark**
-   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="help-center-icon"/>)
    button in the bottom right corner of the app.
 
 {end_tabs}

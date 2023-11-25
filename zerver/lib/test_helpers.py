@@ -531,6 +531,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "scim/v2/ServiceProviderConfig",
             "scim/v2/Groups(?:/(?P<uuid>[^/]+))?",
             "scim/v2/Groups/.search",
+            # TODO: This endpoint and the rest of its system are a work in progress,
+            # we are not testing it yet.
+            "self-hosted-billing/",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 

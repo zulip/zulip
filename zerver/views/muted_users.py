@@ -15,6 +15,14 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
     if user_profile.id == muted_user_id:
         raise JsonableError(_("Cannot mute self"))
 
+    # Arguably, access_used_by_id is not quite the right check; in the
+    # corner case of a limited guest trying to mute a deactivated user
+    # who they no longer have access to because the user was
+    # deactivated... it might from a policy perspective be OK to allow
+    # that operation even though this API will reject it.
+    #
+    # But it's quite possibly something nobody will try to do, so we
+    # just reuse the existing shared code path.
     muted_user = access_user_by_id(
         user_profile, muted_user_id, allow_bots=True, allow_deactivated=True, for_admin=False
     )

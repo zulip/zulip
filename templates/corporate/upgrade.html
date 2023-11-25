@@ -9,7 +9,7 @@
 <div id="upgrade-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Upgrade {{ realm.name }} to
+            <h1>Upgrade {{ customer_name }} to
                 {% if free_trial_days %}
                     Zulip Cloud Standard free trial
                 {% else %}
@@ -25,13 +25,6 @@
                     <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}" />
                     <input type="hidden" name="salt" value="{{ salt }}" />
                     <input type="hidden" name="billing_modality" value="charge_automatically" />
-                    {% if onboarding %}
-                    <input type="hidden" name="onboarding" value="true" />
-                    {% endif %}
-                    {% if onboarding and free_trial_days %}
-                    <p id="onboarding-free-trial-not-ready" class="not-editable-realm-field"><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
-                    <hr/>
-                    {% endif %}
 
                     <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if free_trial_days %}
@@ -94,6 +87,9 @@
                                 {{ 'user' if seat_count == 1 else 'users' }}
                             </span> x
                             <span class="due-today-duration"></span>
+                            {% if discount_percent %}
+                            <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
+                            {% endif %}
                             <h1>$<span class="due-today-price"></span></h1>
                         </div>
                     </div>
@@ -134,10 +130,35 @@
                         </p>
                     </div>
                     {% endif %}
+                    {% if not is_demo_organization %}
+                    <div {% if payment_method %} id="upgrade-payment-info"{% endif %}>
+                        {% if payment_method %}
+                        <div class="input-box upgrade-page-field no-validation" id="upgrade-payment-menthod-wrapper">
+                            <label for="customer-payment-method-for-upgrade" class="inline-block label-title">Payment method</label>
+                            <div id="customer-payment-method-for-upgrade" class="not-editable-realm-field">
+                                {{ payment_method }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="upgrade-add-card-container input-box upgrade-page-field">
+                            <button id="upgrade-add-card-button" {% if payment_method %}class="update-card-button"{% endif %}>
+                                <span id="upgrade-add-card-button-text">
+                                    {% if payment_method %}
+                                    Update card
+                                    {% else %}
+                                    Add card
+                                    {% endif %}
+                                </span>
+                                <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                        <div id="upgrade-cardchange-error" class="alert alert-danger upgrade-page-error"></div>
+                    </div>
+                    {% endif %}
                     <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
-                        <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}">
-                            <span id="org-upgrade-button-span">
+                        <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not payment_method %}disabled{% endif %}>
+                            <span id="org-upgrade-button-text">
                                 {% if free_trial_days %}
                                     Start {{ free_trial_days }} day free trial
                                 {% else %}
@@ -146,13 +167,13 @@
                             </span>
                             <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
-                        <div id="autopay-error" class="alert alert-danger upgrade-page-error"></div>
+                        <div id="autopay-error" class="alert alert-danger upgrade-page-error hide"></div>
                     </div>
                 </form>
-                {% if error_message %}
-                <div class="alert alert-danger" id="upgrade-error-message-box">
-                    {{ error_message }}
-                </div>
+                {% if manual_license_management %}
+                <form id="upgrade-cardchange-form">
+                    <input type="hidden" name="manual_license_management" value="true" />
+                </form>
                 {% endif %}
                 <div class="input-box upgrade-page-field">
                     <div class="support-link not-editable-realm-field">

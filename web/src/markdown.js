@@ -85,13 +85,22 @@ function contains_problematic_linkifier({content, get_linkifier_map}) {
     return false;
 }
 
+function contains_topic_wildcard_mention(content) {
+    // If the content has topic wildcard mention (@**topic**) then don't
+    // render it locally. We have only server-side restriction check for
+    // @topic mention. This helps to show the error message (no permission)
+    // via the compose banner and not to local-echo then fail due to restriction.
+    return content.includes("@**topic**");
+}
+
 function content_contains_backend_only_syntax({content, get_linkifier_map}) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
     return (
         contains_preview_link(content) ||
-        contains_problematic_linkifier({content, get_linkifier_map})
+        contains_problematic_linkifier({content, get_linkifier_map}) ||
+        contains_topic_wildcard_mention(content)
     );
 }
 

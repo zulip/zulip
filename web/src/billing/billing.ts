@@ -1,8 +1,19 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import * as portico_modals from "../portico/portico_modals";
 
 import * as helpers from "./helpers";
+
+const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
+
+enum CustomerPlanStatus {
+    ACTIVE = 1,
+    DOWNGRADE_AT_END_OF_CYCLE = 2,
+    FREE_TRIAL = 3,
+    SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4,
+    SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6,
+}
 
 export function create_update_current_cycle_license_request(): void {
     $("#current-manual-license-count-update-button .billing-button-text").text("");
@@ -254,6 +265,61 @@ export function initialize(): void {
                 $("#next-manual-license-count-update-button").toggleClass("hide", false);
             }
         }, 300); // Wait for 300ms after the user stops typing
+    });
+
+    $<HTMLInputElement>(".billing-frequency-select").on("change", function () {
+        const $wrapper = $(".org-billing-frequency-wrapper");
+        const switch_to_annual_eoc = $wrapper.attr("data-switch-to-annual-eoc") === "true";
+        const switch_to_monthly_eoc = $wrapper.attr("data-switch-to-monthly-eoc") === "true";
+        const free_trial = $wrapper.attr("data-free-trial") === "true";
+        const downgrade_at_end_of_cycle = $wrapper.attr("data-downgrade-eoc") === "true";
+        const current_billing_frequency = $wrapper.attr("data-current-billing-frequency");
+        const billing_frequency_selected = billing_frequency_schema.parse(this.value);
+
+        if (
+            (switch_to_annual_eoc && billing_frequency_selected === "Monthly") ||
+            (switch_to_monthly_eoc && billing_frequency_selected === "Annual")
+        ) {
+            $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
+            let new_status = CustomerPlanStatus.ACTIVE;
+            if (downgrade_at_end_of_cycle) {
+                new_status = CustomerPlanStatus.DOWNGRADE_AT_END_OF_CYCLE;
+            } else if (free_trial) {
+                new_status = CustomerPlanStatus.FREE_TRIAL;
+            }
+            $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
+        } else if (current_billing_frequency !== billing_frequency_selected) {
+            $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
+            let new_status = CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
+            if (billing_frequency_selected === "Monthly") {
+                new_status = CustomerPlanStatus.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE;
+            }
+            $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
+        } else {
+            $("#org-billing-frequency-confirm-button").toggleClass("hide", true);
+        }
+    });
+
+    $("#org-billing-frequency-confirm-button").on("click", (e) => {
+        e.preventDefault();
+        void $.ajax({
+            type: "patch",
+            url: "/json/billing/plan",
+            data: {
+                status: $("#org-billing-frequency-confirm-button").attr("data-status"),
+            },
+            success() {
+                window.location.replace(
+                    "/billing/?success_message=" +
+                        encodeURIComponent("Billing frequency has been updated."),
+                );
+            },
+            error(xhr) {
+                if (xhr.responseJSON?.msg) {
+                    $("#org-billing-frequency-change-error").text(xhr.responseJSON.msg);
+                }
+            },
+        });
     });
 }
 
