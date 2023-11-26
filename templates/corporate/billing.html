@@ -41,7 +41,7 @@
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
                     <label for="org-billing-frequency">Billing frequency</label>
-                    {% if free_trial or downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle %}
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle %}
                     <div class="not-editable-realm-field">
                         {{ billing_frequency }}
                     </div>

@@ -13,6 +13,8 @@ enum CustomerPlanStatus {
     FREE_TRIAL = 3,
     SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4,
     SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6,
+    SWITCH_NOW_FREE_TRIAL_FROM_ANNUAL_TO_MONTHLY_CYCLE = 8,
+    SWITCH_NOW_FREE_TRIAL_FROM_MONTHLY_TO_ANNUAL_CYCLE = 9,
 }
 
 export function create_update_current_cycle_license_request(): void {
@@ -290,9 +292,13 @@ export function initialize(): void {
             $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
         } else if (current_billing_frequency !== billing_frequency_selected) {
             $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
-            let new_status = CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
+            let new_status = free_trial
+                ? CustomerPlanStatus.SWITCH_NOW_FREE_TRIAL_FROM_MONTHLY_TO_ANNUAL_CYCLE
+                : CustomerPlanStatus.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE;
             if (billing_frequency_selected === "Monthly") {
-                new_status = CustomerPlanStatus.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE;
+                new_status = free_trial
+                    ? CustomerPlanStatus.SWITCH_NOW_FREE_TRIAL_FROM_ANNUAL_TO_MONTHLY_CYCLE
+                    : CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
             }
             $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
         } else {

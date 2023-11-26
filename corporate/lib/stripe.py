@@ -1014,8 +1014,13 @@ class BillingSession(ABC):
     ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
         last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
         next_billing_cycle = self.get_next_billing_cycle(plan)
+        event_in_next_billing_cycle = next_billing_cycle <= event_time
+        trigger_updates_now = plan.status in (
+            CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_ANNUAL_TO_MONTHLY_CYCLE,
+            CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_MONTHLY_TO_ANNUAL_CYCLE,
+        )
 
-        if next_billing_cycle <= event_time and last_ledger_entry is not None:
+        if (event_in_next_billing_cycle or trigger_updates_now) and last_ledger_entry is not None:
             licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             assert licenses_at_next_renewal is not None
             if plan.status == CustomerPlan.ACTIVE:
@@ -1183,6 +1188,104 @@ class BillingSession(ABC):
 
             if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
                 self.process_downgrade(plan)
+
+            if plan.status == CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_ANNUAL_TO_MONTHLY_CYCLE:
+                if plan.fixed_price is not None:  # nocoverage
+                    raise BillingError("Customer is already on monthly fixed plan.")
+
+                plan.status = CustomerPlan.ENDED
+                plan.save(update_fields=["status"])
+
+                discount = plan.customer.default_discount or plan.discount
+                price_per_license = get_price_per_license(
+                    tier=plan.tier,
+                    billing_schedule=CustomerPlan.MONTHLY,
+                    discount=plan.discount,
+                )
+
+                new_plan = CustomerPlan.objects.create(
+                    customer=plan.customer,
+                    billing_schedule=CustomerPlan.MONTHLY,
+                    automanage_licenses=plan.automanage_licenses,
+                    charge_automatically=plan.charge_automatically,
+                    price_per_license=price_per_license,
+                    discount=discount,
+                    # Billing cycle anchor stays the same.
+                    billing_cycle_anchor=plan.billing_cycle_anchor,
+                    tier=plan.tier,
+                    status=CustomerPlan.FREE_TRIAL,
+                    # Next invoice date stays the same
+                    next_invoice_date=plan.next_invoice_date,
+                    invoiced_through=None,
+                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                )
+
+                new_plan_ledger_entry = LicenseLedger.objects.create(
+                    plan=new_plan,
+                    is_renewal=True,
+                    event_time=event_time,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+
+                self.write_to_audit_log(
+                    event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN,
+                    event_time=event_time,
+                    extra_data={
+                        "annual_plan_id": plan.id,
+                        "monthly_plan_id": new_plan.id,
+                    },
+                )
+                return new_plan, new_plan_ledger_entry
+
+            if plan.status == CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_MONTHLY_TO_ANNUAL_CYCLE:
+                if plan.fixed_price is not None:  # nocoverage
+                    raise BillingError("Customer is already on monthly fixed plan.")
+
+                plan.status = CustomerPlan.ENDED
+                plan.save(update_fields=["status"])
+
+                discount = plan.customer.default_discount or plan.discount
+                price_per_license = get_price_per_license(
+                    tier=plan.tier,
+                    billing_schedule=CustomerPlan.ANNUAL,
+                    discount=plan.discount,
+                )
+
+                new_plan = CustomerPlan.objects.create(
+                    customer=plan.customer,
+                    billing_schedule=CustomerPlan.ANNUAL,
+                    automanage_licenses=plan.automanage_licenses,
+                    charge_automatically=plan.charge_automatically,
+                    price_per_license=price_per_license,
+                    discount=discount,
+                    # Billing cycle anchor stays the same.
+                    billing_cycle_anchor=plan.billing_cycle_anchor,
+                    tier=plan.tier,
+                    status=CustomerPlan.FREE_TRIAL,
+                    # Next invoice date stays the same
+                    next_invoice_date=plan.next_invoice_date,
+                    invoiced_through=None,
+                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                )
+
+                new_plan_ledger_entry = LicenseLedger.objects.create(
+                    plan=new_plan,
+                    is_renewal=True,
+                    event_time=event_time,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+
+                self.write_to_audit_log(
+                    event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
+                    event_time=event_time,
+                    extra_data={
+                        "annual_plan_id": new_plan.id,
+                        "monthly_plan_id": plan.id,
+                    },
+                )
+                return new_plan, new_plan_ledger_entry
             return None, None
         return None, last_ledger_entry
 
@@ -1439,6 +1542,18 @@ class BillingSession(ABC):
             elif status == CustomerPlan.FREE_TRIAL:
                 assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
                 do_change_plan_status(plan, status)
+            elif status == CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_ANNUAL_TO_MONTHLY_CYCLE:
+                assert plan.billing_schedule == CustomerPlan.ANNUAL
+                assert plan.status == CustomerPlan.FREE_TRIAL
+                do_change_plan_status(
+                    plan, CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_ANNUAL_TO_MONTHLY_CYCLE
+                )
+            elif status == CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_MONTHLY_TO_ANNUAL_CYCLE:
+                assert plan.billing_schedule == CustomerPlan.MONTHLY
+                assert plan.status == CustomerPlan.FREE_TRIAL
+                do_change_plan_status(
+                    plan, CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_MONTHLY_TO_ANNUAL_CYCLE
+                )
             return
 
         licenses = update_plan_request.licenses

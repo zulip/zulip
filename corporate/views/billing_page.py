@@ -138,6 +138,8 @@ def update_plan(
                 CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE,
                 CustomerPlan.FREE_TRIAL,
                 CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+                CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_ANNUAL_TO_MONTHLY_CYCLE,
+                CustomerPlan.SWITCH_NOW_FREE_TRIAL_FROM_MONTHLY_TO_ANNUAL_CYCLE,
                 CustomerPlan.ENDED,
             ]
         ),
