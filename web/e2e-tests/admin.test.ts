@@ -30,7 +30,7 @@ async function submit_notifications_stream_settings(page: Page): Promise<void> {
 }
 
 async function test_change_new_stream_notifications_setting(page: Page): Promise<void> {
-    await page.click("#realm_notifications_stream_id_widget.dropdown-widget-button");
+    await page.click("#realm_notifications_stream_id-widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
     });
@@ -50,7 +50,7 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
 async function test_change_signup_notifications_stream(page: Page): Promise<void> {
     console.log('Changing signup notifications stream to Verona by filtering with "verona"');
 
-    await page.click("#realm_signup_notifications_stream_id_widget");
+    await page.click("#realm_signup_notifications_stream_id-widget");
     await page.waitForSelector(".dropdown-list-search-input", {visible: true});
 
     await page.type(".dropdown-list-search-input", "verona");
