@@ -10,11 +10,11 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
+from corporate.lib.decorator import self_hosting_management_endpoint
 from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityDict,
     get_identity_dict_from_session,
 )
-from zerver.decorator import self_hosting_management_endpoint
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
