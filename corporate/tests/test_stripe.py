@@ -2839,6 +2839,115 @@ class StripeTest(StripeTestCase):
         self.assertIsNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
 
+    @mock_stripe()
+    def test_switch_now_free_trial_from_monthly_to_annual(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        free_trial_end_date = self.now + timedelta(days=60)
+        with self.settings(FREE_TRIAL_DAYS=60):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                self.add_card_and_upgrade(user, schedule="monthly")
+                plan = CustomerPlan.objects.get()
+                self.assertEqual(plan.next_invoice_date, free_trial_end_date)
+                self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
+                self.assertEqual(plan.status, CustomerPlan.FREE_TRIAL)
+
+                customer = get_customer_by_realm(user.realm)
+                assert customer is not None
+                result = self.client_patch(
+                    "/json/billing/plan",
+                    {
+                        "status": CustomerPlan.FREE_TRIAL,
+                        "schedule": CustomerPlan.ANNUAL,
+                    },
+                )
+                self.assert_json_success(result)
+
+                plan.refresh_from_db()
+                self.assertEqual(plan.status, CustomerPlan.ENDED)
+
+                plan = CustomerPlan.objects.get(
+                    customer=customer,
+                    automanage_licenses=True,
+                    price_per_license=8000,
+                    fixed_price=None,
+                    discount=None,
+                    billing_cycle_anchor=self.now,
+                    billing_schedule=CustomerPlan.ANNUAL,
+                    invoiced_through=None,
+                    next_invoice_date=free_trial_end_date,
+                    tier=CustomerPlan.STANDARD,
+                    status=CustomerPlan.FREE_TRIAL,
+                    charge_automatically=True,
+                )
+                LicenseLedger.objects.get(
+                    plan=plan,
+                    is_renewal=True,
+                    event_time=self.now,
+                    licenses=self.seat_count,
+                    licenses_at_next_renewal=self.seat_count,
+                )
+
+                realm_audit_log = RealmAuditLog.objects.filter(
+                    event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+                ).last()
+                assert realm_audit_log is not None
+
+    @mock_stripe()
+    def test_switch_now_free_trial_from_annual_to_monthly(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        free_trial_end_date = self.now + timedelta(days=60)
+        with self.settings(FREE_TRIAL_DAYS=60):
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                self.add_card_and_upgrade(user, schedule="annual")
+                plan = CustomerPlan.objects.get()
+                self.assertEqual(plan.next_invoice_date, free_trial_end_date)
+                self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_STANDARD)
+                self.assertEqual(plan.status, CustomerPlan.FREE_TRIAL)
+
+                customer = get_customer_by_realm(user.realm)
+                assert customer is not None
+                result = self.client_patch(
+                    "/json/billing/plan",
+                    {
+                        "status": CustomerPlan.FREE_TRIAL,
+                        "schedule": CustomerPlan.MONTHLY,
+                    },
+                )
+                self.assert_json_success(result)
+                plan.refresh_from_db()
+                self.assertEqual(plan.status, CustomerPlan.ENDED)
+
+                plan = CustomerPlan.objects.get(
+                    customer=customer,
+                    automanage_licenses=True,
+                    price_per_license=800,
+                    fixed_price=None,
+                    discount=None,
+                    billing_cycle_anchor=self.now,
+                    billing_schedule=CustomerPlan.MONTHLY,
+                    invoiced_through=None,
+                    next_invoice_date=free_trial_end_date,
+                    tier=CustomerPlan.STANDARD,
+                    status=CustomerPlan.FREE_TRIAL,
+                    charge_automatically=True,
+                )
+                LicenseLedger.objects.get(
+                    plan=plan,
+                    is_renewal=True,
+                    event_time=self.now,
+                    licenses=self.seat_count,
+                    licenses_at_next_renewal=self.seat_count,
+                )
+
+                realm_audit_log = RealmAuditLog.objects.filter(
+                    event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+                ).last()
+                assert realm_audit_log is not None
+
     def test_end_free_trial(self) -> None:
         user = self.example_user("hamlet")
 

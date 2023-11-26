@@ -110,11 +110,13 @@ def update_plan(
     licenses_at_next_renewal: Optional[int] = REQ(
         "licenses_at_next_renewal", json_validator=check_int, default=None
     ),
+    schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
 ) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,
         licenses=licenses,
         licenses_at_next_renewal=licenses_at_next_renewal,
+        schedule=schedule,
     )
     billing_session = RealmBillingSession(user=user)
     billing_session.do_update_plan(update_plan_request)

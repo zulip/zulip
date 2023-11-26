@@ -491,6 +491,7 @@ class UpdatePlanRequest:
     status: Optional[int]
     licenses: Optional[int]
     licenses_at_next_renewal: Optional[int]
+    schedule: Optional[int]
 
 
 @dataclass
@@ -1035,6 +1036,72 @@ class BillingSession(ABC):
             data["stripe_payment_intent_id"] = stripe_payment_intent_id
         return data
 
+    def do_change_schedule_after_free_trial(self, plan: CustomerPlan, schedule: int) -> None:
+        # Change the billing frequency of the plan after the free trial ends.
+        assert schedule in (CustomerPlan.MONTHLY, CustomerPlan.ANNUAL)
+        last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+        assert last_ledger_entry is not None
+        licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+        assert licenses_at_next_renewal is not None
+        assert plan.next_invoice_date is not None
+        next_billing_cycle = plan.next_invoice_date
+
+        if plan.fixed_price is not None:  # nocoverage
+            raise BillingError("Customer is already on monthly fixed plan.")
+
+        plan.status = CustomerPlan.ENDED
+        plan.save(update_fields=["status"])
+
+        discount = plan.customer.default_discount or plan.discount
+        _, _, _, price_per_license = compute_plan_parameters(
+            tier=plan.tier,
+            automanage_licenses=plan.automanage_licenses,
+            billing_schedule=schedule,
+            discount=plan.discount,
+        )
+
+        new_plan = CustomerPlan.objects.create(
+            customer=plan.customer,
+            billing_schedule=schedule,
+            automanage_licenses=plan.automanage_licenses,
+            charge_automatically=plan.charge_automatically,
+            price_per_license=price_per_license,
+            discount=discount,
+            billing_cycle_anchor=plan.billing_cycle_anchor,
+            tier=plan.tier,
+            status=CustomerPlan.FREE_TRIAL,
+            next_invoice_date=next_billing_cycle,
+            invoiced_through=None,
+            invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+        )
+
+        LicenseLedger.objects.create(
+            plan=new_plan,
+            is_renewal=True,
+            event_time=plan.billing_cycle_anchor,
+            licenses=licenses_at_next_renewal,
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+
+        if schedule == CustomerPlan.ANNUAL:
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
+                event_time=timezone_now(),
+                extra_data={
+                    "monthly_plan_id": plan.id,
+                    "annual_plan_id": new_plan.id,
+                },
+            )
+        else:
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN,
+                event_time=timezone_now(),
+                extra_data={
+                    "annual_plan_id": plan.id,
+                    "monthly_plan_id": new_plan.id,
+                },
+            )
+
     def get_next_billing_cycle(self, plan: CustomerPlan) -> datetime:
         last_ledger_renewal = (
             LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
@@ -1061,8 +1128,9 @@ class BillingSession(ABC):
     ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
         last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
         next_billing_cycle = self.get_next_billing_cycle(plan)
+        event_in_next_billing_cycle = next_billing_cycle <= event_time
 
-        if next_billing_cycle <= event_time and last_ledger_entry is not None:
+        if event_in_next_billing_cycle and last_ledger_entry is not None:
             licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             assert licenses_at_next_renewal is not None
             if plan.status == CustomerPlan.ACTIVE:
@@ -1187,6 +1255,7 @@ class BillingSession(ABC):
 
             if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
                 self.process_downgrade(plan)
+
             return None, None
         return None, last_ledger_entry
 
@@ -1441,8 +1510,11 @@ class BillingSession(ABC):
                 assert plan.is_free_trial()
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.FREE_TRIAL:
-                assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
-                do_change_plan_status(plan, status)
+                if update_plan_request.schedule is not None:
+                    self.do_change_schedule_after_free_trial(plan, update_plan_request.schedule)
+                else:
+                    assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
+                    do_change_plan_status(plan, status)
             return
 
         licenses = update_plan_request.licenses
