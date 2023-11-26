@@ -8,8 +8,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from pydantic import Json
 
-from corporate.lib.decorator import self_hosting_management_endpoint
-from corporate.lib.remote_billing_util import get_remote_realm_from_session
+from corporate.lib.decorator import authenticated_remote_realm_management_endpoint
 from corporate.lib.stripe import (
     VALID_BILLING_MODALITY_VALUES,
     VALID_BILLING_SCHEDULE_VALUES,
@@ -30,6 +29,7 @@ from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import UserProfile, get_org_type_display_name
+from zilencer.models import RemoteRealm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -107,15 +107,15 @@ def upgrade_page(
     return response
 
 
-@self_hosting_management_endpoint
+@authenticated_remote_realm_management_endpoint
 @typed_endpoint
 def remote_realm_upgrade_page(
     request: HttpRequest,
+    remote_realm: RemoteRealm,
     *,
     realm_uuid: PathOnly[str],
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage
-    remote_realm = get_remote_realm_from_session(request, realm_uuid)
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
         tier=CustomerPlan.STANDARD,
