@@ -1035,13 +1035,7 @@ class BillingSession(ABC):
             data["stripe_payment_intent_id"] = stripe_payment_intent_id
         return data
 
-    # event_time should roughly be timezone_now(). Not designed to handle
-    # event_times in the past or future
-    @transaction.atomic
-    def make_end_of_cycle_updates_if_needed(
-        self, plan: CustomerPlan, event_time: datetime
-    ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
-        last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+    def get_next_billing_cycle(self, plan: CustomerPlan) -> datetime:
         last_ledger_renewal = (
             LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
         )
@@ -1056,6 +1050,18 @@ class BillingSession(ABC):
             next_billing_cycle = plan.next_invoice_date
         else:
             next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
+
+        return next_billing_cycle
+
+    # event_time should roughly be timezone_now(). Not designed to handle
+    # event_times in the past or future
+    @transaction.atomic
+    def make_end_of_cycle_updates_if_needed(
+        self, plan: CustomerPlan, event_time: datetime
+    ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
+        last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+        next_billing_cycle = self.get_next_billing_cycle(plan)
+
         if next_billing_cycle <= event_time and last_ledger_entry is not None:
             licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             assert licenses_at_next_renewal is not None
