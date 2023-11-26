@@ -307,8 +307,11 @@ export function get_custom_profile_field_data(user, field, field_types) {
 }
 
 export function hide_user_profile() {
-    user_streams_list_widget = undefined;
     modals.close_if_open("user-profile-modal");
+}
+
+function on_user_profile_hide() {
+    user_streams_list_widget = undefined;
 }
 
 function show_manage_user_tab(target) {
@@ -386,7 +389,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    modals.open("user-profile-modal", {autoremove: true});
+    modals.open("user-profile-modal", {autoremove: true, on_hide: on_user_profile_hide});
     $(".tabcontent").hide();
 
     let default_tab = 0;
