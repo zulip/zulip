@@ -160,7 +160,7 @@ export function launch(conf: DialogWidgetConfig): void {
                     // If the input is a file input and a file has been selected, set value to file object
                     current_values[property_name] = $(this).prop("files")[0];
                 } else if (property_name === "edit_bot_owner") {
-                    current_values[property_name] = $(this).find(".dropdown_widget_value").text();
+                    current_values[property_name] = $(this).find(".dropdown-widget-value").text();
                 } else {
                     current_values[property_name] = $(this).val();
                 }

@@ -214,7 +214,7 @@ export async function check_compose_state(
         assert.equal(
             await get_text_from_selector(
                 page,
-                "#compose_select_recipient_widget .dropdown_widget_value",
+                "#compose_select_recipient_widget .dropdown-widget-value",
             ),
             params.stream_name,
         );

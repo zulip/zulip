@@ -551,8 +551,8 @@
     }
 }
 
-#recent-view-filter_widget .dropdown_widget_value,
-#inbox-filter_widget .dropdown_widget_value {
+#recent-view-filter_widget .dropdown-widget-value,
+#inbox-filter_widget .dropdown-widget-value {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;

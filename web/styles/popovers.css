@@ -996,7 +996,7 @@ ul {
             margin: 0;
         }
 
-        .dropdown_widget_value {
+        .dropdown-widget-value {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;

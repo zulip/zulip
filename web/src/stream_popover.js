@@ -498,11 +498,11 @@ export async function build_move_topic_to_stream_popover(
         stream_bar.decorate(stream_id, $stream_header_colorblock);
         const stream = stream_data.get_sub_by_id(stream_id);
         if (stream === undefined) {
-            $("#move_topic_to_stream_widget .dropdown_widget_value").text(
+            $("#move_topic_to_stream_widget .dropdown-widget-value").text(
                 $t({defaultMessage: "Select a stream"}),
             );
         } else {
-            $("#move_topic_to_stream_widget .dropdown_widget_value").html(
+            $("#move_topic_to_stream_widget .dropdown-widget-value").html(
                 render_inline_decorated_stream_name({stream, show_colored_icon: true}),
             );
         }
