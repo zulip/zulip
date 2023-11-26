@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from pydantic import Json
 
+from corporate.lib.decorator import self_hosting_management_endpoint
 from corporate.lib.remote_billing_util import get_remote_realm_from_session
 from corporate.lib.stripe import (
     VALID_BILLING_MODALITY_VALUES,
@@ -22,11 +23,7 @@ from corporate.lib.stripe import (
 from corporate.lib.support import get_support_url
 from corporate.models import CustomerPlan, ZulipSponsorshipRequest
 from zerver.actions.users import do_change_is_billing_admin
-from zerver.decorator import (
-    require_organization_member,
-    self_hosting_management_endpoint,
-    zulip_login_required,
-)
+from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
