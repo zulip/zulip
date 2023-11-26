@@ -1013,6 +1013,10 @@ body.has-overlay-scrollbar {
         /* width of right column - width of gear icon - right margin of column-right (250px - 40px - 40px -7px) */
         width: 163px;
 
+        @media (width < $xl_min) {
+            display: none;
+        }
+
         & a {
             font-size: calc(16em / 14);
             font-weight: 600;
@@ -1042,6 +1046,10 @@ body.has-overlay-scrollbar {
         height: var(--header-height);
         width: var(--header-height);
         border-left: 1px solid hsl(0deg 0% 88%);
+
+        @media (width >= $xl_min) {
+            display: none;
+        }
 
         .login_button {
             display: flex;
