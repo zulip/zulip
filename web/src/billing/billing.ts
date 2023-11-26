@@ -7,6 +7,12 @@ import * as helpers from "./helpers";
 
 const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
 
+// Matches the CustomerPlan model in the backend.
+enum BillingFrequency {
+    ANNUAL = 1,
+    MONTHLY = 2,
+}
+
 enum CustomerPlanStatus {
     ACTIVE = 1,
     DOWNGRADE_AT_END_OF_CYCLE = 2,
@@ -290,24 +296,36 @@ export function initialize(): void {
             $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
         } else if (current_billing_frequency !== billing_frequency_selected) {
             $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
-            let new_status = CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
+            let new_status = free_trial
+                ? CustomerPlanStatus.FREE_TRIAL
+                : CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
+            let new_schedule = BillingFrequency.ANNUAL;
             if (billing_frequency_selected === "Monthly") {
-                new_status = CustomerPlanStatus.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE;
+                new_status = free_trial
+                    ? CustomerPlanStatus.FREE_TRIAL
+                    : CustomerPlanStatus.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE;
+                new_schedule = BillingFrequency.MONTHLY;
             }
             $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
+            if (free_trial) {
+                // Only set schedule for free trial since it is a different process to update the frequency immediately.
+                $("#org-billing-frequency-confirm-button").attr("data-schedule", new_schedule);
+            }
         } else {
             $("#org-billing-frequency-confirm-button").toggleClass("hide", true);
         }
     });
 
     $("#org-billing-frequency-confirm-button").on("click", (e) => {
+        const data = {
+            status: $("#org-billing-frequency-confirm-button").attr("data-status"),
+            schedule: $("#org-billing-frequency-confirm-button").attr("data-schedule"),
+        };
         e.preventDefault();
         void $.ajax({
             type: "patch",
             url: "/json/billing/plan",
-            data: {
-                status: $("#org-billing-frequency-confirm-button").attr("data-status"),
-            },
+            data,
             success() {
                 window.location.replace(
                     "/billing/?success_message=" +
