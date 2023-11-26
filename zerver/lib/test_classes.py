@@ -24,10 +24,11 @@ from typing import (
     Union,
     cast,
 )
-from unittest import TestResult, mock
+from unittest import TestResult, mock, skipUnless
 
 import lxml.html
 import orjson
+import responses
 from django.apps import apps
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -36,6 +37,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
+from django.http.response import ResponseHeaders
 from django.test import SimpleTestCase, TestCase, TransactionTestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
@@ -44,6 +46,7 @@ from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
+from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
 from typing_extensions import override
 
@@ -92,6 +95,7 @@ from zerver.lib.webhooks.common import (
 from zerver.models import (
     Client,
     Message,
+    PushDeviceToken,
     Reaction,
     Realm,
     RealmEmoji,
@@ -116,7 +120,7 @@ from zerver.openapi.openapi import validate_against_openapi_schema, validate_req
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import get_remote_server_by_uuid
+    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -2375,3 +2379,60 @@ def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: st
         message__recipient=stream.recipient,
     ).order_by("id")
     return [um.message for um in filter_by_topic_name_via_message(query, topic_name)]
+
+
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+class BouncerTestCase(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
+        self.server = RemoteZulipServer(
+            uuid=self.server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+        self.server.save()
+        super().setUp()
+
+    @override
+    def tearDown(self) -> None:
+        RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
+        super().tearDown()
+
+    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
+        kwargs = {}
+        if isinstance(request.body, bytes):
+            # send_json_to_push_bouncer sends the body as bytes containing json.
+            data = orjson.loads(request.body)
+            kwargs = dict(content_type="application/json")
+        else:
+            assert isinstance(request.body, str) or request.body is None
+            params: Dict[str, List[str]] = urllib.parse.parse_qs(request.body)
+            # In Python 3, the values of the dict from `parse_qs` are
+            # in a list, because there might be multiple values.
+            # But since we are sending values with no same keys, hence
+            # we can safely pick the first value.
+            data = {k: v[0] for k, v in params.items()}
+        assert request.url is not None  # allow mypy to infer url is present.
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+        local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
+        if request.method == "POST":
+            result = self.uuid_post(self.server_uuid, local_url, data, subdomain="", **kwargs)
+        elif request.method == "GET":
+            result = self.uuid_get(self.server_uuid, local_url, data, subdomain="")
+        return (result.status_code, result.headers, result.content)
+
+    def add_mock_response(self) -> None:
+        # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + ".*")
+        responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
+        responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
+
+    def get_generic_payload(self, method: str = "register") -> Dict[str, Any]:
+        user_id = 10
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+
+        return {"user_id": user_id, "token": token, "token_kind": token_kind}

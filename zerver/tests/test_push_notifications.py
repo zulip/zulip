@@ -1,12 +1,10 @@
 import asyncio
 import base64
 import datetime
-import re
 import uuid
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 from unittest import mock, skipUnless
-from urllib import parse
 
 import aioapns
 import orjson
@@ -66,7 +64,7 @@ from zerver.lib.remote_server import (
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_response_from_error
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import BouncerTestCase, ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_counts import realm_user_count_by_role
@@ -96,63 +94,6 @@ if settings.ZILENCER_ENABLED:
         RemoteRealmCount,
         RemoteZulipServer,
     )
-
-
-@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
-class BouncerTestCase(ZulipTestCase):
-    @override
-    def setUp(self) -> None:
-        self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-        self.server = RemoteZulipServer(
-            uuid=self.server_uuid,
-            api_key="magic_secret_api_key",
-            hostname="demo.example.com",
-            last_updated=now(),
-        )
-        self.server.save()
-        super().setUp()
-
-    @override
-    def tearDown(self) -> None:
-        RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
-        super().tearDown()
-
-    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
-        kwargs = {}
-        if isinstance(request.body, bytes):
-            # send_json_to_push_bouncer sends the body as bytes containing json.
-            data = orjson.loads(request.body)
-            kwargs = dict(content_type="application/json")
-        else:
-            assert isinstance(request.body, str) or request.body is None
-            params: Dict[str, List[str]] = parse.parse_qs(request.body)
-            # In Python 3, the values of the dict from `parse_qs` are
-            # in a list, because there might be multiple values.
-            # But since we are sending values with no same keys, hence
-            # we can safely pick the first value.
-            data = {k: v[0] for k, v in params.items()}
-        assert request.url is not None  # allow mypy to infer url is present.
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
-        if request.method == "POST":
-            result = self.uuid_post(self.server_uuid, local_url, data, subdomain="", **kwargs)
-        elif request.method == "GET":
-            result = self.uuid_get(self.server_uuid, local_url, data, subdomain="")
-        return (result.status_code, result.headers, result.content)
-
-    def add_mock_response(self) -> None:
-        # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
-        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + ".*")
-        responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
-        responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
-
-    def get_generic_payload(self, method: str = "register") -> Dict[str, Any]:
-        user_id = 10
-        token = "111222"
-        token_kind = PushDeviceToken.GCM
-
-        return {"user_id": user_id, "token": token, "token_kind": token_kind}
 
 
 class SendTestPushNotificationEndpointTest(BouncerTestCase):
