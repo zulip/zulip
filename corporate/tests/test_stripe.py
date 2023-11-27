@@ -1031,7 +1031,7 @@ class StripeTest(StripeTestCase):
             free_trial_end_date = self.now + timedelta(days=60)
 
             self.assert_in_success_response(
-                ["You card will not be charged", "free trial", "60-day"], response
+                ["Your card will not be charged", "free trial", "60-day"], response
             )
             self.assertNotEqual(user.realm.plan_type, Realm.PLAN_TYPE_STANDARD)
             self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
@@ -1249,7 +1249,7 @@ class StripeTest(StripeTestCase):
             response = self.client_get("/upgrade/")
 
             self.assert_in_success_response(
-                ["You card will not be charged", "free trial", "60-day"], response
+                ["Your card will not be charged", "free trial", "60-day"], response
             )
             self.assertNotEqual(user.realm.plan_type, Realm.PLAN_TYPE_STANDARD)
             self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
