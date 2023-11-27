@@ -448,6 +448,7 @@ test("test_recent_view_show", ({mock_template}) => {
     // and are not to be tested here.
     page_params.is_spectator = false;
     const expected = {
+        filter_unread: false,
         filter_participated: false,
         filter_muted: false,
         filter_pm: false,
@@ -478,6 +479,7 @@ test("test_recent_view_show", ({mock_template}) => {
 test("test_filter_is_spectator", ({mock_template}) => {
     page_params.is_spectator = true;
     const expected = {
+        filter_unread: false,
         filter_participated: false,
         filter_muted: false,
         filter_pm: false,
@@ -510,6 +512,7 @@ test("test_no_filter", ({mock_template}) => {
     // in All topics filter.
     page_params.is_spectator = false;
     const expected = {
+        filter_unread: false,
         filter_participated: false,
         filter_muted: false,
         filter_pm: false,
@@ -632,6 +635,7 @@ test("test_no_filter", ({mock_template}) => {
 test("test_filter_pm", ({mock_template}) => {
     page_params.is_spectator = false;
     const expected = {
+        filter_unread: false,
         filter_participated: false,
         filter_muted: false,
         filter_pm: true,
@@ -680,6 +684,7 @@ test("test_filter_participated", ({mock_template}) => {
     page_params.is_spectator = false;
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, {
+            filter_unread: false,
             filter_participated: expected_filter_participated,
             filter_muted: false,
             filter_pm: false,

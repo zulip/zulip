@@ -821,6 +821,7 @@ function show_selected_filters() {
 
 function get_recent_view_filters_params() {
     return {
+        filter_unread: filters.has("unread"),
         filter_participated: filters.has("participated"),
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
