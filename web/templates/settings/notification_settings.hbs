@@ -10,10 +10,11 @@
                 <tr>
                     <th rowspan="2" width="30%"></th>
                     <th colspan="2" width="28%">{{t "Desktop"}}</th>
-                    <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{/if}}">
-                        <span {{#if (not realm_push_notifications_enabled) }}class="tippy-zulip-tooltip" data-tooltip-template-id="mobile-push-notification-tooltip-template"{{/if}}>
+                    <th rowspan="2" width="14%">
+                        <span {{#if (not realm_push_notifications_enabled) }}class="control-label-disabled tippy-zulip-tooltip" data-tooltip-template-id="mobile-push-notification-tooltip-template"{{/if}}>
                             {{t "Mobile"}}
                         </span>
+                        {{> ../help_link_widget link="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" }}
                     </th>
                     <th rowspan="2" width="14%">{{t "Email"}}</th>
                     <th rowspan="2" width="14%">@all
