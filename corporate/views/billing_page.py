@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from corporate.lib.stripe import RealmBillingSession, UpdatePlanRequest, is_realm_on_paid_plan
+from corporate.lib.stripe import RealmBillingSession, UpdatePlanRequest
 from corporate.models import CustomerPlan, get_customer_by_realm
 from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
@@ -39,6 +39,11 @@ def billing_home(
     user = request.user
     assert user.is_authenticated
 
+    # BUG: This should pass the acting_user; this is just working
+    # around that make_end_of_cycle_updates_if_needed doesn't do audit
+    # logging not using the session user properly.
+    billing_session = RealmBillingSession(user=None, realm=user.realm)
+
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
@@ -54,7 +59,7 @@ def billing_home(
     customer = get_customer_by_realm(user.realm)
     if customer is not None and customer.sponsorship_pending:
         # Don't redirect to sponsorship page if the realm is on a paid plan
-        if not is_realm_on_paid_plan(user.realm):
+        if not billing_session.on_paid_plan():
             return HttpResponseRedirect(reverse("sponsorship_request"))
         # If the realm is on a paid plan, show the sponsorship pending message
         # TODO: Add a sponsorship pending message to the billing page
@@ -73,7 +78,6 @@ def billing_home(
 
         return HttpResponseRedirect(reverse(upgrade_page))
 
-    billing_session = RealmBillingSession(user=None, realm=user.realm)
     main_context = billing_session.get_billing_page_context()
     if main_context:
         context.update(main_context)

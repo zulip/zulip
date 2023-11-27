@@ -79,11 +79,6 @@ CARD_CAPITALIZATION = {
     "visa": "Visa",
 }
 
-PAID_PLANS = [
-    Realm.PLAN_TYPE_STANDARD,
-    Realm.PLAN_TYPE_PLUS,
-]
-
 # The version of Stripe API the billing system supports.
 STRIPE_API_VERSION = "2020-08-27"
 
@@ -210,10 +205,6 @@ def check_upgrade_parameters(
         seat_count,
         exempt_from_license_number_check,
     )
-
-
-def is_realm_on_paid_plan(realm: Realm) -> bool:
-    return realm.plan_type in PAID_PLANS
 
 
 # Be extremely careful changing this function. Historical billing periods
@@ -1636,6 +1627,11 @@ class RealmBillingSession(BillingSession):
             assert realm is not None  # for mypy
             self.realm = realm
 
+    PAID_PLANS = [
+        Realm.PLAN_TYPE_STANDARD,
+        Realm.PLAN_TYPE_PLUS,
+    ]
+
     @override
     @property
     def billing_session_url(self) -> str:
@@ -1861,7 +1857,7 @@ class RealmBillingSession(BillingSession):
 
     @override
     def on_paid_plan(self) -> bool:
-        return is_realm_on_paid_plan(self.realm)
+        return self.realm.plan_type in self.PAID_PLANS
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
