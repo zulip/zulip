@@ -64,6 +64,9 @@ def sponsorship_request(request: HttpRequest) -> HttpResponse:
         if plan is not None:
             context["plan_name"] = plan.name
             context["free_trial"] = plan.is_free_trial()
+        # We don't create CustomerPlan objects for fully sponsored realms via support page.
+        elif user.realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
+            context["plan_name"] = "Zulip Cloud Standard"
         else:
             context["plan_name"] = "Zulip Cloud Free"
 
