@@ -295,6 +295,14 @@ def generate_realm_uuid_owner_secret() -> str:
     return f"zuliprealm_{token}"
 
 
+class OrgTypeDict(TypedDict):
+    name: str
+    id: int
+    hidden: bool
+    display_order: int
+    onboarding_zulip_guide_url: Optional[str]
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -554,7 +562,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     first_visible_message_id = models.IntegerField(default=0)
 
     # Valid org types
-    ORG_TYPES: Dict[str, Dict[str, Any]] = {
+    ORG_TYPES: Dict[str, OrgTypeDict] = {
         "unspecified": {
             "name": "Unspecified",
             "id": 0,
