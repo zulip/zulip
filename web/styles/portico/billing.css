@@ -444,6 +444,7 @@ input[name="licenses"] {
     display: block;
 }
 
+#upgrade-page #upgrade-manual-license-count-wrapper,
 #billing-page .input-box-number {
     text-align: left;
 }
@@ -460,6 +461,7 @@ input[name="licenses"] {
     align-items: flex-end;
 }
 
+#upgrade-page #manual_license_count,
 #billing-page
     .white-box
     .input-box-number
