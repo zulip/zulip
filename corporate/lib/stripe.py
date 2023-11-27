@@ -613,6 +613,10 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
+    def is_sponsored(self) -> bool:
+        pass
+
+    @abstractmethod
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
         pass
 
@@ -1775,10 +1779,12 @@ class RealmBillingSession(BillingSession):
                 internal_send_private_message(notification_bot, user, message)
 
     @override
+    def is_sponsored(self) -> bool:
+        return self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE
+
+    @override
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        if (
-            customer is not None and customer.sponsorship_pending
-        ) or self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE:
+        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
             return True
         return False
 
@@ -1968,10 +1974,12 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         pass
 
     @override
+    def is_sponsored(self) -> bool:
+        return self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY
+
+    @override
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        if (
-            customer is not None and customer.sponsorship_pending
-        ) or self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY:
+        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
             return True
         return False
 
@@ -2170,6 +2178,10 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # TODO: Write audit log entry
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
+
+    @override
+    def is_sponsored(self) -> bool:
+        return self.remote_server.plan_type == self.remote_server.PLAN_TYPE_COMMUNITY
 
     @override
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
