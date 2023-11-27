@@ -40,6 +40,7 @@ from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     AbstractPushDeviceToken,
@@ -812,6 +813,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         )
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
+    change_katex_to_raw_latex(elem)
     plain_text = process(elem)
     return plain_text
 
