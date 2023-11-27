@@ -212,7 +212,10 @@ export function initialize(): void {
     $("#confirm-end-free-trial .dialog_submit_button").on("click", (e) => {
         helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
             window.location.replace(
-                "/billing/?success_message=" + encodeURIComponent("Successfully ended trial!"),
+                "/billing/?success_message=" +
+                    encodeURIComponent(
+                        "Your plan will be canceled at the end of the trial. Your card will not be charged.",
+                    ),
             ),
         );
         e.preventDefault();
