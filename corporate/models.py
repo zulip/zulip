@@ -358,7 +358,7 @@ class LicenseLedger(models.Model):
 
 
 class ZulipSponsorshipRequest(models.Model):
-    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)
     requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     org_type = models.PositiveSmallIntegerField(

@@ -167,8 +167,10 @@ def sponsorship(
 
     if form.is_valid():
         with transaction.atomic():
+            # Ensures customer is created first before updating sponsorship status.
+            billing_session.update_customer_sponsorship_status(True)
             sponsorship_request = ZulipSponsorshipRequest(
-                realm=realm,
+                customer=billing_session.get_customer(),
                 requested_by=user,
                 org_website=form.cleaned_data["website"],
                 org_description=form.cleaned_data["description"],
@@ -184,7 +186,6 @@ def sponsorship(
                 realm.org_type = org_type
                 realm.save(update_fields=["org_type"])
 
-            billing_session.update_customer_sponsorship_status(True)
             do_change_is_billing_admin(user, True)
 
             org_type_display_name = get_org_type_display_name(org_type)

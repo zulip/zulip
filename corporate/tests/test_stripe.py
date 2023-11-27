@@ -1804,8 +1804,10 @@ class StripeTest(StripeTestCase):
         response = self.client_post("/json/billing/sponsorship", data)
         self.assert_json_success(response)
 
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
         sponsorship_request = ZulipSponsorshipRequest.objects.filter(
-            realm=user.realm, requested_by=user
+            customer=customer, requested_by=user
         ).first()
         assert sponsorship_request is not None
         self.assertEqual(sponsorship_request.org_website, data["website"])
