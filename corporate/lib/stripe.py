@@ -493,6 +493,12 @@ class UpdatePlanRequest:
     licenses_at_next_renewal: Optional[int]
 
 
+@dataclass
+class EventStatusRequest:
+    stripe_session_id: Optional[str]
+    stripe_payment_intent_id: Optional[str]
+
+
 class AuditLogEventType(Enum):
     STRIPE_CUSTOMER_CREATED = 1
     STRIPE_CARD_CHANGED = 2
@@ -618,6 +624,10 @@ class BillingSession(ABC):
 
     @abstractmethod
     def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
+        pass
+
+    @abstractmethod
+    def has_billing_access(self) -> bool:
         pass
 
     @catch_stripe_errors
@@ -1518,6 +1528,41 @@ class BillingSession(ABC):
         assert new_plan is not None  # for mypy
         invoice_plan(new_plan, plan_switch_time)
 
+    def get_event_status(self, event_status_request: EventStatusRequest) -> Dict[str, Any]:
+        customer = self.get_customer()
+
+        if customer is None:
+            raise JsonableError(_("No customer for this organization!"))
+
+        stripe_session_id = event_status_request.stripe_session_id
+        if stripe_session_id is not None:
+            try:
+                session = Session.objects.get(
+                    stripe_session_id=stripe_session_id, customer=customer
+                )
+            except Session.DoesNotExist:
+                raise JsonableError(_("Session not found"))
+
+            if (
+                session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE
+                and not self.has_billing_access()
+            ):
+                raise JsonableError(_("Must be a billing administrator or an organization owner"))
+            return {"session": session.to_dict()}
+
+        stripe_payment_intent_id = event_status_request.stripe_payment_intent_id
+        if stripe_payment_intent_id is not None:
+            payment_intent = PaymentIntent.objects.filter(
+                stripe_payment_intent_id=stripe_payment_intent_id,
+                customer=customer,
+            ).last()
+
+            if payment_intent is None:
+                raise JsonableError(_("Payment intent not found"))
+            return {"payment_intent": payment_intent.to_dict()}
+
+        raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -1758,6 +1803,11 @@ class RealmBillingSession(BillingSession):
             assert current_plan_tier == CustomerPlan.PLUS
             return new_plan_tier == CustomerPlan.STANDARD
 
+    @override
+    def has_billing_access(self) -> bool:
+        assert self.user is not None
+        return self.user.has_billing_access
+
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
@@ -1951,6 +2001,12 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         # TBD
         return False
 
+    @override
+    def has_billing_access(self) -> bool:
+        # We don't currently have a way to authenticate a remote
+        # session that isn't authorized for billing access.
+        return True
+
 
 class RemoteServerBillingSession(BillingSession):  # nocoverage
     """Billing session for pre-8.0 servers that do not yet support
@@ -2136,6 +2192,12 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
         # TBD
         return False
+
+    @override
+    def has_billing_access(self) -> bool:
+        # We don't currently have a way to authenticate a remote
+        # session that isn't authorized for billing access.
+        return True
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
