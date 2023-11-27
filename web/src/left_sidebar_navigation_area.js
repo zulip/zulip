@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {localstorage} from "./localstorage";
+import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
@@ -17,6 +18,11 @@ const STATES = {
 };
 
 function restore_views_state() {
+    if (page_params.is_spectator) {
+        // Spectators should always see the expanded view.
+        return;
+    }
+
     const views_state = ls.get(ls_key);
     // Expanded state is default, so we only need to toggle if the state is condensed.
     if (views_state === STATES.CONDENSED) {
