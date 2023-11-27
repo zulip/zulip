@@ -59,7 +59,7 @@
                     {% endif %}
 
                     {% if manual_license_management %}
-                    <div class="input-box upgrade-page-field">
+                    <div class="input-box upgrade-page-field" id="upgrade-manual-license-count-wrapper">
                         <label for="licenses" class="inline-block label-title">Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</label>
                         <input type="number" name="licenses" autocomplete="off" {% if not exempt_from_license_number_check %}min="{{ seat_count }}" value="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/>
                         <div id="upgrade-licenses-change-error" class="alert alert-danger upgrade-page-error"></div>
