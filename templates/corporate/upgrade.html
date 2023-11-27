@@ -11,7 +11,7 @@
         <div class="pitch">
             <h1>
                 {% if free_trial_days %}
-                Start free trial of Zulip Cloud Standard
+                Start free trial of {{ plan }}
                 {% else %}
                 Upgrade {{ customer_name }} to {{ plan }}
                 {% endif %}
@@ -29,10 +29,9 @@
                     <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if free_trial_days %}
                         <div class="not-editable-realm-field">
-                            Start your {{ free_trial_days }}-day free trial, with no upfront payment.
-                            <br /><br />
-                            You won't be charged during the free trial. You can also downgrade to
-                            Zulip Cloud Free, our forever free plan, at any time.
+                            Add a credit card to start your <b>{{ free_trial_days }}-day free trial</b> of
+                            {{ plan }}. You card will not be charged if you
+                            cancel in the first {{ free_trial_days }} days.
                         </div>
                         {% endif %}
 
@@ -99,36 +98,20 @@
                     {% if not manual_license_management %}
                     <div id="license-automatic-section" class="input-box upgrade-page-field license-management-section">
                         <p class="not-editable-realm-field">
-                            {% if free_trial_days %}
-                            After the Free Trial, you&rsquo;ll be charged
-                            <b>$<span class="due-today-price"></span></b> for <b>{{ seat_count }}</b>
-                            users (or more if you later add more users).<br />
-
-                            We'll automatically charge you for additional licenses as users
-                            are added, and remove licenses not in use at the end of each billing
-                            period.
-                            {% else %}
                             Your subscription will renew automatically. Your bill will vary based on the number
                             of active users in your organization. You can also
                             <a href="/upgrade/?manual_license_management=true">purchase a fixed number of licenses</a> instead. See
                             <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
-                            {% endif %}
                         </p>
                         <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
                     </div>
                     {% else %}
                     <div id="license-manual-section" class="input-box upgrade-page-field">
                         <p class="not-editable-realm-field">
-                            {% if free_trial_days %}
-                            Enter the number of users you would like to pay for after the Free Trial.<br />
-                            You'll need to manually add licenses to add or invite
-                            additional users.
-                            {% else %}
                             Your subscription will renew automatically. You will be able to manage the number of licenses on
                             your organization's billing page. You can also
                             <a href="/upgrade/">choose automatic license management</a> instead. See
                             <a href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
-                            {% endif %}
                         </p>
                     </div>
                     {% endif %}
