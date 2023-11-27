@@ -12,7 +12,7 @@ from typing_extensions import override
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.rate_limiter import rules as rate_limiter_rules
-from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog
+from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog, Realm
 
 
 def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
@@ -103,6 +103,11 @@ class RemoteRealm(models.Model):
 
     # Value obtained's from the remote server's realm.host.
     host = models.TextField()
+
+    org_type = models.PositiveSmallIntegerField(
+        default=Realm.ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
 
     # The fields below are analogical to RemoteZulipServer fields.
 

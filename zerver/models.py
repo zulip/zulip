@@ -8,6 +8,7 @@ import time
 from collections import defaultdict
 from datetime import timedelta
 from email.headerregistry import Address
+from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -295,6 +296,22 @@ def generate_realm_uuid_owner_secret() -> str:
     return f"zuliprealm_{token}"
 
 
+class OrgTypeEnum(Enum):
+    Unspecified = 0
+    Business = 10
+    OpenSource = 20
+    EducationNonProfit = 30
+    Education = 35
+    Research = 40
+    Event = 50
+    NonProfit = 60
+    Government = 70
+    PoliticalGroup = 80
+    Community = 90
+    Personal = 100
+    Other = 1000
+
+
 class OrgTypeDict(TypedDict):
     name: str
     id: int
@@ -565,91 +582,91 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     ORG_TYPES: Dict[str, OrgTypeDict] = {
         "unspecified": {
             "name": "Unspecified",
-            "id": 0,
+            "id": OrgTypeEnum.Unspecified.value,
             "hidden": True,
             "display_order": 0,
             "onboarding_zulip_guide_url": None,
         },
         "business": {
             "name": "Business",
-            "id": 10,
+            "id": OrgTypeEnum.Business.value,
             "hidden": False,
             "display_order": 1,
             "onboarding_zulip_guide_url": "https://zulip.com/for/business/",
         },
         "opensource": {
             "name": "Open-source project",
-            "id": 20,
+            "id": OrgTypeEnum.OpenSource.value,
             "hidden": False,
             "display_order": 2,
             "onboarding_zulip_guide_url": "https://zulip.com/for/open-source/",
         },
         "education_nonprofit": {
             "name": "Education (non-profit)",
-            "id": 30,
+            "id": OrgTypeEnum.EducationNonProfit.value,
             "hidden": False,
             "display_order": 3,
             "onboarding_zulip_guide_url": "https://zulip.com/for/education/",
         },
         "education": {
             "name": "Education (for-profit)",
-            "id": 35,
+            "id": OrgTypeEnum.Education.value,
             "hidden": False,
             "display_order": 4,
             "onboarding_zulip_guide_url": "https://zulip.com/for/education/",
         },
         "research": {
             "name": "Research",
-            "id": 40,
+            "id": OrgTypeEnum.Research.value,
             "hidden": False,
             "display_order": 5,
             "onboarding_zulip_guide_url": "https://zulip.com/for/research/",
         },
         "event": {
             "name": "Event or conference",
-            "id": 50,
+            "id": OrgTypeEnum.Event.value,
             "hidden": False,
             "display_order": 6,
             "onboarding_zulip_guide_url": "https://zulip.com/for/events/",
         },
         "nonprofit": {
             "name": "Non-profit (registered)",
-            "id": 60,
+            "id": OrgTypeEnum.NonProfit.value,
             "hidden": False,
             "display_order": 7,
             "onboarding_zulip_guide_url": "https://zulip.com/for/communities/",
         },
         "government": {
             "name": "Government",
-            "id": 70,
+            "id": OrgTypeEnum.Government.value,
             "hidden": False,
             "display_order": 8,
             "onboarding_zulip_guide_url": None,
         },
         "political_group": {
             "name": "Political group",
-            "id": 80,
+            "id": OrgTypeEnum.PoliticalGroup.value,
             "hidden": False,
             "display_order": 9,
             "onboarding_zulip_guide_url": None,
         },
         "community": {
             "name": "Community",
-            "id": 90,
+            "id": OrgTypeEnum.Community.value,
             "hidden": False,
             "display_order": 10,
             "onboarding_zulip_guide_url": "https://zulip.com/for/communities/",
         },
         "personal": {
             "name": "Personal",
-            "id": 100,
+            "id": OrgTypeEnum.Personal.value,
             "hidden": False,
             "display_order": 100,
             "onboarding_zulip_guide_url": None,
         },
         "other": {
             "name": "Other",
-            "id": 1000,
+            "id": OrgTypeEnum.Other.value,
             "hidden": False,
             "display_order": 1000,
             "onboarding_zulip_guide_url": None,
