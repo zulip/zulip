@@ -1062,7 +1062,7 @@ ul {
 }
 
 .portico-pricing {
-    --color-background-box: hsl(0deg 0% 100% / 80%);
+    --color-background-box: hsla(210deg 44% 92%);
     --color-background-box-muted: hsl(0deg 0% 100% / 50%);
     --color-plan-tab-header: hsl(223deg 40% 30%);
     --color-plan-tab-copy: hsl(223deg 40% 25% / 70%);
@@ -1076,6 +1076,7 @@ ul {
     --color-link-underline-alternate-hover: hsla(210deg 94% 100% / 80%);
     --icon-left-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M0 16h16V0c0 8.837-7.163 16-16 16Z'/%3e%3c/svg%3e");
     --icon-right-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M16 16H0V0c0 8.837 7.163 16 16 16Z'/%3e%3c/svg%3e");
+    --icon-question-header-swoosh: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='33' height='56' fill='none' viewBox='0 0 33 56'%3e%3cpath fill='%23E2EBF4' d='M33 37 1 56C1 35-3.5 0 33 0 7.5 3 7.776 37 33 37Z'/%3e%3c/svg%3e");
 
     padding: 102px 0 58px;
     background: linear-gradient(
@@ -1343,7 +1344,22 @@ ul {
         margin: 0 auto;
 
         header {
+            position: relative;
             padding: 0 16px 0 32px;
+
+            &::before {
+                display: block;
+                content: "";
+                width: 32px;
+                height: 56px;
+                position: absolute;
+                background-color: hsla(210deg 44% 92%);
+                top: 30px;
+                left: -0.5px;
+                mask-position: center;
+                mask-repeat: no-repeat;
+                mask-image: var(--icon-question-header-swoosh);
+            }
 
             h2 {
                 font-family: var(--font-ops);
