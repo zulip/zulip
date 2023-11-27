@@ -101,11 +101,14 @@ export const initialize = (): void => {
                     helpers.redirect_to_billing_with_successful_upgrade();
                 }
             },
-            () => {
+            (xhr) => {
                 $("#org-upgrade-button-text").show();
                 $("#org-upgrade-button .upgrade-button-loader").hide();
-                const error_text = $error_box.text();
-                $error_box.text(`${error_text} Please fix this issue or use a different card.`);
+                // Add a generic help text for card errors.
+                if (xhr.responseJSON.error_description === "card error") {
+                    const error_text = $error_box.text();
+                    $error_box.text(`${error_text} Please fix this issue or use a different card.`);
+                }
             },
         );
     });
