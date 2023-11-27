@@ -79,6 +79,11 @@ CARD_CAPITALIZATION = {
     "visa": "Visa",
 }
 
+PAID_PLANS = [
+    Realm.PLAN_TYPE_STANDARD,
+    Realm.PLAN_TYPE_PLUS,
+]
+
 # The version of Stripe API the billing system supports.
 STRIPE_API_VERSION = "2020-08-27"
 
@@ -205,6 +210,10 @@ def check_upgrade_parameters(
         seat_count,
         exempt_from_license_number_check,
     )
+
+
+def is_realm_on_paid_plan(realm: Realm) -> bool:
+    return realm.plan_type in PAID_PLANS
 
 
 # Be extremely careful changing this function. Historical billing periods
@@ -632,6 +641,14 @@ class BillingSession(ABC):
 
     @abstractmethod
     def has_billing_access(self) -> bool:
+        pass
+
+    @abstractmethod
+    def on_paid_plan(self) -> bool:
+        pass
+
+    @abstractmethod
+    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
         pass
 
     @catch_stripe_errors
@@ -1567,6 +1584,34 @@ class BillingSession(ABC):
 
         raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
 
+    def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
+        context: Dict[str, Any] = {}
+        customer = self.get_customer()
+
+        if customer is not None and customer.sponsorship_pending:
+            if self.on_paid_plan():
+                return None
+
+            context["is_sponsorship_pending"] = True
+
+        if self.is_sponsored():
+            context["is_sponsored"] = True
+
+        if customer is not None:
+            plan = get_current_plan_by_customer(customer)
+            if plan is not None:
+                context["plan_name"] = plan.name
+                context["free_trial"] = plan.is_free_trial()
+            elif self.is_sponsored():
+                # We don't create CustomerPlan objects for fully sponsored realms via support page.
+                context["plan_name"] = "Zulip Cloud Standard"
+            else:
+                # TODO: Don't hardcode this plan name.
+                context["plan_name"] = "Zulip Cloud Free"
+
+        self.add_sponsorship_info_to_context(context)
+        return context
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -1814,6 +1859,27 @@ class RealmBillingSession(BillingSession):
         assert self.user is not None
         return self.user.has_billing_access
 
+    @override
+    def on_paid_plan(self) -> bool:
+        return is_realm_on_paid_plan(self.realm)
+
+    @override
+    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
+        def key_helper(d: Any) -> int:
+            return d[1]["display_order"]
+
+        context.update(
+            realm_org_type=self.realm.org_type,
+            sorted_org_types=sorted(
+                (
+                    [org_type_name, org_type]
+                    for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                    if not org_type.get("hidden")
+                ),
+                key=key_helper,
+            ),
+        )
+
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
@@ -2015,6 +2081,16 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         # session that isn't authorized for billing access.
         return True
 
+    @override
+    def on_paid_plan(self) -> bool:
+        # TBD
+        return False
+
+    @override
+    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
+        # TBD
+        pass
+
 
 class RemoteServerBillingSession(BillingSession):  # nocoverage
     """Billing session for pre-8.0 servers that do not yet support
@@ -2210,6 +2286,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # We don't currently have a way to authenticate a remote
         # session that isn't authorized for billing access.
         return True
+
+    @override
+    def on_paid_plan(self) -> bool:
+        # TBD
+        return False
+
+    @override
+    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
+        # TBD
+        pass
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
