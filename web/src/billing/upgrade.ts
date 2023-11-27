@@ -98,7 +98,7 @@ export const initialize = (): void => {
                         `/billing/event_status?stripe_payment_intent_id=${response_data.stripe_payment_intent_id}`,
                     );
                 } else if (response_data.organization_upgrade_successful) {
-                    window.location.replace("/billing");
+                    helpers.redirect_to_billing_with_successful_upgrade();
                 }
             },
             () => {

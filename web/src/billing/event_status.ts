@@ -144,12 +144,7 @@ export async function stripe_payment_intent_status_check(
             return false;
         case "succeeded":
             if (response_data.payment_intent.event_handler!.status === "succeeded") {
-                update_status_and_redirect(
-                    "/billing/?success_message=" +
-                        encodeURIComponent(
-                            "Your organization has been upgraded to Zulip Cloud Standard.",
-                        ),
-                );
+                helpers.redirect_to_billing_with_successful_upgrade();
                 return true;
             }
             if (response_data.payment_intent.event_handler!.status === "failed") {
