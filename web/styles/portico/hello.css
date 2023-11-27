@@ -1169,11 +1169,12 @@ ul {
         display: grid;
         grid-template:
             ".       cloud-title  self-hosted-title .      " auto
-            "pricing pricing      pricing           pricing" auto / 30px minmax(
+            "pricing pricing      pricing           pricing" auto / 40px minmax(
                 0,
                 1fr
             )
-            minmax(0, 1fr) 30px;
+            minmax(0, 1fr) 40px;
+        column-gap: 2px;
         max-width: 960px;
         margin: 50px auto 38px;
     }
@@ -1198,11 +1199,14 @@ ul {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
         grid-template-rows: auto;
+        justify-items: center;
     }
 
     .pricing-tab {
         cursor: pointer;
         background: var(--color-background-box);
+        padding: 12px 12px 0;
+        border-radius: 16px 16px 0 0;
 
         h2 {
             color: var(--color-plan-tab-header);
@@ -1222,11 +1226,13 @@ ul {
             line-height: 125%;
             margin: 0;
             text-align: center;
+            padding-bottom: 14px;
         }
     }
 
     .pricing-pane {
         padding: 20px;
+        border-radius: 16px;
         color: var(--color-box-copy);
         background: var(--color-background-box);
 
@@ -1234,6 +1240,7 @@ ul {
             font-weight: 550;
             font-size: 28px;
             line-height: 1;
+            padding-left: 14px;
             margin: 8px 0 16px;
         }
 
@@ -1252,6 +1259,11 @@ ul {
             height: 100%;
             display: flex;
             flex-direction: column;
+            max-width: 332px;
+        }
+
+        .text-content {
+            padding: 0 16px;
         }
 
         .bottom {
@@ -1300,6 +1312,8 @@ ul {
         margin: 0 auto;
 
         header {
+            padding: 0 16px 0 32px;
+
             h2 {
                 font-family: var(--font-ops);
                 font-weight: 500;
@@ -1331,6 +1345,7 @@ ul {
             color: var(--color-box-copy);
             background: var(--color-background-box);
             padding: 20px 32px;
+            border-radius: 16px;
         }
 
         h3 {
@@ -1376,6 +1391,8 @@ ul {
         }
 
         .self-hosted-plan-title {
+            border-radius: 16px 16px 0 14px;
+            margin-bottom: 2px;
             background-color: var(--color-background-box-muted);
         }
     }
@@ -1387,6 +1404,8 @@ ul {
         }
 
         .cloud-plan-title {
+            border-radius: 16px 16px 14px 0;
+            margin-bottom: 2px;
             background-color: var(--color-background-box-muted);
         }
     }
