@@ -526,9 +526,9 @@ def batch_create_table_data(
 
 
 def update_remote_realm_data_for_server(
-    server: RemoteZulipServer, server_realms_info: List[Dict[str, Any]]
+    server: RemoteZulipServer, server_realms_info: List[RealmDataForAnalytics]
 ) -> None:
-    uuids = [realm["uuid"] for realm in server_realms_info]
+    uuids = [realm.uuid for realm in server_realms_info]
     already_registered_remote_realms = RemoteRealm.objects.filter(uuid__in=uuids, server=server)
     already_registered_uuids = {
         remote_realm.uuid for remote_realm in already_registered_remote_realms
@@ -537,14 +537,14 @@ def update_remote_realm_data_for_server(
     new_remote_realms = [
         RemoteRealm(
             server=server,
-            uuid=realm["uuid"],
-            uuid_owner_secret=realm["uuid_owner_secret"],
-            host=realm["host"],
-            realm_deactivated=realm["deactivated"],
-            realm_date_created=timestamp_to_datetime(realm["date_created"]),
+            uuid=realm.uuid,
+            uuid_owner_secret=realm.uuid_owner_secret,
+            host=realm.host,
+            realm_deactivated=realm.deactivated,
+            realm_date_created=timestamp_to_datetime(realm.date_created),
         )
         for realm in server_realms_info
-        if realm["uuid"] not in already_registered_uuids
+        if realm.uuid not in already_registered_uuids
     ]
 
     try:
@@ -552,7 +552,7 @@ def update_remote_realm_data_for_server(
     except IntegrityError:
         raise JsonableError(_("Duplicate registration detected."))
 
-    uuid_to_realm_dict = {str(realm["uuid"]): realm for realm in server_realms_info}
+    uuid_to_realm_dict = {str(realm.uuid): realm for realm in server_realms_info}
     remote_realms_to_update = []
     remote_realm_audit_logs = []
     now = timezone_now()
@@ -567,7 +567,7 @@ def update_remote_realm_data_for_server(
             ("realm_deactivated", "deactivated"),
         ]:
             old_value = getattr(remote_realm, remote_realm_attr)
-            new_value = realm[realm_dict_key]
+            new_value = getattr(realm, realm_dict_key)
             if old_value == new_value:
                 continue
 
@@ -577,7 +577,7 @@ def update_remote_realm_data_for_server(
                     server=server,
                     remote_id=None,
                     remote_realm=remote_realm,
-                    realm_id=realm["id"],
+                    realm_id=realm.id,
                     event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
                     event_time=now,
                     extra_data={
@@ -657,7 +657,7 @@ def remote_server_post_analytics(
         )
 
     if realms is not None:
-        update_remote_realm_data_for_server(server, [dict(realm) for realm in realms])
+        update_remote_realm_data_for_server(server, realms)
 
     remote_realm_counts = [
         RemoteRealmCount(
