@@ -35,6 +35,16 @@
                     {{group.description}}
                 </span>
             </div>
+
+            <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
+                <div class="subsection-header">
+                    <h3 class="user_group_setting_subsection_title">{{t "Group permissions" }}
+                    </h3>
+                    {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
+                </div>
+
+                {{> group_permissions can_mention_group_widget_name="can_mention_group"}}
+            </div>
         </div>
 
         <div class="group_member_settings group_setting_section">

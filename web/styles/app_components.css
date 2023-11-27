@@ -835,7 +835,8 @@ div.overlay {
 }
 
 #stream_settings .save-button-controls,
-#settings_page .save-button-controls {
+#settings_page .save-button-controls,
+#user_group_settings .save-button-controls {
     display: inline;
     margin-left: 15px;
 

@@ -4,7 +4,9 @@ import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import * as settings_components from "./settings_components";
 import * as ui_report from "./ui_report";
+import * as user_group_components from "./user_group_components";
 import * as user_group_create_members from "./user_group_create_members";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 import * as user_groups from "./user_groups";
@@ -122,6 +124,10 @@ function create_user_group() {
     const user_ids = user_group_create_members.get_principals();
     data.members = JSON.stringify(user_ids);
 
+    data.can_mention_group = Number.parseInt(
+        settings_components.new_group_can_mention_group_widget.value(),
+        10,
+    );
     loading.make_indicator($("#user_group_creating_indicator"), {
         text: $t({defaultMessage: "Creating group..."}),
     });
@@ -192,4 +198,6 @@ export function set_up_handlers() {
             e.preventDefault();
         }
     });
+
+    user_group_components.setup_permissions_dropdown(undefined, true);
 }

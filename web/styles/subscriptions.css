@@ -1008,7 +1008,8 @@ div.settings-radio-input-parent {
 }
 
 .stream-permissions,
-.stream-creation-body {
+.stream-creation-body,
+.group-permissions {
     .input-group {
         margin-bottom: 10px;
 
