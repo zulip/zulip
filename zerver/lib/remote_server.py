@@ -7,14 +7,14 @@ import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
-from pydantic import UUID4, BaseModel, ConfigDict
+from pydantic import UUID4, BaseModel, ConfigDict, field_validator
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.models import Realm, RealmAuditLog
+from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
 
 
 class PushBouncerSession(OutgoingSession):
@@ -36,11 +36,20 @@ class RealmDataForAnalytics(BaseModel):
     id: int
     host: str
     url: str
+    org_type: int = 0
     date_created: float
     deactivated: bool
 
     uuid: UUID4
     uuid_owner_secret: str
+
+    @field_validator("org_type")
+    @classmethod
+    def check_is_allowed_value(cls, value: int) -> int:
+        if value not in [org_type.value for org_type in OrgTypeEnum]:
+            raise ValueError("Not a valid org_type value")
+
+        return value
 
 
 class UserDataForRemoteBilling(BaseModel):
@@ -214,6 +223,7 @@ def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[Rea
             url=realm.uri,
             deactivated=realm.deactivated,
             date_created=realm.date_created.timestamp(),
+            org_type=realm.org_type,
         )
         for realm in realms
     ]

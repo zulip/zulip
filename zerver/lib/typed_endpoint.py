@@ -364,6 +364,9 @@ def parse_value_for_parameter(parameter: FuncParam[T], value: object) -> T:
         # This condition matches our StringRequiredConstraint
         elif error["type"] == "string_too_short" and error["ctx"].get("min_length") == 1:
             error_template = _("{var_name} cannot be blank")
+        elif error["type"] == "value_error":
+            context["msg"] = error["msg"]
+            error_template = _("Invalid {var_name}: {msg}")
 
         assert error_template is not None, MISSING_ERROR_TEMPLATE.format(
             error_type=error["type"],

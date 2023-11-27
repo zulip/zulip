@@ -979,6 +979,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     "uuid",
                     "uuid_owner_secret",
                     "host",
+                    "org_type",
                     "realm_date_created",
                     "registration_deactivated",
                     "realm_deactivated",
@@ -991,6 +992,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     "uuid": realm.uuid,
                     "uuid_owner_secret": realm.uuid_owner_secret,
                     "host": realm.host,
+                    "org_type": realm.org_type,
                     "realm_date_created": realm.date_created,
                     "registration_deactivated": False,
                     "realm_deactivated": False,
@@ -1159,6 +1161,26 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         # Only the request counts go up -- all of the other rows' duplicates are dropped
         check_counts(10, 8, 3, 2, 5)
+
+        # Test that only valid org_type values are accepted - integers defined in OrgTypeEnum.
+        realms_data = [dict(realm) for realm in get_realms_info_for_push_bouncer()]
+        # Not a valid org_type value:
+        realms_data[0]["org_type"] = 11
+
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/server/analytics",
+            {
+                "realm_counts": orjson.dumps([]).decode(),
+                "installation_counts": orjson.dumps([]).decode(),
+                "realmauditlog_rows": orjson.dumps([]).decode(),
+                "realms": orjson.dumps(realms_data).decode(),
+            },
+            subdomain="",
+        )
+        self.assert_json_error(
+            result, 'Invalid realms[0]["org_type"]: Value error, Not a valid org_type value'
+        )
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
