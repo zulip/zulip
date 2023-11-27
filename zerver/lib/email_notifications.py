@@ -27,6 +27,7 @@ from zerver.lib.notification_data import get_mentioned_user_group_name
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.topic import get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     huddle_narrow_url,
@@ -248,19 +249,7 @@ def build_message_list(
         relative_to_full_url(fragment, user.realm.uri)
         fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
-
-        # Selecting the <span> elements with class 'katex'
-        katex_spans = fragment.xpath("//span[@class='katex']")
-
-        # Iterate through 'katex_spans' and replace with a new <span> having LaTeX text.
-        for katex_span in katex_spans:
-            latex_text = katex_span.xpath(".//annotation[@encoding='application/x-tex']")[0].text
-            # We store 'tail' to insert them back as the replace operation removes it.
-            tail = katex_span.tail
-            latex_span = lxml.html.Element("span")
-            latex_span.text = f"$${latex_text}$$"
-            katex_span.getparent().replace(katex_span, latex_span)
-            latex_span.tail = tail
+        change_katex_to_raw_latex(fragment)
 
         html = lxml.html.tostring(fragment, encoding="unicode")
         if sender:
