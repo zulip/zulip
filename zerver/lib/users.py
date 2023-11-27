@@ -42,6 +42,7 @@ from zerver.models import (
     get_fake_email_domain,
     get_realm_user_dicts,
     get_user,
+    get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
 )
@@ -278,6 +279,23 @@ def access_user_by_id(
     """
     try:
         target = get_user_profile_by_id_in_realm(target_user_id, user_profile.realm)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("No such user"))
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
+
+
+def access_user_by_id_including_cross_realm(
+    user_profile: UserProfile,
+    target_user_id: int,
+    *,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> UserProfile:
+    """Variant of access_user_by_id allowing cross-realm bots to be accessed."""
+    try:
+        target = get_user_by_id_in_realm_including_cross_realm(target_user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 

@@ -50,6 +50,7 @@ from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     Account,
     access_user_by_id,
+    access_user_by_id_including_cross_realm,
     get_accounts_for_email,
     get_cross_realm_dicts,
     user_ids_to_users,
@@ -428,18 +429,41 @@ class PermissionTest(ZulipTestCase):
 
     def test_access_user_by_id(self) -> None:
         iago = self.example_user("iago")
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
 
         # Must be a valid user ID in the realm
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, 1234, for_admin=False)
         with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, 1234, for_admin=False)
+        with self.assertRaises(JsonableError):
             access_user_by_id(iago, self.mit_user("sipbtest").id, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(
+                iago, self.mit_user("sipbtest").id, for_admin=False
+            )
 
         # Can only access bot users if allow_bots is passed
         bot = self.example_user("default_bot")
         access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
+        access_user_by_id_including_cross_realm(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, bot.id, for_admin=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, bot.id, for_admin=True)
+
+        # Only the including_cross_realm variant works for system bots.
+        system_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=False)
+        access_user_by_id_including_cross_realm(
+            iago, system_bot.id, allow_bots=True, for_admin=False
+        )
+        # And even then, only if `allow_bots` was passed.
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, system_bot.id, for_admin=False)
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
@@ -447,16 +471,32 @@ class PermissionTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=False)
         with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=False)
+
+        with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=True)
         access_user_by_id(iago, hamlet.id, allow_deactivated=True, for_admin=True)
+        access_user_by_id_including_cross_realm(
+            iago, hamlet.id, allow_deactivated=True, for_admin=True
+        )
 
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
             access_user_by_id(
                 self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
             )
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(
+                self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
+            )
+
         # But does have read-only access to it.
         access_user_by_id(
+            self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
+        )
+        access_user_by_id_including_cross_realm(
             self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
         )
 
