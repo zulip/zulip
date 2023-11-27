@@ -1074,6 +1074,8 @@ ul {
     --color-link-underline-hover: hsl(210deg 100% 50%);
     --color-link-underline-alternate: hsl(210deg 94% 100% / 40%);
     --color-link-underline-alternate-hover: hsla(210deg 94% 100% / 80%);
+    --icon-left-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M0 16h16V0c0 8.837-7.163 16-16 16Z'/%3e%3c/svg%3e");
+    --icon-right-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M16 16H0V0c0 8.837 7.163 16 16 16Z'/%3e%3c/svg%3e");
 
     padding: 102px 0 58px;
     background: linear-gradient(
@@ -1226,6 +1228,33 @@ ul {
             margin: 0;
             text-align: center;
             padding-bottom: 14px;
+        }
+
+        /* Shared styles to handle tab curvature. */
+        &::before {
+            width: 16px;
+            height: 16px;
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: -16px;
+            background-color: var(--color-background-box);
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-image: var(--icon-left-outward-tab-curve);
+        }
+
+        &::after {
+            width: 16px;
+            height: 16px;
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: -16px;
+            background-color: var(--color-background-box);
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-image: var(--icon-right-outward-tab-curve);
         }
     }
 
@@ -1389,6 +1418,19 @@ ul {
             display: none;
         }
 
+        .cloud-plan-title {
+            position: relative;
+
+            /* Show curvature on cloud tab. */
+            &::before {
+                display: block;
+            }
+
+            &::after {
+                display: block;
+            }
+        }
+
         .self-hosted-plan-title {
             border-radius: 16px 16px 0 14px;
             margin-bottom: 2px;
@@ -1406,6 +1448,19 @@ ul {
             border-radius: 16px 16px 14px 0;
             margin-bottom: 2px;
             background-color: var(--color-background-box-muted);
+        }
+
+        .self-hosted-plan-title {
+            position: relative;
+
+            /* Show curvature on self-hosted tab. */
+            &::before {
+                display: block;
+            }
+
+            &::after {
+                display: block;
+            }
         }
     }
 }
