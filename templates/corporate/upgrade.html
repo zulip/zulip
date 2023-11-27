@@ -47,6 +47,9 @@
                         {% endif %}
                     </div>
 
+                    {% if free_trial_days %}
+                    <input type="hidden" name="schedule" value="monthly" />
+                    {% else %}
                     <div class="input-box upgrade-page-field no-validation">
                         <select name="schedule" id="payment-schedule-select">
                             <option value="monthly" id="autopay_monthly_price"></option>
@@ -54,6 +57,7 @@
                         </select>
                         <label for="payment-schedule-select">Payment schedule</label>
                     </div>
+                    {% endif %}
 
                     {% if manual_license_management %}
                     <div class="input-box upgrade-page-field">
