@@ -53,8 +53,12 @@
     color: hsl(0deg 0% 64%);
 }
 
-.sub_setting_checkbox .control-label-disabled label {
-    cursor: not-allowed;
+.sub_setting_checkbox {
+    display: flex;
+
+    & .control-label-disabled label {
+        cursor: not-allowed;
+    }
 }
 
 .mute-note {
