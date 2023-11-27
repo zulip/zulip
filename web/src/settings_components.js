@@ -48,7 +48,7 @@ export function get_realm_time_limits_in_minutes(property) {
     return val.toString();
 }
 
-export function get_property_value(property_name, for_realm_default_settings, sub) {
+export function get_property_value(property_name, for_realm_default_settings, sub, group) {
     if (for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
         if (property_name === "twenty_four_hour_time") {
@@ -72,6 +72,10 @@ export function get_property_value(property_name, for_realm_default_settings, su
         }
 
         return sub[property_name];
+    }
+
+    if (group) {
+        return group[property_name];
     }
 
     if (property_name === "realm_org_join_restrictions") {
@@ -240,6 +244,8 @@ export let signup_notifications_stream_widget = null;
 export let create_multiuse_invite_group_widget = null;
 export let can_remove_subscribers_group_widget = null;
 export let can_access_all_users_group_widget = null;
+export let can_mention_group_widget = null;
+export let new_group_can_mention_group_widget = null;
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
@@ -255,6 +261,8 @@ export function get_widget_for_dropdown_list_settings(property_name) {
             return can_remove_subscribers_group_widget;
         case "realm_can_access_all_users_group":
             return can_access_all_users_group_widget;
+        case "can_mention_group":
+            return can_mention_group_widget;
         default:
             blueslip.error("No dropdown list widget for property", {property_name});
             return null;
@@ -283,6 +291,14 @@ export function set_can_remove_subscribers_group_widget(widget) {
 
 export function set_can_access_all_users_group_widget(widget) {
     can_access_all_users_group_widget = widget;
+}
+
+export function set_can_mention_group_widget(widget) {
+    can_mention_group_widget = widget;
+}
+
+export function set_new_group_can_mention_group_widget(widget) {
+    new_group_can_mention_group_widget = widget;
 }
 
 export function set_dropdown_list_widget_setting_value(property_name, value) {
@@ -475,10 +491,10 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     return parse_time_limit($custom_input_elem);
 }
 
-export function check_property_changed(elem, for_realm_default_settings, sub) {
+export function check_property_changed(elem, for_realm_default_settings, sub, group) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
-    let current_val = get_property_value(property_name, for_realm_default_settings, sub);
+    let current_val = get_property_value(property_name, for_realm_default_settings, sub, group);
     let proposed_val;
 
     switch (property_name) {
@@ -493,6 +509,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
+        case "can_mention_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":
@@ -545,12 +562,17 @@ function switching_to_private(properties_elements, for_realm_default_settings) {
     return false;
 }
 
-export function save_discard_widget_status_handler($subsection, for_realm_default_settings, sub) {
+export function save_discard_widget_status_handler(
+    $subsection,
+    for_realm_default_settings,
+    sub,
+    group,
+) {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem, for_realm_default_settings, sub),
+        check_property_changed(elem, for_realm_default_settings, sub, group),
     );
 
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");

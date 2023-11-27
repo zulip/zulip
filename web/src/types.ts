@@ -159,6 +159,7 @@ export type UserGroupUpdateEvent = {
     data: {
         name?: string;
         description?: string;
+        can_mention_group?: number;
     };
 };
 

@@ -20,9 +20,12 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
+import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
+import * as settings_org from "./settings_org";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
+import * as user_group_components from "./user_group_components";
 import * as user_group_create from "./user_group_create";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_groups from "./user_groups";
@@ -241,6 +244,13 @@ export function update_settings_pane(group) {
     const $edit_container = get_edit_container(group);
     $edit_container.find(".group-name").text(group.name);
     $edit_container.find(".group-description").text(group.description);
+
+    settings_org.discard_property_element_changes(
+        $("#id_can_mention_group"),
+        false,
+        undefined,
+        group,
+    );
 }
 
 function update_toggler_for_group_setting() {
@@ -267,6 +277,9 @@ export function show_settings_for(group) {
 
     $edit_container.show();
     show_membership_settings(group);
+    user_group_components.setup_permissions_dropdown(group, false);
+
+    $edit_container.find("button").prop("disabled", !settings_data.can_edit_user_group(group.id));
 }
 
 export function setup_group_settings(group) {
@@ -879,6 +892,48 @@ export function initialize() {
         const $group_row = row_for_group_id(user_group_id);
         add_or_remove_from_group(user_group, $group_row);
     });
+
+    $("#groups_overlay_container").on(
+        "click",
+        ".subsection-header .subsection-changes-save button",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const $save_button = $(e.currentTarget);
+            const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+
+            const group_id = $save_button.closest(".user_group_settings_wrapper").data("group-id");
+            const group = user_groups.get_user_group_from_id(group_id);
+            const data = settings_org.populate_data_for_request(
+                $subsection_elem,
+                false,
+                undefined,
+                group,
+            );
+
+            const url = "/json/user_groups/" + group_id;
+            settings_org.save_organization_settings(data, $save_button, url);
+        },
+    );
+
+    $("#groups_overlay_container").on(
+        "click",
+        ".subsection-header .subsection-changes-discard button",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const group_id = $(e.target).closest(".user_group_settings_wrapper").data("group-id");
+            const group = user_groups.get_user_group_from_id(group_id);
+
+            const $subsection = $(e.target).closest(".settings-subsection-parent");
+            for (const elem of settings_components.get_subsection_property_elements($subsection)) {
+                settings_org.discard_property_element_changes(elem, false, undefined, group);
+            }
+            const $save_btn_controls = $(e.target).closest(".save-button-controls");
+            settings_components.change_save_button_state($save_btn_controls, "discarded");
+        },
+    );
 }
 
 export function launch(section) {
