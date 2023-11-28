@@ -1084,7 +1084,7 @@ li.topic-list-item {
 .dm-box {
     grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
     /* This padding maintains a 22px height on DM rows. */
-    padding: 2.25px 0;
+    padding: 2px 0;
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
