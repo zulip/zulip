@@ -49,10 +49,9 @@ up their license for reuse.
 
 ### How are guest accounts billed? Is there special pricing?
 
-For an organization with N other users, 5*N [guest
-users](/help/roles-and-permissions) are included at no extra charge. After that,
-you will be charged at 1/5 of your regular per-user pricing for each additional
-guest.
+For an organization with N other users, 5*N [guest users](/help/guest-users)
+are included at no extra charge. After that, you will be charged at 1/5 of
+your regular per-user pricing for each additional guest.
 
 ## Related articles
 
