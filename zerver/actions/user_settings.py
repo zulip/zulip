@@ -7,6 +7,7 @@ from django.db.models import F
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.settings import STATUS_REVOKED
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -154,6 +155,11 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         user_profile=user_profile,
         realm=user_profile.realm,
     )
+
+    # Deactivate existing email change requests
+    EmailChangeStatus.objects.filter(realm=user_profile.realm, user_profile=user_profile).exclude(
+        id=obj.id,
+    ).update(status=STATUS_REVOKED)
 
     activation_url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
     from zerver.context_processors import common_context
