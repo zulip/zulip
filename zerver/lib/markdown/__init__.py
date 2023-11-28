@@ -1821,25 +1821,7 @@ def prepare_linkifier_pattern(source: str) -> str:
     # We use an extended definition of 'whitespace' which is
     # equivalent to \p{White_Space} -- since \s in re2 only matches
     # ASCII spaces, and re2 does not support \p{White_Space}.
-    regex = rf"""
-        (?P<{BEFORE_CAPTURE_GROUP}>
-            ^  |
-            \s | {next_line} | \pZ |
-            ['"\(,:<]
-        )
-        (?P<{OUTER_CAPTURE_GROUP}>
-            {source}
-        )
-        (?P<{AFTER_CAPTURE_GROUP}>
-            $ |
-            [^\pL\pN]
-        )
-    """
-    # Strip out the spaces and newlines added to make the above
-    # legible -- re2 does not have the equivalent of the /x modifier
-    # that does this automatically.  Note that we are careful to not
-    # strip _whitespace_, which would strip the literal \u0085 out.
-    return regex.replace(" ", "").replace("\n", "")
+    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # Given a regular expression pattern, linkifies groups that match it
