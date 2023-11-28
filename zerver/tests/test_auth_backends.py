@@ -32,6 +32,7 @@ import ldap
 import orjson
 import requests
 import responses
+import time_machine
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -1931,7 +1932,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         result = self.social_auth_test(
             account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
         )
-        with mock.patch("zerver.models.timezone_now", return_value=now):
+        with time_machine.travel(now, tick=False):
             self.stage_two_of_registration(
                 result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
             )

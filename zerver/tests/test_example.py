@@ -2,6 +2,7 @@ import datetime
 from unittest import mock
 
 import orjson
+import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.users import do_change_can_create_users, do_change_user_role
@@ -491,10 +492,7 @@ class TestMocking(ZulipTestCase):
             seconds=MESSAGE_CONTENT_EDIT_LIMIT + 100
         )  # There's a buffer time applied to the limit, hence the extra 100s.
 
-        with mock.patch(
-            "zerver.actions.message_edit.timezone_now",
-            return_value=time_beyond_edit_limit,
-        ):
+        with time_machine.travel(time_beyond_edit_limit, tick=False):
             result = self.client_patch(
                 f"/json/messages/{sent_message_id}", {"content": "I actually want pizza."}
             )

@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from unittest import mock
 
+import time_machine
+
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
 from zerver.lib.muted_users import get_mute_object, get_muting_users, get_user_mutes
@@ -19,7 +21,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(muted_users, [])
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
 
-        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
@@ -85,7 +87,7 @@ class MutedUsersTests(ZulipTestCase):
         if deactivate_user:
             do_deactivate_user(cordelia, acting_user=None)
 
-        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
@@ -139,12 +141,12 @@ class MutedUsersTests(ZulipTestCase):
         if deactivate_user:
             do_deactivate_user(cordelia, acting_user=None)
 
-        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
 
-        with mock.patch("zerver.actions.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             # To test that `RealmAuditLog` entry has correct `event_time`.
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_delete(hamlet, url)

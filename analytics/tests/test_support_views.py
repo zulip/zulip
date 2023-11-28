@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from unittest import mock
 
 import orjson
+import time_machine
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -356,55 +357,56 @@ class TestSupportEndpoint(ZulipTestCase):
         check_zulip_realm_query_result(result)
         check_lear_realm_query_result(result)
 
-        with mock.patch(
-            "analytics.views.support.timezone_now",
-            return_value=timezone_now() - timedelta(minutes=50),
-        ):
-            self.client_post("/accounts/home/", {"email": self.nonreg_email("test")})
-            self.login("iago")
-            result = get_check_query_result(self.nonreg_email("test"), 1)
-            check_preregistration_user_query_result(result, self.nonreg_email("test"))
-            check_zulip_realm_query_result(result)
+        self.client_post("/accounts/home/", {"email": self.nonreg_email("test")})
+        self.login("iago")
 
-            create_invitation("Denmark", self.nonreg_email("test1"))
-            result = get_check_query_result(self.nonreg_email("test1"), 1)
-            check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)
-            check_zulip_realm_query_result(result)
+        def query_result_from_before(*args: Any) -> "TestHttpResponse":
+            with time_machine.travel((timezone_now() - timedelta(minutes=50)), tick=False):
+                return get_check_query_result(*args)
 
-            email = self.nonreg_email("alice")
-            self.submit_realm_creation_form(
-                email, realm_subdomain="custom-test", realm_name="Zulip test"
-            )
-            result = get_check_query_result(email, 1)
-            check_realm_creation_query_result(result, email)
+        result = query_result_from_before(self.nonreg_email("test"), 1)
+        check_preregistration_user_query_result(result, self.nonreg_email("test"))
+        check_zulip_realm_query_result(result)
 
-            invite_expires_in_minutes = 10 * 24 * 60
-            do_create_multiuse_invite_link(
-                self.example_user("hamlet"),
-                invited_as=1,
-                invite_expires_in_minutes=invite_expires_in_minutes,
-            )
-            result = get_check_query_result("zulip", 2)
-            check_multiuse_invite_link_query_result(result)
-            check_zulip_realm_query_result(result)
-            MultiuseInvite.objects.all().delete()
+        create_invitation("Denmark", self.nonreg_email("test1"))
+        result = query_result_from_before(self.nonreg_email("test1"), 1)
+        check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)
+        check_zulip_realm_query_result(result)
 
-            do_send_realm_reactivation_email(get_realm("zulip"), acting_user=None)
-            result = get_check_query_result("zulip", 2)
-            check_realm_reactivation_link_query_result(result)
-            check_zulip_realm_query_result(result)
+        email = self.nonreg_email("alice")
+        self.submit_realm_creation_form(
+            email, realm_subdomain="custom-test", realm_name="Zulip test"
+        )
+        result = query_result_from_before(email, 1)
+        check_realm_creation_query_result(result, email)
 
-            lear_nonreg_email = "newguy@lear.org"
-            self.client_post("/accounts/home/", {"email": lear_nonreg_email}, subdomain="lear")
-            result = get_check_query_result(lear_nonreg_email, 1)
-            check_preregistration_user_query_result(result, lear_nonreg_email)
-            check_lear_realm_query_result(result)
+        invite_expires_in_minutes = 10 * 24 * 60
+        do_create_multiuse_invite_link(
+            self.example_user("hamlet"),
+            invited_as=1,
+            invite_expires_in_minutes=invite_expires_in_minutes,
+        )
+        result = query_result_from_before("zulip", 2)
+        check_multiuse_invite_link_query_result(result)
+        check_zulip_realm_query_result(result)
+        MultiuseInvite.objects.all().delete()
 
-            self.login_user(lear_user)
-            create_invitation("general", "newguy2@lear.org", lear_realm)
-            result = get_check_query_result("newguy2@lear.org", 1, lear_realm.string_id)
-            check_preregistration_user_query_result(result, "newguy2@lear.org", invite=True)
-            check_lear_realm_query_result(result)
+        do_send_realm_reactivation_email(get_realm("zulip"), acting_user=None)
+        result = query_result_from_before("zulip", 2)
+        check_realm_reactivation_link_query_result(result)
+        check_zulip_realm_query_result(result)
+
+        lear_nonreg_email = "newguy@lear.org"
+        self.client_post("/accounts/home/", {"email": lear_nonreg_email}, subdomain="lear")
+        result = query_result_from_before(lear_nonreg_email, 1)
+        check_preregistration_user_query_result(result, lear_nonreg_email)
+        check_lear_realm_query_result(result)
+
+        self.login_user(lear_user)
+        create_invitation("general", "newguy2@lear.org", lear_realm)
+        result = query_result_from_before("newguy2@lear.org", 1, lear_realm.string_id)
+        check_preregistration_user_query_result(result, "newguy2@lear.org", invite=True)
+        check_lear_realm_query_result(result)
 
     def test_get_org_type_display_name(self) -> None:
         self.assertEqual(get_org_type_display_name(Realm.ORG_TYPES["business"]["id"]), "Business")

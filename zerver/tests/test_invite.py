@@ -1439,7 +1439,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email=email, referred_by=inviter, realm=realm
         )
         date_sent = timezone_now() - datetime.timedelta(weeks=3)
-        with patch("confirmation.models.timezone_now", return_value=date_sent):
+        with time_machine.travel(date_sent, tick=False):
             url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
 
         key = url.split("/")[-1]
@@ -1782,10 +1782,7 @@ class InvitationsTestCase(InviteUserBase):
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
-        with patch(
-            "confirmation.models.timezone_now",
-            return_value=timezone_now() - datetime.timedelta(days=3),
-        ):
+        with time_machine.travel((timezone_now() - datetime.timedelta(days=3)), tick=False):
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
@@ -1828,10 +1825,7 @@ class InvitationsTestCase(InviteUserBase):
             get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
         ]
 
-        with patch(
-            "confirmation.models.timezone_now",
-            return_value=timezone_now() - datetime.timedelta(days=1000),
-        ):
+        with time_machine.travel((timezone_now() - datetime.timedelta(days=1000)), tick=False):
             # Testing the invitation with expiry date set to "None" exists
             # after a large amount of days.
             do_invite_users(
@@ -2291,7 +2285,7 @@ class MultiuseInviteTest(ZulipTestCase):
         if date_sent is None:
             date_sent = timezone_now()
         validity_in_minutes = 2 * 24 * 60
-        with patch("confirmation.models.timezone_now", return_value=date_sent):
+        with time_machine.travel(date_sent, tick=False):
             return create_confirmation_link(
                 invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
             )

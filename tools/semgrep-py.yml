@@ -282,3 +282,16 @@ rules:
       Specify timedelta with named arguments.
     languages: [python]
     severity: ERROR
+
+  - id: time-machine
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: patch("$FUNCTION", return_value=$TIME)
+          - pattern: mock.patch("$FUNCTION", return_value=$TIME)
+      - metavariable-regex:
+          metavariable: $FUNCTION
+          regex: .*timezone_now
+    fix: time_machine.travel($TIME, tick=False)
+    severity: ERROR
+    message: "Use the time_machine package, rather than mocking timezone_now"

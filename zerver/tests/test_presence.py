@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Any, Dict
 from unittest import mock
 
+import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -238,7 +239,7 @@ class UserPresenceTests(ZulipTestCase):
         self.login("hamlet")
         self.assertEqual(UserActivityInterval.objects.filter(user_profile=user_profile).count(), 0)
         time_zero = timezone_now().replace(microsecond=0)
-        with mock.patch("zerver.views.presence.timezone_now", return_value=time_zero):
+        with time_machine.travel(time_zero, tick=False):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "active", "new_user_input": "true"}
             )
@@ -250,7 +251,7 @@ class UserPresenceTests(ZulipTestCase):
 
         second_time = time_zero + timedelta(seconds=600)
         # Extent the interval
-        with mock.patch("zerver.views.presence.timezone_now", return_value=second_time):
+        with time_machine.travel(second_time, tick=False):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "active", "new_user_input": "true"}
             )
@@ -261,7 +262,7 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(interval.end, second_time + UserActivityInterval.MIN_INTERVAL_LENGTH)
 
         third_time = time_zero + timedelta(seconds=6000)
-        with mock.patch("zerver.views.presence.timezone_now", return_value=third_time):
+        with time_machine.travel(third_time, tick=False):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "active", "new_user_input": "true"}
             )
@@ -529,22 +530,21 @@ class UserPresenceAggregationTests(ZulipTestCase):
         self, user: UserProfile, status: str, validate_time: datetime.datetime
     ) -> Dict[str, Dict[str, Any]]:
         self.login_user(user)
-        timezone_util = "zerver.views.presence.timezone_now"
         # First create some initial, old presence to avoid the details of the edge case of initial
         # presence creation messing with the intended setup.
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(days=365)):
+        with time_machine.travel((validate_time - datetime.timedelta(days=365)), tick=False):
             self.client_post("/json/users/me/presence", {"status": status})
 
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):
+        with time_machine.travel((validate_time - datetime.timedelta(seconds=5)), tick=False):
             self.client_post("/json/users/me/presence", {"status": status})
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=2)):
+        with time_machine.travel((validate_time - datetime.timedelta(seconds=2)), tick=False):
             self.api_post(
                 user,
                 "/api/v1/users/me/presence",
                 {"status": status},
                 HTTP_USER_AGENT="ZulipAndroid/1.0",
             )
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=7)):
+        with time_machine.travel((validate_time - datetime.timedelta(seconds=7)), tick=False):
             latest_result = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -571,10 +571,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         offset = datetime.timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 1)
         validate_time = timezone_now() - offset
         self._send_presence_for_aggregated_tests(user, "active", validate_time)
-        with mock.patch(
-            "zerver.views.presence.timezone_now",
-            return_value=validate_time + offset,
-        ):
+        with time_machine.travel((validate_time + offset), tick=False):
             result = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -620,10 +617,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         self.login_user(user)
         validate_time = timezone_now()
         self._send_presence_for_aggregated_tests(user, "idle", validate_time)
-        with mock.patch(
-            "zerver.views.presence.timezone_now",
-            return_value=validate_time - datetime.timedelta(seconds=3),
-        ):
+        with time_machine.travel((validate_time - datetime.timedelta(seconds=3)), tick=False):
             result_dict = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -646,10 +640,9 @@ class UserPresenceAggregationTests(ZulipTestCase):
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(user, "idle", validate_time)
 
-        with mock.patch(
-            "zerver.views.presence.timezone_now",
-            return_value=validate_time
-            + datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1),
+        with time_machine.travel(
+            (validate_time + datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1)),
+            tick=False,
         ):
             # After settings.OFFLINE_THRESHOLD_SECS + 1 this generated, recent presence data
             # will count as offline.
