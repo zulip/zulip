@@ -419,6 +419,7 @@ run_test("scheduled_messages", ({override}) => {
 
 run_test("realm settings", ({override}) => {
     page_params.is_admin = true;
+    page_params.realm_date_created = new Date("2023-01-01Z");
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
