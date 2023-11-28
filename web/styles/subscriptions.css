@@ -174,15 +174,6 @@ h4.user_group_setting_subsection_title {
                 display: inline-block;
             }
 
-            & tbody:empty::after,
-            &:empty::after {
-                content: "No subscribers to this stream.";
-                display: block;
-
-                color: hsl(0deg 0% 67%);
-                padding: 5px 5px 5px 10px;
-            }
-
             & thead th {
                 &:first-of-type {
                     border-top-left-radius: 4px;
