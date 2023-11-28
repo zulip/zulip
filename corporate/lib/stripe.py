@@ -1396,7 +1396,7 @@ class BillingSession(ABC):
         free_trial_end_date = None
         if free_trial_days is not None:
             _, _, free_trial_end, _ = compute_plan_parameters(
-                CustomerPlan.STANDARD, False, CustomerPlan.ANNUAL, None, True
+                tier, False, CustomerPlan.ANNUAL, None, True
             )
             free_trial_end_date = f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
 
