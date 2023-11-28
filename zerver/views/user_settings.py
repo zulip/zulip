@@ -80,6 +80,14 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
             id=email_change_object.user_profile_id
         )
 
+        if user_profile.delivery_email != old_email:
+            # This is not expected to be possible, since we deactivate
+            # any previous email changes when we create a new one, but
+            # double-check.
+            return render_confirmation_key_error(
+                request, ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
+            )  # nocoverage
+
         if user_profile.realm.deactivated:
             return redirect_to_deactivation_notice()
 

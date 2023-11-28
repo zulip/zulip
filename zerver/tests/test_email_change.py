@@ -131,6 +131,25 @@ class EmailChangeTestCase(ZulipTestCase):
         response = self.client_get(activation_url)
         self.assertEqual(response.status_code, 404)
 
+    def test_change_email_revokes(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        old_email = user_profile.delivery_email
+
+        first_email = "hamlet-newer@zulip.com"
+        first_url = self.generate_email_change_link(first_email)
+        second_email = "hamlet-newest@zulip.com"
+        second_url = self.generate_email_change_link(second_email)
+        response = self.client_get(first_url)
+        self.assertEqual(response.status_code, 404)
+        user_profile.refresh_from_db()
+        self.assertEqual(user_profile.delivery_email, old_email)
+
+        response = self.client_get(second_url)
+        self.assertEqual(response.status_code, 200)
+        user_profile.refresh_from_db()
+        self.assertEqual(user_profile.delivery_email, second_email)
+
     def test_change_email_deactivated_user_realm(self) -> None:
         new_email = "hamlet-new@zulip.com"
         user_profile = self.example_user("hamlet")
