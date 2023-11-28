@@ -179,6 +179,11 @@ Parameters accepted in the URL include:
   name. By default the integration will send direct messages to the
   bot's owner.
 
+    !!! tip ""
+
+        A stream ID can be found when [browsing streams][browse-streams]
+        in the web app via the URL.
+
 * `topic`: The topic in the specified stream for the integration to
   send notifications to. The topic should also be
   [URL-encoded][url-encoder]. By default the integration will have a
@@ -189,5 +194,6 @@ Parameters accepted in the URL include:
   notification. For details, see the integration's [integration
   documentation](/integrations) page.
 
+[browse-streams]: /help/browse-and-subscribe-to-streams
 [add-bot]: /help/add-a-bot-or-integration
 [url-encoder]: https://www.urlencoder.org/
