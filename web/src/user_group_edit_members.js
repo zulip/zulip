@@ -50,6 +50,7 @@ function format_member_list_elem(person) {
         is_current_user: person.user_id === page_params.user_id,
         email: person.delivery_email,
         can_remove_subscribers: settings_data.can_edit_user_group(current_group_id),
+        for_user_group_members: true,
     });
 }
 
