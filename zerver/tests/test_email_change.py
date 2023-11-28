@@ -241,6 +241,49 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Already has an account", result)
 
+    def test_email_change_already_taken_later(self) -> None:
+        conflict_email = "conflict@zulip.com"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        self.login_user(hamlet)
+        hamlet_url = self.generate_email_change_link(conflict_email)
+        self.logout()
+
+        self.login_user(cordelia)
+        cordelia_url = self.generate_email_change_link(conflict_email)
+        response = self.client_get(cordelia_url)
+        self.assertEqual(response.status_code, 200)
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.delivery_email, conflict_email)
+
+        self.logout()
+        self.login_user(hamlet)
+        response = self.client_get(hamlet_url)
+        self.assertEqual(response.status_code, 400)
+        self.assert_in_response("Already has an account", response)
+
+    def test_change_email_to_disposable_email(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Make the realm allow permissive email changes, create a
+        # link, and then lock the permissions down -- the change
+        # should not be allowed when the link is followed.
+        realm = hamlet.realm
+        realm.disallow_disposable_email_addresses = False
+        realm.emails_restricted_to_domains = False
+        realm.save()
+
+        self.login_user(hamlet)
+        confirmation_url = self.generate_email_change_link("hamlet@mailnator.com")
+
+        realm.disallow_disposable_email_addresses = True
+        realm.save()
+
+        response = self.client_get(confirmation_url)
+        self.assertEqual(response.status_code, 400)
+        self.assert_in_response("Please use your real email address.", response)
+
     def test_unauthorized_email_change_from_email_confirmation_link(self) -> None:
         new_email = "hamlet-new@zulip.com"
         user_profile = self.example_user("hamlet")

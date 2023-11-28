@@ -64,6 +64,31 @@ from zproject.backends import check_password_strength, email_belongs_to_ldap
 AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
 
+def validate_email_change_request(user_profile: UserProfile, new_email: str) -> None:
+    if not user_profile.is_active:
+        # TODO: Make this into a user-facing error, not JSON
+        raise UserDeactivatedError
+
+    if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
+        raise JsonableError(_("Email address changes are disabled in this organization."))
+
+    error = validate_email_is_valid(
+        new_email,
+        get_realm_email_validator(user_profile.realm),
+    )
+    if error:
+        raise JsonableError(error)
+
+    try:
+        validate_email_not_already_in_realm(
+            user_profile.realm,
+            new_email,
+            verbose=False,
+        )
+    except ValidationError as e:
+        raise JsonableError(e.message)
+
+
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
         email_change_object = get_object_from_key(
@@ -91,13 +116,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
         if user_profile.realm.deactivated:
             return redirect_to_deactivation_notice()
 
-        if not user_profile.is_active:
-            # TODO: Make this into a user-facing error, not JSON
-            raise UserDeactivatedError
-
-        if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
-            raise JsonableError(_("Email address changes are disabled in this organization."))
-
+        validate_email_change_request(user_profile, new_email)
         do_change_user_delivery_email(user_profile, new_email)
 
     user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)
@@ -351,24 +370,7 @@ def json_change_settings(
     if email is not None:
         new_email = email.strip()
         if user_profile.delivery_email != new_email:
-            if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
-                raise JsonableError(_("Email address changes are disabled in this organization."))
-
-            error = validate_email_is_valid(
-                new_email,
-                get_realm_email_validator(user_profile.realm),
-            )
-            if error:
-                raise JsonableError(error)
-
-            try:
-                validate_email_not_already_in_realm(
-                    user_profile.realm,
-                    new_email,
-                    verbose=False,
-                )
-            except ValidationError as e:
-                raise JsonableError(e.message)
+            validate_email_change_request(user_profile, new_email)
 
             ratelimited, time_until_free = RateLimitedUser(
                 user_profile, domain="email_change_by_user"
