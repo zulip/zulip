@@ -240,27 +240,30 @@ def send_analytics_to_push_bouncer() -> None:
         logger.warning(e.msg, exc_info=True)
         return
 
+    # Gather only entries with IDs greater than the last ID received by the push bouncer.
+    # We don't re-send old data that's already been submitted.
     last_acked_realm_count_id = result["last_realm_count_id"]
     last_acked_installation_count_id = result["last_installation_count_id"]
     last_acked_realmauditlog_id = result["last_realmauditlog_id"]
 
-    # Gather only entries with IDs greater than the last ID received by the push bouncer.
-    # We don't re-send old data that's already been submitted.
-    (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
-        realm_count_query=RealmCount.objects.filter(id__gt=last_acked_realm_count_id),
-        installation_count_query=InstallationCount.objects.filter(
+    if settings.SUBMIT_USAGE_STATISTICS:
+        installation_count_query = InstallationCount.objects.filter(
             id__gt=last_acked_installation_count_id
-        ),
+        )
+        realm_count_query = RealmCount.objects.filter(id__gt=last_acked_realm_count_id)
+    else:
+        installation_count_query = InstallationCount.objects.none()
+        realm_count_query = RealmCount.objects.none()
+
+    (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
+        realm_count_query=realm_count_query,
+        installation_count_query=installation_count_query,
         realmauditlog_query=RealmAuditLog.objects.filter(
             event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS, id__gt=last_acked_realmauditlog_id
         ),
     )
 
     record_count = len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data)
-    if record_count == 0:
-        logger.info("No new records to report.")
-        return
-
     request = {
         "realm_counts": orjson.dumps(realm_count_data).decode(),
         "installation_counts": orjson.dumps(installation_count_data).decode(),

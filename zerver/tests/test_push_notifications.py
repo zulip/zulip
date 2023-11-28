@@ -969,8 +969,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(InstallationCount.objects.count(), 1)
         self.assertEqual(RealmAuditLog.objects.filter(id__gt=audit_log_max_id).count(), 2)
 
+        with self.settings(SUBMIT_USAGE_STATISTICS=False):
+            # With this setting off, we don't send RealmCounts and InstallationCounts.
+            send_analytics_to_push_bouncer()
+        check_counts(2, 2, 0, 0, 1)
+
         send_analytics_to_push_bouncer()
-        check_counts(2, 2, 1, 1, 1)
+        check_counts(3, 3, 1, 1, 1)
 
         self.assertEqual(
             list(
@@ -1015,7 +1020,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         do_deactivate_realm(zephyr_realm, acting_user=None)
 
         send_analytics_to_push_bouncer()
-        check_counts(3, 3, 1, 1, 4)
+        check_counts(4, 4, 1, 1, 4)
 
         zephyr_remote_realm = RemoteRealm.objects.get(uuid=zephyr_realm.uuid)
         self.assertEqual(zephyr_remote_realm.host, zephyr_realm.host)
@@ -1059,7 +1064,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # Test having no new rows
         send_analytics_to_push_bouncer()
-        check_counts(4, 3, 1, 1, 4)
+        check_counts(5, 5, 1, 1, 4)
 
         # Test only having new RealmCount rows
         RealmCount.objects.create(
@@ -1075,14 +1080,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
             value=9,
         )
         send_analytics_to_push_bouncer()
-        check_counts(5, 4, 3, 1, 4)
+        check_counts(6, 6, 3, 1, 4)
 
         # Test only having new InstallationCount rows
         InstallationCount.objects.create(
             property=realm_stat.property, end_time=end_time + datetime.timedelta(days=1), value=6
         )
         send_analytics_to_push_bouncer()
-        check_counts(6, 5, 3, 2, 4)
+        check_counts(7, 7, 3, 2, 4)
 
         # Test only having new RealmAuditLog rows
         # Non-synced event
@@ -1094,7 +1099,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             extra_data={"data": "foo"},
         )
         send_analytics_to_push_bouncer()
-        check_counts(7, 5, 3, 2, 4)
+        check_counts(8, 8, 3, 2, 4)
         # Synced event
         RealmAuditLog.objects.create(
             realm=user.realm,
@@ -1106,7 +1111,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             },
         )
         send_analytics_to_push_bouncer()
-        check_counts(8, 6, 3, 2, 5)
+        check_counts(9, 9, 3, 2, 5)
 
         # Now create an InstallationCount with a property that's not supposed
         # to be tracked by the remote server - since the bouncer itself tracks
@@ -1126,7 +1131,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         # The analytics endpoint call counts increase by 1, but the actual RemoteCounts remain unchanged,
         # since syncing the data failed.
-        check_counts(9, 7, 3, 2, 5)
+        check_counts(10, 10, 3, 2, 5)
         forbidden_installation_count.delete()
 
         (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
@@ -1160,7 +1165,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ],
         )
         # Only the request counts go up -- all of the other rows' duplicates are dropped
-        check_counts(10, 8, 3, 2, 5)
+        check_counts(11, 11, 3, 2, 5)
 
         # Test that only valid org_type values are accepted - integers defined in OrgTypeEnum.
         realms_data = [dict(realm) for realm in get_realms_info_for_push_bouncer()]

@@ -147,6 +147,13 @@ _Released 2023-11-16_
 
 #### Upgrade notes for 8.0
 
+- Installations using the [Mobile Push Notifications
+  Service][mobile-push] now regularly upload [basic
+  metadata][mobile-push-metadata] about the organizations hosted by
+  the installation to the Mobile Push Notifications
+  Service. Previously, basic metadata was uploaded only when uploading
+  usage statistics was also enabled via the `SUBMIT_USAGE_STATISTICS`
+  setting.
 - This release contains several expensive migrations, most notably
   `0472_add_message_realm_id_indexes.py`,
   `0485_alter_usermessage_flags_and_add_index.py`, and
@@ -165,6 +172,8 @@ _Released 2023-11-16_
   authentication but not explicitly configured with advanced access
   controls. This behavior was removed to simplify hosting multiple
   organizations with different LDAP configuration preferences.
+
+[mobile-push-metadata]: ../production/mobile-push-notifications.md#uploading-usage-statistics
 
 ## Zulip Server 7.x series
 
