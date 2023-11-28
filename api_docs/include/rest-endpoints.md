@@ -117,3 +117,4 @@
 
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
+* [Send a test notification to mobile device(s)](/api/test-notify)

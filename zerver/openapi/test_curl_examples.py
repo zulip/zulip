@@ -24,6 +24,12 @@ from zerver.openapi.curl_param_value_generators import (
 )
 from zerver.openapi.openapi import get_endpoint_from_operationid
 
+UNTESTED_GENERATED_CURL_EXAMPLES = {
+    # Would need push notification bouncer set up to test the
+    # generated curl example for this endpoint.
+    "test-notify",
+}
+
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
     default_authentication_line = f"{client.email}:{client.api_key}"
@@ -42,9 +48,10 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     with open(rest_endpoints_path) as f:
         rest_endpoints_raw = f.read()
     ENDPOINT_REGEXP = re.compile(r"/api/\s*(.*?)\)")
-    endpoint_list = sorted(set(re.findall(ENDPOINT_REGEXP, rest_endpoints_raw)))
+    documented_endpoints = set(re.findall(ENDPOINT_REGEXP, rest_endpoints_raw))
+    endpoints_to_test = sorted(documented_endpoints.difference(UNTESTED_GENERATED_CURL_EXAMPLES))
 
-    for endpoint in endpoint_list:
+    for endpoint in endpoints_to_test:
         article_name = endpoint + ".md"
         file_name = os.path.join(settings.DEPLOY_ROOT, "api_docs/", article_name)
 
