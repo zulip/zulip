@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import * as narrow_state from "./narrow_state";
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
@@ -214,5 +215,16 @@ export function initialize() {
         e.preventDefault();
 
         zoom_out();
+    });
+
+    // When the Direct Messages are collapsed we need to make the current dm conversation
+    // in-active and hide the dm item,
+    // if a stream is clicked upon.
+    $("#streams_list .narrow-filter").on("click", (e) => {
+        e.preventDefault();
+
+        // Whenever a stream is clicked we reset the current filter and update the private message list.
+        narrow_state.reset_current_filter();
+        update_private_messages();
     });
 }
