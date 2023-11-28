@@ -4,6 +4,7 @@ import $ from "jquery";
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -665,6 +666,17 @@ export function initialize() {
         return true;
     });
 
+    const save_stream_privacy_settings = ($save_button) => {
+        const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+
+        const stream_id = $save_button.closest(".subscription_settings.show").data("stream-id");
+        const sub = sub_store.get(stream_id);
+        const data = settings_org.populate_data_for_request($subsection_elem, false, sub);
+
+        const url = "/json/streams/" + stream_id;
+        settings_org.save_organization_settings(data, $save_button, url);
+    };
+
     $("#streams_overlay_container").on(
         "click",
         ".subsection-header .subsection-changes-save button",
@@ -672,14 +684,17 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
             const $save_button = $(e.currentTarget);
-            const $subsection_elem = $save_button.closest(".settings-subsection-parent");
 
-            const stream_id = $save_button.closest(".subscription_settings.show").data("stream-id");
-            const sub = sub_store.get(stream_id);
-            const data = settings_org.populate_data_for_request($subsection_elem, false, sub);
-
-            const url = "/json/streams/" + stream_id;
-            settings_org.save_organization_settings(data, $save_button, url);
+            dialog_widget.launch({
+                html_heading: $t_html({defaultMessage: "Confirm stream privacy change"}),
+                html_body: render_confirm_stream_privacy_change_modal,
+                id: "confirm_stream_privacy_change",
+                html_submit_button: $t_html({defaultMessage: "Confirm"}),
+                on_click() {
+                    save_stream_privacy_settings($save_button);
+                },
+                close_on_submit: true,
+            });
         },
     );
 
