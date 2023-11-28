@@ -51,51 +51,54 @@ class RemoteCountTest(ZulipTestCase):
         # we actually don't record 0s), then the function should just very reasonably return 0.
         self.assertEqual(compute_max_monthly_messages(self.server), 0)
 
-        # Last 30 days of data:
+        # We insert these oldest-first so that the ids are in a
+        # realistic order.  This is >90 days ago and should be ignored
+        # for the calculation. We simulate the highest amounts of
+        # messages here, to test that this is indeed ignored.
         RemoteInstallationCount.objects.bulk_create(
             RemoteInstallationCount(
                 server=self.server,
-                remote_id=1,
-                property="messages_sent:message_type:day",
-                value=10,
-                end_time=now_offset - datetime.timedelta(days=t),
-            )
-            for t in range(1, 31)
-        )
-        # 30 days before that:
-        # This will be the peak of the last 3 months - with 900 messages total
-        RemoteInstallationCount.objects.bulk_create(
-            RemoteInstallationCount(
-                server=self.server,
-                remote_id=1,
-                property="messages_sent:message_type:day",
-                value=30,
-                end_time=now_offset - datetime.timedelta(days=30 + t),
-            )
-            for t in range(1, 31)
-        )
-        # Additional 30 days before that:
-        # This is the last month we're considering for the calculation
-        RemoteInstallationCount.objects.bulk_create(
-            RemoteInstallationCount(
-                server=self.server,
-                remote_id=1,
-                property="messages_sent:message_type:day",
-                value=20,
-                end_time=now_offset - datetime.timedelta(days=60 + t),
-            )
-            for t in range(1, 31)
-        )
-        # Additional 30 days before that:
-        # This is >90 days ago and should be ignored for the calculation. We simulate the highest
-        # amounts of messages here, to test that this is indeed ignored.
-        RemoteInstallationCount.objects.bulk_create(
-            RemoteInstallationCount(
-                server=self.server,
-                remote_id=1,
+                remote_id=1 + t,
                 property="messages_sent:message_type:day",
                 value=100,
-                end_time=now_offset - datetime.timedelta(days=90 + t),
+                end_time=now_offset - datetime.timedelta(days=90 + (31 - t)),
+            )
+            for t in range(1, 31)
+        )
+
+        # Days 60 - 89 ago; this is the last month we're considering for
+        # the calculation
+        RemoteInstallationCount.objects.bulk_create(
+            RemoteInstallationCount(
+                server=self.server,
+                remote_id=31 + t,
+                property="messages_sent:message_type:day",
+                value=20,
+                end_time=now_offset - datetime.timedelta(days=60 + (31 - t)),
+            )
+            for t in range(1, 31)
+        )
+        # Days 30 - 59 ago: this will be the peak of the last 3 months -
+        # with 900 messages total
+        RemoteInstallationCount.objects.bulk_create(
+            RemoteInstallationCount(
+                server=self.server,
+                remote_id=61 + t,
+                property="messages_sent:message_type:day",
+                value=30,
+                end_time=now_offset - datetime.timedelta(days=30 + (31 - t)),
+            )
+            for t in range(1, 31)
+        )
+
+        # Days 0 - 29 ago:
+        RemoteInstallationCount.objects.bulk_create(
+            RemoteInstallationCount(
+                server=self.server,
+                remote_id=91 + t,
+                property="messages_sent:message_type:day",
+                value=10,
+                end_time=now_offset - datetime.timedelta(days=(31 - t)),
             )
             for t in range(1, 31)
         )
