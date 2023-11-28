@@ -489,6 +489,11 @@ input[type="checkbox"] {
     .subsection-header h3 {
         display: inline-block;
     }
+
+    .tip {
+        width: fit-content;
+        margin-top: 0;
+    }
 }
 
 #stream-specific-notify-table .unmute_stream {
