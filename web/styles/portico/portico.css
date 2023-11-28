@@ -1173,6 +1173,10 @@ input.new-organization-button {
             }
         }
     }
+
+    .top-links .find-accounts-link {
+        display: none;
+    }
 }
 
 @media (width <= 500px) {
