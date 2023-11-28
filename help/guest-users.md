@@ -28,6 +28,20 @@ can:
 Zulip Cloud plans have [special discounted
 pricing](/help/zulip-cloud-billing#temporary-users-and-guests) for guest users.
 
+## Configure guest indicator
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|organization-permissions}
+
+1. Under **Guests**, toggle **Display “(guest)” after names of guest users**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Related articles
 
 * [Roles and permissions](/help/roles-and-permissions)
