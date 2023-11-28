@@ -1709,7 +1709,7 @@ Output:
 
         def set_age(user_name: str, age: int) -> None:
             user = self.example_user(user_name)
-            user.date_joined = timezone_now() - timedelta(age)
+            user.date_joined = timezone_now() - timedelta(days=age)
             user.save()
 
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
