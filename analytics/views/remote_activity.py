@@ -38,6 +38,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             rserver.id,
             rserver.hostname,
             rserver.contact_email,
+            rserver.last_version,
             max_value,
             push_user_count,
             max_end_time
@@ -52,6 +53,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "ID",
         "Hostname",
         "Contact email",
+        "Zulip version",
         "Analytics users",
         "Mobile users",
         "Last update time",
@@ -61,7 +63,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
 
     rows = get_query_data(query)
     total_row = []
-    totals_columns = [3, 4]
+    totals_columns = [4, 5]
     for row in rows:
         stats = remote_installation_stats_link(row[0])
         row.append(stats)
