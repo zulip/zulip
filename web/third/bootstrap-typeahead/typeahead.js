@@ -526,6 +526,13 @@ import {get_string_diff} from "../../src/util";
           }
           break
 
+        // to stop typeahead from showing up momentarily
+        // when shift + tabbing to the topic field
+        case 16: // shift
+          if (e.currentTarget.id === "stream_message_recipient_topic") {
+            return;
+          }
+
         default:
           var hideOnEmpty = false
           // backspace
