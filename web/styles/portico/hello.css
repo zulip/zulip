@@ -1203,7 +1203,6 @@ ul {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
         grid-template-rows: auto;
-        justify-items: center;
     }
 
     .pricing-tab {
@@ -1292,7 +1291,20 @@ ul {
             height: 100%;
             display: flex;
             flex-direction: column;
-            max-width: 332px;
+            border-right: 1px dashed hsl(223deg 40% 25% / 20%);
+
+            &:last-child {
+                border-right: 0;
+            }
+
+            .text-content {
+                max-width: 332px;
+                margin: 0 auto;
+            }
+
+            .bottom .text-content {
+                max-width: 268px;
+            }
         }
 
         .text-content {
@@ -1506,6 +1518,11 @@ ul {
             &::after {
                 display: block;
             }
+
+            p {
+                border-bottom: 1px dashed hsl(223deg 40% 25% / 20%);
+                margin: 0 10px;
+            }
         }
 
         .self-hosted-plan-title {
@@ -1537,6 +1554,11 @@ ul {
 
             &::after {
                 display: block;
+            }
+
+            p {
+                border-bottom: 1px dashed hsl(223deg 40% 25% / 20%);
+                margin: 0 10px;
             }
         }
     }
