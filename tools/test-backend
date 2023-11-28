@@ -50,8 +50,9 @@ not_yet_fully_covered = [
     "analytics/lib/fixtures.py",
     # We have 100% coverage on the new stuff; need to refactor old stuff.
     "analytics/views/activity_common.py",
-    "analytics/views/realm_activity.py",
     "analytics/views/installation_activity.py",
+    "analytics/views/realm_activity.py",
+    "analytics/views/remote_activity.py",
     "analytics/views/stats.py",
     "analytics/views/support.py",
     # TODO: This is a work in progress and therefore without

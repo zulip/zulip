@@ -2,7 +2,14 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from psycopg2.sql import SQL
 
-from analytics.views.activity_common import get_page
+from analytics.views.activity_common import (
+    fix_rows,
+    format_date_for_activity_reports,
+    get_query_data,
+    make_table,
+    remote_installation_stats_link,
+    remote_installation_support_link,
+)
 from zerver.decorator import require_server_admin
 
 
@@ -48,12 +55,34 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Analytics users",
         "Mobile users",
         "Last update time",
+        "Analytics",
+        "Support",
     ]
 
-    remote_servers = get_page(query, cols, title, totals_columns=[3, 4])
+    rows = get_query_data(query)
+    total_row = []
+    totals_columns = [3, 4]
+    for row in rows:
+        stats = remote_installation_stats_link(row[0])
+        row.append(stats)
+    for i, col in enumerate(cols):
+        if col == "Last update time":
+            fix_rows(rows, i, format_date_for_activity_reports)
+        if col == "Hostname":
+            for row in rows:
+                support = remote_installation_support_link(row[i])
+                row.append(support)
+        if i == 0:
+            total_row.append("Total")
+        elif i in totals_columns:
+            total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
+        else:
+            total_row.append("")
+    rows.insert(0, total_row)
 
+    content = make_table(title, cols, rows)
     return render(
         request,
         "analytics/activity_details_template.html",
-        context=dict(data=remote_servers["content"], title=remote_servers["title"], is_home=False),
+        context=dict(data=content, title=title, is_home=False),
     )
