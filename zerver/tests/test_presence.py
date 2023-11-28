@@ -648,7 +648,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
         with mock.patch(
             "zerver.views.presence.timezone_now",
-            return_value=validate_time + datetime.timedelta(settings.OFFLINE_THRESHOLD_SECS + 1),
+            return_value=validate_time
+            + datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1),
         ):
             # After settings.OFFLINE_THRESHOLD_SECS + 1 this generated, recent presence data
             # will count as offline.
