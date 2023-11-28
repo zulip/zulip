@@ -1,7 +1,7 @@
 import datetime
 from email.headerregistry import Address
-from unittest import mock
 
+import time_machine
 from django.conf import settings
 from django.core import mail
 from django.utils.html import escape
@@ -79,7 +79,7 @@ class EmailChangeTestCase(ZulipTestCase):
             realm=user_profile.realm,
         )
         date_sent = now() - datetime.timedelta(days=2)
-        with mock.patch("confirmation.models.timezone_now", return_value=date_sent):
+        with time_machine.travel(date_sent, tick=False):
             url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
 
         response = self.client_get(url)

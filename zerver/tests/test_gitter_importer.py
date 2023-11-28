@@ -5,6 +5,7 @@ from unittest import mock
 
 import dateutil.parser
 import orjson
+import time_machine
 
 from zerver.data_import.gitter import do_convert_data, get_usermentions
 from zerver.lib.import_realm import do_import_realm
@@ -33,9 +34,8 @@ class GitterImporter(ZulipTestCase):
         with open(gitter_file) as f:
             gitter_data = orjson.loads(f.read())
         sent_datetime = dateutil.parser.parse(gitter_data[1]["sent"])
-        with self.assertLogs(level="INFO"), mock.patch(
-            "zerver.data_import.import_util.timezone_now",
-            return_value=sent_datetime + timedelta(days=1),
+        with self.assertLogs(level="INFO"), time_machine.travel(
+            (sent_datetime + timedelta(days=1)), tick=False
         ):
             do_convert_data(gitter_file, output_dir)
 

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict
 from unittest.mock import patch
 
 import orjson
+import time_machine
 from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -1020,17 +1021,17 @@ class HomeTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=datetime.timezone.utc)
-        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=10)):
+        with time_machine.travel((now + timedelta(days=10)), tick=False):
             self.assertEqual(is_outdated_server(iago), False)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)
 
-        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=397)):
+        with time_machine.travel((now + timedelta(days=397)), tick=False):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), True)
             self.assertEqual(is_outdated_server(None), True)
 
-        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=380)):
+        with time_machine.travel((now + timedelta(days=380)), tick=False):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)
