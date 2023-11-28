@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.html import escape
@@ -74,20 +75,24 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     assert isinstance(email_change_object, EmailChangeStatus)
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
-    user_profile = email_change_object.user_profile
+    with transaction.atomic():
+        user_profile = UserProfile.objects.select_for_update().get(
+            id=email_change_object.user_profile_id
+        )
 
-    if user_profile.realm.deactivated:
-        return redirect_to_deactivation_notice()
+        if user_profile.realm.deactivated:
+            return redirect_to_deactivation_notice()
 
-    if not user_profile.is_active:
-        # TODO: Make this into a user-facing error, not JSON
-        raise UserDeactivatedError
+        if not user_profile.is_active:
+            # TODO: Make this into a user-facing error, not JSON
+            raise UserDeactivatedError
 
-    if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
-        raise JsonableError(_("Email address changes are disabled in this organization."))
+        if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
+            raise JsonableError(_("Email address changes are disabled in this organization."))
 
-    do_change_user_delivery_email(user_profile, new_email)
+        do_change_user_delivery_email(user_profile, new_email)
 
+    user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)
     context = {"realm_name": user_profile.realm.name, "new_email": new_email}
     language = user_profile.default_language
 
