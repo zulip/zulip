@@ -24,7 +24,7 @@
                     <th data-sort="email">{{t "Email" }}</th>
                     <th class="actions" {{#unless can_edit}}style="display:none"{{/unless}}>{{t "Actions" }}</th>
                 </thead>
-                <tbody class="member_table"></tbody>
+                <tbody class="member_table" data-empty="{{t 'This group has no members.' }}" data-search-results-empty="{{t 'No group members match your current filter.'}}"></tbody>
             </table>
         </div>
     </div>
