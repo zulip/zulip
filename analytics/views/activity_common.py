@@ -146,6 +146,13 @@ def remote_installation_stats_link(server_id: int, hostname: str) -> Markup:
     )
 
 
+def remote_installation_support_link(hostname: str) -> Markup:
+    support_url = reverse("remote_servers_support")
+    query = urlencode({"q": hostname})
+    url = append_url_query_string(support_url, query)
+    return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
+
+
 def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, Any]:
     #: The type annotation used above is clearly overly permissive.
     #: We should perhaps use TypedDict to clearly lay out the schema
