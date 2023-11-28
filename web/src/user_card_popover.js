@@ -6,6 +6,7 @@ import tippy from "tippy.js";
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
 import render_user_card_popover_avatar from "../templates/popovers/user_card/user_card_popover_avatar.hbs";
+import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
 import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
@@ -315,12 +316,24 @@ function show_user_card_popover(
     popover_placement,
     on_mount,
 ) {
-    const args = get_user_card_popover_data(
-        user,
-        has_message_context,
-        is_sender_popover,
-        private_msg_class,
-    );
+    let popover_html;
+    let args;
+    if (user.is_inaccessible_user) {
+        const sent_by_url = hash_util.by_sender_url(user.email);
+        args = {
+            user_id: user.user_id,
+            sent_by_url,
+        };
+        popover_html = render_user_card_popover_for_unknown_user(args);
+    } else {
+        args = get_user_card_popover_data(
+            user,
+            has_message_context,
+            is_sender_popover,
+            private_msg_class,
+        );
+        popover_html = render_user_card_popover(args);
+    }
 
     popover_menus.toggle_popover_menu(
         $popover_element[0],
@@ -328,7 +341,7 @@ function show_user_card_popover(
             placement: popover_placement,
             arrow: false,
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_user_card_popover(args)));
+                instance.setContent(ui_util.parse_html(popover_html));
                 user_card_popovers[template_class].instance = instance;
 
                 const $popover = $(instance.popper);
