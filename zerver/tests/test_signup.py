@@ -1406,7 +1406,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
@@ -1779,7 +1781,9 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
@@ -1832,7 +1836,9 @@ class RealmCreationTest(ZulipTestCase):
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
-        first_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        first_confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 1)
 
         result = self.submit_realm_creation_form(
@@ -1846,7 +1852,9 @@ class RealmCreationTest(ZulipTestCase):
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
-        second_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        second_confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
 
         self.assertNotEqual(first_confirmation_url, second_confirmation_url)
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 2)
@@ -2119,7 +2127,9 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="You recently signed up for Zulip. Awesome!"
+        )
         result = self.client_get(confirmation_url, **client_kwargs)
         self.assertEqual(result.status_code, 200)
 

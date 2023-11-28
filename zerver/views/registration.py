@@ -767,8 +767,17 @@ def send_confirm_registration_email(
     activation_url: str,
     *,
     realm: Optional[Realm] = None,
+    realm_subdomain: Optional[str] = None,
+    realm_type: Optional[int] = None,
     request: Optional[HttpRequest] = None,
 ) -> None:
+    org_url = ""
+    org_type = ""
+    if realm is None:
+        assert realm_subdomain is not None
+        org_url = f"{realm_subdomain}.{settings.EXTERNAL_HOST}"
+        assert realm_type is not None
+        org_type = get_org_type_display_name(realm_type)
     send_email(
         "zerver/emails/confirm_registration",
         to_emails=[email],
@@ -778,6 +787,8 @@ def send_confirm_registration_email(
             "create_realm": realm is None,
             "activate_url": activation_url,
             "corporate_enabled": settings.CORPORATE_ENABLED,
+            "organization_url": org_url,
+            "organization_type": org_type,
         },
         realm=realm,
         request=request,
@@ -845,7 +856,13 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 return HttpResponseRedirect(activation_url)
 
             try:
-                send_confirm_registration_email(email, activation_url, request=request)
+                send_confirm_registration_email(
+                    email,
+                    activation_url,
+                    realm_subdomain=realm_subdomain,
+                    realm_type=realm_type,
+                    request=request,
+                )
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
