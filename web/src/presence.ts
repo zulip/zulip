@@ -202,7 +202,7 @@ export function set_info(
         // returns data on users not yet received via the server_events
         // system are common in both situations.
         const person = people.maybe_get_user_by_id(user_id, true);
-        if (person === undefined) {
+        if (person === undefined || person.is_inaccessible_user) {
             // There are a number of situations where it is expected
             // that we get presence data for a user ID that we do
             // not have in our user database, including when we're

@@ -137,6 +137,15 @@ export function initialize(opts) {
 }
 
 export function update_presence_info(user_id, info, server_time) {
+    // There can be some case where the presence event
+    // was set for an inaccessible user if
+    // CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is
+    // disabled. We just ignore that event and return.
+    const person = people.maybe_get_user_by_id(user_id, true);
+    if (person === undefined || person.is_inaccessible_user) {
+        return;
+    }
+
     presence.update_info_from_event(user_id, info, server_time);
     redraw_user(user_id);
     pm_list.update_private_messages();

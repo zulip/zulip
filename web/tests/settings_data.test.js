@@ -423,3 +423,39 @@ run_test("type_id_to_string", () => {
     assert.equal(settings_data.bot_type_id_to_string(2), "Incoming webhook");
     assert.equal(settings_data.bot_type_id_to_string(5), undefined);
 });
+
+run_test("user_can_access_all_other_users", () => {
+    const guest_user_id = 1;
+    const member_user_id = 2;
+
+    const members = {
+        name: "role:members",
+        id: 1,
+        members: new Set([member_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const everyone = {
+        name: "role:everyone",
+        id: 2,
+        members: new Set([guest_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    };
+
+    user_groups.initialize({realm_user_groups: [members, everyone]});
+    page_params.realm_can_access_all_users_group = members.id;
+
+    // Test spectators case.
+    page_params.user_id = undefined;
+    assert.ok(settings_data.user_can_access_all_other_users());
+
+    page_params.user_id = member_user_id;
+    assert.ok(settings_data.user_can_access_all_other_users());
+
+    page_params.user_id = guest_user_id;
+    assert.ok(!settings_data.user_can_access_all_other_users());
+
+    page_params.realm_can_access_all_users_group = everyone.id;
+    assert.ok(settings_data.user_can_access_all_other_users());
+});
