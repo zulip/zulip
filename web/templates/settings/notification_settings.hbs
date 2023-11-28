@@ -149,6 +149,7 @@
             {{> settings_checkbox
               setting_name=this
               is_checked=(lookup ../settings_object this)
+              is_disabled=(lookup ../show_push_notifications_tooltip this)
               label=(lookup ../settings_label this)
               show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)
               prefix=../prefix}}
