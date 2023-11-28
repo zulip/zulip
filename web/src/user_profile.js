@@ -122,7 +122,8 @@ function render_user_profile_subscribe_widget() {
             placement: "bottom-start",
         },
     };
-    user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
+    user_profile_subscribe_widget =
+        user_profile_subscribe_widget || new dropdown_widget.DropdownWidget(opts);
     user_profile_subscribe_widget.setup();
 }
 
@@ -145,6 +146,15 @@ function reset_subscribe_widget() {
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
         $t({defaultMessage: "Select a stream"}),
     );
+    //  There are two cases when the subscribe widget is reset: when the user_profile
+    //  is setup (the object is null), or after subscribing of a user in the dropdown.
+    //
+    //  After subscribing a user, we want the current_value of dropdown to be reset
+    //  to null after the subscribe widget is reloaded. This is to avoid  an error
+    //  of not finding the current_value of the user_profile in the options.
+    if (user_profile_subscribe_widget) {
+        user_profile_subscribe_widget.current_value = null;
+    }
 }
 
 export function get_user_unsub_streams() {
@@ -312,6 +322,7 @@ export function hide_user_profile() {
 
 function on_user_profile_hide() {
     user_streams_list_widget = undefined;
+    user_profile_subscribe_widget = undefined;
 }
 
 function show_manage_user_tab(target) {
