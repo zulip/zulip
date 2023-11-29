@@ -151,9 +151,11 @@ export function initialize(): void {
                 left_sidebar_expanded_as_overlay &&
                 !$elt.closest(".no-auto-hide-left-sidebar-overlay").length
             ) {
-                const $left_column = $(".app-main .column-left");
-                const click_outside_left_sidebar = !$elt.closest($left_column).length;
-                if (click_outside_left_sidebar) {
+                const click_outside_left_sidebar = !$elt.closest(".app-main .column-left").length;
+                // Don't close sidebar if user is interacting with a popover.
+                const click_outside_popover = !$elt.closest(".popover-menu").length;
+
+                if (click_outside_left_sidebar && click_outside_popover) {
                     hide_streamlist_sidebar();
                 }
             }
