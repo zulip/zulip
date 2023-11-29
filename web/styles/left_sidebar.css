@@ -1268,6 +1268,38 @@ li.topic-list-item {
             padding: 0;
         }
     }
+
+    &.hide_unread_counts {
+        .unread_count,
+        .unread_count.hide,
+        .masked_unread_count {
+            display: none;
+        }
+
+        /* When an empty unread count is hidden,
+           hide the masked unread count, too. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
+        .masked_unread_count {
+            display: block;
+            /* Hold space enough so single-digit
+               unreads don't shift on hover. */
+            margin: 0 3px;
+        }
+
+        &:hover {
+            .unread_count {
+                display: block;
+            }
+
+            .hide,
+            .masked_unread_count {
+                display: none;
+            }
+        }
+    }
 }
 
 .streams_subheader {

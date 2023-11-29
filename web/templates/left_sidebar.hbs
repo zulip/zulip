@@ -157,7 +157,7 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide">
+            <div id="streams_header" class="zoom-in-hide {{#if hide_unread_counts}}hide_unread_counts{{/if}}">
                 <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'STREAMS' }}</span></h4>
                 <div class="heading-markers-and-controls">
                     <i id="filter_streams_tooltip" class="streams_filter_icon fa fa-filter" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
@@ -165,6 +165,7 @@
                         <i id="streams_inline_icon" class='fa fa-plus' aria-hidden="true" ></i>
                     </span>
                     <span class="unread_count"></span>
+                    <span class="masked_unread_count"></span>
                 </div>
 
                 <div class="input-append notdisplayed stream_search_section">
