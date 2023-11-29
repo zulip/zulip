@@ -567,10 +567,14 @@ def update_remote_realm_data_for_server(
         realm = uuid_to_realm_dict[str(remote_realm.uuid)]
         for remote_realm_attr, realm_dict_key in [
             ("host", "host"),
+            ("org_type", "org_type"),
+            ("name", "name"),
+            ("authentication_methods", "authentication_methods"),
             ("realm_deactivated", "deactivated"),
         ]:
             old_value = getattr(remote_realm, remote_realm_attr)
             new_value = getattr(realm, realm_dict_key)
+
             if old_value == new_value:
                 continue
 
@@ -595,7 +599,10 @@ def update_remote_realm_data_for_server(
         if modified:
             remote_realms_to_update.append(remote_realm)
 
-    RemoteRealm.objects.bulk_update(remote_realms_to_update, ["host", "realm_deactivated"])
+    RemoteRealm.objects.bulk_update(
+        remote_realms_to_update,
+        ["host", "realm_deactivated", "name", "authentication_methods", "org_type"],
+    )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 

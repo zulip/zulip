@@ -26,7 +26,11 @@ from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
-from zerver.actions.realm_settings import do_deactivate_realm
+from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
+    do_deactivate_realm,
+    do_set_realm_authentication_methods,
+)
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -1016,20 +1020,49 @@ class AnalyticsBouncerTest(BouncerTestCase):
         zephyr_original_host = zephyr_realm.host
         zephyr_realm.string_id = "zephyr2"
 
+        zephyr_original_name = zephyr_realm.name
+        zephyr_realm.name = "Zephyr2"
+
+        zephyr_original_org_type = zephyr_realm.org_type
+        self.assertEqual(zephyr_realm.org_type, Realm.ORG_TYPES["business"]["id"])
+        do_change_realm_org_type(
+            zephyr_realm, Realm.ORG_TYPES["government"]["id"], acting_user=user
+        )
+
         # date_created can't be updated.
         original_date_created = zephyr_realm.date_created
         zephyr_realm.date_created = now()
         zephyr_realm.save()
+
+        zephyr_original_authentication_methods = zephyr_realm.authentication_methods_dict()
+        # Sanity check to make sure the set up is how we think.
+        self.assertEqual(zephyr_original_authentication_methods["Email"], True)
+
+        new_auth_method_dict = {
+            "Google": False,
+            "Email": False,
+            "GitHub": False,
+            "Apple": False,
+            "Dev": True,
+            "SAML": True,
+            "GitLab": False,
+            "OpenID Connect": False,
+        }
+        do_set_realm_authentication_methods(zephyr_realm, new_auth_method_dict, acting_user=user)
+
         # Deactivation is synced.
         do_deactivate_realm(zephyr_realm, acting_user=None)
 
         send_analytics_to_push_bouncer()
-        check_counts(4, 4, 1, 1, 4)
+        check_counts(4, 4, 1, 1, 7)
 
         zephyr_remote_realm = RemoteRealm.objects.get(uuid=zephyr_realm.uuid)
         self.assertEqual(zephyr_remote_realm.host, zephyr_realm.host)
         self.assertEqual(zephyr_remote_realm.realm_date_created, original_date_created)
         self.assertEqual(zephyr_remote_realm.realm_deactivated, True)
+        self.assertEqual(zephyr_remote_realm.name, zephyr_realm.name)
+        self.assertEqual(zephyr_remote_realm.authentication_methods, new_auth_method_dict)
+        self.assertEqual(zephyr_remote_realm.org_type, Realm.ORG_TYPES["government"]["id"])
 
         # Verify the RemoteRealmAuditLog entries created.
         remote_audit_logs = (
@@ -1058,6 +1091,36 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     remote_id=None,
                     realm_id=zephyr_realm.id,
                     extra_data={
+                        "attr_name": "org_type",
+                        "old_value": zephyr_original_org_type,
+                        "new_value": zephyr_realm.org_type,
+                    },
+                ),
+                dict(
+                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    remote_id=None,
+                    realm_id=zephyr_realm.id,
+                    extra_data={
+                        "attr_name": "name",
+                        "old_value": zephyr_original_name,
+                        "new_value": zephyr_realm.name,
+                    },
+                ),
+                dict(
+                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    remote_id=None,
+                    realm_id=zephyr_realm.id,
+                    extra_data={
+                        "attr_name": "authentication_methods",
+                        "old_value": zephyr_original_authentication_methods,
+                        "new_value": new_auth_method_dict,
+                    },
+                ),
+                dict(
+                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    remote_id=None,
+                    realm_id=zephyr_realm.id,
+                    extra_data={
                         "attr_name": "realm_deactivated",
                         "old_value": False,
                         "new_value": True,
@@ -1068,7 +1131,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # Test having no new rows
         send_analytics_to_push_bouncer()
-        check_counts(5, 5, 1, 1, 4)
+        check_counts(5, 5, 1, 1, 7)
 
         # Test only having new RealmCount rows
         RealmCount.objects.create(
@@ -1084,14 +1147,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
             value=9,
         )
         send_analytics_to_push_bouncer()
-        check_counts(6, 6, 3, 1, 4)
+        check_counts(6, 6, 3, 1, 7)
 
         # Test only having new InstallationCount rows
         InstallationCount.objects.create(
             property=realm_stat.property, end_time=end_time + datetime.timedelta(days=1), value=6
         )
         send_analytics_to_push_bouncer()
-        check_counts(7, 7, 3, 2, 4)
+        check_counts(7, 7, 3, 2, 7)
 
         # Test only having new RealmAuditLog rows
         # Non-synced event
@@ -1103,7 +1166,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             extra_data={"data": "foo"},
         )
         send_analytics_to_push_bouncer()
-        check_counts(8, 8, 3, 2, 4)
+        check_counts(8, 8, 3, 2, 7)
         # Synced event
         RealmAuditLog.objects.create(
             realm=user.realm,
@@ -1115,7 +1178,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             },
         )
         send_analytics_to_push_bouncer()
-        check_counts(9, 9, 3, 2, 5)
+        check_counts(9, 9, 3, 2, 8)
 
         # Now create an InstallationCount with a property that's not supposed
         # to be tracked by the remote server - since the bouncer itself tracks
@@ -1135,7 +1198,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         # The analytics endpoint call counts increase by 1, but the actual RemoteCounts remain unchanged,
         # since syncing the data failed.
-        check_counts(10, 10, 3, 2, 5)
+        check_counts(10, 10, 3, 2, 8)
         forbidden_installation_count.delete()
 
         (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
@@ -1169,7 +1232,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ],
         )
         # Only the request counts go up -- all of the other rows' duplicates are dropped
-        check_counts(11, 11, 3, 2, 5)
+        check_counts(11, 11, 3, 2, 8)
 
         # Test that only valid org_type values are accepted - integers defined in OrgTypeEnum.
         realms_data = [dict(realm) for realm in get_realms_info_for_push_bouncer()]
