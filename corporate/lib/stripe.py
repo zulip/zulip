@@ -640,6 +640,9 @@ class BillingSession(ABC):
     def on_paid_plan(self) -> bool:
         pass
 
+    def sponsorship_org_type_key_helper(self, d: Any) -> int:
+        return d[1]["display_order"]
+
     @abstractmethod
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
         pass
@@ -1972,9 +1975,6 @@ class RealmBillingSession(BillingSession):
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
-        def key_helper(d: Any) -> int:
-            return d[1]["display_order"]
-
         context.update(
             realm_org_type=self.realm.org_type,
             sorted_org_types=sorted(
@@ -1983,7 +1983,7 @@ class RealmBillingSession(BillingSession):
                     for (org_type_name, org_type) in Realm.ORG_TYPES.items()
                     if not org_type.get("hidden")
                 ),
-                key=key_helper,
+                key=self.sponsorship_org_type_key_helper,
             ),
         )
 
