@@ -315,3 +315,8 @@ class RawUserDict(TypedDict):
     bot_type: Optional[int]
     long_term_idle: bool
     email_address_visibility: int
+
+
+class RemoteRealmDictValue(TypedDict):
+    can_push: bool
+    expected_end_timestamp: Optional[int]

@@ -1065,7 +1065,20 @@ class RealmTest(ZulipTestCase):
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     def test_do_create_realm_notify_bouncer(self) -> None:
-        with mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m:
+        dummy_send_realms_only_response = {
+            "result": "success",
+            "msg": "",
+            "realms": {
+                "dummy-uuid": {
+                    "can_push": True,
+                    "expected_end_timestamp": None,
+                },
+            },
+        }
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer",
+            return_value=dummy_send_realms_only_response,
+        ) as m:
             realm = do_create_realm("realm_string_id", "realm name")
 
         self.assertEqual(realm.string_id, "realm_string_id")
