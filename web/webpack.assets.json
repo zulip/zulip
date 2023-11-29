@@ -26,6 +26,8 @@
         "./src/portico/tippyjs",
         "./src/billing/helpers",
         "./src/billing/upgrade",
+        "jquery-validation",
+        "./src/billing/legacy_server_login",
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [

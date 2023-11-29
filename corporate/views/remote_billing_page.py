@@ -6,12 +6,14 @@ from django.core import signing
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
 from corporate.lib.decorator import self_hosting_management_endpoint
 from corporate.lib.remote_billing_util import (
+    LegacyServerIdentityDict,
     RemoteBillingIdentityDict,
     get_identity_dict_from_session,
 )
@@ -19,7 +21,7 @@ from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
-from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer, get_remote_server_by_uuid
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -96,35 +98,45 @@ def render_tmp_remote_billing_page(
     if identity_dict is None:
         raise JsonableError(_("User not authenticated"))
 
-    user_email = identity_dict["user_email"]
-    user_full_name = identity_dict["user_full_name"]
+    # This key should be set in both RemoteRealm and legacy server
+    # login flows.
     remote_server_uuid = identity_dict["remote_server_uuid"]
-    remote_realm_uuid = identity_dict["remote_realm_uuid"]
+    user_email = identity_dict.get("user_email")
+    user_full_name = identity_dict.get("user_full_name")
+    remote_realm_uuid = identity_dict.get("remote_realm_uuid")
 
     try:
         remote_server = RemoteZulipServer.objects.get(uuid=remote_server_uuid)
     except RemoteZulipServer.DoesNotExist:
         raise JsonableError(_("Invalid remote server."))
 
-    try:
-        # Checking for the (uuid, server) is sufficient to be secure here, since the server
-        # is authenticated. the uuid_owner_secret is not needed here, it'll be used for
-        # for validating transfers of a realm to a different RemoteZulipServer (in the
-        # export-import process).
-        remote_realm = RemoteRealm.objects.get(uuid=remote_realm_uuid, server=remote_server)
-    except RemoteRealm.DoesNotExist:
-        raise AssertionError(
-            "The remote realm is missing despite being in the RemoteBillingIdentityDict"
-        )
+    remote_realm = None
+    if remote_realm_uuid:
+        try:
+            # Checking for the (uuid, server) is sufficient to be secure here, since the server
+            # is authenticated. the uuid_owner_secret is not needed here, it'll be used for
+            # for validating transfers of a realm to a different RemoteZulipServer (in the
+            # export-import process).
+            remote_realm = RemoteRealm.objects.get(uuid=remote_realm_uuid, server=remote_server)
+        except RemoteRealm.DoesNotExist:
+            raise AssertionError(
+                "The remote realm is missing despite being in the RemoteBillingIdentityDict"
+            )
 
     remote_server_and_realm_info = {
         "remote_server_uuid": remote_server_uuid,
         "remote_server_hostname": remote_server.hostname,
         "remote_server_contact_email": remote_server.contact_email,
         "remote_server_plan_type": remote_server.plan_type,
-        "remote_realm_uuid": remote_realm_uuid,
-        "remote_realm_host": remote_realm.host,
     }
+
+    if remote_realm is not None:
+        remote_server_and_realm_info.update(
+            {
+                "remote_realm_uuid": remote_realm_uuid,
+                "remote_realm_host": remote_realm.host,
+            }
+        )
 
     return render(
         request,
@@ -185,3 +197,54 @@ def remote_billing_page_server(request: HttpRequest, *, server_uuid: PathOnly[st
 @typed_endpoint
 def remote_billing_page_realm(request: HttpRequest, *, realm_uuid: PathOnly[str]) -> HttpResponse:
     return remote_billing_page_common(request, realm_uuid=realm_uuid, server_uuid=None)
+
+
+@self_hosting_management_endpoint
+@typed_endpoint
+def remote_billing_legacy_server_login(
+    request: HttpRequest,
+    *,
+    server_org_id: Optional[str] = None,
+    server_org_secret: Optional[str] = None,
+) -> HttpResponse:
+    if server_org_id is None or server_org_secret is None:
+        # Should not be possible to submit the form like this, so this is the default
+        # case, where the user just opened this page and therefore we render a fresh form.
+        return render(
+            request,
+            "corporate/legacy_server_login.html",
+            context={"error_message": False},
+        )
+
+    try:
+        remote_server = get_remote_server_by_uuid(server_org_id)
+    except RemoteZulipServer.DoesNotExist:
+        return render(
+            request,
+            "corporate/legacy_server_login.html",
+            context={
+                "error_message": _("Did not find a server registration for this server_org_id.")
+            },
+        )
+
+    if not constant_time_compare(server_org_secret, remote_server.api_key):
+        return render(
+            request,
+            "corporate/legacy_server_login.html",
+            context={"error_message": _("Invalid server_org_secret.")},
+        )
+    if remote_server.deactivated:
+        return render(
+            request,
+            "corporate/legacy_server_login.html",
+            context={"error_message": _("Your server registration has been deactivated.")},
+        )
+
+    remote_server_uuid = str(remote_server.uuid)
+
+    request.session["remote_billing_identities"] = {}
+    request.session["remote_billing_identities"][remote_server_uuid] = LegacyServerIdentityDict(
+        remote_server_uuid=remote_server_uuid
+    )
+
+    return HttpResponseRedirect(reverse("remote_billing_page_server", args=(remote_server_uuid,)))

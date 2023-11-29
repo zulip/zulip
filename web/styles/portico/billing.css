@@ -656,3 +656,16 @@ input[name="licenses"] {
     opacity: 0.8;
     font-weight: 400;
 }
+
+.server-login-button-loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
+}
+
+#server-login-error {
+    text-align: center;
+}
