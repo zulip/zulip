@@ -195,6 +195,7 @@ body {
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 80%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
@@ -444,6 +445,7 @@ body {
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 30%);
     --color-background-modal: hsl(212deg 28% 18%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);

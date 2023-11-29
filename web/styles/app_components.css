@@ -613,7 +613,7 @@ div.overlay {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: hsl(0deg 0% 80%);
+    background-color: var(--color-masked-unread-marker);
     display: none;
 }
 
