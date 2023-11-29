@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
-from zilencer.models import RemoteRealm
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -69,3 +69,23 @@ def get_remote_realm_from_session(
         raise JsonableError(_("Registration is deactivated"))
 
     return remote_realm
+
+
+def get_remote_server_from_session(
+    request: HttpRequest,
+    server_uuid: str,
+) -> RemoteZulipServer:
+    identity_dict = get_identity_dict_from_session(request, None, server_uuid)
+    if identity_dict is None:
+        raise JsonableError(_("User not authenticated"))
+
+    remote_server_uuid = identity_dict["remote_server_uuid"]
+    try:
+        remote_server = RemoteZulipServer.objects.get(uuid=remote_server_uuid)
+    except RemoteZulipServer.DoesNotExist:
+        raise JsonableError(_("Invalid remote server."))
+
+    if remote_server.deactivated:
+        raise JsonableError(_("Registration is deactivated"))
+
+    return remote_server
