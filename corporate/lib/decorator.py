@@ -34,11 +34,10 @@ def self_hosting_management_endpoint(
 
 def authenticated_remote_realm_management_endpoint(
     view_func: Callable[Concatenate[HttpRequest, RemoteRealm, ParamT], HttpResponse]
-) -> Callable[Concatenate[HttpRequest, RemoteRealm, ParamT], HttpResponse]:  # nocoverage
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:  # nocoverage
     @wraps(view_func)
     def _wrapped_view_func(
         request: HttpRequest,
-        remote_realm: RemoteRealm,
         /,
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
