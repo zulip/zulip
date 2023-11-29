@@ -69,9 +69,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Analytics users",
         "Mobile users",
         "Last update time",
-        "7 day count of mobile pushes forwarded (includes today's current count)",
-        "Analytics",
-        "Support",
+        "Mobile pushes forwarded",
+        "Links",
     ]
 
     rows = get_query_data(query)
@@ -79,14 +78,12 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     totals_columns = [4, 5]
     for row in rows:
         stats = remote_installation_stats_link(row[0])
-        row.append(stats)
+        support = remote_installation_support_link(row[1])
+        links = stats + " " + support
+        row.append(links)
     for i, col in enumerate(cols):
         if col == "Last update time":
             fix_rows(rows, i, format_date_for_activity_reports)
-        if col == "Hostname":
-            for row in rows:
-                support = remote_installation_support_link(row[i])
-                row.append(support)
         if i == 0:
             total_row.append("Total")
         elif i in totals_columns:

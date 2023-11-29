@@ -1,5 +1,9 @@
 <h3>{{ data.title }}</h3>
 
+{% if data.title == "Remote servers" %}
+{% include "analytics/remote_activity_key.html" %}
+{% endif %}
+
 {{ data.rows|length}} rows
 <table class="table sortable table-striped table-bordered analytics_table">
 
