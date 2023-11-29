@@ -1,8 +1,66 @@
 # Zulip Cloud billing
 
 This page answers some frequently asked questions about [Zulip Cloud plans and
-pricing](https://zulip.com/plans/). If you have any other questions, please don't hesitate to
-reach out at sales@zulip.com.
+pricing](https://zulip.com/plans/). If you have any other questions, please
+don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
+
+## Upgrade to a Zulip Cloud Standard or Plus plan
+
+{start_tabs}
+
+{tab|zulip-cloud-standard}
+
+{relative|gear|plans}
+
+1. Under the **Cloud Standard** pricing plan, click **Upgrade to Standard**.
+
+1. Select your preferred option from the **Payment schedule** dropdown.
+
+1. Click **Add card** to enter your payment details.
+
+1. Click **Purchase Zulip Cloud Standard**.
+
+{tab|zulip-cloud-plus}
+
+{relative|gear|plans}
+
+1. Under the **Cloud Plus** pricing plan, click **Contact sales**.
+
+{end_tabs}
+
+## Manage billing
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|gear|billing}
+
+{end_tabs}
+
+## Apply for sponsorship
+
+{start_tabs}
+
+{tab|request-sponsorship}
+
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
+
+1. Click the **Request sponsorship** link at the top of the gear menu.
+
+1. Fill out the requested information, and click **Submit**.
+
+{tab|request-education-pricing}
+
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
+
+1. Click the **Request education pricing** link at the top of the gear menu.
+
+1. Fill out the requested information, and click **Submit**.
+
+{end_tabs}
 
 ## Differences between Zulip Cloud plans
 
