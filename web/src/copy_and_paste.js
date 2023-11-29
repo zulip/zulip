@@ -319,7 +319,7 @@ export function paste_handler_converter(paste_html) {
         copied_html_fragment.childNodes.length === 1 &&
         copied_html_fragment.firstElementChild &&
         copied_html_fragment.firstElementChild.innerHTML;
-    const outer_elements_to_retain = ["PRE", "UL", "OL", "A"];
+    const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
     // identify the intended structure of the copied content.
@@ -478,6 +478,62 @@ export function paste_handler_converter(paste_html) {
 
         replacement() {
             return "";
+        },
+    });
+
+    // We override the original upstream implementation of this rule to turn any
+    // single line code blocks into inline markdown code. Everything else is the same.
+    turndownService.addRule("fencedCodeBlock", {
+        filter(node, options) {
+            return (
+                options.codeBlockStyle === "fenced" &&
+                node.nodeName === "PRE" &&
+                node.firstChild &&
+                node.firstChild.nodeName === "CODE"
+            );
+        },
+
+        replacement(_content, node, options) {
+            const code = node.firstChild.textContent;
+
+            // We convert single line code inside a code block to inline markdown code,
+            // and the code for this is taken from upstream's `code` rule.
+            if (!code.includes("\n")) {
+                if (!code) {
+                    return "";
+                }
+                const extraSpace = /^`|^ .*?[^ ].* $|`$/.test(code) ? " " : "";
+
+                // Pick the shortest sequence of backticks that is not found in the code
+                // to be the delimiter.
+                let delimiter = "`";
+                const matches = code.match(/`+/gm) || [];
+                while (matches.includes(delimiter)) {
+                    delimiter = delimiter + "`";
+                }
+
+                return delimiter + extraSpace + code + extraSpace + delimiter;
+            }
+
+            const className = node.firstChild.getAttribute("class") || "";
+            const language = (className.match(/language-(\S+)/) || [null, ""])[1];
+
+            const fenceChar = options.fence.charAt(0);
+            let fenceSize = 3;
+            const fenceInCodeRegex = new RegExp("^" + fenceChar + "{3,}", "gm");
+
+            let match;
+            while ((match = fenceInCodeRegex.exec(code))) {
+                if (match[0].length >= fenceSize) {
+                    fenceSize = match[0].length + 1;
+                }
+            }
+
+            const fence = fenceChar.repeat(fenceSize);
+
+            return (
+                "\n\n" + fence + language + "\n" + code.replace(/\n$/, "") + "\n" + fence + "\n\n"
+            );
         },
     });
 
