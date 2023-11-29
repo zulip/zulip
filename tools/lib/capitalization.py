@@ -26,6 +26,7 @@ IGNORED_PHRASES = [
     r"IP",
     r"JSON",
     r"Kerberos",
+    r"LinkedIn",
     r"LDAP",
     r"Markdown",
     r"OTP",
