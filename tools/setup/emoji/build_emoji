@@ -76,11 +76,11 @@ EMOJI_POS_INFO_TEMPLATE = """\
 }}
 """
 
-EMOJI_POS_INFO_OVERRIDE_TEMPLATE = """\
+EMOJI_OVERRIDE_TEMPLATE = """\
 .emoji-{codepoint} {{
-    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
-    background-size: {background_size} !important;
-    background-position: {pos_x} {pos_y};
+    background-image: url(../../../static/generated/emoji/images-google-64/{codepoint}.png) !important;
+    background-position: 0% 0% !important;
+    background-size: contain !important;
 }}
 """
 
@@ -238,19 +238,14 @@ def generate_sprite_css_files(
     # fallback to Google Modern for any emoji not covered by Google Classic.
     if emojiset == "google-blob":
         extra_emoji_positions = ""
-        n = get_square_size(fallback_emoji_data)
-        background_size = percent(n)
         covered_emoji_codes = [
             get_emoji_code(emoji) for emoji in emoji_data if emoji["has_img_google"]
         ]
         for emoji in fallback_emoji_data:
             code = get_emoji_code(emoji)
             if emoji["has_img_google"] and code not in covered_emoji_codes:
-                extra_emoji_positions += EMOJI_POS_INFO_OVERRIDE_TEMPLATE.format(
+                extra_emoji_positions += EMOJI_OVERRIDE_TEMPLATE.format(
                     codepoint=code,
-                    pos_x=percent(emoji["sheet_x"] / (n - 1)),
-                    pos_y=percent(emoji["sheet_y"] / (n - 1)),
-                    background_size=background_size,
                 )
         with open(SPRITE_CSS_PATH, "a") as f:
             f.write(extra_emoji_positions)
@@ -270,11 +265,8 @@ def generate_sprite_css_files(
         for emoji in emoji_data:
             code = get_emoji_code(emoji)
             if emoji["has_img_google"] and code not in twitter_covered_emoji_codes:
-                extra_emoji_positions += EMOJI_POS_INFO_OVERRIDE_TEMPLATE.format(
+                extra_emoji_positions += EMOJI_OVERRIDE_TEMPLATE.format(
                     codepoint=code,
-                    pos_x=percent(emoji["sheet_x"] / (n - 1)),
-                    pos_y=percent(emoji["sheet_y"] / (n - 1)),
-                    background_size=background_size,
                 )
         with open(SPRITE_CSS_PATH, "a") as f:
             f.write(extra_emoji_positions)
