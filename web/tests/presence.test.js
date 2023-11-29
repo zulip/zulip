@@ -2,17 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
-const reload_state = mock_esm("../src/reload_state", {
-    is_in_progress: () => false,
-});
-
 const people = zrequire("people");
-const watchdog = zrequire("watchdog");
 const presence = zrequire("presence");
 
 const OFFLINE_THRESHOLD_SECS = 200;
@@ -89,24 +83,15 @@ test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");
 });
 
-test("unknown user", ({override}) => {
+test("unknown user", () => {
     const unknown_user_id = 999;
     const now = 888888;
     const presences = {};
     presences[unknown_user_id.toString()] = "does-not-matter";
 
-    blueslip.expect("error", "Unknown user ID in presence data");
+    // We just skip the unknown user.
     presence.set_info(presences, now);
-
-    // If the server is suspected to be offline or reloading,
-    // then we suppress errors.  The use case here is that we
-    // haven't gotten info for a brand new user yet.
-    watchdog.set_suspect_offline(true);
-    presence.set_info(presences, now);
-
-    watchdog.set_suspect_offline(false);
-    override(reload_state, "is_in_progress", () => true);
-    presence.set_info(presences, now);
+    assert.equal(presence.presence_info.get(unknown_user_id), undefined);
 });
 
 test("status_from_raw", () => {
