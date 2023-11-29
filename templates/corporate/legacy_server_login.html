@@ -1,0 +1,45 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "upgrade" %}
+
+{% set PAGE_TITLE = "Zulip server billing management" %}
+
+{% block portico_content %}
+
+<div class="register-account flex full-page server-login-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>Zulip server billing management</h1>
+        </div>
+        <div class="white-box">
+            {% if error_message %}
+            <div id="server-login-error" class="alert alert-danger">{{ error_message }}</div>
+            {% endif %}
+            <div id="server-login-input-section">
+                <form id="server-login-form" method="post" action="/serverlogin/">
+                    {{ csrf_input }}
+                    <div class="input-box server-login-form-field">
+                        <label for="username" class="inline-block label-title">
+                            server_org_id
+                            <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html" target="_blank">
+                                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                            </a>
+                        </label>
+                        <input id="username" name="server_org_id" class="required" type="text"/>
+                    </div>
+                    <div class="input-box server-login-form-field">
+                        <label for="password" class="inline-block label-title">server_org_key</label>
+                        <input id="password" name="server_org_secret" class="required" type="password"/>
+                    </div>
+                    <div class="upgrade-button-container">
+                        <button type="submit" id="server-login-button" class="stripe-button-el invoice-button">
+                            <span class="server-login-button-text">Login</span>
+                            <img class="loader server-login-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -16,6 +16,7 @@ from corporate.views.portico import (
     team_view,
 )
 from corporate.views.remote_billing_page import (
+    remote_billing_legacy_server_login,
     remote_billing_page_realm,
     remote_billing_page_server,
     remote_billing_plans_realm,
@@ -169,4 +170,9 @@ urlpatterns += [
     path("realm/<realm_uuid>/billing", remote_billing_page_realm, name="remote_billing_page_realm"),
     path("server/<server_uuid>/", remote_billing_page_server, name="remote_billing_page_server"),
     path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
+    path(
+        "serverlogin/",
+        remote_billing_legacy_server_login,
+        name="remote_billing_legacy_server_login",
+    ),
 ]

@@ -18,6 +18,12 @@ class RemoteBillingIdentityDict(TypedDict):
     remote_realm_uuid: str
 
 
+class LegacyServerIdentityDict(TypedDict):
+    # Currently this has only one field. We can extend this
+    # to add more information as appropriate.
+    remote_server_uuid: str
+
+
 def get_identity_dict_from_session(
     request: HttpRequest,
     realm_uuid: Optional[str],
