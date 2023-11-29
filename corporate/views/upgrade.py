@@ -192,11 +192,11 @@ def sponsorship(
             "string_id": realm.string_id,
             "support_url": support_url,
             "organization_type": org_type_display_name,
-            "website": website,
-            "description": description,
-            "expected_total_users": expected_total_users,
-            "paid_users_count": paid_users_count,
-            "paid_users_description": paid_users_description,
+            "website": sponsorship_request.org_website,
+            "description": sponsorship_request.org_description,
+            "expected_total_users": sponsorship_request.expected_total_users,
+            "paid_users_count": sponsorship_request.paid_users_count,
+            "paid_users_description": sponsorship_request.paid_users_description,
         }
         # Sent to the server's support team, so this email is not user-facing.
         send_email(
