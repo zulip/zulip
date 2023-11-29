@@ -30,6 +30,16 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
                 and subgroup='false'
             group by server_id
             ),
+        mobile_push_forwarded_count as (
+            select
+                server_id,
+                sum(coalesce(value, 0)) as push_forwarded_count
+            from zilencer_remoteinstallationcount
+            where
+                property = 'mobile_pushes_forwarded::day'
+                and end_time >= current_timestamp(0) - interval '7 days'
+            group by server_id
+        ),
         remote_push_devices as (
             select server_id, count(distinct(user_id)) as push_user_count from zilencer_remotepushdevicetoken
             group by server_id
@@ -41,9 +51,11 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             rserver.last_version,
             max_value,
             push_user_count,
-            max_end_time
+            max_end_time,
+            push_forwarded_count
         from zilencer_remotezulipserver rserver
         left join icount on icount.server_id = rserver.id
+        left join mobile_push_forwarded_count on mobile_push_forwarded_count.server_id = rserver.id
         left join remote_push_devices on remote_push_devices.server_id = rserver.id
         order by max_value DESC NULLS LAST, push_user_count DESC NULLS LAST
     """
@@ -57,6 +69,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Analytics users",
         "Mobile users",
         "Last update time",
+        "7 day count of mobile pushes forwarded (includes today's current count)",
         "Analytics",
         "Support",
     ]
