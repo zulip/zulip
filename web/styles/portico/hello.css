@@ -1113,6 +1113,7 @@ ul {
             "lnum" on;
         color: hsl(0deg 0% 100%);
         max-width: 560px;
+        padding: 0 10px;
         margin: 0 auto;
 
         & a {
@@ -1210,6 +1211,7 @@ ul {
         background: var(--color-background-box);
         padding: 12px 12px 0;
         border-radius: 16px 16px 0 0;
+        min-height: 40px;
 
         h2 {
             color: var(--color-plan-tab-header);
@@ -1230,6 +1232,10 @@ ul {
             margin: 0;
             text-align: center;
             padding-bottom: 14px;
+
+            @media screen and (width <= 700px) {
+                display: none;
+            }
         }
 
         /* Shared styles to handle tab curvature. */
@@ -1348,6 +1354,12 @@ ul {
         max-width: 912px;
         margin: 0 auto;
 
+        @media screen and (width <= 810px) {
+            grid-template-columns: minmax(0, 456px);
+            justify-content: center;
+            row-gap: 32px;
+        }
+
         header {
             position: relative;
             padding: 0 16px 0 32px;
@@ -1433,6 +1445,20 @@ ul {
         .contact-note {
             font-weight: 400;
             font-size: 14px;
+        }
+    }
+
+    @media screen and (width <= 500px) {
+        .additional-pricing-information {
+            margin: 0 8px;
+
+            header {
+                padding-bottom: 29px;
+            }
+
+            p {
+                display: none;
+            }
         }
     }
 
@@ -1523,6 +1549,20 @@ ul {
                 border-bottom: 1px dashed hsl(223deg 40% 25% / 20%);
                 margin: 0 10px;
             }
+
+            @media screen and (width <= 700px) {
+                h2 {
+                    border-bottom: 1px dashed hsl(223deg 40% 25% / 20%);
+                    height: 100%;
+                    margin: 0 10px;
+                }
+            }
+
+            @media screen and (width <= 500px) {
+                h2 {
+                    margin: 0;
+                }
+            }
         }
 
         .self-hosted-plan-title {
@@ -1560,6 +1600,53 @@ ul {
                 border-bottom: 1px dashed hsl(223deg 40% 25% / 20%);
                 margin: 0 10px;
             }
+
+            @media screen and (width <= 700px) {
+                h2 {
+                    border-bottom: 1px dashed hsl(223deg 40% 25% / 20%);
+                    height: 100%;
+                    margin: 0 10px;
+                }
+            }
+
+            @media screen and (width <= 500px) {
+                h2 {
+                    margin: 0;
+                }
+            }
+        }
+    }
+
+    @media screen and (width <= 940px) {
+        h1 {
+            font-size: 40px;
+        }
+
+        .h1-subheader {
+            font-size: 16px;
+        }
+
+        .pricing-tab h2 {
+            font-size: 24px;
+            line-height: 26px;
+            margin-bottom: 0;
+        }
+
+        .pricing-pane h2 {
+            font-size: 22px;
+            margin: 4px 0 12px;
+        }
+    }
+
+    @media screen and (width <= 900px) {
+        .additional-pricing-information header h2 {
+            font-size: 24px;
+        }
+    }
+
+    @media screen and (width <= 500px) {
+        .pricing-tab h2 {
+            font-size: 20px;
         }
     }
 }
