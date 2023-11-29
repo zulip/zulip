@@ -104,6 +104,10 @@ class RemoteRealm(models.Model):
     # Value obtained's from the remote server's realm.host.
     host = models.TextField()
 
+    name = models.TextField(default="")
+
+    authentication_methods = models.JSONField(default=dict)
+
     org_type = models.PositiveSmallIntegerField(
         default=Realm.ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],

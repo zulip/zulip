@@ -543,6 +543,8 @@ def update_remote_realm_data_for_server(
             realm_deactivated=realm.deactivated,
             realm_date_created=timestamp_to_datetime(realm.date_created),
             org_type=realm.org_type,
+            name=realm.name,
+            authentication_methods=realm.authentication_methods,
         )
         for realm in server_realms_info
         if realm.uuid not in already_registered_uuids
