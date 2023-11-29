@@ -1721,7 +1721,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         data = {
-            "organization-type": Realm.ORG_TYPES["opensource"]["id"],
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
             "website": "invalid-url",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
@@ -1737,7 +1737,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         data = {
-            "organization-type": Realm.ORG_TYPES["opensource"]["id"],
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
             "website": "",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",
@@ -1804,7 +1804,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         data = {
-            "organization-type": Realm.ORG_TYPES["opensource"]["id"],
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
             "expected_total_users": "10 users",

@@ -62,7 +62,7 @@
                     </div>
                     <div class="input-box sponsorship-form-field">
                         <div class="inline-block relative">
-                            <select name="organization-type" id="organization-type" class="sponsorship-form-select">
+                            <select name="organization_type" id="organization-type" class="sponsorship-form-select">
                                 {% for org_type in sorted_org_types %}
                                     {% if not org_type[1].hidden %}
                                     <option data-string-value="{{ org_type[0] }}"
@@ -74,7 +74,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <label for="organization-type" class="inline-block label-title">Organization type</label>
+                        <label for="organization_type" class="inline-block label-title">Organization type</label>
                     </div>
                     <p id="sponsorship-discount-details"></p>
                     <div class="input-box sponsorship-form-field no-validation">
