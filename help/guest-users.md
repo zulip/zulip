@@ -42,6 +42,37 @@ pricing](/help/zulip-cloud-billing#temporary-users-and-guests) for guest users.
 
 {end_tabs}
 
+## Configure whether guests can see all other users
+
+{!cloud-plus-only.md!}
+
+You can restrict guests' ability to see other users in the organization. If you
+do so, guests will be able to see information about other users only in the
+following cases:
+
+- The user belongs to a [direct message](/help/direct-messages) thread with the
+  guest.
+- The user is subscribed to the same [stream](/help/streams-and-topics) as the
+  guest.
+
+All other users will be displayed as **Unknown users** in the Zulip app. For
+example, messages and reactions from a former subscriber of a stream will be
+shown as from an **Unknown user**. Unknown users are not shown in the guest's
+right sidebar, and cannot be accessed by guests via the [API](/api).
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|organization-permissions}
+
+1. Under **Guests**, configure **Who can view all other users in the
+   organization**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Related articles
 
 * [Roles and permissions](/help/roles-and-permissions)
