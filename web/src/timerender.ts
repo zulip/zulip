@@ -12,7 +12,7 @@ import _ from "lodash";
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
 import {$t} from "./i18n";
-import {difference_in_calendar_days, start_of_day} from "./time_zone_util";
+import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -149,13 +149,10 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
 
-    const tz_offset = new Intl.DateTimeFormat(user_settings.default_language, {
-        timeZone: display_time_zone,
-        timeZoneName: "longOffset",
-    })
-        .formatToParts(time)
-        .find(({type}) => type === "timeZoneName")!.value;
-    const tz_UTC_offset = `(${tz_offset.replace(/^GMT/, "UTC")})`;
+    const offset_minutes = Math.round(get_offset(time, display_time_zone) / 60000);
+    const tz_UTC_offset = `(UTC${offset_minutes < 0 ? "-" : "+"}${String(
+        Math.floor(Math.abs(offset_minutes) / 60),
+    ).padStart(2, "0")}:${String(Math.abs(offset_minutes) % 60).padStart(2, "0")})`;
 
     if (timezone) {
         return timezone + " " + tz_UTC_offset;
