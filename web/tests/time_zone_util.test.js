@@ -23,6 +23,7 @@ const chatham_dst_begin = new Date("2022-09-24T14:00Z");
 const chatham_dst_end = new Date("2023-04-01T14:00Z");
 const kiritimati = "Pacific/Kiritimati";
 const kiritimati_date_skip = new Date("1994-12-31T10:00Z");
+const fractional_date = new Date("2023-01-02T03:04:05.678Z");
 
 run_test("get_offset", () => {
     assert.equal(get_offset(ny_new_year, "UTC"), 0);
@@ -37,6 +38,9 @@ run_test("get_offset", () => {
     assert.equal(get_offset(chatham_dst_end, chatham), (12 * 60 + 45) * 60000);
     assert.equal(get_offset(pre(kiritimati_date_skip), kiritimati), -10 * 60 * 60000);
     assert.equal(get_offset(kiritimati_date_skip, kiritimati), 14 * 60 * 60000);
+    assert.equal(get_offset(fractional_date, "UTC"), 0);
+    assert.equal(get_offset(fractional_date, ny), -5 * 60 * 60000);
+    assert.equal(get_offset(fractional_date, kiritimati), 14 * 60 * 60000);
 });
 
 run_test("start_of_day", () => {

@@ -1,30 +1,41 @@
-import assert from "minimalistic-assert";
+const parsable_formats = new Map<string, Intl.DateTimeFormat>();
 
-const offset_formats = new Map<string, Intl.DateTimeFormat>();
-
-function get_offset_format(time_zone: string): Intl.DateTimeFormat {
-    let format = offset_formats.get(time_zone);
+function get_parsable_format(time_zone: string): Intl.DateTimeFormat {
+    let format = parsable_formats.get(time_zone);
     if (format === undefined) {
         format = new Intl.DateTimeFormat("en-US", {
-            timeZoneName: "longOffset",
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric",
+            hourCycle: "h23",
             timeZone: time_zone,
         });
-        offset_formats.set(time_zone, format);
+        parsable_formats.set(time_zone, format);
     }
     return format;
 }
 
 /** Get the given time zone's offset in milliseconds at the given date. */
 export function get_offset(date: number | Date, time_zone: string): number {
-    const offset_string = get_offset_format(time_zone)
-        .formatToParts(date)
-        .find((part) => part.type === "timeZoneName")!.value;
-    if (offset_string === "GMT") {
-        return 0;
-    }
-    const m = /^GMT(([+-])\d\d):(\d\d)$/.exec(offset_string);
-    assert(m !== null, offset_string);
-    return (Number(m[1]) * 60 + Number(m[2] + m[3])) * 60000;
+    const parts = Object.fromEntries(
+        get_parsable_format(time_zone)
+            .formatToParts(date)
+            .map((part) => [part.type, part.value]),
+    );
+    return (
+        Date.UTC(
+            Number(parts.year),
+            Number(parts.month) - 1,
+            Number(parts.day),
+            Number(parts.hour),
+            Number(parts.minute),
+            Number(parts.second),
+        ) -
+        (Number(date) - (Number(date) % 1000))
+    );
 }
 
 /** Get the start of the day for the given date in the given time zone. */
