@@ -56,6 +56,12 @@ export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
         if (!stream_data.is_stream_muted_by_name(stream_name)) {
             return true;
         }
+        if (only_followed_topics) {
+            // We can use Shift + N to go to unread followed topic in muted stream.
+            const stream_id = stream_data.get_stream_id(stream_name);
+            const topics = stream_topic_history.get_recent_topic_names(stream_id);
+            return topics.some((topic) => user_topics.is_topic_followed(stream_id, topic));
+        }
         if (stream_name === curr_stream) {
             // We can use n within a muted stream if we are
             // currently narrowed to it.
