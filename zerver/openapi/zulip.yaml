@@ -4477,6 +4477,10 @@ paths:
                                         primarily relevant to clients containing UI for changing it.
 
                                         [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+                                    signup_notifications_include_referrer:
+                                      type: boolean
+                                      description: |
+                                        Whether new user signup notifications contain the referrer's name.
                                     user_group_edit_policy:
                                       type: integer
                                       description: |
@@ -14770,6 +14774,10 @@ paths:
                           primarily relevant to clients containing UI for changing it.
 
                           [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+                      realm_signup_notifications_include_referrer:
+                        type: boolean
+                        description: |
+                          Whether new user signup notifications contain the referrer's name.
                       realm_user_settings_defaults:
                         type: object
                         additionalProperties: false

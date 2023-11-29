@@ -921,6 +921,7 @@ class InviteUserTest(InviteUserBase):
         """
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
@@ -964,8 +965,24 @@ class InviteUserTest(InviteUserBase):
 
         self.assertEqual(signups_stream_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
-            signups_stream_msg.content.startswith(
-                f"@_**alice_zulip.com|{invitee_profile.id}** just signed up",
+            realm.signup_notifications_include_referrer
+            and signups_stream_msg.content.startswith(
+                f"@_**alice_zulip.com|{invitee_profile.id}** accepted @_**King Hamlet|{user_profile.id}**'s invite",
+            )
+        )
+
+        # Check notification message when signup_notifications_include_referrer is False
+        realm.signup_notifications_include_referrer = False
+        realm.save()
+        invitee = self.nonreg_email("bob")
+        self.invite(invitee, [private_stream_name, "Denmark"])
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user("bob")
+        new_signups_stream_msg = Message.objects.all().order_by("-id")[1:2].get()
+        self.assertTrue(
+            not realm.signup_notifications_include_referrer
+            and new_signups_stream_msg.content.startswith(
+                f"@_**bob_zulip.com|{invitee_profile.id}** just signed",
             )
         )
 
