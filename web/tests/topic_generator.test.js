@@ -121,6 +121,14 @@ run_test("topics", ({override}) => {
         topic: "followed",
     });
 
+    // Shift + N takes the user to next unread followed topic,
+    // even if the stream is muted.
+    next_item = tg.get_next_topic("announce", "whatever", true);
+    assert.deepEqual(next_item, {
+        stream: "muted",
+        topic: "followed",
+    });
+
     next_item = tg.get_next_topic("muted", "whatever", true);
     assert.deepEqual(next_item, {
         stream: "muted",
