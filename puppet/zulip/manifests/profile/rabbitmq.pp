@@ -14,17 +14,32 @@ class zulip::profile::rabbitmq {
     ensure => absent,
   }
 
+
+  group { 'rabbitmq':
+    ensure => present,
+    system => true,
+  }
+  user { 'rabbitmq':
+    ensure  => present,
+    comment => 'RabbitMQ messaging server',
+    gid     => 'rabbitmq',
+    home    => '/var/lib/rabbitmq',
+    shell   => '/usr/sbin/nologin',
+    system  => true,
+    require => Group['rabbitmq'],
+  }
   file { '/etc/rabbitmq':
-    ensure => directory,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0755',
-    before => Package['rabbitmq-server'],
+    ensure  => directory,
+    owner   => 'rabbitmq',
+    group   => 'rabbitmq',
+    mode    => '0755',
+    require => User['rabbitmq'],
+    before  => Package['rabbitmq-server'],
   }
   file { '/etc/rabbitmq/rabbitmq.config':
     ensure => file,
-    owner  => 'root',
-    group  => 'root',
+    owner  => 'rabbitmq',
+    group  => 'rabbitmq',
     mode   => '0644',
     source => 'puppet:///modules/zulip/rabbitmq/rabbitmq.config',
     # This config file must be installed before the package, so that
@@ -46,8 +61,8 @@ class zulip::profile::rabbitmq {
   }
   file { '/etc/rabbitmq/rabbitmq-env.conf':
     ensure => file,
-    owner  => 'root',
-    group  => 'root',
+    owner  => 'rabbitmq',
+    group  => 'rabbitmq',
     mode   => '0644',
     source => 'puppet:///modules/zulip/rabbitmq/rabbitmq-env.conf',
     before => Package['rabbitmq-server'],
