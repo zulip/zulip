@@ -135,6 +135,8 @@ class Command(ZulipBaseCommand):
 
     def _log_params(self, params: Dict[str, Any]) -> None:
         print("The following data will be submitted to the push notification service:")
-        for key in sorted(params.keys()):
-            print(f"  {key}: {params[key]}")
+        for key, value in sorted(params.items()):
+            if key == "zulip_org_key":
+                value = value[0:8] + "..."
+            print(f"  {key}: {value}")
         print("")
