@@ -23,7 +23,8 @@ from analytics.lib.counts import (
     REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
-from corporate.lib.stripe import do_deactivate_remote_server
+from corporate.lib.stripe import RemoteRealmBillingSession, do_deactivate_remote_server
+from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -36,8 +37,9 @@ from zerver.lib.push_notifications import (
 from zerver.lib.remote_server import RealmDataForAnalytics
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.types import RemoteRealmDictValue
 from zerver.lib.validator import check_capped_string, check_int, check_string_fixed_length
 from zerver.views.push_notifications import check_app_id, validate_token
 from zilencer.auth import InvalidZulipServerKeyError
@@ -766,7 +768,36 @@ def remote_server_post_analytics(
             )
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
 
-    return json_success(request)
+    remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
+    remote_realms = RemoteRealm.objects.filter(server=server)
+    for remote_realm in remote_realms:
+        uuid = str(remote_realm.uuid)
+        billing_session = RemoteRealmBillingSession(remote_realm)
+
+        customer = billing_session.get_customer()
+        if customer is None:
+            remote_realm_dict[uuid] = {"can_push": True, "expected_end_timestamp": None}
+            continue
+
+        current_plan = get_current_plan_by_customer(customer)
+        if current_plan is None:
+            remote_realm_dict[uuid] = {"can_push": True, "expected_end_timestamp": None}
+            continue
+
+        expected_end_timestamp = None
+        if current_plan.status in [
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ]:
+            expected_end_timestamp = datetime_to_timestamp(
+                billing_session.get_next_billing_cycle(current_plan)
+            )
+        remote_realm_dict[uuid] = {
+            "can_push": True,
+            "expected_end_timestamp": expected_end_timestamp,
+        }
+
+    return json_success(request, data={"realms": remote_realm_dict})
 
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:

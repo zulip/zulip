@@ -15,6 +15,7 @@ from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.types import RemoteRealmDictValue
 from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
 
 
@@ -287,7 +288,7 @@ def send_analytics_to_push_bouncer() -> None:
     logger.info("Reported %d records", record_count)
 
 
-def send_realms_only_to_push_bouncer() -> None:
+def send_realms_only_to_push_bouncer() -> Dict[str, RemoteRealmDictValue]:
     request = {
         "realm_counts": "[]",
         "installation_counts": "[]",
@@ -299,7 +300,10 @@ def send_realms_only_to_push_bouncer() -> None:
 
     # We don't catch JsonableError here, because we want it to propagate further
     # to either explicitly, loudly fail or be error-handled by the caller.
-    send_to_push_bouncer("POST", "server/analytics", request)
+    response = send_to_push_bouncer("POST", "server/analytics", request)
+    assert isinstance(response["realms"], dict)  # for mypy
+
+    return response["realms"]
 
 
 def enqueue_register_realm_with_push_bouncer_if_needed(realm: Realm) -> None:

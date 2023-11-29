@@ -23,6 +23,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
+from corporate.models import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
@@ -1577,6 +1578,47 @@ class AnalyticsBouncerTest(BouncerTestCase):
     def test_send_realms_only_to_push_bouncer(self) -> None:
         self.add_mock_response()
 
+        with mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=None
+        ) as m:
+            realms = send_realms_only_to_push_bouncer()
+            m.assert_called()
+            for data in realms.values():
+                self.assertEqual(data["can_push"], True)
+                self.assertEqual(data["expected_end_timestamp"], None)
+
+        dummy_customer = mock.MagicMock()
+        with mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+        ):
+            with mock.patch("zilencer.views.get_current_plan_by_customer", return_value=None) as m:
+                realms = send_realms_only_to_push_bouncer()
+                m.assert_called()
+                for data in realms.values():
+                    self.assertEqual(data["can_push"], True)
+                    self.assertEqual(data["expected_end_timestamp"], None)
+
+        dummy_customer_plan = mock.MagicMock()
+        dummy_customer_plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+        dummy_date = datetime.datetime(year=2023, month=12, day=3, tzinfo=datetime.timezone.utc)
+        with mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+        ):
+            with mock.patch(
+                "zilencer.views.get_current_plan_by_customer", return_value=dummy_customer_plan
+            ):
+                with mock.patch(
+                    "zilencer.views.RemoteRealmBillingSession.get_next_billing_cycle",
+                    return_value=dummy_date,
+                ) as m:
+                    realms = send_realms_only_to_push_bouncer()
+                    m.assert_called()
+                    for data in realms.values():
+                        self.assertEqual(data["can_push"], True)
+                        self.assertEqual(
+                            data["expected_end_timestamp"], datetime_to_timestamp(dummy_date)
+                        )
+
         send_realms_only_to_push_bouncer()
 
         self.assertEqual(
@@ -1608,8 +1650,19 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
 
         # Use a mock to assert exactly the data that gets sent.
+        dummy_send_realms_only_response = {
+            "result": "success",
+            "msg": "",
+            "realms": {
+                "f9535515-84d0-489e-80d5-9ae97c3c7ec1": {
+                    "can_push": True,
+                    "expected_end_timestamp": None,
+                },
+            },
+        }
         with mock.patch(
-            "zerver.lib.remote_server.send_to_push_bouncer"
+            "zerver.lib.remote_server.send_to_push_bouncer",
+            return_value=dummy_send_realms_only_response,
         ) as mock_send_to_push_bouncer:
             send_realms_only_to_push_bouncer()
 
