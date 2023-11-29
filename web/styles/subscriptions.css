@@ -181,6 +181,18 @@ h4.user_group_setting_subsection_title {
                 z-index: 1;
             }
 
+            & tbody tr:last-child td {
+                border-bottom: 1px solid hsl(0deg 0% 87%);
+
+                &:first-of-type {
+                    border-bottom-left-radius: 4px;
+                }
+
+                &:last-of-type {
+                    border-bottom-right-radius: 4px;
+                }
+            }
+
             .hidden-subscriber-email {
                 font-style: italic;
             }
