@@ -5,6 +5,7 @@ import render_message_view_header from "../templates/message_view_header.hbs";
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
@@ -31,6 +32,7 @@ function make_message_view_header(filter) {
         };
     }
     message_view_header.title = filter.get_title();
+    message_view_header.is_spectator = page_params.is_spectator;
     filter.add_icon_data(message_view_header);
     if (filter.has_operator("stream") && !filter._sub) {
         message_view_header.sub_count = "0";
