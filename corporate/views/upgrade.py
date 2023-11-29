@@ -144,7 +144,7 @@ class SponsorshipRequestForm(forms.Form):
 def sponsorship(
     request: HttpRequest,
     user: UserProfile,
-    organization_type: str = REQ("organization-type"),
+    organization_type: str = REQ(),
     website: str = REQ(),
     description: str = REQ(),
     expected_total_users: str = REQ(),
@@ -159,10 +159,6 @@ def sponsorship(
     support_url = get_support_url(realm)
 
     post_data = request.POST.copy()
-    # We need to do this because the field name in the template
-    # for organization type contains a hyphen and the form expects
-    # an underscore.
-    post_data.update(organization_type=organization_type)
     form = SponsorshipRequestForm(post_data)
 
     if form.is_valid():
