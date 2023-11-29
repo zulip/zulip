@@ -58,6 +58,12 @@ class RemoteZulipServer(models.Model):
     # The current billing plan for the remote server, similar to Realm.plan_type.
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
+    # This is not synced with the remote server, but only filled for sponsorship requests.
+    org_type = models.PositiveSmallIntegerField(
+        default=Realm.ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
+
     @override
     def __str__(self) -> str:
         return f"{self.hostname} {str(self.uuid)[0:12]}"
