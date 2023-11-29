@@ -146,19 +146,12 @@ h4.user_group_setting_subsection_title {
         .subscriber-list {
             width: 100%;
             margin: auto;
-            border-radius: 6px;
 
             & tbody {
                 border-bottom: none;
-
-                & tr:last-of-type {
-                    border-bottom: none;
-                }
             }
 
             & tr {
-                border-bottom: 1px solid hsl(0deg 0% 93%);
-
                 & td,
                 th {
                     padding: 4px 0 4px 5px;
