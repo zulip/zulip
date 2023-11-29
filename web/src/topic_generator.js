@@ -67,13 +67,23 @@ export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
             // currently narrowed to it.
             return true;
         }
-        return false;
+        // We can use N to go to next unread unmuted/followed topic in a muted stream .
+        const stream_id = stream_data.get_stream_id(stream_name);
+        const topics = stream_topic_history.get_recent_topic_names(stream_id);
+        return topics.some((topic) => user_topics.is_topic_unmuted_or_followed(stream_id, topic));
     });
 
     function get_unmuted_topics(stream_name) {
         const stream_id = stream_data.get_stream_id(stream_name);
         let topics = stream_topic_history.get_recent_topic_names(stream_id);
-        topics = topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
+
+        if (stream_data.is_stream_muted_by_name(stream_name)) {
+            topics = topics.filter((topic) =>
+                user_topics.is_topic_unmuted_or_followed(stream_id, topic),
+            );
+        } else {
+            topics = topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
+        }
         return topics;
     }
 

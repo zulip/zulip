@@ -89,9 +89,9 @@ run_test("topics", ({override}) => {
     override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         switch (stream_id) {
             case muted_stream_id:
-                return ["ms-topic1", "ms-topic2", "followed"];
+                return ["ms-topic1", "ms-topic2", "unmuted", "followed-muted"];
             case devel_stream_id:
-                return ["muted", "python", "followed"];
+                return ["muted", "python", "followed-devel"];
         }
 
         return [];
@@ -101,44 +101,81 @@ run_test("topics", ({override}) => {
 
     override(stream_data, "is_stream_muted_by_name", (stream_name) => stream_name === "muted");
 
-    override(unread, "topic_has_any_unread", (stream_id) =>
-        [devel_stream_id, muted_stream_id].includes(stream_id),
-    );
+    let topic_has_unreads = new Set([
+        "unmuted",
+        "followed-muted",
+        "muted",
+        "python",
+        "followed-devel",
+    ]);
+    function mark_topic_as_read(topic) {
+        topic_has_unreads.delete(topic);
+    }
+    override(unread, "topic_has_any_unread", (_stream_id, topic) => topic_has_unreads.has(topic));
 
     override(user_topics, "is_topic_muted", (_stream_name, topic) => topic === "muted");
 
-    override(user_topics, "is_topic_followed", (_stream_name, topic) => topic === "followed");
+    override(
+        user_topics,
+        "is_topic_unmuted_or_followed",
+        (_stream_name, topic) =>
+            topic === "unmuted" || topic === "followed-muted" || topic === "followed-devel",
+    );
+
+    override(
+        user_topics,
+        "is_topic_followed",
+        (_stream_name, topic) => topic === "followed-muted" || topic === "followed-devel",
+    );
 
     let next_item = tg.get_next_topic("announce", "whatever");
+    assert.deepEqual(next_item, {
+        stream: "muted",
+        topic: "unmuted",
+    });
+    mark_topic_as_read("unmuted");
+
+    next_item = tg.get_next_topic("muted", "unmuted");
+    assert.deepEqual(next_item, {
+        stream: "muted",
+        topic: "followed-muted",
+    });
+    mark_topic_as_read("followed-muted");
+
+    next_item = tg.get_next_topic("muted", "followed-muted");
     assert.deepEqual(next_item, {
         stream: "devel",
         topic: "python",
     });
+    mark_topic_as_read("python");
 
     next_item = tg.get_next_topic("devel", "python");
     assert.deepEqual(next_item, {
         stream: "devel",
-        topic: "followed",
+        topic: "followed-devel",
     });
+    mark_topic_as_read("followed-devel");
 
+    // Mark topics as unread again
+    topic_has_unreads = new Set(["unmuted", "followed-muted", "muted", "python", "followed-devel"]);
     // Shift + N takes the user to next unread followed topic,
     // even if the stream is muted.
     next_item = tg.get_next_topic("announce", "whatever", true);
     assert.deepEqual(next_item, {
         stream: "muted",
-        topic: "followed",
+        topic: "followed-muted",
     });
 
     next_item = tg.get_next_topic("muted", "whatever", true);
     assert.deepEqual(next_item, {
         stream: "muted",
-        topic: "followed",
+        topic: "followed-muted",
     });
 
     next_item = tg.get_next_topic("muted", undefined);
     assert.deepEqual(next_item, {
         stream: "muted",
-        topic: "ms-topic1",
+        topic: "unmuted",
     });
 });
 
