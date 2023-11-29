@@ -16,7 +16,7 @@ ZULIP_PATH = os.path.dirname(TOOLS_DIR)
 sys.path.append(ZULIP_PATH)
 
 from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS
-from tools.setup.emoji.emoji_setup_utils import EMOJISETS, emoji_is_universal, get_emoji_code
+from tools.setup.emoji.emoji_setup_utils import emoji_is_supported, get_emoji_code
 
 UNIFIED_REACTIONS_FILE = os.path.join(
     ZULIP_PATH, "zerver", "management", "data", "unified_reactions.json"
@@ -24,6 +24,9 @@ UNIFIED_REACTIONS_FILE = os.path.join(
 EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
 EMOJI_CACHE = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
 OUTPUT_FILE = os.path.join(EMOJI_CACHE, "emoji_names_table.html")
+
+# Emoji sets that we currently support.
+EMOJISETS = ["google", "twitter"]
 
 with open(EMOJI_DATA_FILE, "rb") as fp:
     EMOJI_DATA = orjson.loads(fp.read())
@@ -175,7 +178,7 @@ def generate_emoji_collection() -> None:
     generate_emoji_code_to_emoji_names_maps()
     # Prepare `emoji_collection`.
     for emoji_dict in EMOJI_DATA:
-        if not emoji_is_universal(emoji_dict):
+        if not emoji_is_supported(emoji_dict):
             continue
         category = emoji_dict["category"]
         emoji_code = get_emoji_code(emoji_dict)
