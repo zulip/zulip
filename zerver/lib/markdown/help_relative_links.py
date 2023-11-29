@@ -28,13 +28,13 @@ gear_info = {
     "integrations": ['<i class="fa fa-github"></i> Integrations', "/integrations/"],
     "stats": ['<i class="fa fa-bar-chart"></i> Usage statistics', "/stats"],
     "plans": ['<i class="fa fa-rocket"></i> Plans and pricing', "/plans/"],
-    "billing": ['<i class="fa fa-credit-card"></i> Billing', "/billing/"],
+    "billing": ['<i class="zulip-icon zulip-icon-credit-card"></i> Billing', "/billing/"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
 gear_instructions = """
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
-   right corner of the web or desktop app.
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
 
 1. Select {item}.
 """
