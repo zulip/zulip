@@ -1813,7 +1813,7 @@ Output:
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int
     ) -> Tuple[CustomerPlan, LicenseLedger]:
         return self.subscribe_realm_to_manual_license_management_plan(
-            realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
+            realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
 
     def create_user_notifications_data_object(

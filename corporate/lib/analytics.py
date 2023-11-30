@@ -32,7 +32,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
             # TODO: figure out what to do for plans that don't automatically
             # renew, but which probably will renew
             renewal_cents = renewal_amount(plan, timezone_now())
-            if plan.billing_schedule == CustomerPlan.MONTHLY:
+            if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
                 renewal_cents *= 12
             # TODO: Decimal stuff
             annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)

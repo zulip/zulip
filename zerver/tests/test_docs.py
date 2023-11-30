@@ -602,7 +602,7 @@ class PlansPageTest(ZulipTestCase):
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.FREE_TRIAL,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.MONTHLY,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
         )
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan (free trial)"], result)

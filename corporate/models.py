@@ -223,11 +223,11 @@ class CustomerPlan(models.Model):
     # billing_cycle_anchor.
     billing_cycle_anchor = models.DateTimeField()
 
-    ANNUAL = 1
-    MONTHLY = 2
+    BILLING_SCHEDULE_ANNUAL = 1
+    BILLING_SCHEDULE_MONTHLY = 2
     BILLING_SCHEDULES = {
-        ANNUAL: "Annual",
-        MONTHLY: "Monthly",
+        BILLING_SCHEDULE_ANNUAL: "Annual",
+        BILLING_SCHEDULE_MONTHLY: "Monthly",
     }
     billing_schedule = models.SmallIntegerField()
 
