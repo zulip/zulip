@@ -4,7 +4,7 @@ from unittest import mock
 import responses
 from django.test import override_settings
 
-from corporate.lib.remote_billing_util import RemoteBillingIdentityDict
+from corporate.lib.remote_billing_util import RemoteBillingIdentityDict, RemoteBillingUserDict
 from zerver.lib.remote_server import send_realms_only_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.models import UserProfile
@@ -34,9 +34,11 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
 
         # Verify the authed data that should have been stored in the session.
         identity_dict = RemoteBillingIdentityDict(
-            user_email=user.delivery_email,
-            user_uuid=str(user.uuid),
-            user_full_name=user.full_name,
+            user=RemoteBillingUserDict(
+                user_email=user.delivery_email,
+                user_uuid=str(user.uuid),
+                user_full_name=user.full_name,
+            ),
             remote_server_uuid=str(self.server.uuid),
             remote_realm_uuid=str(user.realm.uuid),
             next_page=next_page,

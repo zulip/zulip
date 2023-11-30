@@ -15,6 +15,7 @@ from corporate.lib.decorator import self_hosting_management_endpoint
 from corporate.lib.remote_billing_util import (
     LegacyServerIdentityDict,
     RemoteBillingIdentityDict,
+    RemoteBillingUserDict,
     get_identity_dict_from_session,
 )
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
@@ -51,9 +52,9 @@ def remote_server_billing_entry(
         raise MissingRemoteRealmError
 
     identity_dict = RemoteBillingIdentityDict(
-        user_email=user.email,
-        user_uuid=str(user.uuid),
-        user_full_name=user.full_name,
+        user=RemoteBillingUserDict(
+            user_email=user.email, user_uuid=str(user.uuid), user_full_name=user.full_name
+        ),
         remote_server_uuid=str(remote_server.uuid),
         remote_realm_uuid=str(remote_realm.uuid),
         next_page=next_page,
@@ -118,9 +119,16 @@ def render_tmp_remote_billing_page(
     # This key should be set in both RemoteRealm and legacy server
     # login flows.
     remote_server_uuid = identity_dict["remote_server_uuid"]
-    user_email = identity_dict.get("user_email")
-    user_full_name = identity_dict.get("user_full_name")
+
     remote_realm_uuid = identity_dict.get("remote_realm_uuid")
+
+    user_dict = identity_dict.get("user", {})
+    # Mypy recognizes user_dict as "object" otherwise.
+    # If not empty, this is actually a RemoteBillingUserDict.
+    assert isinstance(user_dict, dict)
+
+    user_email = user_dict.get("user_email")
+    user_full_name = user_dict.get("user_full_name")
 
     try:
         remote_server = RemoteZulipServer.objects.get(uuid=remote_server_uuid)
