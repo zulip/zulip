@@ -28,7 +28,7 @@
             {{/if}}
         </div>
     </td>
-    <td class="recent_topic_name" colspan="2">
+    <td class="recent_topic_name"{{#if (not is_spectator) }} colspan="2"{{/if}}>
         <div class="flex_container">
             <div class="left_part recent_view_focusable line_clamp">
                 {{#if is_private}}
