@@ -135,7 +135,7 @@ function disable_group_edit_settings(group) {
     }
     const $edit_container = get_edit_container(group);
     $edit_container.find(".group-header .button-group").hide();
-    $edit_container.find(".member-list .actions").hide();
+    $edit_container.find(".member-list .user-remove-actions").hide();
     update_add_members_elements(group);
 }
 

@@ -196,6 +196,10 @@ h4.user_group_setting_subsection_title {
             .hidden-subscriber-email {
                 font-style: italic;
             }
+
+            th.user-remove-actions {
+                min-width: 80px;
+            }
         }
     }
 }
