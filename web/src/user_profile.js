@@ -1,5 +1,6 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
+import _ from "lodash";
 
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
@@ -7,6 +8,7 @@ import render_settings_edit_embedded_bot_service from "../templates/settings/edi
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
+import render_user_profile_tab from "../templates/user_profile_tab.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
 import * as avatar from "./avatar";
@@ -46,6 +48,8 @@ let user_streams_list_widget;
 let user_profile_subscribe_widget;
 let toggler;
 let bot_owner_dropdown_widget;
+let fields_user_pills;
+let original_values;
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -306,6 +310,51 @@ export function get_custom_profile_field_data(user, field, field_types) {
     return profile_field;
 }
 
+function render_profile_tab(user) {
+    const $user_profile_name = $(".user_profile_name");
+    $user_profile_name.text(user.full_name);
+
+    const $profile_tab_modal = $(".profile-content");
+
+    const field_types = page_params.custom_profile_field_types;
+    const profile_data = page_params.custom_profile_fields
+        .map((f) => get_custom_profile_field_data(user, f, field_types))
+        .filter((f) => f.name !== undefined);
+
+    const args = {
+        date_joined: timerender.get_localized_date_or_time_for_format(
+            parseISO(user.date_joined),
+            "dayofyear_year",
+        ),
+        email: user.delivery_email,
+        is_bot: user.is_bot,
+        profile_data,
+        user_avatar: people.medium_avatar_url_for_person(user),
+        user_id: user.user_id,
+        user_is_guest: user.is_guest,
+        user_time: people.get_user_time(user.user_id),
+        user_type: people.get_user_type(user.user_id),
+    };
+
+    if (user.is_bot) {
+        const is_system_bot = user.is_system_bot;
+        const bot_owner_id = user.bot_owner_id;
+        if (is_system_bot) {
+            args.is_system_bot = is_system_bot;
+        } else if (bot_owner_id) {
+            const bot_owner = people.get_by_user_id(bot_owner_id);
+            args.bot_owner = bot_owner;
+        }
+        args.bot_type = settings_data.bot_type_id_to_string(user.bot_type);
+
+        const bot = people.get_by_user_id(user.user_id);
+        const bot_avatar = people.medium_avatar_url_for_person(bot);
+        $(".profile-content #avatar").css("background-image", `url(${bot_avatar})`);
+    }
+
+    $profile_tab_modal.html(render_user_profile_tab(args));
+}
+
 export function hide_user_profile() {
     user_streams_list_widget = undefined;
     modals.close_if_open("user-profile-modal");
@@ -496,6 +545,13 @@ export function show_edit_bot_info_modal(user_id, $container) {
     const bot_type = bot.bot_type.toString();
     const service = bot_data.get_services(bot.user_id)[0];
     edit_bot_post_render();
+
+    original_values = get_current_values(user_id);
+    $("#bot-edit-form").on("input", "input, select, button", (e) => {
+        e.preventDefault();
+        toggle_submit_button(user_id);
+    });
+
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
         const $full_name = $("#bot-edit-form").find("input[name='full_name']");
@@ -540,7 +596,15 @@ export function show_edit_bot_info_modal(user_id, $container) {
             contentType: false,
             success() {
                 avatar_widget.clear();
-                hide_user_profile();
+                original_values = get_current_values(user_id);
+                hide_button_spinner($submit_btn);
+                $submit_btn.prop("disabled", true);
+                render_profile_tab(bot);
+                ui_report.success(
+                    $t_html({defaultMessage: "Saved successfully!"}),
+                    $("#user-profile-modal .save-success"),
+                    1200,
+                );
             },
             error(xhr) {
                 ui_report.error(
@@ -695,6 +759,52 @@ function get_human_profile_data(fields_user_pills) {
     return new_profile_data;
 }
 
+function get_current_values(user_id) {
+    const person = people.maybe_get_user_by_id(user_id);
+    let current_values = {};
+    if (person.is_bot) {
+        $("#bot-edit-form")
+            .find("input,select,textarea,button")
+            .each(function () {
+                const property_name = $(this).attr("name");
+                if (property_name) {
+                    if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
+                        current_values[property_name] = $(this).prop("files")[0];
+                    } else if (property_name === "edit_bot_owner") {
+                        current_values[property_name] = $(this)
+                            .find(".dropdown_widget_value")
+                            .text();
+                    } else {
+                        current_values[property_name] = $(this).val();
+                    }
+                }
+            });
+    } else {
+        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+        const $full_name = $("#edit-user-form").find("input[name='full_name']");
+        const profile_data = get_human_profile_data(fields_user_pills);
+        current_values = {
+            full_name: $full_name.val(),
+            role,
+        };
+
+        for (const field of profile_data) {
+            current_values[field.id] = field.value;
+        }
+    }
+    return current_values;
+}
+
+function toggle_submit_button(user_id) {
+    const current_values = get_current_values(user_id);
+    const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+    if (!_.isEqual(original_values, current_values)) {
+        $submit_btn.prop("disabled", false);
+    } else {
+        $submit_btn.prop("disabled", true);
+    }
+}
+
 export function show_edit_user_info_modal(user_id, $container) {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -732,11 +842,15 @@ export function show_edit_user_info_modal(user_id, $container) {
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(
         custom_profile_field_form_selector,
     );
-    const fields_user_pills = custom_profile_fields_ui.initialize_custom_user_type_fields(
+    fields_user_pills = custom_profile_fields_ui.initialize_custom_user_type_fields(
         custom_profile_field_form_selector,
         user_id,
         true,
+        () => {
+            toggle_submit_button(user_id);
+        },
     );
+    original_values = get_current_values(user_id);
 
     // Handle deactivation
     $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
@@ -762,6 +876,11 @@ export function show_edit_user_info_modal(user_id, $container) {
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
+    $("#edit-user-form").on("input", "input, select, textarea", (e) => {
+        e.preventDefault();
+        toggle_submit_button(user_id);
+    });
+
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
         const $full_name = $("#edit-user-form").find("input[name='full_name']");
@@ -778,12 +897,19 @@ export function show_edit_user_info_modal(user_id, $container) {
         const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
         show_button_spinner($submit_btn);
         $cancel_btn.prop("disabled", true);
-
         channel.patch({
             url,
             data,
             success() {
-                hide_user_profile();
+                original_values = get_current_values(user_id);
+                hide_button_spinner($submit_btn);
+                $submit_btn.prop("disabled", true);
+                render_profile_tab(person);
+                ui_report.success(
+                    $t_html({defaultMessage: "Saved successfully!"}),
+                    $("#user-profile-modal .save-success"),
+                    1200,
+                );
             },
             error(xhr) {
                 ui_report.error(

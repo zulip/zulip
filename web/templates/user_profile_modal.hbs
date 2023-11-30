@@ -33,71 +33,10 @@
             <main class="modal__body" id="body" data-simplebar data-simplebar-auto-hide="false">
                 <div class="tab-data">
                     <div class="tabcontent active" id="profile-tab">
-                        <div class="top">
-                            <div class="col-wrap col-left">
-                                <div id="default-section">
-                                    {{#if email}}
-                                    <div id="email" class="default-field">
-                                        <div class="name">{{t "Email" }}</div>
-                                        <div class="value">{{email}}</div>
-                                    </div>
-                                    {{/if}}
-                                    <div id="user-id" class="default-field">
-                                        <div class="name">{{t "User ID" }}</div>
-                                        <div class="value">{{user_id}}</div>
-                                    </div>
-                                    <div id="user-type" class="default-field">
-                                        <div class="name">{{t "Role" }}</div>
-                                        {{#if is_bot}}
-                                            {{#if is_system_bot}}
-                                            <div class="value">{{t "System bot" }}</div>
-                                            {{else}}
-                                            <div class="value">{{t "Bot" }}</div>
-                                            {{/if}}
-                                        {{else}}
-                                            <div class="value">{{user_type}}</div>
-                                        {{/if}}
-                                    </div>
-                                    <div id="date-joined" class="default-field">
-                                        <div class="name">{{t "Joined" }}</div>
-                                        <div class="value">{{date_joined}}</div>
-                                    </div>
-                                    {{#if user_time}}
-                                    <div class="default-field">
-                                        <div class="name">{{t "Local time" }}</div>
-                                        <div class="value">{{user_time}}</div>
-                                    </div>
-                                    {{/if}}
-                                </div>
-                            </div>
-                            <div class="col-wrap col-right">
-                                <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
-                                  style="background-image: url('{{user_avatar}}');">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bottom">
-                            <div id="content">
-                                {{#if is_bot}}
-                                    <div class="field-section">
-                                        <div class="name">{{t "Bot type" }}</div>
-                                        <div class="bot_info_value">{{bot_type}}</div>
-                                    </div>
-                                    {{#if bot_owner}}
-                                    <div class="field-section bot_owner_user_field" data-field-id="{{bot_owner.user_id}}">
-                                        <div class="name">{{t "Owner" }}</div>
-                                        <div class="pill-container not-editable">
-                                            <div class="input" contenteditable="false" style="display: none;"></div>
-                                        </div>
-                                    </div>
-                                    {{/if}}
-                                {{else}}
-                                    {{> user_custom_profile_fields profile_fields=profile_data}}
-                                {{/if}}
-                            </div>
+                        <div class="profile-content">
+                            {{> user_profile_tab email=email user_id=user_id user_type=user_type date_joined=date_joined user_time=user_time user_is_guest=user_is_guest user_avatar=user_avatar profile_fields=profile_data is_bot=is_bot bot_type=bot_type bot_owner=bot_owner}}
                         </div>
                     </div>
-
                     <div class="tabcontent" id="user-profile-streams-tab">
                         <div class="alert stream_list_info"></div>
                         {{#if show_user_subscribe_widget}}
@@ -130,8 +69,9 @@
             </main>
             <div class="manage-profile-tab-footer">
                 <footer class="modal__footer">
+                    <div class="save-success"></div>
                     <button type="button" class="modal__btn dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
-                    <button type="button" class="modal__btn dialog_submit_button">
+                    <button type="button" class="modal__btn dialog_submit_button" disabled="true">
                         <span>{{t "Save changes"}}</span>
                         <div class="modal__spinner"></div>
                     </button>

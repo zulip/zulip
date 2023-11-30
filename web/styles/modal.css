@@ -147,6 +147,22 @@
     }
 }
 
+.save-success {
+    display: inline-block;
+    vertical-align: top;
+    height: auto !important;
+    width: auto !important;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-right: 10px;
+    color: hsl(156deg 30% 50%);
+    padding: 3px 10px;
+
+    &:not(:empty) {
+        border: 1px solid hsl(156deg 30% 50%);
+    }
+}
+
 #read_receipts_error,
 #dialog_error {
     margin-bottom: 10px;
