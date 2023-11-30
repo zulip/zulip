@@ -140,16 +140,9 @@ class SponsorshipRequestForm(forms.Form):
 
 
 @require_organization_member
-@has_request_variables
 def sponsorship(
     request: HttpRequest,
     user: UserProfile,
-    organization_type: str = REQ(),
-    website: str = REQ(),
-    description: str = REQ(),
-    expected_total_users: str = REQ(),
-    paid_users_count: str = REQ(),
-    paid_users_description: str = REQ(),
 ) -> HttpResponse:
     realm = user.realm
     billing_session = RealmBillingSession(user)
