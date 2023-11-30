@@ -376,7 +376,7 @@ export function get_user_time(user_id: number): string | undefined {
                 timeZone: user_timezone,
             });
         } catch (error) {
-            blueslip.error(`Error formatting time in ${user_timezone}`, undefined, error);
+            blueslip.warn(`Error formatting time in ${user_timezone}: ${String(error)}`);
         }
     }
     return undefined;
