@@ -49,14 +49,11 @@ def authenticated_remote_realm_management_endpoint(
             return render(request, "404.html", status=404)
 
         realm_uuid = kwargs.get("realm_uuid")
-        server_uuid = kwargs.get("server_uuid")
         if realm_uuid is not None and not isinstance(realm_uuid, str):
             raise TypeError("realm_uuid must be a string or None")
-        if server_uuid is not None and not isinstance(server_uuid, str):
-            raise TypeError("server_uuid must be a string or None")
-        remote_realm = get_remote_realm_from_session(
-            request, realm_uuid=realm_uuid, server_uuid=server_uuid
-        )
+
+        remote_realm = get_remote_realm_from_session(request, realm_uuid)
+
         billing_session = RemoteRealmBillingSession(remote_realm)
         return view_func(request, billing_session)
 

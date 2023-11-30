@@ -42,7 +42,8 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             next_page=next_page,
         )
         self.assertEqual(
-            self.client.session["remote_billing_identities"][str(user.realm.uuid)], identity_dict
+            self.client.session["remote_billing_identities"][f"remote_realm:{user.realm.uuid!s}"],
+            identity_dict,
         )
 
         # It's up to the caller to verify further details, such as the exact redirect URL,

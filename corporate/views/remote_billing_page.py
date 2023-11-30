@@ -85,7 +85,9 @@ def remote_server_billing_finalize_login(
     remote_realm_uuid = identity_dict["remote_realm_uuid"]
 
     request.session["remote_billing_identities"] = {}
-    request.session["remote_billing_identities"][remote_realm_uuid] = identity_dict
+    request.session["remote_billing_identities"][
+        f"remote_realm:{remote_realm_uuid}"
+    ] = identity_dict
 
     # TODO: Figure out redirects based on whether the realm/server already has a plan
     # and should be taken to /billing or doesn't have and should be taken to /plans.
@@ -132,6 +134,7 @@ def render_tmp_remote_billing_page(
             # is authenticated. the uuid_owner_secret is not needed here, it'll be used for
             # for validating transfers of a realm to a different RemoteZulipServer (in the
             # export-import process).
+            assert isinstance(remote_realm_uuid, str)
             remote_realm = RemoteRealm.objects.get(uuid=remote_realm_uuid, server=remote_server)
         except RemoteRealm.DoesNotExist:
             raise AssertionError(
@@ -258,8 +261,8 @@ def remote_billing_legacy_server_login(
     remote_server_uuid = str(remote_server.uuid)
 
     request.session["remote_billing_identities"] = {}
-    request.session["remote_billing_identities"][remote_server_uuid] = LegacyServerIdentityDict(
-        remote_server_uuid=remote_server_uuid
-    )
+    request.session["remote_billing_identities"][
+        f"remote_server:{remote_server_uuid}"
+    ] = LegacyServerIdentityDict(remote_server_uuid=remote_server_uuid)
 
     return HttpResponseRedirect(reverse("remote_billing_page_server", args=(remote_server_uuid,)))
