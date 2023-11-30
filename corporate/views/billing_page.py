@@ -17,19 +17,6 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 
 @zulip_login_required
-def sponsorship_request(request: HttpRequest) -> HttpResponse:
-    user = request.user
-    assert user.is_authenticated
-
-    billing_session = RealmBillingSession(user)
-    context = billing_session.get_sponsorship_request_context()
-    if context is None:
-        return HttpResponseRedirect(reverse("billing_home"))
-
-    return render(request, "corporate/sponsorship.html", context=context)
-
-
-@zulip_login_required
 @has_request_variables
 def billing_home(
     request: HttpRequest,

@@ -11,6 +11,7 @@ from functools import wraps
 from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypedDict, TypeVar, Union
 
 import stripe
+from django import forms
 from django.conf import settings
 from django.core import signing
 from django.core.signing import Signer
@@ -28,6 +29,7 @@ from corporate.models import (
     LicenseLedger,
     PaymentIntent,
     Session,
+    ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
     get_customer_by_realm,
@@ -36,10 +38,20 @@ from corporate.models import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_realm_owners
+from zerver.lib.send_email import (
+    FromAddress,
+    send_email,
+    send_email_to_billing_admins_and_realm_owners,
+)
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
+from zerver.models import (
+    Realm,
+    RealmAuditLog,
+    UserProfile,
+    get_org_type_display_name,
+    get_system_bot,
+)
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
@@ -533,6 +545,20 @@ class UpgradePageSessionTypeSpecificContext(TypedDict):
     is_self_hosting: bool
 
 
+class SponsorshipApplicantInfo(TypedDict):
+    name: str
+    role: str
+    email: str
+
+
+class SponsorshipRequestSessionSpecificContext(TypedDict):
+    # We don't store UserProfile for remote realms.
+    realm_user: Optional[UserProfile]
+    user_info: SponsorshipApplicantInfo
+    # TODO: Call this what we end up calling it for /support page.
+    realm_string_id: str
+
+
 class UpgradePageContext(TypedDict):
     customer_name: str
     default_invoice_days_until_due: int
@@ -552,10 +578,23 @@ class UpgradePageContext(TypedDict):
     signed_seat_count: str
 
 
+class SponsorshipRequestForm(forms.Form):
+    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False)
+    organization_type = forms.IntegerField()
+    description = forms.CharField(widget=forms.Textarea)
+    expected_total_users = forms.CharField(widget=forms.Textarea)
+    paid_users_count = forms.CharField(widget=forms.Textarea)
+    paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
+
+
 class BillingSession(ABC):
     @property
     @abstractmethod
     def billing_session_url(self) -> str:
+        pass
+
+    @abstractmethod
+    def support_url(self) -> str:
         pass
 
     @abstractmethod
@@ -620,6 +659,16 @@ class BillingSession(ABC):
 
     @abstractmethod
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        pass
+
+    @abstractmethod
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        pass
+
+    @abstractmethod
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
         pass
 
     @abstractmethod
@@ -1717,6 +1766,67 @@ class BillingSession(ABC):
         self.add_sponsorship_info_to_context(context)
         return context
 
+    def request_sponsorship(self, form: SponsorshipRequestForm) -> None:
+        if not form.is_valid():
+            message = " ".join(
+                error["message"]
+                for error_list in form.errors.get_json_data().values()
+                for error in error_list
+            )
+            raise BillingError("Form validation error", message=message)
+
+        request_context = self.get_sponsorship_request_session_specific_context()
+        with transaction.atomic():
+            # Ensures customer is created first before updating sponsorship status.
+            self.update_customer_sponsorship_status(True)
+            sponsorship_request = ZulipSponsorshipRequest(
+                customer=self.get_customer(),
+                requested_by=request_context["realm_user"],
+                org_website=form.cleaned_data["website"],
+                org_description=form.cleaned_data["description"],
+                org_type=form.cleaned_data["organization_type"],
+                expected_total_users=form.cleaned_data["expected_total_users"],
+                paid_users_count=form.cleaned_data["paid_users_count"],
+                paid_users_description=form.cleaned_data["paid_users_description"],
+            )
+            sponsorship_request.save()
+
+            org_type = form.cleaned_data["organization_type"]
+            self.save_org_type_from_request_sponsorship_session(org_type)
+
+            if request_context["realm_user"] is not None:
+                # TODO: Refactor to not create an import cycle.
+                from zerver.actions.users import do_change_is_billing_admin
+
+                do_change_is_billing_admin(request_context["realm_user"], True)
+
+            org_type_display_name = get_org_type_display_name(org_type)
+
+        user_info = request_context["user_info"]
+        support_url = self.support_url()
+        context = {
+            "requested_by": user_info["name"],
+            "user_role": user_info["role"],
+            # TODO: realm_string_id needs to be replaced by something more generic.
+            "string_id": request_context["realm_string_id"],
+            "support_url": support_url,
+            "organization_type": org_type_display_name,
+            "website": sponsorship_request.org_website,
+            "description": sponsorship_request.org_description,
+            "expected_total_users": sponsorship_request.expected_total_users,
+            "paid_users_count": sponsorship_request.paid_users_count,
+            "paid_users_description": sponsorship_request.paid_users_description,
+        }
+        send_email(
+            "zerver/emails/sponsorship_request",
+            to_emails=[FromAddress.SUPPORT],
+            # Sent to the server's support team, so this email is not user-facing.
+            from_name="Zulip sponsorship request",
+            from_address=FromAddress.tokenized_no_reply_address(),
+            reply_to_email=user_info["email"],
+            context=context,
+        )
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -1750,6 +1860,13 @@ class RealmBillingSession(BillingSession):
     @property
     def billing_session_url(self) -> str:
         return self.realm.uri
+
+    @override
+    def support_url(self) -> str:
+        # TODO: Refactor to not create an import cycle.
+        from corporate.lib.support import get_support_url
+
+        return get_support_url(self.realm)
 
     @override
     def get_customer(self) -> Optional[Customer]:
@@ -1987,10 +2104,34 @@ class RealmBillingSession(BillingSession):
             ),
         )
 
+    @override
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        assert self.user is not None
+        return SponsorshipRequestSessionSpecificContext(
+            realm_user=self.user,
+            user_info=SponsorshipApplicantInfo(
+                name=self.user.full_name,
+                email=self.user.delivery_email,
+                role=self.user.get_role_name(),
+            ),
+            realm_string_id=self.realm.string_id,
+        )
+
+    @override
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+        # TODO: Use the actions.py method for this.
+        if self.realm.org_type != org_type:
+            self.realm.org_type = org_type
+            self.realm.save(update_fields=["org_type"])
+
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
-        self, remote_realm: RemoteRealm, support_staff: Optional[UserProfile] = None
+        self,
+        remote_realm: RemoteRealm,
+        support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_realm = remote_realm
         if support_staff is not None:
@@ -2003,6 +2144,10 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @property
     def billing_session_url(self) -> str:
         return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/realm/{self.remote_realm.uuid}"
+
+    @override
+    def support_url(self) -> str:
+        return "TODO:not-implemented"
 
     @override
     def get_customer(self) -> Optional[Customer]:
@@ -2195,8 +2340,40 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
-        # TBD
-        pass
+        context.update(
+            realm_org_type=self.remote_realm.org_type,
+            sorted_org_types=sorted(
+                (
+                    [org_type_name, org_type]
+                    for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                    if not org_type.get("hidden")
+                ),
+                key=self.sponsorship_org_type_key_helper,
+            ),
+        )
+
+    @override
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        return SponsorshipRequestSessionSpecificContext(
+            realm_user=None,
+            user_info=SponsorshipApplicantInfo(
+                # TODO: Plumb through the session data on the acting user.
+                name="Remote realm administrator",
+                email=self.remote_realm.server.contact_email,
+                # TODO: Set user_role when determining which set of users can access the page.
+                role="Remote realm administrator",
+            ),
+            # TODO: Check if this works on support page.
+            realm_string_id=self.remote_realm.host,
+        )
+
+    @override
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+        if self.remote_realm.org_type != org_type:
+            self.remote_realm.org_type = org_type
+            self.remote_realm.save(update_fields=["org_type"])
 
 
 class RemoteServerBillingSession(BillingSession):  # nocoverage
@@ -2204,7 +2381,9 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     creating RemoteRealm objects."""
 
     def __init__(
-        self, remote_server: RemoteZulipServer, support_staff: Optional[UserProfile] = None
+        self,
+        remote_server: RemoteZulipServer,
+        support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_server = remote_server
         if support_staff is not None:
@@ -2217,6 +2396,10 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @property
     def billing_session_url(self) -> str:
         return "TBD"
+
+    @override
+    def support_url(self) -> str:
+        return "TODO:not-implemented"
 
     @override
     def get_customer(self) -> Optional[Customer]:
@@ -2401,8 +2584,42 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
-        # TBD
-        pass
+        context.update(
+            realm_org_type=self.remote_server.org_type,
+            sorted_org_types=sorted(
+                (
+                    [org_type_name, org_type]
+                    for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                    if not org_type.get("hidden")
+                ),
+                key=self.sponsorship_org_type_key_helper,
+            ),
+        )
+
+    @override
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        return SponsorshipRequestSessionSpecificContext(
+            realm_user=None,
+            user_info=SponsorshipApplicantInfo(
+                # TODO: Figure out a better story here. We don't
+                # actually have a name or other details on the person
+                # doing this flow, but could ask for it in the login
+                # form if desired.
+                name="Remote server administrator",
+                email=self.remote_server.contact_email,
+                role="Remote server administrator",
+            ),
+            # TODO: Check if this works on support page.
+            realm_string_id=self.remote_server.hostname,
+        )
+
+    @override
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+        if self.remote_server.org_type != org_type:
+            self.remote_server.org_type = org_type
+            self.remote_server.save(update_fields=["org_type"])
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(

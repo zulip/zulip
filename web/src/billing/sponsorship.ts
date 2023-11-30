@@ -55,6 +55,7 @@ function create_ajax_request(): void {
 
     void $.ajax({
         type: "post",
+        // TODO: This needs to be conditional on billing session type
         url: "/json/billing/sponsorship",
         data,
         success() {
