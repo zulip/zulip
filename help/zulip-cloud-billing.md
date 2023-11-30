@@ -38,6 +38,23 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {end_tabs}
 
+## Cancel paid plan
+
+If you cancel your plan, your organization will be downgraded to **Zulip Cloud
+Free** at the end of the current billing period.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|gear|billing}
+
+1. At the bottom of the page, click **Cancel plan**.
+
+1. Click **Downgrade** to confirm.
+
+{end_tabs}
+
 ## Apply for sponsorship
 
 {start_tabs}
@@ -97,6 +114,26 @@ added.
 
 In general, selecting automatic billing is highly recommended unless you
 have a specific reason to do otherwise.
+
+#### Manually manage licenses
+
+If you organization is on a manual billing plan, you can manage the number of
+licenses on your organization's billing page.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|gear|billing}
+
+1. Modify **Number of licenses for current billing period** or **Number of
+   licenses for next billing period**, and click **Update**.
+
+!!! tip ""
+
+    You can only increase the number of licenses for the current billing period.
+
+{end_tabs}
 
 ## Temporary users and guests
 
