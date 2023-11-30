@@ -256,9 +256,18 @@ class CustomerPlan(models.Model):
     # state.
     invoicing_status = models.SmallIntegerField(default=DONE)
 
-    STANDARD = 1
-    PLUS = 2  # not available through self-serve signup
-    ENTERPRISE = 10
+    TIER_CLOUD_STANDARD = 1
+    TIER_CLOUD_PLUS = 2
+    # Reserved tier IDs for future use
+    TIER_CLOUD_COMMUNITY = 3
+    TIER_CLOUD_ENTERPRISE = 4
+
+    TIER_SELF_HOSTED_BASE = 100
+    TIER_SELF_HOSTED_LEGACY = 101
+    TIER_SELF_HOSTED_COMMUNITY = 102
+    TIER_SELF_HOSTED_BUSINESS = 103
+    TIER_SELF_HOSTED_PLUS = 104
+    TIER_SELF_HOSTED_ENTERPRISE = 105
     tier = models.SmallIntegerField()
 
     ACTIVE = 1
@@ -281,9 +290,9 @@ class CustomerPlan(models.Model):
     @property
     def name(self) -> str:
         return {
-            CustomerPlan.STANDARD: "Zulip Cloud Standard",
-            CustomerPlan.PLUS: "Zulip Plus",
-            CustomerPlan.ENTERPRISE: "Zulip Enterprise",
+            CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
+            CustomerPlan.TIER_CLOUD_PLUS: "Zulip Plus",
+            CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
         }[self.tier]
 
     def get_plan_status_as_text(self) -> str:

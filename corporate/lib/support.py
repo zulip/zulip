@@ -52,4 +52,4 @@ def update_realm_billing_method(
 
 def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     billing_session = RealmBillingSession(realm=realm)
-    billing_session.do_change_plan_to_new_tier(new_plan_tier=CustomerPlan.PLUS)
+    billing_session.do_change_plan_to_new_tier(new_plan_tier=CustomerPlan.TIER_CLOUD_PLUS)

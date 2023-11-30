@@ -293,7 +293,7 @@ class TestSupportEndpoint(ZulipTestCase):
             customer=customer,
             billing_cycle_anchor=now,
             billing_schedule=CustomerPlan.ANNUAL,
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
             price_per_license=8000,
             next_invoice_date=add_months(now, 12),
         )

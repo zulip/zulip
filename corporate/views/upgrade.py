@@ -90,7 +90,7 @@ def upgrade_page(
 
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
-        tier=CustomerPlan.STANDARD,
+        tier=CustomerPlan.TIER_CLOUD_STANDARD,
     )
     billing_session = RealmBillingSession(user)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
@@ -113,7 +113,7 @@ def remote_realm_upgrade_page(
 ) -> HttpResponse:  # nocoverage
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
-        tier=CustomerPlan.STANDARD,
+        tier=CustomerPlan.TIER_CLOUD_STANDARD,
     )
     billing_session = RemoteRealmBillingSession(remote_realm)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
