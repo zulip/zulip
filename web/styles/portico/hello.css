@@ -1174,14 +1174,26 @@ ul {
         display: grid;
         grid-template:
             ".       cloud-title  self-hosted-title .      " auto
-            "pricing pricing      pricing           pricing" auto / 40px minmax(
+            "pricing pricing      pricing           pricing" auto / 56px minmax(
                 0,
                 1fr
             )
-            minmax(0, 1fr) 40px;
+            minmax(0, 1fr) 56px;
         column-gap: 2px;
         max-width: 960px;
         margin: 50px auto 38px;
+
+        @media screen and (width <= 700px) {
+            grid-template-columns:
+                40px minmax(0, 1fr)
+                minmax(0, 1fr) 40px;
+        }
+    }
+
+    .pricing-pane-scroll-container {
+        grid-area: pricing;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
 
     .cloud-plan-title {
@@ -1189,7 +1201,6 @@ ul {
     }
 
     .cloud-plan-pricing {
-        grid-area: pricing;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
         grid-template-rows: auto;
@@ -1200,7 +1211,6 @@ ul {
     }
 
     .self-hosted-plan-pricing {
-        grid-area: pricing;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
         grid-template-rows: auto;
@@ -1273,6 +1283,12 @@ ul {
         border-radius: 16px;
         color: var(--color-box-copy);
         background: var(--color-background-box);
+        min-width: 850px;
+        margin: 0 16px;
+
+        @media screen and (width <= 700px) {
+            margin: 0 8px;
+        }
 
         h2 {
             font-weight: 550;
@@ -1528,6 +1544,7 @@ ul {
     }
 
     &.showing-cloud {
+        .self-hosted-scroll,
         .self-hosted-plan-pricing,
         .self-hosted-additional-pricing {
             display: none;
@@ -1573,6 +1590,7 @@ ul {
     }
 
     &.showing-self-hosted {
+        .cloud-scroll,
         .cloud-plan-pricing,
         .cloud-additional-pricing {
             display: none;
