@@ -15,12 +15,13 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 
 @require_organization_member
-@has_request_variables
+@typed_endpoint
 def event_status(
     request: HttpRequest,
     user: UserProfile,
-    stripe_session_id: Optional[str] = REQ(default=None),
-    stripe_payment_intent_id: Optional[str] = REQ(default=None),
+    *,
+    stripe_session_id: Optional[str] = None,
+    stripe_payment_intent_id: Optional[str] = None,
 ) -> HttpResponse:
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_payment_intent_id=stripe_payment_intent_id
