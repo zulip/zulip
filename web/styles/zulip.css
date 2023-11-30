@@ -418,12 +418,9 @@ body {
     --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23333333'/%3E%3C/svg%3E%0A");
 
     /* Button colors on modals and message editing. */
-    /* Exit buttons are sometimes Cancel, but sometimes
-       other "Nah, forget it" actions. */
-    --color-exit-button-text: hsl(0deg 0% 0%);
-    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
-    --color-exit-button-background: hsl(0deg 0% 100%);
-    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+    /* Don't define light theme colors for modal here
+       since the modal is also used on billing pages and
+       this file is not imported on billing pages. */
 }
 
 %dark-theme {

@@ -1,4 +1,13 @@
 /* Styles for the Micromodal-based modals */
+:root {
+    /* Exit buttons are sometimes Cancel, but sometimes
+       other "Nah, forget it" actions. */
+    --color-exit-button-text: hsl(0deg 0% 0%);
+    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
+    --color-exit-button-background: hsl(0deg 0% 100%);
+    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+}
+
 .modal__overlay {
     position: fixed;
     inset: 0;
