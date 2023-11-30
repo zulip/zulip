@@ -15,7 +15,7 @@ from corporate.lib.stripe import (
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
-from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.models import RemoteZulipServer
 
 
 @zulip_login_required
@@ -34,9 +34,8 @@ def sponsorship_page(request: HttpRequest) -> HttpResponse:
 @authenticated_remote_realm_management_endpoint
 def remote_realm_sponsorship_page(
     request: HttpRequest,
-    remote_realm: RemoteRealm,
+    billing_session: RemoteRealmBillingSession,
 ) -> HttpResponse:  # nocoverage
-    billing_session = RemoteRealmBillingSession(remote_realm)
     context = billing_session.get_sponsorship_request_context()
     if context is None:
         return HttpResponseRedirect(reverse("remote_billing_page_realm"))
@@ -72,9 +71,8 @@ def sponsorship(
 @authenticated_remote_realm_management_endpoint
 def remote_realm_sponsorship(
     request: HttpRequest,
-    remote_realm: RemoteRealm,
+    billing_session: RemoteRealmBillingSession,
 ) -> HttpResponse:  # nocoverage
-    billing_session = RemoteRealmBillingSession(remote_realm)
     post_data = request.POST.copy()
     form = SponsorshipRequestForm(post_data)
     billing_session.request_sponsorship(form)
