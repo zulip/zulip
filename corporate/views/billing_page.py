@@ -17,7 +17,6 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 
 @zulip_login_required
-@has_request_variables
 def sponsorship_request(request: HttpRequest) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
