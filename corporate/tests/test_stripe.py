@@ -2372,7 +2372,9 @@ class StripeTest(StripeTestCase):
         assert annual_plan is not None
         self.assertEqual(annual_plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
-        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INITIAL_INVOICE_TO_BE_SENT)
+        self.assertEqual(
+            annual_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+        )
         self.assertEqual(annual_plan.billing_cycle_anchor, self.next_month)
         self.assertEqual(annual_plan.next_invoice_date, self.next_month)
         self.assertEqual(annual_plan.invoiced_through, None)
@@ -2398,7 +2400,7 @@ class StripeTest(StripeTestCase):
         annual_ledger_entries = LicenseLedger.objects.filter(plan=annual_plan).order_by("id")
         self.assert_length(annual_ledger_entries, 2)
         annual_plan.refresh_from_db()
-        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.DONE)
+        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
         self.assertEqual(annual_plan.invoiced_through, annual_ledger_entries[1])
         self.assertEqual(annual_plan.billing_cycle_anchor, self.next_month)
         self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 1))
@@ -2552,7 +2554,9 @@ class StripeTest(StripeTestCase):
         assert annual_plan is not None
         self.assertEqual(annual_plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
-        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INITIAL_INVOICE_TO_BE_SENT)
+        self.assertEqual(
+            annual_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+        )
         self.assertEqual(annual_plan.billing_cycle_anchor, self.next_month)
         self.assertEqual(annual_plan.next_invoice_date, self.next_month)
         annual_ledger_entries = LicenseLedger.objects.filter(plan=annual_plan).order_by("id")
@@ -2571,7 +2575,7 @@ class StripeTest(StripeTestCase):
         annual_plan.refresh_from_db()
         self.assertEqual(annual_plan.invoiced_through, annual_ledger_entries[0])
         self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 12))
-        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.DONE)
+        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
 
         assert customer.stripe_customer_id
         [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
@@ -2680,7 +2684,7 @@ class StripeTest(StripeTestCase):
 
         annual_plan.refresh_from_db()
         self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 1))
-        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.DONE)
+        self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
         self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 3)
 
         customer = get_customer_by_realm(user.realm)
@@ -2734,7 +2738,9 @@ class StripeTest(StripeTestCase):
         assert monthly_plan is not None
         self.assertEqual(monthly_plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
-        self.assertEqual(monthly_plan.invoicing_status, CustomerPlan.INITIAL_INVOICE_TO_BE_SENT)
+        self.assertEqual(
+            monthly_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+        )
         self.assertEqual(monthly_plan.billing_cycle_anchor, self.next_year)
         self.assertEqual(monthly_plan.next_invoice_date, self.next_year)
         self.assertEqual(monthly_plan.invoiced_through, None)
@@ -2760,7 +2766,7 @@ class StripeTest(StripeTestCase):
         monthly_ledger_entries = LicenseLedger.objects.filter(plan=monthly_plan).order_by("id")
         self.assert_length(monthly_ledger_entries, 2)
         monthly_plan.refresh_from_db()
-        self.assertEqual(monthly_plan.invoicing_status, CustomerPlan.DONE)
+        self.assertEqual(monthly_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
         self.assertEqual(monthly_plan.invoiced_through, monthly_ledger_entries[1])
         self.assertEqual(monthly_plan.billing_cycle_anchor, self.next_year)
         self.assertEqual(monthly_plan.next_invoice_date, add_months(self.next_year, 1))
@@ -4827,7 +4833,7 @@ class InvoiceTest(StripeTestCase):
         self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
         plan = CustomerPlan.objects.first()
         assert plan is not None
-        plan.invoicing_status = CustomerPlan.STARTED
+        plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
         plan.save(update_fields=["invoicing_status"])
         with self.assertRaises(NotImplementedError):
             invoice_plan(assert_is_not_none(CustomerPlan.objects.first()), self.now)

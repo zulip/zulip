@@ -1128,7 +1128,7 @@ class BillingSession(ABC):
             status=CustomerPlan.FREE_TRIAL,
             next_invoice_date=next_billing_cycle,
             invoiced_through=None,
-            invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+            invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
         )
 
         LicenseLedger.objects.create(
@@ -1237,7 +1237,7 @@ class BillingSession(ABC):
                     status=CustomerPlan.ACTIVE,
                     next_invoice_date=next_billing_cycle,
                     invoiced_through=None,
-                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                    invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
                 )
 
                 new_plan_ledger_entry = LicenseLedger.objects.create(
@@ -1285,7 +1285,7 @@ class BillingSession(ABC):
                     status=CustomerPlan.ACTIVE,
                     next_invoice_date=next_billing_cycle,
                     invoiced_through=None,
-                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                    invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
                 )
 
                 new_plan_ledger_entry = LicenseLedger.objects.create(
@@ -1656,7 +1656,7 @@ class BillingSession(ABC):
             billing_schedule=current_plan.billing_schedule,
             tier=new_plan_tier,
             billing_cycle_anchor=new_plan_billing_cycle_anchor,
-            invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+            invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
             next_invoice_date=new_plan_billing_cycle_anchor,
         )
 
@@ -2839,7 +2839,7 @@ class PriceArgs(TypedDict, total=False):
 
 
 def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
-    if plan.invoicing_status == CustomerPlan.STARTED:
+    if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_STARTED:
         raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
     if not plan.customer.stripe_customer_id:
         assert plan.customer.realm is not None
@@ -2856,7 +2856,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.status is not CustomerPlan.SWITCH_PLAN_TIER_NOW:
         billing_session.make_end_of_cycle_updates_if_needed(plan, event_time)
 
-    if plan.invoicing_status == CustomerPlan.INITIAL_INVOICE_TO_BE_SENT:
+    if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
         invoiced_through_id = -1
         licenses_base = None
     else:
@@ -2906,7 +2906,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
 
         if price_args:
             plan.invoiced_through = ledger_entry
-            plan.invoicing_status = CustomerPlan.STARTED
+            plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
             plan.save(update_fields=["invoicing_status", "invoiced_through"])
             stripe.InvoiceItem.create(
                 currency="usd",
@@ -2924,7 +2924,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             )
             invoice_item_created = True
         plan.invoiced_through = ledger_entry
-        plan.invoicing_status = CustomerPlan.DONE
+        plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
         plan.save(update_fields=["invoicing_status", "invoiced_through"])
         licenses_base = ledger_entry.licenses
 
