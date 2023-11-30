@@ -2340,7 +2340,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         *,
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
-        # BUG: This doesn't have a way to pass realm_id !
+        # These audit logs don't use all the fields of `RemoteRealmAuditLog`:
+        #
+        # * remote_id is None because this is not synced from a remote table.
+        # * realm_id is None because we do not aim to store both remote_realm
+        #   and the legacy realm_id field.
         audit_log_event = self.get_audit_log_event(event_type)
         log_data = {
             "server": self.remote_realm.server,
