@@ -52,6 +52,7 @@ export const page_params: {
         big_blue_button?: {name: string; id: number};
     };
     realm_avatar_changes_disabled: boolean;
+    realm_bot_domain: string;
     realm_can_access_all_users_group: number;
     realm_create_multiuse_invite_group: number;
     realm_create_private_stream_policy: number;
