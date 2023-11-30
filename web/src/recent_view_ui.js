@@ -604,6 +604,7 @@ function format_conversation(conversation_data) {
         .map((name) => _.escape(name))
         .join("<br />");
     context.last_msg_url = hash_util.by_conversation_and_time_url(last_msg);
+    context.is_spectator = page_params.is_spectator;
 
     return context;
 }

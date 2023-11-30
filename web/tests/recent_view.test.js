@@ -405,6 +405,7 @@ function generate_topic_data(topic_info_array) {
             mention_in_unread: false,
             visibility_policy,
             all_visibility_policies,
+            is_spectator: page_params.is_spectator,
         });
     }
     return data;
