@@ -10,9 +10,8 @@ from corporate.lib.remote_billing_util import (
     get_remote_realm_from_session,
     get_remote_server_from_session,
 )
-from corporate.lib.stripe import RemoteRealmBillingSession
+from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 from zerver.lib.subdomains import get_subdomain
-from zilencer.models import RemoteZulipServer
 
 ParamT = ParamSpec("ParamT")
 
@@ -65,7 +64,7 @@ def authenticated_remote_realm_management_endpoint(
 
 
 def authenticated_remote_server_management_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, RemoteZulipServer, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, RemoteServerBillingSession, ParamT], HttpResponse]
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:  # nocoverage
     @wraps(view_func)
     def _wrapped_view_func(
@@ -82,6 +81,7 @@ def authenticated_remote_server_management_endpoint(
             raise TypeError("server_uuid must be a string")
 
         remote_server = get_remote_server_from_session(request, server_uuid=server_uuid)
-        return view_func(request, remote_server)
+        billing_session = RemoteServerBillingSession(remote_server)
+        return view_func(request, billing_session)
 
     return _wrapped_view_func
