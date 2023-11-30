@@ -1,13 +1,13 @@
 import logging
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from corporate.lib.stripe import RealmBillingSession
 from corporate.models import Session
 from zerver.decorator import require_billing_access, require_organization_member
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_bool
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -34,11 +34,12 @@ def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) ->
 
 
 @require_organization_member
-@has_request_variables
+@typed_endpoint
 def start_card_update_stripe_session_for_realm_upgrade(
     request: HttpRequest,
     user: UserProfile,
-    manual_license_management: bool = REQ(default=False, json_validator=check_bool),
+    *,
+    manual_license_management: Json[bool] = False,
 ) -> HttpResponse:
     billing_session = RealmBillingSession(user)
     metadata = {
