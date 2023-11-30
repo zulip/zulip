@@ -1068,7 +1068,7 @@ class BillingSession(ABC):
         # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
         if free_trial or not charge_automatically:
             self.process_initial_upgrade(
-                CustomerPlan.STANDARD,
+                CustomerPlan.TIER_CLOUD_STANDARD,
                 licenses,
                 automanage_licenses,
                 billing_schedule,
@@ -1078,7 +1078,7 @@ class BillingSession(ABC):
             data["organization_upgrade_successful"] = True
         else:
             stripe_payment_intent_id = self.setup_upgrade_payment_intent_and_charge(
-                CustomerPlan.STANDARD,
+                CustomerPlan.TIER_CLOUD_STANDARD,
                 seat_count,
                 licenses,
                 license_management,
@@ -2000,9 +2000,11 @@ class RealmBillingSession(BillingSession):
         # formats of CustomerPlan.tier and Realm.plan_type.
         if is_sponsored:
             plan_type = Realm.PLAN_TYPE_STANDARD_FREE
-        elif tier == CustomerPlan.STANDARD:
+        elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
             plan_type = Realm.PLAN_TYPE_STANDARD
-        elif tier == CustomerPlan.PLUS:  # nocoverage # Plus plan doesn't use this code path yet.
+        elif (
+            tier == CustomerPlan.TIER_CLOUD_PLUS
+        ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = Realm.PLAN_TYPE_PLUS
         else:
             raise AssertionError("Unexpected tier")
@@ -2075,11 +2077,11 @@ class RealmBillingSession(BillingSession):
 
     @override
     def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
-        if current_plan_tier == CustomerPlan.STANDARD:
-            return new_plan_tier == CustomerPlan.PLUS
+        if current_plan_tier == CustomerPlan.TIER_CLOUD_STANDARD:
+            return new_plan_tier == CustomerPlan.TIER_CLOUD_PLUS
         else:  # nocoverage, not currently implemented
-            assert current_plan_tier == CustomerPlan.PLUS
-            return new_plan_tier == CustomerPlan.STANDARD
+            assert current_plan_tier == CustomerPlan.TIER_CLOUD_PLUS
+            return new_plan_tier == CustomerPlan.TIER_CLOUD_STANDARD
 
     @override
     def has_billing_access(self) -> bool:
@@ -2274,9 +2276,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         # formats of CustomerPlan.tier and Realm.plan_type.
         if is_sponsored:
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
-        elif tier == CustomerPlan.STANDARD:
+        elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
             plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
-        elif tier == CustomerPlan.PLUS:  # nocoverage # Plus plan doesn't use this code path yet.
+        elif (
+            tier == CustomerPlan.TIER_CLOUD_PLUS
+        ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = RemoteRealm.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
@@ -2519,9 +2523,11 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # formats of CustomerPlan.tier and RealmZulipServer.plan_type.
         if is_sponsored:
             plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
-        elif tier == CustomerPlan.STANDARD:
+        elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
             plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
-        elif tier == CustomerPlan.PLUS:  # nocoverage # Plus plan doesn't use this code path yet.
+        elif (
+            tier == CustomerPlan.TIER_CLOUD_PLUS
+        ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = RemoteZulipServer.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
@@ -2651,14 +2657,14 @@ def get_price_per_license(
 ) -> int:
     price_per_license: Optional[int] = None
 
-    if tier == CustomerPlan.STANDARD:
+    if tier == CustomerPlan.TIER_CLOUD_STANDARD:
         if billing_schedule == CustomerPlan.ANNUAL:
             price_per_license = 8000
         elif billing_schedule == CustomerPlan.MONTHLY:
             price_per_license = 800
         else:  # nocoverage
             raise InvalidBillingScheduleError(billing_schedule)
-    elif tier == CustomerPlan.PLUS:
+    elif tier == CustomerPlan.TIER_CLOUD_PLUS:
         if billing_schedule == CustomerPlan.ANNUAL:
             price_per_license = 16000
         elif billing_schedule == CustomerPlan.MONTHLY:

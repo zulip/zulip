@@ -48,12 +48,12 @@ class Command(BaseCommand):
             CustomerProfile(
                 unique_id="annual-standard",
                 billing_schedule=CustomerPlan.ANNUAL,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
             ),
             CustomerProfile(
                 unique_id="annual-plus",
                 billing_schedule=CustomerPlan.ANNUAL,
-                tier=CustomerPlan.PLUS,
+                tier=CustomerPlan.TIER_CLOUD_PLUS,
             ),
             CustomerProfile(
                 unique_id="monthly-free",
@@ -62,52 +62,52 @@ class Command(BaseCommand):
             CustomerProfile(
                 unique_id="monthly-standard",
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
             ),
             CustomerProfile(
                 unique_id="monthly-plus",
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.PLUS,
+                tier=CustomerPlan.TIER_CLOUD_PLUS,
             ),
             CustomerProfile(
                 unique_id="downgrade-end-of-cycle",
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 status=CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
             ),
             CustomerProfile(
                 unique_id="standard-automanage-licenses",
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 automanage_licenses=True,
             ),
             CustomerProfile(
                 unique_id="standard-automatic-card",
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 card="pm_card_visa",
             ),
             CustomerProfile(
                 unique_id="standard-invoice-payment",
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 charge_automatically=False,
             ),
             CustomerProfile(
                 unique_id="standard-switch-to-annual-eoc",
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 status=CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
             ),
             CustomerProfile(
                 unique_id="sponsored",
                 is_sponsored=True,
                 billing_schedule=CustomerPlan.MONTHLY,
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
             ),
             CustomerProfile(
                 unique_id="free-trial",
-                tier=CustomerPlan.STANDARD,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 status=CustomerPlan.FREE_TRIAL,
             ),
         ]
@@ -117,11 +117,14 @@ class Command(BaseCommand):
             unique_id = customer_profile.unique_id
             if customer_profile.tier is None:
                 plan_type = Realm.PLAN_TYPE_LIMITED
-            elif customer_profile.tier == CustomerPlan.STANDARD and customer_profile.is_sponsored:
+            elif (
+                customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD
+                and customer_profile.is_sponsored
+            ):
                 plan_type = Realm.PLAN_TYPE_STANDARD_FREE
-            elif customer_profile.tier == CustomerPlan.STANDARD:
+            elif customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD:
                 plan_type = Realm.PLAN_TYPE_STANDARD
-            elif customer_profile.tier == CustomerPlan.PLUS:
+            elif customer_profile.tier == CustomerPlan.TIER_CLOUD_PLUS:
                 plan_type = Realm.PLAN_TYPE_PLUS
             else:
                 raise AssertionError("Unexpected tier!")

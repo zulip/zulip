@@ -1796,7 +1796,7 @@ Output:
             automanage_licenses=False,
             billing_cycle_anchor=timezone_now(),
             billing_schedule=billing_schedule,
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         ledger = LicenseLedger.objects.create(
             plan=plan,

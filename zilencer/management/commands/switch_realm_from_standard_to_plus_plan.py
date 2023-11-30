@@ -25,4 +25,4 @@ class Command(ZulipBaseCommand):
 
         if settings.BILLING_ENABLED:
             billing_session = RealmBillingSession(realm=realm)
-            billing_session.do_change_plan_to_new_tier(new_plan_tier=CustomerPlan.PLUS)
+            billing_session.do_change_plan_to_new_tier(new_plan_tier=CustomerPlan.TIER_CLOUD_PLUS)

@@ -599,7 +599,7 @@ class PlansPageTest(ZulipTestCase):
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
         plan = CustomerPlan.objects.create(
             customer=customer,
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.FREE_TRIAL,
             billing_cycle_anchor=timezone_now(),
             billing_schedule=CustomerPlan.MONTHLY,

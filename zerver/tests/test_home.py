@@ -854,7 +854,7 @@ class HomeTest(ZulipTestCase):
             billing_cycle_anchor=timezone_now(),
             billing_schedule=CustomerPlan.ANNUAL,
             next_invoice_date=timezone_now(),
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.ENDED,
         )
         with self.settings(CORPORATE_ENABLED=True):

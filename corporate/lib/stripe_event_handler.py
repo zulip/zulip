@@ -128,7 +128,7 @@ def handle_payment_intent_succeeded_event(
 
     billing_session = RealmBillingSession(user)
     billing_session.process_initial_upgrade(
-        CustomerPlan.STANDARD,
+        CustomerPlan.TIER_CLOUD_STANDARD,
         int(metadata["licenses"]),
         metadata["license_management"] == "automatic",
         int(metadata["billing_schedule"]),
