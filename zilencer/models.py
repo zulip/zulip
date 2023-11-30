@@ -169,10 +169,13 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
-    # For pre-8.0 servers, we might only have the realm ID.
-    realm_id = models.IntegerField()
-    # With newer servers, we can link to the RemoteRealm object.
+    # With modern Zulip servers, we can link to the RemoteRealm object.
     remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
+    # For pre-8.0 servers, we might only have the realm ID and thus no
+    # RemoteRealm object yet. We will eventually be able to drop this
+    # column once all self-hosted servers have upgraded in favor of
+    # just using the foreign key everywhere.
+    realm_id = models.IntegerField(null=True, blank=True)
     # The remote_id field lets us deduplicate data from the remote server
     remote_id = models.IntegerField(null=True)
 
