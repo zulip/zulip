@@ -108,8 +108,10 @@ TAB_SECTION_LABELS = {
     "via-compose-box-buttons": "Via compose box buttons",
     "stream-compose": "Compose to a stream",
     "dm-compose": "Compose a DM",
+    "v8": "Zulip Server 8.0+",
     "v6": "Zulip Server 6.0+",
     "v4": "Zulip Server 4.0+",
+    "older-versions": "All older versions",
 }
 
 
