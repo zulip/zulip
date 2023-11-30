@@ -821,7 +821,7 @@ class StripeTest(StripeTestCase):
             fixed_price=None,
             discount=None,
             billing_cycle_anchor=self.now,
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             invoiced_through=LicenseLedger.objects.first(),
             next_invoice_date=self.next_month,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
@@ -970,7 +970,7 @@ class StripeTest(StripeTestCase):
             fixed_price=None,
             discount=None,
             billing_cycle_anchor=self.now,
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             invoiced_through=LicenseLedger.objects.first(),
             next_invoice_date=self.next_year,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
@@ -1080,7 +1080,7 @@ class StripeTest(StripeTestCase):
                 fixed_price=None,
                 discount=None,
                 billing_cycle_anchor=self.now,
-                billing_schedule=CustomerPlan.ANNUAL,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                 invoiced_through=LicenseLedger.objects.first(),
                 next_invoice_date=free_trial_end_date,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
@@ -1290,7 +1290,7 @@ class StripeTest(StripeTestCase):
                 fixed_price=None,
                 discount=None,
                 billing_cycle_anchor=self.now,
-                billing_schedule=CustomerPlan.ANNUAL,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                 invoiced_through=LicenseLedger.objects.first(),
                 next_invoice_date=free_trial_end_date,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
@@ -1496,10 +1496,12 @@ class StripeTest(StripeTestCase):
     def test_upgrade_race_condition_during_invoice_upgrade(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+        self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
         with self.assertLogs("corporate.stripe", "WARNING") as m:
             with self.assertRaises(BillingError) as context:
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+                self.local_upgrade(
+                    self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+                )
         self.assertEqual(
             "subscribing with existing subscription", context.exception.error_description
         )
@@ -1971,7 +1973,7 @@ class StripeTest(StripeTestCase):
             CustomerPlan.objects.create(
                 customer=customer,
                 billing_cycle_anchor=timezone_now(),
-                billing_schedule=CustomerPlan.ANNUAL,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
             )
             response = self.client_get("/upgrade/")
@@ -2204,7 +2206,9 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         plan = get_current_plan_by_realm(user.realm)
         assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
@@ -2321,7 +2325,7 @@ class StripeTest(StripeTestCase):
         monthly_plan = get_current_plan_by_realm(user.realm)
         assert monthly_plan is not None
         self.assertEqual(monthly_plan.automanage_licenses, True)
-        self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.MONTHLY)
+        self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
 
         stripe_customer_id = Customer.objects.get(realm=user.realm).id
         new_plan = get_current_plan_by_realm(user.realm)
@@ -2367,7 +2371,7 @@ class StripeTest(StripeTestCase):
         annual_plan = get_current_plan_by_realm(user.realm)
         assert annual_plan is not None
         self.assertEqual(annual_plan.status, CustomerPlan.ACTIVE)
-        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
         self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INITIAL_INVOICE_TO_BE_SENT)
         self.assertEqual(annual_plan.billing_cycle_anchor, self.next_month)
         self.assertEqual(annual_plan.next_invoice_date, self.next_month)
@@ -2512,7 +2516,7 @@ class StripeTest(StripeTestCase):
         monthly_plan = get_current_plan_by_realm(user.realm)
         assert monthly_plan is not None
         self.assertEqual(monthly_plan.automanage_licenses, False)
-        self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.MONTHLY)
+        self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
         stripe_customer_id = Customer.objects.get(realm=user.realm).id
         new_plan = get_current_plan_by_realm(user.realm)
         assert new_plan is not None
@@ -2547,7 +2551,7 @@ class StripeTest(StripeTestCase):
         annual_plan = get_current_plan_by_realm(user.realm)
         assert annual_plan is not None
         self.assertEqual(annual_plan.status, CustomerPlan.ACTIVE)
-        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
         self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INITIAL_INVOICE_TO_BE_SENT)
         self.assertEqual(annual_plan.billing_cycle_anchor, self.next_month)
         self.assertEqual(annual_plan.next_invoice_date, self.next_month)
@@ -2624,7 +2628,7 @@ class StripeTest(StripeTestCase):
         annual_plan = get_current_plan_by_realm(user.realm)
         assert annual_plan is not None
         self.assertEqual(annual_plan.automanage_licenses, True)
-        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
 
         stripe_customer_id = Customer.objects.get(realm=user.realm).id
         new_plan = get_current_plan_by_realm(user.realm)
@@ -2669,7 +2673,7 @@ class StripeTest(StripeTestCase):
         annual_plan.refresh_from_db()
         self.assertEqual(annual_plan.status, CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE)
         self.assertEqual(annual_plan.next_invoice_date, self.next_month)
-        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
         self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 3)
 
         invoice_plans_as_needed(self.next_month + timedelta(days=1))
@@ -2729,7 +2733,7 @@ class StripeTest(StripeTestCase):
         monthly_plan = get_current_plan_by_realm(user.realm)
         assert monthly_plan is not None
         self.assertEqual(monthly_plan.status, CustomerPlan.ACTIVE)
-        self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.MONTHLY)
+        self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
         self.assertEqual(monthly_plan.invoicing_status, CustomerPlan.INITIAL_INVOICE_TO_BE_SENT)
         self.assertEqual(monthly_plan.billing_cycle_anchor, self.next_year)
         self.assertEqual(monthly_plan.next_invoice_date, self.next_year)
@@ -2795,7 +2799,9 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
                 response = self.client_patch(
@@ -2832,7 +2838,9 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         with self.assertLogs("corporate.stripe", "INFO") as m:
             stripe_customer_id = Customer.objects.get(realm=user.realm).id
             new_plan = get_current_plan_by_realm(user.realm)
@@ -2874,7 +2882,7 @@ class StripeTest(StripeTestCase):
                     "/json/billing/plan",
                     {
                         "status": CustomerPlan.FREE_TRIAL,
-                        "schedule": CustomerPlan.ANNUAL,
+                        "schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     },
                 )
                 self.assert_json_success(result)
@@ -2889,7 +2897,7 @@ class StripeTest(StripeTestCase):
                     fixed_price=None,
                     discount=None,
                     billing_cycle_anchor=self.now,
-                    billing_schedule=CustomerPlan.ANNUAL,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     invoiced_through=None,
                     next_invoice_date=free_trial_end_date,
                     tier=CustomerPlan.TIER_CLOUD_STANDARD,
@@ -2929,7 +2937,7 @@ class StripeTest(StripeTestCase):
                     "/json/billing/plan",
                     {
                         "status": CustomerPlan.FREE_TRIAL,
-                        "schedule": CustomerPlan.MONTHLY,
+                        "schedule": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     },
                 )
                 self.assert_json_success(result)
@@ -2943,7 +2951,7 @@ class StripeTest(StripeTestCase):
                     fixed_price=None,
                     discount=None,
                     billing_cycle_anchor=self.now,
-                    billing_schedule=CustomerPlan.MONTHLY,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     invoiced_through=None,
                     next_invoice_date=free_trial_end_date,
                     tier=CustomerPlan.TIER_CLOUD_STANDARD,
@@ -2969,7 +2977,9 @@ class StripeTest(StripeTestCase):
         free_trial_end_date = self.now + timedelta(days=60)
         with self.settings(FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, True)
+                self.local_upgrade(
+                    self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, True
+                )
 
             plan = CustomerPlan.objects.get()
             self.assertEqual(plan.next_invoice_date, free_trial_end_date)
@@ -3018,7 +3028,9 @@ class StripeTest(StripeTestCase):
         free_trial_end_date = self.now + timedelta(days=60)
         with self.settings(FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, True)
+                self.local_upgrade(
+                    self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, True
+                )
             plan = get_current_plan_by_realm(user.realm)
             assert plan is not None
             self.assertEqual(plan.next_invoice_date, free_trial_end_date)
@@ -3126,7 +3138,9 @@ class StripeTest(StripeTestCase):
         free_trial_end_date = self.now + timedelta(days=60)
         with self.settings(FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, True)
+                self.local_upgrade(
+                    self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, True
+                )
             plan = get_current_plan_by_realm(user.realm)
             assert plan is not None
             self.assertEqual(plan.next_invoice_date, free_trial_end_date)
@@ -3178,7 +3192,9 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
 
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         self.login_user(user)
         with self.assertLogs("corporate.stripe", "INFO") as m:
@@ -3196,7 +3212,9 @@ class StripeTest(StripeTestCase):
             "corporate.stripe", "WARNING"
         ) as m:
             with time_machine.travel(self.now, tick=False):
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+                self.local_upgrade(
+                    self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+                )
         self.assertEqual(
             m.output[0],
             "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (with stripe_customer_id: cus_123) failed because of existing active plan.",
@@ -3212,7 +3230,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/plans/", response["Location"])
 
         with time_machine.travel(self.next_year, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         self.assertEqual(Customer.objects.count(), 1)
         self.assertEqual(CustomerPlan.objects.count(), 2)
@@ -3369,7 +3389,7 @@ class StripeTest(StripeTestCase):
         customer.save()
 
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(100, False, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(100, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
 
         with time_machine.travel(self.now, tick=False):
             result = self.client_patch(
@@ -3403,7 +3423,9 @@ class StripeTest(StripeTestCase):
         reduced_seat_count = get_latest_seat_count(user.realm) - 2
 
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(reduced_seat_count, False, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                reduced_seat_count, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         latest_license_ledger = LicenseLedger.objects.last()
         assert latest_license_ledger is not None
@@ -3415,7 +3437,9 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         with time_machine.travel(self.now, tick=False):
             result = self.client_patch("/json/billing/plan", {"licenses": 100})
@@ -3427,7 +3451,9 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_with_invalid_status(self) -> None:
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         self.login_user(self.example_user("hamlet"))
 
         response = self.client_patch(
@@ -3438,7 +3464,9 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_without_any_params(self) -> None:
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         self.login_user(self.example_user("hamlet"))
         with time_machine.travel(self.now, tick=False):
@@ -3447,7 +3475,9 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_that_which_is_due_for_expiry(self) -> None:
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
@@ -3469,7 +3499,9 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_that_which_is_due_for_replacement(self) -> None:
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.MONTHLY, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_MONTHLY, True, False
+            )
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
@@ -3494,7 +3526,9 @@ class StripeTest(StripeTestCase):
     def test_deactivate_realm(self, mock_: Mock) -> None:
         user = self.example_user("hamlet")
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         plan = CustomerPlan.objects.get()
         self.assertEqual(plan.next_invoice_date, self.next_month)
@@ -3540,7 +3574,9 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
 
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         do_deactivate_realm(get_realm("zulip"), acting_user=None)
         self.assertTrue(get_realm("zulip").deactivated)
@@ -3552,7 +3588,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/plans/", response["Location"])
 
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         self.assertEqual(Customer.objects.count(), 1)
 
@@ -3812,7 +3850,7 @@ class StripeTest(StripeTestCase):
         )
 
         plan, ledger = self.subscribe_realm_to_manual_license_management_plan(
-            realm, 9, 9, CustomerPlan.MONTHLY
+            realm, 9, 9, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
         # Test upgrading to Plus when realm has no stripe_customer_id
         with self.assertRaises(BillingError) as billing_context:
@@ -3829,7 +3867,7 @@ class StripeTest(StripeTestCase):
             customer=customer,
             automanage_licenses=True,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.MONTHLY,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         ledger = LicenseLedger.objects.create(
@@ -3843,7 +3881,7 @@ class StripeTest(StripeTestCase):
         realm.save(update_fields=["plan_type"])
         plan.invoiced_through = ledger
         plan.price_per_license = get_price_per_license(
-            CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.MONTHLY
+            CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
         plan.save(update_fields=["invoiced_through", "price_per_license"])
 
@@ -4223,45 +4261,80 @@ class BillingHelpersTest(ZulipTestCase):
         test_cases = [
             # test all possibilities, since there aren't that many
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.ANNUAL, None),
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    True,
+                    CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    None,
+                ),
                 (anchor, month_later, year_later, 8000),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.ANNUAL, 85),
+                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
                 (anchor, month_later, year_later, 1200),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.MONTHLY, None),
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    True,
+                    CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                    None,
+                ),
                 (anchor, month_later, month_later, 800),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.MONTHLY, 85),
+                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.BILLING_SCHEDULE_MONTHLY, 85),
                 (anchor, month_later, month_later, 120),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.ANNUAL, None),
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    False,
+                    CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    None,
+                ),
                 (anchor, year_later, year_later, 8000),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.ANNUAL, 85),
+                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
                 (anchor, year_later, year_later, 1200),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.MONTHLY, None),
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    False,
+                    CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                    None,
+                ),
                 (anchor, month_later, month_later, 800),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.MONTHLY, 85),
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    False,
+                    CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                    85,
+                ),
                 (anchor, month_later, month_later, 120),
             ),
             # test exact math of Decimals; 800 * (1 - 87.25) = 101.9999999..
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.MONTHLY, 87.25),
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    False,
+                    CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                    87.25,
+                ),
                 (anchor, month_later, month_later, 102),
             ),
             # test dropping of fractional cents; without the int it's 102.8
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.MONTHLY, 87.15),
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    False,
+                    CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                    87.15,
+                ),
                 (anchor, month_later, month_later, 102),
             ),
         ]
@@ -4277,27 +4350,43 @@ class BillingHelpersTest(ZulipTestCase):
 
     def test_get_price_per_license(self) -> None:
         self.assertEqual(
-            get_price_per_license(CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.ANNUAL), 8000
-        )
-        self.assertEqual(
-            get_price_per_license(CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.MONTHLY), 800
+            get_price_per_license(
+                CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_ANNUAL
+            ),
+            8000,
         )
         self.assertEqual(
             get_price_per_license(
-                CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.MONTHLY, discount=Decimal(50)
+                CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+            ),
+            800,
+        )
+        self.assertEqual(
+            get_price_per_license(
+                CustomerPlan.TIER_CLOUD_STANDARD,
+                CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                discount=Decimal(50),
             ),
             400,
         )
 
         self.assertEqual(
-            get_price_per_license(CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.ANNUAL), 16000
-        )
-        self.assertEqual(
-            get_price_per_license(CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.MONTHLY), 1600
+            get_price_per_license(
+                CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.BILLING_SCHEDULE_ANNUAL
+            ),
+            16000,
         )
         self.assertEqual(
             get_price_per_license(
-                CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.MONTHLY, discount=Decimal(50)
+                CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+            ),
+            1600,
+        )
+        self.assertEqual(
+            get_price_per_license(
+                CustomerPlan.TIER_CLOUD_PLUS,
+                CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                discount=Decimal(50),
             ),
             800,
         )
@@ -4306,7 +4395,9 @@ class BillingHelpersTest(ZulipTestCase):
             get_price_per_license(CustomerPlan.TIER_CLOUD_STANDARD, 1000)
 
         with self.assertRaisesRegex(InvalidTierError, "Unknown tier: 4"):
-            get_price_per_license(CustomerPlan.TIER_CLOUD_ENTERPRISE, CustomerPlan.ANNUAL)
+            get_price_per_license(
+                CustomerPlan.TIER_CLOUD_ENTERPRISE, CustomerPlan.BILLING_SCHEDULE_ANNUAL
+            )
 
     def test_get_plan_renewal_or_end_date(self) -> None:
         realm = get_realm("zulip")
@@ -4316,7 +4407,7 @@ class BillingHelpersTest(ZulipTestCase):
             customer=customer,
             status=CustomerPlan.ACTIVE,
             billing_cycle_anchor=billing_cycle_anchor,
-            billing_schedule=CustomerPlan.MONTHLY,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         renewal_date = get_plan_renewal_or_end_date(plan, billing_cycle_anchor)
@@ -4385,7 +4476,7 @@ class BillingHelpersTest(ZulipTestCase):
             customer=customer,
             status=CustomerPlan.ACTIVE,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         self.assertEqual(get_current_plan_by_customer(customer), plan)
@@ -4414,7 +4505,7 @@ class BillingHelpersTest(ZulipTestCase):
             customer=customer,
             status=CustomerPlan.ACTIVE,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         self.assertEqual(get_current_plan_by_realm(realm), plan)
@@ -4428,7 +4519,7 @@ class BillingHelpersTest(ZulipTestCase):
             customer=customer,
             status=CustomerPlan.ACTIVE,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         self.assertFalse(is_realm_on_free_trial(realm))
@@ -4534,7 +4625,9 @@ class AnalyticsHelpersTest(ZulipTestCase):
 class LicenseLedgerTest(StripeTestCase):
     def test_add_plan_renewal_if_needed(self) -> None:
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         self.assertEqual(LicenseLedger.objects.count(), 1)
         plan = CustomerPlan.objects.get()
         # Plan hasn't renewed yet
@@ -4572,7 +4665,9 @@ class LicenseLedgerTest(StripeTestCase):
         update_license_ledger_if_needed(realm, self.now)
         self.assertFalse(LicenseLedger.objects.exists())
         # Test plan not automanaged
-        self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, True, False)
+        self.local_upgrade(
+            self.seat_count + 1, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+        )
         plan = CustomerPlan.objects.get()
         self.assertEqual(LicenseLedger.objects.count(), 1)
         self.assertEqual(plan.licenses(), self.seat_count + 1)
@@ -4594,7 +4689,9 @@ class LicenseLedgerTest(StripeTestCase):
     def test_update_license_ledger_for_automanaged_plan(self) -> None:
         realm = get_realm("zulip")
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
@@ -4643,7 +4740,9 @@ class LicenseLedgerTest(StripeTestCase):
         realm = get_realm("zulip")
 
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count + 1, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
 
         plan = get_current_plan_by_realm(realm)
         assert plan is not None
@@ -4700,7 +4799,7 @@ class LicenseLedgerTest(StripeTestCase):
             update_license_ledger_for_manual_plan(plan, self.now)
 
     def test_user_changes(self) -> None:
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+        self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
         user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
         do_deactivate_user(user, acting_user=None)
         do_reactivate_user(user, acting_user=None)
@@ -4725,7 +4824,7 @@ class LicenseLedgerTest(StripeTestCase):
 
 class InvoiceTest(StripeTestCase):
     def test_invoicing_status_is_started(self) -> None:
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+        self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         plan.invoicing_status = CustomerPlan.STARTED
@@ -4734,7 +4833,9 @@ class InvoiceTest(StripeTestCase):
             invoice_plan(assert_is_not_none(CustomerPlan.objects.first()), self.now)
 
     def test_invoice_plan_without_stripe_customer(self) -> None:
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, False)
+        self.local_upgrade(
+            self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, False
+        )
         plan = get_current_plan_by_realm(get_realm("zulip"))
         assert plan is not None
         plan.customer.stripe_customer_id = None
@@ -4845,7 +4946,9 @@ class InvoiceTest(StripeTestCase):
 
     def test_no_invoice_needed(self) -> None:
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
@@ -4858,7 +4961,9 @@ class InvoiceTest(StripeTestCase):
 
     def test_invoice_plans_as_needed(self) -> None:
         with time_machine.travel(self.now, tick=False):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+            self.local_upgrade(
+                self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
@@ -4877,12 +4982,12 @@ class TestTestClasses(ZulipTestCase):
     def test_subscribe_realm_to_manual_license_management_plan(self) -> None:
         realm = get_realm("zulip")
         plan, ledger = self.subscribe_realm_to_manual_license_management_plan(
-            realm, 50, 60, CustomerPlan.ANNUAL
+            realm, 50, 60, CustomerPlan.BILLING_SCHEDULE_ANNUAL
         )
 
         plan.refresh_from_db()
         self.assertEqual(plan.automanage_licenses, False)
-        self.assertEqual(plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
         self.assertEqual(plan.tier, CustomerPlan.TIER_CLOUD_STANDARD)
         self.assertEqual(plan.licenses(), 50)
         self.assertEqual(plan.licenses_at_next_renewal(), 60)
@@ -4903,7 +5008,7 @@ class TestTestClasses(ZulipTestCase):
 
         plan.refresh_from_db()
         self.assertEqual(plan.automanage_licenses, False)
-        self.assertEqual(plan.billing_schedule, CustomerPlan.MONTHLY)
+        self.assertEqual(plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
         self.assertEqual(plan.tier, CustomerPlan.TIER_CLOUD_STANDARD)
         self.assertEqual(plan.licenses(), 20)
         self.assertEqual(plan.licenses_at_next_renewal(), 30)
@@ -5121,7 +5226,7 @@ class TestSupportBillingHelpers(StripeTestCase):
             customer=customer,
             status=CustomerPlan.ACTIVE,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         self.assertEqual(plan.charge_automatically, False)

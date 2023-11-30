@@ -852,7 +852,7 @@ class HomeTest(ZulipTestCase):
         CustomerPlan.objects.create(
             customer=customer,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             next_invoice_date=timezone_now(),
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.ENDED,

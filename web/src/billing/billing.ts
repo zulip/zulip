@@ -9,8 +9,8 @@ const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
 
 // Matches the CustomerPlan model in the backend.
 enum BillingFrequency {
-    ANNUAL = 1,
-    MONTHLY = 2,
+    BILLING_SCHEDULE_ANNUAL = 1,
+    BILLING_SCHEDULE_MONTHLY = 2,
 }
 
 enum CustomerPlanStatus {
@@ -302,12 +302,12 @@ export function initialize(): void {
             let new_status = free_trial
                 ? CustomerPlanStatus.FREE_TRIAL
                 : CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
-            let new_schedule = BillingFrequency.ANNUAL;
+            let new_schedule = BillingFrequency.BILLING_SCHEDULE_ANNUAL;
             if (billing_frequency_selected === "Monthly") {
                 new_status = free_trial
                     ? CustomerPlanStatus.FREE_TRIAL
                     : CustomerPlanStatus.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE;
-                new_schedule = BillingFrequency.MONTHLY;
+                new_schedule = BillingFrequency.BILLING_SCHEDULE_MONTHLY;
             }
             $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
             if (free_trial) {

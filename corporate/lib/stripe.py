@@ -265,8 +265,8 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
 
 def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
     months_per_period = {
-        CustomerPlan.ANNUAL: 12,
-        CustomerPlan.MONTHLY: 1,
+        CustomerPlan.BILLING_SCHEDULE_ANNUAL: 12,
+        CustomerPlan.BILLING_SCHEDULE_MONTHLY: 1,
     }[plan.billing_schedule]
     periods = 1
     dt = plan.billing_cycle_anchor
@@ -281,8 +281,8 @@ def next_invoice_date(plan: CustomerPlan) -> Optional[datetime]:
         return None
     assert plan.next_invoice_date is not None  # for mypy
     months_per_period = {
-        CustomerPlan.ANNUAL: 12,
-        CustomerPlan.MONTHLY: 1,
+        CustomerPlan.BILLING_SCHEDULE_ANNUAL: 12,
+        CustomerPlan.BILLING_SCHEDULE_MONTHLY: 1,
     }[plan.billing_schedule]
     if plan.automanage_licenses:
         months_per_period = 1
@@ -1060,9 +1060,10 @@ class BillingSession(ABC):
         automanage_licenses = license_management == "automatic"
         charge_automatically = billing_modality == "charge_automatically"
 
-        billing_schedule = {"annual": CustomerPlan.ANNUAL, "monthly": CustomerPlan.MONTHLY}[
-            schedule
-        ]
+        billing_schedule = {
+            "annual": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            "monthly": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+        }[schedule]
         data: Dict[str, Any] = {}
         free_trial = is_free_trial_offer_enabled()
         # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
@@ -1090,7 +1091,10 @@ class BillingSession(ABC):
 
     def do_change_schedule_after_free_trial(self, plan: CustomerPlan, schedule: int) -> None:
         # Change the billing frequency of the plan after the free trial ends.
-        assert schedule in (CustomerPlan.MONTHLY, CustomerPlan.ANNUAL)
+        assert schedule in (
+            CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+            CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+        )
         last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
         assert last_ledger_entry is not None
         licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
@@ -1135,7 +1139,7 @@ class BillingSession(ABC):
             licenses_at_next_renewal=licenses_at_next_renewal,
         )
 
-        if schedule == CustomerPlan.ANNUAL:
+        if schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
             self.write_to_audit_log(
                 event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
                 event_time=timezone_now(),
@@ -1217,13 +1221,13 @@ class BillingSession(ABC):
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
                     automanage_licenses=plan.automanage_licenses,
-                    billing_schedule=CustomerPlan.ANNUAL,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     discount=plan.discount,
                 )
 
                 new_plan = CustomerPlan.objects.create(
                     customer=plan.customer,
-                    billing_schedule=CustomerPlan.ANNUAL,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     automanage_licenses=plan.automanage_licenses,
                     charge_automatically=plan.charge_automatically,
                     price_per_license=price_per_license,
@@ -1265,13 +1269,13 @@ class BillingSession(ABC):
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
                     automanage_licenses=plan.automanage_licenses,
-                    billing_schedule=CustomerPlan.MONTHLY,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     discount=plan.discount,
                 )
 
                 new_plan = CustomerPlan.objects.create(
                     customer=plan.customer,
-                    billing_schedule=CustomerPlan.MONTHLY,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     automanage_licenses=plan.automanage_licenses,
                     charge_automatically=plan.charge_automatically,
                     price_per_license=price_per_license,
@@ -1351,13 +1355,13 @@ class BillingSession(ABC):
 
                 if switch_to_annual_at_end_of_cycle:
                     annual_price_per_license = get_price_per_license(
-                        plan.tier, CustomerPlan.ANNUAL, customer.default_discount
+                        plan.tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, customer.default_discount
                     )
                     renewal_cents = annual_price_per_license * licenses_at_next_renewal
                     price_per_license = format_money(annual_price_per_license / 12)
                 elif switch_to_monthly_at_end_of_cycle:
                     monthly_price_per_license = get_price_per_license(
-                        plan.tier, CustomerPlan.MONTHLY, customer.default_discount
+                        plan.tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, customer.default_discount
                     )
                     renewal_cents = monthly_price_per_license * licenses_at_next_renewal
                     price_per_license = format_money(monthly_price_per_license)
@@ -1448,7 +1452,7 @@ class BillingSession(ABC):
         free_trial_end_date = None
         if free_trial_days is not None:
             _, _, free_trial_end, _ = compute_plan_parameters(
-                tier, False, CustomerPlan.ANNUAL, None, True
+                tier, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, None, True
             )
             free_trial_end_date = f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
 
@@ -1464,11 +1468,15 @@ class BillingSession(ABC):
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "page_params": {
-                "annual_price": get_price_per_license(tier, CustomerPlan.ANNUAL, percent_off),
+                "annual_price": get_price_per_license(
+                    tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, percent_off
+                ),
                 "demo_organization_scheduled_deletion_date": customer_specific_context[
                     "demo_organization_scheduled_deletion_date"
                 ],
-                "monthly_price": get_price_per_license(tier, CustomerPlan.MONTHLY, percent_off),
+                "monthly_price": get_price_per_license(
+                    tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, percent_off
+                ),
                 "seat_count": seat_count,
             },
             "payment_method": current_payment_method,
@@ -1537,7 +1545,7 @@ class BillingSession(ABC):
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 self.downgrade_at_the_end_of_billing_cycle(plan=plan)
             elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
-                assert plan.billing_schedule == CustomerPlan.MONTHLY
+                assert plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 # Customer needs to switch to an active plan first to avoid unexpected behavior.
                 assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
@@ -1546,7 +1554,7 @@ class BillingSession(ABC):
                 assert plan.fixed_price is None
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE:
-                assert plan.billing_schedule == CustomerPlan.ANNUAL
+                assert plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 # Customer needs to switch to an active plan first to avoid unexpected behavior.
                 assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
@@ -2658,16 +2666,16 @@ def get_price_per_license(
     price_per_license: Optional[int] = None
 
     if tier == CustomerPlan.TIER_CLOUD_STANDARD:
-        if billing_schedule == CustomerPlan.ANNUAL:
+        if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
             price_per_license = 8000
-        elif billing_schedule == CustomerPlan.MONTHLY:
+        elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
             price_per_license = 800
         else:  # nocoverage
             raise InvalidBillingScheduleError(billing_schedule)
     elif tier == CustomerPlan.TIER_CLOUD_PLUS:
-        if billing_schedule == CustomerPlan.ANNUAL:
+        if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
             price_per_license = 16000
-        elif billing_schedule == CustomerPlan.MONTHLY:
+        elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
             price_per_license = 1600
         else:  # nocoverage
             raise InvalidBillingScheduleError(billing_schedule)
@@ -2690,9 +2698,9 @@ def compute_plan_parameters(
     # so standardize on 1 second resolution.
     # TODO talk about leap seconds?
     billing_cycle_anchor = timezone_now().replace(microsecond=0)
-    if billing_schedule == CustomerPlan.ANNUAL:
+    if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
         period_end = add_months(billing_cycle_anchor, 12)
-    elif billing_schedule == CustomerPlan.MONTHLY:
+    elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
         period_end = add_months(billing_cycle_anchor, 1)
     else:  # nocoverage
         raise InvalidBillingScheduleError(billing_schedule)

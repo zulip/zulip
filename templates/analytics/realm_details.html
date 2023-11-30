@@ -113,7 +113,7 @@
     <h3>📅 Current plan</h3>
     <b>Name</b>: {{ plan_data[realm.id].current_plan.name }}<br />
     <b>Status</b>: {{plan_data[realm.id].current_plan.get_plan_status_as_text()}}<br />
-    <b>Billing schedule</b>: {% if plan_data[realm.id].current_plan.billing_schedule == plan_data[realm.id].current_plan.ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
+    <b>Billing schedule</b>: {% if plan_data[realm.id].current_plan.billing_schedule == plan_data[realm.id].current_plan.BILLING_SCHEDULE_ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
     <b>Licenses</b>: {{ plan_data[realm.id].licenses_used }}/{{ plan_data[realm.id].licenses }} ({% if plan_data[realm.id].current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br />
     {% if plan_data[realm.id].current_plan.price_per_license %}
     <b>Price per license</b>: ${{ plan_data[realm.id].current_plan.price_per_license/100 }}<br />

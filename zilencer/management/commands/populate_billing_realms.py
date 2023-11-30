@@ -21,7 +21,7 @@ from zproject.config import get_secret
 @dataclass
 class CustomerProfile:
     unique_id: str
-    billing_schedule: int = CustomerPlan.ANNUAL
+    billing_schedule: int = CustomerPlan.BILLING_SCHEDULE_ANNUAL
     tier: Optional[int] = None
     automanage_licenses: bool = False
     status: int = CustomerPlan.ACTIVE
@@ -43,66 +43,66 @@ class Command(BaseCommand):
             CustomerProfile(unique_id="sponsorship-pending", sponsorship_pending=True),
             CustomerProfile(
                 unique_id="annual-free",
-                billing_schedule=CustomerPlan.ANNUAL,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             ),
             CustomerProfile(
                 unique_id="annual-standard",
-                billing_schedule=CustomerPlan.ANNUAL,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
             ),
             CustomerProfile(
                 unique_id="annual-plus",
-                billing_schedule=CustomerPlan.ANNUAL,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                 tier=CustomerPlan.TIER_CLOUD_PLUS,
             ),
             CustomerProfile(
                 unique_id="monthly-free",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
             ),
             CustomerProfile(
                 unique_id="monthly-standard",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
             ),
             CustomerProfile(
                 unique_id="monthly-plus",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_PLUS,
             ),
             CustomerProfile(
                 unique_id="downgrade-end-of-cycle",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 status=CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
             ),
             CustomerProfile(
                 unique_id="standard-automanage-licenses",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 automanage_licenses=True,
             ),
             CustomerProfile(
                 unique_id="standard-automatic-card",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 card="pm_card_visa",
             ),
             CustomerProfile(
                 unique_id="standard-invoice-payment",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 charge_automatically=False,
             ),
             CustomerProfile(
                 unique_id="standard-switch-to-annual-eoc",
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 status=CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
             ),
             CustomerProfile(
                 unique_id="sponsored",
                 is_sponsored=True,
-                billing_schedule=CustomerPlan.MONTHLY,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
             ),
             CustomerProfile(
@@ -202,7 +202,7 @@ class Command(BaseCommand):
                 )
 
             months = 12
-            if customer_profile.billing_schedule == CustomerPlan.MONTHLY:
+            if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
                 months = 1
             next_invoice_date = add_months(timezone_now(), months)
 
