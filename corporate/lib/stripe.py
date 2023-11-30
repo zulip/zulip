@@ -2342,21 +2342,17 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     ) -> None:
         # BUG: This doesn't have a way to pass realm_id !
         audit_log_event = self.get_audit_log_event(event_type)
+        log_data = {
+            "server": self.remote_realm.server,
+            "remote_realm": self.remote_realm,
+            "event_type": audit_log_event,
+            "event_time": event_time,
+        }
+
         if extra_data:
-            RemoteRealmAuditLog.objects.create(
-                server=self.remote_realm.server,
-                remote_realm=self.remote_realm,
-                event_type=audit_log_event,
-                event_time=event_time,
-                extra_data=extra_data,
-            )
-        else:
-            RemoteRealmAuditLog.objects.create(
-                server=self.remote_realm.server,
-                remote_realm=self.remote_realm,
-                event_type=audit_log_event,
-                event_time=event_time,
-            )
+            log_data["extra_data"] = extra_data
+
+        RemoteRealmAuditLog.objects.create(**log_data)
 
     @override
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
@@ -2597,19 +2593,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
+        log_data = {
+            "server": self.remote_server,
+            "event_type": audit_log_event,
+            "event_time": event_time,
+        }
+
         if extra_data:
-            RemoteZulipServerAuditLog.objects.create(
-                server=self.remote_server,
-                event_type=audit_log_event,
-                event_time=event_time,
-                extra_data=extra_data,
-            )
-        else:
-            RemoteZulipServerAuditLog.objects.create(
-                server=self.remote_server,
-                event_type=audit_log_event,
-                event_time=event_time,
-            )
+            log_data["extra_data"] = extra_data
+
+        RemoteZulipServerAuditLog.objects.create(**log_data)
 
     @override
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
