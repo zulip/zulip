@@ -370,7 +370,7 @@ class TestRealmAuditLog(ZulipTestCase):
         stream = self.make_stream(stream_name, realm)
         stream_ids = {stream.id}
 
-        result = get_streams_traffic(stream_ids)
+        result = get_streams_traffic(stream_ids, realm)
         self.assertEqual(result, {})
 
         StreamCount.objects.create(
@@ -381,7 +381,7 @@ class TestRealmAuditLog(ZulipTestCase):
             value=999,
         )
 
-        result = get_streams_traffic(stream_ids)
+        result = get_streams_traffic(stream_ids, realm)
         self.assertEqual(result, {stream.id: 999})
 
     def test_subscriptions(self) -> None:
