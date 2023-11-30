@@ -43,18 +43,18 @@ function handle_session_complete_event(session: StripeSession): void {
             redirect_to = "/billing/";
             break;
         case "card_update_from_upgrade_page":
-            if (session.is_manual_license_management_upgrade_session) {
-                redirect_to = "/upgrade/?manual_license_management=true";
-            } else {
-                redirect_to = "/upgrade/";
-            }
+            redirect_to = helpers.get_upgrade_page_url(
+                session.is_manual_license_management_upgrade_session,
+            );
             break;
     }
     update_status_and_redirect(redirect_to);
 }
 
 async function stripe_checkout_session_status_check(stripe_session_id: string): Promise<boolean> {
-    const response: unknown = await $.get("/json/billing/event/status", {stripe_session_id});
+    const response: unknown = await $.get(helpers.get_event_status_url(), {
+        stripe_session_id,
+    });
     const response_data = stripe_response_schema.parse(response);
 
     if (response_data.session.status === "created") {

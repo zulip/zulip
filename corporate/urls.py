@@ -5,7 +5,12 @@ from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 
 from corporate.views.billing_page import billing_home, update_plan
-from corporate.views.event_status import event_status, event_status_page
+from corporate.views.event_status import (
+    event_status,
+    event_status_page,
+    remote_realm_event_status,
+    remote_realm_event_status_page,
+)
 from corporate.views.portico import (
     app_download_link_redirect,
     apps_view,
@@ -26,6 +31,7 @@ from corporate.views.remote_billing_page import (
 from corporate.views.session import (
     start_card_update_stripe_session,
     start_card_update_stripe_session_for_realm_upgrade,
+    start_card_update_stripe_session_for_remote_realm_upgrade,
 )
 from corporate.views.sponsorship import (
     remote_realm_sponsorship,
@@ -188,9 +194,19 @@ urlpatterns += [
         remote_billing_legacy_server_login,
         name="remote_billing_legacy_server_login",
     ),
+    path(
+        "realm/<realm_uuid>/billing/event_status",
+        remote_realm_event_status_page,
+        name="remote_realm_event_status_page",
+    ),
     # Remote variants of above API endpoints.
     path("json/realm/<realm_uuid>/sponsorship", remote_realm_sponsorship),
     path("json/server/<server_uuid>/sponsorship", remote_server_sponsorship),
+    path(
+        "json/realm/<realm_uuid>/upgrade/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_realm_upgrade,
+    ),
+    path("json/realm/<realm_uuid>/billing/event/status", remote_realm_event_status),
 ]
 
 urlpatterns += [

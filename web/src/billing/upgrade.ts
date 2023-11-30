@@ -137,7 +137,7 @@ export const initialize = (): void => {
         $("#upgrade-add-card-button #upgrade-add-card-button-text").hide();
         $("#upgrade-add-card-button .loader").show();
         helpers.create_ajax_request(
-            "/json/upgrade/session/start_card_update_session",
+            helpers.get_upgrade_page_card_update_session_url(),
             "upgrade-cardchange",
             [],
             "POST",
