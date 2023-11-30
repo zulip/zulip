@@ -14,9 +14,9 @@ const huddle_data = zrequire("huddle_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
-const search = zrequire("search_suggestion");
+const search_suggestion = zrequire("search_suggestion");
 
-search.__Rewire__("max_num_of_search_results", 15);
+search_suggestion.__Rewire__("max_num_of_search_results", 15);
 
 const me = {
     email: "myself@zulip.com",
@@ -69,7 +69,7 @@ function init() {
 }
 
 function get_suggestions(query) {
-    return search.get_suggestions(query);
+    return search_suggestion.get_suggestions(query);
 }
 
 function test(label, f) {
@@ -758,7 +758,7 @@ test("topic_suggestions (limits)", () => {
 
     function assert_result(guess, expected_topics) {
         assert.deepEqual(
-            search.get_topic_suggestions_from_candidates({candidate_topics, guess}),
+            search_suggestion.get_topic_suggestions_from_candidates({candidate_topics, guess}),
             expected_topics,
         );
     }
