@@ -17,6 +17,8 @@ class RemoteBillingIdentityDict(TypedDict):
     remote_server_uuid: str
     remote_realm_uuid: str
 
+    next_page: Optional[str]
+
 
 class LegacyServerIdentityDict(TypedDict):
     # Currently this has only one field. We can extend this

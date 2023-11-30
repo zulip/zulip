@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from unittest import mock
 
 import responses
@@ -16,8 +16,13 @@ if TYPE_CHECKING:
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class RemoteBillingAuthenticationTest(BouncerTestCase):
-    def execute_remote_billing_authentication_flow(self, user: UserProfile) -> "TestHttpResponse":
-        result = self.client_get("/self-hosted-billing/")
+    def execute_remote_billing_authentication_flow(
+        self, user: UserProfile, next_page: Optional[str] = None
+    ) -> "TestHttpResponse":
+        self_hosted_billing_url = "/self-hosted-billing/"
+        if next_page is not None:
+            self_hosted_billing_url += f"?next_page={next_page}"
+        result = self.client_get(self_hosted_billing_url)
         self.assertEqual(result.status_code, 302)
         self.assertIn("http://selfhosting.testserver/remote-billing-login/", result["Location"])
 
@@ -34,6 +39,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             user_full_name=user.full_name,
             remote_server_uuid=str(self.server.uuid),
             remote_realm_uuid=str(user.realm.uuid),
+            next_page=next_page,
         )
         self.assertEqual(
             self.client.session["remote_billing_identities"][str(user.realm.uuid)], identity_dict
@@ -99,3 +105,43 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         result = self.client_get(result["Location"], subdomain="selfhosting")
         self.assert_in_success_response(["Your remote user info:"], result)
         self.assert_in_success_response([desdemona.delivery_email], result)
+
+    @responses.activate
+    def test_remote_billing_authentication_flow_to_sponsorship_page(self) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+
+        self.add_mock_response()
+        send_realms_only_to_push_bouncer()
+
+        result = self.execute_remote_billing_authentication_flow(desdemona, "sponsorship")
+
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/sponsorship")
+
+        # Go to the URL we're redirected to after authentication and assert
+        # some basic expected content.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["Request Zulip Cloud sponsorship", "Description of your organization"], result
+        )
+
+    @responses.activate
+    def test_remote_billing_authentication_flow_to_upgrade_page(self) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+
+        self.add_mock_response()
+        send_realms_only_to_push_bouncer()
+
+        result = self.execute_remote_billing_authentication_flow(desdemona, "upgrade")
+
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/upgrade")
+
+        # Go to the URL we're redirected to after authentication and assert
+        # some basic expected content.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["Upgrade", "Purchase Zulip", "Your subscription will renew automatically."], result
+        )
