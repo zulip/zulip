@@ -8,6 +8,7 @@ from corporate.lib.stripe import EventStatusRequest, RealmBillingSession
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -30,11 +31,12 @@ def event_status(
 
 
 @zulip_login_required
-@has_request_variables
+@typed_endpoint
 def event_status_page(
     request: HttpRequest,
-    stripe_session_id: str = REQ(default=""),
-    stripe_payment_intent_id: str = REQ(default=""),
+    *,
+    stripe_session_id: str = "",
+    stripe_payment_intent_id: str = "",
 ) -> HttpResponse:
     context = {
         "stripe_session_id": stripe_session_id,
