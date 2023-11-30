@@ -1302,6 +1302,23 @@ li.topic-list-item {
     }
 }
 
+/* Prepare an adjusted grid for the logged-out state,
+   one that reassigns the vdots space to markers and
+   controls. */
+.spectator-view #streams_header {
+    grid-template-columns: 0 0 minmax(0, 1fr) minmax(30px, max-content) 0 12px;
+
+    /* With markers and controls now sized the same
+       as the ordinary vdots area (but allowed to grow,
+       care of `minmax(30px, max-content)`, should
+       additional logged-out icons be added in the
+       future), let's center the icon in that area,
+       just like vdots would be. */
+    .heading-markers-and-controls {
+        justify-content: center;
+    }
+}
+
 .streams_subheader {
     font-size: 0.8em;
     font-weight: normal;
