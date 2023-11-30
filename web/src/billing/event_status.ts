@@ -36,12 +36,6 @@ function show_error_message(message: string): void {
     $("#webhook-error").text(message);
 }
 
-function show_html_error_message(rendered_message: string): void {
-    $("#webhook-loading").hide();
-    $("#webhook-error").show();
-    $("#webhook-error").html(rendered_message);
-}
-
 function handle_session_complete_event(session: StripeSession): void {
     let redirect_to = "";
     switch (session.type) {
@@ -81,24 +75,6 @@ async function stripe_checkout_session_status_check(stripe_session_id: string): 
     return false;
 }
 
-export function initialize_retry_with_another_card_link_click_handler(): void {
-    $("#retry-with-another-card-link").on("click", (e) => {
-        e.preventDefault();
-        $("#webhook-error").hide();
-        helpers.create_ajax_request(
-            "/json/billing/session/start_retry_payment_intent_session",
-            "restartsession",
-            [],
-            "POST",
-            (response) => {
-                const response_data = helpers.stripe_session_url_schema.parse(response);
-
-                window.location.replace(response_data.stripe_session_url);
-            },
-        );
-    });
-}
-
 export async function stripe_payment_intent_status_check(
     stripe_payment_intent_id: string,
 ): Promise<boolean> {
@@ -127,21 +103,6 @@ export async function stripe_payment_intent_status_check(
     const response_data = response_schema.parse(response);
 
     switch (response_data.payment_intent.status) {
-        case "requires_payment_method":
-            if (response_data.payment_intent.event_handler!.status === "succeeded") {
-                show_html_error_message(
-                    response_data.payment_intent.last_payment_error!.message +
-                        "<br>" +
-                        'You can try adding <a id="retry-with-another-card-link"> another card or </a> or retry the upgrade.',
-                );
-                initialize_retry_with_another_card_link_click_handler();
-                return true;
-            }
-            if (response_data.payment_intent.event_handler!.status === "failed") {
-                show_error_message(response_data.payment_intent.event_handler!.error!.message);
-                return true;
-            }
-            return false;
         case "succeeded":
             if (response_data.payment_intent.event_handler!.status === "succeeded") {
                 helpers.redirect_to_billing_with_successful_upgrade();
