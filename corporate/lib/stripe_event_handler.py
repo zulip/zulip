@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import stripe
 from django.conf import settings
@@ -7,10 +7,12 @@ from django.conf import settings
 from corporate.lib.stripe import (
     BillingError,
     RealmBillingSession,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
     UpgradeWithExistingPlanError,
     ensure_customer_does_not_have_active_plan,
 )
-from corporate.models import CustomerPlan, Event, PaymentIntent, Session
+from corporate.models import Customer, CustomerPlan, Event, PaymentIntent, Session
 from zerver.models import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -61,6 +63,20 @@ def error_handler(
     return wrapper
 
 
+def get_billing_session(
+    customer: Customer, user_id: Optional[str]
+) -> Union[RealmBillingSession, RemoteRealmBillingSession, RemoteServerBillingSession]:
+    if customer.remote_realm is not None:  # nocoverage
+        return RemoteRealmBillingSession(customer.remote_realm)
+    elif customer.remote_server is not None:  # nocoverage
+        return RemoteServerBillingSession(customer.remote_server)
+    else:
+        assert user_id is not None
+        assert customer.realm is not None
+        user = get_active_user_profile_by_id_in_realm(int(user_id), customer.realm)
+        return RealmBillingSession(user)
+
+
 @error_handler
 def handle_checkout_session_completed_event(
     stripe_session: stripe.checkout.Session, session: Session
@@ -69,13 +85,9 @@ def handle_checkout_session_completed_event(
     session.save()
 
     assert isinstance(stripe_session.setup_intent, str)
-    stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
-    assert session.customer.realm is not None
     assert stripe_session.metadata is not None
-    user_id = stripe_session.metadata.get("user_id")
-    assert user_id is not None
-    user = get_active_user_profile_by_id_in_realm(int(user_id), session.customer.realm)
-    billing_session = RealmBillingSession(user)
+    stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
+    billing_session = get_billing_session(session.customer, stripe_session.metadata.get("user_id"))
     payment_method = stripe_setup_intent.payment_method
     assert isinstance(payment_method, (str, type(None)))
 

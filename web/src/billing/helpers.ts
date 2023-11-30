@@ -159,3 +159,46 @@ export function redirect_to_billing_with_successful_upgrade(): void {
             encodeURIComponent("Your organization has been upgraded to Zulip Cloud Standard."),
     );
 }
+
+export function get_realm_uuid_from_url(): string | undefined {
+    const url = new URL(window.location.href);
+    const path_segments = url.pathname.split("/");
+    const realm_index = path_segments.indexOf("realm");
+    if (realm_index !== -1 && realm_index < path_segments.length - 1) {
+        return path_segments[realm_index + 1];
+    }
+
+    return undefined;
+}
+
+export function get_event_status_url(): string {
+    const realm_uuid = get_realm_uuid_from_url();
+    if (realm_uuid) {
+        return `/json/realm/${realm_uuid}/billing/event/status`;
+    }
+    return "/json/billing/event/status";
+}
+
+export function get_upgrade_page_card_update_session_url(): string {
+    const realm_uuid = get_realm_uuid_from_url();
+    if (realm_uuid) {
+        return `/json/realm/${realm_uuid}/upgrade/session/start_card_update_session`;
+    }
+    return "/json/upgrade/session/start_card_update_session";
+}
+
+export function get_upgrade_page_url(
+    is_manual_license_management_upgrade_session: boolean | undefined,
+): string {
+    let redirect_to = "/upgrade";
+    if (is_manual_license_management_upgrade_session) {
+        redirect_to += "/?manual_license_management=true";
+    }
+
+    const realm_uuid = get_realm_uuid_from_url();
+    if (realm_uuid) {
+        return `/realm/${realm_uuid}` + redirect_to;
+    }
+
+    return redirect_to;
+}
