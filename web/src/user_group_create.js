@@ -139,10 +139,6 @@ function create_user_group() {
             $("#create_user_group_name").val("");
             $("#create_user_group_description").val("");
             user_group_create_members.clear_member_list();
-            ui_report.success(
-                $t_html({defaultMessage: "User group successfully created!"}),
-                $(".user_group_create_info"),
-            );
             loading.destroy_indicator($("#user_group_creating_indicator"));
             // TODO: The rest of the work should be done via the create event we will get for user group.
         },
