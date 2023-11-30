@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Literal, Optional
 
 from django.conf import settings
 from django.core import signing
@@ -26,6 +26,10 @@ from zilencer.models import RemoteRealm, RemoteZulipServer, get_remote_server_by
 billing_logger = logging.getLogger("corporate.stripe")
 
 
+VALID_NEXT_PAGES = [None, "sponsorship", "upgrade", "billing", "plans"]
+VALID_NEXT_PAGES_TYPE = Literal[None, "sponsorship", "upgrade", "billing", "plans"]
+
+
 @csrf_exempt
 @typed_endpoint
 def remote_server_billing_entry(
@@ -34,6 +38,7 @@ def remote_server_billing_entry(
     *,
     user: Json[UserDataForRemoteBilling],
     realm: Json[RealmDataForAnalytics],
+    next_page: VALID_NEXT_PAGES_TYPE = None,
 ) -> HttpResponse:
     if not settings.DEVELOPMENT:
         return render(request, "404.html", status=404)
@@ -51,6 +56,7 @@ def remote_server_billing_entry(
         user_full_name=user.full_name,
         remote_server_uuid=str(remote_server.uuid),
         remote_realm_uuid=str(remote_realm.uuid),
+        next_page=next_page,
     )
 
     signed_identity_dict = signing.dumps(identity_dict)
@@ -64,7 +70,8 @@ def remote_server_billing_entry(
 
 @self_hosting_management_endpoint
 def remote_server_billing_finalize_login(
-    request: HttpRequest, signed_billing_access_token: str
+    request: HttpRequest,
+    signed_billing_access_token: str,
 ) -> HttpResponse:
     try:
         identity_dict: RemoteBillingIdentityDict = signing.loads(
@@ -85,7 +92,15 @@ def remote_server_billing_finalize_login(
     # For now we're only implemented the case where we have the RemoteRealm, and we take
     # to /plans.
 
-    return HttpResponseRedirect(reverse("remote_billing_plans_realm", args=(remote_realm_uuid,)))
+    assert identity_dict["next_page"] in VALID_NEXT_PAGES
+    if identity_dict["next_page"] is None:
+        return HttpResponseRedirect(
+            reverse("remote_billing_plans_realm", args=(remote_realm_uuid,))
+        )
+    else:
+        return HttpResponseRedirect(
+            reverse(f"remote_realm_{identity_dict['next_page']}_page", args=(remote_realm_uuid,))
+        )
 
 
 def render_tmp_remote_billing_page(

@@ -21,7 +21,7 @@ from corporate.models import CustomerPlan
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import UserProfile
 from zilencer.models import RemoteRealm
@@ -108,7 +108,6 @@ def remote_realm_upgrade_page(
     request: HttpRequest,
     remote_realm: RemoteRealm,
     *,
-    realm_uuid: PathOnly[str],
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage
     initial_upgrade_request = InitialUpgradeRequest(
