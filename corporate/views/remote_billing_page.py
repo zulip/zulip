@@ -7,12 +7,14 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.crypto import constant_time_compare
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
 from corporate.lib.decorator import self_hosting_management_endpoint
 from corporate.lib.remote_billing_util import (
+    REMOTE_BILLING_SESSION_VALIDITY_SECONDS,
     LegacyServerIdentityDict,
     RemoteBillingIdentityDict,
     RemoteBillingUserDict,
@@ -21,6 +23,7 @@ from corporate.lib.remote_billing_util import (
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zilencer.models import RemoteRealm, RemoteZulipServer, get_remote_server_by_uuid
 
@@ -57,6 +60,7 @@ def remote_server_billing_entry(
         ),
         remote_server_uuid=str(remote_server.uuid),
         remote_realm_uuid=str(remote_realm.uuid),
+        authenticated_at=datetime_to_timestamp(timezone_now()),
         next_page=next_page,
     )
 
@@ -74,6 +78,11 @@ def remote_server_billing_finalize_login(
     request: HttpRequest,
     signed_billing_access_token: str,
 ) -> HttpResponse:
+    # Sanity assert, because otherwise these make no sense.
+    assert (
+        settings.SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS < REMOTE_BILLING_SESSION_VALIDITY_SECONDS
+    )
+
     try:
         identity_dict: RemoteBillingIdentityDict = signing.loads(
             signed_billing_access_token, max_age=settings.SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS
@@ -271,6 +280,9 @@ def remote_billing_legacy_server_login(
     request.session["remote_billing_identities"] = {}
     request.session["remote_billing_identities"][
         f"remote_server:{remote_server_uuid}"
-    ] = LegacyServerIdentityDict(remote_server_uuid=remote_server_uuid)
+    ] = LegacyServerIdentityDict(
+        remote_server_uuid=remote_server_uuid,
+        authenticated_at=datetime_to_timestamp(timezone_now()),
+    )
 
     return HttpResponseRedirect(reverse("remote_billing_page_server", args=(remote_server_uuid,)))
