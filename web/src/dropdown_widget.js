@@ -77,6 +77,10 @@ export class DropdownWidget {
     }
 
     init() {
+        // NOTE: Widget should only be initialized again if the events_container was rendered again to
+        // avoid duplicate events to be attached to events_container.
+        // Don't attach any events or classes to any element other than `events_container` here, otherwise
+        // the attached events / classes will be lost when the widget is rendered again without initialing the widget again.
         if (this.current_value !== null) {
             this.render();
         }
@@ -94,12 +98,15 @@ export class DropdownWidget {
         );
 
         if (this.disable_for_spectators && page_params.is_spectator) {
-            const $widget = $(this.widget_id);
-            $widget.addClass("disabled-for-spectators");
-            $widget.on("click", (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-            });
+            this.$events_container.addClass("dropdown-widget-disabled-for-spectators");
+            this.$events_container.on(
+                "click",
+                `${this.widget_id}, ${this.widget_wrapper_id}`,
+                (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                },
+            );
         }
     }
 
