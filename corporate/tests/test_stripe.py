@@ -4134,7 +4134,7 @@ class RequiresBillingAccessTest(StripeTestCase):
             pat
             for name in reverse_dict
             for matches, pat, defaults, converters in reverse_dict.getlist(name)
-            if pat.startswith(re.escape("json/"))
+            if pat.startswith("json/") and not (pat.startswith(("json/realm/", "json/server/")))
         }
         self.assert_length(json_endpoints, len(tested_endpoints))
 
