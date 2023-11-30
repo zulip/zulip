@@ -522,6 +522,18 @@ class EventStatusRequest:
     stripe_payment_intent_id: Optional[str]
 
 
+class SupportType(Enum):
+    approve_sponsorship = 1
+    update_sponsorship_status = 2
+    attach_discount = 3
+
+
+class SupportViewRequest(TypedDict, total=False):
+    support_type: SupportType
+    sponsorship_status: Optional[bool]
+    discount: Optional[Decimal]
+
+
 class AuditLogEventType(Enum):
     STRIPE_CUSTOMER_CREATED = 1
     STRIPE_CARD_CHANGED = 2
@@ -607,6 +619,11 @@ class SponsorshipRequestForm(forms.Form):
 class BillingSession(ABC):
     @property
     @abstractmethod
+    def billing_entity_display_name(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def billing_session_url(self) -> str:
         pass
 
@@ -672,7 +689,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def approve_sponsorship(self) -> None:
+    def approve_sponsorship(self) -> str:
         pass
 
     @abstractmethod
@@ -868,29 +885,32 @@ class BillingSession(ABC):
         )
         return stripe_session
 
-    def attach_discount_to_customer(self, discount: Decimal) -> None:
+    def attach_discount_to_customer(self, new_discount: Decimal) -> str:
         customer = self.get_customer()
-        old_discount: Optional[Decimal] = None
+        old_discount = None
         if customer is not None:
             old_discount = customer.default_discount
-            customer.default_discount = discount
+            customer.default_discount = new_discount
             customer.save(update_fields=["default_discount"])
         else:
-            customer = self.update_or_create_customer(defaults={"default_discount": discount})
+            customer = self.update_or_create_customer(defaults={"default_discount": new_discount})
         plan = get_current_plan_by_customer(customer)
         if plan is not None:
             plan.price_per_license = get_price_per_license(
-                plan.tier, plan.billing_schedule, discount
+                plan.tier, plan.billing_schedule, new_discount
             )
-            plan.discount = discount
+            plan.discount = new_discount
             plan.save(update_fields=["price_per_license", "discount"])
         self.write_to_audit_log(
             event_type=AuditLogEventType.DISCOUNT_CHANGED,
             event_time=timezone_now(),
-            extra_data={"old_discount": old_discount, "new_discount": discount},
+            extra_data={"old_discount": old_discount, "new_discount": new_discount},
         )
+        if old_discount is None:
+            old_discount = Decimal(0)
+        return f"Discount for {self.billing_entity_display_name} changed to {new_discount}% from {old_discount}%."
 
-    def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> None:
+    def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
         if customer is None:
             customer = self.update_or_create_customer()
@@ -901,6 +921,14 @@ class BillingSession(ABC):
             event_time=timezone_now(),
             extra_data={"sponsorship_pending": sponsorship_pending},
         )
+
+        if sponsorship_pending:
+            success_message = f"{self.billing_entity_display_name} marked as pending sponsorship."
+        else:
+            success_message = (
+                f"{self.billing_entity_display_name} is no longer pending sponsorship."
+            )
+        return success_message
 
     def update_billing_modality_of_current_plan(self, charge_automatically: bool) -> None:
         customer = self.get_customer()
@@ -1981,6 +2009,23 @@ class BillingSession(ABC):
             context=context,
         )
 
+    def process_support_view_request(self, support_request: SupportViewRequest) -> str:
+        support_type = support_request["support_type"]
+        success_message = ""
+
+        if support_type == SupportType.approve_sponsorship:
+            success_message = self.approve_sponsorship()
+        elif support_type == SupportType.update_sponsorship_status:
+            assert support_request["sponsorship_status"] is not None
+            sponsorship_status = support_request["sponsorship_status"]
+            success_message = self.update_customer_sponsorship_status(sponsorship_status)
+        elif support_type == SupportType.attach_discount:
+            assert support_request["discount"] is not None
+            new_discount = support_request["discount"]
+            success_message = self.attach_discount_to_customer(new_discount)
+
+        return success_message
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -2009,6 +2054,11 @@ class RealmBillingSession(BillingSession):
         Realm.PLAN_TYPE_STANDARD,
         Realm.PLAN_TYPE_PLUS,
     ]
+
+    @override
+    @property
+    def billing_entity_display_name(self) -> str:
+        return self.realm.string_id
 
     @override
     @property
@@ -2179,7 +2229,7 @@ class RealmBillingSession(BillingSession):
         plan.save(update_fields=["status"])
 
     @override
-    def approve_sponsorship(self) -> None:
+    def approve_sponsorship(self) -> str:
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
@@ -2210,6 +2260,7 @@ class RealmBillingSession(BillingSession):
                     end_link="](/help/linking-to-zulip-website)",
                 )
                 internal_send_private_message(notification_bot, user, message)
+        return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
     def is_sponsored(self) -> bool:
@@ -2321,6 +2372,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             self.support_session = True
         else:
             self.support_session = False
+
+    @override
+    @property
+    def billing_entity_display_name(self) -> str:
+        return self.remote_realm.name
 
     @override
     @property
@@ -2476,9 +2532,9 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         self.remote_realm.save(update_fields=["plan_type"])
 
     @override
-    def approve_sponsorship(self) -> None:
+    def approve_sponsorship(self) -> str:
         # TBD
-        pass
+        return ""
 
     @override
     def is_sponsored(self) -> bool:
@@ -2594,6 +2650,11 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             self.support_session = True
         else:
             self.support_session = False
+
+    @override
+    @property
+    def billing_entity_display_name(self) -> str:
+        return self.remote_server.hostname
 
     @override
     @property
@@ -2739,9 +2800,9 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         self.remote_server.save(update_fields=["plan_type"])
 
     @override
-    def approve_sponsorship(self) -> None:
+    def approve_sponsorship(self) -> str:
         # TBD
-        pass
+        return ""
 
     @override
     def process_downgrade(self, plan: CustomerPlan) -> None:

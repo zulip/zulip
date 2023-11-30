@@ -55,16 +55,15 @@ if settings.ZILENCER_ENABLED:
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
         RealmBillingSession,
+        SupportType,
+        SupportViewRequest,
         get_latest_seat_count,
         void_all_open_invoices,
     )
     from corporate.lib.support import (
-        approve_realm_sponsorship,
-        attach_discount_to_realm,
         get_discount_for_realm,
         switch_realm_from_standard_to_plus_plan,
         update_realm_billing_modality,
-        update_realm_sponsorship_status,
     )
     from corporate.models import (
         Customer,
@@ -197,7 +196,21 @@ def support(
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
-        if plan_type is not None:
+        support_view_request = None
+
+        if approve_sponsorship:
+            support_view_request = SupportViewRequest(support_type=SupportType.approve_sponsorship)
+        elif sponsorship_pending is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_sponsorship_status,
+                sponsorship_status=sponsorship_pending,
+            )
+        elif discount is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.attach_discount,
+                discount=discount,
+            )
+        elif plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(plan_type)} "
@@ -207,12 +220,6 @@ def support(
             do_change_realm_org_type(realm, org_type, acting_user=acting_user)
             msg = f"Org type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
             context["success_message"] = msg
-        elif discount is not None:
-            current_discount = get_discount_for_realm(realm) or 0
-            attach_discount_to_realm(realm, discount, acting_user=acting_user)
-            context[
-                "success_message"
-            ] = f"Discount of {realm.string_id} changed to {discount}% from {current_discount}%."
         elif new_subdomain is not None:
             old_subdomain = realm.string_id
             try:
@@ -251,16 +258,6 @@ def support(
                 context[
                     "success_message"
                 ] = f"Billing collection method of {realm.string_id} updated to charge automatically."
-        elif sponsorship_pending is not None:
-            if sponsorship_pending:
-                update_realm_sponsorship_status(realm, True, acting_user=acting_user)
-                context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
-            else:
-                update_realm_sponsorship_status(realm, False, acting_user=acting_user)
-                context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
-        elif approve_sponsorship:
-            approve_realm_sponsorship(realm, acting_user=acting_user)
-            context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif modify_plan is not None:
             billing_session = RealmBillingSession(
                 user=acting_user, realm=realm, support_session=True
@@ -293,6 +290,13 @@ def support(
             assert user_profile_for_deletion.realm == realm
             do_delete_user_preserving_messages(user_profile_for_deletion)
             context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
+
+        if support_view_request is not None:
+            billing_session = RealmBillingSession(
+                user=acting_user, realm=realm, support_session=True
+            )
+            success_message = billing_session.process_support_view_request(support_view_request)
+            context["success_message"] = success_message
 
     if query:
         key_words = get_invitee_emails_set(query)
