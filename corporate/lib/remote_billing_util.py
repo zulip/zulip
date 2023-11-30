@@ -10,10 +10,14 @@ from zilencer.models import RemoteRealm, RemoteZulipServer
 billing_logger = logging.getLogger("corporate.stripe")
 
 
-class RemoteBillingIdentityDict(TypedDict):
+class RemoteBillingUserDict(TypedDict):
     user_uuid: str
     user_email: str
     user_full_name: str
+
+
+class RemoteBillingIdentityDict(TypedDict):
+    user: RemoteBillingUserDict
     remote_server_uuid: str
     remote_realm_uuid: str
 
