@@ -13,6 +13,9 @@ const blueslip = require("./lib/zblueslip");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
 const message_user_ids = mock_esm("../src/message_user_ids");
+const settings_data = mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -1362,6 +1365,41 @@ test_people("should_show_guest_user_indicator", () => {
     page_params.realm_enable_guest_user_indicator = true;
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
+});
+
+test_people("get_user_by_id_assert_valid", ({override}) => {
+    people.add_active_user(charles);
+    const inaccessible_user_id = 99;
+    page_params.realm_bot_domain = "zulipdev.com";
+    override(settings_data, "user_can_access_all_other_users", () => false);
+
+    let user = people.get_user_by_id_assert_valid(inaccessible_user_id);
+    assert.equal(user.full_name, "translated: Unknown user");
+    assert.equal(user.user_id, inaccessible_user_id);
+    assert.ok(user.is_inaccessible_user);
+    assert.equal(user.email, "user99@zulipdev.com");
+
+    user = people.get_user_by_id_assert_valid(charles.user_id);
+    assert.equal(user.full_name, charles.full_name);
+    assert.ok(!user.is_inaccessible_user);
+    assert.equal(user.email, charles.email);
+
+    override(settings_data, "user_can_access_all_other_users", () => true);
+
+    assert.throws(
+        () => {
+            people.get_user_by_id_assert_valid(199);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 199",
+        },
+    );
+
+    user = people.get_user_by_id_assert_valid(charles.user_id);
+    assert.equal(user.full_name, charles.full_name);
+    assert.ok(!user.is_inaccessible_user);
+    assert.equal(user.email, charles.email);
 });
 
 // reset to native Date()
