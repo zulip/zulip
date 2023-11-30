@@ -19,8 +19,9 @@ let selected_schedule: string =
 let current_license_count = page_params.seat_count;
 
 const upgrade_response_schema = z.object({
-    stripe_session_url: z.string().optional(),
+    // Returned if we charged the user and need to verify.
     stripe_payment_intent_id: z.string().optional(),
+    // Returned if we directly upgraded the org (for free trial or invoice payments).
     organization_upgrade_successful: z.boolean().optional(),
 });
 
@@ -91,9 +92,7 @@ export const initialize = (): void => {
             "POST",
             (response) => {
                 const response_data = upgrade_response_schema.parse(response);
-                if (response_data.stripe_session_url) {
-                    window.location.replace(response_data.stripe_session_url);
-                } else if (response_data.stripe_payment_intent_id) {
+                if (response_data.stripe_payment_intent_id) {
                     window.location.replace(
                         `/billing/event_status?stripe_payment_intent_id=${response_data.stripe_payment_intent_id}`,
                     );
