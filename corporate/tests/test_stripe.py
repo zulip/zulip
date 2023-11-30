@@ -75,12 +75,9 @@ from corporate.lib.stripe import (
     void_all_open_invoices,
 )
 from corporate.lib.support import (
-    approve_realm_sponsorship,
-    attach_discount_to_realm,
     get_discount_for_realm,
     switch_realm_from_standard_to_plus_plan,
     update_realm_billing_modality,
-    update_realm_sponsorship_status,
 )
 from corporate.models import (
     Customer,
@@ -3756,7 +3753,10 @@ class StripeTest(StripeTestCase):
             users_to_create=1, create_stripe_customer=False, create_plan=False
         )
         # To create local Customer object but no Stripe customer.
-        attach_discount_to_realm(realm, Decimal(20), acting_user=self.example_user("iago"))
+        billing_session = RealmBillingSession(
+            user=self.example_user("iago"), realm=realm, support_session=True
+        )
+        billing_session.attach_discount_to_customer(Decimal(20))
         rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, False, False))
 
         realm, _, _ = create_realm(
@@ -5108,11 +5108,12 @@ class TestRemoteServerBillingSession(StripeTestCase):
 
 class TestSupportBillingHelpers(StripeTestCase):
     def test_get_discount_for_realm(self) -> None:
-        iago = self.example_user("iago")
+        support_admin = self.example_user("iago")
         user = self.example_user("hamlet")
         self.assertEqual(get_discount_for_realm(user.realm), None)
 
-        attach_discount_to_realm(user.realm, Decimal(85), acting_user=iago)
+        billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+        billing_session.attach_discount_to_customer(Decimal(85))
         self.assertEqual(get_discount_for_realm(user.realm), 85)
 
     @mock_stripe()
@@ -5120,7 +5121,8 @@ class TestSupportBillingHelpers(StripeTestCase):
         # Attach discount before Stripe customer exists
         support_admin = self.example_user("iago")
         user = self.example_user("hamlet")
-        attach_discount_to_realm(user.realm, Decimal(85), acting_user=support_admin)
+        billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+        billing_session.attach_discount_to_customer(Decimal(85))
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
         ).last()
@@ -5149,7 +5151,8 @@ class TestSupportBillingHelpers(StripeTestCase):
         # Attach discount to existing Stripe customer
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
-        attach_discount_to_realm(user.realm, Decimal(25), acting_user=support_admin)
+        billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+        billing_session.attach_discount_to_customer(Decimal(25))
         with time_machine.travel(self.now, tick=False):
             self.add_card_and_upgrade(
                 user, license_management="automatic", billing_modality="charge_automatically"
@@ -5165,7 +5168,8 @@ class TestSupportBillingHelpers(StripeTestCase):
         )
         plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
 
-        attach_discount_to_realm(user.realm, Decimal(50), acting_user=support_admin)
+        billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+        billing_session.attach_discount_to_customer(Decimal(50))
         plan.refresh_from_db()
         self.assertEqual(plan.price_per_license, 4000)
         self.assertEqual(plan.discount, 50)
@@ -5192,7 +5196,8 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
 
         support_admin = self.example_user("iago")
-        approve_realm_sponsorship(realm, acting_user=support_admin)
+        billing_session = RealmBillingSession(user=support_admin, realm=realm, support_session=True)
+        billing_session.approve_sponsorship()
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
 
         expected_message = (
@@ -5222,7 +5227,8 @@ class TestSupportBillingHelpers(StripeTestCase):
     def test_update_realm_sponsorship_status(self) -> None:
         lear = get_realm("lear")
         iago = self.example_user("iago")
-        update_realm_sponsorship_status(lear, True, acting_user=iago)
+        billing_session = RealmBillingSession(user=iago, realm=lear, support_session=True)
+        billing_session.update_customer_sponsorship_status(True)
         customer = get_customer_by_realm(realm=lear)
         assert customer is not None
         self.assertTrue(customer.sponsorship_pending)

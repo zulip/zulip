@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Optional
 from unittest import mock
 
@@ -7,8 +8,7 @@ import time_machine
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import add_months
-from corporate.lib.support import update_realm_sponsorship_status
+from corporate.lib.stripe import RealmBillingSession, add_months
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
@@ -533,14 +533,15 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(result["Location"], "/login/")
 
         iago = self.example_user("iago")
-        self.login("iago")
+        self.login_user(iago)
 
-        with mock.patch("analytics.views.support.attach_discount_to_realm") as m:
-            result = self.client_post(
-                "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
-            )
-            m.assert_called_once_with(get_realm("lear"), 25, acting_user=iago)
-            self.assert_in_success_response(["Discount of lear changed to 25% from 0%"], result)
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
+        )
+        self.assert_in_success_response(["Discount for lear changed to 25% from 0%"], result)
+        customer = get_customer_by_realm(lear_realm)
+        assert customer is not None
+        self.assertEqual(customer.default_discount, Decimal(25))
 
     def test_change_sponsorship_status(self) -> None:
         lear_realm = get_realm("lear")
@@ -577,7 +578,10 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_approve_sponsorship(self) -> None:
         support_admin = self.example_user("iago")
         lear_realm = get_realm("lear")
-        update_realm_sponsorship_status(lear_realm, True, acting_user=support_admin)
+        billing_session = RealmBillingSession(
+            user=support_admin, realm=lear_realm, support_session=True
+        )
+        billing_session.update_customer_sponsorship_status(True)
         king_user = self.lear_user("king")
         king_user.role = UserProfile.ROLE_REALM_OWNER
         king_user.save()
