@@ -248,13 +248,13 @@ class CustomerPlan(models.Model):
     )
     end_date = models.DateTimeField(null=True)
 
-    DONE = 1
-    STARTED = 2
-    INITIAL_INVOICE_TO_BE_SENT = 3
+    INVOICING_STATUS_DONE = 1
+    INVOICING_STATUS_STARTED = 2
+    INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT = 3
     # This status field helps ensure any errors encountered during the
     # invoicing process do not leave our invoicing system in a broken
     # state.
-    invoicing_status = models.SmallIntegerField(default=DONE)
+    invoicing_status = models.SmallIntegerField(default=INVOICING_STATUS_DONE)
 
     TIER_CLOUD_STANDARD = 1
     TIER_CLOUD_PLUS = 2
