@@ -57,7 +57,7 @@ def authenticated_remote_realm_management_endpoint(
         remote_realm = get_remote_realm_from_session(
             request, realm_uuid=realm_uuid, server_uuid=server_uuid
         )
-        return view_func(request, remote_realm, *args, **kwargs)
+        return view_func(request, remote_realm)
 
     return _wrapped_view_func
 
@@ -80,6 +80,6 @@ def authenticated_remote_server_management_endpoint(
             raise TypeError("server_uuid must be a string")
 
         remote_server = get_remote_server_from_session(request, server_uuid=server_uuid)
-        return view_func(request, remote_server, *args, **kwargs)
+        return view_func(request, remote_server)
 
     return _wrapped_view_func
