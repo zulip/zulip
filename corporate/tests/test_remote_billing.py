@@ -1,12 +1,20 @@
+import datetime
 from typing import TYPE_CHECKING, Optional
 from unittest import mock
 
 import responses
+import time_machine
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
-from corporate.lib.remote_billing_util import RemoteBillingIdentityDict, RemoteBillingUserDict
+from corporate.lib.remote_billing_util import (
+    REMOTE_BILLING_SESSION_VALIDITY_SECONDS,
+    RemoteBillingIdentityDict,
+    RemoteBillingUserDict,
+)
 from zerver.lib.remote_server import send_realms_only_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserProfile
 from zilencer.models import RemoteRealm
 
@@ -19,16 +27,21 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
     def execute_remote_billing_authentication_flow(
         self, user: UserProfile, next_page: Optional[str] = None
     ) -> "TestHttpResponse":
+        now = timezone_now()
+
         self_hosted_billing_url = "/self-hosted-billing/"
         if next_page is not None:
             self_hosted_billing_url += f"?next_page={next_page}"
-        result = self.client_get(self_hosted_billing_url)
+        with time_machine.travel(now, tick=False):
+            result = self.client_get(self_hosted_billing_url)
+
         self.assertEqual(result.status_code, 302)
         self.assertIn("http://selfhosting.testserver/remote-billing-login/", result["Location"])
 
         # We've received a redirect to an URL that will grant us an authenticated
         # session for remote billing.
-        result = self.client_get(result["Location"], subdomain="selfhosting")
+        with time_machine.travel(now, tick=False):
+            result = self.client_get(result["Location"], subdomain="selfhosting")
         # When successful, we receive a final redirect.
         self.assertEqual(result.status_code, 302)
 
@@ -41,6 +54,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             ),
             remote_server_uuid=str(self.server.uuid),
             remote_realm_uuid=str(user.realm.uuid),
+            authenticated_at=datetime_to_timestamp(now),
             next_page=next_page,
         )
         self.assertEqual(
@@ -108,6 +122,43 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         result = self.client_get(result["Location"], subdomain="selfhosting")
         self.assert_in_success_response(["Your remote user info:"], result)
         self.assert_in_success_response([desdemona.delivery_email], result)
+
+    @responses.activate
+    def test_remote_billing_authentication_flow_expired_session(self) -> None:
+        now = timezone_now()
+
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+
+        self.add_mock_response()
+        send_realms_only_to_push_bouncer()
+
+        with time_machine.travel(now, tick=False):
+            result = self.execute_remote_billing_authentication_flow(desdemona)
+
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+
+        final_url = result["Location"]
+
+        # Go to the URL we're redirected to after authentication and make sure
+        # we're granted access.
+        with time_machine.travel(
+            now + datetime.timedelta(seconds=1),
+            tick=False,
+        ):
+            result = self.client_get(final_url, subdomain="selfhosting")
+        self.assert_in_success_response(["Your remote user info:"], result)
+        self.assert_in_success_response([desdemona.delivery_email], result)
+
+        # Now go there again, simulating doing this after the session has expired.
+        # We should be denied access.
+        with time_machine.travel(
+            now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 1),
+            tick=False,
+        ):
+            result = self.client_get(final_url, subdomain="selfhosting")
+        self.assert_json_error(result, "User not authenticated")
 
     @responses.activate
     def test_remote_billing_authentication_flow_to_sponsorship_page(self) -> None:
