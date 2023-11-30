@@ -60,7 +60,6 @@ from corporate.lib.stripe import (
     get_latest_seat_count,
     get_plan_renewal_or_end_date,
     get_price_per_license,
-    invoice_plan,
     invoice_plans_as_needed,
     is_free_trial_offer_enabled,
     is_realm_on_free_trial,
@@ -1349,7 +1348,7 @@ class StripeTest(StripeTestCase):
             ]:
                 self.assert_in_response(substring, response)
 
-            with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_month)
             mocked.assert_not_called()
             mocked.reset_mock()
@@ -2596,7 +2595,7 @@ class StripeTest(StripeTestCase):
         for key, value in annual_plan_invoice_item_params.items():
             self.assertEqual(invoice_item[key], value)
 
-        with patch("corporate.lib.stripe.invoice_plan") as m:
+        with patch("corporate.lib.stripe.BillingSession.invoice_plan") as m:
             invoice_plans_as_needed(add_months(self.now, 2))
             m.assert_not_called()
 
@@ -3018,12 +3017,12 @@ class StripeTest(StripeTestCase):
             self.assertEqual("/plans/", response["Location"])
 
             # The extra users added in the final month are not charged
-            with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_month)
             mocked.assert_not_called()
 
             # The plan is not renewed after an year
-            with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_year)
             mocked.assert_not_called()
 
@@ -3128,12 +3127,12 @@ class StripeTest(StripeTestCase):
             self.assertEqual("/plans/", response["Location"])
 
             # The extra users added in the final month are not charged
-            with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_month)
             mocked.assert_not_called()
 
             # The plan is not renewed after an year
-            with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_year)
             mocked.assert_not_called()
 
@@ -3567,12 +3566,12 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/plans/", response["Location"])
 
         # The extra users added in the final month are not charged
-        with patch("corporate.lib.stripe.invoice_plan") as mocked:
+        with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
             invoice_plans_as_needed(self.next_month)
         mocked.assert_not_called()
 
         # The plan is not renewed after an year
-        with patch("corporate.lib.stripe.invoice_plan") as mocked:
+        with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
             invoice_plans_as_needed(self.next_year)
         mocked.assert_not_called()
 
@@ -4830,27 +4829,32 @@ class LicenseLedgerTest(StripeTestCase):
 
 class InvoiceTest(StripeTestCase):
     def test_invoicing_status_is_started(self) -> None:
+        # local_upgrade uses hamlet as user, therefore realm is zulip.
         self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
         plan.save(update_fields=["invoicing_status"])
         with self.assertRaises(NotImplementedError):
-            invoice_plan(assert_is_not_none(CustomerPlan.objects.first()), self.now)
+            billing_session = RealmBillingSession(realm=get_realm("zulip"))
+            billing_session.invoice_plan(assert_is_not_none(CustomerPlan.objects.first()), self.now)
 
     def test_invoice_plan_without_stripe_customer(self) -> None:
+        # local_upgrade uses hamlet as user, therefore realm is zulip.
+        realm = get_realm("zulip")
         self.local_upgrade(
             self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, False
         )
-        plan = get_current_plan_by_realm(get_realm("zulip"))
+        plan = get_current_plan_by_realm(realm)
         assert plan is not None
         plan.customer.stripe_customer_id = None
         plan.customer.save(update_fields=["stripe_customer_id"])
         with self.assertRaises(BillingError) as context:
-            invoice_plan(plan, timezone_now())
+            billing_session = RealmBillingSession(realm=realm)
+            billing_session.invoice_plan(plan, timezone_now())
         self.assertRegex(
             context.exception.error_description,
-            "Realm zulip has a paid plan without a Stripe customer",
+            "Customer has a paid plan without a Stripe customer ID:",
         )
 
     @mock_stripe()
@@ -4876,7 +4880,8 @@ class InvoiceTest(StripeTestCase):
             update_license_ledger_if_needed(get_realm("zulip"), self.now + timedelta(days=500))
         plan = CustomerPlan.objects.first()
         assert plan is not None
-        invoice_plan(plan, self.now + timedelta(days=400))
+        billing_session = RealmBillingSession(realm=user.realm)
+        billing_session.invoice_plan(plan, self.now + timedelta(days=400))
         stripe_customer_id = plan.customer.stripe_customer_id
         assert stripe_customer_id is not None
         [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
@@ -4931,7 +4936,8 @@ class InvoiceTest(StripeTestCase):
         plan.fixed_price = 100
         plan.price_per_license = 0
         plan.save(update_fields=["fixed_price", "price_per_license"])
-        invoice_plan(plan, self.next_year)
+        billing_session = RealmBillingSession(realm=user.realm)
+        billing_session.invoice_plan(plan, self.next_year)
         stripe_customer_id = plan.customer.stripe_customer_id
         assert stripe_customer_id is not None
         [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
@@ -4951,6 +4957,7 @@ class InvoiceTest(StripeTestCase):
             self.assertEqual(item.get(key), value)
 
     def test_no_invoice_needed(self) -> None:
+        # local_upgrade uses hamlet as user, therefore realm is zulip.
         with time_machine.travel(self.now, tick=False):
             self.local_upgrade(
                 self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
@@ -4959,7 +4966,9 @@ class InvoiceTest(StripeTestCase):
         assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
         # Test this doesn't make any calls to stripe.Invoice or stripe.InvoiceItem
-        invoice_plan(plan, self.next_month)
+        assert plan.customer.realm is not None
+        billing_session = RealmBillingSession(realm=plan.customer.realm)
+        billing_session.invoice_plan(plan, self.next_month)
         plan = CustomerPlan.objects.first()
         # Test that we still update next_invoice_date
         assert plan is not None
@@ -4974,7 +4983,7 @@ class InvoiceTest(StripeTestCase):
         assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
         # Test nothing needed to be done
-        with patch("corporate.lib.stripe.invoice_plan") as mocked:
+        with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
             invoice_plans_as_needed(self.next_month - timedelta(days=1))
         mocked.assert_not_called()
         # Test something needing to be done
