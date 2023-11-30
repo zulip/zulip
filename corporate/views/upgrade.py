@@ -24,7 +24,6 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import UserProfile
-from zilencer.models import RemoteRealm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -106,7 +105,7 @@ def upgrade_page(
 @typed_endpoint
 def remote_realm_upgrade_page(
     request: HttpRequest,
-    remote_realm: RemoteRealm,
+    billing_session: RemoteRealmBillingSession,
     *,
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage
@@ -114,7 +113,6 @@ def remote_realm_upgrade_page(
         manual_license_management=manual_license_management,
         tier=CustomerPlan.TIER_CLOUD_STANDARD,
     )
-    billing_session = RemoteRealmBillingSession(remote_realm)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
 
     if redirect_url:
