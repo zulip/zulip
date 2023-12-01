@@ -76,8 +76,6 @@ def remote_realm_event_status_page(
     stripe_payment_intent_id: str = "",
 ) -> HttpResponse:  # nocoverage
     context = {
-        "realm_uuid": realm_uuid,
-        "server_uuid": server_uuid,
         "stripe_session_id": stripe_session_id,
         "stripe_payment_intent_id": stripe_payment_intent_id,
     }
