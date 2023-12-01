@@ -7,7 +7,7 @@ from django.urls import reverse
 
 from corporate.lib.stripe import RealmBillingSession
 from corporate.models import CustomerPlan, get_customer_by_realm
-from zerver.models import Realm, UserProfile, get_realm
+from zerver.models import Realm, get_realm
 
 
 def get_support_url(realm: Realm) -> str:
@@ -24,13 +24,6 @@ def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
     if customer is not None:
         return customer.default_discount
     return None
-
-
-def update_realm_billing_modality(
-    realm: Realm, charge_automatically: bool, *, acting_user: UserProfile
-) -> None:
-    billing_session = RealmBillingSession(acting_user, realm, support_session=True)
-    billing_session.update_billing_modality_of_current_plan(charge_automatically)
 
 
 def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:

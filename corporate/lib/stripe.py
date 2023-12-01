@@ -526,12 +526,14 @@ class SupportType(Enum):
     approve_sponsorship = 1
     update_sponsorship_status = 2
     attach_discount = 3
+    update_billing_modality = 4
 
 
 class SupportViewRequest(TypedDict, total=False):
     support_type: SupportType
     sponsorship_status: Optional[bool]
     discount: Optional[Decimal]
+    billing_modality: Optional[str]
 
 
 class AuditLogEventType(Enum):
@@ -930,7 +932,7 @@ class BillingSession(ABC):
             )
         return success_message
 
-    def update_billing_modality_of_current_plan(self, charge_automatically: bool) -> None:
+    def update_billing_modality_of_current_plan(self, charge_automatically: bool) -> str:
         customer = self.get_customer()
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
@@ -942,6 +944,11 @@ class BillingSession(ABC):
                     event_time=timezone_now(),
                     extra_data={"charge_automatically": charge_automatically},
                 )
+        if charge_automatically:
+            success_message = f"Billing collection method of {self.billing_entity_display_name} updated to charge automatically."
+        else:
+            success_message = f"Billing collection method of {self.billing_entity_display_name} updated to send invoice."
+        return success_message
 
     def setup_upgrade_payment_intent_and_charge(
         self,
@@ -2023,6 +2030,11 @@ class BillingSession(ABC):
             assert support_request["discount"] is not None
             new_discount = support_request["discount"]
             success_message = self.attach_discount_to_customer(new_discount)
+        elif support_type == SupportType.update_billing_modality:
+            assert support_request["billing_modality"] is not None
+            assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
+            charge_automatically = support_request["billing_modality"] == "charge_automatically"
+            success_message = self.update_billing_modality_of_current_plan(charge_automatically)
 
         return success_message
 
