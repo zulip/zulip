@@ -27,6 +27,7 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -1017,6 +1018,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         if "zerver_usergroup" not in data:
             set_default_for_realm_permission_group_settings(realm)
+
+    enqueue_register_realm_with_push_bouncer_if_needed(realm)
 
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server

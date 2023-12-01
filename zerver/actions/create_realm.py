@@ -14,6 +14,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
 )
 from zerver.lib.bulk_create import create_users
+from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import ensure_stream, get_signups_stream
 from zerver.lib.user_groups import (
@@ -264,6 +265,8 @@ def do_create_realm(
                 for backend_name in all_implemented_backend_names()
             ]
         )
+
+    enqueue_register_realm_with_push_bouncer_if_needed(realm)
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(
