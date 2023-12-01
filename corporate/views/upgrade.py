@@ -6,7 +6,10 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from pydantic import Json
 
-from corporate.lib.decorator import authenticated_remote_realm_management_endpoint
+from corporate.lib.decorator import (
+    authenticated_remote_realm_management_endpoint,
+    authenticated_remote_server_management_endpoint,
+)
 from corporate.lib.stripe import (
     VALID_BILLING_MODALITY_VALUES,
     VALID_BILLING_SCHEDULE_VALUES,
@@ -15,6 +18,7 @@ from corporate.lib.stripe import (
     InitialUpgradeRequest,
     RealmBillingSession,
     RemoteRealmBillingSession,
+    RemoteServerBillingSession,
     UpgradeRequest,
 )
 from corporate.models import CustomerPlan
@@ -106,6 +110,27 @@ def upgrade_page(
 def remote_realm_upgrade_page(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
+    *,
+    manual_license_management: Json[bool] = False,
+) -> HttpResponse:  # nocoverage
+    initial_upgrade_request = InitialUpgradeRequest(
+        manual_license_management=manual_license_management,
+        tier=CustomerPlan.TIER_CLOUD_STANDARD,
+    )
+    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+
+    if redirect_url:
+        return HttpResponseRedirect(redirect_url)
+
+    response = render(request, "corporate/upgrade.html", context=context)
+    return response
+
+
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def remote_server_upgrade_page(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
     *,
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage

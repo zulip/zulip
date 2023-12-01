@@ -3,8 +3,15 @@ import logging
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
 
-from corporate.lib.decorator import authenticated_remote_realm_management_endpoint
-from corporate.lib.stripe import RealmBillingSession, RemoteRealmBillingSession
+from corporate.lib.decorator import (
+    authenticated_remote_realm_management_endpoint,
+    authenticated_remote_server_management_endpoint,
+)
+from corporate.lib.stripe import (
+    RealmBillingSession,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+)
 from corporate.models import Session
 from zerver.decorator import require_billing_access, require_organization_member
 from zerver.lib.response import json_success
@@ -57,6 +64,23 @@ def start_card_update_stripe_session_for_realm_upgrade(
 def start_card_update_stripe_session_for_remote_realm_upgrade(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
+    *,
+    manual_license_management: Json[bool] = False,
+) -> HttpResponse:  # nocoverage
+    session_data = billing_session.get_card_update_session_data_for_upgrade(
+        manual_license_management
+    )
+    return json_success(
+        request,
+        data=session_data,
+    )
+
+
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def start_card_update_stripe_session_for_remote_server_upgrade(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
     *,
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage

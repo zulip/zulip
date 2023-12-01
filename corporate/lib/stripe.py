@@ -2594,12 +2594,12 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @override
     @property
     def billing_session_url(self) -> str:
-        return "TBD"
+        return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/server/{self.remote_server.uuid}"
 
     @override
     @property
     def billing_base_url(self) -> str:
-        return f"/server/${self.remote_server.uuid}"
+        return f"/server/{self.remote_server.uuid}"
 
     @override
     def support_url(self) -> str:

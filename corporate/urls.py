@@ -10,6 +10,7 @@ from corporate.views.event_status import (
     event_status_page,
     remote_realm_event_status,
     remote_realm_event_status_page,
+    remote_server_event_status,
     remote_server_event_status_page,
 )
 from corporate.views.portico import (
@@ -33,6 +34,7 @@ from corporate.views.session import (
     start_card_update_stripe_session,
     start_card_update_stripe_session_for_realm_upgrade,
     start_card_update_stripe_session_for_remote_realm_upgrade,
+    start_card_update_stripe_session_for_remote_server_upgrade,
 )
 from corporate.views.sponsorship import (
     remote_realm_sponsorship,
@@ -43,7 +45,12 @@ from corporate.views.sponsorship import (
     sponsorship_page,
 )
 from corporate.views.support import support_request
-from corporate.views.upgrade import remote_realm_upgrade_page, upgrade, upgrade_page
+from corporate.views.upgrade import (
+    remote_realm_upgrade_page,
+    remote_server_upgrade_page,
+    upgrade,
+    upgrade_page,
+)
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
@@ -181,6 +188,11 @@ urlpatterns += [
     path("server/<server_uuid>/", remote_billing_page_server, name="remote_billing_page_server"),
     path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
     path(
+        "server/<server_uuid>/upgrade",
+        remote_server_upgrade_page,
+        name="remote_server_upgrade_page",
+    ),
+    path(
         "realm/<realm_uuid>/sponsorship",
         remote_realm_sponsorship_page,
         name="remote_realm_sponsorship_page",
@@ -212,7 +224,12 @@ urlpatterns += [
         "json/realm/<realm_uuid>/upgrade/session/start_card_update_session",
         start_card_update_stripe_session_for_remote_realm_upgrade,
     ),
+    path(
+        "json/server/<server_uuid>/upgrade/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_server_upgrade,
+    ),
     path("json/realm/<realm_uuid>/billing/event/status", remote_realm_event_status),
+    path("json/server/<server_uuid>/billing/event/status", remote_server_event_status),
 ]
 
 urlpatterns += [
