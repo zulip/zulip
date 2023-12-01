@@ -5,6 +5,8 @@ import * as loading from "../loading";
 
 import * as helpers from "./helpers";
 
+const billing_base_url = $("#data").attr("data-billing-base-url")!;
+
 const stripe_response_schema = z.object({
     session: z.object({
         type: z.string(),
@@ -45,6 +47,7 @@ function handle_session_complete_event(session: StripeSession): void {
         case "card_update_from_upgrade_page":
             redirect_to = helpers.get_upgrade_page_url(
                 session.is_manual_license_management_upgrade_session,
+                billing_base_url,
             );
             break;
     }
@@ -52,7 +55,7 @@ function handle_session_complete_event(session: StripeSession): void {
 }
 
 async function stripe_checkout_session_status_check(stripe_session_id: string): Promise<boolean> {
-    const response: unknown = await $.get(helpers.get_event_status_url(), {
+    const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
         stripe_session_id,
     });
     const response_data = stripe_response_schema.parse(response);
