@@ -7,6 +7,7 @@ import render_selected_stream_title from "../templates/stream_settings/selected_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dropdown_widget from "./dropdown_widget";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -24,8 +25,10 @@ export function set_right_panel_title(sub) {
     if (settings_data.using_dark_theme()) {
         title_icon_color = "#dddeee";
     }
+
+    const preview_url = hash_util.by_stream_url(sub.stream_id);
     $("#subscription_overlay .stream-info-title").html(
-        render_selected_stream_title({sub, title_icon_color}),
+        render_selected_stream_title({sub, title_icon_color, preview_url}),
     );
 }
 
