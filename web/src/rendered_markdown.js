@@ -134,16 +134,27 @@ export const update_elements = ($content) => {
         }
 
         if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
-            // If it's a mention of a specific user, edit the
-            // mention text to show the user's current name,
-            // assuming that you're not searching for text
-            // inside the highlight.
+            // If it's a mention of a specific user, edit the mention
+            // text to show the user's current name, assuming that
+            // you're not searching for text inside the highlight.
             const person = people.maybe_get_user_by_id(user_id, true);
-            if (person !== undefined) {
+            if (person === undefined || person.is_inaccessible_user) {
                 // Note that person might be undefined in some
-                // unpleasant corner cases involving data import.
-                set_name_in_mention_element(this, person.full_name, user_id);
+                // unpleasant corner cases involving data import
+                // or when guest users cannot access all users in
+                // the organization.
+                //
+                // In these cases, the best we can do is leave the
+                // existing name in the existing mention pill
+                // HTML. Clicking on the pill will show the the
+                // "Unknown user" popover.
+                if (person === undefined) {
+                    people.add_inaccessible_user(user_id);
+                }
+                return;
             }
+
+            set_name_in_mention_element(this, person.full_name, user_id);
         }
     });
 

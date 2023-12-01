@@ -49,6 +49,8 @@ const polonius = {
     full_name: "Polonius",
     is_guest: true,
 };
+const inaccessible_user_id = 33;
+const inaccessible_user = people.add_inaccessible_user(inaccessible_user_id);
 people.init();
 people.add_active_user(iago);
 people.add_active_user(cordelia);
@@ -228,6 +230,29 @@ run_test("user-mention without guest indicator", () => {
     page_params.realm_enable_guest_user_indicator = false;
     rm.update_elements($content);
     assert.equal($polonius.text(), `@${polonius.full_name}`);
+});
+
+run_test("user-mention of inaccessible users", () => {
+    const $content = get_content_element();
+    const $othello = $.create("user-mention(othello)");
+    $othello.set_find_results(".highlight", false);
+    $othello.attr("data-user-id", inaccessible_user_id);
+    $othello.text("@Othello");
+    $content.set_find_results(".user-mention", $array([$othello]));
+
+    rm.update_elements($content);
+    assert.equal($othello.text(), "@Othello");
+    assert.notEqual($othello.text(), `@${inaccessible_user.full_name}`);
+
+    // Test inaccessible user id with no user object.
+    const $cordelia = $.create("user-mention(cordelia)");
+    $cordelia.set_find_results(".highlight", false);
+    $cordelia.attr("data-user-id", 40);
+    $cordelia.text("@Cordelia");
+    $content.set_find_results(".user-mention", $array([$cordelia]));
+
+    rm.update_elements($content);
+    assert.equal($cordelia.text(), "@Cordelia");
 });
 
 run_test("user-mention (stream wildcard)", () => {
