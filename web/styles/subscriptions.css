@@ -56,7 +56,7 @@
 .sub_setting_checkbox {
     display: flex;
 
-    & .control-label-disabled label {
+    & .control-label-disabled label.checkbox + label {
         cursor: not-allowed;
     }
 }
