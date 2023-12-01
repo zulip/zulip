@@ -47,7 +47,10 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         const recipient_emails = [];
         if (scheduled_msg.to) {
             for (const recipient_id of scheduled_msg.to) {
-                recipient_emails.push(people.get_by_user_id(recipient_id).email);
+                const recipient_user = people.get_by_user_id(recipient_id);
+                if (!recipient_user.is_inaccessible_user) {
+                    recipient_emails.push(recipient_user.email);
+                }
             }
         }
         compose_args = {

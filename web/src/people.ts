@@ -421,11 +421,7 @@ export function get_full_names_for_poll_option(user_ids: number[]): string {
 }
 
 export function get_display_full_name(user_id: number): string {
-    const person = maybe_get_user_by_id(user_id);
-    if (!person) {
-        blueslip.error("Unknown user id", {user_id});
-        return "?";
-    }
+    const person = get_user_by_id_assert_valid(user_id);
 
     if (muted_users.is_user_muted(user_id)) {
         if (should_add_guest_user_indicator(user_id)) {
