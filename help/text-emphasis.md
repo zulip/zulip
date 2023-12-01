@@ -2,23 +2,9 @@
 
 {!emphasis-intro.md!}
 
-## Examples
-
-{!emphasis-examples.md!}
-
 ## Making text bold
 
 {start_tabs}
-
-{tab|via-markdown}
-
-{!start-composing.md!}
-
-1. Surround your text with double asterisks (`**`) to make it bold.
-
-!!! keyboard_tip ""
-
-    You can also use <kbd>Ctrl</kbd> + <kbd>B</kbd> to insert bold formatting.
 
 {tab|via-compose-box-buttons}
 
@@ -26,8 +12,18 @@
 
 1. Select the text you want to format.
 
-1. Click the **Bold** (<i class="fa fa-bold"></i>) icon at the
+1. Click the **Bold** (<i class="zulip-icon zulip-icon-bold"></i>) icon at the
    bottom of the compose box.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Ctrl</kbd> + <kbd>B</kbd> to insert bold formatting.
+
+{tab|via-markdown}
+
+{!start-composing.md!}
+
+1. To make text bold, use double asterisks (`**`) around the text: `**text**`.
 
 !!! keyboard_tip ""
 
@@ -39,24 +35,24 @@
 
 {start_tabs}
 
-{tab|via-markdown}
-
-{!start-composing.md!}
-
-1. Surround your text with single asterisks (`*`) to make it italic.
-
-!!! keyboard_tip ""
-
-    You can also use <kbd>Ctrl</kbd> + <kbd>I</kbd> to insert italic formatting.
-
 {tab|via-compose-box-buttons}
 
 {!start-composing.md!}
 
 1. Select the text you want to format.
 
-1. Click the **Italic** (<i class="fa fa-italic"></i>) icon at the
-   bottom of the compose box.
+1. Click the **Italic** (<i class="zulip-icon zulip-icon-italic"></i>) icon at
+   the bottom of the compose box.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Ctrl</kbd> + <kbd>I</kbd> to insert italic formatting.
+
+{tab|via-markdown}
+
+{!start-composing.md!}
+
+1. To make text italic, use single asterisks (`*`) around the text: `*text*`.
 
 !!! keyboard_tip ""
 
@@ -68,11 +64,28 @@
 
 {start_tabs}
 
+{tab|via-compose-box-buttons}
+
 {!start-composing.md!}
 
-1. Surround your text with two tildes (`~~`) to apply strikethrough formatting.
+1. Select the text you want to format.
+
+1. Click the **Strikethrough**
+   (<i class="zulip-icon zulip-icon-strikethrough"></i>) icon at the
+   bottom of the compose box.
+
+{tab|via-markdown}
+
+{!start-composing.md!}
+
+1. To apply strikethrough formatting, use two tildes (`~~`) around the text:
+   `~~text~~`.
 
 {end_tabs}
+
+## Examples
+
+{!emphasis-examples.md!}
 
 ## Related articles
 
