@@ -20,13 +20,6 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
-**Feature level 231**
-
-* [`GET /server_settings`](/api/get-server-settings): Renamed
-`push_notifications_enabled` to `push_notifications_configured`
- as it doesn't actually check if push notifications are working,
- just whether there is configuration for them.
-
 **Feature level 230**
 
 * [`GET /events`](/api/get-events): Added `has_trigger` field in

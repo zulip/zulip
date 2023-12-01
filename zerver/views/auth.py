@@ -1109,7 +1109,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         zulip_version=ZULIP_VERSION,
         zulip_merge_base=ZULIP_MERGE_BASE,
         zulip_feature_level=API_FEATURE_LEVEL,
-        push_notifications_configured=push_notifications_configured(),
+        push_notifications_enabled=push_notifications_configured(),
         is_incompatible=check_server_incompatibility(request),
     )
     context = zulip_default_context(request)
