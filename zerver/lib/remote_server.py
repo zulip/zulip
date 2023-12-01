@@ -14,6 +14,7 @@ from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.queue import queue_json_publish
 from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
 
 
@@ -299,3 +300,14 @@ def send_realms_only_to_push_bouncer() -> None:
     # We don't catch JsonableError here, because we want it to propagate further
     # to either explicitly, loudly fail or be error-handled by the caller.
     send_to_push_bouncer("POST", "server/analytics", request)
+
+
+def enqueue_register_realm_with_push_bouncer_if_needed(realm: Realm) -> None:
+    from zerver.lib.push_notifications import uses_notification_bouncer
+
+    if uses_notification_bouncer():
+        # Let the bouncer know about the new realm.
+        # We do this in a queue worker to avoid messing with the realm
+        # creation process due to network issues or latency.
+        event = {"type": "register_realm_with_push_bouncer", "realm_id": realm.id}
+        queue_json_publish("deferred_work", event)

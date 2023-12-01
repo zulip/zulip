@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import re
 from datetime import timedelta
@@ -7,6 +8,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -1060,6 +1062,21 @@ class RealmTest(ZulipTestCase):
             SystemGroups.NOBODY,
         ]
         self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    def test_do_create_realm_notify_bouncer(self) -> None:
+        with mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m:
+            realm = do_create_realm("realm_string_id", "realm name")
+
+        self.assertEqual(realm.string_id, "realm_string_id")
+        self.assertEqual(m.call_count, 1)
+
+        calls_args_for_assert = m.call_args_list[0][0]
+        self.assertEqual(calls_args_for_assert[0], "POST")
+        self.assertEqual(calls_args_for_assert[1], "server/analytics")
+        self.assertIn(
+            realm.id, [realm["id"] for realm in json.loads(m.call_args_list[0][0][2]["realms"])]
+        )
 
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")
