@@ -6,8 +6,8 @@ import render_hotspot_icon from "../templates/hotspot_icon.hbs";
 import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
 
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as message_viewport from "./message_viewport";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 
@@ -104,19 +104,7 @@ function compute_placement($elt, popover_height, popover_width, prefer_vertical_
 }
 
 export function post_hotspot_as_read(hotspot_name) {
-    channel.post({
-        url: "/json/users/me/hotspots",
-        data: {hotspot: hotspot_name},
-        error(err) {
-            if (err.readyState !== 0) {
-                blueslip.error("Failed to fetch hotspots", {
-                    readyState: err.readyState,
-                    status: err.status,
-                    body: err.responseText,
-                });
-            }
-        },
-    });
+    onboarding_steps.post_onboarding_step_as_read(hotspot_name);
 }
 
 function place_icon(hotspot) {

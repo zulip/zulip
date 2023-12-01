@@ -43,7 +43,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
-from zerver.actions.hotspots import do_mark_hotspot_as_read
+from zerver.actions.hotspots import do_mark_onboarding_step_as_read
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -3048,12 +3048,12 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, state_change_expected=False)
         check_realm_deactivated("events[0]", events[0])
 
-    def test_do_mark_hotspot_as_read(self) -> None:
+    def test_do_mark_onboarding_step_as_read(self) -> None:
         self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
         self.user_profile.save(update_fields=["tutorial_status"])
 
         events = self.verify_action(
-            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_streams")
+            lambda: do_mark_onboarding_step_as_read(self.user_profile, "intro_streams")
         )
         check_hotspots("events[0]", events[0])
 

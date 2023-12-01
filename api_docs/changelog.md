@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 233**
+
+* `POST /users/me/onboarding_steps`: Added a new endpoint that
+  deprecates the `/users/me/hotspots` endpoint. Added support for
+  displaying one-time notices in addition to existing hotspots.
+  This is now used as a common endpoint to mark both types of
+  onboarding steps, i.e., 'hotspot' and 'one_time_notice'.
+  There is no compatibility support for `/users/me/hotspots` as
+  no client other than web app has this feature currently.
+
 **Feature level 232**
 
 * [`POST /register`](/api/register-queue): Added a new
