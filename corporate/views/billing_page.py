@@ -5,22 +5,34 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from corporate.lib.stripe import RealmBillingSession, UpdatePlanRequest
+from corporate.lib.decorator import (
+    authenticated_remote_realm_management_endpoint,
+    authenticated_remote_server_management_endpoint,
+)
+from corporate.lib.stripe import (
+    RealmBillingSession,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+    UpdatePlanRequest,
+)
 from corporate.models import CustomerPlan, get_customer_by_realm
 from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_int, check_int_in, check_string
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.validator import check_int, check_int_in
 from zerver.models import UserProfile
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 billing_logger = logging.getLogger("corporate.stripe")
 
 
 @zulip_login_required
-@has_request_variables
+@typed_endpoint
 def billing_page(
     request: HttpRequest,
-    success_message: str = REQ(default="", str_validator=check_string),
+    *,
+    success_message: str = "",
 ) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
@@ -58,6 +70,105 @@ def billing_page(
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse("upgrade_page"))
+
+    main_context = billing_session.get_billing_page_context()
+    if main_context:
+        context.update(main_context)
+        context["success_message"] = success_message
+
+    return render(request, "corporate/billing.html", context=context)
+
+
+@authenticated_remote_realm_management_endpoint
+@typed_endpoint
+def remote_realm_billing_page(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    *,
+    success_message: str = "",
+) -> HttpResponse:  # nocoverage
+    context: Dict[str, Any] = {
+        # We wouldn't be here if user didn't have access.
+        "admin_access": billing_session.has_billing_access(),
+        "has_active_plan": False,
+        "org_name": billing_session.remote_realm.name,
+    }
+
+    if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:
+        return HttpResponseRedirect(reverse("remote_realm_sponsorship_page"))
+
+    customer = billing_session.get_customer()
+    if customer is not None and customer.sponsorship_pending:
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan
+        if not billing_session.on_paid_plan():
+            return HttpResponseRedirect(reverse("remote_realm_sponsorship_page"))
+        # If the realm is on a paid plan, show the sponsorship pending message
+        context["sponsorship_pending"] = True
+
+    if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED:
+        return HttpResponseRedirect(reverse("remote_realm_plans_page"))
+
+    if customer is None:
+        return HttpResponseRedirect(reverse("remote_realm_upgrade_page"))
+
+    if not CustomerPlan.objects.filter(customer=customer).exists():
+        return HttpResponseRedirect(reverse("remote_realm_upgrade_page"))
+
+    main_context = billing_session.get_billing_page_context()
+    if main_context:
+        context.update(main_context)
+        context["success_message"] = success_message
+
+    return render(request, "corporate/billing.html", context=context)
+
+
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def remote_server_billing_page(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    *,
+    success_message: str = "",
+) -> HttpResponse:  # nocoverage
+    context: Dict[str, Any] = {
+        # We wouldn't be here if user didn't have access.
+        "admin_access": billing_session.has_billing_access(),
+        "has_active_plan": False,
+        "org_name": billing_session.remote_server.hostname,
+    }
+
+    if billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY:
+        return HttpResponseRedirect(
+            reverse(
+                "remote_server_sponsorship_page",
+                kwargs={"server_uuid": billing_session.remote_server.uuid},
+            )
+        )
+
+    customer = billing_session.get_customer()
+    if customer is not None and customer.sponsorship_pending:
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan
+        if not billing_session.on_paid_plan():
+            return HttpResponseRedirect(
+                reverse(
+                    "remote_server_sponsorship_page",
+                    kwargs={"server_uuid": billing_session.remote_server.uuid},
+                )
+            )
+        # If the realm is on a paid plan, show the sponsorship pending message
+        context["sponsorship_pending"] = True
+
+    if (
+        billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+        or customer is None
+        or not CustomerPlan.objects.filter(customer=customer).exists()
+    ):
+        return HttpResponseRedirect(
+            reverse(
+                "remote_server_upgrade_page",
+                kwargs={"server_uuid": billing_session.remote_server.uuid},
+            )
+        )
 
     main_context = billing_session.get_billing_page_context()
     if main_context:
