@@ -152,6 +152,7 @@ your regular per-user pricing for each additional guest.
 
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
+* [Self-hosted billing](/help/self-hosted-billing)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Contact support](/help/contact-support)
 
