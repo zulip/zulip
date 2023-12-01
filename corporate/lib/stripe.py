@@ -1508,7 +1508,7 @@ class BillingSession(ABC):
                 "billing_base_url": self.billing_base_url,
             },
             "payment_method": current_payment_method,
-            "plan": "Zulip Cloud Standard",
+            "plan": CustomerPlan.name_from_tier(tier),
             "salt": salt,
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
@@ -2873,6 +2873,8 @@ def get_price_per_license(
     price_map: Dict[int, Dict[str, int]] = {
         CustomerPlan.TIER_CLOUD_STANDARD: {"Annual": 8000, "Monthly": 800},
         CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 16000, "Monthly": 1600},
+        # Placeholder self-hosted plan for development.
+        CustomerPlan.TIER_SELF_HOSTED_BUSINESS: {"Annual": 8000, "Monthly": 800},
     }
 
     try:
