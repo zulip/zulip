@@ -43,20 +43,12 @@ def start_card_update_stripe_session_for_realm_upgrade(
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:
     billing_session = RealmBillingSession(user)
-    metadata = {
-        "type": "card_update",
-        "user_id": user.id,
-    }
-
-    stripe_session = billing_session.create_stripe_update_card_for_realm_upgrade_session(
-        metadata, Session.CARD_UPDATE_FROM_UPGRADE_PAGE, manual_license_management
+    session_data = billing_session.get_card_update_session_data_for_upgrade(
+        manual_license_management
     )
     return json_success(
         request,
-        data={
-            "stripe_session_url": stripe_session.url,
-            "stripe_session_id": stripe_session.id,
-        },
+        data=session_data,
     )
 
 
@@ -68,18 +60,10 @@ def start_card_update_stripe_session_for_remote_realm_upgrade(
     *,
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage
-    metadata = {
-        "type": "card_update",
-        # TODO: Add user identity metadata from the remote realm identity
-        # "user_id": user.id,
-    }
-    stripe_session = billing_session.create_stripe_update_card_for_realm_upgrade_session(
-        metadata, Session.CARD_UPDATE_FROM_UPGRADE_PAGE, manual_license_management
+    session_data = billing_session.get_card_update_session_data_for_upgrade(
+        manual_license_management
     )
     return json_success(
         request,
-        data={
-            "stripe_session_url": stripe_session.url,
-            "stripe_session_id": stripe_session.id,
-        },
+        data=session_data,
     )

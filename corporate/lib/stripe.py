@@ -711,6 +711,10 @@ class BillingSession(ABC):
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
         pass
 
+    @abstractmethod
+    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+        pass
+
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
         stripe_customer_data = self.get_data_for_stripe_customer()
@@ -806,12 +810,11 @@ class BillingSession(ABC):
         )
         return stripe_payment_intent.id
 
-    def create_stripe_update_card_for_realm_upgrade_session(
+    def get_card_update_session_data_for_upgrade(
         self,
-        metadata: Dict[str, Any],
-        session_type: int,
         manual_license_management: bool,
-    ) -> stripe.checkout.Session:
+    ) -> Dict[str, Any]:
+        metadata = self.get_metadata_for_stripe_update_card_for_realm_upgrade_session()
         customer = self.update_or_create_stripe_customer()
         cancel_url = f"{self.billing_session_url}/upgrade/"
         if manual_license_management:
@@ -828,10 +831,13 @@ class BillingSession(ABC):
         Session.objects.create(
             stripe_session_id=stripe_session.id,
             customer=customer,
-            type=session_type,
+            type=Session.CARD_UPDATE_FROM_UPGRADE_PAGE,
             is_manual_license_management_upgrade_session=manual_license_management,
         )
-        return stripe_session
+        return {
+            "stripe_session_url": stripe_session.url,
+            "stripe_session_id": stripe_session.id,
+        }
 
     def create_stripe_checkout_session(
         self,
@@ -2204,6 +2210,14 @@ class RealmBillingSession(BillingSession):
         return False
 
     @override
+    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+        assert self.user is not None
+        return {
+            "type": "card_update",
+            "user_id": self.user.id,
+        }
+
+    @override
     def get_upgrade_page_session_type_specific_context(
         self,
     ) -> UpgradePageSessionTypeSpecificContext:
@@ -2460,6 +2474,14 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         return False
 
     @override
+    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+        return {
+            "type": "card_update",
+            # TODO: Add user identity metadata from the remote realm identity
+            # "user_id": user.id,
+        }
+
+    @override
     def get_upgrade_page_session_type_specific_context(
         self,
     ) -> UpgradePageSessionTypeSpecificContext:
@@ -2712,6 +2734,14 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
         # TBD
         return False
+
+    @override
+    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+        return {
+            "type": "card_update",
+            # TODO: Maybe add some user identity metadata from the remote server identity
+            # "user_id": user.id,
+        }
 
     @override
     def get_upgrade_page_session_type_specific_context(
