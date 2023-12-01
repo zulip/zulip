@@ -4,7 +4,7 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 
-from corporate.views.billing_page import billing_home, update_plan
+from corporate.views.billing_page import billing_page, update_plan
 from corporate.views.event_status import (
     event_status,
     event_status_page,
@@ -63,7 +63,7 @@ i18n_urlpatterns: Any = [
     path("zephyr-mirror/", TemplateView.as_view(template_name="corporate/zephyr-mirror.html")),
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
     # Billing
-    path("billing/", billing_home, name="billing_home"),
+    path("billing/", billing_page, name="billing_page"),
     path("sponsorship/", sponsorship_page, name="sponsorship_request"),
     path("upgrade/", upgrade_page, name="upgrade_page"),
     path("support/", support_request),

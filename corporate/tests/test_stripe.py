@@ -1890,7 +1890,7 @@ class StripeTest(StripeTestCase):
             response,
         )
 
-    def test_redirect_for_billing_home(self) -> None:
+    def test_redirect_for_billing_page(self) -> None:
         user = self.example_user("iago")
         self.login_user(user)
         response = self.client_get("/billing/")

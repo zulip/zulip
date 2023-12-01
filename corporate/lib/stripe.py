@@ -1449,7 +1449,7 @@ class BillingSession(ABC):
         if self.is_sponsored_or_pending(customer):
             return f"{self.billing_session_url}/sponsorship", None
 
-        billing_page_url = reverse("billing_home")
+        billing_page_url = reverse("billing_page")
         if customer is not None and (get_current_plan_by_customer(customer) is not None):
             return billing_page_url, None
 
