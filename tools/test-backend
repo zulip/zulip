@@ -52,7 +52,6 @@ not_yet_fully_covered = [
     "analytics/views/activity_common.py",
     "analytics/views/installation_activity.py",
     "analytics/views/realm_activity.py",
-    "analytics/views/remote_activity.py",
     "analytics/views/stats.py",
     "analytics/views/support.py",
     # TODO: This is a work in progress and therefore without

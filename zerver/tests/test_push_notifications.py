@@ -1287,6 +1287,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         handling for this edge case nonetheless.
         """
 
+        # Start by deleting existing registration, to have a clean slate.
+        RemoteRealm.objects.all().delete()
+
         second_server = RemoteZulipServer.objects.create(
             uuid=uuid.uuid4(),
             api_key="magic_secret_api_key2",

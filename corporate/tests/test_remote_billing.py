@@ -90,6 +90,8 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
 
     @responses.activate
     def test_remote_billing_authentication_flow_realm_not_registered(self) -> None:
+        RemoteRealm.objects.all().delete()
+
         self.login("desdemona")
         desdemona = self.example_user("desdemona")
         realm = desdemona.realm
