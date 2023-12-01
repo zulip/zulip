@@ -8,9 +8,9 @@
 
 {!start-composing.md!}
 
-1. Click the **video camera** (<i class="fa fa-video-camera"></i>) icon at the
-   bottom of the compose box. This will insert a **Join video call.** link into
-   your message.
+1. Click the **video camera** (<i class="zulip-icon zulip-icon-video-call"></i>)
+   icon at the bottom of the compose box. This will insert a **Join video call.**
+   link into your message.
 
 1. Send the message.
 
@@ -52,9 +52,9 @@
 
 {!start-composing.md!}
 
-1. Click the **phone** (<i class="fa fa-phone"></i>) icon at the
-   bottom of the compose box. This will insert a **Join voice call.** link into
-   your message.
+1. Click the **phone** (<i class="zulip-icon zulip-icon-voice-call"></i>) icon
+   at the bottom of the compose box. This will insert a **Join voice call.**
+   link into your message.
 
 1. Send the message.
 
