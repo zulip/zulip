@@ -80,6 +80,8 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
     user_id = models.BigIntegerField(null=True)
     user_uuid = models.UUIDField(null=True)
 
+    remote_realm = models.ForeignKey("RemoteRealm", on_delete=models.SET_NULL, null=True)
+
     class Meta:
         unique_together = [
             # These indexes rely on the property that in Postgres,
