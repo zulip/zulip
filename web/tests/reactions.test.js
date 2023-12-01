@@ -40,6 +40,9 @@ const sample_message = {
 
 const channel = mock_esm("../src/channel");
 const message_store = mock_esm("../src/message_store");
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 const spectators = mock_esm("../src/spectators", {
     login_to_access() {},
 });

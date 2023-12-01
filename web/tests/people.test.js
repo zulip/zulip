@@ -494,7 +494,7 @@ test_people("get_full_names_for_poll_option", () => {
     assert.equal(names, "Me Myself, Isaac Newton");
 });
 
-test_people("get_display_full_names", () => {
+test_people("get_display_full_names", ({override}) => {
     people.initialize_current_user(me.user_id);
     people.add_active_user(steven);
     people.add_active_user(bob);
@@ -502,7 +502,7 @@ test_people("get_display_full_names", () => {
     people.add_active_user(guest);
     page_params.realm_enable_guest_user_indicator = true;
 
-    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
+    let user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
 
     // This doesn't do anything special for the current user. The caller has
@@ -545,6 +545,12 @@ test_people("get_display_full_names", () => {
         "translated: Muted user",
         "translated: Muted user (guest)",
     ]);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    const inaccessible_user_id = 99;
+    user_ids = [me.user_id, steven.user_id, inaccessible_user_id];
+    names = people.get_display_full_names(user_ids, true);
+    assert.deepEqual(names, ["Me Myself", "Steven", "translated: Unknown user"]);
 });
 
 test_people("my_custom_profile_data", () => {
