@@ -5,10 +5,6 @@ $settings_sidebar_width: 250px;
 
 label {
     margin: 0;
-
-    .fa-question-circle-o {
-        left: 2px;
-    }
 }
 
 label,
@@ -17,21 +13,6 @@ h3,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
-    & a {
-        color: inherit;
-    }
-
-    .fa-question-circle-o {
-        top: 1px;
-        /* This should match .settings-info-icon. */
-        opacity: 0.7;
-        position: relative;
-
-        &:hover {
-            opacity: 1;
-        }
-    }
-
     .fa-info-circle {
         top: 1px;
         position: relative;
@@ -50,10 +31,25 @@ h3,
     }
 }
 
+.help_link_widget {
+    opacity: 0.7;
+    color: inherit;
+    margin-left: 3px;
+
+    .fa-question-circle-o {
+        position: relative;
+        top: 1px;
+    }
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
 h3,
 .settings-section-title {
-    .fa-question-circle-o {
-        left: 5px;
+    .help_link_widget {
+        margin-left: 5px;
     }
 }
 
