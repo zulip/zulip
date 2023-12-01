@@ -19,6 +19,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -478,7 +479,7 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
         filter_pills: false,
-        filter_groups: !is_silent,
+        filter_groups_for_mention: !is_silent,
         ...opts,
     };
     return get_person_suggestions(query, opts);
@@ -490,6 +491,7 @@ export function get_pm_people(query) {
         filter_pills: true,
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
+        filter_groups_for_guests: true,
     };
     return get_person_suggestions(query, opts);
 }
@@ -516,8 +518,19 @@ export function get_person_suggestions(query, opts) {
     }
 
     let groups;
-    if (opts.filter_groups) {
+    if (opts.filter_groups_for_mention) {
         groups = user_groups.get_user_groups_allowed_to_mention();
+    } else if (opts.filter_groups_for_guests && !settings_data.user_can_access_all_other_users()) {
+        groups = user_groups.get_realm_user_groups().filter((group) => {
+            const group_members = group.members;
+            for (const user_id of group_members) {
+                const person = people.maybe_get_user_by_id(user_id, true);
+                if (person === undefined || person.is_inaccessible_user) {
+                    return false;
+                }
+            }
+            return true;
+        });
     } else {
         groups = user_groups.get_realm_user_groups();
     }
