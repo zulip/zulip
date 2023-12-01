@@ -59,10 +59,7 @@ if settings.BILLING_ENABLED:
         SupportViewRequest,
         get_latest_seat_count,
     )
-    from corporate.lib.support import (
-        get_discount_for_realm,
-        switch_realm_from_standard_to_plus_plan,
-    )
+    from corporate.lib.support import get_discount_for_realm
     from corporate.models import (
         Customer,
         CustomerPlan,
@@ -130,7 +127,7 @@ VALID_MODIFY_PLAN_METHODS = [
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
-    "upgrade_to_plus",
+    "upgrade_plan_tier",
 ]
 
 VALID_STATUS_VALUES = [
@@ -213,6 +210,13 @@ def support(
                 support_type=SupportType.update_billing_modality,
                 billing_modality=billing_modality,
             )
+        elif modify_plan is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.modify_plan,
+                plan_modification=modify_plan,
+            )
+            if modify_plan == "upgrade_plan_tier":
+                support_view_request["new_plan_tier"] = CustomerPlan.TIER_CLOUD_PLUS
         elif plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
@@ -246,29 +250,6 @@ def support(
             elif status == "deactivated":
                 do_deactivate_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} deactivated."
-        elif modify_plan is not None:
-            billing_session = RealmBillingSession(
-                user=acting_user, realm=realm, support_session=True
-            )
-            if modify_plan == "downgrade_at_billing_cycle_end":
-                billing_session.downgrade_at_the_end_of_billing_cycle()
-                context[
-                    "success_message"
-                ] = f"{realm.string_id} marked for downgrade at the end of billing cycle"
-            elif modify_plan == "downgrade_now_without_additional_licenses":
-                billing_session.downgrade_now_without_creating_additional_invoices()
-                context[
-                    "success_message"
-                ] = f"{realm.string_id} downgraded without creating additional invoices"
-            elif modify_plan == "downgrade_now_void_open_invoices":
-                billing_session.downgrade_now_without_creating_additional_invoices()
-                voided_invoices_count = billing_session.void_all_open_invoices()
-                context[
-                    "success_message"
-                ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"
-            elif modify_plan == "upgrade_to_plus":
-                switch_realm_from_standard_to_plus_plan(realm)
-                context["success_message"] = f"{realm.string_id} upgraded to Plus"
         elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)
             context["success_message"] = f"{realm.string_id} scrubbed."

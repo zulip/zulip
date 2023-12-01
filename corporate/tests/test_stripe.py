@@ -50,6 +50,8 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteServerBillingSession,
     StripeCardError,
+    SupportType,
+    SupportViewRequest,
     add_months,
     catch_stripe_errors,
     compute_plan_parameters,
@@ -74,7 +76,7 @@ from corporate.lib.stripe import (
     update_license_ledger_for_manual_plan,
     update_license_ledger_if_needed,
 )
-from corporate.lib.support import get_discount_for_realm, switch_realm_from_standard_to_plus_plan
+from corporate.lib.support import get_discount_for_realm
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -5298,8 +5300,43 @@ class TestSupportBillingHelpers(StripeTestCase):
         assert original_plan is not None
         self.assertEqual(original_plan.tier, CustomerPlan.TIER_CLOUD_STANDARD)
 
-        switch_realm_from_standard_to_plus_plan(user.realm)
+        support_admin = self.example_user("iago")
+        billing_session = RealmBillingSession(
+            user=support_admin, realm=user.realm, support_session=True
+        )
+        support_request = SupportViewRequest(
+            support_type=SupportType.modify_plan,
+            plan_modification="upgrade_plan_tier",
+            new_plan_tier=CustomerPlan.TIER_CLOUD_PLUS,
+        )
+        success_message = billing_session.process_support_view_request(support_request)
+        self.assertEqual(success_message, "zulip upgraded to Zulip Plus")
         customer.refresh_from_db()
         new_plan = get_current_plan_by_customer(customer)
         assert new_plan is not None
         self.assertEqual(new_plan.tier, CustomerPlan.TIER_CLOUD_PLUS)
+
+    @mock_stripe()
+    def test_downgrade_realm_and_void_open_invoices(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with time_machine.travel(self.now, tick=False):
+            self.upgrade(invoice=True)
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        original_plan = get_current_plan_by_customer(customer)
+        assert original_plan is not None
+        self.assertEqual(original_plan.status, CustomerPlan.ACTIVE)
+
+        support_admin = self.example_user("iago")
+        billing_session = RealmBillingSession(
+            user=support_admin, realm=user.realm, support_session=True
+        )
+        support_request = SupportViewRequest(
+            support_type=SupportType.modify_plan,
+            plan_modification="downgrade_now_void_open_invoices",
+        )
+        success_message = billing_session.process_support_view_request(support_request)
+        self.assertEqual(success_message, "zulip downgraded and voided 1 open invoices")
+        original_plan.refresh_from_db()
+        self.assertEqual(original_plan.status, CustomerPlan.ENDED)
