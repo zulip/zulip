@@ -12,6 +12,9 @@ const channel = mock_esm("../src/channel");
 const list_widget = mock_esm("../src/list_widget", {
     generic_sort_functions: noop,
 });
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => false,
+});
 
 const settings_muted_users = zrequire("settings_muted_users");
 const muted_users = zrequire("muted_users");
@@ -20,6 +23,7 @@ const people = zrequire("people");
 run_test("settings", ({override}) => {
     people.add_active_user({user_id: 5, email: "five@zulip.com", full_name: "Feivel Fiverson"});
     muted_users.add_muted_user(5, 1577836800);
+    muted_users.add_muted_user(10, 1577836900);
     let populate_list_called = false;
     override(list_widget, "create", (_$container, list) => {
         assert.deepEqual(list, [
@@ -28,6 +32,14 @@ run_test("settings", ({override}) => {
                 date_muted_str: "Jan 1, 2020",
                 user_id: 5,
                 user_name: "Feivel Fiverson",
+                can_unmute: true,
+            },
+            {
+                date_muted: 1577836900000,
+                date_muted_str: "Jan 1, 2020",
+                user_id: 10,
+                user_name: "translated: Unknown user",
+                can_unmute: false,
             },
         ]);
         populate_list_called = true;
