@@ -152,6 +152,7 @@ def register_remote_push_device(
     server: RemoteZulipServer,
     user_id: Optional[int] = REQ(json_validator=check_int, default=None),
     user_uuid: Optional[str] = REQ(default=None),
+    realm_uuid: Optional[str] = REQ(default=None),
     token: str = REQ(),
     token_kind: int = REQ(json_validator=check_int),
     ios_app_id: Optional[str] = REQ(str_validator=check_app_id, default=None),
@@ -173,6 +174,17 @@ def register_remote_push_device(
         # One of these is None, so these kwargs will lead to a proper registration
         # of either user_id or user_uuid type
         kwargs = {"user_id": user_id, "user_uuid": user_uuid}
+
+    if realm_uuid is not None:
+        # Servers 8.0+ also send the realm.uuid of the user.
+        assert isinstance(
+            user_uuid, str
+        ), "Servers new enough to send realm_uuid, should also have user_uuid"
+        remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+        if remote_realm is not None:
+            # We want to associate the RemotePushDeviceToken with the RemoteRealm.
+            kwargs["remote_realm_id"] = remote_realm.id
+
     try:
         with transaction.atomic():
             RemotePushDeviceToken.objects.create(
@@ -328,6 +340,39 @@ def remote_server_send_test_notification(
     return json_success(request)
 
 
+def get_remote_realm_helper(
+    request: HttpRequest, server: RemoteZulipServer, realm_uuid: str, user_uuid: str
+) -> Optional[RemoteRealm]:
+    """
+    Tries to fetch RemoteRealm for the given realm_uuid and server. Otherwise,
+    returns None and logs what happened using request and user_uuid args to make
+    the output more informative.
+    """
+
+    try:
+        remote_realm = RemoteRealm.objects.get(uuid=realm_uuid)
+    except RemoteRealm.DoesNotExist:
+        logger.info(
+            "%s: Received request for unknown realm %s, server %s, user %s",
+            request.path,
+            realm_uuid,
+            server.id,
+            user_uuid,
+        )
+        return None
+
+    if remote_realm.server_id != server.id:
+        logger.warning(
+            "%s: Realm %s exists, but not registered to server %s",
+            request.path,
+            realm_uuid,
+            server.id,
+        )
+        return None
+
+    return remote_realm
+
+
 @has_request_variables
 def remote_server_notify_push(
     request: HttpRequest,
@@ -345,12 +390,10 @@ def remote_server_notify_push(
     realm_uuid = payload.get("realm_uuid")
     remote_realm = None
     if realm_uuid is not None:
-        try:
-            remote_realm = RemoteRealm.objects.get(uuid=realm_uuid, server=server)
-        except RemoteRealm.DoesNotExist:
-            # We don't yet have a RemoteRealm for this realm. E.g. the server hasn't yet
-            # submitted analytics data since the realm's creation.
-            remote_realm = None
+        assert isinstance(
+            user_uuid, str
+        ), "Servers new enough to send realm_uuid, should also have user_uuid"
+        remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
 
     android_devices = list(
         RemotePushDeviceToken.objects.filter(

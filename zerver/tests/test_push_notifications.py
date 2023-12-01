@@ -98,6 +98,7 @@ if settings.ZILENCER_ENABLED:
         RemoteRealmCount,
         RemoteZulipServer,
     )
+    from zilencer.views import update_remote_realm_data_for_server
 
 
 class SendTestPushNotificationEndpointTest(BouncerTestCase):
@@ -737,6 +738,51 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
+    def test_register_token_realm_uuid_belongs_to_different_server(self) -> None:
+        self.add_mock_response()
+        user = self.example_user("cordelia")
+        self.login_user(user)
+
+        # Create a simulated second server. We will take user's RemoteRealm registration
+        # and change its server to this second server. This means that when the bouncer
+        # is processing the token registration request, it will find a RemoteRealm matching
+        # the realm_uuid in the request, but that RemoteRealm will be registered to a
+        # different server than the one making the request (self.server).
+        # This will make it log a warning and register the token, but of course without
+        # assigning the token registration to that RemoteRealm.
+        second_server = RemoteZulipServer.objects.create(
+            uuid=uuid.uuid4(),
+            api_key="magic_secret_api_key2",
+            hostname="demo2.example.com",
+            last_updated=now(),
+        )
+
+        remote_realm = RemoteRealm.objects.get(server=self.server, uuid=user.realm.uuid)
+        remote_realm.server = second_server
+        remote_realm.save()
+
+        endpoint = "/json/users/me/apns_device_token"
+        token = "apple-tokenaz"
+        with self.assertLogs("zilencer.views", level="WARN") as warn_log:
+            result = self.client_post(
+                endpoint, {"token": token, "appid": "org.zulip.Zulip"}, subdomain="zulip"
+            )
+            self.assert_json_success(result)
+        self.assertEqual(
+            warn_log.output,
+            [
+                "WARNING:zilencer.views:/api/v1/remotes/push/register: "
+                f"Realm {remote_realm.uuid!s} exists, but not registered to server {self.server.id}"
+            ],
+        )
+
+        remote_token = RemotePushDeviceToken.objects.get(token=token)
+        self.assertEqual(remote_token.server, self.server)
+        self.assertEqual(remote_token.user_uuid, user.uuid)
+        self.assertEqual(remote_token.remote_realm, None)
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
     def test_push_bouncer_api(self) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
@@ -811,7 +857,38 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         # Add tokens
         for endpoint, token, kind, appid in endpoints:
-            # Test that we can push twice
+            # First register a token without having a RemoteRealm registration:
+            RemoteRealm.objects.all().delete()
+            with self.assertLogs("zilencer.views", level="INFO") as info_log:
+                result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
+            self.assert_json_success(result)
+            self.assertIn(
+                "INFO:zilencer.views:/api/v1/remotes/push/register: Received request for "
+                f"unknown realm {user.realm.uuid!s}, server {server.id}, "
+                f"user {user.uuid!s}",
+                info_log.output,
+            )
+
+            # The registration succeeded, but RemotePushDeviceToken doesn't have remote_realm set:
+            tokens = list(
+                RemotePushDeviceToken.objects.filter(
+                    user_uuid=user.uuid, token=token, server=server
+                )
+            )
+            self.assert_length(tokens, 1)
+            self.assertEqual(tokens[0].kind, kind)
+            self.assertEqual(tokens[0].user_uuid, user.uuid)
+
+            # Delete it to clean up.
+            RemotePushDeviceToken.objects.filter(
+                user_uuid=user.uuid, token=token, server=server
+            ).delete()
+
+            # Create the expected RemoteRealm registration and proceed with testing with a
+            # normal setup.
+            update_remote_realm_data_for_server(self.server, get_realms_info_for_push_bouncer())
+
+            # Test that we can push more times
             result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
             self.assert_json_success(result)
 
@@ -825,6 +902,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
             )
             self.assert_length(tokens, 1)
             self.assertEqual(tokens[0].kind, kind)
+            # These new registrations have .remote_realm set properly.
+            assert tokens[0].remote_realm is not None
+            self.assertEqual(tokens[0].remote_realm.uuid, user.realm.uuid)
             self.assertEqual(tokens[0].ios_app_id, appid.get("appid"))
 
         # User should have tokens for both devices now.
