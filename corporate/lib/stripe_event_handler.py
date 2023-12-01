@@ -107,10 +107,6 @@ def handle_payment_intent_succeeded_event(
     payment_intent.status = PaymentIntent.SUCCEEDED
     payment_intent.save()
     metadata: Dict[str, Any] = stripe_payment_intent.metadata
-    assert payment_intent.customer.realm is not None
-    user_id = metadata.get("user_id")
-    assert user_id is not None
-    user = get_active_user_profile_by_id_in_realm(user_id, payment_intent.customer.realm)
 
     description = ""
     charge: stripe.Charge
@@ -140,7 +136,9 @@ def handle_payment_intent_succeeded_event(
         stripe.Invoice.finalize_invoice(stripe_invoice)
         raise e
 
-    billing_session = RealmBillingSession(user)
+    billing_session = get_billing_session_for_stripe_webhook(
+        payment_intent.customer, metadata.get("user_id")
+    )
     billing_session.process_initial_upgrade(
         CustomerPlan.TIER_CLOUD_STANDARD,
         int(metadata["licenses"]),

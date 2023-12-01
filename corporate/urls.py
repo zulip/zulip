@@ -46,7 +46,9 @@ from corporate.views.sponsorship import (
 )
 from corporate.views.support import support_request
 from corporate.views.upgrade import (
+    remote_realm_upgrade,
     remote_realm_upgrade_page,
+    remote_server_upgrade,
     remote_server_upgrade_page,
     upgrade,
     upgrade_page,
@@ -230,6 +232,8 @@ urlpatterns += [
     ),
     path("json/realm/<realm_uuid>/billing/event/status", remote_realm_event_status),
     path("json/server/<server_uuid>/billing/event/status", remote_server_event_status),
+    path("json/realm/<realm_uuid>/billing/upgrade", remote_realm_upgrade),
+    path("json/server/<server_uuid>/billing/upgrade", remote_server_upgrade),
 ]
 
 urlpatterns += [
