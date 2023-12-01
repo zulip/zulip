@@ -58,7 +58,6 @@ if settings.BILLING_ENABLED:
         SupportType,
         SupportViewRequest,
         get_latest_seat_count,
-        void_all_open_invoices,
     )
     from corporate.lib.support import (
         get_discount_for_realm,
@@ -263,7 +262,7 @@ def support(
                 ] = f"{realm.string_id} downgraded without creating additional invoices"
             elif modify_plan == "downgrade_now_void_open_invoices":
                 billing_session.downgrade_now_without_creating_additional_invoices()
-                voided_invoices_count = void_all_open_invoices(realm)
+                voided_invoices_count = billing_session.void_all_open_invoices()
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"

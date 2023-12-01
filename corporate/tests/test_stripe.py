@@ -54,6 +54,7 @@ from corporate.lib.stripe import (
     catch_stripe_errors,
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
+    customer_has_last_n_invoices_open,
     do_change_remote_server_plan_type,
     do_deactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
@@ -72,7 +73,6 @@ from corporate.lib.stripe import (
     update_license_ledger_for_automanaged_plan,
     update_license_ledger_for_manual_plan,
     update_license_ledger_if_needed,
-    void_all_open_invoices,
 )
 from corporate.lib.support import get_discount_for_realm, switch_realm_from_standard_to_plus_plan
 from corporate.models import (
@@ -3610,7 +3610,10 @@ class StripeTest(StripeTestCase):
         iago = self.example_user("iago")
         king = self.lear_user("king")
 
-        self.assertEqual(void_all_open_invoices(iago.realm), 0)
+        voided_invoice_count = RealmBillingSession(
+            user=None, realm=iago.realm
+        ).void_all_open_invoices()
+        self.assertEqual(voided_invoice_count, 0)
 
         zulip_customer = RealmBillingSession(iago).update_or_create_stripe_customer()
         lear_customer = RealmBillingSession(king).update_or_create_stripe_customer()
@@ -3651,7 +3654,10 @@ class StripeTest(StripeTestCase):
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
-        self.assertEqual(void_all_open_invoices(iago.realm), 1)
+        voided_invoice_count = RealmBillingSession(
+            user=None, realm=iago.realm
+        ).void_all_open_invoices()
+        self.assertEqual(voided_invoice_count, 1)
         invoices = stripe.Invoice.list(customer=zulip_customer.stripe_customer_id)
         self.assert_length(invoices, 1)
         for invoice in invoices:
@@ -3660,11 +3666,17 @@ class StripeTest(StripeTestCase):
         lear_stripe_customer_id = lear_customer.stripe_customer_id
         lear_customer.stripe_customer_id = None
         lear_customer.save(update_fields=["stripe_customer_id"])
-        self.assertEqual(void_all_open_invoices(king.realm), 0)
+        voided_invoice_count = RealmBillingSession(
+            user=None, realm=king.realm
+        ).void_all_open_invoices()
+        self.assertEqual(voided_invoice_count, 0)
 
         lear_customer.stripe_customer_id = lear_stripe_customer_id
         lear_customer.save(update_fields=["stripe_customer_id"])
-        self.assertEqual(void_all_open_invoices(king.realm), 1)
+        voided_invoice_count = RealmBillingSession(
+            user=None, realm=king.realm
+        ).void_all_open_invoices()
+        self.assertEqual(voided_invoice_count, 1)
         invoices = stripe.Invoice.list(customer=lear_customer.stripe_customer_id)
         self.assert_length(invoices, 1)
         for invoice in invoices:
@@ -3740,57 +3752,64 @@ class StripeTest(StripeTestCase):
             expected_plan_type: int
             plan: Optional[CustomerPlan]
             expected_plan_status: Optional[int]
-            void_all_open_invoices_mock_called: bool
+            expected_invoice_count: int
             email_expected_to_be_sent: bool
 
         rows: List[Row] = []
 
+        # no stripe customer ID (excluded from query)
         realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=False, create_plan=False
         )
-        # To create local Customer object but no Stripe customer.
         billing_session = RealmBillingSession(
             user=self.example_user("iago"), realm=realm, support_session=True
         )
         billing_session.attach_discount_to_customer(Decimal(20))
-        rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, False, False))
+        rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, 0, False))
 
+        # no active paid plan or invoices (no action)
         realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=False
         )
-        rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, False, False))
+        rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, 0, False))
 
+        # no active plan, one unpaid invoice (will be voided, no downgrade or email)
         realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=False, num_invoices=1
         )
-        rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, True, False))
+        rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, 0, False))
 
+        # active plan, no invoices (no action)
         realm, plan, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True
         )
-        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
+        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, 0, False))
 
+        # active plan, only one unpaid invoice (not downgraded or voided)
         realm, plan, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True, num_invoices=1
         )
-        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
+        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, 1, False))
 
+        # active plan, two unpaid invoices (will be downgraded, voided and emailed)
         realm, plan, _ = create_realm(
             users_to_create=3, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
-        rows.append(Row(realm, Realm.PLAN_TYPE_LIMITED, plan, CustomerPlan.ENDED, True, True))
+        rows.append(Row(realm, Realm.PLAN_TYPE_LIMITED, plan, CustomerPlan.ENDED, 0, True))
 
+        # active plan, two paid invoices (not downgraded)
         realm, plan, invoices = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
         for invoice in invoices:
             stripe.Invoice.pay(invoice, paid_out_of_band=True)
-        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
+        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, 0, False))
 
+        # not a small realm, two unpaid invoices (not downgraded or voided)
         realm, plan, _ = create_realm(
             users_to_create=20, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
-        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, False, False))
+        rows.append(Row(realm, Realm.PLAN_TYPE_STANDARD, plan, CustomerPlan.ACTIVE, 2, False))
 
         # Customer objects without a realm should be excluded from query.
         remote_server = RemoteZulipServer.objects.create(
@@ -3801,8 +3820,7 @@ class StripeTest(StripeTestCase):
         )
         Customer.objects.create(remote_server=remote_server, stripe_customer_id="cus_xxx")
 
-        with patch("corporate.lib.stripe.void_all_open_invoices") as void_all_open_invoices_mock:
-            downgrade_small_realms_behind_on_payments_as_needed()
+        downgrade_small_realms_behind_on_payments_as_needed()
 
         from django.core.mail import outbox
 
@@ -3812,15 +3830,12 @@ class StripeTest(StripeTestCase):
             if row.plan is not None:
                 row.plan.refresh_from_db()
                 self.assertEqual(row.plan.status, row.expected_plan_status)
-            if row.void_all_open_invoices_mock_called:
-                void_all_open_invoices_mock.assert_any_call(row.realm)
-            else:
-                try:
-                    void_all_open_invoices_mock.assert_any_call(row.realm)
-                except AssertionError:
-                    pass
-                else:  # nocoverage
-                    raise AssertionError("void_all_open_invoices_mock should not be called")
+                customer = get_customer_by_realm(row.realm)
+                if customer is not None and customer.stripe_customer_id is not None:
+                    open_invoices = customer_has_last_n_invoices_open(
+                        customer, row.expected_invoice_count
+                    )
+                    self.assertTrue(open_invoices)
 
             email_found = False
             for email in outbox:

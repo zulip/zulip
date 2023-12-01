@@ -758,7 +758,9 @@ class TestSupportEndpoint(ZulipTestCase):
         with mock.patch(
             "analytics.views.support.RealmBillingSession.downgrade_now_without_creating_additional_invoices"
         ) as m1:
-            with mock.patch("analytics.views.support.void_all_open_invoices", return_value=1) as m2:
+            with mock.patch(
+                "analytics.views.support.RealmBillingSession.void_all_open_invoices", return_value=1
+            ) as m2:
                 result = self.client_post(
                     "/activity/support",
                     {
@@ -767,7 +769,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     },
                 )
                 m1.assert_called_once()
-                m2.assert_called_once_with(get_realm("zulip"))
+                m2.assert_called_once()
                 self.assert_in_success_response(
                     ["zulip downgraded and voided 1 open invoices"], result
                 )
