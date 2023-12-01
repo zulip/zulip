@@ -987,6 +987,10 @@ export function is_current_user_only_owner(): boolean {
 export function filter_all_persons(pred: (person: User) => boolean): User[] {
     const ret = [];
     for (const person of people_by_user_id_dict.values()) {
+        if (person.is_inaccessible_user) {
+            continue;
+        }
+
         if (pred(person)) {
             ret.push(person);
         }
@@ -1162,7 +1166,7 @@ export function get_active_message_people(): User[] {
 export function get_people_for_search_bar(query: string): User[] {
     const pred = build_person_matcher(query);
 
-    const message_people = get_message_people();
+    const message_people = get_message_people().filter((user) => !user.is_inaccessible_user);
 
     const small_results = message_people.filter((item) => pred(item));
 
