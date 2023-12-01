@@ -179,14 +179,6 @@ export function get_event_status_url(): string {
     return "/json/billing/event/status";
 }
 
-export function get_upgrade_page_card_update_session_url(): string {
-    const realm_uuid = get_realm_uuid_from_url();
-    if (realm_uuid) {
-        return `/json/realm/${realm_uuid}/upgrade/session/start_card_update_session`;
-    }
-    return "/json/upgrade/session/start_card_update_session";
-}
-
 export function get_upgrade_page_url(
     is_manual_license_management_upgrade_session: boolean | undefined,
 ): string {

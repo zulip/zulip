@@ -551,6 +551,7 @@ class UpgradePageParams(TypedDict):
     demo_organization_scheduled_deletion_date: Optional[datetime]
     monthly_price: int
     seat_count: int
+    billing_base_url: str
 
 
 class UpgradePageSessionTypeSpecificContext(TypedDict):
@@ -607,6 +608,11 @@ class BillingSession(ABC):
     @property
     @abstractmethod
     def billing_session_url(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def billing_base_url(self) -> str:
         pass
 
     @abstractmethod
@@ -1499,6 +1505,7 @@ class BillingSession(ABC):
                     tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, percent_off
                 ),
                 "seat_count": seat_count,
+                "billing_base_url": self.billing_base_url,
             },
             "payment_method": current_payment_method,
             "plan": "Zulip Cloud Standard",
@@ -2009,6 +2016,11 @@ class RealmBillingSession(BillingSession):
         return self.realm.uri
 
     @override
+    @property
+    def billing_base_url(self) -> str:
+        return ""
+
+    @override
     def support_url(self) -> str:
         # TODO: Refactor to not create an import cycle.
         from corporate.lib.support import get_support_url
@@ -2316,6 +2328,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/realm/{self.remote_realm.uuid}"
 
     @override
+    @property
+    def billing_base_url(self) -> str:
+        return f"/realm/{self.remote_realm.uuid}"
+
+    @override
     def support_url(self) -> str:
         return "TODO:not-implemented"
 
@@ -2578,6 +2595,11 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @property
     def billing_session_url(self) -> str:
         return "TBD"
+
+    @override
+    @property
+    def billing_base_url(self) -> str:
+        return f"/server/${self.remote_server.uuid}"
 
     @override
     def support_url(self) -> str:
