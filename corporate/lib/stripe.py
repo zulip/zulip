@@ -467,6 +467,10 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
     )
 
 
+def sponsorship_org_type_key_helper(d: Any) -> int:
+    return d[1]["display_order"]
+
+
 class PriceArgs(TypedDict, total=False):
     amount: int
     unit_amount: int
@@ -702,9 +706,6 @@ class BillingSession(ABC):
     @abstractmethod
     def on_paid_plan(self) -> bool:
         pass
-
-    def sponsorship_org_type_key_helper(self, d: Any) -> int:
-        return d[1]["display_order"]
 
     @abstractmethod
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
@@ -2255,7 +2256,7 @@ class RealmBillingSession(BillingSession):
                     for (org_type_name, org_type) in Realm.ORG_TYPES.items()
                     if not org_type.get("hidden")
                 ),
-                key=self.sponsorship_org_type_key_helper,
+                key=sponsorship_org_type_key_helper,
             ),
         )
 
@@ -2507,7 +2508,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
                     for (org_type_name, org_type) in Realm.ORG_TYPES.items()
                     if not org_type.get("hidden")
                 ),
-                key=self.sponsorship_org_type_key_helper,
+                key=sponsorship_org_type_key_helper,
             ),
         )
 
@@ -2752,7 +2753,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
                     for (org_type_name, org_type) in Realm.ORG_TYPES.items()
                     if not org_type.get("hidden")
                 ),
-                key=self.sponsorship_org_type_key_helper,
+                key=sponsorship_org_type_key_helper,
             ),
         )
 
