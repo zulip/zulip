@@ -4,7 +4,12 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 
-from corporate.views.billing_page import billing_page, update_plan
+from corporate.views.billing_page import (
+    billing_page,
+    remote_realm_billing_page,
+    remote_server_billing_page,
+    update_plan,
+)
 from corporate.views.event_status import (
     event_status,
     event_status_page,
@@ -24,11 +29,9 @@ from corporate.views.portico import (
 )
 from corporate.views.remote_billing_page import (
     remote_billing_legacy_server_login,
-    remote_realm_billing_page,
-    remote_server_billing_page,
     remote_realm_plans_page,
-    remote_server_plans_page,
     remote_server_billing_finalize_login,
+    remote_server_plans_page,
 )
 from corporate.views.session import (
     start_card_update_stripe_session,
@@ -186,8 +189,14 @@ urlpatterns += [
         remote_server_plans_page,
         name="remote_server_plans_page",
     ),
-    path("realm/<realm_uuid>/billing", remote_realm_billing_page, name="remote_realm_billing_page"),
-    path("server/<server_uuid>/billing", remote_server_billing_page, name="remote_server_billing_page"),
+    path(
+        "realm/<realm_uuid>/billing/", remote_realm_billing_page, name="remote_realm_billing_page"
+    ),
+    path(
+        "server/<server_uuid>/billing/",
+        remote_server_billing_page,
+        name="remote_server_billing_page",
+    ),
     path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
     path(
         "server/<server_uuid>/upgrade",

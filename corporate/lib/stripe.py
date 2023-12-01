@@ -2532,10 +2532,14 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         # session that isn't authorized for billing access.
         return True
 
+    PAID_PLANS = [
+        RemoteRealm.PLAN_TYPE_BUSINESS,
+        RemoteRealm.PLAN_TYPE_ENTERPRISE,
+    ]
+
     @override
     def on_paid_plan(self) -> bool:
-        # TBD
-        return False
+        return self.remote_realm.plan_type in self.PAID_PLANS
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
@@ -2790,10 +2794,14 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # session that isn't authorized for billing access.
         return True
 
+    PAID_PLANS = [
+        RemoteZulipServer.PLAN_TYPE_BUSINESS,
+        RemoteZulipServer.PLAN_TYPE_ENTERPRISE,
+    ]
+
     @override
     def on_paid_plan(self) -> bool:
-        # TBD
-        return False
+        return self.remote_server.plan_type in self.PAID_PLANS
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:

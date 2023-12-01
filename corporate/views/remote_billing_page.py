@@ -220,18 +220,6 @@ def remote_billing_page_common(
 
 @self_hosting_management_endpoint
 @typed_endpoint
-def remote_server_billing_page(request: HttpRequest, *, server_uuid: PathOnly[str]) -> HttpResponse:
-    return remote_billing_page_common(request, server_uuid=server_uuid, realm_uuid=None)
-
-
-@self_hosting_management_endpoint
-@typed_endpoint
-def remote_realm_billing_page(request: HttpRequest, *, realm_uuid: PathOnly[str]) -> HttpResponse:
-    return remote_billing_page_common(request, realm_uuid=realm_uuid, server_uuid=None)
-
-
-@self_hosting_management_endpoint
-@typed_endpoint
 def remote_billing_legacy_server_login(
     request: HttpRequest,
     *,
