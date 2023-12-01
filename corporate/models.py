@@ -287,13 +287,17 @@ class CustomerPlan(models.Model):
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
 
-    @property
-    def name(self) -> str:
+    @staticmethod
+    def name_from_tier(tier: int) -> str:
         return {
             CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
             CustomerPlan.TIER_CLOUD_PLUS: "Zulip Plus",
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
-        }[self.tier]
+        }[tier]
+
+    @property
+    def name(self) -> str:
+        return self.name_from_tier(self.tier)
 
     def get_plan_status_as_text(self) -> str:
         return {
