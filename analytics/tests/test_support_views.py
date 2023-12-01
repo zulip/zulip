@@ -9,7 +9,13 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from corporate.lib.stripe import RealmBillingSession, add_months
-from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
+from corporate.models import (
+    Customer,
+    CustomerPlan,
+    LicenseLedger,
+    get_current_plan_by_realm,
+    get_customer_by_realm,
+)
 from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
 from zerver.actions.user_settings import do_change_user_setting
@@ -434,39 +440,50 @@ class TestSupportEndpoint(ZulipTestCase):
             result,
         )
 
-    @mock.patch("analytics.views.support.update_realm_billing_modality")
-    def test_change_billing_modality(self, m: mock.Mock) -> None:
+    def test_change_billing_modality(self) -> None:
+        realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
-
         result = self.client_post(
-            "/activity/support", {"realm_id": f"{cordelia.realm_id}", "plan_type": "2"}
+            "/activity/support",
+            {"realm_id": f"{realm.id}", "billing_method": "charge_automatically"},
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
+
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
+        CustomerPlan.objects.create(
+            customer=customer,
+            status=CustomerPlan.ACTIVE,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+        )
 
         iago = self.example_user("iago")
         self.login_user(iago)
 
         result = self.client_post(
             "/activity/support",
-            {"realm_id": f"{iago.realm_id}", "billing_modality": "charge_automatically"},
+            {"realm_id": f"{realm.id}", "billing_modality": "charge_automatically"},
         )
-        m.assert_called_once_with(get_realm("zulip"), charge_automatically=True, acting_user=iago)
         self.assert_in_success_response(
             ["Billing collection method of zulip updated to charge automatically"], result
         )
-
-        m.reset_mock()
+        plan = get_current_plan_by_realm(realm)
+        assert plan is not None
+        self.assertEqual(plan.charge_automatically, True)
 
         result = self.client_post(
-            "/activity/support",
-            {"realm_id": f"{iago.realm_id}", "billing_modality": "send_invoice"},
+            "/activity/support", {"realm_id": f"{realm.id}", "billing_modality": "send_invoice"}
         )
-        m.assert_called_once_with(get_realm("zulip"), charge_automatically=False, acting_user=iago)
         self.assert_in_success_response(
             ["Billing collection method of zulip updated to send invoice"], result
         )
+        realm.refresh_from_db()
+        plan = get_current_plan_by_realm(realm)
+        assert plan is not None
+        self.assertEqual(plan.charge_automatically, False)
 
     def test_change_realm_plan_type(self) -> None:
         cordelia = self.example_user("cordelia")

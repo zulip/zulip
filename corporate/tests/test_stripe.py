@@ -74,11 +74,7 @@ from corporate.lib.stripe import (
     update_license_ledger_if_needed,
     void_all_open_invoices,
 )
-from corporate.lib.support import (
-    get_discount_for_realm,
-    switch_realm_from_standard_to_plus_plan,
-    update_realm_billing_modality,
-)
+from corporate.lib.support import get_discount_for_realm, switch_realm_from_standard_to_plus_plan
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -5252,8 +5248,9 @@ class TestSupportBillingHelpers(StripeTestCase):
         )
         self.assertEqual(plan.charge_automatically, False)
 
-        iago = self.example_user("iago")
-        update_realm_billing_modality(realm, True, acting_user=iago)
+        support_admin = self.example_user("iago")
+        billing_session = RealmBillingSession(user=support_admin, realm=realm, support_session=True)
+        billing_session.update_billing_modality_of_current_plan(True)
         plan.refresh_from_db()
         self.assertEqual(plan.charge_automatically, True)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -5261,10 +5258,10 @@ class TestSupportBillingHelpers(StripeTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
-        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm_audit_log.acting_user, support_admin)
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
-        update_realm_billing_modality(realm, False, acting_user=iago)
+        billing_session.update_billing_modality_of_current_plan(False)
         plan.refresh_from_db()
         self.assertEqual(plan.charge_automatically, False)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -5272,7 +5269,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
-        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm_audit_log.acting_user, support_admin)
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
     @mock_stripe()

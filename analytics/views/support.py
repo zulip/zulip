@@ -63,7 +63,6 @@ if settings.BILLING_ENABLED:
     from corporate.lib.support import (
         get_discount_for_realm,
         switch_realm_from_standard_to_plus_plan,
-        update_realm_billing_modality,
     )
     from corporate.models import (
         Customer,
@@ -210,6 +209,11 @@ def support(
                 support_type=SupportType.attach_discount,
                 discount=discount,
             )
+        elif billing_modality is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_billing_modality,
+                billing_modality=billing_modality,
+            )
         elif plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
@@ -243,21 +247,6 @@ def support(
             elif status == "deactivated":
                 do_deactivate_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} deactivated."
-        elif billing_modality is not None:
-            if billing_modality == "send_invoice":
-                update_realm_billing_modality(
-                    realm, charge_automatically=False, acting_user=acting_user
-                )
-                context[
-                    "success_message"
-                ] = f"Billing collection method of {realm.string_id} updated to send invoice."
-            elif billing_modality == "charge_automatically":
-                update_realm_billing_modality(
-                    realm, charge_automatically=True, acting_user=acting_user
-                )
-                context[
-                    "success_message"
-                ] = f"Billing collection method of {realm.string_id} updated to charge automatically."
         elif modify_plan is not None:
             billing_session = RealmBillingSession(
                 user=acting_user, realm=realm, support_session=True
