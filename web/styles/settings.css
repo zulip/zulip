@@ -31,7 +31,7 @@ h3,
     }
 }
 
-.help_link_widget {
+a.help_link_widget {
     opacity: 0.7;
     color: inherit;
     margin-left: 3px;
@@ -42,6 +42,7 @@ h3,
     }
 
     &:hover {
+        color: inherit;
         opacity: 1;
     }
 }
