@@ -54,14 +54,10 @@ def billing_page(
         return HttpResponseRedirect(reverse("plans"))
 
     if customer is None:
-        from corporate.views.upgrade import upgrade_page
-
-        return HttpResponseRedirect(reverse(upgrade_page))
+        return HttpResponseRedirect(reverse("upgrade_page"))
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
-        from corporate.views.upgrade import upgrade_page
-
-        return HttpResponseRedirect(reverse(upgrade_page))
+        return HttpResponseRedirect(reverse("upgrade_page"))
 
     main_context = billing_session.get_billing_page_context()
     if main_context:
