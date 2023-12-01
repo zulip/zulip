@@ -19,18 +19,24 @@ gear_info = {
     # key is from REGEXP: `{relative|gear|key}`
     # name is what the item is called in the gear menu: `Select **name**.`
     # link is used for relative links: `Select [name](link).`
-    "stream-settings": ['<i class="fa fa-exchange"></i> Stream settings', "/#streams/subscribed"],
-    "settings": ['<i class="fa fa-wrench"></i> Personal Settings', "/#settings/profile"],
+    "stream-settings": [
+        '<i class="zulip-icon zulip-icon-hash"></i> Stream settings',
+        "/#streams/subscribed",
+    ],
+    "settings": [
+        '<i class="zulip-icon zulip-icon-tool"></i> Personal Settings',
+        "/#settings/profile",
+    ],
     "organization-settings": [
-        '<i class="fa fa-bolt"></i> Organization settings',
+        '<i class="zulip-icon zulip-icon-building"></i> Organization settings',
         "/#organization/organization-profile",
     ],
     "group-settings": [
         '<i class="zulip-icon zulip-icon-user-cog"></i> Group settings',
         "/#groups/your",
     ],
-    "integrations": ['<i class="fa fa-github"></i> Integrations', "/integrations/"],
-    "stats": ['<i class="fa fa-bar-chart"></i> Usage statistics', "/stats"],
+    "stats": ['<i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics', "/stats"],
+    "integrations": ['<i class="zulip-icon-git-pull-request"></i> Integrations', "/integrations/"],
     "plans": ['<i class="fa fa-rocket"></i> Plans and pricing', "/plans/"],
     "billing": ['<i class="zulip-icon zulip-icon-credit-card"></i> Billing', "/billing/"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
@@ -69,6 +75,10 @@ help_info = {
         '<i class="zulip-icon zulip-icon-manage-search"></i> Search filters',
         "/#search-operators",
     ],
+    "about-zulip": [
+        '<i class="zulip-icon zulip-icon-info"></i> About Zulip',
+        "/#about-zulip",
+    ],
 }
 
 help_instructions = """
@@ -93,10 +103,10 @@ stream_info = {
 }
 
 stream_instructions_no_link = """
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
-   right corner of the web or desktop app.
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
 
-1. Click **Stream settings**.
+1. Click <i class="zulip-icon zulip-icon-hash"></i> **Stream settings**.
 """
 
 
@@ -114,10 +124,10 @@ group_info = {
 }
 
 group_instructions_no_link = """
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
-   right corner of the web or desktop app.
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
 
-1. Click **Group settings**.
+1. Click <i class="zulip-icon zulip-icon-user-cog"></i> **Group settings**.
 """
 
 
