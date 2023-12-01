@@ -1561,6 +1561,19 @@ class BillingSession(ABC):
         assert plan is not None
         do_change_plan_status(plan, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
 
+    def void_all_open_invoices(self) -> int:
+        customer = self.get_customer()
+        if customer is None:
+            return 0
+        invoices = get_all_invoices_for_customer(customer)
+        voided_invoices_count = 0
+        for invoice in invoices:
+            if invoice.status == "open":
+                assert invoice.id is not None
+                stripe.Invoice.void_invoice(invoice.id)
+                voided_invoices_count += 1
+        return voided_invoices_count
+
     # During realm deactivation we instantly downgrade the plan to Limited.
     # Extra users added in the final month are not charged. Also used
     # for the cancellation of Free Trial.
@@ -3151,20 +3164,6 @@ def get_all_invoices_for_customer(customer: Customer) -> Generator[stripe.Invoic
         )
 
 
-def void_all_open_invoices(realm: Realm) -> int:
-    customer = get_customer_by_realm(realm)
-    if customer is None:
-        return 0
-    invoices = get_all_invoices_for_customer(customer)
-    voided_invoices_count = 0
-    for invoice in invoices:
-        if invoice.status == "open":
-            assert invoice.id is not None
-            stripe.Invoice.void_invoice(invoice.id)
-            voided_invoices_count += 1
-    return voided_invoices_count
-
-
 def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
     if customer.stripe_customer_id is None:  # nocoverage
         return False
@@ -3195,7 +3194,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
             # We've now decided to downgrade this customer and void all invoices, and the below will execute this.
             billing_session = RealmBillingSession(user=None, realm=realm)
             billing_session.downgrade_now_without_creating_additional_invoices()
-            void_all_open_invoices(realm)
+            billing_session.void_all_open_invoices()
             context: Dict[str, Union[str, Realm]] = {
                 "upgrade_url": f"{realm.uri}{reverse('upgrade_page')}",
                 "realm": realm,
@@ -3210,4 +3209,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
             )
         else:
             if customer_has_last_n_invoices_open(customer, 1):
-                void_all_open_invoices(realm)
+                # If a small realm, without an active plan, has
+                # the last invoice open, void the open invoices.
+                billing_session = RealmBillingSession(user=None, realm=realm)
+                billing_session.void_all_open_invoices()
