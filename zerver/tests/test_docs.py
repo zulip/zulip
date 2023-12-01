@@ -408,7 +408,7 @@ class HelpTest(ZulipTestCase):
     def test_help_relative_links_for_gear(self) -> None:
         result = self.client_get("/help/analytics")
         self.assertIn(
-            '<a href="/stats"><i class="fa fa-bar-chart"></i> Usage statistics</a>',
+            '<a href="/stats"><i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics</a>',
             str(result.content),
         )
         self.assertEqual(result.status_code, 200)
@@ -417,7 +417,8 @@ class HelpTest(ZulipTestCase):
             result = self.client_get("/help/analytics", subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn(
-            '<strong><i class="fa fa-bar-chart"></i> Usage statistics</strong>', str(result.content)
+            '<strong><i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics</strong>',
+            str(result.content),
         )
         self.assertNotIn("/stats", str(result.content))
 
