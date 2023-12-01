@@ -15624,13 +15624,10 @@ paths:
                           This will be `""` if unavailable.
 
                           **Changes**: New in Zulip 5.0 (feature level 88).
-                      push_notifications_configured:
+                      push_notifications_enabled:
                         type: boolean
                         description: |
                           Whether mobile/push notifications are configured.
-
-                          **Changes**: In Zulip 8.0 (feature level 231), renamed
-                          `push_notifications_enabled` to `push_notifications_configured`.
                       is_incompatible:
                         type: boolean
                         description: |
@@ -15701,7 +15698,7 @@ paths:
                           },
                         "zulip_version": "5.0-dev-1650-gc3fd37755f",
                         "zulip_merge_base": "5.0-dev-1646-gea6b21cd8c",
-                        "push_notifications_configured": false,
+                        "push_notifications_enabled": false,
                         "msg": "",
                         "is_incompatible": false,
                         "email_auth_enabled": true,
