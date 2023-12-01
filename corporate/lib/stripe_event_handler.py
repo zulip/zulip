@@ -87,7 +87,9 @@ def handle_checkout_session_completed_event(
     assert isinstance(stripe_session.setup_intent, str)
     assert stripe_session.metadata is not None
     stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
-    billing_session = get_billing_session_for_stripe_webhook(session.customer, stripe_session.metadata.get("user_id"))
+    billing_session = get_billing_session_for_stripe_webhook(
+        session.customer, stripe_session.metadata.get("user_id")
+    )
     payment_method = stripe_setup_intent.payment_method
     assert isinstance(payment_method, (str, type(None)))
 
