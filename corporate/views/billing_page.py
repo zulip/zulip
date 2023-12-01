@@ -48,7 +48,6 @@ def billing_page(
         if not billing_session.on_paid_plan():
             return HttpResponseRedirect(reverse("sponsorship_request"))
         # If the realm is on a paid plan, show the sponsorship pending message
-        # TODO: Add a sponsorship pending message to the billing page
         context["sponsorship_pending"] = True
 
     if user.realm.plan_type == user.realm.PLAN_TYPE_LIMITED:
