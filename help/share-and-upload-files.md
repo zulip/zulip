@@ -47,9 +47,9 @@ People reading the message can click on the preview to
 
 {!start-composing.md!}
 
-1. Click the **paperclip** (<i class="fa fa-paperclip"></i>) icon at
-   the bottom of the compose box to select one or more files. Zulip will upload
-   the files, and insert named links using
+1. Click the **paperclip** (<i class="zulip-icon zulip-icon-attachment"></i>)
+   icon at the bottom of the compose box to select one or more files.
+   Zulip will upload the files, and insert named links using
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 

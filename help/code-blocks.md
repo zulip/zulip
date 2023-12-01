@@ -2,6 +2,59 @@
 
 {!code-blocks-intro.md!}
 
+## Insert code formatting
+
+{start_tabs}
+
+{tab|via-compose-box-buttons}
+
+{!start-composing.md!}
+
+1. _(optional)_ Select the text you want to format.
+
+1. Click the **Code** (<i class="zulip-icon zulip-icon-code"></i>) icon at the
+   bottom of the compose box to insert code formatting. The appropriate inline
+   or block formatting will be applied automatically depending on whether you
+   selected a whole line, part of a line, or multiple lines.
+
+!!! tip ""
+
+    You can also use the **Code** (<i class="zulip-icon zulip-icon-code"></i>)
+    icon to remove existing code formatting from the selected text.
+
+{tab|via-markdown}
+
+{!start-composing.md!}
+
+1. To create an inline code span, use single backticks around the text:
+~~~
+`text`
+~~~
+   To create a code block, use triple backticks around the text:
+~~~
+```
+def f(x):
+    return x+1
+```
+~~~
+   To enable syntax highlighting, use triple backticks followed by one or more
+   letters, and select the desired programming language from the auto-complete
+   suggestions.
+~~~
+```python
+def fib(n):
+    # TODO: base case
+    return fib(n-1) + fib(n-2)
+```
+~~~
+
+!!! tip ""
+
+    You can also use `~~~` to start code blocks, or just indent the code 4 or more
+    spaces.
+
+{end_tabs}
+
 ## Examples
 
 {!code-blocks-examples.md!}

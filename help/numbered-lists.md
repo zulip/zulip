@@ -6,6 +6,22 @@
 
 {start_tabs}
 
+{tab|via-compose-box-buttons}
+
+{!start-composing.md!}
+
+1. _(optional)_ Select the text you want to format.
+
+1. Click the **Numbered list**
+   (<i class="zulip-icon zulip-icon-ordered-list"></i>) icon at the
+   bottom of the compose box to insert list formatting.
+
+!!! tip ""
+
+    You can also use the **Numbered list**
+    (<i class="zulip-icon zulip-icon-ordered-list"></i>) icon
+    to remove existing list formatting from the current line or selected text.
+
 {tab|via-markdown}
 
 {!start-composing.md!}
@@ -18,20 +34,6 @@
 
     Pressing <kbd>Enter</kbd> on a blank list item will remove the list
     formatting on the current line.
-
-{tab|via-compose-box-buttons}
-
-{!start-composing.md!}
-
-1. _(optional)_ Select the text you want to format.
-
-1. Click the **Numbered list** (<i class="fa fa-list-ol"></i>) icon at the
-   bottom of the compose box to insert list formatting.
-
-!!! tip ""
-
-    You can also use the **Numbered list** (<i class="fa fa-list-ol"></i>) icon
-    to remove existing list formatting from the current line or selected text.
 
 {end_tabs}
 

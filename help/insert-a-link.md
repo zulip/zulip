@@ -2,10 +2,6 @@
 
 {!links-intro.md!}
 
-## Examples
-
-{!links-examples.md!}
-
 ## Insert a link
 
 {start_tabs}
@@ -17,6 +13,22 @@
 1. Select the text you want to linkify.
 
 1. Paste a URL to turn the selected text into a named link.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>
+    to insert link formatting.
+
+{tab|via-compose-box-buttons}
+
+{!start-composing.md!}
+
+1. Select the text you want to linkify.
+
+1. Click the **link** (<i class="zulip-icon zulip-icon-link"></i>) icon at the
+   bottom of the compose box.
+
+1. Replace `url` with a valid URL.
 
 !!! keyboard_tip ""
 
@@ -35,23 +47,11 @@
     You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>
     to insert link formatting.
 
-{tab|via-compose-box-buttons}
-
-{!start-composing.md!}
-
-1. Select the text you want to linkify.
-
-1. Click the **link** (<i class="fa fa-link"></i>) icon at the
-   bottom of the compose box.
-
-1. Replace `url` with a valid URL.
-
-!!! keyboard_tip ""
-
-    You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>
-    to insert link formatting.
-
 {end_tabs}
+
+## Examples
+
+{!links-examples.md!}
 
 ## Related articles
 
