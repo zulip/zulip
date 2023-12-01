@@ -439,11 +439,6 @@ export function set_clean_reactions(message) {
         const local_id = get_local_reaction_id(reaction);
         const user_id = reaction.user_id;
 
-        if (!people.is_known_user_id(user_id)) {
-            blueslip.warn("Unknown user_id " + user_id + " in reaction for message " + message.id);
-            continue;
-        }
-
         if (!distinct_reactions.has(local_id)) {
             distinct_reactions.set(local_id, reaction);
             user_map.set(local_id, []);

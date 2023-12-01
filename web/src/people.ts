@@ -242,11 +242,10 @@ export function get_user_id(email: string): number | undefined {
 
 export function is_known_user_id(user_id: number): boolean {
     /*
-    For certain low-stakes operations, such as emoji reactions,
-    we may get a user_id that we don't know about, because the
-    user may have been deactivated.  (We eventually want to track
-    deactivated users on the client, but until then, this is an
-    expedient thing we can check.)
+    We may get a user_id from mention syntax that we don't
+    know about if a user includes some random number in
+    the mention syntax by manually typing it instead of
+    selecting some user from typeahead.
     */
     return people_by_user_id_dict.has(user_id);
 }
