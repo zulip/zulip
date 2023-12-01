@@ -2870,24 +2870,18 @@ def calculate_discounted_price_per_license(
 def get_price_per_license(
     tier: int, billing_schedule: int, discount: Optional[Decimal] = None
 ) -> int:
-    price_per_license: Optional[int] = None
+    price_map: Dict[int, Dict[str, int]] = {
+        CustomerPlan.TIER_CLOUD_STANDARD: {"Annual": 8000, "Monthly": 800},
+        CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 16000, "Monthly": 1600},
+    }
 
-    if tier == CustomerPlan.TIER_CLOUD_STANDARD:
-        if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
-            price_per_license = 8000
-        elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            price_per_license = 800
+    try:
+        price_per_license = price_map[tier][CustomerPlan.BILLING_SCHEDULES[billing_schedule]]
+    except KeyError:
+        if tier not in price_map:
+            raise InvalidTierError(tier)
         else:  # nocoverage
             raise InvalidBillingScheduleError(billing_schedule)
-    elif tier == CustomerPlan.TIER_CLOUD_PLUS:
-        if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
-            price_per_license = 16000
-        elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            price_per_license = 1600
-        else:  # nocoverage
-            raise InvalidBillingScheduleError(billing_schedule)
-    else:
-        raise InvalidTierError(tier)
 
     if discount is not None:
         price_per_license = calculate_discounted_price_per_license(price_per_license, discount)
