@@ -116,6 +116,10 @@ class AnalyticsTestCase(ZulipTestCase):
         # used as defaults in self.assert_table_count
         self.current_property: Optional[str] = None
 
+        # Delete RemoteRealm registrations to have a clean slate - the relevant
+        # tests want to construct this from scratch.
+        RemoteRealm.objects.all().delete()
+
     # Lightweight creation of users, streams, and messages
     def create_user(self, **kwargs: Any) -> UserProfile:
         self.name_counter += 1
