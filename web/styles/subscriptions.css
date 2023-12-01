@@ -400,6 +400,15 @@ h4.user_group_setting_subsection_title {
             font-weight: 600;
             border-bottom: 1px solid hsl(0deg 0% 87%);
 
+            & a {
+                color: inherit;
+
+                &:hover {
+                    color: inherit;
+                    text-decoration: none;
+                }
+            }
+
             &.preview::after {
                 content: "Preview";
             }
