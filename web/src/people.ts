@@ -928,7 +928,7 @@ export function is_valid_email_for_compose(email: string): boolean {
     }
 
     const person = get_by_email(email);
-    if (!person) {
+    if (!person || person.is_inaccessible_user) {
         return false;
     }
 
