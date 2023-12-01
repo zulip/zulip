@@ -1601,25 +1601,16 @@ def get_recent_conversations_recipient_id(
 def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dict[str, Any]]:
     """This function uses some carefully optimized SQL queries, designed
     to use the UserMessage index on private_messages.  It is
-    significantly complicated by the fact that for 1:1 direct
+    somewhat complicated by the fact that for 1:1 direct
     messages, we store the message against a recipient_id of whichever
     user was the recipient, and thus for 1:1 direct messages sent
     directly to us, we need to look up the other user from the
     sender_id on those messages.  You'll see that pattern repeated
     both here and also in zerver/lib/events.py.
 
-    Ideally, we would write these queries using Django, but even
-    without the UNION ALL, that seems to not be possible, because the
-    equivalent Django syntax (for the first part of this query):
-
-        message_data = UserMessage.objects.select_related("message__recipient_id").filter(
-            user_profile=user_profile,
-        ).extra(
-            where=[UserMessage.where_private()]
-        ).order_by("-message_id")[:1000].values(
-            "message__recipient_id").annotate(last_message_id=Max("message_id"))
-
-    does not properly nest the GROUP BY (from .annotate) with the slicing.
+    It may be possible to write this query directly in Django, however
+    it is made much easier by using CTEs, which Django does not
+    natively support.
 
     We return a dictionary structure for convenient modification
     below; this structure is converted into its final form by
@@ -1633,41 +1624,40 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
 
     query = SQL(
         """
-    SELECT
-        subquery.recipient_id, MAX(subquery.message_id)
-    FROM (
-        (SELECT
-            um.message_id AS message_id,
-            m.recipient_id AS recipient_id
-        FROM
-            zerver_usermessage um
-        JOIN
-            zerver_message m
-        ON
-            um.message_id = m.id
-        WHERE
-            um.user_profile_id=%(user_profile_id)s AND
-            um.flags & 2048 <> 0 AND
-            m.recipient_id <> %(my_recipient_id)s
-        ORDER BY message_id DESC
-        LIMIT %(conversation_limit)s)
-        UNION ALL
-        (SELECT
-            m.id AS message_id,
-            sender_profile.recipient_id AS recipient_id
-        FROM
-            zerver_message m
-        JOIN
-            zerver_userprofile sender_profile
-        ON
-            m.sender_id = sender_profile.id
-        WHERE
-            m.realm_id=%(realm_id)s AND
-            m.recipient_id=%(my_recipient_id)s
-        ORDER BY message_id DESC
-        LIMIT %(conversation_limit)s)
-    ) AS subquery
-    GROUP BY subquery.recipient_id
+        WITH personals AS (
+            SELECT   um.message_id AS message_id
+            FROM     zerver_usermessage um
+            WHERE    um.user_profile_id = %(user_profile_id)s
+            AND      um.flags & 2048 <> 0
+            ORDER BY message_id DESC limit %(conversation_limit)s
+        ),
+        message AS (
+            SELECT message_id,
+                   CASE
+                          WHEN m.recipient_id = %(my_recipient_id)s
+                          THEN m.sender_id
+                          ELSE NULL
+                   END AS sender_id,
+                   CASE
+                          WHEN m.recipient_id <> %(my_recipient_id)s
+                          THEN m.recipient_id
+                          ELSE NULL
+                   END AS outgoing_recipient_id
+            FROM   personals
+            JOIN   zerver_message m
+            ON     personals.message_id = m.id
+        ),
+        unified AS (
+            SELECT    message_id,
+                      COALESCE(zerver_userprofile.recipient_id, outgoing_recipient_id) AS other_recipient_id
+            FROM      message
+            LEFT JOIN zerver_userprofile
+            ON        zerver_userprofile.id = sender_id
+        )
+        SELECT   other_recipient_id,
+                 MAX(message_id)
+        FROM     unified
+        GROUP BY other_recipient_id
     """
     )
 
@@ -1678,7 +1668,6 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
                 "user_profile_id": user_profile.id,
                 "conversation_limit": RECENT_CONVERSATIONS_LIMIT,
                 "my_recipient_id": my_recipient_id,
-                "realm_id": user_profile.realm_id,
             },
         )
         rows = cursor.fetchall()
