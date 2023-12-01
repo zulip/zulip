@@ -187,7 +187,7 @@ urlpatterns += [
         name="remote_billing_plans_server",
     ),
     path("realm/<realm_uuid>/billing", remote_billing_page_realm, name="remote_billing_page_realm"),
-    path("server/<server_uuid>/", remote_billing_page_server, name="remote_billing_page_server"),
+    path("server/<server_uuid>/billing", remote_billing_page_server, name="remote_billing_page_server"),
     path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
     path(
         "server/<server_uuid>/upgrade",
