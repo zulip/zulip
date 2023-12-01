@@ -69,6 +69,7 @@ rules:
         - zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py
         - zerver/migrations/0387_reupload_realmemoji_again.py
         - zerver/migrations/0443_userpresence_new_table_schema.py
+        - zerver/migrations/0493_rename_userhotspot_to_onboardingstep.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
   - id: html-format

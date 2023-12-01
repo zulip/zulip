@@ -45,6 +45,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    OnboardingStep,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -63,7 +64,6 @@ from zerver.models import (
     UserActivityInterval,
     UserGroup,
     UserGroupMembership,
-    UserHotspot,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -138,6 +138,7 @@ ALL_ZULIP_TABLES = {
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_onboardingstep",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
@@ -165,7 +166,6 @@ ALL_ZULIP_TABLES = {
     "zerver_useractivityinterval",
     "zerver_usergroup",
     "zerver_usergroupmembership",
-    "zerver_userhotspot",
     "zerver_usermessage",
     "zerver_userpresence",
     "zerver_userprofile",
@@ -296,7 +296,7 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_stream": ["date_created"],
     "zerver_useractivityinterval": ["start", "end"],
     "zerver_useractivity": ["last_visit"],
-    "zerver_userhotspot": ["timestamp"],
+    "zerver_onboardingstep": ["timestamp"],
     "zerver_userpresence": ["last_active_time", "last_connected_time"],
     "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
     "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
@@ -940,6 +940,13 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     )
 
     Config(
+        table="zerver_onboardingstep",
+        model=OnboardingStep,
+        normal_parent=user_profile_config,
+        include_rows="user_id__in",
+    )
+
+    Config(
         table="zerver_useractivity",
         model=UserActivity,
         normal_parent=user_profile_config,
@@ -951,13 +958,6 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=UserActivityInterval,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
-    )
-
-    Config(
-        table="zerver_userhotspot",
-        model=UserHotspot,
-        normal_parent=user_profile_config,
-        include_rows="user_id__in",
     )
 
     Config(

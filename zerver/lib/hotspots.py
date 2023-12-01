@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise
 
-from zerver.models import UserHotspot, UserProfile
+from zerver.models import OnboardingStep, UserProfile
 
 
 @dataclass
@@ -87,7 +87,7 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, Union[str, float, boo
         return []
 
     seen_hotspots = frozenset(
-        UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)
+        OnboardingStep.objects.filter(user=user).values_list("onboarding_step", flat=True)
     )
 
     hotspots = [hotspot.to_dict() for hotspot in NON_INTRO_HOTSPOTS]
@@ -108,9 +108,11 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, Union[str, float, boo
 
 
 def copy_hotspots(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    for userhotspot in frozenset(UserHotspot.objects.filter(user=source_profile)):
-        UserHotspot.objects.create(
-            user=target_profile, hotspot=userhotspot.hotspot, timestamp=userhotspot.timestamp
+    for userhotspot in frozenset(OnboardingStep.objects.filter(user=source_profile)):
+        OnboardingStep.objects.create(
+            user=target_profile,
+            onboarding_step=userhotspot.onboarding_step,
+            timestamp=userhotspot.timestamp,
         )
 
     target_profile.tutorial_status = source_profile.tutorial_status

@@ -60,6 +60,7 @@ from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomainError,
     Message,
+    OnboardingStep,
     PreregistrationUser,
     RealmAuditLog,
     RealmDomain,
@@ -70,7 +71,6 @@ from zerver.models import (
     Subscription,
     SystemGroups,
     UserGroupMembership,
-    UserHotspot,
     UserProfile,
     UserTopic,
     check_valid_user_ids,
@@ -1270,11 +1270,11 @@ class UserProfileTest(ZulipTestCase):
         with get_test_image_file("img.png") as image_file:
             upload_avatar_image(image_file, cordelia, cordelia)
 
-        UserHotspot.objects.filter(user=cordelia).delete()
-        UserHotspot.objects.filter(user=iago).delete()
+        OnboardingStep.objects.filter(user=cordelia).delete()
+        OnboardingStep.objects.filter(user=iago).delete()
         hotspots_completed = {"intro_streams", "intro_topics"}
         for hotspot in hotspots_completed:
-            UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
+            OnboardingStep.objects.create(user=cordelia, onboarding_step=hotspot)
 
         # Check that we didn't send an realm_user update events to
         # users; this work is happening before the user account is
@@ -1316,7 +1316,9 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.enter_sends, False)
         self.assertEqual(hamlet.enter_sends, True)
 
-        hotspots = set(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
+        hotspots = set(
+            OnboardingStep.objects.filter(user=iago).values_list("onboarding_step", flat=True)
+        )
         self.assertEqual(hotspots, hotspots_completed)
 
     def test_copy_default_settings_from_realm_user_default(self) -> None:

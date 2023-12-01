@@ -66,6 +66,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    OnboardingStep,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -78,7 +79,6 @@ from zerver.models import (
     SystemGroups,
     UserGroup,
     UserGroupMembership,
-    UserHotspot,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -798,9 +798,9 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
         # data to test import of hotspots
-        UserHotspot.objects.create(
+        OnboardingStep.objects.create(
             user=sample_user,
-            hotspot="intro_streams",
+            onboarding_step="intro_streams",
         )
 
         # data to test import of muted topic
@@ -1187,8 +1187,8 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_user_hotspots(r: Realm) -> Set[str]:
             user_id = get_user_id(r, "King Hamlet")
-            hotspots = UserHotspot.objects.filter(user_id=user_id)
-            user_hotspots = {hotspot.hotspot for hotspot in hotspots}
+            hotspots = OnboardingStep.objects.filter(user_id=user_id)
+            user_hotspots = {hotspot.onboarding_step for hotspot in hotspots}
             return user_hotspots
 
         # test muted topics
@@ -1939,12 +1939,12 @@ class SingleUserExportTest(ExportFile):
             (rec,) = records
             self.assertEqual(rec["value"], 42)
 
-        UserHotspot.objects.create(user=cordelia, hotspot="topics")
-        UserHotspot.objects.create(user=othello, hotspot="bogus")
+        OnboardingStep.objects.create(user=cordelia, onboarding_step="topics")
+        OnboardingStep.objects.create(user=othello, onboarding_step="bogus")
 
         @checker
-        def zerver_userhotspot(records: List[Record]) -> None:
-            self.assertEqual(records[-1]["hotspot"], "topics")
+        def zerver_onboardingstep(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["onboarding_step"], "topics")
 
         """
         The zerver_realmauditlog checker basically assumes that
