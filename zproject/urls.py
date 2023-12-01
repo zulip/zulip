@@ -56,7 +56,7 @@ from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, home
-from zerver.views.hotspots import mark_hotspot_as_read
+from zerver.views.hotspots import mark_onboarding_step_as_read
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
     get_user_invites,
@@ -411,11 +411,11 @@ v1_api_and_json_patterns = [
     ),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
-    # users/me/hotspots -> zerver.views.hotspots
+    # users/me/onboarding_steps -> zerver.views.hotspots
     rest_path(
-        "users/me/hotspots",
+        "users/me/onboarding_steps",
         POST=(
-            mark_hotspot_as_read,
+            mark_onboarding_step_as_read,
             # This endpoint is low priority for documentation as
             # it is part of the web app-specific tutorial.
             {"intentionally_undocumented"},

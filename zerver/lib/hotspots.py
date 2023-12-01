@@ -70,6 +70,7 @@ NON_INTRO_HOTSPOTS: List[Hotspot] = []
 # a part of the initial tutorial. To that end, classifying them into
 # categories which are aggregated in ALL_HOTSPOTS, seems like a good start.
 ALL_HOTSPOTS = [*INTRO_HOTSPOTS, *NON_INTRO_HOTSPOTS]
+ALL_ONBOARDING_STEPS = ALL_HOTSPOTS
 
 
 def get_next_hotspots(user: UserProfile) -> List[Dict[str, Union[str, float, bool]]]:

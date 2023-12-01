@@ -154,6 +154,7 @@ EXEMPT_FILES = make_set(
         "web/src/navbar_help_menu.js",
         "web/src/navbar_menus.js",
         "web/src/navigate.js",
+        "web/src/onboarding_steps.js",
         "web/src/overlay_util.ts",
         "web/src/overlays.ts",
         "web/src/padded_widget.ts",
