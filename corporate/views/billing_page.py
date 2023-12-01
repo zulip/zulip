@@ -18,7 +18,7 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 @zulip_login_required
 @has_request_variables
-def billing_home(
+def billing_page(
     request: HttpRequest,
     success_message: str = REQ(default="", str_validator=check_string),
 ) -> HttpResponse:
