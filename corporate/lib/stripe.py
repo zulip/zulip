@@ -527,6 +527,7 @@ class SupportType(Enum):
     update_sponsorship_status = 2
     attach_discount = 3
     update_billing_modality = 4
+    modify_plan = 5
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -534,6 +535,8 @@ class SupportViewRequest(TypedDict, total=False):
     sponsorship_status: Optional[bool]
     discount: Optional[Decimal]
     billing_modality: Optional[str]
+    plan_modification: Optional[str]
+    new_plan_tier: Optional[int]
 
 
 class AuditLogEventType(Enum):
@@ -1859,7 +1862,7 @@ class BillingSession(ABC):
         plan.next_invoice_date = next_invoice_date(plan)
         plan.save(update_fields=["next_invoice_date"])
 
-    def do_change_plan_to_new_tier(self, new_plan_tier: int) -> None:
+    def do_change_plan_to_new_tier(self, new_plan_tier: int) -> str:
         customer = self.get_customer()
         assert customer is not None
         current_plan = get_current_plan_by_customer(customer)
@@ -1897,13 +1900,14 @@ class BillingSession(ABC):
             new_plan = get_current_plan_by_customer(customer)
             assert new_plan is not None  # for mypy
             self.invoice_plan(new_plan, plan_switch_time)
-            return
+            return f"{self.billing_entity_display_name} upgraded to {new_plan.name}"
 
         # TODO: Implement downgrade that is a change from and to a paid plan
         # tier. This should keep the same billing cycle schedule and change
         # the plan when it's next invoiced vs immediately. Note this will need
         # new CustomerPlan.status value, e.g. SWITCH_PLAN_TIER_AT_END_OF_CYCLE.
         assert type_of_tier_change == PlanTierChangeType.DOWNGRADE  # nocoverage
+        return ""  # nocoverage
 
     def get_event_status(self, event_status_request: EventStatusRequest) -> Dict[str, Any]:
         customer = self.get_customer()
@@ -2048,6 +2052,24 @@ class BillingSession(ABC):
             assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
             charge_automatically = support_request["billing_modality"] == "charge_automatically"
             success_message = self.update_billing_modality_of_current_plan(charge_automatically)
+        elif support_type == SupportType.modify_plan:
+            assert support_request["plan_modification"] is not None
+            plan_modification = support_request["plan_modification"]
+            if plan_modification == "downgrade_at_billing_cycle_end":
+                self.downgrade_at_the_end_of_billing_cycle()
+                success_message = f"{self.billing_entity_display_name} marked for downgrade at the end of billing cycle"
+            elif plan_modification == "downgrade_now_without_additional_licenses":
+                self.downgrade_now_without_creating_additional_invoices()
+                success_message = f"{self.billing_entity_display_name} downgraded without creating additional invoices"
+            elif plan_modification == "downgrade_now_void_open_invoices":
+                self.downgrade_now_without_creating_additional_invoices()
+                voided_invoices_count = self.void_all_open_invoices()
+                success_message = f"{self.billing_entity_display_name} downgraded and voided {voided_invoices_count} open invoices"
+            else:
+                assert plan_modification == "upgrade_plan_tier"
+                assert support_request["new_plan_tier"] is not None
+                new_plan_tier = support_request["new_plan_tier"]
+                success_message = self.do_change_plan_to_new_tier(new_plan_tier)
 
         return success_message
 

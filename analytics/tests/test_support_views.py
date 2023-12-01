@@ -713,77 +713,84 @@ class TestSupportEndpoint(ZulipTestCase):
             ["Subdomain reserved. Please choose a different one."], result
         )
 
-    def test_downgrade_realm(self) -> None:
+    def test_modify_plan_for_downgrade_at_end_of_billing_cycle(self) -> None:
+        realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
         result = self.client_post(
-            "/activity/support", {"realm_id": f"{cordelia.realm_id}", "plan_type": "2"}
+            "/activity/support",
+            {"realm_id": f"{realm.id}", "modify_plan": "downgrade_at_billing_cycle_end"},
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
+        CustomerPlan.objects.create(
+            customer=customer,
+            status=CustomerPlan.ACTIVE,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+        )
+
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        with mock.patch(
-            "analytics.views.support.RealmBillingSession.downgrade_at_the_end_of_billing_cycle"
-        ) as m:
+        with self.assertLogs("corporate.stripe", "INFO") as m:
             result = self.client_post(
                 "/activity/support",
                 {
-                    "realm_id": f"{iago.realm_id}",
+                    "realm_id": f"{realm.id}",
                     "modify_plan": "downgrade_at_billing_cycle_end",
                 },
             )
-            m.assert_called_once()
             self.assert_in_success_response(
                 ["zulip marked for downgrade at the end of billing cycle"], result
             )
+            plan = get_current_plan_by_realm(realm)
+            assert plan is not None
+            self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
 
-        with mock.patch(
-            "analytics.views.support.RealmBillingSession.downgrade_now_without_creating_additional_invoices"
-        ) as m:
-            result = self.client_post(
-                "/activity/support",
-                {
-                    "realm_id": f"{iago.realm_id}",
-                    "modify_plan": "downgrade_now_without_additional_licenses",
-                },
-            )
-            m.assert_called_once()
-            self.assert_in_success_response(
-                ["zulip downgraded without creating additional invoices"], result
-            )
+    def test_modify_plan_for_downgrade_now_without_additional_licenses(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+        result = self.client_post(
+            "/activity/support",
+            {"realm_id": f"{realm.id}", "modify_plan": "downgrade_now_without_additional_licenses"},
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
 
-        with mock.patch(
-            "analytics.views.support.RealmBillingSession.downgrade_now_without_creating_additional_invoices"
-        ) as m1:
-            with mock.patch(
-                "analytics.views.support.RealmBillingSession.void_all_open_invoices", return_value=1
-            ) as m2:
-                result = self.client_post(
-                    "/activity/support",
-                    {
-                        "realm_id": f"{iago.realm_id}",
-                        "modify_plan": "downgrade_now_void_open_invoices",
-                    },
-                )
-                m1.assert_called_once()
-                m2.assert_called_once()
-                self.assert_in_success_response(
-                    ["zulip downgraded and voided 1 open invoices"], result
-                )
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            status=CustomerPlan.ACTIVE,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+        )
 
-        with mock.patch("analytics.views.support.switch_realm_from_standard_to_plus_plan") as m:
-            result = self.client_post(
-                "/activity/support",
-                {
-                    "realm_id": f"{iago.realm_id}",
-                    "modify_plan": "upgrade_to_plus",
-                },
-            )
-            m.assert_called_once_with(get_realm("zulip"))
-            self.assert_in_success_response(["zulip upgraded to Plus"], result)
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{iago.realm_id}",
+                "modify_plan": "downgrade_now_without_additional_licenses",
+            },
+        )
+        self.assert_in_success_response(
+            ["zulip downgraded without creating additional invoices"], result
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, CustomerPlan.ENDED)
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
 
     def test_scrub_realm(self) -> None:
         cordelia = self.example_user("cordelia")
