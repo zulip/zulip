@@ -160,37 +160,13 @@ export function redirect_to_billing_with_successful_upgrade(): void {
     );
 }
 
-export function get_realm_uuid_from_url(): string | undefined {
-    const url = new URL(window.location.href);
-    const path_segments = url.pathname.split("/");
-    const realm_index = path_segments.indexOf("realm");
-    if (realm_index !== -1 && realm_index < path_segments.length - 1) {
-        return path_segments[realm_index + 1];
-    }
-
-    return undefined;
-}
-
-export function get_event_status_url(): string {
-    const realm_uuid = get_realm_uuid_from_url();
-    if (realm_uuid) {
-        return `/json/realm/${realm_uuid}/billing/event/status`;
-    }
-    return "/json/billing/event/status";
-}
-
 export function get_upgrade_page_url(
     is_manual_license_management_upgrade_session: boolean | undefined,
+    billing_base_url: string,
 ): string {
     let redirect_to = "/upgrade";
     if (is_manual_license_management_upgrade_session) {
         redirect_to += "/?manual_license_management=true";
     }
-
-    const realm_uuid = get_realm_uuid_from_url();
-    if (realm_uuid) {
-        return `/realm/${realm_uuid}` + redirect_to;
-    }
-
-    return redirect_to;
+    return billing_base_url + redirect_to;
 }

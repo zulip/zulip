@@ -10,6 +10,7 @@ from corporate.views.event_status import (
     event_status_page,
     remote_realm_event_status,
     remote_realm_event_status_page,
+    remote_server_event_status_page,
 )
 from corporate.views.portico import (
     app_download_link_redirect,
@@ -198,6 +199,11 @@ urlpatterns += [
         "realm/<realm_uuid>/billing/event_status",
         remote_realm_event_status_page,
         name="remote_realm_event_status_page",
+    ),
+    path(
+        "server/<server_uuid>/billing/event_status",
+        remote_server_event_status_page,
+        name="remote_server_event_status_page",
     ),
     # Remote variants of above API endpoints.
     path("json/realm/<realm_uuid>/sponsorship", remote_realm_sponsorship),
