@@ -32,7 +32,7 @@ export function show_user_list(message_id) {
                     url: `/json/messages/${message_id}/read_receipts`,
                     success(data) {
                         const users = data.user_ids.map((id) => {
-                            const user = people.get_by_user_id(id);
+                            const user = people.get_user_by_id_assert_valid(id);
                             return {
                                 user_id: user.user_id,
                                 full_name: user.full_name,
