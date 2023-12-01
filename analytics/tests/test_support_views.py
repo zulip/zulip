@@ -434,8 +434,8 @@ class TestSupportEndpoint(ZulipTestCase):
             result,
         )
 
-    @mock.patch("analytics.views.support.update_realm_billing_method")
-    def test_change_billing_method(self, m: mock.Mock) -> None:
+    @mock.patch("analytics.views.support.update_realm_billing_modality")
+    def test_change_billing_modality(self, m: mock.Mock) -> None:
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
 
@@ -450,21 +450,22 @@ class TestSupportEndpoint(ZulipTestCase):
 
         result = self.client_post(
             "/activity/support",
-            {"realm_id": f"{iago.realm_id}", "billing_method": "charge_automatically"},
+            {"realm_id": f"{iago.realm_id}", "billing_modality": "charge_automatically"},
         )
         m.assert_called_once_with(get_realm("zulip"), charge_automatically=True, acting_user=iago)
         self.assert_in_success_response(
-            ["Billing method of zulip updated to charge automatically"], result
+            ["Billing collection method of zulip updated to charge automatically"], result
         )
 
         m.reset_mock()
 
         result = self.client_post(
-            "/activity/support", {"realm_id": f"{iago.realm_id}", "billing_method": "send_invoice"}
+            "/activity/support",
+            {"realm_id": f"{iago.realm_id}", "billing_modality": "send_invoice"},
         )
         m.assert_called_once_with(get_realm("zulip"), charge_automatically=False, acting_user=iago)
         self.assert_in_success_response(
-            ["Billing method of zulip updated to pay by invoice"], result
+            ["Billing collection method of zulip updated to send invoice"], result
         )
 
     def test_change_realm_plan_type(self) -> None:

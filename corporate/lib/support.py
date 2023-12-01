@@ -43,11 +43,11 @@ def update_realm_sponsorship_status(
     billing_session.update_customer_sponsorship_status(sponsorship_pending)
 
 
-def update_realm_billing_method(
+def update_realm_billing_modality(
     realm: Realm, charge_automatically: bool, *, acting_user: UserProfile
 ) -> None:
     billing_session = RealmBillingSession(acting_user, realm, support_session=True)
-    billing_session.update_billing_method_of_current_plan(charge_automatically)
+    billing_session.update_billing_modality_of_current_plan(charge_automatically)
 
 
 def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:

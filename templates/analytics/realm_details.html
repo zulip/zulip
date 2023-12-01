@@ -123,12 +123,12 @@
     <b>Next invoice date</b>: {{ plan_data[realm.id].current_plan.next_invoice_date.strftime('%d %B %Y') }}<br />
 </div>
 
-<form method="POST" class="billing-method-form">
+<form method="POST" class="billing-modality-form">
     <br />
-    <b>Billing method</b><br />
+    <b>Billing collection method</b><br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-    <select name="billing_method" class="billing-method-select" required>
+    <select name="billing_modality" class="billing-modality-select" required>
         <option value="charge_automatically" {% if plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
         <option value="send_invoice" {% if not plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
     </select>
