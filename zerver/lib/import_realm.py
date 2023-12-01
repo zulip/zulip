@@ -51,6 +51,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    OnboardingStep,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -70,7 +71,6 @@ from zerver.models import (
     UserActivityInterval,
     UserGroup,
     UserGroupMembership,
-    UserHotspot,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -111,6 +111,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "recipient": {},
     "subscription": {},
     "defaultstream": {},
+    "onboardingstep": {},
     "reaction": {},
     "realmauthenticationmethod": {},
     "realmemoji": {},
@@ -128,7 +129,6 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "attachment": {},
     "realmauditlog": {},
     "recipient_to_huddle_map": {},
-    "userhotspot": {},
     "usertopic": {},
     "muteduser": {},
     "service": {},
@@ -1189,11 +1189,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(AlertWord, data, "alertword")
         bulk_import_model(data, AlertWord)
 
-    if "zerver_userhotspot" in data:
-        fix_datetime_fields(data, "zerver_userhotspot")
-        re_map_foreign_keys(data, "zerver_userhotspot", "user", related_table="user_profile")
-        update_model_ids(UserHotspot, data, "userhotspot")
-        bulk_import_model(data, UserHotspot)
+    if "zerver_onboardingstep" in data:
+        fix_datetime_fields(data, "zerver_onboardingstep")
+        re_map_foreign_keys(data, "zerver_onboardingstep", "user", related_table="user_profile")
+        update_model_ids(OnboardingStep, data, "onboardingstep")
+        bulk_import_model(data, OnboardingStep)
 
     if "zerver_usertopic" in data:
         fix_datetime_fields(data, "zerver_usertopic")

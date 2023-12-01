@@ -4,7 +4,7 @@ from zerver.actions.create_user import do_create_user
 from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, NON_INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserHotspot, UserProfile, get_realm
+from zerver.models import OnboardingStep, UserProfile, get_realm
 
 
 # Splitting this out, since I imagine this will eventually have most of the
@@ -56,7 +56,9 @@ class TestHotspots(ZulipTestCase):
         user = self.example_user("hamlet")
         do_mark_hotspot_as_read(user, "intro_compose")
         self.assertEqual(
-            list(UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)),
+            list(
+                OnboardingStep.objects.filter(user=user).values_list("onboarding_step", flat=True)
+            ),
             ["intro_compose"],
         )
 
@@ -66,13 +68,17 @@ class TestHotspots(ZulipTestCase):
         result = self.client_post("/json/users/me/hotspots", {"hotspot": "intro_streams"})
         self.assert_json_success(result)
         self.assertEqual(
-            list(UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)),
+            list(
+                OnboardingStep.objects.filter(user=user).values_list("onboarding_step", flat=True)
+            ),
             ["intro_streams"],
         )
 
         result = self.client_post("/json/users/me/hotspots", {"hotspot": "invalid"})
         self.assert_json_error(result, "Unknown hotspot: invalid")
         self.assertEqual(
-            list(UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)),
+            list(
+                OnboardingStep.objects.filter(user=user).values_list("onboarding_step", flat=True)
+            ),
             ["intro_streams"],
         )

@@ -2086,7 +2086,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     avatar_hash = models.CharField(null=True, max_length=64)
 
     # TODO: TUTORIAL_STATUS was originally an optimization designed to
-    # allow us to skip querying the UserHotspot table when loading
+    # allow us to skip querying the OnboardingStep table when loading
     # /. This optimization is no longer effective, so it's possible we
     # should delete it.
     TUTORIAL_WAITING = "W"
@@ -4951,13 +4951,13 @@ class RealmAuditLog(AbstractRealmAuditLog):
         ]
 
 
-class UserHotspot(models.Model):
+class OnboardingStep(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    hotspot = models.CharField(max_length=30)
+    onboarding_step = models.CharField(max_length=30)
     timestamp = models.DateTimeField(default=timezone_now)
 
     class Meta:
-        unique_together = ("user", "hotspot")
+        unique_together = ("user", "onboarding_step")
 
 
 def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:

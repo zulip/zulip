@@ -607,6 +607,7 @@ def use_db_models(
         Huddle = apps.get_model("zerver", "Huddle")
         Message = apps.get_model("zerver", "Message")
         MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
+        OnboardingStep = apps.get_model("zerver", "OnboardingStep")
         PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
         PushDeviceToken = apps.get_model("zerver", "PushDeviceToken")
         Reaction = apps.get_model("zerver", "Reaction")
@@ -628,7 +629,6 @@ def use_db_models(
         UserActivityInterval = apps.get_model("zerver", "UserActivityInterval")
         UserGroup = apps.get_model("zerver", "UserGroup")
         UserGroupMembership = apps.get_model("zerver", "UserGroupMembership")
-        UserHotspot = apps.get_model("zerver", "UserHotspot")
         UserMessage = apps.get_model("zerver", "UserMessage")
         UserPresence = apps.get_model("zerver", "UserPresence")
         UserProfile = apps.get_model("zerver", "UserProfile")
@@ -652,6 +652,7 @@ def use_db_models(
             Message=Message,
             MultiuseInvite=MultiuseInvite,
             UserTopic=UserTopic,
+            OnboardingStep=OnboardingStep,
             PreregistrationUser=PreregistrationUser,
             PushDeviceToken=PushDeviceToken,
             Reaction=Reaction,
@@ -670,7 +671,6 @@ def use_db_models(
             UserActivityInterval=UserActivityInterval,
             UserGroup=UserGroup,
             UserGroupMembership=UserGroupMembership,
-            UserHotspot=UserHotspot,
             UserMessage=UserMessage,
             UserPresence=UserPresence,
             UserProfile=UserProfile,
