@@ -106,9 +106,7 @@ def remote_server_billing_finalize_login(
 
     assert identity_dict["next_page"] in VALID_NEXT_PAGES
     if identity_dict["next_page"] is None:
-        return HttpResponseRedirect(
-            reverse("remote_billing_plans_realm", args=(remote_realm_uuid,))
-        )
+        return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(remote_realm_uuid,)))
     else:
         return HttpResponseRedirect(
             reverse(f"remote_realm_{identity_dict['next_page']}_page", args=(remote_realm_uuid,))
@@ -188,8 +186,8 @@ def remote_billing_plans_common(
     request: HttpRequest, realm_uuid: Optional[str], server_uuid: Optional[str]
 ) -> HttpResponse:
     """
-    Once implemented, this function, shared between remote_billing_plans_realm
-    and remote_billing_plans_server, will return a Plans page, adjusted depending
+    Once implemented, this function, shared between remote_realm_plans_page
+    and remote_server_plans_page, will return a Plans page, adjusted depending
     on whether the /realm/... or /server/... endpoint is being used
     """
 
@@ -198,15 +196,13 @@ def remote_billing_plans_common(
 
 @self_hosting_management_endpoint
 @typed_endpoint
-def remote_billing_plans_realm(request: HttpRequest, *, realm_uuid: PathOnly[str]) -> HttpResponse:
+def remote_realm_plans_page(request: HttpRequest, *, realm_uuid: PathOnly[str]) -> HttpResponse:
     return remote_billing_plans_common(request, realm_uuid=realm_uuid, server_uuid=None)
 
 
 @self_hosting_management_endpoint
 @typed_endpoint
-def remote_billing_plans_server(
-    request: HttpRequest, *, server_uuid: PathOnly[str]
-) -> HttpResponse:
+def remote_server_plans_page(request: HttpRequest, *, server_uuid: PathOnly[str]) -> HttpResponse:
     return remote_billing_plans_common(request, server_uuid=server_uuid, realm_uuid=None)
 
 
@@ -214,8 +210,8 @@ def remote_billing_page_common(
     request: HttpRequest, realm_uuid: Optional[str], server_uuid: Optional[str]
 ) -> HttpResponse:
     """
-    Once implemented, this function, shared between remote_billing_page_realm
-    and remote_billing_page_server, will return a Billing page, adjusted depending
+    Once implemented, this function, shared between remote_realm_billing_page
+    and remote_server_billing_page, will return a Billing page, adjusted depending
     on whether the /realm/... or /server/... endpoint is being used
     """
 
@@ -224,13 +220,13 @@ def remote_billing_page_common(
 
 @self_hosting_management_endpoint
 @typed_endpoint
-def remote_billing_page_server(request: HttpRequest, *, server_uuid: PathOnly[str]) -> HttpResponse:
+def remote_server_billing_page(request: HttpRequest, *, server_uuid: PathOnly[str]) -> HttpResponse:
     return remote_billing_page_common(request, server_uuid=server_uuid, realm_uuid=None)
 
 
 @self_hosting_management_endpoint
 @typed_endpoint
-def remote_billing_page_realm(request: HttpRequest, *, realm_uuid: PathOnly[str]) -> HttpResponse:
+def remote_realm_billing_page(request: HttpRequest, *, realm_uuid: PathOnly[str]) -> HttpResponse:
     return remote_billing_page_common(request, realm_uuid=realm_uuid, server_uuid=None)
 
 
@@ -285,4 +281,4 @@ def remote_billing_legacy_server_login(
         authenticated_at=datetime_to_timestamp(timezone_now()),
     )
 
-    return HttpResponseRedirect(reverse("remote_billing_page_server", args=(remote_server_uuid,)))
+    return HttpResponseRedirect(reverse("remote_server_billing_page", args=(remote_server_uuid,)))

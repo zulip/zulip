@@ -24,10 +24,10 @@ from corporate.views.portico import (
 )
 from corporate.views.remote_billing_page import (
     remote_billing_legacy_server_login,
-    remote_billing_page_realm,
-    remote_billing_page_server,
-    remote_billing_plans_realm,
-    remote_billing_plans_server,
+    remote_realm_billing_page,
+    remote_server_billing_page,
+    remote_realm_plans_page,
+    remote_server_plans_page,
     remote_server_billing_finalize_login,
 )
 from corporate.views.session import (
@@ -180,14 +180,14 @@ urlpatterns += [
         "remote-billing-login/<signed_billing_access_token>", remote_server_billing_finalize_login
     ),
     # Remote server billing endpoints.
-    path("realm/<realm_uuid>/plans", remote_billing_plans_realm, name="remote_billing_plans_realm"),
+    path("realm/<realm_uuid>/plans", remote_realm_plans_page, name="remote_realm_plans_page"),
     path(
         "server/<server_uuid>/plans",
-        remote_billing_plans_server,
-        name="remote_billing_plans_server",
+        remote_server_plans_page,
+        name="remote_server_plans_page",
     ),
-    path("realm/<realm_uuid>/billing", remote_billing_page_realm, name="remote_billing_page_realm"),
-    path("server/<server_uuid>/billing", remote_billing_page_server, name="remote_billing_page_server"),
+    path("realm/<realm_uuid>/billing", remote_realm_billing_page, name="remote_realm_billing_page"),
+    path("server/<server_uuid>/billing", remote_server_billing_page, name="remote_server_billing_page"),
     path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
     path(
         "server/<server_uuid>/upgrade",

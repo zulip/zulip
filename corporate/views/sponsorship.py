@@ -37,7 +37,7 @@ def remote_realm_sponsorship_page(
 ) -> HttpResponse:  # nocoverage
     context = billing_session.get_sponsorship_request_context()
     if context is None:
-        return HttpResponseRedirect(reverse("remote_billing_page_realm"))
+        return HttpResponseRedirect(reverse("remote_realm_billing_page"))
 
     return render(request, "corporate/sponsorship.html", context=context)
 
@@ -49,7 +49,7 @@ def remote_server_sponsorship_page(
 ) -> HttpResponse:  # nocoverage
     context = billing_session.get_sponsorship_request_context()
     if context is None:
-        return HttpResponseRedirect(reverse("remote_billing_page_server"))
+        return HttpResponseRedirect(reverse("remote_server_billing_page"))
 
     return render(request, "corporate/sponsorship.html", context=context)
 
