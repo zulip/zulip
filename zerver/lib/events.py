@@ -18,7 +18,7 @@ from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
-from zerver.lib.hotspots import get_next_hotspots
+from zerver.lib.hotspots import get_next_onboarding_steps
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
     WEBHOOK_INTEGRATIONS,
@@ -188,7 +188,7 @@ def fetch_initial_state_data(
         # Even if we offered special hotspots for guests without an
         # account, we'd maybe need to store their state using cookies
         # or local storage, rather than in the database.
-        state["hotspots"] = [] if user_profile is None else get_next_hotspots(user_profile)
+        state["hotspots"] = [] if user_profile is None else get_next_onboarding_steps(user_profile)
 
     if want("message"):
         # Since the introduction of `anchor="latest"` in the API,
