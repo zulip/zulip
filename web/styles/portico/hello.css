@@ -1173,20 +1173,19 @@ ul {
     .pricing-container {
         display: grid;
         grid-template:
-            ".       cloud-title  self-hosted-title .      " auto
-            "pricing pricing      pricing           pricing" auto / 56px minmax(
+            ".       .       cloud-title  self-hosted-title .       .      " auto
+            "pricing pricing pricing      pricing           pricing pricing" auto / 56px 1fr minmax(
                 0,
-                1fr
+                420px
             )
-            minmax(0, 1fr) 56px;
+            minmax(0, 420px) 1fr 56px;
         column-gap: 2px;
-        max-width: 960px;
         margin: 50px auto 38px;
 
         @media screen and (width <= 700px) {
             grid-template-columns:
-                40px minmax(0, 1fr)
-                minmax(0, 1fr) 40px;
+                40px 1fr minmax(0, 420px)
+                minmax(0, 420px) 1fr 40px;
         }
     }
 
@@ -1320,12 +1319,7 @@ ul {
             }
 
             .text-content {
-                max-width: 332px;
                 margin: 0 auto;
-            }
-
-            .bottom .text-content {
-                max-width: 268px;
             }
         }
 
@@ -1544,6 +1538,10 @@ ul {
     }
 
     &.showing-cloud {
+        .pricing-container {
+            max-width: 1100px;
+        }
+
         .self-hosted-scroll,
         .self-hosted-plan-pricing,
         .self-hosted-additional-pricing {
@@ -1590,6 +1588,10 @@ ul {
     }
 
     &.showing-self-hosted {
+        .pricing-container {
+            max-width: 960px;
+        }
+
         .cloud-scroll,
         .cloud-plan-pricing,
         .cloud-additional-pricing {
@@ -1631,6 +1633,16 @@ ul {
                 h2 {
                     margin: 0;
                 }
+            }
+        }
+
+        .price-box {
+            .text-content {
+                max-width: 332px;
+            }
+
+            .bottom .text-content {
+                max-width: 268px;
             }
         }
     }
