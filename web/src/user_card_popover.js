@@ -664,6 +664,15 @@ function register_click_handlers() {
             user = people.get_by_user_id(user_id);
         } else {
             user = people.get_by_email(email);
+            if (user === undefined) {
+                // There can be a case when user is undefined if
+                // the user is an inaccessible user as we do not
+                // create the fake user objects for it because
+                // we do not have user ID. It is fine to not
+                // open popover for this case as such cases
+                // without user ID are rare and old.
+                return;
+            }
         }
         toggle_user_card_popover_for_message(this, user, message);
     });
