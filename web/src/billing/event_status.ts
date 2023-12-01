@@ -81,7 +81,9 @@ async function stripe_checkout_session_status_check(stripe_session_id: string): 
 export async function stripe_payment_intent_status_check(
     stripe_payment_intent_id: string,
 ): Promise<boolean> {
-    const response: unknown = await $.get("/json/billing/event/status", {stripe_payment_intent_id});
+    const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
+        stripe_payment_intent_id,
+    });
 
     const response_schema = z.object({
         payment_intent: z.object({
@@ -108,7 +110,7 @@ export async function stripe_payment_intent_status_check(
     switch (response_data.payment_intent.status) {
         case "succeeded":
             if (response_data.payment_intent.event_handler!.status === "succeeded") {
-                helpers.redirect_to_billing_with_successful_upgrade();
+                helpers.redirect_to_billing_with_successful_upgrade(billing_base_url);
                 return true;
             }
             if (response_data.payment_intent.event_handler!.status === "failed") {

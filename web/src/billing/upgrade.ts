@@ -86,7 +86,7 @@ export const initialize = (): void => {
         $("#org-upgrade-button-text").hide();
         $("#org-upgrade-button .upgrade-button-loader").show();
         helpers.create_ajax_request(
-            "/json/billing/upgrade",
+            `/json${page_params.billing_base_url}/billing/upgrade`,
             "autopay",
             [],
             "POST",
@@ -94,10 +94,12 @@ export const initialize = (): void => {
                 const response_data = upgrade_response_schema.parse(response);
                 if (response_data.stripe_payment_intent_id) {
                     window.location.replace(
-                        `/billing/event_status?stripe_payment_intent_id=${response_data.stripe_payment_intent_id}`,
+                        `${page_params.billing_base_url}/billing/event_status?stripe_payment_intent_id=${response_data.stripe_payment_intent_id}`,
                     );
                 } else if (response_data.organization_upgrade_successful) {
-                    helpers.redirect_to_billing_with_successful_upgrade();
+                    helpers.redirect_to_billing_with_successful_upgrade(
+                        page_params.billing_base_url,
+                    );
                 }
             },
             (xhr) => {

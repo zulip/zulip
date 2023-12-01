@@ -79,6 +79,96 @@ def upgrade(
         raise BillingError(error_description, error_message)
 
 
+@authenticated_remote_realm_management_endpoint
+@has_request_variables
+def remote_realm_upgrade(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    billing_modality: str = REQ(str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)),
+    schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
+    signed_seat_count: str = REQ(),
+    salt: str = REQ(),
+    license_management: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
+    ),
+    licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+) -> HttpResponse:  # nocoverage
+    try:
+        upgrade_request = UpgradeRequest(
+            billing_modality=billing_modality,
+            schedule=schedule,
+            signed_seat_count=signed_seat_count,
+            salt=salt,
+            license_management=license_management,
+            licenses=licenses,
+        )
+        data = billing_session.do_upgrade(upgrade_request)
+        return json_success(request, data)
+    except BillingError as e:
+        billing_logger.warning(
+            "BillingError during upgrade: %s. remote_realm=%s (%s), billing_modality=%s, "
+            "schedule=%s, license_management=%s, licenses=%s",
+            e.error_description,
+            billing_session.remote_realm.id,
+            billing_session.remote_realm.host,
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+        )
+        raise e
+    except Exception:
+        billing_logger.exception("Uncaught exception in billing:", stack_info=True)
+        error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
+        error_description = "uncaught exception during upgrade"
+        raise BillingError(error_description, error_message)
+
+
+@authenticated_remote_server_management_endpoint
+@has_request_variables
+def remote_server_upgrade(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    billing_modality: str = REQ(str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)),
+    schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
+    signed_seat_count: str = REQ(),
+    salt: str = REQ(),
+    license_management: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
+    ),
+    licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+) -> HttpResponse:  # nocoverage
+    try:
+        upgrade_request = UpgradeRequest(
+            billing_modality=billing_modality,
+            schedule=schedule,
+            signed_seat_count=signed_seat_count,
+            salt=salt,
+            license_management=license_management,
+            licenses=licenses,
+        )
+        data = billing_session.do_upgrade(upgrade_request)
+        return json_success(request, data)
+    except BillingError as e:
+        billing_logger.warning(
+            "BillingError during upgrade: %s. remote_server=%s (%s), billing_modality=%s, "
+            "schedule=%s, license_management=%s, licenses=%s",
+            e.error_description,
+            billing_session.remote_server.id,
+            billing_session.remote_server.hostname,
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+        )
+        raise e
+    except Exception:
+        billing_logger.exception("Uncaught exception in billing:", stack_info=True)
+        error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
+        error_description = "uncaught exception during upgrade"
+        raise BillingError(error_description, error_message)
+
+
 @zulip_login_required
 @has_request_variables
 def upgrade_page(
