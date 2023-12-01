@@ -607,7 +607,6 @@ def use_db_models(
         Huddle = apps.get_model("zerver", "Huddle")
         Message = apps.get_model("zerver", "Message")
         MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
-        UserTopic = apps.get_model("zerver", "UserTopic")
         PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
         PushDeviceToken = apps.get_model("zerver", "PushDeviceToken")
         Reaction = apps.get_model("zerver", "Reaction")
@@ -633,6 +632,7 @@ def use_db_models(
         UserMessage = apps.get_model("zerver", "UserMessage")
         UserPresence = apps.get_model("zerver", "UserPresence")
         UserProfile = apps.get_model("zerver", "UserProfile")
+        UserTopic = apps.get_model("zerver", "UserTopic")
 
         zerver_models_patch = mock.patch.multiple(
             "zerver.models",
