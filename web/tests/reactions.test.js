@@ -40,9 +40,7 @@ const sample_message = {
 
 const channel = mock_esm("../src/channel");
 const message_store = mock_esm("../src/message_store");
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
-});
+const settings_data = mock_esm("../src/settings_data");
 const spectators = mock_esm("../src/spectators", {
     login_to_access() {},
 });
@@ -109,7 +107,7 @@ function test(label, f) {
 
 test("basics", () => {
     const message = {...sample_message};
-
+    settings_data.user_can_access_all_other_users = () => true;
     const result = reactions.get_message_reactions(message);
     assert.ok(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
     assert.ok(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
@@ -193,6 +191,68 @@ test("basics", () => {
             vote_text: "3",
             user_ids: [6, 7, 8],
             label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
+            emoji_alt_code: false,
+            class: "message_reaction",
+            is_realm_emoji: false,
+        },
+    ];
+    assert.deepEqual(result, expected_result);
+});
+
+test("reactions from unknown users", () => {
+    settings_data.user_can_access_all_other_users = () => false;
+    people.add_inaccessible_user(10);
+    const message = {
+        id: 1001,
+        reactions: [
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "smile", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "frown", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f641"},
+
+            {emoji_name: "tada", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+            {emoji_name: "tada", user_id: 10, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+        ],
+    };
+
+    const result = reactions.get_message_reactions(message);
+    result.sort((a, b) => a.count - b.count);
+
+    const expected_result = [
+        {
+            emoji_name: "frown",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f641",
+            local_id: "unicode_emoji,1f641",
+            count: 1,
+            vote_text: "1",
+            user_ids: [9],
+            label: "translated: translated: Unknown user reacted with :frown:",
+            emoji_alt_code: false,
+            class: "message_reaction",
+            is_realm_emoji: false,
+        },
+        {
+            emoji_name: "smile",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f642",
+            local_id: "unicode_emoji,1f642",
+            count: 2,
+            vote_text: "2",
+            user_ids: [5, 9],
+            label: "translated: You (click to remove) and translated: Unknown user reacted with :smile:",
+            emoji_alt_code: false,
+            class: "message_reaction reacted",
+            is_realm_emoji: false,
+        },
+        {
+            emoji_name: "tada",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f389",
+            local_id: "unicode_emoji,1f389",
+            count: 2,
+            vote_text: "2",
+            user_ids: [6, 10],
+            label: "translated: Bob van Roberts and translated: Unknown user reacted with :tada:",
             emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
@@ -1208,31 +1268,6 @@ test("process_reaction_click", ({override}) => {
     args = stub.get_args("args").args;
     assert.equal(args.url, "/json/messages/1001/reactions");
     assert.deepEqual(args.data, expected_reaction_info);
-});
-
-test("warnings", () => {
-    const message = {
-        id: 3001,
-        reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
-            // add some bogus user_ids
-            {
-                emoji_name: "octopus",
-                user_id: 8888,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f419",
-            },
-            {
-                emoji_name: "frown",
-                user_id: 9999,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f641",
-            },
-        ],
-    };
-    blueslip.expect("warn", "Unknown user_id 8888 in reaction for message 3001");
-    blueslip.expect("warn", "Unknown user_id 9999 in reaction for message 3001");
-    reactions.get_message_reactions(message);
 });
 
 test("code coverage", ({override}) => {
