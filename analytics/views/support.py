@@ -63,7 +63,7 @@ if settings.BILLING_ENABLED:
         attach_discount_to_realm,
         get_discount_for_realm,
         switch_realm_from_standard_to_plus_plan,
-        update_realm_billing_method,
+        update_realm_billing_modality,
         update_realm_sponsorship_status,
     )
     from corporate.models import (
@@ -141,7 +141,7 @@ VALID_STATUS_VALUES = [
     "deactivated",
 ]
 
-VALID_BILLING_METHODS = [
+VALID_BILLING_MODALITY_VALUES = [
     "send_invoice",
     "charge_automatically",
 ]
@@ -164,8 +164,8 @@ def support(
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
     new_subdomain: Optional[str] = REQ(default=None),
     status: Optional[str] = REQ(default=None, str_validator=check_string_in(VALID_STATUS_VALUES)),
-    billing_method: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_BILLING_METHODS)
+    billing_modality: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)
     ),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
@@ -236,21 +236,21 @@ def support(
             elif status == "deactivated":
                 do_deactivate_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} deactivated."
-        elif billing_method is not None:
-            if billing_method == "send_invoice":
-                update_realm_billing_method(
+        elif billing_modality is not None:
+            if billing_modality == "send_invoice":
+                update_realm_billing_modality(
                     realm, charge_automatically=False, acting_user=acting_user
                 )
                 context[
                     "success_message"
-                ] = f"Billing method of {realm.string_id} updated to pay by invoice."
-            elif billing_method == "charge_automatically":
-                update_realm_billing_method(
+                ] = f"Billing collection method of {realm.string_id} updated to send invoice."
+            elif billing_modality == "charge_automatically":
+                update_realm_billing_modality(
                     realm, charge_automatically=True, acting_user=acting_user
                 )
                 context[
                     "success_message"
-                ] = f"Billing method of {realm.string_id} updated to charge automatically."
+                ] = f"Billing collection method of {realm.string_id} updated to charge automatically."
         elif sponsorship_pending is not None:
             if sponsorship_pending:
                 update_realm_sponsorship_status(realm, True, acting_user=acting_user)
