@@ -387,6 +387,7 @@ def remote_servers_support(
     query: Optional[str] = REQ("q", default=None),
     remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -410,7 +411,12 @@ def remote_servers_support(
 
         support_view_request = None
 
-        if discount is not None:
+        if sponsorship_pending is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_sponsorship_status,
+                sponsorship_status=sponsorship_pending,
+            )
+        elif discount is not None:
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
                 discount=discount,
