@@ -151,6 +151,10 @@ tr.admin td:first-child {
     }
 }
 
+.remote-server-information {
+    padding-bottom: 15px;
+}
+
 .support-realm-icon {
     max-width: 25px;
     position: relative;
