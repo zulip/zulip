@@ -189,8 +189,8 @@ export function highlight_all_messages_view() {
 function handle_home_view_order(home_view) {
     // Remove class and tabindex from current home view
     const $current_home_view = $(".selected-home-view");
-    $current_home_view.removeAttr("tabindex");
     $current_home_view.removeClass("selected-home-view");
+    $current_home_view.find("a").removeAttr("tabindex");
 
     const $all_messages_rows = $(".top_left_all_messages");
     const $recent_views_rows = $(".top_left_recent_view");
