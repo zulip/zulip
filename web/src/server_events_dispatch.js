@@ -8,6 +8,7 @@ import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
+import {buddy_list} from "./buddy_list";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -471,6 +472,16 @@ export function dispatch_normal_event(event) {
                         settings_users.update_bot_data(event.person.user_id);
                     }
                     break;
+                case "remove": {
+                    const user_id = event.person.user_id;
+                    people.remove_inaccessible_user(user_id);
+                    buddy_list.maybe_remove_user_id({user_id});
+                    message_live_update.update_user_full_name(
+                        user_id,
+                        people.INACCESSIBLE_USER_NAME,
+                    );
+                    break;
+                }
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);
                     break;

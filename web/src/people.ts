@@ -1408,6 +1408,16 @@ export function deactivate(person: User): void {
     non_active_user_dict.set(person.user_id, person);
 }
 
+export function remove_inaccessible_user(user_id: number): void {
+    // We do not track inaccessible users in active_user_dict.
+    active_user_dict.delete(user_id);
+
+    // Create unknown user object for the inaccessible user.
+    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
+    _add_user(unknown_user);
+}
+
 export function report_late_add(user_id: number, email: string): void {
     // If the events system is not running, then it is expected that
     // we will fetch messages from the server that were sent by users
