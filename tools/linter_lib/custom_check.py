@@ -622,6 +622,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/zerver/emails",
             "templates/analytics/realm_details.html",
+            "templates/analytics/remote_server_support.html",
             "templates/analytics/support.html",
         },
         "description": "`title` value should be translatable.",
