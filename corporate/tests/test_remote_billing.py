@@ -55,6 +55,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             remote_server_uuid=str(self.server.uuid),
             remote_realm_uuid=str(user.realm.uuid),
             authenticated_at=datetime_to_timestamp(now),
+            uri_scheme="http://",
             next_page=next_page,
         )
         self.assertEqual(
@@ -154,13 +155,81 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         self.assert_in_success_response([desdemona.delivery_email], result)
 
         # Now go there again, simulating doing this after the session has expired.
-        # We should be denied access.
+        # We should be denied access and redirected to re-auth.
         with time_machine.travel(
             now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 1),
             tick=False,
         ):
             result = self.client_get(final_url, subdomain="selfhosting")
-        self.assert_json_error(result, "User not authenticated")
+
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(
+                result["Location"],
+                f"http://{desdemona.realm.host}/self-hosted-billing/?next_page=plans",
+            )
+
+            # Opening this re-auth URL in result["Location"] is same as re-doing the auth
+            # flow via execute_remote_billing_authentication_flow with next_page="plans".
+            # So let's test that and assert that we end up successfully re-authed on the /plans
+            # page.
+            result = self.execute_remote_billing_authentication_flow(desdemona, next_page="plans")
+            self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+            result = self.client_get(result["Location"], subdomain="selfhosting")
+            self.assert_in_success_response(["Your remote user info:"], result)
+            self.assert_in_success_response([desdemona.delivery_email], result)
+
+    @responses.activate
+    def test_remote_billing_unauthed_access(self) -> None:
+        now = timezone_now()
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+
+        self.add_mock_response()
+        send_realms_only_to_push_bouncer()
+
+        # Straight-up access without authing at all:
+        result = self.client_get(f"/realm/{realm.uuid!s}/plans", subdomain="selfhosting")
+        self.assert_json_error(result, "User not authenticated", 401)
+
+        result = self.execute_remote_billing_authentication_flow(desdemona)
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+
+        final_url = result["Location"]
+
+        # Sanity check - access is granted after authing:
+        result = self.client_get(final_url, subdomain="selfhosting")
+        self.assertEqual(result.status_code, 200)
+
+        # Now mess with the identity dict in the session in unlikely ways so that it should
+        # not grant access.
+        # First delete the RemoteRealm entry for this session.
+        RemoteRealm.objects.filter(uuid=realm.uuid).delete()
+
+        with self.assertLogs("django.request", "ERROR") as m, self.assertRaises(AssertionError):
+            self.client_get(final_url, subdomain="selfhosting")
+        self.assertIn(
+            "The remote realm is missing despite being in the RemoteBillingIdentityDict",
+            m.output[0],
+        )
+
+        # Try the case where the identity dict is simultaneously expired.
+        with time_machine.travel(
+            now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
+            tick=False,
+        ):
+            with self.assertLogs("django.request", "ERROR") as m, self.assertRaises(AssertionError):
+                self.client_get(final_url, subdomain="selfhosting")
+        # The django.request log should be a traceback, mentioning the relevant
+        # exceptions that occurred.
+        self.assertIn(
+            "RemoteBillingIdentityExpiredError",
+            m.output[0],
+        )
+        self.assertIn(
+            "AssertionError",
+            m.output[0],
+        )
 
     @responses.activate
     def test_remote_billing_authentication_flow_to_sponsorship_page(self) -> None:

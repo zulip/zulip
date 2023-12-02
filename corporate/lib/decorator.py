@@ -1,17 +1,21 @@
 from functools import wraps
 from typing import Callable
+from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from typing_extensions import Concatenate, ParamSpec
 
 from corporate.lib.remote_billing_util import (
+    RemoteBillingIdentityExpiredError,
     get_remote_realm_from_session,
     get_remote_server_from_session,
 )
 from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.url_encoding import append_url_query_string
+from zilencer.models import RemoteRealm
 
 ParamT = ParamSpec("ParamT")
 
@@ -52,7 +56,65 @@ def authenticated_remote_realm_management_endpoint(
         if realm_uuid is not None and not isinstance(realm_uuid, str):
             raise TypeError("realm_uuid must be a string or None")
 
-        remote_realm = get_remote_realm_from_session(request, realm_uuid)
+        try:
+            remote_realm = get_remote_realm_from_session(request, realm_uuid)
+        except RemoteBillingIdentityExpiredError as e:
+            # The user had an authenticated session with an identity_dict,
+            # but it expired.
+            # We want to redirect back to the start of their login flow
+            # at their {realm.host}/self-hosted-billing/ with a proper
+            # next parameter to take them back to what they're trying
+            # to access after re-authing.
+            # Note: Theoretically we could take the realm_uuid from the request
+            # path or params to figure out the remote_realm.host for the redirect,
+            # but that would mean leaking that .host value to anyone who knows
+            # the uuid. Therefore we limit ourselves to taking the realm_uuid
+            # from the identity_dict - since that proves that the user at least
+            # previously was successfully authenticated as a billing admin of that
+            # realm.
+            realm_uuid = e.realm_uuid
+            server_uuid = e.server_uuid
+            uri_scheme = e.uri_scheme
+            if realm_uuid is None:
+                # This doesn't make sense - if get_remote_realm_from_session
+                # found an expired identity dict, it should have had a realm_uuid.
+                raise AssertionError
+
+            assert server_uuid is not None, "identity_dict with realm_uuid must have server_uuid"
+            assert uri_scheme is not None, "identity_dict with realm_uuid must have uri_scheme"
+
+            try:
+                remote_realm = RemoteRealm.objects.get(uuid=realm_uuid, server__uuid=server_uuid)
+            except RemoteRealm.DoesNotExist:
+                # This should be impossible - unless the RemoteRealm existed and somehow the row
+                # was deleted.
+                raise AssertionError
+
+            # Using EXTERNAL_URI_SCHEME means we'll do https:// in production, which is
+            # the sane default - while having http:// in development, which will allow
+            # these redirects to work there for testing.
+            url = urljoin(uri_scheme + remote_realm.host, "/self-hosted-billing/")
+
+            # Our endpoint URLs in this subsystem end with something like
+            # /sponsorship or /plans etc.
+            # Therefore we can use this nice property to figure out easily what
+            # kind of page the user is trying to access and find the right value
+            # for the `next` query parameter.
+            path = request.path
+            if path.endswith("/"):  # nocoverage
+                path = path[:-1]
+
+            page_type = path.split("/")[-1]
+
+            from corporate.views.remote_billing_page import (
+                VALID_NEXT_PAGES as REMOTE_BILLING_VALID_NEXT_PAGES,
+            )
+
+            if page_type in REMOTE_BILLING_VALID_NEXT_PAGES:
+                query = urlencode({"next_page": page_type})
+                url = append_url_query_string(url, query)
+
+            return HttpResponseRedirect(url)
 
         billing_session = RemoteRealmBillingSession(remote_realm)
         return view_func(request, billing_session)

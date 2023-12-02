@@ -12,7 +12,10 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
-from corporate.lib.decorator import self_hosting_management_endpoint
+from corporate.lib.decorator import (
+    authenticated_remote_realm_management_endpoint,
+    self_hosting_management_endpoint,
+)
 from corporate.lib.remote_billing_util import (
     REMOTE_BILLING_SESSION_VALIDITY_SECONDS,
     LegacyServerIdentityDict,
@@ -20,6 +23,7 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingUserDict,
     get_identity_dict_from_session,
 )
+from corporate.lib.stripe import RemoteRealmBillingSession
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
@@ -42,6 +46,7 @@ def remote_server_billing_entry(
     *,
     user: Json[UserDataForRemoteBilling],
     realm: Json[RealmDataForAnalytics],
+    uri_scheme: Literal["http://", "https://"] = "https://",
     next_page: VALID_NEXT_PAGES_TYPE = None,
 ) -> HttpResponse:
     if not settings.DEVELOPMENT:
@@ -61,6 +66,7 @@ def remote_server_billing_entry(
         remote_server_uuid=str(remote_server.uuid),
         remote_realm_uuid=str(remote_realm.uuid),
         authenticated_at=datetime_to_timestamp(timezone_now()),
+        uri_scheme=uri_scheme,
         next_page=next_page,
     )
 
@@ -194,9 +200,11 @@ def remote_billing_plans_common(
     return render_tmp_remote_billing_page(request, realm_uuid=realm_uuid, server_uuid=server_uuid)
 
 
-@self_hosting_management_endpoint
-@typed_endpoint
-def remote_realm_plans_page(request: HttpRequest, *, realm_uuid: PathOnly[str]) -> HttpResponse:
+@authenticated_remote_realm_management_endpoint
+def remote_realm_plans_page(
+    request: HttpRequest, billing_session: RemoteRealmBillingSession
+) -> HttpResponse:
+    realm_uuid = str(billing_session.remote_realm.uuid)
     return remote_billing_plans_common(request, realm_uuid=realm_uuid, server_uuid=None)
 
 

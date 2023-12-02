@@ -1,11 +1,11 @@
 import logging
-from typing import Optional, TypedDict, Union, cast
+from typing import Literal, Optional, TypedDict, Union, cast
 
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RemoteBillingAuthenticationError
 from zerver.lib.timestamp import datetime_to_timestamp
 from zilencer.models import RemoteRealm, RemoteZulipServer
 
@@ -29,6 +29,7 @@ class RemoteBillingIdentityDict(TypedDict):
     remote_realm_uuid: str
 
     authenticated_at: int
+    uri_scheme: Literal["http://", "https://"]
 
     next_page: Optional[str]
 
@@ -39,6 +40,19 @@ class LegacyServerIdentityDict(TypedDict):
     remote_server_uuid: str
 
     authenticated_at: int
+
+
+class RemoteBillingIdentityExpiredError(Exception):
+    def __init__(
+        self,
+        *,
+        realm_uuid: Optional[str] = None,
+        server_uuid: Optional[str] = None,
+        uri_scheme: Optional[Literal["http://", "https://"]] = None,
+    ) -> None:
+        self.realm_uuid = realm_uuid
+        self.server_uuid = server_uuid
+        self.uri_scheme = uri_scheme
 
 
 def get_identity_dict_from_session(
@@ -66,7 +80,14 @@ def get_identity_dict_from_session(
         datetime_to_timestamp(timezone_now()) - result["authenticated_at"]
         > REMOTE_BILLING_SESSION_VALIDITY_SECONDS
     ):
-        return None
+        # In this case we raise, because callers want to catch this as an explicitly
+        # different scenario from the user not being authenticated, to handle it nicely
+        # by redirecting them to their login page.
+        raise RemoteBillingIdentityExpiredError(
+            realm_uuid=result.get("remote_realm_uuid"),
+            server_uuid=result.get("remote_server_uuid"),
+            uri_scheme=result.get("uri_scheme"),
+        )
 
     return result
 
@@ -83,7 +104,7 @@ def get_remote_realm_from_session(
     )
 
     if identity_dict is None:
-        raise JsonableError(_("User not authenticated"))
+        raise RemoteBillingAuthenticationError
 
     remote_server_uuid = identity_dict["remote_server_uuid"]
     remote_realm_uuid = identity_dict["remote_realm_uuid"]
