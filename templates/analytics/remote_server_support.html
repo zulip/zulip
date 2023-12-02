@@ -18,6 +18,20 @@
         </center>
     </form>
 
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <center>
+            {{ error_message }}
+        </center>
+    </div>
+    {% elif success_message %}
+    <div class="alert alert-success">
+        <center>
+            {{ success_message }}
+        </center>
+    </div>
+    {% endif %}
+
     <div id="remote-server-query-results">
         {% for remote_server in remote_servers %}
         <div class="support-query-result">

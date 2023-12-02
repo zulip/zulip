@@ -380,6 +380,12 @@ def get_remote_servers_for_support(
 def remote_servers_support(
     request: HttpRequest, query: Optional[str] = REQ("q", default=None)
 ) -> HttpResponse:
+    context: Dict[str, Any] = {}
+
+    if "success_message" in request.session:
+        context["success_message"] = request.session["success_message"]
+        del request.session["success_message"]
+
     email_to_search = None
     hostname_to_search = None
     if query:
@@ -400,11 +406,11 @@ def remote_servers_support(
         except MissingDataError:
             remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
 
+    context["remote_servers"] = remote_servers
+    context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
+
     return render(
         request,
         "analytics/remote_server_support.html",
-        context=dict(
-            remote_servers=remote_servers,
-            remote_server_to_max_monthly_messages=remote_server_to_max_monthly_messages,
-        ),
+        context=context,
     )
