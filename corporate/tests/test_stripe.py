@@ -5300,7 +5300,7 @@ class TestSupportBillingHelpers(StripeTestCase):
             new_plan_tier=CustomerPlan.TIER_CLOUD_PLUS,
         )
         success_message = billing_session.process_support_view_request(support_request)
-        self.assertEqual(success_message, "zulip upgraded to Zulip Plus")
+        self.assertEqual(success_message, "zulip upgraded to Zulip Cloud Plus")
         customer.refresh_from_db()
         new_plan = get_current_plan_by_customer(customer)
         assert new_plan is not None

@@ -348,7 +348,7 @@ class LegacyServerLoginTest(BouncerTestCase):
         # Access on the upgrade page is granted, assert a basic string proving that.
         result = self.client_get(result["Location"], subdomain="selfhosting")
         self.assert_in_success_response(
-            [f"Upgrade {self.server.hostname} to Zulip Self-Hosted Business"], result
+            [f"Upgrade {self.server.hostname} to Zulip Business"], result
         )
 
     def test_server_login_success_with_next_page(self) -> None:
@@ -427,7 +427,7 @@ class LegacyServerLoginTest(BouncerTestCase):
         # Sanity check: access on the upgrade page is granted.
         result = self.client_get(result["Location"], subdomain="selfhosting")
         self.assert_in_success_response(
-            [f"Upgrade {self.server.hostname} to Zulip Self-Hosted Business"], result
+            [f"Upgrade {self.server.hostname} to Zulip Business"], result
         )
 
         # Now we can simulate an expired identity dict in the session.
