@@ -646,6 +646,10 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
+    def get_email(self) -> str:
+        pass
+
+    @abstractmethod
     def current_count_for_billed_licenses(self) -> int:
         pass
 
@@ -2129,6 +2133,11 @@ class RealmBillingSession(BillingSession):
         return get_customer_by_realm(self.realm)
 
     @override
+    def get_email(self) -> str:
+        assert self.user is not None
+        return self.user.delivery_email
+
+    @override
     def current_count_for_billed_licenses(self) -> int:
         return get_latest_seat_count(self.realm)
 
@@ -2188,7 +2197,7 @@ class RealmBillingSession(BillingSession):
         metadata["realm_str"] = self.realm.string_id
         realm_stripe_customer_data = StripeCustomerData(
             description=f"{self.realm.string_id} ({self.realm.name})",
-            email=self.user.delivery_email,
+            email=self.get_email(),
             metadata=metadata,
         )
         return realm_stripe_customer_data
@@ -2199,7 +2208,7 @@ class RealmBillingSession(BillingSession):
     ) -> Dict[str, Any]:
         assert self.user is not None
         updated_metadata = dict(
-            user_email=self.user.delivery_email,
+            user_email=self.get_email(),
             realm_id=self.realm.id,
             realm_str=self.realm.string_id,
             user_id=self.user.id,
@@ -2224,7 +2233,7 @@ class RealmBillingSession(BillingSession):
             amount=amount,
             description=description,
             plan_name=plan_name,
-            email=self.user.delivery_email,
+            email=self.get_email(),
         )
 
     @override
@@ -2334,7 +2343,7 @@ class RealmBillingSession(BillingSession):
         assert self.user is not None
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.realm.name,
-            email=self.user.delivery_email,
+            email=self.get_email(),
             is_demo_organization=self.realm.demo_organization_scheduled_deletion_date is not None,
             demo_organization_scheduled_deletion_date=self.realm.demo_organization_scheduled_deletion_date,
             is_self_hosting=False,
@@ -2393,7 +2402,7 @@ class RealmBillingSession(BillingSession):
             realm_user=self.user,
             user_info=SponsorshipApplicantInfo(
                 name=self.user.full_name,
-                email=self.user.delivery_email,
+                email=self.get_email(),
                 role=self.user.get_role_name(),
             ),
             realm_string_id=self.realm.string_id,
@@ -2442,6 +2451,12 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @override
     def get_customer(self) -> Optional[Customer]:
         return get_customer_by_remote_realm(self.remote_realm)
+
+    @override
+    def get_email(self) -> str:
+        # BUG: This is an email for the whole server. We probably
+        # need a separable field here.
+        return self.remote_realm.server.contact_email
 
     @override
     def current_count_for_billed_licenses(self) -> int:
@@ -2502,9 +2517,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         metadata["remote_realm_host"] = str(self.remote_realm.host)
         realm_stripe_customer_data = StripeCustomerData(
             description=str(self.remote_realm),
-            # BUG: This is an email for the whole server. We probably
-            # need a separable field here.
-            email=self.remote_realm.server.contact_email,
+            email=self.get_email(),
             metadata=metadata,
         )
         return realm_stripe_customer_data
@@ -2533,9 +2546,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             amount=amount,
             description=description,
             plan_name=plan_name,
-            # BUG: This is an email for the whole server. We probably
-            # need a separable field here.
-            email=self.remote_realm.server.contact_email,
+            email=self.get_email(),
         )
 
     @override
@@ -2619,7 +2630,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     ) -> UpgradePageSessionTypeSpecificContext:
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.remote_realm.host,
-            email=self.remote_realm.server.contact_email,
+            email=self.get_email(),
             is_demo_organization=False,
             demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
@@ -2679,7 +2690,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             user_info=SponsorshipApplicantInfo(
                 # TODO: Plumb through the session data on the acting user.
                 name="Remote realm administrator",
-                email=self.remote_realm.server.contact_email,
+                email=self.get_email(),
                 # TODO: Set user_role when determining which set of users can access the page.
                 role="Remote realm administrator",
             ),
@@ -2734,6 +2745,10 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return get_customer_by_remote_server(self.remote_server)
 
     @override
+    def get_email(self) -> str:
+        return self.remote_server.contact_email
+
+    @override
     def current_count_for_billed_licenses(self) -> int:
         # TODO: Do the proper calculation here.
         return 10
@@ -2786,7 +2801,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         metadata["remote_server_str"] = str(self.remote_server)
         realm_stripe_customer_data = StripeCustomerData(
             description=str(self.remote_server),
-            email=self.remote_server.contact_email,
+            email=self.get_email(),
             metadata=metadata,
         )
         return realm_stripe_customer_data
@@ -2797,7 +2812,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     ) -> Dict[str, Any]:
         updated_metadata = dict(
             server=self.remote_server,
-            email=self.remote_server.contact_email,
+            email=self.get_email(),
             **metadata,
         )
         return updated_metadata
@@ -2815,7 +2830,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             amount=amount,
             description=description,
             plan_name=plan_name,
-            email=self.remote_server.contact_email,
+            email=self.get_email(),
         )
 
     @override
@@ -2907,7 +2922,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     ) -> UpgradePageSessionTypeSpecificContext:
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.remote_server.hostname,
-            email=self.remote_server.contact_email,
+            email=self.get_email(),
             is_demo_organization=False,
             demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
@@ -2961,7 +2976,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
                 # doing this flow, but could ask for it in the login
                 # form if desired.
                 name="Remote server administrator",
-                email=self.remote_server.contact_email,
+                email=self.get_email(),
                 role="Remote server administrator",
             ),
             # TODO: Check if this works on support page.
