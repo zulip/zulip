@@ -2637,7 +2637,10 @@ def do_convert(
 
         if mention_data is None:
             mention_backend = MentionBackend(message_realm.id)
-            mention_data = MentionData(mention_backend, content)
+            message_sender = None
+            if message is not None:
+                message_sender = message.sender
+            mention_data = MentionData(mention_backend, content, message_sender)
 
         stream_names = possible_linked_stream_names(content)
         stream_name_info = mention_data.get_stream_name_map(stream_names)

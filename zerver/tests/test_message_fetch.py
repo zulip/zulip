@@ -4301,7 +4301,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         realm_id = hamlet.realm.id
         rendering_result = render_markdown(msg, content)
         mention_backend = MentionBackend(realm_id)
-        mention_data = MentionData(mention_backend, content)
+        mention_data = MentionData(mention_backend, content, msg.sender)
         do_update_message(
             hamlet,
             msg,
