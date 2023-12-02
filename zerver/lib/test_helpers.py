@@ -39,7 +39,7 @@ from django.test import override_settings
 from django.urls import URLResolver
 from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
-from typing_extensions import override
+from typing_extensions import ParamSpec, override
 
 from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.user_settings import do_change_user_setting
@@ -563,15 +563,15 @@ def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> E
     return data
 
 
-FuncT = TypeVar("FuncT", bound=Callable[..., None])
+P = ParamSpec("P")
 
 
-def use_s3_backend(method: FuncT) -> FuncT:
+def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)
-    def new_method(*args: Any, **kwargs: Any) -> Any:
+    def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
         with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
             return method(*args, **kwargs)
 

@@ -11,7 +11,7 @@ types-boto
 types-chardet
 types-decorator
 types-jsonschema
-types-Markdown
+types-Markdown<3.5.0.3  # https://github.com/python/typeshed/pull/10972#pullrequestreview-1760743552
 types-oauthlib
 types-polib
 types-pika
