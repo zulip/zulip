@@ -1,6 +1,5 @@
 import urllib
 from contextlib import suppress
-from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
 from typing import Any, Dict, Iterable, List, Optional, Union
@@ -53,19 +52,13 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import (
-        RealmBillingSession,
-        SupportType,
-        SupportViewRequest,
-        get_latest_seat_count,
+    from corporate.lib.stripe import RealmBillingSession, SupportType, SupportViewRequest
+    from corporate.lib.support import (
+        PlanData,
+        get_current_plan_data_for_support_view,
+        get_customer_discount_for_support_view,
     )
-    from corporate.lib.support import get_customer_discount_for_support_view
-    from corporate.models import (
-        Customer,
-        CustomerPlan,
-        get_current_plan_by_realm,
-        get_customer_by_realm,
-    )
+    from corporate.models import CustomerPlan
 
 
 def get_plan_name(plan_type: int) -> str:
@@ -139,14 +132,6 @@ VALID_BILLING_MODALITY_VALUES = [
     "send_invoice",
     "charge_automatically",
 ]
-
-
-@dataclass
-class PlanData:
-    customer: Optional["Customer"] = None
-    current_plan: Optional["CustomerPlan"] = None
-    licenses: Optional[int] = None
-    licenses_used: Optional[int] = None
 
 
 @require_server_admin
@@ -343,23 +328,9 @@ def support(
         )
         plan_data: Dict[int, PlanData] = {}
         for realm in all_realms:
-            current_plan = get_current_plan_by_realm(realm)
-            plan_data[realm.id] = PlanData(
-                customer=get_customer_by_realm(realm),
-                current_plan=current_plan,
-            )
-            if current_plan is not None:
-                billing_session = RealmBillingSession(user=None, realm=realm)
-                new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-                    current_plan, timezone_now()
-                )
-                if last_ledger_entry is not None:
-                    if new_plan is not None:
-                        plan_data[realm.id].current_plan = new_plan
-                    else:
-                        plan_data[realm.id].current_plan = current_plan
-                    plan_data[realm.id].licenses = last_ledger_entry.licenses
-                    plan_data[realm.id].licenses_used = get_latest_seat_count(realm)
+            billing_session = RealmBillingSession(user=None, realm=realm)
+            realm_plan_data = get_current_plan_data_for_support_view(billing_session)
+            plan_data[realm.id] = realm_plan_data
         context["plan_data"] = plan_data
 
     def get_realm_owner_emails_as_string(realm: Realm) -> str:
