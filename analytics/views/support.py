@@ -388,6 +388,7 @@ def remote_servers_support(
     remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -411,7 +412,9 @@ def remote_servers_support(
 
         support_view_request = None
 
-        if sponsorship_pending is not None:
+        if approve_sponsorship:
+            support_view_request = SupportViewRequest(support_type=SupportType.approve_sponsorship)
+        elif sponsorship_pending is not None:
             support_view_request = SupportViewRequest(
                 support_type=SupportType.update_sponsorship_status,
                 sponsorship_status=sponsorship_pending,
