@@ -19,6 +19,7 @@ import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
+import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
@@ -133,9 +134,13 @@ export function send_message_success(request, data) {
 
     if (request.type === "stream") {
         if (data.automatic_new_visibility_policy) {
+            if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
+                return;
+            }
             // topic has been automatically unmuted or followed. No need to
             // suggest the user to unmute. Show the banner and return.
             compose_notifications.notify_automatic_new_visibility_policy(request, data);
+            onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
             return;
         }
 
