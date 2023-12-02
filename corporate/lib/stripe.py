@@ -763,7 +763,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
         pass
 
     @catch_stripe_errors
@@ -867,7 +867,7 @@ class BillingSession(ABC):
         self,
         manual_license_management: bool,
     ) -> Dict[str, Any]:
-        metadata = self.get_metadata_for_stripe_update_card_for_realm_upgrade_session()
+        metadata = self.get_metadata_for_stripe_update_card()
         customer = self.update_or_create_stripe_customer()
         cancel_url = f"{self.billing_session_url}/upgrade/"
         if manual_license_management:
@@ -2332,7 +2332,7 @@ class RealmBillingSession(BillingSession):
         return False
 
     @override
-    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
         assert self.user is not None
         return {
             "type": "card_update",
@@ -2599,7 +2599,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         return False
 
     @override
-    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
         return {
             "type": "card_update",
             # TODO: Add user identity metadata from the remote realm identity
@@ -2875,7 +2875,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return False
 
     @override
-    def get_metadata_for_stripe_update_card_for_realm_upgrade_session(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
         return {
             "type": "card_update",
             # TODO: Maybe add some user identity metadata from the remote server identity
