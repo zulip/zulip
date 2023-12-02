@@ -76,7 +76,7 @@
         },
         "paid": true,
         "payment_intent": "pi_NORMALIZED00000000000001",
-        "payment_method": "pm_1ODZbCDEQaroqDjsGY2lvS6F",
+        "payment_method": "pm_1OIlUmDEQaroqDjs0AAGeLzU",
         "payment_method_details": {
           "card": {
             "amount_authorized": 48000,
@@ -87,7 +87,7 @@
               "cvc_check": "pass"
             },
             "country": "US",
-            "exp_month": 11,
+            "exp_month": 12,
             "exp_year": 2024,
             "extended_authorization": {
               "status": "disabled"
@@ -116,9 +116,10 @@
           },
           "type": "card"
         },
+        "radar_options": {},
         "receipt_email": "hamlet@zulip.com",
         "receipt_number": null,
-        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKK-236oGMgbWN2nUDmA6LBah4Z3Bgkq_Qz9wbuLNU_ZsAGIfmiipR-Ub-1CsDS0xXPp58vSA5hjm4z1e",
+        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKKj5qqsGMgabYrMy7qY6LBbxILhQWV5O1SayjyKwv--4CWfCdYX-glFcOh9y-Y5PeEAvfpEOpsmMtmwm",
         "refunded": false,
         "refunds": {
           "data": [],
@@ -143,7 +144,7 @@
     "total_count": 1,
     "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000001_secret_GhNIQ1qIF31zO8VOgP3Au41k0",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_PINrM33YM9KIsKSnhNma2VvhN",
   "confirmation_method": "automatic",
   "created": 1010000001,
   "currency": "usd",
@@ -170,7 +171,7 @@
   "next_action": null,
   "object": "payment_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_1ODZbCDEQaroqDjsGY2lvS6F",
+  "payment_method": "pm_1OIlUmDEQaroqDjs0AAGeLzU",
   "payment_method_configuration_details": null,
   "payment_method_options": {
     "card": {
