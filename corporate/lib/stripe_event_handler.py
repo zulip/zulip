@@ -123,6 +123,7 @@ def handle_payment_intent_succeeded_event(
         description=description,
         discountable=False,
     )
+    plan_tier = int(metadata["plan_tier"])
     try:
         ensure_customer_does_not_have_active_plan(payment_intent.customer)
     except UpgradeWithExistingPlanError as e:
@@ -131,7 +132,8 @@ def handle_payment_intent_succeeded_event(
             collection_method="charge_automatically",
             customer=stripe_payment_intent.customer,
             days_until_due=None,
-            statement_descriptor="Cloud Standard Credit",
+            statement_descriptor=CustomerPlan.name_from_tier(plan_tier).replace("Zulip ", "")
+            + " Credit",
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
         raise e
@@ -140,7 +142,7 @@ def handle_payment_intent_succeeded_event(
         payment_intent.customer, metadata.get("user_id")
     )
     billing_session.process_initial_upgrade(
-        CustomerPlan.TIER_CLOUD_STANDARD,
+        plan_tier,
         int(metadata["licenses"]),
         metadata["license_management"] == "automatic",
         int(metadata["billing_schedule"]),

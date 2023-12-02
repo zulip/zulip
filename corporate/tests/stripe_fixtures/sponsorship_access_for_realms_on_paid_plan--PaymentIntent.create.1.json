@@ -55,6 +55,7 @@
           "billing_schedule": "1",
           "license_management": "automatic",
           "licenses": "6",
+          "plan_tier": "1",
           "price_per_license": "8000",
           "realm_id": "1",
           "realm_str": "zulip",
@@ -76,7 +77,7 @@
         },
         "paid": true,
         "payment_intent": "pi_NORMALIZED00000000000001",
-        "payment_method": "pm_1OFf15DEQaroqDjs1q9XiIYO",
+        "payment_method": "pm_1OIla7DEQaroqDjs1Clp2qPy",
         "payment_method_details": {
           "card": {
             "amount_authorized": 48000,
@@ -87,7 +88,7 @@
               "cvc_check": "pass"
             },
             "country": "US",
-            "exp_month": 11,
+            "exp_month": 12,
             "exp_year": 2024,
             "extended_authorization": {
               "status": "disabled"
@@ -116,9 +117,10 @@
           },
           "type": "card"
         },
+        "radar_options": {},
         "receipt_email": "hamlet@zulip.com",
         "receipt_number": null,
-        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKPjk_aoGMgZ2xhla3UQ6LBZ1xB9jef8E7cgmIXMzB-HUUA6ELeya1StU6zBxLj5-JYRe97hmmqZd3S-C",
+        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKPP7qqsGMgahBLsndjk6LBZoXgulf69rWsB4tnOoaJVzB3tp-E9iCpxTx_eialqqbYm8jjCKVbsM5KZI",
         "refunded": false,
         "refunds": {
           "data": [],
@@ -143,7 +145,7 @@
     "total_count": 1,
     "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000001_secret_M6ApwY4vAGFmAi20dvhDBb0IR",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_L9an0tnDQUFOpjq1Jqx3MMjbo",
   "confirmation_method": "automatic",
   "created": 1000000000,
   "currency": "usd",
@@ -159,6 +161,7 @@
     "billing_schedule": "1",
     "license_management": "automatic",
     "licenses": "6",
+    "plan_tier": "1",
     "price_per_license": "8000",
     "realm_id": "1",
     "realm_str": "zulip",
@@ -170,7 +173,7 @@
   "next_action": null,
   "object": "payment_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_1OFf15DEQaroqDjs1q9XiIYO",
+  "payment_method": "pm_1OIla7DEQaroqDjs1Clp2qPy",
   "payment_method_configuration_details": null,
   "payment_method_options": {
     "card": {

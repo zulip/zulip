@@ -6,7 +6,7 @@
   "description": "Zulip Cloud Standard - renewal",
   "discountable": false,
   "discounts": [],
-  "id": "ii_NORMALIZED00000000000001",
+  "id": "ii_NORMALIZED00000000000002",
   "invoice": null,
   "livemode": false,
   "metadata": {},
@@ -19,7 +19,7 @@
   "price": {
     "active": false,
     "billing_scheme": "per_unit",
-    "created": 1010000005,
+    "created": 1010000004,
     "currency": "usd",
     "custom_unit_amount": null,
     "id": "price_NORMALIZED00000000000001",

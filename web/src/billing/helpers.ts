@@ -157,7 +157,7 @@ export function redirect_to_billing_with_successful_upgrade(billing_base_url: st
     window.location.replace(
         billing_base_url +
             "/billing/?success_message=" +
-            encodeURIComponent("Your organization has been upgraded to Zulip Cloud Standard."),
+            encodeURIComponent("Your organization has been upgraded to PLAN_NAME."),
     );
 }
 

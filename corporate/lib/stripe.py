@@ -500,6 +500,7 @@ class UpgradeRequest:
     salt: str
     license_management: Optional[str]
     licenses: Optional[int]
+    tier: int
 
 
 @dataclass
@@ -677,11 +678,29 @@ class BillingSession(ABC):
     ) -> Dict[str, Any]:
         pass
 
-    @abstractmethod
     def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
+        self,
+        price_per_license: int,
+        licenses: int,
+        plan_tier: int,
+        email: str,
     ) -> StripePaymentIntentData:
-        pass
+        if hasattr(self, "support_session") and self.support_session:  # nocoverage
+            raise BillingError(
+                "invalid support session",
+                "Support requests do not set any stripe billing information.",
+            )
+
+        amount = price_per_license * licenses
+
+        plan_name = CustomerPlan.name_from_tier(plan_tier)
+        description = f"Upgrade to {plan_name}, ${price_per_license/100} x {licenses}"
+        return StripePaymentIntentData(
+            amount=amount,
+            description=description,
+            plan_name=plan_name,
+            email=email,
+        )
 
     @abstractmethod
     def update_or_create_customer(
@@ -807,7 +826,9 @@ class BillingSession(ABC):
         # NOTE: This charges users immediately.
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
-        payment_intent_data = self.get_data_for_stripe_payment_intent(price_per_license, licenses)
+        payment_intent_data = self.get_data_for_stripe_payment_intent(
+            price_per_license, licenses, metadata["plan_tier"], self.get_email()
+        )
         # Ensure customers have a default payment method set.
         stripe_customer = stripe_get_customer(customer.stripe_customer_id)
         if not stripe_customer_has_credit_card_as_default_payment_method(stripe_customer):
@@ -979,6 +1000,7 @@ class BillingSession(ABC):
             "price_per_license": price_per_license,
             "seat_count": seat_count,
             "type": "upgrade",
+            "plan_tier": plan_tier,
         }
         updated_metadata = self.update_data_for_checkout_session_and_payment_intent(
             general_metadata
@@ -1138,7 +1160,7 @@ class BillingSession(ABC):
         # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
         if free_trial or not charge_automatically:
             self.process_initial_upgrade(
-                CustomerPlan.TIER_CLOUD_STANDARD,
+                upgrade_request.tier,
                 licenses,
                 automanage_licenses,
                 billing_schedule,
@@ -1148,7 +1170,7 @@ class BillingSession(ABC):
             data["organization_upgrade_successful"] = True
         else:
             stripe_payment_intent_id = self.setup_upgrade_payment_intent_and_charge(
-                CustomerPlan.TIER_CLOUD_STANDARD,
+                upgrade_request.tier,
                 seat_count,
                 licenses,
                 license_management,
@@ -1480,6 +1502,7 @@ class BillingSession(ABC):
                     "price_per_license": price_per_license,
                     "is_sponsorship_pending": customer.sponsorship_pending,
                     "discount_percent": format_discount_percentage(customer.default_discount),
+                    "is_self_hosted_billing": not isinstance(self, RealmBillingSession),
                 }
         return context
 
@@ -2217,26 +2240,6 @@ class RealmBillingSession(BillingSession):
         return updated_metadata
 
     @override
-    def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
-    ) -> StripePaymentIntentData:
-        # Support requests do not set any stripe billing information.
-        assert self.support_session is False
-        assert self.user is not None
-        amount = price_per_license * licenses
-
-        # TODO: Don't hardcode plan name; it should be looked up for
-        # the tier.
-        description = f"Upgrade to Zulip Cloud Standard, ${price_per_license/100} x {licenses}"
-        plan_name = "Zulip Cloud Standard"
-        return StripePaymentIntentData(
-            amount=amount,
-            description=description,
-            plan_name=plan_name,
-            email=self.get_email(),
-        )
-
-    @override
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
     ) -> Customer:
@@ -2533,23 +2536,6 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         return updated_metadata
 
     @override
-    def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
-    ) -> StripePaymentIntentData:
-        # Support requests do not set any stripe billing information.
-        assert self.support_session is False
-        amount = price_per_license * licenses
-        # TODO: Don't hardcode plan names.
-        description = f"Upgrade to Zulip X Standard, ${price_per_license/100} x {licenses}"
-        plan_name = "Zulip X Standard"
-        return StripePaymentIntentData(
-            amount=amount,
-            description=description,
-            plan_name=plan_name,
-            email=self.get_email(),
-        )
-
-    @override
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
     ) -> Customer:
@@ -2569,22 +2555,18 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
-        # TODO: Create actual plan types.
-
-        # This function needs to translate between the different
-        # formats of CustomerPlan.tier and Realm.plan_type.
         if is_sponsored:
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
-        elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
         elif (
-            tier == CustomerPlan.TIER_CLOUD_PLUS
+            tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
         ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = RemoteRealm.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
 
-        # TODO: Audit logging.
+        # TODO: Audit logging and set usage limits.
 
         self.remote_realm.plan_type = plan_type
         self.remote_realm.save(update_fields=["plan_type"])
@@ -2818,22 +2800,6 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return updated_metadata
 
     @override
-    def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
-    ) -> StripePaymentIntentData:
-        # Support requests do not set any stripe billing information.
-        assert self.support_session is False
-        amount = price_per_license * licenses
-        description = f"Upgrade to Zulip X Standard, ${price_per_license/100} x {licenses}"
-        plan_name = "Zulip X Standard"
-        return StripePaymentIntentData(
-            amount=amount,
-            description=description,
-            plan_name=plan_name,
-            email=self.get_email(),
-        )
-
-    @override
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
     ) -> Customer:
@@ -2859,16 +2825,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # formats of CustomerPlan.tier and RealmZulipServer.plan_type.
         if is_sponsored:
             plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
-        elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
         elif (
-            tier == CustomerPlan.TIER_CLOUD_PLUS
+            tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
         ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = RemoteZulipServer.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
 
-        # TODO: Audit logging.
+        # TODO: Audit logging and set usage limits.
 
         self.remote_server.plan_type = plan_type
         self.remote_server.save(update_fields=["plan_type"])
