@@ -148,6 +148,11 @@ def self_hosting_auth_redirect(
     post_data = {
         "user": user_info.model_dump_json(),
         "realm": realm_info.model_dump_json(),
+        # The uri_scheme is necessary for the bouncer to know the correct URL
+        # to redirect the user to for re-authing in case the session expires.
+        # Otherwise, the bouncer would know only the realm.host but be missing
+        # the knowledge of whether to use http or https.
+        "uri_scheme": settings.EXTERNAL_URI_SCHEME,
     }
     if next_page is not None:
         post_data["next_page"] = next_page
