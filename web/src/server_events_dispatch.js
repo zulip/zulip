@@ -145,6 +145,7 @@ export function dispatch_normal_event(event) {
 
         case "onboarding_steps":
             hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
+            onboarding_steps.update_notice_to_display(event.onboarding_steps);
             page_params.onboarding_steps = page_params.onboarding_steps
                 ? [...page_params.onboarding_steps, ...event.onboarding_steps]
                 : event.onboarding_steps;

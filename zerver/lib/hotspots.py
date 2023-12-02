@@ -79,7 +79,11 @@ class OneTimeNotice:
         }
 
 
-ONE_TIME_NOTICES: List[OneTimeNotice] = []
+ONE_TIME_NOTICES: List[OneTimeNotice] = [
+    OneTimeNotice(
+        name="visibility_policy_banner",
+    ),
+]
 
 # We would most likely implement new hotspots in the future that aren't
 # a part of the initial tutorial. To that end, classifying them into

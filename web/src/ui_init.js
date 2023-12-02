@@ -75,6 +75,7 @@ import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navbar_help_menu from "./navbar_help_menu";
 import * as navigate from "./navigate";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -692,6 +693,7 @@ export function initialize_everything() {
     });
     drafts.initialize();
     drafts_overlay_ui.initialize();
+    onboarding_steps.initialize();
     hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();
