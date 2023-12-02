@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from django.conf import settings
 from django.core import signing
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.crypto import constant_time_compare
@@ -242,6 +242,10 @@ def remote_billing_legacy_server_login(
             "corporate/legacy_server_login.html",
             context={"error_message": False},
         )
+
+    # The form must be submitted via POST.
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
 
     try:
         remote_server = get_remote_server_by_uuid(server_org_id)
