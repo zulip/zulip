@@ -8,9 +8,9 @@
           "account_country": "US",
           "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
-          "amount_due": 7200,
+          "amount_due": 960000,
           "amount_paid": 0,
-          "amount_remaining": 7200,
+          "amount_remaining": 960000,
           "amount_shipping": 0,
           "application": null,
           "application_fee_amount": null,
@@ -29,7 +29,7 @@
           "custom_fields": null,
           "customer": "cus_NORMALIZED0002",
           "customer_address": null,
-          "customer_email": "king@lear.org",
+          "customer_email": "hamlet@zulip.com",
           "customer_name": null,
           "customer_phone": null,
           "customer_shipping": null,
@@ -46,18 +46,18 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QMWNiamVvamNtMWo5Q3I4RVR0cDNxZmxlSjlYeFlULDkwNzk2NDYw02005SuvDQni?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpMSlFpamJ6ejdlcjJqM3BJRmNvcnloelVsaDVZLDkyMDM0ODcz0200jA0q3ZOP?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QMWNiamVvamNtMWo5Q3I4RVR0cDNxZmxlSjlYeFlULDkwNzk2NDYw02005SuvDQni/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpMSlFpamJ6ejdlcjJqM3BJRmNvcnloelVsaDVZLDkyMDM0ODcz0200jA0q3ZOP/pdf?s=ap",
           "last_finalization_error": null,
           "latest_revision": null,
           "lines": {
             "data": [
               {
-                "amount": 14400,
-                "amount_excluding_tax": 14400,
+                "amount": 960000,
+                "amount_excluding_tax": 960000,
                 "currency": "usd",
-                "description": "Zulip Plus - renewal",
+                "description": "Zulip Cloud Standard - renewal",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -67,8 +67,8 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1000000000,
-                  "start": 1000000000
+                  "end": 1420167845,
+                  "start": 1388631845
                 },
                 "plan": null,
                 "price": {
@@ -89,19 +89,19 @@
                   "tiers_mode": null,
                   "transform_quantity": null,
                   "type": "one_time",
-                  "unit_amount": 1600,
-                  "unit_amount_decimal": "1600"
+                  "unit_amount": 8000,
+                  "unit_amount_decimal": "8000"
                 },
                 "proration": false,
                 "proration_details": {
                   "credited_items": null
                 },
-                "quantity": 9,
+                "quantity": 120,
                 "subscription": null,
                 "tax_amounts": [],
                 "tax_rates": [],
                 "type": "invoiceitem",
-                "unit_amount_excluding_tax": "1600"
+                "unit_amount_excluding_tax": "8000"
               }
             ],
             "has_more": false,
@@ -138,8 +138,8 @@
           "rendering_options": null,
           "shipping_cost": null,
           "shipping_details": null,
-          "starting_balance": -7200,
-          "statement_descriptor": "Zulip Plus",
+          "starting_balance": 0,
+          "statement_descriptor": "Zulip Cloud Standard",
           "status": "open",
           "status_transitions": {
             "finalized_at": 1000000000,
@@ -151,19 +151,19 @@
           "subscription_details": {
             "metadata": null
           },
-          "subtotal": 14400,
-          "subtotal_excluding_tax": 14400,
+          "subtotal": 960000,
+          "subtotal_excluding_tax": 960000,
           "tax": null,
           "test_clock": null,
-          "total": 14400,
+          "total": 960000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 14400,
+          "total_excluding_tax": 960000,
           "total_tax_amounts": [],
           "transfer_data": null,
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1ODZMmDEQaroqDjsNuCDHeFl",
+      "id": "evt_1OIlXBDEQaroqDjsZj40mhUl",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,

@@ -42,7 +42,7 @@
                 },
                 "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
                 "captured": true,
-                "created": 1010000004,
+                "created": 1010000005,
                 "currency": "usd",
                 "customer": "cus_NORMALIZED0001",
                 "description": "Upgrade to Zulip Cloud Standard, $80.0 x 6",
@@ -61,6 +61,7 @@
                   "billing_schedule": "1",
                   "license_management": "automatic",
                   "licenses": "6",
+                  "plan_tier": "1",
                   "price_per_license": "8000",
                   "realm_id": "1",
                   "realm_str": "zulip",
@@ -82,7 +83,7 @@
                 },
                 "paid": true,
                 "payment_intent": "pi_NORMALIZED00000000000001",
-                "payment_method": "pm_1ODZZeDEQaroqDjsJoaoeBMM",
+                "payment_method": "pm_1OIlZWDEQaroqDjsIEStkUZh",
                 "payment_method_details": {
                   "card": {
                     "amount_authorized": 48000,
@@ -93,7 +94,7 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 11,
+                    "exp_month": 12,
                     "exp_year": 2024,
                     "extended_authorization": {
                       "status": "disabled"
@@ -122,9 +123,10 @@
                   },
                   "type": "card"
                 },
+                "radar_options": {},
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
-                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKM-136oGMgZSLWswruA6LBaH0qW7328Vf8JcsmXmwwLdmtie2vjMnceW4m1fzIAc6w2KWB_lr4ATcScW",
+                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKM77qqsGMgbU9H0uERk6LBYpcla43eFWXBZbiPFzt6jDO9zdDF25nKHBdi2PDGuOUJrpDGzamU02f3VQ",
                 "refunded": false,
                 "refunds": {
                   "data": [],
@@ -149,9 +151,9 @@
             "total_count": 1,
             "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_2a4Ddf3htE4dFNr7w88QF7Xdm",
+          "client_secret": "pi_NORMALIZED00000000000001_secret_m9xMfWwQp3bHB1NRXpgW823vW",
           "confirmation_method": "automatic",
-          "created": 1010000004,
+          "created": 1010000005,
           "currency": "usd",
           "customer": "cus_NORMALIZED0001",
           "description": "Upgrade to Zulip Cloud Standard, $80.0 x 6",
@@ -165,6 +167,7 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "plan_tier": "1",
             "price_per_license": "8000",
             "realm_id": "1",
             "realm_str": "zulip",
@@ -176,7 +179,7 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1ODZZeDEQaroqDjsJoaoeBMM",
+          "payment_method": "pm_1OIlZWDEQaroqDjsIEStkUZh",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -202,13 +205,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3ODZZiDEQaroqDjs0OBBL4AC",
+      "id": "evt_3OIlZZDEQaroqDjs11FM49Rf",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 2,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "4d0e5e72-0e17-42c7-9833-51051ec4c19b"
+        "idempotency_key": "148e66eb-e0af-493d-bd47-e18eaea5e7d0"
       },
       "type": "payment_intent.succeeded"
     },
@@ -239,7 +242,7 @@
           },
           "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
           "captured": true,
-          "created": 1010000004,
+          "created": 1010000005,
           "currency": "usd",
           "customer": "cus_NORMALIZED0001",
           "description": "Upgrade to Zulip Cloud Standard, $80.0 x 6",
@@ -258,6 +261,7 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "plan_tier": "1",
             "price_per_license": "8000",
             "realm_id": "1",
             "realm_str": "zulip",
@@ -279,7 +283,7 @@
           },
           "paid": true,
           "payment_intent": "pi_NORMALIZED00000000000001",
-          "payment_method": "pm_1ODZZeDEQaroqDjsJoaoeBMM",
+          "payment_method": "pm_1OIlZWDEQaroqDjsIEStkUZh",
           "payment_method_details": {
             "card": {
               "amount_authorized": 48000,
@@ -290,7 +294,7 @@
                 "cvc_check": "pass"
               },
               "country": "US",
-              "exp_month": 11,
+              "exp_month": 12,
               "exp_year": 2024,
               "extended_authorization": {
                 "status": "disabled"
@@ -319,9 +323,10 @@
             },
             "type": "card"
           },
+          "radar_options": {},
           "receipt_email": "hamlet@zulip.com",
           "receipt_number": null,
-          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKM-136oGMgZ7tsD4XaA6LBbAyffIM8QksduYhSKQZHwNQNAiRv0m7aH2TIf5eQ5tywNCuEbS-GpM5n--",
+          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKM77qqsGMgYTbnwUXW86LBZ_U3W3vqlKcnyZhRgRir_yUhO2UusdSJIXX4iZQO-xghqsLx3NRV5NUnIe",
           "refunded": false,
           "refunds": {
             "data": [],
@@ -341,13 +346,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3ODZZiDEQaroqDjs0VJa89kg",
+      "id": "evt_3OIlZZDEQaroqDjs1vwK4alC",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "4d0e5e72-0e17-42c7-9833-51051ec4c19b"
+        "idempotency_key": "148e66eb-e0af-493d-bd47-e18eaea5e7d0"
       },
       "type": "charge.succeeded"
     }

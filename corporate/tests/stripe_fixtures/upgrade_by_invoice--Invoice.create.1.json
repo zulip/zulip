@@ -18,7 +18,7 @@
   "billing_reason": "manual",
   "charge": null,
   "collection_method": "send_invoice",
-  "created": 1010000001,
+  "created": 1010000006,
   "currency": "usd",
   "custom_fields": null,
   "customer": "cus_NORMALIZED0001",

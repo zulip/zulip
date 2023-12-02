@@ -54,6 +54,8 @@ def upgrade(
             salt=salt,
             license_management=license_management,
             licenses=licenses,
+            # TODO: tier should be a passed parameter.
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         billing_session = RealmBillingSession(user)
         data = billing_session.do_upgrade(upgrade_request)
@@ -101,6 +103,8 @@ def remote_realm_upgrade(
             salt=salt,
             license_management=license_management,
             licenses=licenses,
+            # TODO: tier should be a passed parameter.
+            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         )
         data = billing_session.do_upgrade(upgrade_request)
         return json_success(request, data)
@@ -146,6 +150,8 @@ def remote_server_upgrade(
             salt=salt,
             license_management=license_management,
             licenses=licenses,
+            # TODO: tier should be a passed parameter.
+            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         )
         data = billing_session.do_upgrade(upgrade_request)
         return json_success(request, data)

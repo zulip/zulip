@@ -51,7 +51,7 @@
         "amount": 14400,
         "amount_excluding_tax": 14400,
         "currency": "usd",
-        "description": "Zulip Plus - renewal",
+        "description": "Zulip Cloud Plus - renewal",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
@@ -133,7 +133,7 @@
   "shipping_cost": null,
   "shipping_details": null,
   "starting_balance": -7200,
-  "statement_descriptor": "Zulip Plus",
+  "statement_descriptor": "Zulip Cloud Plus",
   "status": "draft",
   "status_transitions": {
     "finalized_at": null,

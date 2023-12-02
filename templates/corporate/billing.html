@@ -11,14 +11,23 @@
         {% if admin_access and has_active_plan %}
         {% if is_sponsorship_pending %}
         <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
-            This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            This organization has requested sponsorship for a <a href="/plans/">{{ plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
         </div>
         {% endif %}
         {% if success_message %}
-        <div class="alert alert-success billing-page-success" id="billing-success-message-top">{{ success_message }}</div>
+        <div class="alert alert-success billing-page-success" id="billing-success-message-top">
+            {{ success_message.replace("PLAN_NAME", plan_name) }}
+        </div>
         {% endif %}
         <div class="pitch">
-            <h1>Zulip Cloud billing for {{ org_name }}</h1>
+            <h1>
+                Zulip
+                {% if is_self_hosted_billing %}
+                {% else %}
+                Cloud
+                {% endif %}
+                billing for {{ org_name }}
+            </h1>
         </div>
         <div class="alert alert-danger" id="error-message-box"></div>
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
