@@ -506,6 +506,7 @@ class NormalActionsTest(BaseAction):
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=content,
+            message_sender=self.example_user("cordelia"),
         )
 
         events = self.verify_action(
@@ -813,6 +814,7 @@ class NormalActionsTest(BaseAction):
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=content,
+            message_sender=iago,
         )
 
         events = self.verify_action(

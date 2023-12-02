@@ -1265,6 +1265,7 @@ def check_update_message(
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=content,
+            message_sender=message.sender,
         )
         prior_mention_user_ids = get_mentions_for_message_updates(message.id)
 
