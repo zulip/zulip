@@ -289,11 +289,14 @@ class CustomerPlan(models.Model):
 
     @staticmethod
     def name_from_tier(tier: int) -> str:
+        # NOTE: Check `statement_descriptor` values after updating this.
+        # Stripe has a 22 character limit on the statement descriptor length.
+        # https://stripe.com/docs/payments/account/statement-descriptors
         return {
             CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
-            CustomerPlan.TIER_CLOUD_PLUS: "Zulip Plus",
+            CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
-            CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Self-Hosted Business",
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
         }[tier]
 
     @property
