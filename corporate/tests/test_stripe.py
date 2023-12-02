@@ -76,7 +76,6 @@ from corporate.lib.stripe import (
     update_license_ledger_for_manual_plan,
     update_license_ledger_if_needed,
 )
-from corporate.lib.support import get_discount_for_realm
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -5120,15 +5119,6 @@ class TestRemoteServerBillingSession(StripeTestCase):
 
 
 class TestSupportBillingHelpers(StripeTestCase):
-    def test_get_discount_for_realm(self) -> None:
-        support_admin = self.example_user("iago")
-        user = self.example_user("hamlet")
-        self.assertEqual(get_discount_for_realm(user.realm), None)
-
-        billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
-        billing_session.attach_discount_to_customer(Decimal(85))
-        self.assertEqual(get_discount_for_realm(user.realm), 85)
-
     @mock_stripe()
     def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
         # Attach discount before Stripe customer exists

@@ -59,7 +59,7 @@ if settings.BILLING_ENABLED:
         SupportViewRequest,
         get_latest_seat_count,
     )
-    from corporate.lib.support import get_discount_for_realm
+    from corporate.lib.support import get_customer_discount_for_support_view
     from corporate.models import (
         Customer,
         CustomerPlan,
@@ -378,7 +378,7 @@ def support(
 
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
-    context["get_discount_for_realm"] = get_discount_for_realm
+    context["get_discount"] = get_customer_discount_for_support_view
     context["get_org_type_display_name"] = get_org_type_display_name
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
