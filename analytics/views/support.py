@@ -52,7 +52,12 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import RealmBillingSession, SupportType, SupportViewRequest
+    from corporate.lib.stripe import (
+        RealmBillingSession,
+        RemoteServerBillingSession,
+        SupportType,
+        SupportViewRequest,
+    )
     from corporate.lib.support import (
         PlanData,
         get_current_plan_data_for_support_view,
@@ -398,7 +403,11 @@ def remote_servers_support(
         email_to_search=email_to_search, hostname_to_search=hostname_to_search
     )
     remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
+    plan_data: Dict[int, PlanData] = {}
     for remote_server in remote_servers:
+        billing_session = RemoteServerBillingSession(remote_server=remote_server)
+        remote_server_plan_data = get_current_plan_data_for_support_view(billing_session)
+        plan_data[remote_server.id] = remote_server_plan_data
         try:
             remote_server_to_max_monthly_messages[remote_server.id] = compute_max_monthly_messages(
                 remote_server
@@ -408,6 +417,7 @@ def remote_servers_support(
 
     context["remote_servers"] = remote_servers
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
+    context["plan_data"] = plan_data
 
     return render(
         request,
