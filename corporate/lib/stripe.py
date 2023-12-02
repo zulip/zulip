@@ -2580,8 +2580,20 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def approve_sponsorship(self) -> str:
-        # TBD
-        return ""
+        # Sponsorship approval is only a support admin action.
+        assert self.support_session
+
+        self.do_change_plan_type(tier=None, is_sponsored=True)
+        customer = self.get_customer()
+        if customer is not None and customer.sponsorship_pending:
+            customer.sponsorship_pending = False
+            customer.save(update_fields=["sponsorship_pending"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
+            )
+        # TODO: Add something (probably email) to let remote realm
+        # organization know that the sponsorship request was approved.
+        return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
     def is_sponsored(self) -> bool:
@@ -2848,8 +2860,20 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def approve_sponsorship(self) -> str:
-        # TBD
-        return ""
+        # Sponsorship approval is only a support admin action.
+        assert self.support_session
+
+        self.do_change_plan_type(tier=None, is_sponsored=True)
+        customer = self.get_customer()
+        if customer is not None and customer.sponsorship_pending:
+            customer.sponsorship_pending = False
+            customer.save(update_fields=["sponsorship_pending"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
+            )
+        # TODO: Add something (probably email) to let remote server
+        # organization know that the sponsorship request was approved.
+        return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
     def process_downgrade(self, plan: CustomerPlan) -> None:

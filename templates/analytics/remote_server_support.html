@@ -58,6 +58,17 @@
                 <button type="submit" class="btn btn-default support-submit-button">Update</button>
             </form>
 
+            {% if plan_data[remote_server.id].customer and plan_data[remote_server.id].customer.sponsorship_pending %}
+            <form method="POST" class="">
+                {{ csrf_input }}
+                <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                <input type="hidden" name="approve_sponsorship" value="true" />
+                <button class="btn btn-default sea-green small approve-sponsorship-button">
+                    Approve full sponsorship
+                </button>
+            </form>
+            {% endif %}
+
             <form method="POST" class="remote-server-form">
                 <b>Discount</b>:<br />
                 {{ csrf_input }}
