@@ -2285,6 +2285,17 @@ div.focused-message-list {
     }
 }
 
+.top-navbar-container {
+    /* Calculate right margin so that title and description
+       elements can truncate and not collide with or run underneath
+       with the search section. */
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 #message_view_header {
     color: var(--color-text-message-view-header);
     z-index: 2;
@@ -2310,8 +2321,6 @@ div.focused-message-list {
         text-overflow: ellipsis;
         color: inherit;
         text-decoration: none;
-        /* Don't yield any space needed for the stream name. */
-        flex-shrink: 0;
         /* Create a flex container for the icon and
            stream name. */
         display: flex;
@@ -2362,6 +2371,8 @@ div.focused-message-list {
     }
 
     .message-header-navbar-title {
+        /* Allow long navbar titles (e.g., stream names) to collapse. */
+        flex: 0 1 auto;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -2378,7 +2389,6 @@ div.focused-message-list {
         font-size: 14px;
         color: inherit;
         font-weight: 400;
-        padding: 0 6px;
         padding-left: 10px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2395,11 +2405,6 @@ div.focused-message-list {
     .narrow_description {
         flex: 1 1 0;
         margin: 0;
-        /* Calculate right margin so that text can truncate
-           and not collide with the search section. */
-        margin-right: calc(
-            var(--search-box-width) + var(--navbar-content-righthand-offset)
-        );
     }
 }
 
