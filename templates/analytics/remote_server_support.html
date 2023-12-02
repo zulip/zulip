@@ -48,6 +48,17 @@
             </div>
 
             <form method="POST" class="remote-server-form">
+                <b>Sponsorship pending</b>:<br />
+                {{ csrf_input }}
+                <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                <select name="sponsorship_pending">
+                    <option value="true" {% if plan_data[remote_server.id].customer and plan_data[remote_server.id].customer.sponsorship_pending %}selected{% endif %}>Yes</option>
+                    <option value="false" {% if not plan_data[remote_server.id].customer or not plan_data[remote_server.id].customer.sponsorship_pending %}selected{% endif %}>No</option>
+                </select>
+                <button type="submit" class="btn btn-default support-submit-button">Update</button>
+            </form>
+
+            <form method="POST" class="remote-server-form">
                 <b>Discount</b>:<br />
                 {{ csrf_input }}
                 <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
