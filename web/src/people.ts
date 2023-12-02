@@ -364,7 +364,7 @@ export function emails_to_full_names_string(emails: string[]): string {
             if (person !== undefined) {
                 return person.full_name;
             }
-            return email;
+            return INACCESSIBLE_USER_NAME;
         })
         .join(", ");
 }
