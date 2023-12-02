@@ -155,6 +155,10 @@ tr.admin td:first-child {
     padding-bottom: 15px;
 }
 
+.remote-server-form {
+    margin-bottom: 10px;
+}
+
 .support-realm-icon {
     max-width: 25px;
     position: relative;

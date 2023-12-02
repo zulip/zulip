@@ -383,13 +383,44 @@ def get_remote_servers_for_support(
 @require_server_admin
 @has_request_variables
 def remote_servers_support(
-    request: HttpRequest, query: Optional[str] = REQ("q", default=None)
+    request: HttpRequest,
+    query: Optional[str] = REQ("q", default=None),
+    remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
         del request.session["success_message"]
+
+    acting_user = request.user
+    assert isinstance(acting_user, UserProfile)
+    if settings.BILLING_ENABLED and request.method == "POST":
+        # We check that request.POST only has two keys in it: The
+        # remote_server_id and a field to change.
+        keys = set(request.POST.keys())
+        if "csrfmiddlewaretoken" in keys:
+            keys.remove("csrfmiddlewaretoken")
+        if len(keys) != 2:
+            raise JsonableError(_("Invalid parameters"))
+
+        assert remote_server_id is not None
+        remote_server = RemoteZulipServer.objects.get(id=remote_server_id)
+
+        support_view_request = None
+
+        if discount is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.attach_discount,
+                discount=discount,
+            )
+        if support_view_request is not None:
+            billing_session = RemoteServerBillingSession(
+                support_staff=acting_user, remote_server=remote_server
+            )
+            success_message = billing_session.process_support_view_request(support_view_request)
+            context["success_message"] = success_message
 
     email_to_search = None
     hostname_to_search = None
@@ -418,6 +449,7 @@ def remote_servers_support(
     context["remote_servers"] = remote_servers
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
     context["plan_data"] = plan_data
+    context["get_discount"] = get_customer_discount_for_support_view
 
     return render(
         request,
