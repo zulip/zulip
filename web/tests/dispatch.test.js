@@ -736,6 +736,11 @@ run_test("realm_user", ({override}) => {
     assert.equal(update_bot_stub.num_calls, 1);
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");
     assert_same(args.update_user_id, event.person.user_id);
+
+    event = event_fixtures.realm_user__remove;
+    dispatch(event);
+    const removed_person = people.get_by_user_id(event.person.user_id);
+    assert.equal(removed_person.full_name, "translated: Unknown user");
 });
 
 run_test("restart", ({override}) => {
