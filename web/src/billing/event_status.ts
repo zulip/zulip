@@ -42,7 +42,7 @@ function handle_session_complete_event(session: StripeSession): void {
     let redirect_to = "";
     switch (session.type) {
         case "card_update_from_billing_page":
-            redirect_to = "/billing/";
+            redirect_to = billing_base_url + "/billing/";
             break;
         case "card_update_from_upgrade_page":
             redirect_to = helpers.get_upgrade_page_url(

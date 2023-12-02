@@ -6,6 +6,7 @@ import * as portico_modals from "../portico/portico_modals";
 import * as helpers from "./helpers";
 
 const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
+const billing_base_url = $("#billing-page").attr("data-billing-base-url")!;
 
 // Matches the CustomerPlan model in the backend.
 enum BillingFrequency {
@@ -25,13 +26,13 @@ export function create_update_current_cycle_license_request(): void {
     $("#current-manual-license-count-update-button .billing-button-text").text("");
     $("#current-manual-license-count-update-button .loader").show();
     helpers.create_ajax_request(
-        "/json/billing/plan",
+        `/json${billing_base_url}/billing/plan`,
         "current-license-change",
         [],
-        "PATCH",
+        "post",
         () => {
             window.location.replace(
-                "/billing/?success_message=" +
+                `${billing_base_url}/billing/?success_message=` +
                     encodeURIComponent(
                         "Updated number of licenses for the current billing period.",
                     ),
@@ -50,13 +51,13 @@ export function create_update_next_cycle_license_request(): void {
     $("#next-manual-license-count-update-button .loader").show();
     $("#next-manual-license-count-update-button .billing-button-text").text("");
     helpers.create_ajax_request(
-        "/json/billing/plan",
+        `/json${billing_base_url}/billing/plan`,
         "next-license-change",
         [],
-        "PATCH",
+        "post",
         () => {
             window.location.replace(
-                "/billing/?success_message=" +
+                `${billing_base_url}/billing/?success_message=` +
                     encodeURIComponent("Updated number of licenses for the next billing period."),
             );
             $("#next-manual-license-count-update-button .loader").hide();
@@ -74,7 +75,7 @@ export function initialize(): void {
         $("#update-card-button .billing-button-text").text("");
         $("#update-card-button .loader").show();
         helpers.create_ajax_request(
-            "/json/billing/session/start_card_update_session",
+            `/json${billing_base_url}/billing/session/start_card_update_session`,
             "cardchange",
             [],
             "POST",
@@ -188,35 +189,50 @@ export function initialize(): void {
     );
 
     $("#confirm-cancel-subscription-modal .dialog_submit_button").on("click", (e) => {
-        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-            window.location.replace(
-                "/billing/?success_message=" +
-                    encodeURIComponent("Your plan has been canceled and will not renew."),
-            ),
+        helpers.create_ajax_request(
+            `/json${billing_base_url}/billing/plan`,
+            "planchange",
+            [],
+            "post",
+            () =>
+                window.location.replace(
+                    `${billing_base_url}/billing/?success_message=` +
+                        encodeURIComponent("Your plan has been canceled and will not renew."),
+                ),
         );
         e.preventDefault();
     });
 
     $("#reactivate-subscription .reactivate-current-plan-button").on("click", (e) => {
-        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-            window.location.replace(
-                "/billing/?success_message=" +
-                    encodeURIComponent(
-                        "Your plan has been reactivated and will renew automatically.",
-                    ),
-            ),
+        helpers.create_ajax_request(
+            `/json${billing_base_url}/billing/plan`,
+            "planchange",
+            [],
+            "post",
+            () =>
+                window.location.replace(
+                    `${billing_base_url}/billing/?success_message=` +
+                        encodeURIComponent(
+                            "Your plan has been reactivated and will renew automatically.",
+                        ),
+                ),
         );
         e.preventDefault();
     });
 
     $("#confirm-end-free-trial .dialog_submit_button").on("click", (e) => {
-        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-            window.location.replace(
-                "/billing/?success_message=" +
-                    encodeURIComponent(
-                        "Your plan will be canceled at the end of the trial. Your card will not be charged.",
-                    ),
-            ),
+        helpers.create_ajax_request(
+            `/json${billing_base_url}/billing/plan`,
+            "planchange",
+            [],
+            "post",
+            () =>
+                window.location.replace(
+                    `${billing_base_url}/billing/?success_message=` +
+                        encodeURIComponent(
+                            "Your plan will be canceled at the end of the trial. Your card will not be charged.",
+                        ),
+                ),
         );
         e.preventDefault();
     });
@@ -326,12 +342,12 @@ export function initialize(): void {
         };
         e.preventDefault();
         void $.ajax({
-            type: "patch",
-            url: "/json/billing/plan",
+            type: "post",
+            url: `/json${billing_base_url}/billing/plan`,
             data,
             success() {
                 window.location.replace(
-                    "/billing/?success_message=" +
+                    `${billing_base_url}/billing/?success_message=` +
                         encodeURIComponent("Billing frequency has been updated."),
                 );
             },

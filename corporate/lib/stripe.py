@@ -863,7 +863,7 @@ class BillingSession(ABC):
         )
         return stripe_payment_intent.id
 
-    def get_card_update_session_data_for_upgrade(
+    def create_card_update_session_for_upgrade(
         self,
         manual_license_management: bool,
     ) -> Dict[str, Any]:
@@ -892,12 +892,8 @@ class BillingSession(ABC):
             "stripe_session_id": stripe_session.id,
         }
 
-    def create_stripe_checkout_session(
-        self,
-        metadata: Dict[str, Any],
-        session_type: int,
-    ) -> stripe.checkout.Session:
-        # Create checkout sessions for adding and updating exiting cards.
+    def create_card_update_session(self) -> Dict[str, Any]:
+        metadata = self.get_metadata_for_stripe_update_card()
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
         stripe_session = stripe.checkout.Session.create(
@@ -911,9 +907,12 @@ class BillingSession(ABC):
         Session.objects.create(
             stripe_session_id=stripe_session.id,
             customer=customer,
-            type=session_type,
+            type=Session.CARD_UPDATE_FROM_BILLING_PAGE,
         )
-        return stripe_session
+        return {
+            "stripe_session_url": stripe_session.url,
+            "stripe_session_id": stripe_session.id,
+        }
 
     def attach_discount_to_customer(self, new_discount: Decimal) -> str:
         customer = self.get_customer()
