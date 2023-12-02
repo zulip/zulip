@@ -45,6 +45,7 @@ from corporate.lib.stripe import (
     AuditLogEventType,
     BillingError,
     BillingSessionAuditLogEventError,
+    InitialUpgradeRequest,
     InvalidBillingScheduleError,
     InvalidTierError,
     RealmBillingSession,
@@ -1401,9 +1402,21 @@ class StripeTest(StripeTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         new_seat_count = 23
+        initial_upgrade_request = InitialUpgradeRequest(
+            manual_license_management=False,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+        )
+        billing_session = RealmBillingSession(hamlet)
+        _, context_when_upgrade_page_is_rendered = billing_session.get_initial_upgrade_context(
+            initial_upgrade_request
+        )
         # Change the seat count while the user is going through the upgrade flow
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count):
-            self.add_card_and_upgrade(hamlet)
+            with patch(
+                "corporate.lib.stripe.RealmBillingSession.get_initial_upgrade_context",
+                return_value=(_, context_when_upgrade_page_is_rendered),
+            ):
+                self.add_card_and_upgrade(hamlet)
 
         customer = Customer.objects.first()
         assert customer is not None
