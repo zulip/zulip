@@ -145,11 +145,11 @@ from zerver.lib.event_schema import (
     check_draft_update,
     check_has_zoom_token,
     check_heartbeat,
-    check_hotspots,
     check_invites_changed,
     check_message,
     check_muted_topics,
     check_muted_users,
+    check_onboarding_steps,
     check_presence,
     check_reaction_add,
     check_reaction_remove,
@@ -3055,7 +3055,7 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_mark_onboarding_step_as_read(self.user_profile, "intro_streams")
         )
-        check_hotspots("events[0]", events[0])
+        check_onboarding_steps("events[0]", events[0])
 
     def test_rename_stream(self) -> None:
         for i, include_streams in enumerate([True, False]):

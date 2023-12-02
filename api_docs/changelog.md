@@ -22,6 +22,14 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 233**
 
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Renamed the event type `hotspots` and the `hotspots` array field in it
+  to `onboarding_steps` as this event is sent to clients with remaining
+  onboarding steps data that includes hotspots and one-time notices to display.
+  Earlier, we had hotspots only. Added a `type` field to the objects in
+  the renamed `onboarding_steps` array to distinguish between the two type
+  of onboarding steps.
+
 * `POST /users/me/onboarding_steps`: Added a new endpoint that
   deprecates the `/users/me/hotspots` endpoint. Added support for
   displaying one-time notices in addition to existing hotspots.
