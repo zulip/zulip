@@ -26,6 +26,16 @@ from zilencer.models import RemoteRealm, RemoteZulipServer
 
 billing_logger = logging.getLogger("corporate.stripe")
 
+ALLOWED_PLANS_API_STATUS_VALUES = [
+    CustomerPlan.ACTIVE,
+    CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+    CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+    CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE,
+    CustomerPlan.FREE_TRIAL,
+    CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+    CustomerPlan.ENDED,
+]
+
 
 @zulip_login_required
 @typed_endpoint
@@ -46,6 +56,7 @@ def billing_page(
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
         "org_name": user.realm.name,
+        "billing_base_url": "",
     }
 
     if not user.has_billing_access:
@@ -92,6 +103,7 @@ def remote_realm_billing_page(
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
         "org_name": billing_session.remote_realm.name,
+        "billing_base_url": f"/realm/{billing_session.remote_realm.uuid}",
     }
 
     if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:
@@ -135,6 +147,7 @@ def remote_server_billing_page(
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
         "org_name": billing_session.remote_server.hostname,
+        "billing_base_url": f"/server/{billing_session.remote_server.uuid}",
     }
 
     if billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY:
@@ -185,17 +198,7 @@ def update_plan(
     user: UserProfile,
     status: Optional[int] = REQ(
         "status",
-        json_validator=check_int_in(
-            [
-                CustomerPlan.ACTIVE,
-                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-                CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
-                CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE,
-                CustomerPlan.FREE_TRIAL,
-                CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-                CustomerPlan.ENDED,
-            ]
-        ),
+        json_validator=check_int_in(ALLOWED_PLANS_API_STATUS_VALUES),
         default=None,
     ),
     licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
@@ -211,5 +214,57 @@ def update_plan(
         schedule=schedule,
     )
     billing_session = RealmBillingSession(user=user)
+    billing_session.do_update_plan(update_plan_request)
+    return json_success(request)
+
+
+@authenticated_remote_realm_management_endpoint
+@has_request_variables
+def update_plan_for_remote_realm(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    status: Optional[int] = REQ(
+        "status",
+        json_validator=check_int_in(ALLOWED_PLANS_API_STATUS_VALUES),
+        default=None,
+    ),
+    licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
+    licenses_at_next_renewal: Optional[int] = REQ(
+        "licenses_at_next_renewal", json_validator=check_int, default=None
+    ),
+    schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
+) -> HttpResponse:  # nocoverage
+    update_plan_request = UpdatePlanRequest(
+        status=status,
+        licenses=licenses,
+        licenses_at_next_renewal=licenses_at_next_renewal,
+        schedule=schedule,
+    )
+    billing_session.do_update_plan(update_plan_request)
+    return json_success(request)
+
+
+@authenticated_remote_server_management_endpoint
+@has_request_variables
+def update_plan_for_remote_server(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    status: Optional[int] = REQ(
+        "status",
+        json_validator=check_int_in(ALLOWED_PLANS_API_STATUS_VALUES),
+        default=None,
+    ),
+    licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
+    licenses_at_next_renewal: Optional[int] = REQ(
+        "licenses_at_next_renewal", json_validator=check_int, default=None
+    ),
+    schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
+) -> HttpResponse:  # nocoverage
+    update_plan_request = UpdatePlanRequest(
+        status=status,
+        licenses=licenses,
+        licenses_at_next_renewal=licenses_at_next_renewal,
+        schedule=schedule,
+    )
     billing_session.do_update_plan(update_plan_request)
     return json_success(request)

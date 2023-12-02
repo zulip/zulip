@@ -12,7 +12,6 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
 )
-from corporate.models import Session
 from zerver.decorator import require_billing_access, require_organization_member
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
@@ -24,20 +23,32 @@ billing_logger = logging.getLogger("corporate.stripe")
 @require_billing_access
 def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) -> HttpResponse:
     billing_session = RealmBillingSession(user)
-    assert billing_session.get_customer() is not None
-    metadata = {
-        "type": "card_update",
-        "user_id": user.id,
-    }
-    stripe_session = billing_session.create_stripe_checkout_session(
-        metadata, Session.CARD_UPDATE_FROM_BILLING_PAGE
-    )
+    session_data = billing_session.create_card_update_session()
     return json_success(
         request,
-        data={
-            "stripe_session_url": stripe_session.url,
-            "stripe_session_id": stripe_session.id,
-        },
+        data=session_data,
+    )
+
+
+@authenticated_remote_realm_management_endpoint
+def start_card_update_stripe_session_for_remote_realm(
+    request: HttpRequest, billing_session: RemoteRealmBillingSession
+) -> HttpResponse:  # nocoverage
+    session_data = billing_session.create_card_update_session()
+    return json_success(
+        request,
+        data=session_data,
+    )
+
+
+@authenticated_remote_server_management_endpoint
+def start_card_update_stripe_session_for_remote_server(
+    request: HttpRequest, billing_session: RemoteServerBillingSession
+) -> HttpResponse:  # nocoverage
+    session_data = billing_session.create_card_update_session()
+    return json_success(
+        request,
+        data=session_data,
     )
 
 
@@ -50,9 +61,7 @@ def start_card_update_stripe_session_for_realm_upgrade(
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:
     billing_session = RealmBillingSession(user)
-    session_data = billing_session.get_card_update_session_data_for_upgrade(
-        manual_license_management
-    )
+    session_data = billing_session.create_card_update_session_for_upgrade(manual_license_management)
     return json_success(
         request,
         data=session_data,
@@ -67,9 +76,7 @@ def start_card_update_stripe_session_for_remote_realm_upgrade(
     *,
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage
-    session_data = billing_session.get_card_update_session_data_for_upgrade(
-        manual_license_management
-    )
+    session_data = billing_session.create_card_update_session_for_upgrade(manual_license_management)
     return json_success(
         request,
         data=session_data,
@@ -84,9 +91,7 @@ def start_card_update_stripe_session_for_remote_server_upgrade(
     *,
     manual_license_management: Json[bool] = False,
 ) -> HttpResponse:  # nocoverage
-    session_data = billing_session.get_card_update_session_data_for_upgrade(
-        manual_license_management
-    )
+    session_data = billing_session.create_card_update_session_for_upgrade(manual_license_management)
     return json_success(
         request,
         data=session_data,

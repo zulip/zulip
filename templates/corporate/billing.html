@@ -6,12 +6,12 @@
 {% endblock %}
 
 {% block portico_content %}
-<div id="billing-page" class="register-account flex full-page">
+<div id="billing-page" class="register-account flex full-page" data-billing-base-url="{{ billing_base_url }}">
     <div class="center-block new-style">
         {% if admin_access and has_active_plan %}
         {% if is_sponsorship_pending %}
         <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
-            This organization has requested sponsorship for a <a href="/plans/">{{ plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            This organization has requested sponsorship for a <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
         </div>
         {% endif %}
         {% if success_message %}
@@ -157,11 +157,11 @@
                             {% if downgrade_at_end_of_cycle %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                             period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
-                            <a href="/plans/">other features</a> of your current plan.
+                            <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
                             {% elif downgrade_at_end_of_free_trial %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the free trial
                             (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
-                            <a href="/plans/">other features</a> of your current plan.
+                            <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
                             {% else %}
                             {% if charge_automatically %}
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
@@ -276,7 +276,7 @@
                 <p>
                     Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of your free trial
                     ({{ renewal_date }}). You will lose access to unlimited search history and
-                    <a href="/plans/">other features</a>
+                    <a href="{{ billing_base_url }}/plans/">other features</a>
                     of your current plan. Are you sure you want to continue?
                 </p>
             </main>
@@ -360,7 +360,7 @@
                 <p>
                     Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                     period ({{ renewal_date }}). You will lose access to unlimited search history and
-                    <a href="/plans/">other features</a>
+                    <a href="{{ billing_base_url }}/plans/">other features</a>
                     of your current plan. Are you sure you want to continue?
                 </p>
             </main>

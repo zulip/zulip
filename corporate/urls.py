@@ -9,6 +9,8 @@ from corporate.views.billing_page import (
     remote_realm_billing_page,
     remote_server_billing_page,
     update_plan,
+    update_plan_for_remote_realm,
+    update_plan_for_remote_server,
 )
 from corporate.views.event_status import (
     event_status,
@@ -36,7 +38,9 @@ from corporate.views.remote_billing_page import (
 from corporate.views.session import (
     start_card_update_stripe_session,
     start_card_update_stripe_session_for_realm_upgrade,
+    start_card_update_stripe_session_for_remote_realm,
     start_card_update_stripe_session_for_remote_realm_upgrade,
+    start_card_update_stripe_session_for_remote_server,
     start_card_update_stripe_session_for_remote_server_upgrade,
 )
 from corporate.views.sponsorship import (
@@ -232,6 +236,14 @@ urlpatterns += [
     path("json/realm/<realm_uuid>/sponsorship", remote_realm_sponsorship),
     path("json/server/<server_uuid>/sponsorship", remote_server_sponsorship),
     path(
+        "json/realm/<realm_uuid>/billing/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_realm,
+    ),
+    path(
+        "json/server/<server_uuid>/billing/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_server,
+    ),
+    path(
         "json/realm/<realm_uuid>/upgrade/session/start_card_update_session",
         start_card_update_stripe_session_for_remote_realm_upgrade,
     ),
@@ -243,6 +255,8 @@ urlpatterns += [
     path("json/server/<server_uuid>/billing/event/status", remote_server_event_status),
     path("json/realm/<realm_uuid>/billing/upgrade", remote_realm_upgrade),
     path("json/server/<server_uuid>/billing/upgrade", remote_server_upgrade),
+    path("json/realm/<realm_uuid>/billing/plan", update_plan_for_remote_realm),
+    path("json/server/<server_uuid>/billing/plan", update_plan_for_remote_server),
 ]
 
 urlpatterns += [
