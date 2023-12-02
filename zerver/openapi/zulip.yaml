@@ -2272,11 +2272,14 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when the set of onboarding "hotspots" to show for
+                                Event sent when the set of onboarding steps to show for
                                 the current user have changed (E.g. because the user dismissed one).
 
                                 Clients that feature a similar tutorial experience to the Zulip
                                 web app may want to handle these events.
+
+                                **Changes**: Before Zulip 8.0 (feature level 233), this was named
+                                as `Hotspots`. One-time notice wasn't available earlier.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2284,18 +2287,21 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - hotspots
-                                hotspots:
+                                        - onboarding_steps
+                                onboarding_steps:
                                   type: array
                                   description: |
                                     An array of dictionaries where each
-                                    dictionary contains details about a single hotspot.
+                                    dictionary contains details about a single onboarding step.
+
+                                    **Changes**: Before Zulip 8.0 (feature level 233), this array
+                                    was named as `hotspots`. One-time notice wasn't available earlier.
                                   items:
-                                    $ref: "#/components/schemas/Hotspot"
+                                    $ref: "#/components/schemas/OnboardingStep"
                               example:
                                 {
-                                  "type": "hotspots",
-                                  "hotspots":
+                                  "type": "onboarding_steps",
+                                  "onboarding_steps":
                                     [
                                       {
                                         "type": "hotspot",
@@ -11815,17 +11821,17 @@ paths:
                           array will be empty if `enable_drafts_synchronization` is set to `false`.
                         items:
                           $ref: "#/components/schemas/Draft"
-                      hotspots:
+                      onboarding_steps:
                         type: array
                         description: |
-                          Present if `hotspots` is present in `fetch_event_types`.
+                          Present if `onboarding_steps` is present in `fetch_event_types`.
 
                           An array of dictionaries, where each dictionary contains details about
-                          a single onboarding hotspot that should be shown to new users.
+                          a single onboarding step that should be shown to new users.
 
                           We expect that only official Zulip clients will interact with these data.
                         items:
-                          $ref: "#/components/schemas/Hotspot"
+                          $ref: "#/components/schemas/OnboardingStep"
                       max_message_id:
                         type: integer
                         deprecated: true
@@ -18552,17 +18558,22 @@ components:
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             **Changes**: New in Zulip 6.0 (feature level 146).
-    Hotspot:
+    OnboardingStep:
       type: object
       additionalProperties: false
       description: |
-        Dictionary containing details of a single hotspot.
+        Dictionary containing details of a single onboarding step.
+
+        **Changes**: Before Zulip 8.0 (feature level 233), this was
+        named as `Hotspot`. One-time notice wasn't available earlier.
       properties:
         type:
           type: string
           description: |
             The type of the onboarding step. Valid values are either
             'hotspot' or 'one_time_notice'.
+
+            **Changes**: New in Zulip 8.0 (feature level 233).
         name:
           type: string
           description: |

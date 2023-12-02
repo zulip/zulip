@@ -184,11 +184,13 @@ def fetch_initial_state_data(
 
             del state["custom_profile_field_types"]["PRONOUNS"]
 
-    if want("hotspots"):
-        # Even if we offered special hotspots for guests without an
+    if want("onboarding_steps"):
+        # Even if we offered special onboarding steps for guests without an
         # account, we'd maybe need to store their state using cookies
         # or local storage, rather than in the database.
-        state["hotspots"] = [] if user_profile is None else get_next_onboarding_steps(user_profile)
+        state["onboarding_steps"] = (
+            [] if user_profile is None else get_next_onboarding_steps(user_profile)
+        )
 
     if want("message"):
         # Since the introduction of `anchor="latest"` in the API,
@@ -854,8 +856,8 @@ def apply_event(
                 if scheduled_message["scheduled_message_id"] == event["scheduled_message_id"]:
                     del state["scheduled_messages"][idx]
 
-    elif event["type"] == "hotspots":
-        state["hotspots"] = event["hotspots"]
+    elif event["type"] == "onboarding_steps":
+        state["onboarding_steps"] = event["onboarding_steps"]
     elif event["type"] == "custom_profile_fields":
         state["custom_profile_fields"] = event["fields"]
         custom_profile_field_ids = {field["id"] for field in state["custom_profile_fields"]}

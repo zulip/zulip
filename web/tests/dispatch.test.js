@@ -306,12 +306,12 @@ run_test("default_streams", ({override}) => {
     assert_same(args.realm_default_streams, event.default_streams);
 });
 
-run_test("hotspots", ({override}) => {
-    page_params.hotspots = [];
-    const event = event_fixtures.hotspots;
+run_test("onboarding_steps", ({override}) => {
+    page_params.onboarding_steps = [];
+    const event = event_fixtures.onboarding_steps;
     override(hotspots, "load_new", noop);
     dispatch(event);
-    assert_same(page_params.hotspots, event.hotspots);
+    assert_same(page_params.onboarding_steps, event.onboarding_steps);
 });
 
 run_test("invites_changed", ({override}) => {

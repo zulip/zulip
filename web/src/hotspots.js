@@ -336,7 +336,7 @@ export function load_new(new_hotspots) {
 }
 
 export function initialize() {
-    load_new(page_params.hotspots);
+    load_new(onboarding_steps.filter_new_hotspots(page_params.onboarding_steps));
 
     // open
     $("body").on("click", ".hotspot-icon", function (e) {

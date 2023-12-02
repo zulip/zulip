@@ -16,3 +16,7 @@ export function post_onboarding_step_as_read(onboarding_step_name) {
         },
     });
 }
+
+export function filter_new_hotspots(onboarding_steps) {
+    return onboarding_steps.filter((onboarding_step) => onboarding_step.type === "hotspot");
+}

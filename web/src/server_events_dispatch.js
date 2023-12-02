@@ -30,6 +30,7 @@ import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -142,11 +143,11 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "hotspots":
-            hotspots.load_new(event.hotspots);
-            page_params.hotspots = page_params.hotspots
-                ? [...page_params.hotspots, ...event.hotspots]
-                : event.hotspots;
+        case "onboarding_steps":
+            hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
+            page_params.onboarding_steps = page_params.onboarding_steps
+                ? [...page_params.onboarding_steps, ...event.onboarding_steps]
+                : event.onboarding_steps;
             break;
 
         case "invites_changed":
