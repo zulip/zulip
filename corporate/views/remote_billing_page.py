@@ -41,7 +41,7 @@ VALID_NEXT_PAGES_TYPE = Literal[None, "sponsorship", "upgrade", "billing", "plan
 
 @csrf_exempt
 @typed_endpoint
-def remote_server_billing_entry(
+def remote_realm_billing_entry(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
     *,
@@ -75,13 +75,13 @@ def remote_server_billing_entry(
 
     billing_access_url = (
         f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}"
-        + reverse(remote_server_billing_finalize_login, args=[signed_identity_dict])
+        + reverse(remote_realm_billing_finalize_login, args=[signed_identity_dict])
     )
     return json_success(request, data={"billing_access_url": billing_access_url})
 
 
 @self_hosting_management_endpoint
-def remote_server_billing_finalize_login(
+def remote_realm_billing_finalize_login(
     request: HttpRequest,
     signed_billing_access_token: str,
 ) -> HttpResponse:
