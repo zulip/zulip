@@ -110,7 +110,7 @@ def authenticated_remote_realm_management_endpoint(
     return _wrapped_view_func
 
 
-def get_next_page_param_from_request_path(request: HttpRequest) -> Optional[str]:  # nocoverage
+def get_next_page_param_from_request_path(request: HttpRequest) -> Optional[str]:
     # Our endpoint URLs in this subsystem end with something like
     # /sponsorship or /plans etc.
     # Therefore we can use this nice property to figure out easily what

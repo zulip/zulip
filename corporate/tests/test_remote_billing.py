@@ -6,9 +6,11 @@ import responses
 import time_machine
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from corporate.lib.remote_billing_util import (
     REMOTE_BILLING_SESSION_VALIDITY_SECONDS,
+    LegacyServerIdentityDict,
     RemoteBillingIdentityDict,
     RemoteBillingUserDict,
 )
@@ -268,3 +270,169 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         self.assert_in_success_response(
             ["Upgrade", "Purchase Zulip", "Your subscription will renew automatically."], result
         )
+
+
+class LegacyServerLoginTest(BouncerTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.uuid = self.server.uuid
+        self.secret = self.server.api_key
+
+    def test_server_login_get(self) -> None:
+        result = self.client_get("/serverlogin/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Zulip server billing management"], result)
+
+    def test_server_login_invalid_server_org_id(self) -> None:
+        result = self.client_post(
+            "/serverlogin/",
+            {"server_org_id": "invalid", "server_org_secret": "secret"},
+            subdomain="selfhosting",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            ["Did not find a server registration for this server_org_id."], result
+        )
+
+    def test_server_login_invalid_server_org_secret(self) -> None:
+        result = self.client_post(
+            "/serverlogin/",
+            {"server_org_id": self.uuid, "server_org_secret": "invalid"},
+            subdomain="selfhosting",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Invalid server_org_secret."], result)
+
+    def test_server_login_deactivated_server(self) -> None:
+        self.server.deactivated = True
+        self.server.save(update_fields=["deactivated"])
+
+        result = self.client_post(
+            "/serverlogin/",
+            {"server_org_id": self.uuid, "server_org_secret": self.secret},
+            subdomain="selfhosting",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Your server registration has been deactivated."], result)
+
+    def test_server_login_success_with_no_plan(self) -> None:
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_post(
+                "/serverlogin/",
+                {"server_org_id": self.uuid, "server_org_secret": self.secret},
+                subdomain="selfhosting",
+            )
+
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/billing/")
+
+        # Verify the authed data that should have been stored in the session.
+        identity_dict = LegacyServerIdentityDict(
+            remote_server_uuid=str(self.server.uuid),
+            authenticated_at=datetime_to_timestamp(now),
+        )
+        self.assertEqual(
+            self.client.session["remote_billing_identities"][f"remote_server:{self.uuid!s}"],
+            identity_dict,
+        )
+
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        # The server has no plan, so the /billing page redirects to /upgrade
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade")
+
+        # Access on the upgrade page is granted, assert a basic string proving that.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(
+            [f"Upgrade {self.server.hostname} to Zulip Self-Hosted Business"], result
+        )
+
+    def test_server_login_success_with_next_page(self) -> None:
+        # First test an invalid next_page value.
+        result = self.client_post(
+            "/serverlogin/",
+            {"server_org_id": self.uuid, "server_org_secret": self.secret, "next_page": "invalid"},
+            subdomain="selfhosting",
+        )
+        self.assert_json_error(result, "Invalid next_page", 400)
+
+        result = self.client_post(
+            "/serverlogin/",
+            {
+                "server_org_id": self.uuid,
+                "server_org_secret": self.secret,
+                "next_page": "sponsorship",
+            },
+            subdomain="selfhosting",
+        )
+        # We should be redirected to the page dictated by the next_page param.
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/sponsorship")
+
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        # TODO Update the string when we have a complete sponsorship page for legacy servers.
+        self.assert_in_success_response(["Request Zulip Cloud sponsorship"], result)
+
+    def test_server_login_next_page_in_form_persists(self) -> None:
+        result = self.client_get("/serverlogin/?next_page=billing", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ['<input type="hidden" name="next_page" value="billing" />'], result
+        )
+
+        result = self.client_post(
+            "/serverlogin/",
+            {"server_org_id": self.uuid, "server_org_secret": "invalid", "next_page": "billing"},
+            subdomain="selfhosting",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Invalid server_org_secret."], result)
+        # The next_page param should be preserved in the form.
+        self.assert_in_success_response(
+            ['<input type="hidden" name="next_page" value="billing" />'], result
+        )
+
+    def test_server_billing_unauthed(self) -> None:
+        now = timezone_now()
+        # Try to open a page with no auth at all.
+        result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 302)
+        # Redirects to the login form with appropriate next_page value.
+        self.assertEqual(result["Location"], "/serverlogin/?next_page=billing")
+
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(
+            ['<input type="hidden" name="next_page" value="billing" />'], result
+        )
+
+        # Now authenticate, going to the /upgrade page since we'll be able to access
+        # it directly without annoying extra redirects.
+        with time_machine.travel(now, tick=False):
+            result = self.client_post(
+                "/serverlogin/",
+                {
+                    "server_org_id": self.uuid,
+                    "server_org_secret": self.secret,
+                    "next_page": "upgrade",
+                },
+                subdomain="selfhosting",
+            )
+
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade")
+
+        # Sanity check: access on the upgrade page is granted.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(
+            [f"Upgrade {self.server.hostname} to Zulip Self-Hosted Business"], result
+        )
+
+        # Now we can simulate an expired identity dict in the session.
+        with time_machine.travel(
+            now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
+            tick=False,
+        ):
+            result = self.client_get(f"/server/{self.uuid}/upgrade", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/serverlogin/?next_page=upgrade")
