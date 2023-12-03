@@ -14,6 +14,7 @@ from pydantic import Json
 
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
+    authenticated_remote_server_management_endpoint,
     self_hosting_management_endpoint,
 )
 from corporate.lib.remote_billing_util import (
@@ -23,12 +24,12 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingUserDict,
     get_identity_dict_from_session,
 )
-from corporate.lib.stripe import RemoteRealmBillingSession
+from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import typed_endpoint
 from zilencer.models import RemoteRealm, RemoteZulipServer, get_remote_server_by_uuid
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -208,9 +209,11 @@ def remote_realm_plans_page(
     return remote_billing_plans_common(request, realm_uuid=realm_uuid, server_uuid=None)
 
 
-@self_hosting_management_endpoint
-@typed_endpoint
-def remote_server_plans_page(request: HttpRequest, *, server_uuid: PathOnly[str]) -> HttpResponse:
+@authenticated_remote_server_management_endpoint
+def remote_server_plans_page(
+    request: HttpRequest, billing_session: RemoteServerBillingSession
+) -> HttpResponse:
+    server_uuid = str(billing_session.remote_server.uuid)
     return remote_billing_plans_common(request, server_uuid=server_uuid, realm_uuid=None)
 
 
