@@ -1,5 +1,5 @@
 import logging
-from typing import Literal, Optional
+from typing import Any, Dict, Literal, Optional
 
 from django.conf import settings
 from django.core import signing
@@ -233,44 +233,31 @@ def remote_billing_legacy_server_login(
     *,
     server_org_id: Optional[str] = None,
     server_org_secret: Optional[str] = None,
+    next_page: VALID_NEXT_PAGES_TYPE = None,
 ) -> HttpResponse:
+    context: Dict[str, Any] = {"next_page": next_page}
     if server_org_id is None or server_org_secret is None:
-        # Should not be possible to submit the form like this, so this is the default
-        # case, where the user just opened this page and therefore we render a fresh form.
-        return render(
-            request,
-            "corporate/legacy_server_login.html",
-            context={"error_message": False},
-        )
+        context.update({"error_message": False})
+        return render(request, "corporate/legacy_server_login.html", context)
 
-    # The form must be submitted via POST.
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
     try:
         remote_server = get_remote_server_by_uuid(server_org_id)
     except RemoteZulipServer.DoesNotExist:
-        return render(
-            request,
-            "corporate/legacy_server_login.html",
-            context={
-                "error_message": _("Did not find a server registration for this server_org_id.")
-            },
+        context.update(
+            {"error_message": _("Did not find a server registration for this server_org_id.")}
         )
+        return render(request, "corporate/legacy_server_login.html", context)
 
     if not constant_time_compare(server_org_secret, remote_server.api_key):
-        return render(
-            request,
-            "corporate/legacy_server_login.html",
-            context={"error_message": _("Invalid server_org_secret.")},
-        )
-    if remote_server.deactivated:
-        return render(
-            request,
-            "corporate/legacy_server_login.html",
-            context={"error_message": _("Your server registration has been deactivated.")},
-        )
+        context.update({"error_message": _("Invalid server_org_secret.")})
+        return render(request, "corporate/legacy_server_login.html", context)
 
+    if remote_server.deactivated:
+        context.update({"error_message": _("Your server registration has been deactivated.")})
+        return render(request, "corporate/legacy_server_login.html", context)
     remote_server_uuid = str(remote_server.uuid)
 
     request.session["remote_billing_identities"] = {}
@@ -281,4 +268,12 @@ def remote_billing_legacy_server_login(
         authenticated_at=datetime_to_timestamp(timezone_now()),
     )
 
-    return HttpResponseRedirect(reverse("remote_server_billing_page", args=(remote_server_uuid,)))
+    assert next_page in VALID_NEXT_PAGES
+    if next_page is None:
+        return HttpResponseRedirect(
+            reverse("remote_server_billing_page", args=(remote_server_uuid,))
+        )
+    else:
+        return HttpResponseRedirect(
+            reverse(f"remote_server_{next_page}_page", args=(remote_server_uuid,))
+        )

@@ -17,6 +17,9 @@
             <div id="server-login-input-section">
                 <form id="server-login-form" method="post" action="/serverlogin/">
                     {{ csrf_input }}
+                    {% if next_page %}
+                    <input type="hidden" name="next_page" value="{{ next_page }}" />
+                    {% endif %}
                     <div class="input-box server-login-form-field">
                         <label for="username" class="inline-block label-title">
                             server_org_id
