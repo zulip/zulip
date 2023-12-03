@@ -31,8 +31,8 @@ from corporate.views.portico import (
 )
 from corporate.views.remote_billing_page import (
     remote_billing_legacy_server_login,
+    remote_realm_billing_finalize_login,
     remote_realm_plans_page,
-    remote_server_billing_finalize_login,
     remote_server_plans_page,
 )
 from corporate.views.session import (
@@ -183,9 +183,7 @@ i18n_urlpatterns += landing_page_urls
 urlpatterns = list(i18n_urlpatterns)
 
 urlpatterns += [
-    path(
-        "remote-billing-login/<signed_billing_access_token>/", remote_server_billing_finalize_login
-    ),
+    path("remote-billing-login/<signed_billing_access_token>", remote_realm_billing_finalize_login),
     # Remote server billing endpoints.
     path("realm/<realm_uuid>/plans/", remote_realm_plans_page, name="remote_realm_plans_page"),
     path(
