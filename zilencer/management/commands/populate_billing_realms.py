@@ -114,114 +114,117 @@ class Command(BaseCommand):
 
         # Create a realm for each customer profile
         for customer_profile in customer_profiles:
-            unique_id = customer_profile.unique_id
-            if customer_profile.tier is None:
-                plan_type = Realm.PLAN_TYPE_LIMITED
-            elif (
-                customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD
-                and customer_profile.is_sponsored
-            ):
-                plan_type = Realm.PLAN_TYPE_STANDARD_FREE
-            elif customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD:
-                plan_type = Realm.PLAN_TYPE_STANDARD
-            elif customer_profile.tier == CustomerPlan.TIER_CLOUD_PLUS:
-                plan_type = Realm.PLAN_TYPE_PLUS
-            else:
-                raise AssertionError("Unexpected tier!")
-            plan_name = Realm.ALL_PLAN_TYPES[plan_type]
+            populate_realm(customer_profile)
 
-            # Delete existing realm with this name
-            with contextlib.suppress(Realm.DoesNotExist):
-                get_realm(unique_id).delete()
-                # Because we just deleted a bunch of objects in the database
-                # directly (rather than deleting individual objects in Django,
-                # in which case our post_save hooks would have flushed the
-                # individual objects from memcached for us), we need to flush
-                # memcached in order to ensure deleted objects aren't still
-                # present in the memcached cache.
-                flush_cache(None)
 
-            realm = do_create_realm(
-                string_id=unique_id,
-                name=unique_id,
-                description=unique_id,
-                plan_type=plan_type,
-            )
+def populate_realm(customer_profile: CustomerProfile) -> None:
+    unique_id = customer_profile.unique_id
+    if customer_profile.tier is None:
+        plan_type = Realm.PLAN_TYPE_LIMITED
+    elif (
+        customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD and customer_profile.is_sponsored
+    ):
+        plan_type = Realm.PLAN_TYPE_STANDARD_FREE
+    elif customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD:
+        plan_type = Realm.PLAN_TYPE_STANDARD
+    elif customer_profile.tier == CustomerPlan.TIER_CLOUD_PLUS:
+        plan_type = Realm.PLAN_TYPE_PLUS
+    else:
+        raise AssertionError("Unexpected tier!")
+    plan_name = Realm.ALL_PLAN_TYPES[plan_type]
 
-            # Create a user with billing access
-            full_name = f"{plan_name}-admin"
-            email = f"{full_name}@zulip.com"
-            user = do_create_user(
-                email,
-                full_name,
-                realm,
-                full_name,
-                role=UserProfile.ROLE_REALM_OWNER,
-                acting_user=None,
-            )
+    # Delete existing realm with this name
+    with contextlib.suppress(Realm.DoesNotExist):
+        get_realm(unique_id).delete()
+        # Because we just deleted a bunch of objects in the database
+        # directly (rather than deleting individual objects in Django,
+        # in which case our post_save hooks would have flushed the
+        # individual objects from memcached for us), we need to flush
+        # memcached in order to ensure deleted objects aren't still
+        # present in the memcached cache.
+        flush_cache(None)
 
-            stream, _ = create_stream_if_needed(
-                realm,
-                "all",
-            )
+    realm = do_create_realm(
+        string_id=unique_id,
+        name=unique_id,
+        description=unique_id,
+        plan_type=plan_type,
+    )
 
-            bulk_add_subscriptions(realm, [stream], [user], acting_user=None)
+    # Create a user with billing access
+    full_name = f"{plan_name}-admin"
+    email = f"{full_name}@zulip.com"
+    user = do_create_user(
+        email,
+        full_name,
+        realm,
+        full_name,
+        role=UserProfile.ROLE_REALM_OWNER,
+        acting_user=None,
+    )
 
-            if customer_profile.sponsorship_pending:
-                customer = Customer.objects.create(
-                    realm=realm,
-                    sponsorship_pending=customer_profile.sponsorship_pending,
-                )
-                continue
+    stream, _ = create_stream_if_needed(
+        realm,
+        "all",
+    )
 
-            if customer_profile.tier is None:
-                continue
+    bulk_add_subscriptions(realm, [stream], [user], acting_user=None)
 
-            billing_session = RealmBillingSession(user)
-            customer = billing_session.update_or_create_stripe_customer()
-            assert customer.stripe_customer_id is not None
+    if customer_profile.sponsorship_pending:
+        customer = Customer.objects.create(
+            realm=realm,
+            sponsorship_pending=customer_profile.sponsorship_pending,
+        )
+        return
 
-            # Add a test card to the customer.
-            if customer_profile.card:
-                # Set the Stripe API key
-                stripe.api_key = get_secret("stripe_secret_key")
+    if customer_profile.tier is None:
+        return
 
-                # Create a card payment method and attach it to the customer
-                payment_method = stripe.PaymentMethod.create(
-                    type="card",
-                    card={"token": "tok_visa"},
-                )
+    billing_session = RealmBillingSession(user)
+    customer = billing_session.update_or_create_stripe_customer()
+    assert customer.stripe_customer_id is not None
 
-                # Attach the payment method to the customer
-                stripe.PaymentMethod.attach(payment_method.id, customer=customer.stripe_customer_id)
+    # Add a test card to the customer.
+    if customer_profile.card:
+        # Set the Stripe API key
+        stripe.api_key = get_secret("stripe_secret_key")
 
-                # Set the default payment method for the customer
-                stripe.Customer.modify(
-                    customer.stripe_customer_id,
-                    invoice_settings={"default_payment_method": payment_method.id},
-                )
+        # Create a card payment method and attach it to the customer
+        payment_method = stripe.PaymentMethod.create(
+            type="card",
+            card={"token": "tok_visa"},
+        )
 
-            months = 12
-            if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-                months = 1
-            next_invoice_date = add_months(timezone_now(), months)
+        # Attach the payment method to the customer
+        stripe.PaymentMethod.attach(payment_method.id, customer=customer.stripe_customer_id)
 
-            customer_plan = CustomerPlan.objects.create(
-                customer=customer,
-                billing_cycle_anchor=timezone_now(),
-                billing_schedule=customer_profile.billing_schedule,
-                tier=customer_profile.tier,
-                price_per_license=1200,
-                automanage_licenses=customer_profile.automanage_licenses,
-                status=customer_profile.status,
-                charge_automatically=customer_profile.charge_automatically,
-                next_invoice_date=next_invoice_date,
-            )
+        # Set the default payment method for the customer
+        stripe.Customer.modify(
+            customer.stripe_customer_id,
+            invoice_settings={"default_payment_method": payment_method.id},
+        )
 
-            LicenseLedger.objects.create(
-                licenses=10,
-                licenses_at_next_renewal=10,
-                event_time=timezone_now(),
-                is_renewal=True,
-                plan=customer_plan,
-            )
+    months = 12
+    if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+        months = 1
+    next_invoice_date = add_months(timezone_now(), months)
+
+    customer_plan = CustomerPlan.objects.create(
+        customer=customer,
+        billing_cycle_anchor=timezone_now(),
+        billing_schedule=customer_profile.billing_schedule,
+        tier=customer_profile.tier,
+        price_per_license=1200,
+        automanage_licenses=customer_profile.automanage_licenses,
+        status=customer_profile.status,
+        charge_automatically=customer_profile.charge_automatically,
+        next_invoice_date=next_invoice_date,
+    )
+
+    LicenseLedger.objects.create(
+        licenses=10,
+        licenses_at_next_renewal=10,
+        event_time=timezone_now(),
+        is_renewal=True,
+        plan=customer_plan,
+    )
