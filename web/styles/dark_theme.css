@@ -661,14 +661,6 @@
         color: hsl(0deg 0% 100%);
     }
 
-    .spectator_login_buttons a {
-        color: hsl(236deg 33% 90%);
-
-        &:hover {
-            color: hsl(0deg 0% 100%);
-        }
-    }
-
     .spectator_narrow_login_button .login_button i {
         color: hsl(236deg 33% 90%);
     }

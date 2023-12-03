@@ -381,6 +381,28 @@ body {
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
     --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 40% 50%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 100% 30% / 5%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 100% 30% / 8%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 40% 40% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        244deg 64% 47% / 10%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        244deg 64% 47% / 15%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        244deg 64% 47% / 18%
+    );
     --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
     --color-gear-menu-blue-text: hsl(217deg 100% 50%);
     --color-header-button-hover: hsl(0deg 0% 0% / 5%);
@@ -632,6 +654,28 @@ body {
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
     --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 55% 72% / 100%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 10%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 13%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 64% 76% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        240deg 56% 70% / 12%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 17%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 12%
+    );
     --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
     --color-gear-menu-blue-text: hsl(217deg 100% 65%);
     --color-header-button-hover: hsl(0deg 0% 100% / 4%);
@@ -1018,7 +1062,6 @@ body.has-overlay-scrollbar {
     top: 0;
 
     .spectator_login_buttons {
-        display: flex;
         /* Allow the login buttons flexbox to
            grow and shrink to fit the available
            area. */
@@ -1026,6 +1069,10 @@ body.has-overlay-scrollbar {
         /* Use a flexbox gap of 7px between the
            buttons to reflect the outer 7px of space. */
         gap: 7px;
+        /* Don't allow login buttons flexbox to
+           break out of the allotted right-column
+           space. */
+        overflow: hidden;
         /* This should be removed once the navbar
            has been rewritten entirely with modern
            layout methods. For now, we pull this up
@@ -1039,11 +1086,14 @@ body.has-overlay-scrollbar {
             /* Vertically size the buttons to
                match the search box. */
             line-height: 28px;
-            font-weight: 600;
-            color: hsl(0deg 0% 20%);
+            font-weight: 450;
+            letter-spacing: 0.03ch;
             /* Allow individual buttons to grow
-               and shrink inside their containers. */
+               and shrink inside their containers,
+               with padding to prevent text from
+               sitting against the edge of the button. */
             flex: 1 1 0;
+            padding: 0 4px;
             /* Center the text nodes within the
                flex items. */
             text-align: center;
@@ -1054,14 +1104,75 @@ body.has-overlay-scrollbar {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            /* Button curvature and transitions. */
+            border-radius: 4px;
+            transition: all 100ms ease-out;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 text-decoration: none;
-                color: hsl(0deg 0% 0%);
+            }
+
+            &:active {
+                transform: scale(0.98);
             }
 
             & i {
                 margin-right: 3px;
+            }
+        }
+
+        & .signup_button {
+            color: var(
+                --color-navbar-spectator-low-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-low-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-active
+                );
+            }
+        }
+
+        & .login_button {
+            color: var(
+                --color-navbar-spectator-medium-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-medium-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-active
+                );
             }
         }
 
