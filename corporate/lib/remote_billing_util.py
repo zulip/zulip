@@ -137,7 +137,7 @@ def get_remote_server_from_session(
     )
 
     if identity_dict is None:
-        raise JsonableError(_("User not authenticated"))
+        raise RemoteBillingAuthenticationError
 
     remote_server_uuid = identity_dict["remote_server_uuid"]
     try:
