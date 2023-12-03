@@ -581,7 +581,6 @@
         background-color: inherit;
     }
 
-    .spectator_narrow_login_button,
     .top-navbar-border {
         border-color: hsl(0deg 0% 0% / 60%);
     }
@@ -659,10 +658,6 @@
 
     .clear_search_button:hover {
         color: hsl(0deg 0% 100%);
-    }
-
-    .spectator_narrow_login_button .login_button i {
-        color: hsl(236deg 33% 90%);
     }
 
     .zoom-in {
