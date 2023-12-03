@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {localstorage} from "./localstorage";
+import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
@@ -158,6 +159,7 @@ export function highlight_inbox_view() {
     remove($(".top_left_starred_messages"));
     remove($(".top_left_recent_view"));
     remove($(".top_left_mentions"));
+    narrow_state.reset_current_filter();
     $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -169,6 +171,7 @@ export function highlight_recent_view() {
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     remove($(".top_left_inbox"));
+    narrow_state.reset_current_filter();
     $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();

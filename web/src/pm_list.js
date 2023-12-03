@@ -160,8 +160,8 @@ export function handle_narrow_activated(filter) {
             `li[data-user-ids-string='${CSS.escape(current_user_ids_string)}']`,
         );
         scroll_pm_into_view($active_filter_li);
-        update_private_messages();
     }
+    update_private_messages();
 }
 
 export function handle_message_view_deactivated() {
