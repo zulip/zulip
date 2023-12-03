@@ -494,6 +494,7 @@ export function initialize_everything() {
     }
 
     i18n.initialize(i18n_params);
+    timerender.initialize();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
@@ -609,7 +610,6 @@ export function initialize_everything() {
     copy_and_paste.initialize();
     overlays.initialize();
     invite.initialize();
-    timerender.initialize();
     message_view_header.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);

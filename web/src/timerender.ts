@@ -19,17 +19,6 @@ import {user_settings} from "./user_settings";
 let next_timerender_id = 0;
 
 export let display_time_zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-if (
-    display_time_zone === undefined || // https://bugs.chromium.org/p/chromium/issues/detail?id=1487920
-    display_time_zone === "Etc/Unknown" // https://bugs.chromium.org/p/chromium/issues/detail?id=1473422
-) {
-    display_time_zone = user_settings.timezone;
-    try {
-        new Intl.DateTimeFormat(undefined, {timeZone: display_time_zone});
-    } catch {
-        display_time_zone = "UTC";
-    }
-}
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
 
@@ -341,6 +330,18 @@ let update_list: UpdateEntry[] = [];
 let last_update: Date;
 
 export function initialize(): void {
+    if (
+        display_time_zone === undefined || // https://bugs.chromium.org/p/chromium/issues/detail?id=1487920
+        display_time_zone === "Etc/Unknown" // https://bugs.chromium.org/p/chromium/issues/detail?id=1473422
+    ) {
+        display_time_zone = user_settings.timezone;
+        try {
+            new Intl.DateTimeFormat(undefined, {timeZone: display_time_zone});
+        } catch {
+            display_time_zone = "UTC";
+        }
+    }
+
     last_update = start_of_day(new Date(), display_time_zone);
 }
 
