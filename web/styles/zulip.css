@@ -1189,7 +1189,6 @@ body.has-overlay-scrollbar {
         right: 0;
         height: var(--header-height);
         width: var(--header-height);
-        border-left: 1px solid hsl(0deg 0% 88%);
 
         @media (width >= $xl_min) and (height >= 600px) {
             display: none;
@@ -1200,15 +1199,13 @@ body.has-overlay-scrollbar {
             justify-content: center;
             align-items: center;
             height: 100%;
-            opacity: 0.5;
 
             &:hover {
-                opacity: 1;
                 text-decoration: none;
             }
 
             & i {
-                color: hsl(0deg 0% 20%);
+                color: var(--color-navbar-icon);
                 font-size: 1.6em;
             }
         }
