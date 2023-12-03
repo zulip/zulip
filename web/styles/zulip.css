@@ -999,6 +999,17 @@ body.has-overlay-scrollbar {
     background-color: hsl(0deg 0% 0% / 70%);
 }
 
+/* Set flex display on login buttons only in the
+   spectator view. We want them to display none
+   otherwise. */
+.spectator-view .column-right .spectator_login_buttons {
+    display: flex;
+
+    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+        display: none;
+    }
+}
+
 .column-right {
     width: var(--right-sidebar-width);
     max-width: var(--right-sidebar-width);
@@ -1008,22 +1019,41 @@ body.has-overlay-scrollbar {
 
     .spectator_login_buttons {
         display: flex;
-        justify-content: space-evenly;
-        position: absolute;
-        top: 8px;
-        /* gear menu + help menu width (40px * 2) */
-        right: 80px;
-        /* width of right column - width of gear icon - right margin of column-right (250px - 40px - 40px -7px) */
-        width: 163px;
-
-        @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-            display: none;
-        }
+        /* Allow the login buttons flexbox to
+           grow and shrink to fit the available
+           area. */
+        flex: 1 1 0;
+        /* Use a flexbox gap of 7px between the
+           buttons to reflect the outer 7px of space. */
+        gap: 7px;
+        /* This should be removed once the navbar
+           has been rewritten entirely with modern
+           layout methods. For now, we pull this up
+           so that the buttons and search box are
+           the same height and their boxes sit on the
+           same invisible line. */
+        margin-top: -1px;
 
         & a {
             font-size: calc(16em / 14);
+            /* Vertically size the buttons to
+               match the search box. */
+            line-height: 28px;
             font-weight: 600;
             color: hsl(0deg 0% 20%);
+            /* Allow individual buttons to grow
+               and shrink inside their containers. */
+            flex: 1 1 0;
+            /* Center the text nodes within the
+               flex items. */
+            text-align: center;
+            /* Internationalization: disallow wrapping,
+               and display an ellipsis when there's not
+               space enough to accommodate the button
+               text. */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
 
             &:hover {
                 text-decoration: none;
@@ -3546,10 +3576,21 @@ select.invite-as {
 
 .header-main .column-right {
     display: flex;
-    width: auto;
+    /* Make the top navbar right column its full width,
+       less 7px of space on the left and right. */
+    width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
-    margin-right: 7px;
+    /* Move the column to the right with absolute
+       positioning, rather than margin. */
+    right: 7px;
+
+    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
+    }
 
     & a:focus {
         filter: none;
