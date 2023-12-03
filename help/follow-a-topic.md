@@ -8,15 +8,17 @@ or participate in. Participating in a topic means sending a message,
 
 It's easy to prioritize catching up on followed topics. You can:
 
-- Configure how you get notified about new messages for topics you follow.
+- [Configure](/help/follow-a-topic#configure-notifications-for-followed-topics)
+  how you get notified about new messages for topics you follow.
 
-- Use the <kbd>Shift</kbd> + <kbd>N</kbd> keyboard shortcut to go to the next
-  unread followed topic.
+- Use the <kbd>Shift</kbd> + <kbd>N</kbd> [keyboard
+  shortcut](/help/keyboard-shortcuts) to go to the next unread followed topic.
 
-- Filter the [**inbox**](/help/inbox) view to only show followed topics.
+- Filter the [**inbox**](/help/inbox) and [**recent
+  conversations**](/help/recent-conversations) views to only show followed
+  topics.
 
-- See which topics you are following in the **left sidebar** and [**recent
-  conversations**](/help/recent-conversations).
+- See which topics you are following in the **left sidebar**.
 
 You can use followed topics for a variety of workflows:
 
