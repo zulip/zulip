@@ -272,11 +272,20 @@ def remote_billing_legacy_server_login(
     )
 
     assert next_page in VALID_NEXT_PAGES
-    if next_page is None:
+    if next_page is not None:
         return HttpResponseRedirect(
-            reverse("remote_server_billing_page", args=(remote_server_uuid,))
+            reverse(f"remote_server_{next_page}_page", args=(remote_server_uuid,))
+        )
+    elif remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED:
+        # TODO: Take user to plans page once that is available.
+        return HttpResponseRedirect(
+            reverse("remote_server_upgrade_page", args=(remote_server_uuid,))
+        )
+    elif remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY:
+        return HttpResponseRedirect(
+            reverse("remote_server_sponsorship_page", args=(remote_server_uuid,))
         )
     else:
         return HttpResponseRedirect(
-            reverse(f"remote_server_{next_page}_page", args=(remote_server_uuid,))
+            reverse("remote_server_billing_page", args=(remote_server_uuid,))
         )

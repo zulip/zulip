@@ -328,7 +328,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             )
 
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"/server/{self.uuid}/billing/")
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade")
 
         # Verify the authed data that should have been stored in the session.
         identity_dict = LegacyServerIdentityDict(
@@ -340,7 +340,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             identity_dict,
         )
 
-        result = self.client_get(result["Location"], subdomain="selfhosting")
+        result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
         # The server has no plan, so the /billing page redirects to /upgrade
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade")
