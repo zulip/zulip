@@ -389,6 +389,9 @@ def remote_servers_support(
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
+    billing_modality: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)
+    ),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -423,6 +426,11 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
                 discount=discount,
+            )
+        elif billing_modality is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_billing_modality,
+                billing_modality=billing_modality,
             )
         if support_view_request is not None:
             billing_session = RemoteServerBillingSession(
