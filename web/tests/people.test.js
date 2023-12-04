@@ -141,6 +141,15 @@ const moderator = {
     role: 300,
 };
 
+const bot_with_inaccesible_owner = {
+    email: "inaccessible-owner-bot@example.com",
+    user_id: 37,
+    full_name: "Inaccessible owner bot",
+    is_bot: true,
+    bot_owner_id: 38,
+    role: 300,
+};
+
 const steven = {
     email: "steven@example.com",
     delivery_email: "steven-delivery@example.com",
@@ -267,7 +276,7 @@ function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
 
-test_people("basics", () => {
+test_people("basics", ({override}) => {
     const persons = get_all_persons();
 
     assert.deepEqual(people.get_realm_users(), [me]);
@@ -339,6 +348,12 @@ test_people("basics", () => {
     assert.equal(people.get_bot_owner_user(welcome_bot), undefined);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.get_by_email(welcome_bot.email).full_name, "Welcome Bot");
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    assert.equal(
+        people.get_bot_owner_user(bot_with_inaccesible_owner).full_name,
+        "translated: Unknown user",
+    );
 
     // get_realm_users() will include our active bot,
     // but will exclude isaac (who is deactivated)

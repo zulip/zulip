@@ -185,7 +185,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
         return undefined;
     }
 
-    return get_by_user_id(owner_id);
+    return get_user_by_id_assert_valid(owner_id);
 }
 
 export function can_admin_user(user: User): boolean {
