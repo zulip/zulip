@@ -6,7 +6,9 @@ first install the
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
     **Important:** The HookPress plugin requires URL parameters to
     be delimited by semicolons instead of ampersands. If you have a

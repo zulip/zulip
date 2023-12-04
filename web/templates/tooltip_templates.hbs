@@ -59,6 +59,12 @@
         <div class="tooltip-inner-content italic">{{t "Everyone sees global times in their own time zone." }}</div>
     </div>
 </template>
+<template id="add-poll-tooltip">
+    <div>
+        <span>{{t "Add poll" }}</span><br/>
+        <span class="tooltip-inner-content italic">{{t "A poll must be an entire message." }}</span>
+    </div>
+</template>
 <template id="delete-draft-tooltip-template">
     {{t 'Delete draft' }}
     {{tooltip_hotkey_hints "Backspace"}}
@@ -71,16 +77,33 @@
     {{t 'Main menu' }}
     {{tooltip_hotkey_hints "G"}}
 </template>
+<template id="personal-menu-tooltip-template">
+    {{t 'Personal menu' }}
+    {{tooltip_hotkey_hints "G" "→"}}
+</template>
+<template id="help-menu-tooltip-template">
+    {{t 'Help menu' }}
+    {{tooltip_hotkey_hints "G" "←"}}
+</template>
 <template id="all-message-tooltip-template">
-    {{t 'All messages' }}
+    <div class="views-tooltip-container" data-view-code="all_messages">
+        <div>{{t 'All messages' }}</div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
     {{tooltip_hotkey_hints "A"}}
 </template>
 <template id="recent-conversations-tooltip-template">
-    {{t 'Recent conversations' }}
+    <div class="views-tooltip-container" data-view-code="recent_topics">
+        <div>{{t 'Recent conversations' }}</div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
     {{tooltip_hotkey_hints "T"}}
 </template>
 <template id="inbox-tooltip-template">
-    {{t 'Inbox' }}
+    <div class="views-tooltip-container" data-view-code="inbox">
+        <div>{{t 'Inbox' }}</div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
     {{tooltip_hotkey_hints "Shift" "I"}}
 </template>
 <template id="drafts-tooltip-template">
@@ -160,10 +183,6 @@
 <template id="search-people-tooltip-template">
     {{t 'Search people' }}
     {{tooltip_hotkey_hints "W"}}
-</template>
-<template id="keyboard-icon-tooltip-template">
-    {{t 'Keyboard shortcuts' }}
-    {{tooltip_hotkey_hints "?"}}
 </template>
 <template id="restore-scheduled-message-tooltip-template">
     {{t 'Edit and reschedule message' }}

@@ -586,25 +586,11 @@ test_people("bot_custom_profile_data", () => {
 test_people("user_timezone", () => {
     MockDate.set(parseISO("20130208T080910").getTime());
 
-    const expected_pref = {
-        timezone: "America/Los_Angeles",
-        format: "H:mm",
-    };
-
     user_settings.twenty_four_hour_time = true;
-    assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
-
-    expected_pref.format = "h:mm a";
-    user_settings.twenty_four_hour_time = false;
-    assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
-
-    user_settings.twenty_four_hour_time = true;
-    assert.equal(people.get_user_time(me.user_id), "0:09");
+    assert.equal(people.get_user_time(me.user_id), "00:09");
 
     user_settings.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
-
-    assert.deepEqual(people.get_user_time_preferences(unknown_user.user_id), undefined);
 });
 
 test_people("utcToZonedTime", ({override}) => {
@@ -612,10 +598,13 @@ test_people("utcToZonedTime", ({override}) => {
     user_settings.twenty_four_hour_time = true;
 
     assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
-    assert.equal(people.get_user_time(me.user_id), "0:09");
+    assert.equal(people.get_user_time(me.user_id), "00:09");
 
     override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
-    blueslip.expect("error", "Got invalid date for timezone");
+    blueslip.expect(
+        "warn",
+        "Error formatting time in Eriador/Rivendell: RangeError: Invalid time zone specified: Eriador/Rivendell",
+    );
     people.get_user_time(me.user_id);
 });
 

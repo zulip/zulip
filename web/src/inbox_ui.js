@@ -9,6 +9,7 @@ import render_user_with_status_icon from "../templates/user_with_status_icon.hbs
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
@@ -17,7 +18,6 @@ import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as modals from "./modals";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as sidebar_ui from "./sidebar_ui";
@@ -35,6 +35,7 @@ let dms_dict = new Map();
 let topics_dict = new Map();
 let streams_dict = new Map();
 let update_triggered_by_user = false;
+let filters_dropdown_widget;
 
 const COLUMNS = {
     COLLAPSE_BUTTON: 0,
@@ -46,16 +47,16 @@ const COLUMNS = {
 let col_focus = COLUMNS.COLLAPSE_BUTTON;
 let row_focus = 0;
 
-const ls_filter_key = "inbox_filters";
+const ls_filter_key = "inbox-filters";
 const ls_collapsed_containers_key = "inbox_collapsed_containers";
 
 const ls = localstorage();
-let filters = new Set();
+let filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
 let collapsed_containers = new Set();
 
 let search_keyword = "";
 const INBOX_SEARCH_ID = "inbox-search";
-const MUTED_FILTER_ID = "include_muted";
+const INBOX_FILTERS_DROPDOWN_ID = "inbox-filter_widget";
 export let current_focus_id;
 
 const STREAM_HEADER_PREFIX = "inbox-stream-header-";
@@ -71,10 +72,6 @@ function get_row_from_conversation_key(key) {
 function save_data_to_ls() {
     ls.set(ls_filter_key, [...filters]);
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
-}
-
-function should_include_muted() {
-    return filters.has(MUTED_FILTER_ID);
 }
 
 export function show() {
@@ -128,36 +125,16 @@ function get_stream_header_row(stream_id) {
 }
 
 function load_data_from_ls() {
-    filters = new Set(ls.get(ls_filter_key));
+    const saved_filters = new Set(ls.get(ls_filter_key));
+    const valid_filters = new Set(Object.values(views_util.FILTERS));
+    // If saved filters are not in the list of valid filters, we reset to default.
+    const is_subset = [...saved_filters].every((filter) => valid_filters.has(filter));
+    if (saved_filters.size === 0 || !is_subset) {
+        filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
+    } else {
+        filters = saved_filters;
+    }
     collapsed_containers = new Set(ls.get(ls_collapsed_containers_key));
-    update_filters();
-}
-
-function update_filters() {
-    const $mute_checkbox = $("#inbox-filters #inbox_filter_mute_toggle");
-    const $mute_filter = $("#inbox-filters .btn-inbox-filter");
-    if (should_include_muted()) {
-        $mute_checkbox.removeClass("fa-square-o");
-        $mute_checkbox.addClass("fa-check-square-o");
-        $mute_filter.addClass("btn-inbox-selected");
-    } else {
-        $mute_checkbox.removeClass("fa-check-square-o");
-        $mute_checkbox.addClass("fa-square-o");
-        $mute_filter.removeClass("btn-inbox-selected");
-    }
-}
-
-export function toggle_muted_filter() {
-    const $mute_filter = $("#inbox-filters .btn-inbox-filter");
-    if ($mute_filter.hasClass("btn-inbox-selected")) {
-        filters.delete(MUTED_FILTER_ID);
-    } else {
-        filters.add(MUTED_FILTER_ID);
-    }
-
-    update_filters();
-    save_data_to_ls();
-    update();
 }
 
 function format_dm(user_ids_string, unread_count, latest_msg_id) {
@@ -313,15 +290,11 @@ function format_topic(stream_id, topic, topic_unread_count, latest_msg_id) {
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
         latest_msg_id,
-        // The following two fields (development & all_visibility_policies)
-        // are not specific to this context, but this is the easiest way
-        // we've figured out for passing the data to the template rendering.
-        development: page_params.development_environment,
+        // The 'all_visibility_policies' field is not specific to this context,
+        // but this is the easiest way we've figured out for passing the data
+        // to the template rendering.
         all_visibility_policies: user_topics.all_visibility_policies,
         visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
-        topic_muted: Boolean(user_topics.is_topic_muted(stream_id, topic)),
-        topic_unmuted: Boolean(user_topics.is_topic_unmuted(stream_id, topic)),
-        stream_muted: sub_store.get(stream_id).is_muted,
     };
 
     return context;
@@ -523,6 +496,19 @@ function show_empty_inbox_text(has_visible_unreads) {
     }
 }
 
+function filter_click_handler(event, dropdown, widget) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    // We don't support multiple filters yet, so we clear existing and add the new filter.
+    filters = new Set([filter_id]);
+    save_data_to_ls();
+    dropdown.hide();
+    widget.render();
+    update();
+}
+
 export function complete_rerender() {
     if (!is_visible()) {
         return;
@@ -532,16 +518,13 @@ export function complete_rerender() {
     $("#inbox-pane").html(
         render_inbox_view({
             search_val: search_keyword,
-            include_muted: should_include_muted(),
             INBOX_SEARCH_ID,
-            MUTED_FILTER_ID,
             dms_dict,
             topics_dict,
             streams_dict,
             ...additional_context,
         }),
     );
-    update_filters();
     show_empty_inbox_text(has_visible_unreads);
     // If the focus is not on the inbox rows, the inbox view scrolls
     // down when moving from other views to the inbox view. To avoid
@@ -552,6 +535,15 @@ export function complete_rerender() {
         $("#inbox-list .simplebar-content-wrapper").attr("tabindex", "-1");
         revive_current_focus();
     }, 0);
+
+    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+        widget_name: "inbox-filter",
+        item_click_callback: filter_click_handler,
+        $events_container: $("#inbox-main"),
+        default_id: filters.values().next().value,
+    });
+    filters_dropdown_widget.setup();
 }
 
 export function search_and_update() {
@@ -584,16 +576,21 @@ function filter_should_hide_row({stream_id, topic, dm_key}) {
             return true;
         }
 
-        if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
-            return false;
-        }
-
         if (
-            !should_include_muted() &&
-            (stream_data.is_muted(stream_id) || user_topics.is_topic_muted(stream_id, topic))
+            filters.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
+            !user_topics.is_topic_followed(stream_id, topic)
         ) {
             return true;
         }
+
+        if (
+            filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
+            (user_topics.is_topic_muted(stream_id, topic) || stream_data.is_muted(stream_id)) &&
+            !user_topics.is_topic_unmuted_or_followed(stream_id, topic)
+        ) {
+            return true;
+        }
+
         text = (sub.name + " " + topic).toLowerCase();
     }
 
@@ -640,7 +637,7 @@ function focus_inbox_search() {
 }
 
 function is_list_focused() {
-    return ![INBOX_SEARCH_ID, MUTED_FILTER_ID].includes(current_focus_id);
+    return ![INBOX_SEARCH_ID, INBOX_FILTERS_DROPDOWN_ID].includes(current_focus_id);
 }
 
 function get_all_rows() {
@@ -761,7 +758,7 @@ function set_list_focus(input_key) {
     const $all_rows = get_all_rows();
     const max_row_focus = $all_rows.length - 1;
     if (max_row_focus < 0) {
-        focus_inbox_search();
+        focus_filters_dropdown();
         return;
     }
 
@@ -826,17 +823,17 @@ function set_list_focus(input_key) {
     $($cols_to_focus[col_focus]).trigger("focus");
 }
 
-function focus_muted_filter() {
-    current_focus_id = MUTED_FILTER_ID;
-    focus_current_id();
+function focus_filters_dropdown() {
+    current_focus_id = INBOX_FILTERS_DROPDOWN_ID;
+    $(`#${INBOX_FILTERS_DROPDOWN_ID}`).trigger("focus");
 }
 
 function is_search_focused() {
     return current_focus_id === INBOX_SEARCH_ID;
 }
 
-function is_muted_filter_focused() {
-    return current_focus_id === MUTED_FILTER_ID;
+function is_filters_dropdown_focused() {
+    return current_focus_id === INBOX_FILTERS_DROPDOWN_ID;
 }
 
 function get_page_up_down_delta() {
@@ -894,14 +891,20 @@ export function change_focused_element(input_key) {
 
         switch (input_key) {
             case "down_arrow":
+            case "tab":
                 set_list_focus();
                 return true;
             case "right_arrow":
-            case "tab":
                 if (end !== text_length || is_selected) {
                     return false;
                 }
-                focus_muted_filter();
+                focus_filters_dropdown();
+                return true;
+            case "left_arrow":
+                if (start !== 0 || is_selected) {
+                    return false;
+                }
+                focus_filters_dropdown();
                 return true;
             case "escape":
                 if (get_all_rows().length === 0) {
@@ -909,21 +912,23 @@ export function change_focused_element(input_key) {
                 }
                 set_list_focus();
                 return true;
+        }
+    } else if (is_filters_dropdown_focused()) {
+        switch (input_key) {
+            case "down_arrow":
+                set_list_focus();
+                return true;
+            case "left_arrow":
+                focus_inbox_search();
+                return true;
+            case "right_arrow":
+            case "tab":
+                focus_inbox_search();
+                return true;
             case "shift_tab":
                 // Let user focus outside inbox view.
                 current_focus_id = "";
                 return false;
-        }
-    } else if (is_muted_filter_focused()) {
-        switch (input_key) {
-            case "down_arrow":
-            case "tab":
-                set_list_focus();
-                return true;
-            case "left_arrow":
-            case "shift_tab":
-                focus_inbox_search();
-                return true;
         }
     } else {
         switch (input_key) {
@@ -936,7 +941,7 @@ export function change_focused_element(input_key) {
             case "vim_up":
             case "up_arrow":
                 if (row_focus === 0) {
-                    focus_inbox_search();
+                    focus_filters_dropdown();
                     return true;
                 }
                 row_focus -= 1;
@@ -1254,13 +1259,6 @@ export function initialize() {
         window.location.href = $elt.find("a").attr("href");
     });
 
-    $("body").on("click", "#include_muted", () => {
-        current_focus_id = MUTED_FILTER_ID;
-        update_triggered_by_user = true;
-        toggle_muted_filter();
-        compose_closed_ui.set_standard_text_for_reply_button();
-    });
-
     $("body").on("click", "#inbox-list .on_hover_dm_read", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -1350,5 +1348,11 @@ export function initialize() {
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );
+    });
+
+    $(document).on("compose_canceled.zulip", () => {
+        if (is_visible()) {
+            revive_current_focus();
+        }
     });
 }

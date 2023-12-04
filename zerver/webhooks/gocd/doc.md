@@ -3,7 +3,9 @@ your build statuses.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Add the following to your `Config.XML` file.
 

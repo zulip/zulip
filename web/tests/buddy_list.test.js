@@ -57,9 +57,8 @@ run_test("basics", ({override}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
-    override(buddy_list, "get_data_from_keys", (opts) => {
-        const keys = opts.keys;
-        assert.deepEqual(keys, [alice.user_id]);
+    override(buddy_list, "get_data_from_user_ids", (user_ids) => {
+        assert.deepEqual(user_ids, [alice.user_id]);
         return "data-stub";
     });
 
@@ -73,22 +72,22 @@ run_test("basics", ({override}) => {
     override(padded_widget, "update_padding", () => {});
 
     let appended;
-    $("#user_presences").append = (html) => {
+    $("#buddy-list-users-matching-view").append = (html) => {
         assert.equal(html, "html-stub");
         appended = true;
     };
 
     buddy_list.populate({
-        keys: [alice.user_id],
+        all_user_ids: [alice.user_id],
     });
     assert.ok(appended);
 
     const $alice_li = {length: 1};
 
-    override(buddy_list, "get_li_from_key", (opts) => {
-        const key = opts.key;
+    override(buddy_list, "get_li_from_user_id", (opts) => {
+        const user_id = opts.user_id;
 
-        assert.equal(key, alice.user_id);
+        assert.equal(user_id, alice.user_id);
         return $alice_li;
     });
 
@@ -128,7 +127,7 @@ run_test("big_list", ({override}) => {
     });
 
     buddy_list.populate({
-        keys: user_ids,
+        all_user_ids: user_ids,
     });
 
     assert.equal(chunks_inserted, 6);
@@ -150,7 +149,7 @@ run_test("force_render", ({override}) => {
     assert.equal(num_rendered, 60 - 50 + 3);
 
     // Force a contrived error case for line coverage.
-    blueslip.expect("error", "cannot show key at this position");
+    blueslip.expect("error", "cannot show user id at this position");
     buddy_list.force_render({
         pos: 10,
     });
@@ -162,15 +161,15 @@ run_test("find_li w/force_render", ({override}) => {
     // If we call find_li w/force_render set, and the
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
-    const key = "999";
+    const user_id = "999";
     const $stub_li = {length: 0};
 
-    override(buddy_list, "get_li_from_key", (opts) => {
-        assert.equal(opts.key, key);
+    override(buddy_list, "get_li_from_user_id", (opts) => {
+        assert.equal(opts.user_id, user_id);
         return $stub_li;
     });
 
-    buddy_list.keys = ["foo", "bar", key, "baz"];
+    buddy_list.all_user_ids = ["foo", "bar", user_id, "baz"];
 
     let shown;
 
@@ -180,13 +179,13 @@ run_test("find_li w/force_render", ({override}) => {
     });
 
     const $empty_li = buddy_list.find_li({
-        key,
+        key: user_id,
     });
     assert.equal($empty_li, $stub_li);
     assert.ok(!shown);
 
     const $li = buddy_list.find_li({
-        key,
+        key: user_id,
         force_render: true,
     });
 
@@ -196,7 +195,7 @@ run_test("find_li w/force_render", ({override}) => {
 
 run_test("find_li w/bad key", ({override}) => {
     const buddy_list = new BuddyList();
-    override(buddy_list, "get_li_from_key", () => ({length: 0}));
+    override(buddy_list, "get_li_from_user_id", () => ({length: 0}));
 
     const $undefined_li = buddy_list.find_li({
         key: "not-there",
@@ -213,7 +212,7 @@ run_test("scrolling", ({override}) => {
     override(message_viewport, "height", () => 550);
 
     buddy_list.populate({
-        keys: [],
+        all_user_ids: [],
     });
 
     let tried_to_fill;
@@ -225,7 +224,7 @@ run_test("scrolling", ({override}) => {
     assert.ok(!tried_to_fill);
 
     buddy_list.start_scroll_handler();
-    $(buddy_list.scroll_container_sel).trigger("scroll");
+    $(buddy_list.scroll_container_selector).trigger("scroll");
 
     assert.ok(tried_to_fill);
 });

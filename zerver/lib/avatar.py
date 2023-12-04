@@ -147,3 +147,7 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
         return False
 
     return True
+
+
+def get_avatar_for_inaccessible_user() -> str:
+    return staticfiles_storage.url("images/unknown-user-avatar.png")

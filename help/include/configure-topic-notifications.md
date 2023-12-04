@@ -2,15 +2,7 @@
 
 {tab|desktop-web}
 
-{!topic-actions.md!}
-
-1. Configure topic notifications using the row of icons at the top of the menu.
-
-!!! tip ""
-
-    You can also configure notifications by clicking the topic notifications status
-    icon in the message recipient bar, in the **Inbox view**, or in
-    **Recent conversations**.
+{!configure-topic-notifications-desktop-web.md!}
 
 {tab|mobile}
 

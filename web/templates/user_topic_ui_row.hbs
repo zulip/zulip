@@ -5,9 +5,7 @@
     <td>
         <select class="settings_user_topic_visibility_policy prop-element list_select bootstrap-focus-style" data-setting-widget-type="number">
             {{#each ../user_topic_visibility_policy_values}}
-                {{#unless (and (eq this.description "Followed") (not ../../development))}}
-                    <option value='{{this.code}}' {{#if (eq this.code ../visibility_policy)}}selected{{/if}}>{{this.description}}</option>
-                {{/unless}}
+                <option value='{{this.code}}' {{#if (eq this.code ../visibility_policy)}}selected{{/if}}>{{this.description}}</option>
             {{/each}}
         </select>
     </td>

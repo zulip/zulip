@@ -286,7 +286,7 @@ function get_user_card_popover_data(
         status_content_available: Boolean(status_text || status_emoji_info),
         status_text,
         status_emoji_info,
-        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id, !is_active),
         date_joined,
         spectator_view,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
@@ -508,7 +508,6 @@ export function get_user_card_popover_manage_menu_items() {
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
 function toggle_user_card_popover_for_message(element, user, message, on_mount) {
-    message_lists.current.select_id(message.id);
     const $elt = $(element);
     if (!message_user_card.is_open()) {
         if (user === undefined) {
@@ -680,7 +679,7 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".user-card-popover-actions .clear_status", (e) => {
+    $("body").on("click", ".user-card-popover-actions .user-card-clear-status-button", (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents("ul"));
         user_status.server_update_status({
@@ -694,7 +693,7 @@ function register_click_handlers() {
         });
     });
 
-    $("body").on("click", ".user-card-popover-actions .sidebar-popover-reactivate-user", (e) => {
+    $("body").on("click", ".sidebar-popover-reactivate-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all();
         e.stopPropagation();
@@ -742,7 +741,8 @@ function register_click_handlers() {
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
-        const mention = people.get_mention_syntax(name, user_id);
+        const is_active = people.is_active_user_for_popover(user_id);
+        const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();
         e.stopPropagation();
@@ -787,13 +787,13 @@ function register_click_handlers() {
     $("body").on("click", ".update_status_text", open_user_status_modal);
 
     // Clicking on one's own status emoji should open the user status modal.
-    $("#user_presences").on(
+    $("#buddy-list-users-matching-view").on(
         "click",
         ".user_sidebar_entry_me .status-emoji",
         open_user_status_modal,
     );
 
-    $("#user_presences").on("click", ".user-list-sidebar-menu-icon", (e) => {
+    $("#buddy-list-users-matching-view").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
 

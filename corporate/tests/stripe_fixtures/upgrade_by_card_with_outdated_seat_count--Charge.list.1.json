@@ -21,7 +21,7 @@
         "name": null,
         "phone": null
       },
-      "calculated_statement_descriptor": "ZULIP STANDARD",
+      "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
       "captured": true,
       "created": 1010000001,
       "currency": "usd",
@@ -30,6 +30,7 @@
       "destination": null,
       "dispute": null,
       "disputed": false,
+      "failure_balance_transaction": null,
       "failure_code": null,
       "failure_message": null,
       "fraud_details": {},
@@ -41,6 +42,7 @@
         "billing_schedule": "1",
         "license_management": "automatic",
         "licenses": "6",
+        "plan_tier": "1",
         "price_per_license": "8000",
         "realm_id": "1",
         "realm_str": "zulip",
@@ -62,9 +64,10 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1K2OatHSaWXyvFpKpAU5iFIK",
+      "payment_method": "pm_1OIlbaDEQaroqDjstEC8FO1C",
       "payment_method_details": {
         "card": {
+          "amount_authorized": 48000,
           "brand": "visa",
           "checks": {
             "address_line1_check": null,
@@ -72,21 +75,39 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 3,
-          "exp_year": 2033,
+          "exp_month": 12,
+          "exp_year": 2024,
+          "extended_authorization": {
+            "status": "disabled"
+          },
           "fingerprint": "NORMALIZED000001",
           "funding": "credit",
+          "incremental_authorization": {
+            "status": "unavailable"
+          },
           "installments": null,
           "last4": "4242",
+          "mandate": null,
+          "multicapture": {
+            "status": "unavailable"
+          },
           "network": "visa",
+          "network_token": {
+            "used": false
+          },
+          "overcapture": {
+            "maximum_amount_capturable": 48000,
+            "status": "unavailable"
+          },
           "three_d_secure": null,
           "wallet": null
         },
         "type": "card"
       },
+      "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000001/rcpt_NORMALIZED000000000000000000001",
+      "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNL8qqsGMgbtKEzRc3Q6LBaDmOfuUFjBhUIgkVijwOKlm6XkIZ7Roy_8k9aI9Mzoja40-jKL0t4iLvtt",
       "refunded": false,
       "refunds": {
         "data": [],

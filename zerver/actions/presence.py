@@ -11,6 +11,7 @@ from zerver.lib.presence import (
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import Client, UserPresence, UserProfile, active_user_ids, get_client
 from zerver.tornado.django_api import send_event
 
@@ -27,7 +28,11 @@ def send_presence_changed(
     #
     # See https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
     # internals documentation on presence.
-    user_ids = active_user_ids(user_profile.realm_id)
+    if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE:
+        user_ids = get_user_ids_who_can_access_user(user_profile)
+    else:
+        user_ids = active_user_ids(user_profile.realm_id)
+
     if (
         len(user_ids) > settings.USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
         and not force_send_update

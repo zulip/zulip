@@ -12,8 +12,8 @@ import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
+import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -51,22 +51,16 @@ function maybe_hide_inbox() {
 }
 
 function show_all_message_view() {
-    const coming_from_recent_view = maybe_hide_recent_view();
-    const coming_from_inbox = maybe_hide_inbox();
-    const is_actively_scrolling = message_scroll.is_actively_scrolling();
-    narrow.deactivate(!(coming_from_recent_view || coming_from_inbox), is_actively_scrolling);
-    // We need to maybe scroll to the selected message
-    // once we have the proper viewport set up
-    setTimeout(message_viewport.maybe_scroll_to_selected, 0);
+    narrow.deactivate();
 }
 
-export function set_hash_to_default_view() {
-    let default_view_hash = `#${user_settings.default_view}`;
-    if (default_view_hash === "#recent_topics") {
-        default_view_hash = "#recent";
+export function set_hash_to_home_view() {
+    let home_view_hash = `#${user_settings.web_home_view}`;
+    if (home_view_hash === "#recent_topics") {
+        home_view_hash = "#recent";
     }
 
-    if (window.location.hash !== default_view_hash) {
+    if (window.location.hash !== home_view_hash) {
         // We want to set URL with no hash here. It is not possible
         // to do so with `window.location.hash` since it will set an empty
         // hash. So, we use `pushState` which simply updates the current URL
@@ -77,28 +71,25 @@ export function set_hash_to_default_view() {
     }
 }
 
-function hide_non_message_list_views() {
-    maybe_hide_inbox();
-    maybe_hide_recent_view();
-}
-
-function show_default_view() {
-    hide_non_message_list_views();
+function show_home_view() {
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
-    // We only allow the primary recommended options for default views
+    // We only allow the primary recommended options for home views
     // rendered without a hash.
-    switch (user_settings.default_view) {
+    switch (user_settings.web_home_view) {
         case "recent_topics": {
+            maybe_hide_inbox();
             recent_view_ui.show();
             break;
         }
         case "all_messages": {
+            // Hides inbox/recent views internally if open.
             show_all_message_view();
             break;
         }
         case "inbox": {
+            maybe_hide_recent_view();
             inbox_ui.show();
             break;
         }
@@ -109,7 +100,7 @@ function show_default_view() {
             // go back in browser history. See
             // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
             // for detailed description of the issue.
-            window.location.hash = user_settings.default_view;
+            window.location.hash = user_settings.web_home_view;
         }
     }
 }
@@ -125,7 +116,6 @@ function do_hashchange_normal(from_reload) {
 
     switch (hash[0]) {
         case "#narrow": {
-            hide_non_message_list_views();
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.
@@ -140,11 +130,11 @@ function do_hashchange_normal(from_reload) {
             }
             if (operators === undefined) {
                 // If the narrow URL didn't parse,
-                // send them to default_view.
+                // send them to web_home_view.
                 // We cannot clear hash here since
                 // it will block user from going back
                 // in browser history.
-                show_default_view();
+                show_home_view();
                 return false;
             }
             const narrow_opts = {
@@ -170,7 +160,7 @@ function do_hashchange_normal(from_reload) {
         }
         case "":
         case "#":
-            show_default_view();
+            show_home_view();
             break;
         case "#recent_topics":
             // The URL for Recent Conversations was changed from
@@ -207,7 +197,7 @@ function do_hashchange_normal(from_reload) {
             blueslip.error("overlay logic skipped for: " + hash);
             break;
         default:
-            show_default_view();
+            show_home_view();
     }
     return false;
 }
@@ -215,8 +205,8 @@ function do_hashchange_normal(from_reload) {
 function do_hashchange_overlay(old_hash) {
     if (old_hash === undefined) {
         // The user opened the app with an overlay hash; we need to
-        // show the user's default view behind it.
-        show_default_view();
+        // show the user's home view behind it.
+        show_home_view();
     }
     const base = hash_parser.get_current_hash_category();
     const old_base = hash_parser.get_hash_category(old_hash);
@@ -224,7 +214,7 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "groups" && (!page_params.development_environment || page_params.is_guest)) {
         // The #groups settings page is unfinished, and disabled in production.
-        show_default_view();
+        show_home_view();
         return;
     }
 
@@ -257,7 +247,9 @@ function do_hashchange_overlay(old_hash) {
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
         if (base === "streams") {
-            stream_settings_ui.change_state(section);
+            // e.g. #streams/29/social/subscribers
+            const right_side_tab = hash_parser.get_current_nth_hash_section(4);
+            stream_settings_ui.change_state(section, right_side_tab);
             return;
         }
 
@@ -322,7 +314,9 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "streams") {
-        stream_settings_ui.launch(section);
+        // e.g. #streams/29/social/subscribers
+        const right_side_tab = hash_parser.get_current_nth_hash_section(4);
+        stream_settings_ui.launch(section, right_side_tab);
         return;
     }
 
@@ -407,6 +401,7 @@ function hashchanged(from_reload, e) {
     overlays.close_for_hash_change();
     sidebar_ui.hide_all();
     popovers.hide_all();
+    modals.close_active_if_any();
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);
     browser_history.state.changing_hash = false;

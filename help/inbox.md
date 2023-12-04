@@ -14,28 +14,32 @@ regularly clear all unread messages in your subscribed streams.
     The arrow keys and vim navigation keys (<kbd>J</kbd>, <kbd>K</kbd>,
     <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
 
-## Include muted conversations
+## Filter conversations
 
-In the web app, you can control whether **Inbox** includes muted
-conversations.
+### Filter by topic status
+
+In the web app, you can control whether the **Inbox** includes all topics, just
+[unmuted](/help/mute-a-topic) topics, or only topics you
+[follow](/help/follow-a-topic).
 
 {start_tabs}
 
 {tab|desktop-web}
 
-{relative|message|inbox}
+{!go-to-inbox.md!}
 
-1. Toggle **Include muted** next to the filter box at the top.
+1. Select **All topics**, **Unmuted topics**, or **Followed topics** from
+   the dropdown in the upper left of the **inbox** view.
 
 {end_tabs}
 
-## Filter conversations
+### Filter by keyword
 
 {start_tabs}
 
 {tab|desktop-web}
 
-{relative|message|inbox}
+{!go-to-inbox.md!}
 
 1. Use the **Filter** box at the top to find a conversation.
    You can filter by stream, topic, or direct message participants.

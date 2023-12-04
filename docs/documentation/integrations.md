@@ -85,10 +85,8 @@ Here are a few common macros used to document Zulip's integrations:
   for a given integration and select **Generic bot** as the **Bot type**. For an
   example rendering, see [the docs for Zulip's Matrix integration][matrix].
 
-- `{!create-bot-construct-url.md!}` macro - Instructs users to create a bot
+- `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
   for a given integration and select **Incoming webhook** as the **Bot type**.
-  The URL is generated automatically for every incoming webhook by using
-  attributes in the `WebhookIntegration` class in [zerver/lib/integrations.py][integrations-file].
   This macro is usually used right after `{!create-stream!}`. For an example
   rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
 
@@ -99,15 +97,20 @@ Here are a few common macros used to document Zulip's integrations:
   deployed on. If special configuration is required to set the `SITE`
   variable, you should document that too.
 
+- `{!generate-integration-url.md!}` - Instructs user how to get the URL for a
+  bot for a given integration. An example URL is generated automatically for
+  every incoming webhook by using attributes in the `WebhookIntegration` class
+  in [zerver/lib/integrations.py][integrations-file].
+
 - `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`
   to a URL in cases where supplying a stream name in the URL is optional.
   Supplying a stream name is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url.md!}`, this macro need not be used.
+  `{!generate-integration-url.md!}`, this macro need not be used.
 
 - `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
   to supply a custom topic for webhook notification messages. Supplying a custom
   topic is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url.md!}`, this macro need not be used.
+  `{!generate-integration-url.md!}`, this macro need not be used.
 
 - `{!congrats.md!}` macro - Inserts congratulatory lines signifying the
   successful setup of a given integration. This macro is usually used at
@@ -135,7 +138,7 @@ Here are a few common macros used to document Zulip's integrations:
   see the last paragraph of **Step 2** in
   [the docs for Zulip's GitHub integration][github-integration].
 
-- `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url.md!}`
+- `{!webhook-url.md!}` - Used internally by `{!generate-integration-url.md!}`
   to generate the webhook URL.
 
 - `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
@@ -215,10 +218,12 @@ A typical doc will then have the following steps.
 
 ##### "Create the bot" step
 
-- Typically, use the `create-bot-construct-url` macro.
-- [Existing macros](#markdown-macros) should be used for this if they exist, but if the macro
-  defaults don’t work, it may make sense to write something custom for the
-  integration in question. This step is mandatory for all integrations.
+- Typically, use the `create-an-incoming-webhook` and
+  `generate-integration-url` macros.
+- [Existing macros](#markdown-macros) should be used for this if they exist,
+  but if the macro defaults don’t work, it may make sense to write something
+  custom for the integration in question. This step is mandatory for all
+  integrations.
 
 ##### "Navigate to this screen" step
 

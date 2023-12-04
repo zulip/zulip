@@ -265,52 +265,53 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # Make sure each stream created in the realm creation process has at least one message below
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
-    content_of_private_streams_topic = (
-        _("This is a private stream, as indicated by the lock icon next to the stream name.")
-        + " "
-        + _("Private streams are only visible to stream members.")
-        + "\n"
-        "\n"
-        + _(
-            "To manage this stream, go to [Stream settings]({stream_settings_url}) "
-            "and click on `{initial_private_stream_name}`."
+    with override_language(realm.default_language):
+        content_of_private_streams_topic = (
+            _("This is a private stream, as indicated by the lock icon next to the stream name.")
+            + " "
+            + _("Private streams are only visible to stream members.")
+            + "\n"
+            "\n"
+            + _(
+                "To manage this stream, go to [Stream settings]({stream_settings_url}) "
+                "and click on `{initial_private_stream_name}`."
+            )
+        ).format(
+            stream_settings_url="#streams/subscribed",
+            initial_private_stream_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
         )
-    ).format(
-        stream_settings_url="#streams/subscribed",
-        initial_private_stream_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
-    )
 
-    content1_of_topic_demonstration_topic = (
-        _(
-            "This is a message on stream #**{default_notification_stream_name}** with the "
-            "topic `topic demonstration`."
-        )
-    ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+        content1_of_topic_demonstration_topic = (
+            _(
+                "This is a message on stream #**{default_notification_stream_name}** with the "
+                "topic `topic demonstration`."
+            )
+        ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
 
-    content2_of_topic_demonstration_topic = (
-        _("Topics are a lightweight tool to keep conversations organized.")
-        + " "
-        + _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
-    ).format(about_topics_help_url="/help/streams-and-topics")
+        content2_of_topic_demonstration_topic = (
+            _("Topics are a lightweight tool to keep conversations organized.")
+            + " "
+            + _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
+        ).format(about_topics_help_url="/help/streams-and-topics")
 
-    content_of_swimming_turtles_topic = (
-        _(
-            "This is a message on stream #**{default_notification_stream_name}** with the "
-            "topic `swimming turtles`."
+        content_of_swimming_turtles_topic = (
+            _(
+                "This is a message on stream #**{default_notification_stream_name}** with the "
+                "topic `swimming turtles`."
+            )
+            + "\n"
+            "\n"
+            "[](/static/images/cute/turtle.png)"
+            "\n"
+            "\n"
+            + _(
+                "[Start a new topic]({start_topic_help_url}) any time you're not replying to a \
+            previous message."
+            )
+        ).format(
+            default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            start_topic_help_url="/help/starting-a-new-topic",
         )
-        + "\n"
-        "\n"
-        "[](/static/images/cute/turtle.png)"
-        "\n"
-        "\n"
-        + _(
-            "[Start a new topic]({start_topic_help_url}) any time you're not replying to a \
-        previous message."
-        )
-    ).format(
-        default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-        start_topic_help_url="/help/starting-a-new-topic",
-    )
 
     welcome_messages: List[Dict[str, str]] = [
         {

@@ -59,6 +59,9 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
     assert.deepEqual(notifiable_counts, expected_notifiable_count);
     user_settings.desktop_icon_count_display = 3;
     notifiable_counts = unread.get_notifiable_count();
+    assert.deepEqual(notifiable_counts, expected_notifiable_count);
+    user_settings.desktop_icon_count_display = 4;
+    notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, 0);
 }
 

@@ -10,10 +10,16 @@ const {page_params} = require("./lib/zpage_params");
 
 const message_live_update = mock_esm("../src/message_live_update");
 const settings_account = mock_esm("../src/settings_account", {
+    maybe_update_deactivate_account_button() {},
     update_email() {},
     update_full_name() {},
     update_account_settings_display() {},
 });
+const settings_users = mock_esm("../src/settings_users", {
+    update_user_data() {},
+    update_view_on_deactivate() {},
+});
+const stream_events = mock_esm("../src/stream_events");
 
 mock_esm("../src/activity_ui", {
     redraw() {},
@@ -41,9 +47,6 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
 });
 mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
-});
-mock_esm("../src/settings_users", {
-    update_user_data() {},
 });
 
 page_params.is_admin = true;
@@ -259,4 +262,30 @@ run_test("updates", () => {
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);
     assert.equal(person.bot_owner_id, me.user_id);
+
+    let user_removed_from_streams = false;
+    stream_events.remove_deactivated_user_from_all_streams = (user_id) => {
+        assert.equal(user_id, isaac.user_id);
+        user_removed_from_streams = true;
+    };
+    user_events.update_person({user_id: isaac.user_id, is_active: false});
+    assert.ok(!people.is_person_active(isaac.user_id));
+    assert.ok(user_removed_from_streams);
+
+    user_events.update_person({user_id: isaac.user_id, is_active: true});
+    assert.ok(people.is_person_active(isaac.user_id));
+
+    stream_events.remove_deactivated_user_from_all_streams = () => {};
+
+    let bot_data_updated = false;
+    settings_users.update_bot_data = (user_id) => {
+        assert.equal(user_id, test_bot.user_id);
+        bot_data_updated = true;
+    };
+    user_events.update_person({user_id: test_bot.user_id, is_active: false});
+    assert.equal(bot_data_updated, true);
+
+    bot_data_updated = false;
+    user_events.update_person({user_id: test_bot.user_id, is_active: true});
+    assert.ok(bot_data_updated);
 });

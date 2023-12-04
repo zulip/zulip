@@ -478,7 +478,13 @@ html {
     }
 
     .alert {
-        &:not(.alert-info) {
+        &:not(
+                .alert-info,
+                .billing-page-success,
+                .upgrade-page-success,
+                .sponsorship-page-success,
+                #autopay-error
+            ) {
             padding: 0;
             margin-bottom: 5px;
             font-weight: 600;
@@ -518,6 +524,7 @@ html {
         & input[type="text"],
         input[type="email"],
         input[type="password"],
+        input[type="number"],
         textarea,
         select {
             padding: 10px 32px 10px 12px;
@@ -916,6 +923,10 @@ button#register_auth_button_gitlab {
     }
 }
 
+#upgrade-page-details,
+#billing-page-details,
+#sponsorship-form,
+#sponsorship-status-page-details,
 #registration,
 #new-realm-creation {
     width: auto;
@@ -965,13 +976,20 @@ button#register_auth_button_gitlab {
             }
         }
 
-        &.support-form-field {
+        &.upgrade-page-field,
+        &.billing-page-field,
+        &.support-form-field,
+        &.sponsorship-form-field {
             width: 450px;
 
             & input,
             textarea {
                 width: 400px;
                 font-size: 1rem;
+            }
+
+            & select {
+                width: 450px;
             }
 
             & textarea {
@@ -1000,13 +1018,17 @@ button#register_auth_button_gitlab {
         border-radius: 4px;
     }
 
-    .support-submit-button {
+    .support-submit-button,
+    #sponsorship-button {
         margin-top: 20px;
         margin-bottom: 5px;
         width: 450px;
     }
 
-    .register-button .loader {
+    .register-button .loader,
+    .upgrade-button-loader,
+    .sponsorship-button-loader,
+    .billing-button-loader {
         display: none;
         vertical-align: top;
         position: relative;

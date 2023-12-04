@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import shutil
 import uuid
@@ -10,6 +11,7 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -73,6 +75,7 @@ from zerver.models import (
     ScheduledMessage,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserHotspot,
@@ -1387,6 +1390,25 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    def test_import_realm_notify_bouncer(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        self.export_realm(original_realm)
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"), patch(
+            "zerver.lib.remote_server.send_to_push_bouncer"
+        ) as m:
+            new_realm = do_import_realm(get_output_dir(), "test-zulip")
+
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        calls_args_for_assert = m.call_args_list[0][0]
+        self.assertEqual(calls_args_for_assert[0], "POST")
+        self.assertEqual(calls_args_for_assert[1], "server/analytics")
+        self.assertIn(
+            new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[0][0][2]["realms"])]
+        )
+
     def test_import_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
@@ -1605,8 +1627,8 @@ class RealmImportExportTest(ExportFile):
         # corresponding system groups.
         for user in UserProfile.objects.filter(realm=imported_realm):
             expected_group_names = {UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
-            if UserGroup.MEMBERS_GROUP_NAME in expected_group_names:
-                expected_group_names.add(UserGroup.FULL_MEMBERS_GROUP_NAME)
+            if SystemGroups.MEMBERS in expected_group_names:
+                expected_group_names.add(SystemGroups.FULL_MEMBERS)
             self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)
 
 

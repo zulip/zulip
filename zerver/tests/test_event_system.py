@@ -27,7 +27,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
-from zerver.lib.users import get_api_key, get_raw_user_data
+from zerver.lib.users import get_api_key, get_users_for_api
 from zerver.models import (
     CustomProfileField,
     UserMessage,
@@ -1249,7 +1249,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        with self.assert_database_query_count(39):
+        with self.assert_database_query_count(40):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1259,7 +1259,7 @@ class FetchQueriesTest(ZulipTestCase):
             default_streams=1,
             default_stream_groups=1,
             drafts=1,
-            hotspots=0,
+            hotspots=1,
             message=1,
             muted_topics=1,
             muted_users=1,
@@ -1384,10 +1384,10 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
         self.assertEqual(result, [])
 
 
-class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
-    def test_get_raw_user_data_on_system_bot_realm(self) -> None:
+class TestGetUserAPIDataSystemBotRealm(ZulipTestCase):
+    def test_get_users_api_data_on_system_bot_realm(self) -> None:
         realm = get_realm(settings.SYSTEM_BOT_REALM)
-        result = get_raw_user_data(
+        result = get_users_for_api(
             realm,
             self.example_user("hamlet"),
             client_gravatar=True,

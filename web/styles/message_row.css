@@ -470,6 +470,59 @@ $time_column_min_width: 42px; /* + padding */
         display: unset !important;
         cursor: default;
     }
+
+    /* Message-editing styles */
+    .message-edit-buttons-and-timer {
+        margin-top: 5px;
+        display: flex;
+        gap: 5px;
+        /* Allow items to occupy full height.
+           This is especially important for
+           buttons that are flex items. */
+        align-items: stretch;
+    }
+
+    .message-actions-button {
+        box-sizing: border-box;
+        height: 28px;
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: 0;
+        margin-bottom: 0;
+        line-height: 1;
+    }
+
+    .message_edit_save {
+        /* Match Save button's basic colors to
+           the compose box Send button. */
+        color: var(--color-compose-send-button-icon-color);
+        background-color: var(--color-compose-send-button-background);
+
+        &:hover {
+            background-color: var(
+                --color-compose-send-button-background-interactive
+            );
+        }
+
+        &:disabled {
+            /* Replicate the `.new-style` disabled values,
+               without any color shifts. */
+            cursor: not-allowed;
+            filter: saturate(0);
+            opacity: 0.5;
+        }
+    }
+
+    .message_edit_cancel,
+    .message_edit_close {
+        color: var(--color-exit-button-text);
+        background: var(--color-exit-button-background);
+        border: 1px solid var(--color-exit-button-border);
+
+        &:hover {
+            background: var(--color-exit-button-background-interactive);
+        }
+    }
 }
 
 .recipient_row {

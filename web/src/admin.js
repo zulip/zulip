@@ -30,7 +30,9 @@ const admin_settings_label = {
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
     realm_notifications_stream: $t({defaultMessage: "New stream announcements"}),
     realm_signup_notifications_stream: $t({defaultMessage: "New user announcements"}),
-    realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
+    realm_inline_image_preview: $t({
+        defaultMessage: "Show previews of uploaded and linked images and videos",
+    }),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
     realm_message_content_allowed_in_email_notifications: $t({
@@ -184,7 +186,7 @@ export function build_page() {
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
-        default_view_values: settings_config.default_view_values,
+        web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
         display_settings: settings_config.get_all_display_settings(),
         settings_label: settings_config.realm_user_settings_defaults_labels,

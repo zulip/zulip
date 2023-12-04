@@ -15,7 +15,6 @@ import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
-import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
@@ -38,11 +37,6 @@ import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-
-function setup_subscriptions_stream_hash(sub) {
-    const hash = hash_util.stream_edit_url(sub);
-    browser_history.update(hash);
-}
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -90,13 +84,13 @@ function get_sub_for_target(target) {
     return sub;
 }
 
-export function open_edit_panel_for_row(stream_row) {
+export function open_edit_panel_for_row(stream_row, right_side_tab) {
     const sub = get_sub_for_target(stream_row);
 
     $(".stream-row.active").removeClass("active");
     stream_settings_components.show_subs_pane.settings(sub);
     $(stream_row).addClass("active");
-    setup_subscriptions_stream_hash(sub);
+    stream_edit_toggler.setup_subscriptions_stream_hash(sub, right_side_tab);
     setup_stream_settings(stream_row);
 }
 
@@ -151,13 +145,17 @@ function show_subscription_settings(sub) {
     });
 }
 
-function is_notification_setting(setting_label) {
+function has_global_notification_setting(setting_label) {
     if (setting_label.includes("_notifications")) {
         return true;
     } else if (setting_label.includes("_notify")) {
         return true;
     }
     return false;
+}
+
+function is_notification_setting(setting_label) {
+    return has_global_notification_setting(setting_label) || setting_label === "is_muted";
 }
 
 export function stream_settings(sub) {
@@ -171,9 +169,9 @@ export function stream_settings(sub) {
             label: settings_labels[setting],
             disabled_realm_setting: check_realm_setting[setting],
             is_disabled: check_realm_setting[setting],
-            is_notification_setting: is_notification_setting(setting),
+            has_global_notification_setting: has_global_notification_setting(setting),
         };
-        if (is_notification_setting(setting)) {
+        if (has_global_notification_setting(setting)) {
             // This block ensures we correctly display to users the
             // current state of stream-level notification settings
             // with a value of `null`, which inherit the user's global
@@ -181,7 +179,6 @@ export function stream_settings(sub) {
             ret.is_checked =
                 stream_data.receives_notifications(sub.stream_id, setting) &&
                 !check_realm_setting[setting];
-            ret.is_disabled = ret.is_disabled || sub.is_muted;
             return ret;
         }
         ret.is_checked = sub[setting] && !check_realm_setting[setting];
@@ -196,6 +193,7 @@ function setup_dropdown(sub, slim_sub) {
         get_options: () =>
             user_groups.get_realm_user_groups_for_dropdown_list_widget(
                 "can_remove_subscribers_group",
+                "stream",
             ),
         item_click_callback(event, dropdown) {
             dropdown.hide();
@@ -233,7 +231,7 @@ export function show_settings_for(node) {
 
     const other_settings = [];
     const notification_settings = all_settings.filter((setting) => {
-        if (setting.is_notification_setting) {
+        if (is_notification_setting(setting.name)) {
             return true;
         }
         other_settings.push(setting);
@@ -255,6 +253,7 @@ export function show_settings_for(node) {
             page_params.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: page_params.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
+        can_access_stream_email: stream_data.can_access_stream_email(sub),
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -281,13 +280,10 @@ export function setup_stream_settings(node) {
 
 export function update_muting_rendering(sub) {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
-    const $notification_checkboxes = $edit_container.find(".sub_notification_setting");
     const $is_muted_checkbox = $edit_container.find("#sub_is_muted_setting .sub_setting_control");
 
     $is_muted_checkbox.prop("checked", sub.is_muted);
     $edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
-    $notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
-    $notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
 }
 
 function stream_is_muted_changed(e) {
@@ -299,8 +295,7 @@ function stream_is_muted_changed(e) {
 
     stream_settings_api.set_stream_property(
         sub,
-        "is_muted",
-        e.target.checked,
+        {property: "is_muted", value: e.target.checked},
         $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
     );
 }
@@ -317,11 +312,15 @@ function stream_setting_changed(e) {
         blueslip.error("undefined sub in stream_setting_changed()");
         return;
     }
-    if (is_notification_setting(setting) && sub[setting] === null) {
+    if (has_global_notification_setting(setting) && sub[setting] === null) {
         sub[setting] =
             user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
-    stream_settings_api.set_stream_property(sub, setting, e.target.checked, $status_element);
+    stream_settings_api.set_stream_property(
+        sub,
+        {property: setting, value: e.target.checked},
+        $status_element,
+    );
 }
 
 export function archive_stream(stream_id, $alert_element, $stream_row) {
@@ -346,6 +345,71 @@ export function get_stream_email_address(flags, address) {
     const flag_string = flags.map((flag) => "." + flag).join("");
 
     return clean_address.replace("@", flag_string + "@");
+}
+
+function show_stream_email_address_modal(address) {
+    const copy_email_address_modal_html = render_copy_email_address_modal({
+        email_address: address,
+        tags: [
+            {
+                name: "show-sender",
+                description: $t({
+                    defaultMessage: "The sender's email address",
+                }),
+            },
+            {
+                name: "include-footer",
+                description: $t({defaultMessage: "Email footers (e.g., signature)"}),
+            },
+            {
+                name: "include-quotes",
+                description: $t({defaultMessage: "Quoted original email (in replies)"}),
+            },
+            {
+                name: "prefer-html",
+                description: $t({
+                    defaultMessage: "Use html encoding (not recommended)",
+                }),
+            },
+        ],
+    });
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Generate stream email address"}),
+        html_body: copy_email_address_modal_html,
+        id: "copy_email_address_modal",
+        html_submit_button: $t_html({defaultMessage: "Copy address"}),
+        html_exit_button: $t_html({defaultMessage: "Close"}),
+        help_link: "/help/message-a-stream-by-email#configuration-options",
+        on_click() {},
+        close_on_submit: false,
+    });
+    $("#show-sender").prop("checked", true);
+
+    const clipboard = new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
+        text() {
+            return address;
+        },
+    });
+
+    // Show a tippy tooltip when the stream email address copied
+    clipboard.on("success", (e) => {
+        show_copied_confirmation(e.trigger);
+    });
+
+    $("#copy_email_address_modal .tag-checkbox").on("change", () => {
+        const $checked_checkboxes = $(".copy-email-modal").find("input:checked");
+
+        const flags = [];
+
+        $($checked_checkboxes).each(function () {
+            flags.push($(this).attr("id"));
+        });
+
+        address = get_stream_email_address(flags, address);
+
+        $(".email-address").text(address);
+    });
 }
 
 export function initialize() {
@@ -453,70 +517,20 @@ export function initialize() {
         e.stopPropagation();
 
         const stream_id = get_stream_id(e.target);
-        const stream = sub_store.get(stream_id);
-        let address = stream.email_address;
 
-        const copy_email_address = render_copy_email_address_modal({
-            email_address: address,
-            tags: [
-                {
-                    name: "show-sender",
-                    description: $t({
-                        defaultMessage: "The sender's email address",
-                    }),
-                },
-                {
-                    name: "include-footer",
-                    description: $t({defaultMessage: "Email footers (e.g., signature)"}),
-                },
-                {
-                    name: "include-quotes",
-                    description: $t({defaultMessage: "Quoted original email (in replies)"}),
-                },
-                {
-                    name: "prefer-html",
-                    description: $t({
-                        defaultMessage: "Use html encoding (not recommended)",
-                    }),
-                },
-            ],
-        });
-
-        dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Generate stream email address"}),
-            html_body: copy_email_address,
-            id: "copy_email_address_modal",
-            html_submit_button: $t_html({defaultMessage: "Copy address"}),
-            html_exit_button: $t_html({defaultMessage: "Close"}),
-            help_link: "/help/message-a-stream-by-email#configuration-options",
-            on_click() {},
-            close_on_submit: false,
-        });
-        $("#show-sender").prop("checked", true);
-
-        const clipboard = new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
-            text() {
-                return address;
+        channel.get({
+            url: "/json/streams/" + stream_id + "/email_address",
+            success(data) {
+                const address = data.email;
+                show_stream_email_address_modal(address);
             },
-        });
-
-        // Show a tippy tooltip when the stream email address copied
-        clipboard.on("success", (e) => {
-            show_copied_confirmation(e.trigger);
-        });
-
-        $("#copy_email_address_modal .tag-checkbox").on("change", () => {
-            const $checked_checkboxes = $(".copy-email-modal").find("input:checked");
-
-            const flags = [];
-
-            $($checked_checkboxes).each(function () {
-                flags.push($(this).attr("id"));
-            });
-
-            address = get_stream_email_address(flags, address);
-
-            $(".email-address").text(address);
+            error(xhr) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                    $(".stream_email_address_error"),
+                );
+            },
         });
     });
 
@@ -550,7 +564,7 @@ export function initialize() {
         stream_settings_components.sub_or_unsub(sub, $stream_row);
 
         if (!sub.subscribed) {
-            open_edit_panel_for_row($stream_row);
+            open_edit_panel_for_row($stream_row, stream_edit_toggler.select_tab);
         }
         stream_ui_updates.update_regular_sub_settings(sub);
 
@@ -618,7 +632,7 @@ export function initialize() {
 
     $("#streams_overlay_container").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            open_edit_panel_for_row(this);
+            open_edit_panel_for_row(this, stream_edit_toggler.select_tab);
         }
     });
 

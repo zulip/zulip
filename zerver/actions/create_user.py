@@ -29,6 +29,8 @@ from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
     get_api_key,
+    get_data_for_inaccessible_user,
+    user_access_restricted_in_realm,
     user_profile_to_user_row,
 )
 from zerver.models import (
@@ -41,10 +43,12 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
+    active_user_ids,
     bot_owner_user_ids,
     get_system_bot,
 )
@@ -254,7 +258,7 @@ def process_new_human_user(
                 get_system_bot(settings.NOTIFICATION_BOT, prereg_user.referred_by.realm_id),
                 prereg_user.referred_by,
                 _("{user} accepted your invitation to join Zulip!").format(
-                    user=f"{user_profile.full_name} <`{user_profile.email}`>"
+                    user=silent_mention_syntax_for_user(user_profile)
                 ),
             )
 
@@ -299,7 +303,7 @@ def process_new_human_user(
     send_initial_direct_message(user_profile)
 
 
-def notify_created_user(user_profile: UserProfile) -> None:
+def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -> None:
     user_row = user_profile_to_user_row(user_profile)
 
     format_user_row_kwargs: Dict[str, Any] = {
@@ -318,13 +322,41 @@ def notify_created_user(user_profile: UserProfile) -> None:
         "custom_profile_field_data": {},
     }
 
-    active_users = user_profile.realm.get_active_users()
+    user_ids_without_access_to_created_user: List[int] = []
+    users_with_access_to_created_users: List[UserProfile] = []
+
+    if notify_user_ids:
+        # This is currently used to send creation event when a guest
+        # gains access to a user, so we depend on the caller to make
+        # sure that only accessible users receive the user data.
+        users_with_access_to_created_users = list(
+            user_profile.realm.get_active_users().filter(id__in=notify_user_ids)
+        )
+    else:
+        active_realm_users = list(user_profile.realm.get_active_users())
+
+        # This call to user_access_restricted_in_realm results in
+        # one extra query in the user creation codepath to check
+        # "realm.can_access_all_users_group.name" because we do
+        # not prefetch realm and its related fields when fetching
+        # PreregistrationUser object.
+        if user_access_restricted_in_realm(user_profile):
+            for user in active_realm_users:
+                if user.is_guest:
+                    # This logic assumes that can_access_all_users_group
+                    # setting can only be set to EVERYONE or MEMBERS.
+                    user_ids_without_access_to_created_user.append(user.id)
+                else:
+                    users_with_access_to_created_users.append(user)
+        else:
+            users_with_access_to_created_users = active_realm_users
+
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
 
     person_for_real_email_access_users = None
     person_for_without_real_email_access_users = None
-    for recipient_user in active_users:
+    for recipient_user in users_with_access_to_created_users:
         if can_access_delivery_email(
             recipient_user, user_profile.id, user_row["email_address_visibility"]
         ):
@@ -356,6 +388,14 @@ def notify_created_user(user_profile: UserProfile) -> None:
         assert person_for_without_real_email_access_users is not None
         event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
         send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
+
+    if user_ids_without_access_to_created_user:
+        event = dict(
+            type="realm_user",
+            op="add",
+            person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
+        )
+        send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -489,7 +529,7 @@ def do_create_user(
 
         if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
             full_members_system_group = UserGroup.objects.get(
-                name=UserGroup.FULL_MEMBERS_GROUP_NAME,
+                name=SystemGroups.FULL_MEMBERS,
                 realm=user_profile.realm,
                 is_system_group=True,
             )
@@ -507,7 +547,7 @@ def do_create_user(
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
-    notify_created_user(user_profile)
+    notify_created_user(user_profile, [])
 
     do_send_user_group_members_update_event("add_members", system_user_group, [user_profile.id])
     if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
@@ -586,7 +626,7 @@ def do_activate_mirror_dummy_user(
         if settings.BILLING_ENABLED:
             update_license_ledger_if_needed(user_profile.realm, event_time)
 
-    notify_created_user(user_profile)
+    notify_created_user(user_profile, [])
 
 
 @transaction.atomic(savepoint=False)
@@ -638,10 +678,21 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
     if settings.BILLING_ENABLED:
         update_license_ledger_if_needed(user_profile.realm, event_time)
 
-    notify_created_user(user_profile)
+    event = dict(
+        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
+    )
+    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     if user_profile.is_bot:
-        notify_created_bot(user_profile)
+        event = dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=user_profile.id,
+                is_active=True,
+            ),
+        )
+        send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
         if bot_owner_changed:
             from zerver.actions.bots import send_bot_owner_update_events
@@ -674,5 +725,5 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         realm=user_profile.realm,
         altered_user_dict=altered_user_dict,
         stream_dict=stream_dict,
-        private_peer_dict=subscriber_peer_info.private_peer_dict,
+        subscriber_peer_info=subscriber_peer_info,
     )

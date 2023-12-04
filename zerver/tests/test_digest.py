@@ -3,6 +3,7 @@ import time
 from typing import List, Set
 from unittest import mock
 
+import time_machine
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -451,7 +452,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         tuesday = self.tuesday()
         cutoff = tuesday - datetime.timedelta(days=5)
 
-        with mock.patch("zerver.lib.digest.timezone_now", return_value=tuesday):
+        with time_machine.travel(tuesday, tick=False):
             with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
                 enqueue_emails(cutoff)
         queue_mock.assert_not_called()
@@ -463,7 +464,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         not_tuesday = datetime.datetime(year=2016, month=1, day=6, tzinfo=datetime.timezone.utc)
         cutoff = not_tuesday - datetime.timedelta(days=5)
 
-        with mock.patch("zerver.lib.digest.timezone_now", return_value=not_tuesday):
+        with time_machine.travel(not_tuesday, tick=False):
             with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
                 enqueue_emails(cutoff)
         queue_mock.assert_not_called()

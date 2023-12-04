@@ -166,7 +166,7 @@ function test_helper({override, override_rewire, change_tab}) {
 
 run_test("hash_interactions", ({override, override_rewire}) => {
     $window_stub = $.create("window-stub");
-    user_settings.default_view = "recent_topics";
+    user_settings.web_home_view = "recent_topics";
 
     const helper = test_helper({override, override_rewire, change_tab: true});
 
@@ -182,7 +182,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
 
     browser_history.clear_for_testing();
     hashchange.initialize();
-    // If it's an unknown hash it should show the default view.
+    // If it's an unknown hash it should show the home view.
     assert.equal(recent_view_ui_shown, true);
     assert.equal(hide_all_called, true);
     helper.assert_events([
@@ -273,7 +273,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.clear_events();
     $window_stub.trigger("hashchange");
     helper.assert_events([]);
-    // If it's reload hash it shouldn't show the default view.
+    // If it's reload hash it shouldn't show the home view.
     assert.equal(recent_view_ui_shown, false);
 
     window.location.hash = "#keyboard-shortcuts/whatever";

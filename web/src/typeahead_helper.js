@@ -398,15 +398,16 @@ export function sort_recipients({
         }
     }
 
-    // We suggest only the first matching wildcard mention,
-    // irrespective of how many equivalent wildcard mentions match.
+    // We suggest only the first matching stream wildcard mention,
+    // irrespective of how many equivalent stream wildcard mentions match.
     const recipients = [];
-    let wildcard_mention_included = false;
+    let stream_wildcard_mention_included = false;
     for (const item of items) {
-        if (!item.is_broadcast || !wildcard_mention_included) {
+        const topic_wildcard_mention = item.email === "topic";
+        if (!item.is_broadcast || topic_wildcard_mention || !stream_wildcard_mention_included) {
             recipients.push(item);
-            if (item.is_broadcast) {
-                wildcard_mention_included = true;
+            if (item.is_broadcast && !topic_wildcard_mention) {
+                stream_wildcard_mention_included = true;
             }
         }
     }

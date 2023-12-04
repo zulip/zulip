@@ -3,7 +3,7 @@ import os
 import sys
 import time
 from copy import deepcopy
-from typing import Any, Dict, Final, List, Tuple, Union
+from typing import Any, Dict, Final, List, Literal, Tuple, Union
 from urllib.parse import urljoin
 
 from scripts.lib.zulip_tools import get_tornado_ports
@@ -100,8 +100,6 @@ else:
     IS_WORKER = False
 
 
-# This is overridden in test_settings.py for the test suites
-TEST_SUITE = False
 # This is overridden in test_settings.py for the test suites
 PUPPETEER_TESTS = False
 # This is overridden in test_settings.py for the test suites
@@ -714,6 +712,19 @@ def skip_site_packages_logs(record: logging.LogRecord) -> bool:
     return "site-packages" not in record.pathname
 
 
+def file_handler(
+    filename: str,
+    level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG",
+    formatter: str = "default",
+) -> Dict[str, str]:
+    return {
+        "filename": filename,
+        "level": level,
+        "formatter": formatter,
+        "class": "logging.handlers.WatchedFileHandler",
+    }
+
+
 LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -754,6 +765,11 @@ LOGGING: Dict[str, Any] = {
         },
     },
     "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+        },
         "mail_admins": {
             "level": "ERROR",
             "class": "django.utils.log.AdminEmailHandler",
@@ -763,65 +779,20 @@ LOGGING: Dict[str, Any] = {
                 else []
             ),
         },
-        "auth_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "default",
-            "filename": AUTH_LOG_PATH,
-        },
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "default",
-        },
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "default",
-            "filename": FILE_LOG_PATH,
-        },
-        "errors_file": {
-            "level": "WARNING",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "default",
-            "filename": ERROR_FILE_LOG_PATH,
-        },
-        "ldap_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "default",
-            "filename": LDAP_LOG_PATH,
-        },
-        "scim_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "default",
-            "filename": SCIM_LOG_PATH,
-        },
-        "slow_queries_file": {
-            "level": "INFO",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "default",
-            "filename": SLOW_QUERIES_LOG_PATH,
-        },
-        "webhook_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "webhook_request_data",
-            "filename": WEBHOOK_LOG_PATH,
-        },
-        "webhook_unsupported_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "webhook_request_data",
-            "filename": WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH,
-        },
-        "webhook_anomalous_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "formatter": "webhook_request_data",
-            "filename": WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH,
-        },
+        "analytics_file": file_handler(ANALYTICS_LOG_PATH),
+        "auth_file": file_handler(AUTH_LOG_PATH),
+        "errors_file": file_handler(ERROR_FILE_LOG_PATH, level="WARNING"),
+        "file": file_handler(FILE_LOG_PATH),
+        "ldap_file": file_handler(LDAP_LOG_PATH),
+        "scim_file": file_handler(SCIM_LOG_PATH),
+        "slow_queries_file": file_handler(SLOW_QUERIES_LOG_PATH, level="INFO"),
+        "webhook_anomalous_file": file_handler(
+            WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH, formatter="webhook_request_data"
+        ),
+        "webhook_file": file_handler(WEBHOOK_LOG_PATH, formatter="webhook_request_data"),
+        "webhook_unsupported_file": file_handler(
+            WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH, formatter="webhook_request_data"
+        ),
     },
     "loggers": {
         # The Python logging module uses a hierarchy of logger names for config:
@@ -928,6 +899,10 @@ LOGGING: Dict[str, Any] = {
         },
         "zerver.management.commands.deliver_scheduled_messages": {
             "level": "DEBUG",
+        },
+        "zulip.analytics": {
+            "handlers": ["analytics_file", "errors_file"],
+            "propagate": False,
         },
         "zulip.auth": {
             "level": "DEBUG",

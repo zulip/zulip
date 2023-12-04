@@ -77,12 +77,13 @@ Zulip offers the following filters based on the location of the message.
 * `has:link`: Search messages that contain URLs.
 * `has:attachment`: Search messages that contain an [uploaded
   file](/help/share-and-upload-files).
-* `has:image`: Search messages that contain an uploaded image or link to an image.
+* `has:image`: Search messages that contain uploaded or linked images or videos.
 
 !!! tip ""
 
-    You can also [view](/help/manage-your-uploaded-files) all the files you have uploaded
-    or [browse](/help/view-and-browse-images) all the images in the current view.
+    You can also [view](/help/manage-your-uploaded-files) all the files you
+    have uploaded or [browse](/help/view-images-and-videos) all the images and
+    videos in the current view.
 
 ### Search your important messages
 
@@ -154,7 +155,9 @@ A summary of the search filters above is available in the Zulip app.
 
 {start_tabs}
 
-{relative|gear|search-filters}
+{tab|desktop-web}
+
+{relative|help|search-filters}
 
 {end_tabs}
 

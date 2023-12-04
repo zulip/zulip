@@ -51,7 +51,9 @@ There are several different types of fields available.
 * **Date picker**: For dates, like "Birthday".
 * **Link**: For links to websites.
 * **External account**: For linking to GitHub, Twitter, etc.
-* **Pronouns**: What pronouns should people use to refer to the user?
+* **Pronouns**: What pronouns should people use to refer to the user? Pronouns
+  are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
+  suggestions.
 * **List of options**: Creates a dropdown with a list of options.
 * **Person picker**: For selecting one or more users, like "Manager" or
     "Direct reports".

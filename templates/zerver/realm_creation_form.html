@@ -35,6 +35,23 @@
     </div>
 
     <div class="input-box">
+        <div class="inline-block relative">
+            <select name="realm_default_language" id="realm_default_language">
+                {% for language in language_list %}
+                    <option value="{{ language.code }}" {% if form.realm_default_language.value() == language.code %}selected{% endif %} >{{ _(language.name) }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <label for="realm_default_language" class="inline-block label-title">
+            {{ _('Organization language') }}
+            <a href="/help/configure-organization-language" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </label>
+    </div>
+
+    <div class="input-box">
         <label class="static org-url">
             {{ _('Organization URL') }}
         </label>

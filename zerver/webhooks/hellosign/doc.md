@@ -2,7 +2,9 @@ Configuring the HelloSign integration is easy!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to your HelloSign account **Settings**. Select **Integrations** and
    click on **API**.

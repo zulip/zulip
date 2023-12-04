@@ -14,6 +14,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
+import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import * as settings_data from "./settings_data";
@@ -27,21 +28,12 @@ import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
+import * as util from "./util";
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
 let stream_popover_instance = null;
 let stream_widget_value;
 let $stream_header_colorblock;
-
-// Keep the menu icon over which the popover is based off visible.
-function show_left_sidebar_menu_icon(element) {
-    $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
-}
-
-// Remove the class from element when popover is closed
-function hide_left_sidebar_menu_icon() {
-    $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
-}
 
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
@@ -79,7 +71,7 @@ export function is_open() {
 
 export function hide_stream_popover() {
     if (is_open()) {
-        hide_left_sidebar_menu_icon();
+        ui_util.hide_left_sidebar_menu_icon();
         stream_popover_instance.destroy();
         stream_popover_instance = null;
     }
@@ -123,14 +115,14 @@ function build_stream_popover(opts) {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            show_left_sidebar_menu_icon(elt);
+            ui_util.show_left_sidebar_menu_icon(elt);
 
             // Stream settings
             $popper.on("click", ".open_stream_settings", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
 
-                const stream_edit_hash = hash_util.stream_edit_url(sub);
+                const stream_edit_hash = hash_util.stream_edit_url(sub, "general");
                 browser_history.go_to_location(stream_edit_hash);
             });
 
@@ -154,7 +146,10 @@ function build_stream_popover(opts) {
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
-                stream_settings_api.set_stream_property(sub, "is_muted", !sub.is_muted);
+                stream_settings_api.set_stream_property(sub, {
+                    property: "is_muted",
+                    value: !sub.is_muted,
+                });
                 e.stopPropagation();
             });
 
@@ -165,7 +160,7 @@ function build_stream_popover(opts) {
 
                 compose_actions.start("stream", {
                     trigger: "popover new topic button",
-                    stream: sub.name,
+                    stream_id: sub.stream_id,
                     topic: "",
                 });
                 e.preventDefault();
@@ -214,7 +209,119 @@ function build_stream_popover(opts) {
     });
 }
 
-export function build_move_topic_to_stream_popover(
+async function get_message_placement_from_server(
+    current_stream_id,
+    topic_name,
+    current_message_id,
+) {
+    return new Promise((resolve) => {
+        message_edit.is_message_oldest_or_newest(
+            current_stream_id,
+            topic_name,
+            current_message_id,
+            (is_oldest, is_newest) => {
+                if (is_oldest) {
+                    resolve("first");
+                } else if (is_newest) {
+                    resolve("last");
+                } else {
+                    resolve("intermediate");
+                }
+            },
+        );
+    });
+}
+
+async function get_message_placement_in_conversation(
+    current_stream_id,
+    topic_name,
+    current_message_id,
+) {
+    // First we check if the placement of the message can be determined
+    // in the current message list. This allows us to avoid a server call
+    // in most cases.
+
+    if (message_lists.current.data.filter.supports_collapsing_recipients()) {
+        // Next we check if we are in a conversation view. If we are
+        // in a conversation view, we check if the message is the
+        // first or the last message in the current view. If not, we
+        // can conclude that the message is an intermediate message.
+        //
+        // It's safe to assume message_lists.current.data is non-empty, because
+        // current_message_id must be present in it.
+        if (message_lists.current.data.filter.is_conversation_view()) {
+            if (
+                message_lists.current.data.fetch_status.has_found_oldest() &&
+                message_lists.current.data.first().id === current_message_id
+            ) {
+                return "first";
+            } else if (
+                message_lists.current.data.fetch_status.has_found_newest() &&
+                message_lists.current.data.last().id === current_message_id
+            ) {
+                return "last";
+            }
+            return "intermediate";
+        }
+
+        // If we are not in a conversation view, but still know
+        // the view contains the entire conversation, we check if
+        // we can find the adjacent messages in the current view
+        // through which we can determine if the message is an
+        // intermediate message or not.
+        const msg_list = message_lists.current.data.all_messages();
+        let found_newer_matching_message = false;
+        let found_older_matching_message = false;
+        const current_dict = {
+            stream_id: current_stream_id,
+            topic: topic_name,
+        };
+
+        for (let i = msg_list.length - 1; i >= 0; i -= 1) {
+            const message = msg_list[i];
+            const message_dict = {
+                stream_id: message.stream_id,
+                topic: message.topic,
+            };
+
+            if (util.same_stream_and_topic(current_dict, message_dict)) {
+                if (message.id > current_message_id) {
+                    found_newer_matching_message = true;
+                } else if (message.id < current_message_id) {
+                    found_older_matching_message = true;
+                }
+
+                if (found_newer_matching_message && found_older_matching_message) {
+                    return "intermediate";
+                }
+            }
+        }
+
+        if (
+            message_lists.current.data.fetch_status.has_found_newest() &&
+            !found_newer_matching_message
+        ) {
+            return "last";
+        }
+        if (
+            message_lists.current.data.fetch_status.has_found_oldest() &&
+            !found_older_matching_message
+        ) {
+            return "first";
+        }
+    }
+
+    // In case we are unable to determine the placement of the message
+    // in the current message list, we make a server call to determine
+    // the placement.
+    return await get_message_placement_from_server(
+        current_stream_id,
+        topic_name,
+        current_message_id,
+    );
+}
+
+export async function build_move_topic_to_stream_popover(
     current_stream_id,
     topic_name,
     only_topic_edit,
@@ -267,6 +374,11 @@ export function build_move_topic_to_stream_popover(
         const move_limit_buffer = 5;
         args.disable_topic_input = !message_edit.is_topic_editable(message, move_limit_buffer);
         disable_stream_input = !message_edit.is_stream_editable(message, move_limit_buffer);
+        args.message_placement = await get_message_placement_in_conversation(
+            current_stream_id,
+            topic_name,
+            message.id,
+        );
     }
 
     function get_params_from_form() {

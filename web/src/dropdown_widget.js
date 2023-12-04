@@ -1,6 +1,7 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
+import render_dropdown_current_value_not_in_options from "../templates/dropdown_current_value_not_in_options.hbs";
 import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.hbs";
 import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
@@ -8,6 +9,7 @@ import render_inline_decorated_stream_name from "../templates/inline_decorated_s
 
 import * as blueslip from "./blueslip";
 import * as ListWidget from "./list_widget";
+import {page_params} from "./page_params";
 import {default_popover_props} from "./popover_menus";
 import {parse_html} from "./ui_util";
 
@@ -22,6 +24,8 @@ export const DATA_TYPES = {
 export class DropdownWidget {
     constructor({
         widget_name,
+        // You can bold the selected `option` by setting `option.bold_current_selection` to `true`.
+        // Currently, not implemented for stream names.
         get_options,
         item_click_callback,
         // Provide an parent element to widget which will be re-rendered if the widget is setup again.
@@ -41,8 +45,11 @@ export class DropdownWidget {
         // NOTE: Any value other than `null` will be rendered when class is initialized.
         default_id = null,
         unique_id_type = null,
-        // Show disabled state if the default_id is not in `get_options()`.
-        show_disabled_if_current_value_not_in_options = false,
+        // Text to show if the current value is not in `get_options()`.
+        text_if_current_value_not_in_options = null,
+        hide_search_box = false,
+        // Disable the widget for spectators.
+        disable_for_spectators = false,
     }) {
         this.widget_name = widget_name;
         this.widget_id = `#${CSS.escape(widget_name)}_widget`;
@@ -64,11 +71,16 @@ export class DropdownWidget {
         this.current_value = default_id;
         this.unique_id_type = unique_id_type;
         this.$events_container = $events_container;
-        this.show_disabled_if_current_value_not_in_options =
-            show_disabled_if_current_value_not_in_options;
+        this.text_if_current_value_not_in_options = text_if_current_value_not_in_options;
+        this.hide_search_box = hide_search_box;
+        this.disable_for_spectators = disable_for_spectators;
     }
 
     init() {
+        // NOTE: Widget should only be initialized again if the events_container was rendered again to
+        // avoid duplicate events to be attached to events_container.
+        // Don't attach any events or classes to any element other than `events_container` here, otherwise
+        // the attached events / classes will be lost when the widget is rendered again without initialing the widget again.
         if (this.current_value !== null) {
             this.render();
         }
@@ -84,6 +96,18 @@ export class DropdownWidget {
                 }
             },
         );
+
+        if (this.disable_for_spectators && page_params.is_spectator) {
+            this.$events_container.addClass("dropdown-widget-disabled-for-spectators");
+            this.$events_container.on(
+                "click",
+                `${this.widget_id}, ${this.widget_wrapper_id}`,
+                (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                },
+            );
+        }
     }
 
     show_empty_if_no_items($popper) {
@@ -112,7 +136,14 @@ export class DropdownWidget {
             theme: "dropdown-widget",
             arrow: false,
             onShow: function (instance) {
-                instance.setContent(parse_html(render_dropdown_list_container()));
+                instance.setContent(
+                    parse_html(
+                        render_dropdown_list_container({
+                            widget_name: this.widget_name,
+                            hide_search_box: this.hide_search_box,
+                        }),
+                    ),
+                );
                 const $popper = $(instance.popper);
                 const $dropdown_list_body = $popper.find(".dropdown-list");
                 const $search_input = $popper.find(".dropdown-list-search-input");
@@ -171,6 +202,22 @@ export class DropdownWidget {
                         trigger_element_focus(last_item());
                     }.bind(this);
 
+                    const handle_arrow_down_on_last_item = () => {
+                        if (this.hide_search_box) {
+                            trigger_element_focus(first_item());
+                        } else {
+                            trigger_element_focus($search_input);
+                        }
+                    };
+
+                    const handle_arrow_up_on_first_item = () => {
+                        if (this.hide_search_box) {
+                            render_all_items_and_focus_last_item();
+                        } else {
+                            trigger_element_focus($search_input);
+                        }
+                    };
+
                     switch (e.key) {
                         case "Enter":
                             if (e.target === $search_input.get(0)) {
@@ -194,7 +241,7 @@ export class DropdownWidget {
                         case "ArrowDown":
                             switch (e.target) {
                                 case last_item().get(0):
-                                    trigger_element_focus($search_input);
+                                    handle_arrow_down_on_last_item();
                                     break;
                                 case $search_input.get(0):
                                     trigger_element_focus(first_item());
@@ -207,7 +254,7 @@ export class DropdownWidget {
                         case "ArrowUp":
                             switch (e.target) {
                                 case first_item().get(0):
-                                    trigger_element_focus($search_input);
+                                    handle_arrow_up_on_first_item();
                                     break;
                                 case $search_input.get(0):
                                     render_all_items_and_focus_last_item();
@@ -225,13 +272,17 @@ export class DropdownWidget {
                     if (this.unique_id_type === DATA_TYPES.NUMBER) {
                         this.current_value = Number.parseInt(this.current_value, 10);
                     }
-                    this.item_click_callback(event, instance);
+                    this.item_click_callback(event, instance, this);
                 });
 
-                // Set focus on search input when dropdown opens.
+                // Set focus on first element when dropdown opens.
                 setTimeout(() => {
-                    $(".dropdown-list-search-input").trigger("focus");
-                });
+                    if (this.hide_search_box) {
+                        $dropdown_list_body.find(".list-item:first-child").trigger("focus");
+                    } else {
+                        $search_input.trigger("focus");
+                    }
+                }, 0);
 
                 this.on_show_callback(instance);
             }.bind(this),
@@ -264,11 +315,16 @@ export class DropdownWidget {
         }
 
         const all_options = this.get_options();
-        let option = all_options.find((option) => option.unique_id === this.current_value);
+        const option = all_options.find((option) => option.unique_id === this.current_value);
 
-        // Show disabled if cannot find current option.
-        if (!option && this.show_disabled_if_current_value_not_in_options) {
-            option = all_options.find((option) => option.is_setting_disabled === true);
+        // If provided, show custom text if cannot find current option.
+        if (!option && this.text_if_current_value_not_in_options) {
+            $(this.widget_value_selector).html(
+                render_dropdown_current_value_not_in_options({
+                    name: this.text_if_current_value_not_in_options,
+                }),
+            );
+            return;
         }
 
         if (!option) {

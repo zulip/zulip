@@ -146,6 +146,7 @@ os.chdir(deploy_path)
 config_file = get_config_file()
 
 IS_SERVER_UP = True
+HAS_FILLED_CACHES = False
 
 if args.from_git:
     logging.info("Caching Zulip Git version...")
@@ -191,12 +192,28 @@ if (minimal_change or args.skip_puppet) and rabbitmq_dist_listen:
     sys.exit(1)
 
 
-def shutdown_server() -> None:
+migrations_needed = False
+
+
+def fill_memcached_caches() -> None:
+    global HAS_FILLED_CACHES
+    if HAS_FILLED_CACHES or migrations_needed:
+        return
+    subprocess.check_call(
+        ["./manage.py", "fill_memcached_caches", "--skip-checks"], preexec_fn=su_to_zulip
+    )
+    HAS_FILLED_CACHES = True
+
+
+def shutdown_server(fill_caches: bool = True) -> None:
     global IS_SERVER_UP
 
     if minimal_change:
         logging.info("Upgrade would require shutting down Zulip -- aborting!")
         sys.exit(1)
+
+    if fill_caches:
+        fill_memcached_caches()
 
     if IS_SERVER_UP:
         logging.info("Stopping Zulip...")
@@ -321,7 +338,7 @@ elif args.from_git:
     # See puppet/zulip/manifests/app_frontend_base.pp for background.
     if mem_gib < 4.2:
         logging.info("Shutting down server to ensure sufficient free RAM for webpack.")
-        shutdown_server()
+        shutdown_server(fill_caches=False)
 
     # Note: The fact that this is before we apply Puppet changes means
     # that we don't support adding new Puppet dependencies of
@@ -355,7 +372,6 @@ if not args.skip_checks:
 # before we start the critical section of the restart.  This saves
 # about 1s of downtime in a no-op upgrade.  We omit this check if we
 # already stopped the server above, due to low memory.
-migrations_needed = False
 if not IS_SERVER_UP:
     migrations_needed = True
 elif not args.skip_migrations:
@@ -376,13 +392,6 @@ if minimal_change and migrations_needed:
 # same cache prefix as we currently have.
 if args.skip_tornado:
     shutil.copyfile("../current/var/remote_cache_prefix", "./var/remote_cache_prefix")
-
-# If there are no migrations needed, we can fill the caches now,
-# instead of after they run.
-if not migrations_needed:
-    subprocess.check_call(
-        ["./manage.py", "fill_memcached_caches", "--skip-checks"], preexec_fn=su_to_zulip
-    )
 
 # Install hooks before we check for puppet changes, so we skip an
 # unnecessary stop/start cycle if hook changes are the only ones.
@@ -504,7 +513,7 @@ else:
 
     logging.info("Restarting Zulip...")
     start_args = ["--skip-checks"]
-    if migrations_needed:
+    if not HAS_FILLED_CACHES:
         start_args.append("--fill-cache")
     if IS_SERVER_UP:
         if args.skip_tornado:

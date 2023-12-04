@@ -181,8 +181,8 @@ export class MessageList {
         return this.data.nth_most_recent_id(n);
     }
 
-    is_search() {
-        return this.data.is_search();
+    is_keyword_search() {
+        return this.data.is_keyword_search();
     }
 
     can_mark_messages_read() {

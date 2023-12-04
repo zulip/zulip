@@ -24,10 +24,10 @@
                     <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
                     <th data-sort="email">{{t "Email" }}</th>
                     {{#if can_remove_subscribers}}
-                    <th class="actions">{{t "Actions" }}</th>
+                    <th>{{t "Actions" }}</th>
                     {{/if}}
                 </thead>
-                <tbody class="subscriber_table"></tbody>
+                <tbody class="subscriber_table" data-empty="{{t 'This stream has no subscribers.' }}" data-search-results-empty="{{t 'No stream subscribers match your current filter.'}}"></tbody>
             </table>
         </div>
     </div>

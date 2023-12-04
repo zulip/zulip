@@ -1,5 +1,6 @@
 import $ from "jquery";
 import Micromodal from "micromodal";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "../blueslip";
 
@@ -17,7 +18,7 @@ function active_modal(): string | undefined {
     return `#${CSS.escape($micromodal.attr("id")!)}`;
 }
 
-function close_active(): void {
+export function close_active(): void {
     if (!is_open()) {
         blueslip.warn("close_active() called without checking is_open()");
         return;
@@ -77,7 +78,8 @@ export function open(modal_id: string, recursive_call_count: number = 0): void {
     const $micromodal = $(id_selector);
 
     $micromodal.find(".modal__container").on("animationend", (event) => {
-        const animation_name = (event.originalEvent as AnimationEvent).animationName;
+        assert(event.originalEvent instanceof AnimationEvent);
+        const animation_name = event.originalEvent.animationName;
         if (animation_name === "mmfadeIn") {
             // Micromodal adds the is-open class before the modal animation
             // is complete, which isn't really helpful since a modal is open after the

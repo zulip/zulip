@@ -39,12 +39,15 @@ export type NeverSubscribedStream = Stream & {
     subscribers?: number[];
 };
 
-// This is the raw data we get from the server for a subscription.
-export type ApiStreamSubscription = (Stream & StreamSpecificNotificationSettings) & {
+export type StreamProperties = StreamSpecificNotificationSettings & {
     color: string;
-    email_address: string;
     is_muted: boolean;
     pin_to_top: boolean;
+};
+
+// This is the raw data we get from the server for a subscription.
+export type ApiStreamSubscription = (Stream & StreamProperties) & {
+    email_address: string;
     stream_weekly_traffic: number | null;
     subscribers?: number[];
 };

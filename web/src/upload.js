@@ -9,12 +9,14 @@ import * as compose_banner from "./compose_banner";
 import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
 
+let drag_drop_img = null;
 export let compose_upload_object;
 export const upload_objects_by_message_edit_row = new Map();
 
@@ -37,7 +39,7 @@ export function get_item(key, config, file_id) {
     if (config.mode === "compose") {
         switch (key) {
             case "textarea":
-                return $("#compose-textarea");
+                return $("textarea#compose-textarea");
             case "send_button":
                 return $("#compose-send-button");
             case "banner_container":
@@ -129,7 +131,11 @@ export function get_item(key, config, file_id) {
 export function hide_upload_banner(uppy, config, file_id) {
     get_item("upload_banner", config, file_id).remove();
     if (uppy.getFiles().length === 0) {
-        get_item("send_button", config).prop("disabled", false);
+        if (config.mode === "compose") {
+            compose_validate.set_upload_in_progress(false);
+        } else {
+            get_item("send_button", config).prop("disabled", false);
+        }
     }
 }
 
@@ -157,7 +163,6 @@ export function show_error_message(
     message = $t({defaultMessage: "An unknown error occurred."}),
     file_id = null,
 ) {
-    get_item("send_button", config).prop("disabled", false);
     if (file_id) {
         $(`${get_item("upload_banner_identifier", config, file_id)} .moving_bar`).hide();
         get_item("upload_banner", config, file_id).removeClass("info").addClass("error");
@@ -195,8 +200,6 @@ export async function upload_files(uppy, config, files) {
         get_item("markdown_preview_hide_button", config).trigger("click");
     }
 
-    get_item("send_button", config).prop("disabled", true);
-
     for (const file of files) {
         try {
             compose_ui.insert_syntax_and_focus(
@@ -217,6 +220,11 @@ export async function upload_files(uppy, config, files) {
             continue;
         }
 
+        if (config.mode === "compose") {
+            compose_validate.set_upload_in_progress(true);
+        } else {
+            get_item("send_button", config).prop("disabled", true);
+        }
         add_upload_banner(
             config,
             "info",
@@ -405,6 +413,10 @@ export function setup_upload(config) {
     });
 
     uppy.on("upload-error", (file, _error, response) => {
+        // The files with failed upload should be removed since uppy doesn't allow files in the store
+        // to be re-uploaded again.
+        uppy.removeFile(file.id);
+
         const message = response ? response.body.msg : undefined;
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
@@ -426,14 +438,27 @@ export function initialize() {
         mode: "compose",
     });
 
-    // Allow the main panel to receive drag/drop events.
-    $(".app-main").on("dragover", (event) => event.preventDefault());
+    $(".app, #navbar-fixed-container").on("dragstart", (event) => {
+        if (event.target.nodeName === "IMG") {
+            drag_drop_img = event.target;
+        } else {
+            drag_drop_img = null;
+        }
+    });
+
+    // Allow the app panel to receive drag/drop events.
+    $(".app, #navbar-fixed-container").on("dragover", (event) => event.preventDefault());
 
     // TODO: Do something visual to hint that drag/drop will work.
-    $(".app-main").on("dragenter", (event) => event.preventDefault());
+    $(".app, #navbar-fixed-container").on("dragenter", (event) => event.preventDefault());
 
-    $(".app-main").on("drop", (event) => {
+    $(".app, #navbar-fixed-container").on("drop", (event) => {
         event.preventDefault();
+
+        if (event.target.nodeName === "IMG" && event.target === drag_drop_img) {
+            drag_drop_img = null;
+            return;
+        }
 
         const $drag_drop_edit_containers = $(".message_edit_form form");
         const files = event.originalEvent.dataTransfer.files;

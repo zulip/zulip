@@ -10,33 +10,25 @@ import {media_breakpoints_num} from "./css_variables";
 import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
-
-// On mobile web, opening the keyboard can trigger a resize event
-// (which in turn can trigger a scroll event).  This will have the
-// side effect of closing popovers, which we don't want.  So we
-// suppress the first hide from scrolling after a resize using this
-// variable.
-let suppress_scroll_hide = false;
-
-export function set_suppress_scroll_hide() {
-    suppress_scroll_hide = true;
-}
+import * as util from "./util";
 
 export const popover_instances = {
     compose_control_buttons: null,
     starred_messages: null,
     drafts: null,
     left_sidebar_inbox_popover: null,
+    left_sidebar_all_messages_popover: null,
+    left_sidebar_recent_view_popover: null,
     top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
     compose_mobile_button: null,
-    compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
     change_visibility_policy: null,
     personal_menu: null,
     gear_menu: null,
+    help_menu: null,
 };
 
 /* Keyboard UI functions */
@@ -48,6 +40,10 @@ export function popover_items_handle_keyboard(key, $items) {
     let index = $items.index($items.filter(":focus"));
 
     if (key === "enter" && index >= 0 && index < $items.length) {
+        // This is not enough for some elements which need to trigger
+        // natural click for them to work like ClipboardJS and follow
+        // the link for anchor tags. For those elements, we need to
+        // use `.navigate-link-on-enter` class on them.
         $items.eq(index).trigger("click");
         return;
     }
@@ -87,6 +83,10 @@ export function get_scheduled_messages_popover() {
     return popover_instances.send_later;
 }
 
+export function is_scheduled_messages_popover_displayed() {
+    return popover_instances.send_later?.state.isVisible;
+}
+
 export function get_compose_control_buttons_popover() {
     return popover_instances.compose_control_buttons;
 }
@@ -95,8 +95,8 @@ export function get_starred_messages_popover() {
     return popover_instances.starred_messages;
 }
 
-export function is_compose_enter_sends_popover_displayed() {
-    return popover_instances.compose_enter_sends?.state.isVisible;
+export function is_personal_menu_popover_displayed() {
+    return popover_instances.personal_menu?.state.isVisible;
 }
 
 export function is_gear_menu_popover_displayed() {
@@ -105,6 +105,14 @@ export function is_gear_menu_popover_displayed() {
 
 export function get_gear_menu_instance() {
     return popover_instances.gear_menu;
+}
+
+export function is_help_menu_popover_displayed() {
+    return popover_instances.help_menu?.state.isVisible;
+}
+
+export function is_message_actions_popover_displayed() {
+    return popover_instances.message_actions?.state.isVisible;
 }
 
 function get_popover_items_for_instance(instance) {
@@ -134,6 +142,91 @@ export const default_popover_props = {
     touch: true,
     /* Don't use allow-HTML here since it is unsafe. Instead, use `parse_html`
        to generate the required html */
+    popperOptions: {
+        modifiers: [
+            {
+                // Hide popover for which the reference element is hidden.
+                // References:
+                // https://popper.js.org/docs/v2/modifiers/
+                // https://github.com/atomiks/tippyjs/blob/ad85f6feb79cf6c5853c43bf1b2a50c4fa98e7a1/src/createTippy.ts#L608
+                name: "destroy-popover-if-reference-hidden",
+                enabled: true,
+                phase: "beforeWrite",
+                requires: ["$$tippy"],
+                fn({state}) {
+                    const instance = state.elements.reference._tippy;
+                    const $popover = $(state.elements.popper);
+                    const $tippy_box = $popover.find(".tippy-box");
+                    if ($tippy_box.hasClass("show-when-reference-hidden")) {
+                        return;
+                    }
+
+                    // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
+                    // but linter wants us to write it like this.
+                    const is_reference_outside_window = Object.hasOwn(
+                        $tippy_box[0].dataset,
+                        "referenceHidden",
+                    );
+                    if (is_reference_outside_window) {
+                        instance.hide();
+                        return;
+                    }
+
+                    const $reference = $(state.elements.reference);
+                    // Hide popover if the reference element is below another element.
+                    //
+                    // We only care about the reference element if it is inside the message feed since
+                    // hiding elements outside the message feed is tricky and expensive due to stacking context.
+                    // References in overlays, modal, sidebar overlays, popovers, etc. can make the below logic hard
+                    // to live with if we take elements outside message feed into account.
+                    // Since `.sticky_header` is inside `#message_feed_container`, we allow popovers from reference inside
+                    // `.sticky_header` to be visible.
+                    if (
+                        $reference.parents("#message_feed_container, .sticky_header").length !== 1
+                    ) {
+                        return;
+                    }
+
+                    const reference_rect = $reference[0].getBoundingClientRect();
+                    // This is the logic we want but since it is too expensive to run
+                    // on every scroll, we run a cheaper version of this to just check if
+                    // compose, sticky header or navbar are not obscuring the reference
+                    // in message list where we want a better experience.
+                    // Also, elementFromPoint can be quite buggy since element can be temporarily
+                    // hidden or obscured by other elements like `simplebar-wrapper`.
+                    //
+                    // const topmost_element = document.elementFromPoint(
+                    //     reference_rect.left,
+                    //     reference_rect.top,
+                    // );
+                    // if (
+                    //     !topmost_element ||
+                    //     ($(topmost_element).closest($reference).length === 0 &&
+                    //         $(topmost_element).find($reference).length === 0)
+                    // ) {
+                    //     instance.hide();
+                    // }
+
+                    // Hide popover if the reference element is below compose, sticky header or navbar.
+                    const elements_at_reference_position = document.elementsFromPoint(
+                        reference_rect.left,
+                        reference_rect.top,
+                    );
+
+                    if (
+                        elements_at_reference_position.some(
+                            (element) =>
+                                element.id === "navbar-fixed-container" ||
+                                element.id === "compose-content" ||
+                                element.classList.contains("sticky_header"),
+                        )
+                    ) {
+                        instance.hide();
+                    }
+                },
+            },
+        ],
+    },
 };
 
 export const left_sidebar_tippy_options = {
@@ -183,8 +276,24 @@ function get_props_for_popover_centering(popover_props) {
                         offset({popper}) {
                             // Calculate the offset needed to place the reference in the center
                             const x_offset_to_center = window.innerWidth / 2;
-                            const y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
+                            let y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
 
+                            // Move popover to the top of the screen if user is focused on an element which can
+                            // open keyboard on a mobile device causing the screen to resize.
+                            // Resize doesn't happen on iOS when keyboard is open, and typing text in input field just works.
+                            // For other browsers, we need to check if the focused element is an text field and
+                            // is causing a resize (thus calling this `offset` modifier function), in which case
+                            // we need to move the popover to the top of the screen.
+                            if (util.is_mobile()) {
+                                const $focused_element = $(document.activeElement);
+                                if (
+                                    $focused_element.is(
+                                        "input[type=text], input[type=number], textarea",
+                                    )
+                                ) {
+                                    y_offset_to_center = 10;
+                                }
+                            }
                             return [x_offset_to_center, y_offset_to_center];
                         },
                     },
@@ -221,6 +330,11 @@ function get_props_for_popover_centering(popover_props) {
 // shortcuts and similar alternative ways to open a popover menu.
 export function toggle_popover_menu(target, popover_props, options) {
     const instance = target._tippy;
+    if (instance) {
+        instance.hide();
+        return;
+    }
+
     let mobile_popover_props = {};
 
     // If the window is mobile-sized, we will render the
@@ -231,9 +345,11 @@ export function toggle_popover_menu(target, popover_props, options) {
         };
     }
 
-    if (instance) {
-        instance.hide();
-        return;
+    if (popover_props.popperOptions?.modifiers) {
+        popover_props.popperOptions.modifiers = [
+            ...default_popover_props.popperOptions.modifiers,
+            ...popover_props.popperOptions.modifiers,
+        ];
     }
 
     tippy(target, {
@@ -273,25 +389,4 @@ export function initialize() {
     overlays.register_pre_close_hook(popovers.hide_all);
     modals.register_pre_open_hook(popovers.hide_all);
     modals.register_pre_close_hook(popovers.hide_all);
-
-    let last_scroll = 0;
-
-    $(document).on("scroll", () => {
-        if (suppress_scroll_hide) {
-            suppress_scroll_hide = false;
-            return;
-        }
-
-        const date = Date.now();
-
-        // only run `popovers.hide_all()` if the last scroll was more
-        // than 250ms ago.
-        if (date - last_scroll > 250) {
-            popovers.hide_all();
-        }
-
-        // update the scroll time on every event to make sure it doesn't
-        // retrigger `hide_all` while still scrolling.
-        last_scroll = date;
-    });
 }

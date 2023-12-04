@@ -153,7 +153,10 @@ js_rules = RuleList(
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
             "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
-            "exclude": {"web/tests/"},
+            "exclude": {
+                "web/tests/",
+                "web/src/billing/",
+            },
         },
         {
             "pattern": r"""report.success\(["']""",
@@ -549,6 +552,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/analytics/support.html",
             "templates/analytics/remote_server_support.html",
+            "templates/corporate",
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",
@@ -579,6 +583,9 @@ html_rules: List["Rule"] = [
             '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
+        "exclude": {
+            "templates/corporate",
+        },
     },
     {
         "pattern": "aria-label='[^{]",
@@ -615,6 +622,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/zerver/emails",
             "templates/analytics/realm_details.html",
+            "templates/analytics/remote_server_support.html",
             "templates/analytics/support.html",
         },
         "description": "`title` value should be translatable.",
@@ -688,7 +696,6 @@ html_rules: List["Rule"] = [
             "web/templates/pm_list_item.hbs",
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
-            "templates/zerver/billing_nav.html",
             "templates/corporate/features.html",
             "templates/zerver/portico-header.html",
             "templates/corporate/billing.html",

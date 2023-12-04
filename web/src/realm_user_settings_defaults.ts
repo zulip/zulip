@@ -1,7 +1,7 @@
 export type RealmDefaultSettings = {
     color_scheme: number;
     default_language: string;
-    default_view: string;
+    web_home_view: string;
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
     dense_mode: boolean;
@@ -27,7 +27,7 @@ export type RealmDefaultSettings = {
     enable_followed_topic_email_notifications: boolean;
     enable_followed_topic_wildcard_mentions_notify: boolean;
     enter_sends: boolean;
-    escape_navigates_to_default_view: boolean;
+    web_escape_navigates_to_home_view: boolean;
     fluid_layout_width: boolean;
     high_contrast_mode: boolean;
     message_content_in_email_notifications: boolean;

@@ -17,6 +17,7 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
@@ -74,15 +75,15 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
-    compose_validate.clear_wildcard_warnings($("#compose_banners"));
-    compose_validate.set_user_acknowledged_wildcard_flag(false);
+    compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
+    compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
     clear_textarea();
     compose_validate.check_overflow_text();
-    $("#compose-textarea").removeData("draft-id");
-    $("#compose-textarea").toggleClass("invalid", false);
-    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("textarea#compose-textarea").removeData("draft-id");
+    $("textarea#compose-textarea").toggleClass("invalid", false);
+    compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
@@ -90,7 +91,7 @@ function clear_box() {
 
 export function autosize_message_content() {
     if (!compose_ui.is_full_size()) {
-        autosize($("#compose-textarea"), {
+        autosize($("textarea#compose-textarea"), {
             callback() {
                 maybe_scroll_up_selected_message();
             },
@@ -191,6 +192,7 @@ export function start(msg_type, opts) {
         blueslip.warn("Empty message type in compose.start");
     }
 
+    popovers.hide_all();
     autosize_message_content();
 
     if (reload_state.is_in_progress()) {
@@ -269,13 +271,13 @@ export function start(msg_type, opts) {
     show_compose_box(msg_type, opts);
 
     if (opts.draft_id) {
-        $("#compose-textarea").data("draft-id", opts.draft_id);
+        $("textarea#compose-textarea").data("draft-id", opts.draft_id);
     }
 
     if (opts.content !== undefined) {
         // If we were provided with message content, we might need to
         // resize the compose box, or display that it's too long.
-        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_ui.autosize_textarea($("textarea#compose-textarea"));
         compose_validate.check_overflow_text();
     }
 
@@ -288,6 +290,10 @@ export function start(msg_type, opts) {
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
+    // Show a warning if the user is in a search narrow when replying to a message
+    if (opts.is_reply) {
+        compose_validate.warn_if_in_search_view();
+    }
 
     compose_recipient.check_posting_policy_for_compose_box();
 
@@ -305,7 +311,7 @@ export function cancel() {
         compose_ui.make_compose_box_original_size();
     }
 
-    $("#compose-textarea").height(40 + "px");
+    $("textarea#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
@@ -374,7 +380,7 @@ export function on_topic_narrow() {
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").trigger("focus");
 }
 
 export function on_narrow(opts) {

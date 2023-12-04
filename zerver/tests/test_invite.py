@@ -61,6 +61,7 @@ from zerver.models import (
     Realm,
     ScheduledEmail,
     Stream,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -107,7 +108,7 @@ class StreamSetupTest(ZulipTestCase):
 
         new_user = self.create_simple_new_user(realm, "alice@zulip.com")
 
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             set_up_streams_for_new_human_user(
                 user_profile=new_user,
                 prereg_user=None,
@@ -142,7 +143,7 @@ class StreamSetupTest(ZulipTestCase):
 
         new_user = self.create_simple_new_user(realm, new_user_email)
 
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(13):
             set_up_streams_for_new_human_user(
                 user_profile=new_user,
                 prereg_user=prereg_user,
@@ -957,7 +958,7 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
             inviter_msg.content.startswith(
-                f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
+                f"@_**{invitee_profile.full_name}|{invitee_profile.id}** accepted your",
             )
         )
 
@@ -1438,7 +1439,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email=email, referred_by=inviter, realm=realm
         )
         date_sent = timezone_now() - datetime.timedelta(weeks=3)
-        with patch("confirmation.models.timezone_now", return_value=date_sent):
+        with time_machine.travel(date_sent, tick=False):
             url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
 
         key = url.split("/")[-1]
@@ -1781,10 +1782,7 @@ class InvitationsTestCase(InviteUserBase):
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
-        with patch(
-            "confirmation.models.timezone_now",
-            return_value=timezone_now() - datetime.timedelta(days=3),
-        ):
+        with time_machine.travel((timezone_now() - datetime.timedelta(days=3)), tick=False):
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
@@ -1827,10 +1825,7 @@ class InvitationsTestCase(InviteUserBase):
             get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
         ]
 
-        with patch(
-            "confirmation.models.timezone_now",
-            return_value=timezone_now() - datetime.timedelta(days=1000),
-        ):
+        with time_machine.travel((timezone_now() - datetime.timedelta(days=1000)), tick=False):
             # Testing the invitation with expiry date set to "None" exists
             # after a large amount of days.
             do_invite_users(
@@ -2290,7 +2285,7 @@ class MultiuseInviteTest(ZulipTestCase):
         if date_sent is None:
             date_sent = timezone_now()
         validity_in_minutes = 2 * 24 * 60
-        with patch("confirmation.models.timezone_now", return_value=date_sent):
+        with time_machine.travel(date_sent, tick=False):
             return create_confirmation_link(
                 invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
             )
@@ -2478,10 +2473,10 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_create_multiuse_invite_group_setting(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
         nobody_system_group = UserGroup.objects.get(
-            name=UserGroup.NOBODY_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
 
         # Default value of create_multiuse_invite_group is administrators
@@ -2513,7 +2508,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_only_owner_can_change_create_multiuse_invite_group(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
 
         self.login("iago")
@@ -2557,7 +2552,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_multiuse_link_for_inviting_as_admin(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -2588,7 +2583,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_multiuse_link_for_inviting_as_moderator(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
-            name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(

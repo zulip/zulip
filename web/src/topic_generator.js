@@ -49,7 +49,7 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
     return undefined;
 }
 
-export function get_next_topic(curr_stream, curr_topic) {
+export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
     let my_streams = stream_list_sort.get_streams();
 
     my_streams = my_streams.filter((stream_name) => {
@@ -71,9 +71,26 @@ export function get_next_topic(curr_stream, curr_topic) {
         return topics;
     }
 
+    function get_followed_topics(stream_name) {
+        const stream_id = stream_data.get_stream_id(stream_name);
+        let topics = stream_topic_history.get_recent_topic_names(stream_id);
+        topics = topics.filter((topic) => user_topics.is_topic_followed(stream_id, topic));
+        return topics;
+    }
+
     function has_unread_messages(stream_name, topic) {
         const stream_id = stream_data.get_stream_id(stream_name);
         return unread.topic_has_any_unread(stream_id, topic);
+    }
+
+    if (only_followed_topics) {
+        return next_topic(
+            my_streams,
+            get_followed_topics,
+            has_unread_messages,
+            curr_stream,
+            curr_topic,
+        );
     }
 
     return next_topic(my_streams, get_unmuted_topics, has_unread_messages, curr_stream, curr_topic);

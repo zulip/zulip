@@ -177,12 +177,14 @@ exports.fixtures = {
                 title: "About topics",
                 description: "Topics are good.",
                 delay: 1.5,
+                has_trigger: false,
             },
             {
                 name: "compose",
                 title: "Compose box",
                 description: "This is where you compose messages.",
                 delay: 3.14159,
+                has_trigger: false,
             },
         ],
     },
@@ -440,15 +442,6 @@ exports.fixtures = {
         },
     },
 
-    realm_bot__remove: {
-        type: "realm_bot",
-        op: "remove",
-        bot: {
-            user_id: 42,
-            full_name: "The Bot",
-        },
-    },
-
     realm_bot__update: {
         type: "realm_bot",
         op: "update",
@@ -565,15 +558,6 @@ exports.fixtures = {
             timezone: "America/New_York",
             date_joined: "2020-01-01",
             delivery_email: "test-delivery@example.com",
-        },
-    },
-
-    realm_user__remove: {
-        type: "realm_user",
-        op: "remove",
-        person: {
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
         },
     },
 
@@ -727,7 +711,6 @@ exports.fixtures = {
                 audible_notifications: true,
                 color: "blue",
                 desktop_notifications: false,
-                email_address: "whatever",
                 email_notifications: false,
                 in_home_view: false,
                 is_muted: true,
@@ -913,20 +896,6 @@ exports.fixtures = {
         language_name: "French",
     },
 
-    user_settings__default_view_all_messages: {
-        type: "user_settings",
-        op: "update",
-        property: "default_view",
-        value: "all_messages",
-    },
-
-    user_settings__default_view_recent_topics: {
-        type: "user_settings",
-        op: "update",
-        property: "default_view",
-        value: "recent_topics",
-    },
-
     user_settings__demote_inactive_streams: {
         type: "user_settings",
         op: "update",
@@ -973,13 +942,6 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "enter_sends",
-        value: true,
-    },
-
-    user_settings__escape_navigates_to_default_view: {
-        type: "user_settings",
-        op: "update",
-        property: "escape_navigates_to_default_view",
         value: true,
     },
 
@@ -1046,6 +1008,34 @@ exports.fixtures = {
         value: 2,
     },
 
+    user_settings__web_escape_navigates_to_home_view: {
+        type: "user_settings",
+        op: "update",
+        property: "web_escape_navigates_to_home_view",
+        value: true,
+    },
+
+    user_settings__web_home_view_all_messages: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "all_messages",
+    },
+
+    user_settings__web_home_view_inbox: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "inbox",
+    },
+
+    user_settings__web_home_view_recent_topics: {
+        type: "user_settings",
+        op: "update",
+        property: "web_home_view",
+        value: "recent_topics",
+    },
+
     user_settings__web_mark_read_on_scroll_policy: {
         type: "user_settings",
         op: "update",
@@ -1061,11 +1051,13 @@ exports.fixtures = {
     },
 
     user_status__set_status_emoji: {
+        id: 1,
         type: "user_status",
         user_id: test_user.user_id,
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
+        status_text: "",
     },
 
     user_status__set_status_text: {

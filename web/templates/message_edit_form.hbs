@@ -14,28 +14,28 @@
         <div class="message_edit_spinner"></div>
         <div class="controls edit-controls">
             {{#if is_editable}}
-                <div class="btn-wrapper inline-block message_edit_save_container"
-                  data-tippy-content="{{t 'You can no longer save changes to this message.' }}">
-                    <button type="button" class="button small rounded sea-green message_edit_save">
-                        <img class="loader" alt="" src="" />
-                        <span>{{t "Save" }}</span>
-                    </button>
-                </div>
-                <div class="btn-wrapper inline-block">
-                    <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
-                </div>
-                <div class="message-edit-feature-group">
-                    {{> compose_control_buttons }}
-                </div>
-            {{else}}
-                <button type="button" class="button small rounded message_edit_close">{{t "Close" }}</button>
-            {{/if}}
-            {{#if is_editable}}
-            <div class="message-edit-timer">
-                <span class="message_edit_countdown_timer
-                  tippy-zulip-tooltip" data-tippy-content="{{t 'This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.' }}"></span>
+            <div class="message-edit-feature-group">
+                {{> compose_control_buttons }}
             </div>
             {{/if}}
+            <div class="message-edit-buttons-and-timer">
+                {{#if is_editable}}
+                    <div class="message_edit_save_container"
+                      data-tippy-content="{{t 'You can no longer save changes to this message.' }}">
+                        <button type="button" class="message-actions-button message_edit_save">
+                            <img class="loader" alt="" src="" />
+                            <span>{{t "Save" }}</span>
+                        </button>
+                    </div>
+                    <button type="button" class="message-actions-button message_edit_cancel"><span>{{t "Cancel" }}</span></button>
+                    <div class="message-edit-timer">
+                        <span class="message_edit_countdown_timer
+                          tippy-zulip-tooltip" data-tippy-content="{{t 'This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.' }}"></span>
+                    </div>
+                {{else}}
+                    <button type="button" class="message-actions-button message_edit_close"><span>{{t "Close" }}</span></button>
+                {{/if}}
+            </div>
         </div>
     </div>
 </form>

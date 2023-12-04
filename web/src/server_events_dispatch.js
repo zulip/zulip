@@ -8,7 +8,6 @@ import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
-import {buddy_list} from "./buddy_list";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -230,6 +229,7 @@ export function dispatch_normal_event(event) {
                 notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: noop,
+                push_notifications_enabled: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
@@ -358,11 +358,6 @@ export function dispatch_normal_event(event) {
                     bot_data.add(event.bot);
                     settings_bots.render_bots();
                     break;
-                case "remove":
-                    bot_data.deactivate(event.bot.user_id);
-                    event.bot.is_active = false;
-                    settings_bots.render_bots();
-                    break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.render_bots();
@@ -466,16 +461,6 @@ export function dispatch_normal_event(event) {
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
-                    }
-                    break;
-                case "remove":
-                    people.deactivate(event.person);
-                    stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
-                    settings_users.update_view_on_deactivate(event.person.user_id);
-                    buddy_list.maybe_remove_key({key: event.person.user_id});
-                    settings_account.maybe_update_deactivate_account_button();
-                    if (people.user_is_bot(event.person.user_id)) {
-                        settings_users.update_bot_data(event.person.user_id);
                     }
                     break;
                 case "update":
@@ -688,12 +673,12 @@ export function dispatch_normal_event(event) {
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
-                "default_view",
+                "web_home_view",
                 "demote_inactive_streams",
                 "dense_mode",
                 "web_mark_read_on_scroll_policy",
                 "emojiset",
-                "escape_navigates_to_default_view",
+                "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
                 "timezone",
@@ -708,7 +693,7 @@ export function dispatch_normal_event(event) {
                 "send_read_receipts",
             ];
 
-            const original_default_view = user_settings.default_view;
+            const original_home_view = user_settings.web_home_view;
             if (user_display_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
@@ -721,19 +706,20 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
             }
-            if (
-                event.property === "default_view" && // If current hash is empty (default view), and the
-                // user changes the default view while in settings,
+            if (event.property === "web_home_view") {
+                left_sidebar_navigation_area.handle_home_view_changed(event.value);
+
+                // If current hash is empty (home view), and the
+                // user changes the home view while in settings,
                 // then going back to an empty hash on closing the
                 // overlay will not match the view currently displayed
                 // under settings, so we set the hash to the previous
-                // value of the default view.
-                !browser_history.state.hash_before_overlay &&
-                overlays.settings_open()
-            ) {
-                browser_history.state.hash_before_overlay =
-                    "#" +
-                    (original_default_view === "recent_topics" ? "recent" : original_default_view);
+                // value of the home view.
+                if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
+                    browser_history.state.hash_before_overlay =
+                        "#" +
+                        (original_home_view === "recent_topics" ? "recent" : original_home_view);
+                }
             }
             if (event.property === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
@@ -806,8 +792,8 @@ export function dispatch_normal_event(event) {
             if (event.property === "display_emoji_reaction_users") {
                 message_live_update.rerender_messages_view();
             }
-            if (event.property === "escape_navigates_to_default_view") {
-                $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+            if (event.property === "web_escape_navigates_to_home_view") {
+                $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
             }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;

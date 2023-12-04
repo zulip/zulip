@@ -22,6 +22,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
             .tap("DebugRequirePlugin", (resolver) => {
                 resolver.getHook("beforeRawModule").tap("DebugRequirePlugin", (req) => {
                     if (!(nameSymbol in req)) {
+                        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                         (req as NamedRequest)[nameSymbol] = req.request;
                     }
                     return undefined!;
@@ -31,6 +32,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
                     if (req.path !== false) {
                         const inPath = path.relative(compiler.context, req.path);
                         if (!inPath.startsWith("../") && !(nameSymbol in req)) {
+                            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                             (req as NamedRequest)[nameSymbol] = "./" + inPath;
                         }
                     }
@@ -40,6 +42,7 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
                 resolver
                     .getHook("beforeResolved")
                     .tap("DebugRequirePlugin", (req: ResolveRequest) => {
+                        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                         const name = (req as NamedRequest)[nameSymbol];
                         if (name !== undefined && req.path !== false) {
                             const names = resolved.get(req.path);

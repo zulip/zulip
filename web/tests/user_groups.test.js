@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
+const {page_params} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
 
@@ -317,7 +318,44 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([4, 5]),
     };
 
-    const expected_groups_list = [
+    page_params.server_supported_permission_settings = {
+        stream: {
+            can_remove_subscribers_group: {
+                require_system_group: true,
+                allow_internet_group: false,
+                allow_owners_group: false,
+                allow_nobody_group: false,
+                allow_everyone_group: true,
+                default_group_name: "role:administrators",
+                id_field_name: "can_remove_subscribers_group_id",
+                allowed_system_groups: [],
+            },
+        },
+        realm: {
+            create_multiuse_invite_group: {
+                require_system_group: true,
+                allow_internet_group: false,
+                allow_owners_group: false,
+                allow_nobody_group: true,
+                allow_everyone_group: false,
+                default_group_name: "role:administrators",
+                id_field_name: "create_multiuse_invite_group_id",
+                allowed_system_groups: [],
+            },
+            can_access_all_users_group: {
+                require_system_group: true,
+                allow_internet_group: false,
+                allow_owners_group: false,
+                allow_nobody_group: false,
+                allow_everyone_group: true,
+                default_group_name: "role:everyone",
+                id_field_name: "can_access_all_users_group_id",
+                allowed_system_groups: ["role:everyone", "role:members"],
+            },
+        },
+    };
+
+    let expected_groups_list = [
         {name: "translated: Admins, moderators, members and guests", unique_id: 6},
         {name: "translated: Admins, moderators and members", unique_id: 5},
         {name: "translated: Admins, moderators and full members", unique_id: 7},
@@ -340,12 +378,29 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     });
 
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget("can_remove_subscribers_group"),
+        user_groups.get_realm_user_groups_for_dropdown_list_widget(
+            "can_remove_subscribers_group",
+            "stream",
+        ),
+        expected_groups_list,
+    );
+
+    expected_groups_list = [
+        {name: "translated: Admins, moderators, members and guests", unique_id: 6},
+        {name: "translated: Admins, moderators and members", unique_id: 5},
+    ];
+
+    assert.deepEqual(
+        user_groups.get_realm_user_groups_for_dropdown_list_widget(
+            "can_access_all_users_group",
+            "realm",
+        ),
         expected_groups_list,
     );
 
     assert.throws(
-        () => user_groups.get_realm_user_groups_for_dropdown_list_widget("invalid_setting"),
+        () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget("invalid_setting", "stream"),
         {
             name: "Error",
             message: "Invalid setting: invalid_setting",

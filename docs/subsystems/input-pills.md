@@ -26,7 +26,7 @@ var pills = input_pill.create({
 });
 ```
 
-You can look at `web/src/user_pill.js` to see how the above
+You can look at `web/src/user_pill.ts` to see how the above
 methods are implemented. Essentially you just need to convert
 from raw data (like an email) to structured data (like an object
 with display_value, email, and user_id for a user), and vice
@@ -46,7 +46,7 @@ source: function () {
 },
 ```
 
-And then in `user_pill.js`...
+And then in `user_pill.ts`...
 
 ```js
 export function typeahead_source(pill_widget) {

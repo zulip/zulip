@@ -1,7 +1,7 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
-mypy
+mypy==1.5.*  # https://github.com/dry-python/returns/issues/1711
 
 boto3-stubs[s3,ses,sns,sqs]
 lxml-stubs
@@ -11,19 +11,19 @@ types-boto
 types-chardet
 types-decorator
 types-jsonschema
-types-Markdown
+types-Markdown<3.5.0.3  # https://github.com/python/typeshed/pull/10972#pullrequestreview-1760743552
 types-oauthlib
 types-polib
 types-pika
 types-Pillow
-types-psycopg2<2.9.21.12  # https://github.com/python/typeshed/pull/10630#pullrequestreview-1629331877
+types-psycopg2
 types-Pygments
+types-pyOpenSSL
 types-python-dateutil
 types-PyYAML
 types-redis
 types-regex
 types-requests<2.31.0.7  # https://github.com/python/typeshed/issues/10825
-types-stripe
 types-zxcvbn
 
 importlib-metadata ; python_version < "3.10"  # for SQLAlchemy

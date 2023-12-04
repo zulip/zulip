@@ -1,6 +1,5 @@
 html {
-    overflow-y: scroll;
-    overflow-x: hidden;
+    overflow: hidden scroll;
     overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
 }
@@ -53,19 +52,23 @@ body {
     */
     --header-height: 40px;
 
-    @media (width < $sm_min) {
+    /*
+    At 600px, the header starts taking up more than 5%
+    of the screen. We make it shorter to leave more space
+    to see the rest of the app. */
+    @media (height < $short_navbar_cutoff_height) {
         --header-height: 30px;
     }
 
     /*
     Height of the search box, which appears in the header.
-    On very small screens, the search box's height becomes
+    On very short screens, the search box's height becomes
     the height of its parent (i.e. the header height).
     */
     --search-box-height: 28px;
     --search-box-width: 150px;
 
-    @media (width < $sm_min) {
+    @media (height < $short_navbar_cutoff_height) {
         --search-box-height: var(--header-height);
     }
 
@@ -99,6 +102,7 @@ body {
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
+    --left-sidebar-header-icon-width: 15px;
 
     /*
     Message box elements and values.
@@ -108,6 +112,11 @@ body {
     --message-box-line-height: 1.214;
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
+
+    /*
+    Reaction container UI scaling.
+    */
+    --scale-message-reaction-active: 0.96;
 
     /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
@@ -186,6 +195,7 @@ body {
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 80%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
@@ -206,6 +216,11 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
+    /* There's no alpha channel here, but this keeps
+       the variable names in line. */
+    --color-background-unread-counter-no-alpha: var(
+        --color-background-unread-counter
+    );
     --color-background-unread-counter-dot: var(
         --color-background-unread-counter
     );
@@ -216,8 +231,23 @@ body {
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
+    --color-background-popover: hsl(0deg 0% 100%);
 
     /* Compose box colors */
+    --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
+    --color-compose-send-button-background: hsl(240deg 96% 68%);
+    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
+    --color-compose-send-button-focus-shadow: hsl(230deg 100% 20%);
+    --color-compose-send-control-button: hsl(240deg 30% 50% / 80%);
+    --color-compose-send-control-button-background: transparent;
+    --color-compose-send-control-button-interactive: hsl(240deg 30% 50%);
+    --color-compose-send-control-button-background-interactive: hsl(
+        240deg 100% 30% / 5%
+    );
+    --color-compose-send-control-button-focus-shadow: var(
+        --color-compose-send-button-focus-shadow
+    );
     --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
     --color-compose-collapsed-reply-button-area-background-interactive: var(
         --color-compose-collapsed-reply-button-area-background
@@ -248,6 +278,23 @@ body {
     --color-text-dropdown-menu: hsl(0deg 0% 15%);
     --color-text-full-name: hsl(0deg 0% 15%);
     --color-text-item: hsl(0deg 0% 40%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
+    --color-text-sidebar-heading: hsl(0deg 0% 43%);
+
+    /* Markdown code colors */
+    --color-markdown-code-text: hsl(0deg 0% 0%);
+    --color-markdown-code-background: hsl(0deg 0% 0% / 6%);
+    --color-markdown-code-background-mentions: hsl(0deg 0% 0% / 7%);
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-border: transparent;
+    --color-markdown-pre-background: hsl(0deg 0% 0% / 4%);
+    --color-markdown-pre-background-mentions: hsl(0deg 0% 0% / 4%);
+    --color-markdown-pre-border-mentions: transparent;
+    --color-markdown-link: hsl(200deg 100% 40%);
+    --color-markdown-code-link: var(--color-markdown-link);
+    --color-markdown-link-hover: hsl(200deg 100% 25%);
+    --color-markdown-code-link-hover: var(--color-markdown-link-hover);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -264,6 +311,29 @@ body {
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(200deg 100% 40%);
+
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(0deg 0% 0% / 12%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 40%);
+    --color-message-reaction-background: hsl(0deg 0% 100%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 100%);
+    --color-message-reaction-background-hover: hsl(210deg 30% 96%);
+    --color-message-reaction-shadow-inner: hsl(210deg 50% 50% / 15%);
+    --color-message-reaction-text: hsl(210deg 20% 25% / 100%);
+    --color-message-reaction-text-reacted: hsl(210deg 20% 20% / 100%);
+    --color-message-reaction-button-text: hsl(210deg 20% 20% / 60%);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text
+    );
+    --color-message-reaction-button-background: inherit;
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background
+    );
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border
+    );
+    --font-weight-message-reaction: 600;
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 0% / 34%);
@@ -287,6 +357,7 @@ body {
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 26px;
     --width-inbox-search: 346px;
+    --width-inbox-filters-dropdown: 150px;
     --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
     --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
@@ -324,10 +395,68 @@ body {
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
     --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 40% 50%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 100% 30% / 5%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 100% 30% / 8%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 40% 40% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        244deg 64% 47% / 10%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        244deg 64% 47% / 15%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        244deg 64% 47% / 18%
+    );
     --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
     --color-gear-menu-blue-text: hsl(217deg 100% 50%);
     --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    /* This is a technique for directing CSS to do
+       the color mixing ordinarily handled by the
+       alpha channel in hsl(); here, the alpha value
+       is omitted from the hsl() syntax and instead
+       used as the percentage for mixing over top of
+       the navbar background. This is needed so that
+       elements like the unread-count dot can make
+       use of the color, but neither compound alpha
+       values or apply alpha values over different
+       colors, such as the background color on the
+       unread dot.
+
+       The second color value aligns with
+       --color-background-navbar. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 5%,
+        hsl(0deg 0% 97%)
+    );
     --color-header-button-focus: hsl(0deg 0% 0% / 8%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 8%,
+        hsl(0deg 0% 97%)
+    );
+    --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
+    --color-fill-user-invite-copy-icon: hsl(0deg 0% 46.7%);
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23333333'/%3E%3C/svg%3E%0A");
+
+    /* Button colors on modals and message editing. */
+    /* Don't define light theme colors for modal here
+       since the modal is also used on billing pages and
+       this file is not imported on billing pages. */
 }
 
 %dark-theme {
@@ -349,6 +478,7 @@ body {
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 30%);
     --color-background-modal: hsl(212deg 28% 18%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
@@ -365,6 +495,18 @@ body {
     --color-border-dropdown-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    /* When unreads are hovered on the condensed
+       views, they should not have an alpha.
+
+       The second color aligns with dark mode's
+       --color-background. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-background-unread-counter-no-alpha: color-mix(
+        in srgb,
+        hsl(105deg 2% 50%) 50%,
+        hsl(0deg 0% 11%)
+    );
     --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
     --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
@@ -377,6 +519,18 @@ body {
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
 
     /* Compose box colors */
+    --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
+    --color-compose-send-control-button: hsl(240deg 30% 70%);
+    --color-compose-send-control-button-background: transparent;
+    --color-compose-send-control-button-interactive: var(
+        --color-compose-send-control-button
+    );
+    --color-compose-send-control-button-background-interactive: hsl(
+        235deg 100% 70% / 11%
+    );
+    --color-compose-send-control-button-focus-shadow: var(
+        --color-compose-send-button-focus-shadow
+    );
     --color-compose-collapsed-reply-button-area-background: hsl(
         0deg 0% 0% / 20%
     );
@@ -393,6 +547,7 @@ body {
     --color-compose-embedded-button-background-hover: hsl(
         235deg 100% 70% / 11%
     );
+    --color-background-popover: hsl(212deg 32% 14%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -413,6 +568,31 @@ body {
     --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
     --color-text-full-name: hsl(0deg 0% 100%);
     --color-text-item: hsl(0deg 0% 50%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
+    /* 75% opacity of --color-text-default against --color-background.
+       We use color-mix here to avoid defining a separate, compounding
+       `opacity` property, and also to preserve a record of the
+       relationship of the color of sidebar headings to other colors. */
+    --color-text-sidebar-heading: color-mix(
+        in srgb,
+        hsl(0deg 0% 75%) 75%,
+        hsl(0deg 0% 11%)
+    );
+
+    /* Markdown code colors */
+    /* Note that Markdown code-link colors are identical
+       to light theme, and so are not redeclared here. */
+    --color-markdown-code-text: hsl(0deg 0% 100% / 85%);
+    --color-markdown-code-background: hsl(0deg 0% 100% / 8%);
+    --color-markdown-code-background-mentions: var(
+        --color-markdown-code-background
+    );
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-border: transparent;
+    --color-markdown-pre-background: hsl(0deg 0% 100% / 4%);
+    --color-markdown-pre-background-mentions: hsl(0deg 0% 100% / 5%);
+    --color-markdown-pre-border-mentions: var(--color-markdown-pre-border);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
@@ -426,6 +606,30 @@ body {
         --color-left-sidebar-navigation-icon
     );
     --color-tab-picker-icon: hsl(0deg 0% 80%);
+
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 100% / 50%);
+    --color-message-reaction-background: hsl(0deg 0% 0% / 30%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 80%);
+    --color-message-reaction-background-hover: hsl(0deg 0% 100% / 10%);
+    /* No shadow in dark mode. */
+    --color-message-reaction-shadow-inner: transparent;
+    --color-message-reaction-text: hsl(0deg 0% 100% / 75%);
+    --color-message-reaction-text-reacted: hsl(0deg 0% 100% / 85%);
+    --color-message-reaction-button-text: var(--color-message-reaction-text);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text-reacted
+    );
+    --color-message-reaction-button-background: inherit;
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background-hover
+    );
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border
+    );
+    --font-weight-message-reaction: 550;
 
     /* Message feed loading indicator colors */
     --color-zulip-logo: hsl(0deg 0% 100% / 50%);
@@ -478,10 +682,54 @@ body {
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
     --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 55% 72% / 100%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 10%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 13%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 64% 76% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        240deg 56% 70% / 12%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 17%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 12%
+    );
     --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
     --color-gear-menu-blue-text: hsl(217deg 100% 65%);
     --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 4%,
+        hsl(0deg 0% 13%)
+    );
     --color-header-button-focus: hsl(0deg 0% 100% / 7%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 7%,
+        hsl(0deg 0% 13%)
+    );
+    --color-fill-user-invite-copy-icon: hsl(236deg 33% 90%);
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23FFFFFFBF'/%3E%3C/svg%3E%0A");
+
+    /* Button colors on modals and message editing. */
+    --color-exit-button-text: hsl(0deg 0% 100%);
+    --color-exit-button-border: hsl(0deg 0% 0% / 60%);
+    --color-exit-button-background: hsl(211deg 29% 14%);
+    --color-exit-button-background-interactive: hsl(211deg 29% 17%);
 }
 
 @media screen {
@@ -789,8 +1037,8 @@ p.n-margin {
 }
 
 .app {
-    width: 100%;
-    height: 100%;
+    min-width: 100%;
+    min-height: 100%;
     z-index: 99;
 }
 
@@ -823,6 +1071,17 @@ body.has-overlay-scrollbar {
     background-color: hsl(0deg 0% 0% / 70%);
 }
 
+/* Set flex display on login buttons only in the
+   spectator view. We want them to display none
+   otherwise. */
+.spectator-view .column-right .spectator_login_buttons {
+    display: flex;
+
+    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+        display: none;
+    }
+}
+
 .column-right {
     width: var(--right-sidebar-width);
     max-width: var(--right-sidebar-width);
@@ -831,26 +1090,117 @@ body.has-overlay-scrollbar {
     top: 0;
 
     .spectator_login_buttons {
-        display: flex;
-        justify-content: space-evenly;
-        position: absolute;
-        top: 10px;
-        right: 40px;
-        /* width of right column - width of gear icon - right margin of column-right (250px - 40px -7px) */
-        width: 203px;
+        /* Allow the login buttons flexbox to
+           grow and shrink to fit the available
+           area. */
+        flex: 1 1 0;
+        /* Use a flexbox gap of 7px between the
+           buttons to reflect the outer 7px of space. */
+        gap: 7px;
+        /* Don't allow login buttons flexbox to
+           break out of the allotted right-column
+           space. */
+        overflow: hidden;
+        /* This should be removed once the navbar
+           has been rewritten entirely with modern
+           layout methods. For now, we pull this up
+           so that the buttons and search box are
+           the same height and their boxes sit on the
+           same invisible line. */
+        margin-top: -1px;
 
         & a {
             font-size: calc(16em / 14);
-            font-weight: 600;
-            color: hsl(0deg 0% 20%);
+            /* Vertically size the buttons to
+               match the search box. */
+            line-height: 28px;
+            font-weight: 450;
+            letter-spacing: 0.03ch;
+            /* Allow individual buttons to grow
+               and shrink inside their containers,
+               with padding to prevent text from
+               sitting against the edge of the button. */
+            flex: 1 1 0;
+            padding: 0 4px;
+            /* Center the text nodes within the
+               flex items. */
+            text-align: center;
+            /* Internationalization: disallow wrapping,
+               and display an ellipsis when there's not
+               space enough to accommodate the button
+               text. */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* Button curvature and transitions. */
+            border-radius: 4px;
+            transition: all 100ms ease-out;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 text-decoration: none;
-                color: hsl(0deg 0% 0%);
+            }
+
+            &:active {
+                transform: scale(0.98);
             }
 
             & i {
                 margin-right: 3px;
+            }
+        }
+
+        & .signup_button {
+            color: var(
+                --color-navbar-spectator-low-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-low-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-active
+                );
+            }
+        }
+
+        & .login_button {
+            color: var(
+                --color-navbar-spectator-medium-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-medium-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-active
+                );
             }
         }
 
@@ -867,22 +1217,23 @@ body.has-overlay-scrollbar {
         right: 0;
         height: var(--header-height);
         width: var(--header-height);
-        border-left: 1px solid hsl(0deg 0% 88%);
+
+        @media (width >= $xl_min) and (height >= 600px) {
+            display: none;
+        }
 
         .login_button {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100%;
-            opacity: 0.5;
 
             &:hover {
-                opacity: 1;
                 text-decoration: none;
             }
 
             & i {
-                color: hsl(0deg 0% 20%);
+                color: var(--color-navbar-icon);
                 font-size: 1.6em;
             }
         }
@@ -1013,7 +1364,7 @@ li,
     z-index: 2;
 
     &:hover svg path {
-        fill: hsl(200deg 100% 40%);
+        fill: var(--color-fill-hover-copy-icon);
     }
 }
 
@@ -1042,6 +1393,14 @@ li,
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {
         box-shadow: none;
+    }
+
+    & path {
+        fill: var(--color-fill-user-invite-copy-icon);
+    }
+
+    &:hover svg path {
+        fill: var(--color-fill-hover-copy-icon);
     }
 }
 
@@ -1085,13 +1444,6 @@ strong {
     white-space: nowrap;
 }
 
-.sidebar-title {
-    color: hsl(0deg 0% 43%);
-    font-size: inherit;
-    font-weight: normal;
-    display: inline;
-}
-
 .tooltip {
     &.in {
         font-size: 12px;
@@ -1131,6 +1483,7 @@ strong {
 .buddy_list_tooltip_content {
     text-align: left;
     word-wrap: break-word;
+    max-width: 280px;
 }
 
 #change_visibility_policy_button_tooltip {
@@ -1620,11 +1973,17 @@ td.pointer {
     flex-grow: 1;
     align-items: center;
 
+    .external-topic-link {
+        /* Vertically center the external link
+           icon inside its containing anchor. */
+        display: flex;
+        align-items: center;
+    }
+
     .change_visibility_policy {
         cursor: pointer;
 
         i {
-            font-size: 17px;
             display: block;
         }
     }
@@ -1890,14 +2249,18 @@ div.focused-message-list {
 }
 
 .message-edit-timer {
-    float: right;
     display: none;
-    margin-top: 5px;
+    /* Center vertically relative to
+       buttons. */
+    align-self: center;
+    /* Use flexbox to position to far right of
+       the Save and Cancel buttons. */
+    margin-left: auto;
 }
 
 .message-edit-feature-group {
-    display: inline-flex;
-    margin: 0 auto -5px 10px;
+    display: flex;
+    margin: 0;
     align-items: baseline;
 }
 
@@ -2088,6 +2451,17 @@ div.focused-message-list {
     }
 }
 
+.top-navbar-container {
+    /* Calculate right margin so that title and description
+       elements can truncate and not collide with or run underneath
+       with the search section. */
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 #message_view_header {
     color: var(--color-text-message-view-header);
     z-index: 2;
@@ -2095,11 +2469,8 @@ div.focused-message-list {
     height: var(--header-height);
     width: 100%;
     line-height: var(--header-height);
-    font-size: 16px;
     display: flex;
-    align-content: flex-start;
-    flex-wrap: nowrap;
-    margin: 0;
+    align-items: baseline;
     white-space: nowrap;
     cursor: default;
 
@@ -2107,28 +2478,49 @@ div.focused-message-list {
         display: none;
     }
 
-    .sub_count,
     .message-header-stream-settings-button,
-    & > span {
-        white-space: nowrap;
-        list-style-type: none;
-        display: inline-block;
-        vertical-align: top;
-        position: relative;
+    .navbar_title {
         font-weight: 600;
         font-size: 16px;
-        line-height: 16px;
-        margin: 0 -4px 0 0;
-        padding: 12px 6px;
+        padding: 0 2px 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: inherit;
+        text-decoration: none;
+        /* Create a flex container for the icon and
+           stream name. */
+        display: flex;
+        /* We want to use baseline alignment so that the
+           stream name and narrow description sit on
+           the same invisible line. */
+        align-items: baseline;
 
-        @media (width < $sm_min) {
-            padding: 7px 3.5px; /* based on having ~41.66% decrease */
+        .zulip-icon {
+            font-size: 14px;
+            /* Pull the icon out of baseline alignment,
+               and center with stream name. */
+            align-self: center;
+        }
+
+        .zulip-icon-inbox {
+            font-size: 16px;
+        }
+
+        .fa-envelope {
+            /* The squatter envelope icon appears
+               better vertically centered when aligned
+               to the baseline of the adjacent DM partners. */
+            align-self: baseline;
+        }
+
+        @media (height < $short_navbar_cutoff_height) {
+            padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
         & i {
-            margin: 0 3px 0 5px;
+            margin: 0 6px 0 5px;
+            /* Align all icons to center. */
+            align-self: center;
         }
 
         .fa {
@@ -2142,83 +2534,13 @@ div.focused-message-list {
                 margin: 0 2px 0 5px;
             }
         }
-
-        .zulip-icon-inbox,
-        .zulip-icon-star-filled {
-            position: relative;
-            top: 2px;
-        }
     }
 
-    .message-header-stream-settings-button {
-        text-overflow: clip;
-        color: inherit;
-        text-decoration: none;
-        /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
-        padding-right: calc(3px + 10px);
-        /* Don't yield any space needed for the stream name. */
-        flex-shrink: 0;
-
-        .zulip-icon {
-            font-size: 14px;
-            position: relative;
-            top: 1px;
-        }
-    }
-
-    .divider {
-        color: hsl(0deg 0% 88%);
-        font-size: 20px;
-        margin: 0 3px;
-    }
-
-    .sub_count,
-    .narrow_description {
-        background: none;
-        font-size: 14px;
-        color: inherit;
-        font-weight: 400;
-        line-height: 20px;
-    }
-
-    .sub_count {
-        padding-left: 10px;
-        margin-left: 1px;
-        padding-right: 10px;
-        margin-right: 1px;
-        overflow: visible;
-
-        .fa.fa-user-o {
-            margin-left: 0;
-        }
-
-        &::before,
-        &::after {
-            content: "|";
-            position: absolute;
-            top: 25%;
-            height: 50%;
-            color: hsl(0deg 0% 88%);
-            font-size: 20px;
-
-            @media (width < $sm_min) {
-                top: 10%;
-            }
-        }
-
-        &::before {
-            left: -3px;
-
-            @media (width < $sm_min) {
-                /* this ensures the before "|" doesn't overlap
-                   with the stream name text on small narrows */
-                left: 0;
-            }
-        }
-
-        &::after {
-            right: -3px;
-        }
+    .message-header-navbar-title {
+        /* Allow long navbar titles (e.g., stream names) to collapse. */
+        flex: 0 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .narrow_description {
@@ -2229,33 +2551,26 @@ div.focused-message-list {
            is chosen such that the narrow description shrinks to close
            before the stream name must begin to shrink */
         flex-shrink: 100;
-        white-space: nowrap;
-        padding: 12px 0;
+        background: none;
+        font-size: 14px;
+        color: inherit;
+        font-weight: 400;
         padding-left: 10px;
-
-        @media (width < $sm_min) {
-            padding: 7px 0;
-            padding-left: 10px;
-        }
-
-        & > a {
-            padding: 12px 0;
-        }
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     /* The very last element in the navbar is the search icon, the second
        last element is either the narrow description (for stream narrows) or
        the "title" (for other narrows). The flex-grow property ensures these
-       elements take up the entirety of the white space. */
+       elements take up the entirety of the white space, while flex-shrink
+       accommodates narrower viewports. Setting flex-basis 0 enables an
+       ellipsis to be displayed, as the 0 takes the place of the max-content
+       default that would otherwise run titles under the search box. */
     .navbar_title,
     .narrow_description {
-        flex-grow: 1;
+        flex: 1 1 0;
         margin: 0;
-        /* Calculate right margin so that text can truncate
-           and not collide with the search section. */
-        margin-right: calc(
-            var(--search-box-width) + var(--navbar-content-righthand-offset)
-        );
     }
 }
 
@@ -2265,8 +2580,6 @@ div.focused-message-list {
     top: 0;
     left: 0;
     text-align: center;
-    vertical-align: middle;
-    /* border-right: 2px solid hsl(204, 20%, 74%); */
 }
 
 .hide-streamlist-toggle-visibility,
@@ -2276,33 +2589,54 @@ div.focused-message-list {
 
 #streamlist-toggle-button {
     text-decoration: none;
-    color: hsl(0deg 0% 52%);
-    display: block;
-    position: relative;
+    color: var(--color-navbar-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    height: 40px;
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-hover-no-alpha);
+        }
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:active,
+    &:focus-visible {
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-focus-no-alpha);
+        }
+    }
 }
 
-#streamlist-toggle-unreadcount,
-#userlist-toggle-unreadcount {
+#streamlist-toggle-unreadcount {
     position: absolute;
     display: none;
-    height: 12px;
-    min-width: 12px;
-    line-height: 12px;
-    background-color: hsl(0deg 100% 20%);
-    top: 4px;
-    right: 4px;
-    border: 1px solid hsl(0deg 0% 93%);
-    box-shadow: 0 0 1px hsl(0deg 0% 0% / 20%);
-    border-radius: 12px;
-    padding: 1px;
-    font-size: 9px;
-    z-index: 15;
-    font-weight: normal;
-    color: hsl(0deg 0% 100%);
+    height: 6px;
+    width: 6px;
+    background-color: var(--color-navbar-icon);
+    top: 10px;
+    right: 9px;
+    border: 2px solid var(--color-background-navbar);
+    border-radius: 6px;
+    padding: 0;
+    font-size: 0;
 }
 
 .nav .dropdown-menu {
@@ -2385,6 +2719,10 @@ nav {
             margin-top: 8px;
             height: 25px;
             max-width: 200px;
+
+            @media (height < $short_navbar_cutoff_height) {
+                height: 15px;
+            }
         }
     }
 
@@ -2648,6 +2986,7 @@ select.invite-as {
 .empty-feed-notice-title {
     font-size: 1.5em;
     font-weight: 400;
+    word-wrap: break-word;
 }
 
 .empty-feed-notice-description {
@@ -2971,21 +3310,25 @@ select.invite-as {
     }
 }
 
+@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
+        }
+
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: var(--header-height);
+        }
+    }
+}
+
 @media (width < $xl_min) {
     .app-main,
     .header-main {
         min-width: 750px;
-    }
-
-    .spectator-view {
-        #navbar-middle {
-            margin-right: 85px;
-        }
-
-        #gear-menu {
-            position: relative;
-            right: 40px;
-        }
     }
 
     .column-right {
@@ -3028,7 +3371,8 @@ select.invite-as {
     }
 
     #navbar-middle {
-        margin-right: 127px;
+        /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: calc(var(--header-height) * 4 + 10px);
     }
 }
 
@@ -3109,39 +3453,23 @@ select.invite-as {
     }
 }
 
-@media (width < $sm_min) {
+@media (height < $short_navbar_cutoff_height) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: var(--navbar-fixed-height);
+        /* For very short screen sizes, skip the relatively large top padding. */
+        padding-top: 0;
     }
 
-    .column-left.expanded {
-        .left-sidebar {
-            /* For very small sizes, skip the relatively large top padding. */
-            padding-top: 0;
-
-            #streams_header {
-                padding-right: 10px;
-            }
-        }
-
-        .left-sidebar-navigation-area {
-            margin-top: 10px;
-        }
+    /* TODO: Properly and accurately align the
+       topmost headers on the left and right
+       sidebar. */
+    .column-right.expanded .right-sidebar-items {
+        margin-top: 10px;
     }
 
-    .spectator-view {
-        #navbar-middle {
-            margin-right: 65px;
-        }
-
-        #gear-menu {
-            right: 35px;
-        }
-    }
-
-    #navbar-middle {
-        margin-right: 97px;
+    .column-left.expanded .left-sidebar-navigation-area {
+        margin-top: 10px;
     }
 
     .nav .dropdown-menu {
@@ -3162,18 +3490,17 @@ select.invite-as {
         height: var(--header-height);
     }
 
-    #searchbox_form {
-        height: calc(var(--header-height) - 1px);
-    }
-
     .spectator_narrow_login_button {
         height: var(--header-height) !important;
     }
 
     #streamlist-toggle-button {
         height: var(--header-height);
-        padding-top: 0;
-        padding-bottom: 0;
+    }
+
+    #streamlist-toggle-unreadcount {
+        /* Adjust in response to shorter navbar. */
+        top: 5px;
     }
 
     .column-right #personal-menu .header-button-avatar {
@@ -3300,13 +3627,6 @@ select.invite-as {
         }
     }
 
-    .dropdown-list-item-common-styles {
-        padding: 3px 10px 3px 8px;
-        font-weight: 400;
-        line-height: 20px;
-        white-space: normal;
-    }
-
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -3320,35 +3640,43 @@ select.invite-as {
                 background-color: hsl(220deg 12% 4.9% / 5%);
                 outline: none;
             }
+        }
 
-            .list-item a {
-                display: block;
-                color: hsl(0deg 0% 20%);
-
-                .stream-privacy-type-icon {
-                    font-size: 13px;
-                    width: 13px;
-                    height: 13px;
-                    padding-right: 2px;
-                }
-
-                &:hover {
-                    text-decoration: none;
-                    background-color: hsl(220deg 12% 4.9% / 5%);
-                }
-
-                &:focus {
-                    text-decoration: none;
-                    outline: none;
-                }
-            }
+        .no-dropdown-items {
+            color: hsl(0deg 0% 60%);
+            display: none;
         }
     }
+}
 
-    .no-dropdown-items {
-        color: hsl(0deg 0% 60%);
-        display: none;
+.dropdown-list-container .dropdown-list-item-common-styles {
+    display: block;
+    color: hsl(0deg 0% 20%);
+    padding: 3px 10px 3px 8px;
+    font-weight: 400;
+    line-height: 20px;
+    white-space: normal;
+
+    .stream-privacy-type-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        padding-right: 2px;
     }
+
+    &:hover {
+        text-decoration: none;
+        background-color: hsl(220deg 12% 4.9% / 5%);
+    }
+
+    &:focus {
+        text-decoration: none;
+        outline: none;
+    }
+}
+
+.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+    font-weight: 700;
 }
 
 #scheduled_messages_overlay .error-icon-message-recipient {
@@ -3384,10 +3712,21 @@ select.invite-as {
 
 .header-main .column-right {
     display: flex;
-    width: auto;
+    /* Make the top navbar right column its full width,
+       less 7px of space on the left and right. */
+    width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
-    margin-right: 7px;
+    /* Move the column to the right with absolute
+       positioning, rather than margin. */
+    right: 7px;
+
+    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
+    }
 
     & a:focus {
         filter: none;
@@ -3401,9 +3740,6 @@ select.invite-as {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
-    top: 0;
-    right: 0;
 
     &:hover,
     &:focus {
@@ -3431,8 +3767,15 @@ select.invite-as {
         font-size: 18px;
     }
 
+    .zulip-icon-help-bigger,
     .zulip-icon-triple-users {
         font-size: 20px;
+    }
+
+    .zulip-icon-help {
+        position: relative;
+        top: 0.5px;
+        right: -0.5px;
     }
 }
 
@@ -3444,14 +3787,5 @@ select.invite-as {
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
-    }
-}
-
-.keyboard-shortcut-option {
-    & span.tooltip-hotkey-hint {
-        margin-left: auto;
-        padding: 0 4px;
-        color: var(--color-hotkey-hint);
-        border-color: var(--color-hotkey-hint);
     }
 }

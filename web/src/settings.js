@@ -109,7 +109,6 @@ export function build_page() {
         full_name: people.my_full_name(),
         date_joined_text: get_parsed_date_of_joining(),
         page_params,
-        development: page_params.development_environment,
         enable_sound_select:
             user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
@@ -124,7 +123,7 @@ export function build_page() {
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
-        default_view_values: settings_config.default_view_values,
+        web_home_view_values: settings_config.web_home_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications(user_settings).general_settings,
         notification_settings: settings_config.all_notifications(user_settings).settings,

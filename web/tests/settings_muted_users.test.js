@@ -24,6 +24,7 @@ run_test("settings", ({override}) => {
     override(list_widget, "create", (_$container, list) => {
         assert.deepEqual(list, [
             {
+                date_muted: 1577836800000,
                 date_muted_str: "Jan 1, 2020",
                 user_id: 5,
                 user_name: "Feivel Fiverson",

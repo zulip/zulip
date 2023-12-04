@@ -4,7 +4,7 @@ import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
 type List<Key> = {
-    scroll_container_sel: string;
+    scroll_container_selector: string;
     find_li(opts: {key: Key; force_render: boolean}): JQuery;
     first_key(): Key | undefined;
     prev_key(key: Key): Key | undefined;
@@ -69,7 +69,7 @@ export class ListCursor<Key> {
     }
 
     adjust_scroll($li: JQuery): void {
-        const $scroll_container = $(this.list.scroll_container_sel);
+        const $scroll_container = $(this.list.scroll_container_selector);
         scroll_util.scroll_element_into_container($li, $scroll_container);
     }
 

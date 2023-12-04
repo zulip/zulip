@@ -67,10 +67,6 @@ export function add(bot_data: ServerAddBotData): void {
     services.set(clean_bot.user_id, bot_services);
 }
 
-export function deactivate(bot_id: number): void {
-    bots.get(bot_id)!.is_active = false;
-}
-
 export function del(bot_id: number): void {
     bots.delete(bot_id);
     services.delete(bot_id);

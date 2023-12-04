@@ -2,11 +2,13 @@
   "data": [
     {
       "account_country": "US",
-      "account_name": "NORMALIZED-1",
+      "account_name": "Kandra Labs, Inc.",
       "account_tax_ids": null,
       "amount_due": 120000,
       "amount_paid": 0,
       "amount_remaining": 120000,
+      "amount_shipping": 0,
+      "application": null,
       "application_fee_amount": null,
       "attempt_count": 0,
       "attempted": false,
@@ -18,7 +20,7 @@
       "billing_reason": "manual",
       "charge": null,
       "collection_method": "charge_automatically",
-      "created": 1010000008,
+      "created": 1010000007,
       "currency": "usd",
       "custom_fields": null,
       "customer": "cus_NORMALIZED0001",
@@ -36,16 +38,20 @@
       "discount": null,
       "discounts": [],
       "due_date": null,
+      "effective_at": 1000000000,
       "ending_balance": 0,
       "footer": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9CdWpqYU1MU1JNY1o4YW9odW9xNVFtaUx3b1hk0100H8f4zFc8",
+      "from_invoice": null,
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpZQ0xOalU3MHBLS0hZYnBOa0h6TExEbXN5dmxMLDkyMDM1MDA00200new8HKrD?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9CdWpqYU1MU1JNY1o4YW9odW9xNVFtaUx3b1hk0100H8f4zFc8/pdf",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpZQ0xOalU3MHBLS0hZYnBOa0h6TExEbXN5dmxMLDkyMDM1MDA00200new8HKrD/pdf?s=ap",
       "last_finalization_error": null,
+      "latest_revision": null,
       "lines": {
         "data": [
           {
             "amount": 120000,
+            "amount_excluding_tax": 120000,
             "currency": "usd",
             "description": "Zulip Cloud Standard - renewal",
             "discount_amounts": [],
@@ -64,8 +70,9 @@
             "price": {
               "active": false,
               "billing_scheme": "per_unit",
-              "created": 1010000009,
+              "created": 1010000008,
               "currency": "usd",
+              "custom_unit_amount": null,
               "id": "price_NORMALIZED00000000000002",
               "livemode": false,
               "lookup_key": null,
@@ -82,11 +89,15 @@
               "unit_amount_decimal": "8000"
             },
             "proration": false,
+            "proration_details": {
+              "credited_items": null
+            },
             "quantity": 15,
             "subscription": null,
             "tax_amounts": [],
             "tax_rates": [],
-            "type": "invoiceitem"
+            "type": "invoiceitem",
+            "unit_amount_excluding_tax": "8000"
           }
         ],
         "has_more": false,
@@ -101,8 +112,10 @@
       "object": "invoice",
       "on_behalf_of": null,
       "paid": false,
+      "paid_out_of_band": false,
       "payment_intent": "pi_NORMALIZED00000000000002",
       "payment_settings": {
+        "default_mandate": null,
         "payment_method_options": null,
         "payment_method_types": null
       },
@@ -112,6 +125,15 @@
       "pre_payment_credit_notes_amount": 0,
       "quote": null,
       "receipt_number": null,
+      "rendering": {
+        "amount_tax_display": null,
+        "pdf": {
+          "page_size": "letter"
+        }
+      },
+      "rendering_options": null,
+      "shipping_cost": null,
+      "shipping_details": null,
       "starting_balance": 0,
       "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
@@ -122,10 +144,16 @@
         "voided_at": null
       },
       "subscription": null,
+      "subscription_details": {
+        "metadata": null
+      },
       "subtotal": 120000,
+      "subtotal_excluding_tax": 120000,
       "tax": null,
+      "test_clock": null,
       "total": 120000,
       "total_discount_amounts": [],
+      "total_excluding_tax": 120000,
       "total_tax_amounts": [],
       "transfer_data": null,
       "webhooks_delivered_at": 1000000000

@@ -4,7 +4,9 @@ a website or service is up and running or down.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. On your Insping **Dashboard**, click on **Integrations**. Click
    on **Create Webhook**.

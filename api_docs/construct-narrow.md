@@ -105,6 +105,12 @@ help center because they are primarily useful to API clients:
 * `dm-including:1234`: Search all direct messages (1-on-1 and group)
   that include you and user ID `1234`.
 
+!!! tip ""
+
+    A user ID can be found by [viewing a user's profile][view-profile]
+    in the web or desktop apps. A stream ID can be found when [browsing
+    streams][browse-streams] in the web app via the URL.
+
 The operands for these search options must be encoded either as an
 integer ID or a JSON list of integer IDs. For example, to query
 messages sent by a user 1234 to a direct message thread with yourself,
@@ -122,3 +128,6 @@ user 1234, and user 5678, the correct JSON-encoded query is:
     }
 ]
 ```
+
+[view-profile]: /help/view-someones-profile
+[browse-streams]: /help/browse-and-subscribe-to-streams

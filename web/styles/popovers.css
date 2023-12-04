@@ -4,6 +4,8 @@
   popovers. (Tippy tooltips are defined in tooltips.css).
 */
 .tippy-box[data-theme="light-border"] {
+    background-color: var(--color-background-popover);
+
     .sp-input {
         /* Override incorrect color for text in dark theme. */
         color: var(--color-text-default) !important;
@@ -27,6 +29,38 @@
         /* Override bootstrap defaults */
         .nav-list > li > a {
             padding: 3px 15px;
+        }
+    }
+
+    &[data-placement^="top"] {
+        > .tippy-arrow {
+            &::before {
+                border-top-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="bottom"] {
+        > .tippy-arrow {
+            &::before {
+                border-bottom-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="left"] {
+        > .tippy-arrow {
+            &::before {
+                border-left-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="right"] {
+        > .tippy-arrow {
+            &::before {
+                border-right-color: var(--color-background-popover);
+            }
         }
     }
 }
@@ -323,7 +357,8 @@ ul {
    from the right sidebar; otherwise, it will have the
    user-card-popover-root class instead. */
 .user-sidebar-popover-root {
-    width: 240px;
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
 
     margin: -14px;
     padding: 0;
@@ -341,7 +376,8 @@ ul {
 .group-info-popover,
 .message-user-card-popover-root,
 .user-card-popover-root {
-    width: 240px;
+    /* 240px (width of avatar) + 2px (1px for each border) */
+    width: 242px;
     padding: 0;
 }
 
@@ -506,8 +542,18 @@ ul {
     .user_profile_manage_own_edit_button,
     .user_profile_manage_others_edit_button {
         width: 25px;
+        height: 14px;
         text-align: center;
         font-size: 18px;
+    }
+
+    #user_profile_manage_own_edit_link {
+        height: 25px;
+    }
+
+    .deactivated-user-icon {
+        margin: -1px;
+        vertical-align: middle;
     }
 
     .user_profile_name {
@@ -1026,39 +1072,50 @@ ul {
 }
 
 .visibility_policy_popover {
-    padding-left: 4px;
-    padding-right: 4px;
+    padding: 0 4px;
+
+    .visibility_policy_popover_container {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding: 1px;
+        background-color: var(--color-background-tab-picker-container);
+        border-radius: 5px;
+    }
 
     .visibility_policy_option {
         padding: 2px 13px;
-        background-color: hsl(0deg 0% 0% / 7%);
-        border-radius: 2px;
-        border: 1px solid transparent;
-
-        &:hover:not(.selected_visibility_policy) {
-            background-color: hsl(0deg 0% 100%);
-            border: 1px solid hsl(0deg 0% 0% / 30%);
-        }
+        border-radius: 4px;
 
         .icon_and_text {
             display: flex;
             align-items: center;
             text-decoration: none;
+            color: var(--color-tab-picker-icon);
+            gap: 10px;
 
-            &:hover {
-                background-color: transparent;
+            &i {
+                font-size: 16px;
             }
         }
 
-        .icon_and_text i {
-            font-size: 17px;
-            margin-right: 10px;
+        &:hover:not(.selected_visibility_policy) {
+            background-color: var(
+                --color-background-tab-picker-tab-option-hover
+            );
+        }
+
+        &:active:not(.selected_visibility_policy) {
+            outline: 1px solid var(--color-outline-tab-picker-tab-option);
+            outline-offset: -1px;
         }
     }
 
     .selected_visibility_policy {
-        background-color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(0deg 0% 0% / 20%);
+        background-color: var(--color-background-tab-picker-selected-tab);
+        outline: 1px solid var(--color-outline-tab-picker-tab-option);
+        outline-offset: -1px;
+        z-index: 1;
     }
 }
 
@@ -1152,9 +1209,10 @@ ul {
         flex-flow: row nowrap;
         align-items: center;
         gap: 5px;
-        padding: 5px 10px;
+        padding: 0 10px;
         font-size: 15px;
         line-height: 16px;
+        height: 26px;
 
         .navbar-dropdown-icon {
             width: 16px;
@@ -1184,12 +1242,7 @@ ul {
         .navbar-dropdown-menu-link {
             color: var(--color-text-dropdown-menu) !important;
             text-decoration: none;
-            display: flex;
-            flex-flow: row nowrap;
             flex-grow: 1;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
 
             &:hover {
                 background: var(--color-background-hover-dropdown-menu);
@@ -1209,15 +1262,6 @@ ul {
         }
     }
 
-    .clear_status {
-        margin-left: auto;
-        color: hsl(0deg 0% 40%) !important;
-
-        &:hover {
-            text-decoration: none;
-        }
-    }
-
     .status_emoji {
         width: 16px;
         height: 16px;
@@ -1227,6 +1271,40 @@ ul {
         position: relative;
         top: -1px;
     }
+}
+
+.personal-menu-clear-status {
+    display: flex;
+    padding: 3px;
+    align-items: center;
+    margin-left: auto;
+    color: hsl(0deg 0% 40%) !important;
+    border-radius: 4px;
+    opacity: 0.5;
+
+    &:hover,
+    &:focus {
+        opacity: 0.9;
+        text-decoration: none;
+    }
+}
+
+.personal-menu-clear-status .personal-menu-clear-status-icon {
+    top: 0;
+}
+
+.personal-menu-status-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.personal-menu-status-text {
+    color: var(--color-text-personal-menu-some-status);
+}
+
+.personal-menu-no-status-text {
+    color: var(--color-text-personal-menu-no-status);
 }
 
 #gear-menu-dropdown {
@@ -1310,6 +1388,10 @@ ul {
     }
 }
 
+#help-menu-dropdown {
+    padding-bottom: 5px;
+}
+
 ul.navbar-dropdown-menu-outer-list {
     list-style: none;
     margin: 0;
@@ -1338,4 +1420,17 @@ ul.navbar-dropdown-menu-outer-list {
     #gear-menu-dropdown .gear-menu-select-dark-theme {
         display: block;
     }
+}
+
+.navbar-dropdown-hotkey-hint {
+    color: var(--color-hotkey-hint);
+    text-align: center;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 14px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid var(--color-hotkey-hint);
+    margin-left: auto;
 }

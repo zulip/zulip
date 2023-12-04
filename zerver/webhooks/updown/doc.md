@@ -2,7 +2,9 @@ See Updown reports in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to [your Updown settings page](https://updown.io/settings/edit).
 

@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from analytics.lib.counts import COUNT_STATS, CountStat
+from analytics.lib.counts import ALL_COUNT_STATS, CountStat
 from analytics.models import installation_epoch
 from zerver.lib.timestamp import TimeZoneNotUTCError, floor_to_day, floor_to_hour, verify_UTC
 from zerver.models import Realm
@@ -44,7 +44,7 @@ class Command(BaseCommand):
 
         warning_unfilled_properties = []
         critical_unfilled_properties = []
-        for property, stat in COUNT_STATS.items():
+        for property, stat in ALL_COUNT_STATS.items():
             last_fill = stat.last_successful_fill()
             if last_fill is None:
                 last_fill = installation_epoch()

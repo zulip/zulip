@@ -168,7 +168,14 @@
               in, e.g., a group DM. */
             display: flex;
             align-items: center;
+            /* Ensure horizontal centering, too. */
+            justify-content: center;
+            /* Disallow shrinking or growth, which can cause
+               little layout shifts with pills. */
+            flex: 0 0 auto;
             height: var(--compose-recipient-box-min-height);
+            /* Round up natural width to next whole pixel. */
+            width: 23px;
 
             .fa-angle-right {
                 font-size: 0.9em;
@@ -229,8 +236,27 @@
         box-shadow: none;
         border: none;
         height: 100%;
-        display: flex;
-        flex-flow: column;
+        display: grid;
+        /* Vlad's design calls for 122px for the send column
+           at its widest; 112px accounts for 6px of gap and
+           4px outside padding.
+
+           TODO: get this value into a CSS variable. */
+        grid-template: minmax(0, 1fr) 32px / minmax(0, 1fr) 112px;
+        grid-template-areas:
+            "compose-textarea message-send-controls-container"
+            "message-formatting-controls-container . ";
+        gap: 4px 6px;
+
+        @media ((width >= $sm_min) and (width < $mc_min)) {
+            /* Drop to a 62px wide send column. */
+            grid-template-columns: minmax(0, 1fr) 62px;
+        }
+
+        @media (width < $sm_min) {
+            /* Drop to a 28px wide send column. */
+            grid-template-columns: minmax(0, 1fr) 28px;
+        }
     }
 
     .message_content {
@@ -238,28 +264,52 @@
     }
 }
 
-#below-compose-content {
+#compose-textarea,
+#preview-message-area-container {
+    grid-area: compose-textarea;
+    /* When the compose box is full screen, this
+       auto height will kick in and make sure that
+       the textarea opens to fill its whole grid
+       area. */
+    height: auto;
+}
+
+#preview-message-area-container {
+    /* Keep preview container invisible outside
+       of preview mode. */
+    display: none;
+}
+
+#message-send-controls-container {
+    grid-area: message-send-controls-container;
+    /* A columnar flex does a nice job here
+       holding Drafts to the top of the
+       container, and the send button to
+       the bottom--even as the compose box
+       expands or contracts. */
     display: flex;
     flex-direction: column;
-    width: 100%;
-    margin-top: 6px;
-    margin-bottom: -2px;
+    /* We add 6px of margin to the grid-gap of
+       6px, for 12px of space between the Send
+       button and the textarea. */
+    margin-left: 6px;
 
-    .compose_bottom_top_container {
-        display: flex;
-    }
-
-    .compose_bottom_bottom_container {
-        display: flex;
-        justify-content: space-between;
+    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+        margin-left: 0;
     }
 }
 
-#compose_limit_indicator {
-    margin-right: 8px;
+#message-formatting-controls-container {
+    grid-area: message-formatting-controls-container;
+}
+
+#compose-limit-indicator {
     font-size: 12px;
     color: hsl(39deg 100% 50%);
-    align-self: center;
+
+    /* Keep the limit indicator
+       just above the send button */
+    margin-top: auto;
 
     &.over_limit {
         color: hsl(0deg 76% 65%);
@@ -285,13 +335,34 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 5px;
+    /* Matched to 6px grid-gap on .messagebox grid. */
+    padding-bottom: 6px;
 }
 
 #compose_top_right {
     display: flex;
     align-items: center;
     height: var(--compose-recipient-box-min-height);
+    /* Align to compose controls; that's 112px width,
+       minus 23px for the narrow indicator, but then
+       add back 6px of grid gap for 95px here.
+
+       TODO: Make variables here; expanded use of grid
+       on the compose box will make these unnecessary,
+       eventually. */
+    width: calc(112px - 23px + 6px);
+    justify-content: flex-end;
+
+    @media ((width >= $sm_min) and (width < $mc_min)) {
+        /* Align to compose controls at narrower widths */
+        width: calc(62px - 23px + 6px);
+    }
+
+    @media (width < $sm_min) {
+        /* Don't attempt to control the width
+           at narrowest widths. */
+        width: auto;
+    }
 
     & button {
         background: transparent;
@@ -763,17 +834,70 @@ textarea.new_message_textarea,
     width: 100%;
 }
 
-#compose-send-button {
-    padding: 3px 12px;
+.compose-send-or-save-button {
+    border-radius: 4px;
+    border: 0;
     margin-bottom: 0;
-    font-weight: 600;
-    font-size: 0.9em;
-    border-radius: 4px 0 0 4px;
+    color: var(--color-compose-send-button-icon-color);
+    background-color: var(--color-compose-send-button-background);
+
+    &:active {
+        transition: all 80ms;
+        transform: scale(0.96);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        border: 1px solid var(--color-compose-send-button-focus-border);
+        box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+
+    &:hover {
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+}
+
+#compose-send-button {
+    width: 74px;
+    height: 28px;
+    /* Allow to grow but not shrink */
+    flex: 1 0 auto;
+    /* Override inherited styles
+       so that flexbox can do the
+       job of positioning the icon. */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Flex items respect z-index values;
+       this is needed to keep the send
+       button over top of the vdots
+       background */
+    z-index: 1;
+
+    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+        /* Drop to a square button,
+           and don't flex any wider. */
+        width: 30px;
+        flex-grow: 0;
+    }
+
+    .zulip-icon-send {
+        display: block;
+        font-size: 17px;
+        line-height: 16px;
+    }
 
     .loader {
         display: none;
-        position: relative;
-        top: -6px;
     }
 }
 
@@ -816,37 +940,12 @@ textarea.new_message_textarea,
     }
 }
 
-.open_enter_sends_dialog {
-    font-size: 12px;
-    height: 14px;
-    padding-left: 4px;
-    opacity: 0.7;
-    margin-bottom: 5px;
-    position: relative;
-    top: -2px;
-    cursor: pointer;
-
-    @media (width < $mm_min) {
-        font-size: 11px;
-    }
-
-    & kbd {
-        padding: 0 4px;
-    }
-
-    &:hover {
-        opacity: 1;
-    }
-
-    .enter_sends_true,
-    .enter_sends_false {
-        display: none;
-    }
-
-    & i {
-        padding-left: 3px;
-        font-size: 12px;
-        font-weight: 600;
+.drafts-item-in-popover {
+    display: none;
+    /* Only show the Drafts item in the popover when it's not visible
+       in the compose box. */
+    @media (width < $sm_min) {
+        display: block;
     }
 }
 
@@ -867,31 +966,34 @@ textarea.new_message_textarea,
     min-height: var(--compose-recipient-box-min-height);
 }
 
-.compose_control_buttons_container {
-    margin-right: auto;
+.compose-control-buttons-container {
     display: flex;
-    gap: 4px;
     align-items: center;
 
-    /* We use the selector in this manner to maintain specificity. */
-    .compose_control_button_container .compose_gif_icon {
-        font-size: 22px;
-
-        /* Remove top and bottom padding. This is necessary
-         * because `compose_gif_icon` is no longer a flex item.  */
-        padding: 0 5px;
-    }
-
     .compose_control_button {
-        padding: 5px;
+        height: 28px;
+        width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         opacity: 0.7;
         color: inherit;
         text-decoration: none;
-        font-size: 17px;
-        text-align: center;
+        font-size: 22px;
+        border-radius: 3px;
 
         &:hover {
             opacity: 1;
+            background-color: hsl(0deg 0% 0% / 10%);
+        }
+    }
+
+    .compose_control_button_container.disabled-on-hover:hover {
+        opacity: 0.3;
+        cursor: not-allowed;
+
+        .compose_control_button {
+            pointer-events: none;
         }
     }
 
@@ -916,16 +1018,17 @@ textarea.new_message_textarea,
 
         .compose_control_menu {
             opacity: 1;
-        }
-    }
+            display: none;
 
-    .hide-sm,
-    .hide-lg {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 0;
-        margin: 0;
+            /* The media query below handles the hiding and showing of the
+            vdot menu icon, so that it is hidden when all compose buttons fit
+            in the main row below the compose box. So, this is the same as
+            the media query for .show_popover_buttons. */
+
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+                display: flex;
+            }
+        }
     }
 
     .divider {
@@ -947,21 +1050,74 @@ textarea.new_message_textarea,
         font-size: 20px;
         line-height: 17px;
     }
+
+    .show_popover_buttons {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* We use this class for the div containing those compose buttons, which
+        we hide and show in a popover instead when they no longer fit in a
+        single row. The media query below handles the hiding and showing of the
+        buttons from the main row of compose buttons below the compose box. */
+
+        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            display: none;
+        }
+    }
+
+    .show_popover_buttons_2 {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* This is similar to show_popover_buttons, but it's only for those
+        compose buttons that we hide, and show in the popover only when the
+        screen gets extremely narrow. */
+
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+            display: none;
+        }
+    }
+
+    &.show_in_popover {
+        display: none;
+
+        /* This is to show the popover 2 buttons in the popover, only when
+        they are hidden in the main row below the compose box. */
+
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+            display: flex;
+        }
+    }
 }
 
-.compose_right_float_container {
+.message-send-controls {
     display: flex;
-    flex-direction: row;
-    white-space: nowrap;
-    margin-top: 2px;
-    height: 24px;
 
-    &.disabled-compose-send-button-container {
+    @media (width < $sm_min) {
+        /* At small widths, we display the
+           diminutive Send button and vdots
+           in a column, using `column-reverse`
+           to put the vdots above Send. */
+        flex-direction: column-reverse;
+    }
+
+    &.disabled-message-send-controls {
         cursor: not-allowed;
 
         & button {
             pointer-events: none;
+        }
+
+        #compose-send-button {
             background-color: hsl(0deg 0% 65%);
+        }
+
+        #send_later {
+            color: hsl(0deg 0% 65%);
         }
     }
 }
@@ -979,7 +1135,6 @@ textarea.new_message_textarea,
     /* minus 5px padding. */
     width: calc(100% - 12px);
     padding: 5px;
-    margin-top: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
     /* the minimum height the textarea collapses to. */
@@ -1037,7 +1192,7 @@ textarea.new_message_textarea,
     & ul {
         list-style: none;
         margin: 0;
-        background: hsl(0deg 0% 100%);
+        background-color: var(--color-background-popover);
     }
 
     .typeahead-header {
@@ -1064,31 +1219,129 @@ textarea.new_message_textarea,
     margin-right: 4px;
 }
 
-/* `^` icon located next to `Send` / `Scheduled` button which shows
+/* Class for send-area buttons, such as
+   Drafts and the send-adjacent vdots */
+.send-control-button {
+    border: 0;
+    outline: 0;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    color: var(--color-compose-send-control-button);
+    background-color: var(--color-compose-send-control-button-background);
+    font-weight: 450;
+
+    &:active {
+        transition: all 80ms;
+        transform: scale(0.96);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+
+    &:hover {
+        /* We need to use !important here, regrettably, to keep the default
+           dark-mode hover colors from showing. */
+        color: var(--color-compose-send-control-button-interactive) !important;
+        background-color: var(
+            --color-compose-send-control-button-background-interactive
+        );
+        text-decoration: none;
+    }
+}
+
+/* vdots icon located next to `Send` button which shows
    options to schedule the message. */
 #send_later {
     display: flex;
     align-items: center;
-    float: right;
-    color: hsl(0deg 0% 100%);
+    justify-content: center;
+    width: 40px;
+    /* Allow to grow but not shrink */
+    flex: 1 0 auto;
+    /* TODO: Set this as a variable shared with
+       the send button. */
+    height: 28px;
+    /* Make the vdots appear to extend from
+       beneath the send button when an
+       interactive background is present.
+       Compensatory padding for this negative
+       margin is handled on the vdots icon
+       below, so as to make for a maximum
+       clickable vdots area. */
+    margin-left: -4px;
     border-radius: 0 4px 4px 0;
-    padding: 0;
-    margin: 0;
+    /* Flex items respect z-index values;
+       this is needed to keep the vdots
+       background beneath the send button. */
+    z-index: 0;
+
+    &:focus-visible {
+        /* Use a border, not an outline, to preserve the
+           conjoined layout with the Send button. Flexbox
+           will handle the dimension change, so there won't
+           be any movement of the vdots in this state. */
+        outline: 0;
+        border: 2px solid var(--color-outline-focus);
+    }
+
+    @media ((width >= $sm_min) and (width < $mc_min)) {
+        width: 32px;
+    }
+
+    @media (width < $sm_min) {
+        /* Drop to a square, rounded button. */
+        width: 30px;
+        margin-left: 0;
+        border-radius: 4px;
+    }
 
     .zulip-icon {
-        padding: 5px 3px;
+        padding: 5px 0 5px 4px;
         font-size: 17px;
+        flex-grow: 1;
     }
+}
 
-    .separator-line {
-        background-color: hsl(0deg 0% 100% / 65%);
-        height: 70%;
-        width: 1px;
-    }
+#compose-drafts-button {
+    /* Use border-box sizing to make
+       width calculations more predictable
+       in a flex context. */
+    box-sizing: border-box;
+    /* In a columnar flex, we need to
+       use alignment to keep the Drafts
+       button from expanding the full
+       width of the column. */
+    align-self: flex-start;
+    /* Keep the Drafts button text
+       aligned with the Send button's
+       lefthand edge */
+    padding: 0 8px;
+    margin-left: -8px;
+    /* Allow the button to occupy as much
+       as 100% of the container width, plus
+       the 8px from the negative left margin. */
+    max-width: calc(100% + 8px);
+    /* Set an ellipsis when the translated
+       version of `Drafts` exceeds the width,
+       and keep button text to a single line. */
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
 
-    &:hover,
-    &:focus {
-        box-shadow: none;
+    @media (width < $mc_min) {
+        margin-left: 0;
+        /* With no negative left margin,
+           hold the max width to 100%. */
+        max-width: 100%;
+        /* Align the `Drafts` text with the
+           send icon below. */
+        padding: 0 5px;
     }
 }
 
@@ -1127,16 +1380,43 @@ textarea.new_message_textarea,
 
     #compose-textarea,
     #preview_message_area {
+        /* When in full screen, override max-height
+           properties set from manually resizing. */
+        max-height: none !important;
+    }
+
+    #compose-textarea {
+        /* Additionally, override the height properties
+           on the textarea. This is essential if the
+           textarea has been manually resized prior
+           to going into fullscreen. */
+        height: auto !important;
+    }
+
+    #preview_message_area {
         /* Setting height to 0 is necessary to make the flex+Simplebar
            combination work correctly, without pushing the compose
            controls offscreen when previewing a very tall message. */
-        max-height: none !important;
         height: 0;
         flex: 1;
     }
 }
 
 .preview_mode {
+    #preview-message-area-container {
+        /* Maintain same top alignment as the
+           compose textarea. */
+        margin-top: 5px;
+        /* When in preview mode, we display the
+           preview container as a columnar flexbox.
+           This containing element is necessary
+           because Simplebar on its own will cause
+           a grid blowout despite a minmax(0, 1fr)
+           row definition. */
+        display: flex;
+        flex-flow: column;
+    }
+
     .preview_mode_disabled {
         cursor: not-allowed;
         opacity: 0.3;

@@ -26,7 +26,7 @@ export type UserSettings = (StreamNotificationSettings &
     FollowedTopicNotificationSettings) & {
     color_scheme: number;
     default_language: string;
-    default_view: string;
+    web_home_view: string;
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
     dense_mode: boolean;
@@ -39,7 +39,7 @@ export type UserSettings = (StreamNotificationSettings &
     enable_marketing_emails: boolean;
     enable_online_push_notifications: boolean;
     enter_sends: boolean;
-    escape_navigates_to_default_view: boolean;
+    web_escape_navigates_to_home_view: boolean;
     fluid_layout_width: boolean;
     high_contrast_mode: boolean;
     message_content_in_email_notifications: boolean;
@@ -58,6 +58,7 @@ export type UserSettings = (StreamNotificationSettings &
     send_read_receipts: boolean;
     automatically_follow_topics_policy: number;
     automatically_unmute_topics_in_muted_streams_policy: number;
+    timezone: string;
 };
 
 export let user_settings: UserSettings;

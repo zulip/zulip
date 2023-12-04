@@ -6,6 +6,7 @@ import $ from "jquery";
 
 import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
+import {buddy_list} from "./buddy_list";
 import * as compose_state from "./compose_state";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
@@ -21,6 +22,7 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
+import * as stream_events from "./stream_events";
 
 export const update_person = function update(person) {
     const person_obj = people.maybe_get_user_by_id(person.user_id);
@@ -134,5 +136,20 @@ export const update_person = function update(person) {
 
     if (Object.hasOwn(person, "bot_owner_id")) {
         person_obj.bot_owner_id = person.bot_owner_id;
+    }
+
+    if (Object.hasOwn(person, "is_active")) {
+        if (person.is_active) {
+            people.add_active_user(person_obj);
+        } else {
+            people.deactivate(person_obj);
+            stream_events.remove_deactivated_user_from_all_streams(person.user_id);
+            settings_users.update_view_on_deactivate(person.user_id);
+            buddy_list.maybe_remove_user_id({user_id: person.user_id});
+        }
+        settings_account.maybe_update_deactivate_account_button();
+        if (people.user_is_bot(person.user_id)) {
+            settings_users.update_bot_data(person.user_id);
+        }
     }
 };

@@ -26,6 +26,7 @@ IGNORED_PHRASES = [
     r"IP",
     r"JSON",
     r"Kerberos",
+    r"LinkedIn",
     r"LDAP",
     r"Markdown",
     r"OTP",
@@ -46,6 +47,7 @@ IGNORED_PHRASES = [
     r"Zulip Server",
     r"Zulip Account Security",
     r"Zulip Security",
+    r"Zulip Cloud",
     r"Zulip Cloud Standard",
     r"BigBlueButton",
     # Code things
@@ -74,6 +76,7 @@ IGNORED_PHRASES = [
     r"user@example\.com",
     r"acme",
     # Fragments of larger strings
+    r"is …",
     r"your subscriptions on your Streams page",
     r"Add global time<br />Everyone sees global times in their own time zone\.",
     r"user",

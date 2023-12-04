@@ -11,7 +11,6 @@ import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
-import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
@@ -22,6 +21,7 @@ import * as spectators from "./spectators";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
+import * as util from "./util";
 
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
@@ -282,7 +282,7 @@ function filter_emojis() {
 }
 
 function toggle_reaction(emoji_name, event) {
-    const message_id = message_lists.current.selected_id();
+    const message_id = current_message_id;
     const message = message_store.get(message_id);
     if (!message) {
         blueslip.error("reactions: Bad message id", {message_id});
@@ -309,6 +309,7 @@ function is_status_emoji(emoji) {
 function process_enter_while_filtering(e) {
     if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
+        e.stopPropagation();
         const $first_emoji = get_rendered_emoji(0, 0);
         if ($first_emoji) {
             if (is_composition($first_emoji)) {
@@ -639,9 +640,6 @@ function get_default_emoji_popover_options() {
             ],
         },
         onCreate(instance) {
-            if (current_message_id) {
-                message_lists.current.select_id(current_message_id);
-            }
             emoji_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
@@ -672,7 +670,12 @@ function get_default_emoji_popover_options() {
             refill_section_head_offsets($popover);
             show_emoji_catalog();
             register_popover_events($popover);
-            change_focus_to_filter();
+            // Don't focus filter box on mobile since it leads to window resize due
+            // to keyboard being open and scrolls the emoji popover out of view while
+            // still open in Chrome Android and can hide it based on device height in Firefox Android.
+            if (!util.is_mobile()) {
+                change_focus_to_filter();
+            }
         },
         onHidden() {
             hide_emoji_popover();
@@ -789,10 +792,10 @@ function register_click_handlers() {
         );
     });
 
-    $("body").on("click", "#set-user-status-modal #selected_emoji", (e) => {
+    $("body").on("click", "#set-user-status-modal #selected_emoji .status-emoji-wrapper", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        toggle_emoji_popover(e.target, undefined, {placement: "bottom"});
+        toggle_emoji_popover(e.currentTarget, undefined, {placement: "bottom"});
         if (is_open()) {
             // Because the emoji picker gets drawn on top of the user
             // status modal, we need this hack to make clicking outside
@@ -804,6 +807,12 @@ function register_click_handlers() {
             );
         }
     });
+
+    $("body").on(
+        "keydown",
+        "#set-user-status-modal #selected_emoji .status-emoji-wrapper",
+        ui_util.convert_enter_to_click,
+    );
 
     $(document).on("click", ".emoji-popover-emoji.status-emoji", function (e) {
         e.preventDefault();

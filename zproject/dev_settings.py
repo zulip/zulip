@@ -7,6 +7,9 @@ from zproject.settings_types import SCIMConfigDict
 
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
+# Initiatize TEST_SUITE early, so other code can rely on the setting.
+TEST_SUITE = os.getenv("ZULIP_TEST_SUITE") == "true"
+
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
 # chdir without having problems accessing it.  Unfortunately, this
 # means we need a duplicate definition of DEPLOY_ROOT with the one in
@@ -99,6 +102,16 @@ SYSTEM_ONLY_REALMS: Set[str] = set()
 USING_PGROONGA = True
 # Flush cache after migration.
 POST_MIGRATION_CACHE_FLUSHING = True
+
+# If a sandbox APNs key or cert is provided, use it.
+# To create such a key or cert, see instructions at:
+#   https://github.com/zulip/zulip-mobile/blob/main/docs/howto/push-notifications.md#ios
+_candidate_apns_token_key_file = "zproject/apns-dev-key.p8"
+_candidate_apns_cert_file = "zproject/apns-dev.pem"
+if os.path.isfile(_candidate_apns_token_key_file):
+    APNS_TOKEN_KEY_FILE = _candidate_apns_token_key_file
+elif os.path.isfile(_candidate_apns_cert_file):
+    APNS_CERT_FILE = _candidate_apns_cert_file
 
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
@@ -193,3 +206,12 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
         "name_formatted_included": True,
     }
 }
+
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
+
+# You can uncomment these lines to use the development environment
+# server as a dummy push bouncer for itself, to test functionalities
+# such as register_server or update_analytics_counts management commands
+# or others involving new bouncer-side logic.
+# DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
+# PUSH_NOTIFICATION_BOUNCER_URL = "http://localhost:9991"

@@ -38,6 +38,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
     if (scheduled_msg.type === "stream") {
         compose_args = {
             type: "stream",
+            stream_id: scheduled_msg.to,
             stream: sub_store.maybe_get_stream_name(scheduled_msg.to),
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,

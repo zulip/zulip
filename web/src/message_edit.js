@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
@@ -958,13 +959,13 @@ export function save_message_row_edit($row) {
         changed = old_content !== new_content;
     }
 
-    const already_has_wildcard_mention = message.wildcard_mentioned;
-    if (!already_has_wildcard_mention) {
-        const wildcard_mention = util.find_wildcard_mentions(new_content);
+    const already_has_stream_wildcard_mention = message.stream_wildcard_mentioned;
+    if (!already_has_stream_wildcard_mention) {
+        const stream_wildcard_mention = util.find_stream_wildcard_mentions(new_content);
         const is_stream_message_mentions_valid = compose_validate.validate_stream_message_mentions({
             stream_id,
             $banner_container,
-            wildcard_mention,
+            stream_wildcard_mention,
         });
 
         if (!is_stream_message_mentions_valid) {
@@ -1039,7 +1040,13 @@ export function save_message_row_edit($row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
-            hide_message_edit_spinner($row);
+            // Ordinarily, in a code path like this, we'd make
+            // a call to `hide_message_edit_spinner()`. But in
+            // this instance, we want to avoid a momentary flash
+            // of the Save button text before the edited message
+            // re-renders. Note that any subsequent editing will
+            // create a fresh Save button, without the spinner
+            // class attached.
         },
         error(xhr) {
             if (msg_list === message_lists.current) {
@@ -1069,15 +1076,30 @@ export function save_message_row_edit($row) {
                 }
 
                 hide_message_edit_spinner($row);
-                const message = channel.xhr_error_message("", xhr);
-                const $container = compose_banner.get_compose_banner_container(
-                    $row.find("textarea"),
-                );
-                compose_banner.show_error_message(
-                    message,
-                    compose_banner.CLASSNAMES.generic_compose_error,
-                    $container,
-                );
+                if (xhr.readyState !== 0) {
+                    const $container = compose_banner.get_compose_banner_container(
+                        $row.find("textarea"),
+                    );
+
+                    if (xhr.responseJSON?.code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
+                        const new_row = render_wildcard_mention_not_allowed_error({
+                            banner_type: compose_banner.ERROR,
+                            classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                        });
+                        compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+                        return;
+                    }
+
+                    const message = channel.xhr_error_message(
+                        $t({defaultMessage: "Error editing message"}),
+                        xhr,
+                    );
+                    compose_banner.show_error_message(
+                        message,
+                        compose_banner.CLASSNAMES.generic_compose_error,
+                        $container,
+                    );
+                }
             }
         },
     });
@@ -1330,5 +1352,41 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
             success_cb(message_id);
         },
         error: error_cb,
+    });
+}
+
+export function is_message_oldest_or_newest(
+    stream_id,
+    topic_name,
+    message_id,
+    success_callback,
+    error_callback,
+) {
+    const data = {
+        anchor: message_id,
+        num_before: 1,
+        num_after: 1,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: stream_id},
+            {operator: "topic", operand: topic_name},
+        ]),
+    };
+
+    channel.get({
+        url: "/json/messages",
+        data,
+        success(data) {
+            let is_oldest = true;
+            let is_newest = true;
+            for (const message of data.messages) {
+                if (message.id < message_id) {
+                    is_oldest = false;
+                } else if (message.id > message_id) {
+                    is_newest = false;
+                }
+            }
+            success_callback(is_oldest, is_newest);
+        },
+        error: error_callback,
     });
 }

@@ -68,7 +68,7 @@ people.add_cross_realm_user(welcome_bot);
 function test_ui(label, f) {
     // The sloppy_$ flag lets us reuse setup from prior tests.
     run_test(label, (helpers) => {
-        $("#compose-textarea").val("some message");
+        $("textarea#compose-textarea").val("some message");
         f(helpers);
     });
 }
@@ -178,7 +178,7 @@ test_ui("validate", ({mock_template}) => {
     }
 
     function add_content_to_compose_box() {
-        $("#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("foobarfoobar");
     }
 
     // test validating direct messages
@@ -243,7 +243,7 @@ test_ui("validate", ({mock_template}) => {
     });
     initialize_pm_pill();
     compose_state.private_message_recipient("welcome-bot@example.com");
-    $("#compose-textarea").toggleClass = (classname, value) => {
+    $("textarea#compose-textarea").toggleClass = (classname, value) => {
         assert.equal(classname, "invalid");
         assert.equal(value, true);
     };
@@ -324,46 +324,50 @@ test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
-test_ui("test_wildcard_mention_allowed", () => {
+test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     page_params.user_id = me.user_id;
+
+    // First, check for large streams (>15 subscribers) where the wildcard mention
+    // policy matters.
+    override_rewire(peer_data, "get_subscriber_count", () => 16);
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_everyone.code;
     page_params.is_guest = true;
     page_params.is_admin = false;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.nobody.code;
     page_params.is_admin = true;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_members.code;
     page_params.is_guest = true;
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.is_guest = false;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_moderators_only.code;
     page_params.is_moderator = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.is_moderator = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_admins_only.code;
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // TODO: Add a by_admins_only case when we implement stream-level administrators.
 
     page_params.is_admin = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_full_members.code;
@@ -371,9 +375,18 @@ test_ui("test_wildcard_mention_allowed", () => {
     person.date_joined = new Date(Date.now());
     page_params.realm_waiting_period_threshold = 10;
 
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
+
+    // Now, check for small streams (<=15 subscribers) where the wildcard mention
+    // policy doesn't matter; everyone is allowed to use wildcard mentions.
+    override_rewire(peer_data, "get_subscriber_count", () => 14);
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_admins_only.code;
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
 test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
@@ -400,32 +413,26 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(stream_id, 101);
         return 16;
     });
-    let wildcard_warning_rendered = false;
+    let stream_wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
-    mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
-        wildcard_warning_rendered = true;
+    mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
+        stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
     });
 
-    override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(wildcard_warning_rendered);
+    assert.ok(stream_wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+    mock_template("compose_banner/wildcard_mention_not_allowed_error.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage:
-                    "You do not have permission to use wildcard mentions in this stream.",
-            }),
-        );
+        assert.equal(data.stream_wildcard_mention, "all");
         wildcards_not_allowed_rendered = true;
     });
-    override_rewire(compose_validate, "wildcard_mention_allowed", () => false);
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => false);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });
@@ -546,9 +553,8 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     mock_banners();
     page_params.max_message_length = 10000;
 
-    const $textarea = $("#compose-textarea");
-    const $indicator = $("#compose_limit_indicator");
-    const $send_button = $("#compose-send-button");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
@@ -562,22 +568,26 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     });
 
     // Indicator should show red colored text
+    let limit_indicator_html;
+    mock_template("compose_limit_indicator.hbs", true, (_data, html) => {
+        limit_indicator_html = html;
+    });
     $textarea.val("a".repeat(10000 + 1));
     compose_validate.check_overflow_text();
     assert.ok($indicator.hasClass("over_limit"));
-    assert.equal($indicator.text(), "10001/10000");
+    assert.equal(limit_indicator_html, "10001&ZeroWidthSpace;/10000\n");
     assert.ok($textarea.hasClass("over_limit"));
     assert.ok(banner_rendered);
-    assert.ok($send_button.prop("disabled"));
+    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator should show orange colored text
     banner_rendered = false;
     $textarea.val("a".repeat(9000 + 1));
     compose_validate.check_overflow_text();
     assert.ok(!$indicator.hasClass("over_limit"));
-    assert.equal($indicator.text(), "9001/10000");
+    assert.equal(limit_indicator_html, "9001&ZeroWidthSpace;/10000\n");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!$send_button.prop("disabled"));
+    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(!banner_rendered);
 
     // Indicator must be empty

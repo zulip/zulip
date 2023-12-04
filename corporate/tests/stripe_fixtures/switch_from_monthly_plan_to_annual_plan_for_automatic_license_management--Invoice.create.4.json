@@ -1,10 +1,12 @@
 {
   "account_country": "US",
-  "account_name": "NORMALIZED-1",
+  "account_name": "Kandra Labs, Inc.",
   "account_tax_ids": null,
   "amount_due": 36830,
   "amount_paid": 0,
   "amount_remaining": 36830,
+  "amount_shipping": 0,
+  "application": null,
   "application_fee_amount": null,
   "attempt_count": 0,
   "attempted": false,
@@ -34,16 +36,20 @@
   "discount": null,
   "discounts": [],
   "due_date": null,
+  "effective_at": null,
   "ending_balance": null,
   "footer": null,
+  "from_invoice": null,
   "hosted_invoice_url": null,
   "id": "in_NORMALIZED00000000000004",
   "invoice_pdf": null,
   "last_finalization_error": null,
+  "latest_revision": null,
   "lines": {
     "data": [
       {
         "amount": 36830,
+        "amount_excluding_tax": 36830,
         "currency": "usd",
         "description": "Additional license (Mar 2, 2012 - Feb 2, 2013)",
         "discount_amounts": [],
@@ -64,6 +70,7 @@
           "billing_scheme": "per_unit",
           "created": 1000000000,
           "currency": "usd",
+          "custom_unit_amount": null,
           "id": "price_NORMALIZED00000000000006",
           "livemode": false,
           "lookup_key": null,
@@ -80,11 +87,15 @@
           "unit_amount_decimal": "7366"
         },
         "proration": false,
+        "proration_details": {
+          "credited_items": null
+        },
         "quantity": 5,
         "subscription": null,
         "tax_amounts": [],
         "tax_rates": [],
-        "type": "invoiceitem"
+        "type": "invoiceitem",
+        "unit_amount_excluding_tax": "7366"
       }
     ],
     "has_more": false,
@@ -99,8 +110,10 @@
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
+  "paid_out_of_band": false,
   "payment_intent": null,
   "payment_settings": {
+    "default_mandate": null,
     "payment_method_options": null,
     "payment_method_types": null
   },
@@ -110,6 +123,15 @@
   "pre_payment_credit_notes_amount": 0,
   "quote": null,
   "receipt_number": null,
+  "rendering": {
+    "amount_tax_display": null,
+    "pdf": {
+      "page_size": "auto"
+    }
+  },
+  "rendering_options": null,
+  "shipping_cost": null,
+  "shipping_details": null,
   "starting_balance": 0,
   "statement_descriptor": "Zulip Cloud Standard",
   "status": "draft",
@@ -120,10 +142,16 @@
     "voided_at": null
   },
   "subscription": null,
+  "subscription_details": {
+    "metadata": null
+  },
   "subtotal": 36830,
+  "subtotal_excluding_tax": 36830,
   "tax": null,
+  "test_clock": null,
   "total": 36830,
   "total_discount_amounts": [],
+  "total_excluding_tax": 36830,
   "total_tax_amounts": [],
   "transfer_data": null,
   "webhooks_delivered_at": null

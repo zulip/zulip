@@ -23,6 +23,14 @@ run_test("map", () => {
     );
 });
 
+run_test("size", () => {
+    const ls = new LazySet([1, 2]);
+    assert.deepEqual(ls.size, 2);
+
+    ls._make_set();
+    assert.deepEqual(ls.size, 2);
+});
+
 run_test("conversions", () => {
     blueslip.expect("error", "not a number", 2);
     const ls = new LazySet([1, 2]);

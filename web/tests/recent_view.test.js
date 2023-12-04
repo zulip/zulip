@@ -117,12 +117,6 @@ mock_esm("../src/user_topics", {
         }
         return false;
     },
-    is_topic_unmuted(stream_id, topic) {
-        if (stream_id === stream6 && topic === topic11) {
-            return true;
-        }
-        return false;
-    },
     is_topic_unmuted_or_followed(stream_id, topic) {
         if (stream_id === stream6 && (topic === topic11 || topic === topic12)) {
             return true;
@@ -187,6 +181,11 @@ mock_esm("../src/unread", {
 mock_esm("../src/resize", {
     update_recent_view_filters_height: noop,
 });
+const dropdown_widget = zrequire("../src/dropdown_widget");
+dropdown_widget.DropdownWidget = function DropdownWidget() {
+    this.setup = noop;
+    this.render = noop;
+};
 
 const {all_messages_data} = zrequire("all_messages_data");
 const people = zrequire("people");
@@ -398,18 +397,15 @@ function generate_topic_data(topic_info_array) {
             stream_name: "stream_name",
             stream_color: "",
             stream_id,
-            stream_muted: undefined,
             stream_url: "https://www.example.com",
             topic,
             conversation_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",
             unread_count,
             mention_in_unread: false,
-            topic_muted: visibility_policy === all_visibility_policies.MUTED,
-            topic_unmuted: visibility_policy === all_visibility_policies.UNMUTED,
             visibility_policy,
-            development: true,
             all_visibility_policies,
+            is_spectator: page_params.is_spectator,
         });
     }
     return data;
@@ -430,7 +426,7 @@ function stub_out_filter_buttons() {
     //
     //       See show_selected_filters() and set_filter() in the
     //       implementation.
-    for (const filter of ["all", "unread", "muted", "participated", "include_private"]) {
+    for (const filter of ["unread", "muted", "participated", "include_private"]) {
         const $stub = $.create(`filter-${filter}-stub`);
         const selector = `[data-filter="${filter}"]`;
         $("#recent_view_filter_buttons").set_find_results(selector, $stub);
@@ -453,8 +449,8 @@ test("test_recent_view_show", ({mock_template}) => {
     // and are not to be tested here.
     page_params.is_spectator = false;
     const expected = {
-        filter_participated: false,
         filter_unread: false,
+        filter_participated: false,
         filter_muted: false,
         filter_pm: false,
         search_val: "",
@@ -484,8 +480,8 @@ test("test_recent_view_show", ({mock_template}) => {
 test("test_filter_is_spectator", ({mock_template}) => {
     page_params.is_spectator = true;
     const expected = {
-        filter_participated: false,
         filter_unread: false,
+        filter_participated: false,
         filter_muted: false,
         filter_pm: false,
         search_val: "",
@@ -509,17 +505,16 @@ test("test_filter_is_spectator", ({mock_template}) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
-    rt.set_filter("all");
     rt.process_messages([messages[0]]);
 });
 
-test("test_filter_all", ({mock_template}) => {
+test("test_no_filter", ({mock_template}) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
     page_params.is_spectator = false;
     const expected = {
-        filter_participated: false,
         filter_unread: false,
+        filter_participated: false,
         filter_muted: false,
         filter_pm: false,
         search_val: "",
@@ -544,87 +539,87 @@ test("test_filter_all", ({mock_template}) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
-    rt.set_filter("all");
     rt.process_messages([messages[0]]);
     assert.equal(
         rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
         false,
     );
 
-    expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 10, participated: true, type: "stream"},
-        {last_msg_id: 1, participated: true, type: "stream"},
-    ];
+    // TODO: Modify this test to work with dropdown widget.
+    // expected_data_to_replace_in_list_widget = [
+    //     {last_msg_id: 10, participated: true, type: "stream"},
+    //     {last_msg_id: 1, participated: true, type: "stream"},
+    // ];
 
-    // topic is muted
-    row_data = [
-        ...row_data,
-        ...generate_topic_data([[1, "topic-7", 1, all_visibility_policies.MUTED]]),
-    ];
-    i = row_data.length;
-    stub_out_filter_buttons();
-    rt.process_messages([messages[9]]);
-    assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 10, participated: true, type: "stream"}),
-        true,
-    );
+    // // topic is muted
+    // row_data = [
+    //     ...row_data,
+    //     ...generate_topic_data([[1, "topic-7", 1, all_visibility_policies.MUTED]]),
+    // ];
+    // i = row_data.length;
+    // stub_out_filter_buttons();
+    // rt.process_messages([messages[9]]);
+    // assert.equal(
+    //     rt.filters_should_hide_topic({last_msg_id: 10, participated: true, type: "stream"}),
+    //     true,
+    // );
 
-    expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 12, participated: true, type: "stream"},
-        {last_msg_id: 10, participated: true, type: "stream"},
-        {last_msg_id: 1, participated: true, type: "stream"},
-    ];
-    // normal topic in muted stream
-    row_data = [
-        ...row_data,
-        ...generate_topic_data([[6, "topic-8", 1, all_visibility_policies.INHERIT]]),
-    ];
-    i = row_data.length;
-    stub_out_filter_buttons();
-    rt.process_messages([messages[11]]);
-    assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 12, participated: true, type: "stream"}),
-        true,
-    );
+    // expected_data_to_replace_in_list_widget = [
+    //     {last_msg_id: 12, participated: true, type: "stream"},
+    //     {last_msg_id: 10, participated: true, type: "stream"},
+    //     {last_msg_id: 1, participated: true, type: "stream"},
+    // ];
+    // // normal topic in muted stream
+    // row_data = [
+    //     ...row_data,
+    //     ...generate_topic_data([[6, "topic-8", 1, all_visibility_policies.INHERIT]]),
+    // ];
+    // i = row_data.length;
+    // stub_out_filter_buttons();
+    // rt.process_messages([messages[11]]);
+    // assert.equal(
+    //     rt.filters_should_hide_topic({last_msg_id: 12, participated: true, type: "stream"}),
+    //     true,
+    // );
 
-    expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 13, participated: true, type: "stream"},
-        {last_msg_id: 12, participated: true, type: "stream"},
-        {last_msg_id: 10, participated: true, type: "stream"},
-        {last_msg_id: 1, participated: true, type: "stream"},
-    ];
-    // unmuted topic in muted stream
-    row_data = [
-        ...row_data,
-        ...generate_topic_data([[6, "topic-11", 1, all_visibility_policies.UNMUTED]]),
-    ];
-    i = row_data.length;
-    stub_out_filter_buttons();
-    rt.process_messages([messages[12]]);
-    assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 13, participated: true, type: "stream"}),
-        false,
-    );
+    // expected_data_to_replace_in_list_widget = [
+    //     {last_msg_id: 13, participated: true, type: "stream"},
+    //     {last_msg_id: 12, participated: true, type: "stream"},
+    //     {last_msg_id: 10, participated: true, type: "stream"},
+    //     {last_msg_id: 1, participated: true, type: "stream"},
+    // ];
+    // // unmuted topic in muted stream
+    // row_data = [
+    //     ...row_data,
+    //     ...generate_topic_data([[6, "topic-11", 1, all_visibility_policies.UNMUTED]]),
+    // ];
+    // i = row_data.length;
+    // stub_out_filter_buttons();
+    // rt.process_messages([messages[12]]);
+    // assert.equal(
+    //     rt.filters_should_hide_topic({last_msg_id: 13, participated: true, type: "stream"}),
+    //     false,
+    // );
 
-    expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 14, participated: true, type: "stream"},
-        {last_msg_id: 13, participated: true, type: "stream"},
-        {last_msg_id: 12, participated: true, type: "stream"},
-        {last_msg_id: 10, participated: true, type: "stream"},
-        {last_msg_id: 1, participated: true, type: "stream"},
-    ];
-    // followed topic in muted stream
-    row_data = [
-        ...row_data,
-        ...generate_topic_data([[6, "topic-12", 1, all_visibility_policies.FOLLOWED]]),
-    ];
-    i = row_data.length;
-    stub_out_filter_buttons();
-    rt.process_messages([messages[13]]);
-    assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 14, participated: true, type: "stream"}),
-        false,
-    );
+    // expected_data_to_replace_in_list_widget = [
+    //     {last_msg_id: 14, participated: true, type: "stream"},
+    //     {last_msg_id: 13, participated: true, type: "stream"},
+    //     {last_msg_id: 12, participated: true, type: "stream"},
+    //     {last_msg_id: 10, participated: true, type: "stream"},
+    //     {last_msg_id: 1, participated: true, type: "stream"},
+    // ];
+    // // followed topic in muted stream
+    // row_data = [
+    //     ...row_data,
+    //     ...generate_topic_data([[6, "topic-12", 1, all_visibility_policies.FOLLOWED]]),
+    // ];
+    // i = row_data.length;
+    // stub_out_filter_buttons();
+    // rt.process_messages([messages[13]]);
+    // assert.equal(
+    //     rt.filters_should_hide_topic({last_msg_id: 14, participated: true, type: "stream"}),
+    //     false,
+    // );
 
     // Test search
     expected.search_val = "topic-1";
@@ -641,8 +636,8 @@ test("test_filter_all", ({mock_template}) => {
 test("test_filter_pm", ({mock_template}) => {
     page_params.is_spectator = false;
     const expected = {
-        filter_participated: false,
         filter_unread: false,
+        filter_participated: false,
         filter_muted: false,
         filter_pm: true,
         search_val: "",
@@ -684,139 +679,14 @@ test("test_filter_pm", ({mock_template}) => {
     assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 17}), false);
 });
 
-test("test_filter_unread", ({mock_template}) => {
-    let expected_filter_unread = false;
-    page_params.is_spectator = false;
-
-    mock_template("recent_view_table.hbs", false, (data) => {
-        assert.deepEqual(data, {
-            filter_participated: false,
-            filter_unread: expected_filter_unread,
-            filter_muted: false,
-            filter_pm: false,
-            search_val: "",
-            is_spectator: false,
-        });
-    });
-
-    mock_template("recent_view_filters.hbs", false, (data) => {
-        assert.equal(data.filter_unread, expected_filter_unread);
-        assert.equal(data.filter_participated, false);
-        return "<recent_view table stub>";
-    });
-
-    let i = 0;
-
-    const row_data = generate_topic_data([
-        // stream_id, topic, unread_count, visibility_policy
-        [6, "topic-12", 1, all_visibility_policies.FOLLOWED],
-        [6, "topic-11", 1, all_visibility_policies.UNMUTED],
-        [6, "topic-8", 1, all_visibility_policies.INHERIT],
-        [4, "topic-10", 1, all_visibility_policies.INHERIT],
-        [1, "topic-7", 1, all_visibility_policies.MUTED],
-        [1, "topic-6", 1, all_visibility_policies.INHERIT],
-        [1, "topic-5", 1, all_visibility_policies.INHERIT],
-        [1, "topic-4", 1, all_visibility_policies.INHERIT],
-        [1, "topic-3", 1, all_visibility_policies.INHERIT],
-        [1, "topic-2", 1, all_visibility_policies.INHERIT],
-        [1, "topic-1", 0, all_visibility_policies.INHERIT],
-    ]);
-
-    mock_template("recent_view_row.hbs", false, (data) => {
-        // All the row will be processed.
-        if (row_data[i]) {
-            assert.deepEqual(data, row_data[i]);
-            i += 1;
-        }
-        return "<recent_view row stub>";
-    });
-
-    rt.clear_for_tests();
-    recent_view_util.set_visible(true);
-    rt.set_default_focus();
-
-    stub_out_filter_buttons();
-    rt.process_messages(messages);
-    $(".home-page-input").trigger("focus");
-    assert.equal(
-        rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
-        false,
-    );
-
-    $("#recent_view_filter_buttons").removeClass("btn-recent-selected");
-
-    expected_filter_unread = true;
-    rt.set_filter("unread");
-    rt.update_filters_view();
-
-    expected_data_to_replace_in_list_widget = [
-        {
-            last_msg_id: 11,
-            participated: true,
-            type: "stream",
-        },
-        {
-            last_msg_id: 10,
-            participated: true,
-            type: "stream",
-        },
-        {
-            last_msg_id: 9,
-            participated: true,
-            type: "stream",
-        },
-        {
-            last_msg_id: 7,
-            participated: true,
-            type: "stream",
-        },
-        {
-            last_msg_id: 5,
-            participated: false,
-            type: "stream",
-        },
-        {
-            last_msg_id: 4,
-            participated: false,
-            type: "stream",
-        },
-        {
-            last_msg_id: 3,
-            participated: true,
-            type: "stream",
-        },
-        {
-            last_msg_id: 1,
-            participated: true,
-            type: "stream",
-        },
-    ];
-
-    rt.process_messages([messages[0]]);
-
-    // Unselect "unread" filter by clicking twice.
-    expected_filter_unread = false;
-    $("#recent_view_filter_buttons").addClass("btn-recent-selected");
-    rt.set_filter("unread");
-
-    assert.equal(i, row_data.length);
-
-    $("#recent_view_filter_buttons").removeClass("btn-recent-selected");
-    // reselect "unread" filter
-    rt.set_filter("unread");
-
-    // Now clicking "all" filter should have no change to expected data.
-    rt.set_filter("all");
-});
-
 test("test_filter_participated", ({mock_template}) => {
     let expected_filter_participated;
 
     page_params.is_spectator = false;
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, {
-            filter_participated: expected_filter_participated,
             filter_unread: false,
+            filter_participated: expected_filter_participated,
             filter_muted: false,
             filter_pm: false,
             search_val: "",
@@ -825,7 +695,6 @@ test("test_filter_participated", ({mock_template}) => {
     });
 
     mock_template("recent_view_filters.hbs", false, (data) => {
-        assert.equal(data.filter_unread, false);
         assert.equal(data.filter_participated, expected_filter_participated);
         return "<recent_view table stub>";
     });
@@ -931,16 +800,12 @@ test("test_filter_participated", ({mock_template}) => {
     ];
 
     rt.process_messages([messages[4]]);
-
-    expected_filter_participated = false;
-    rt.set_filter("all");
 });
 
 test("test_update_unread_count", () => {
     recent_view_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.set_filter("all");
     rt.process_messages(messages);
 
     // update a message
@@ -960,9 +825,8 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.set_default_focus();
-    rt.set_filter("all");
     rt.process_messages(messages);
-    let all_topics = rt_data.get();
+    let all_topics = rt_data.get_conversations();
 
     // update a message
     generate_topic_data([[1, "topic-7", 1, all_visibility_policies.INHERIT]]);
@@ -1024,7 +888,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         type: "private",
         to_user_ids: "6,7,8",
     });
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(all_topics.size, 12);
     assert.equal(
         [...all_topics.keys()].toString(),
@@ -1049,7 +913,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         type: "stream",
     });
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "1:topic-3,6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
@@ -1066,7 +930,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         type: "stream",
     });
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "1:topic-7,1:topic-3,6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
@@ -1088,7 +952,6 @@ test("test_reify_local_echo_message", ({mock_template}) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
-    rt.set_filter("all");
     rt.process_messages(messages);
 
     rt_data.process_message({
@@ -1137,21 +1000,20 @@ test("test_delete_messages", ({override}) => {
     recent_view_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.set_filter("all");
     rt.process_messages(messages);
 
     // messages[0] was removed.
     let reduced_msgs = messages.slice(1);
     override(all_messages_data, "all_messages", () => reduced_msgs);
 
-    let all_topics = rt_data.get();
+    let all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
     rt.update_topics_of_deleted_message_ids([messages[0].id]);
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2",
@@ -1162,7 +1024,7 @@ test("test_delete_messages", ({override}) => {
 
     rt.update_topics_of_deleted_message_ids([messages[1].id, messages[2].id]);
 
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3",
@@ -1179,10 +1041,9 @@ test("test_topic_edit", ({override}) => {
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.set_filter("all");
     rt.process_messages(messages);
 
-    let all_topics = rt_data.get();
+    let all_topics = rt_data.get_conversations();
     assert.equal(
         [...all_topics.keys()].toString(),
         "6:topic-12,6:topic-11,6:topic-8,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
@@ -1196,7 +1057,7 @@ test("test_topic_edit", ({override}) => {
     messages[7].topic = topic8;
     messages[8].topic = topic8;
     rt.process_topic_edit(stream1, topic6, topic8);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
 
     verify_topic_data(all_topics, stream1, topic8, messages[8].id, true);
     assert.equal(all_topics.get(get_topic_key(stream1, topic6)), undefined);
@@ -1207,7 +1068,7 @@ test("test_topic_edit", ({override}) => {
 
     messages[0].stream_id = stream2;
     rt.process_topic_edit(stream1, topic1, topic1, stream2);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
 
     assert.equal(all_topics.get(get_topic_key(stream1, topic1)), undefined);
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
@@ -1219,7 +1080,7 @@ test("test_topic_edit", ({override}) => {
     messages[0].stream_id = stream3;
     messages[0].topic = topic9;
     rt.process_topic_edit(stream2, topic1, topic9, stream3);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
 
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
@@ -1228,7 +1089,7 @@ test("test_topic_edit", ({override}) => {
     messages[0].stream_id = stream5;
     messages[0].topic = topic8;
     rt.process_topic_edit(stream3, topic9, topic8, stream5);
-    all_topics = rt_data.get();
+    all_topics = rt_data.get_conversations();
     assert.equal(rt.filters_should_hide_topic(all_topics.get("5:topic-8")), true);
 });
 

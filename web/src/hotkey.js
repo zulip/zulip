@@ -34,6 +34,7 @@ import * as message_scroll_state from "./message_scroll_state";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_menus from "./navbar_menus";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -44,6 +45,7 @@ import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
+import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
@@ -53,6 +55,7 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as topic_list from "./topic_list";
 import * as unread_ops from "./unread_ops";
 import * as user_card_popover from "./user_card_popover";
 import * as user_group_popover from "./user_group_popover";
@@ -87,6 +90,7 @@ const keydown_shift_mappings = {
     38: {name: "up_arrow", message_view_only: false}, // up arrow
     40: {name: "down_arrow", message_view_only: false}, // down arrow
     72: {name: "view_edit_history", message_view_only: true}, // 'H'
+    78: {name: "narrow_to_next_unread_followed_topic", message_view_only: false}, // 'N'
 };
 
 const keydown_unshift_mappings = {
@@ -237,7 +241,8 @@ export function processing_text() {
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
         $focused_elt.parents(".pill-container").length >= 1 ||
-        $focused_elt.attr("id") === "compose-send-button"
+        $focused_elt.attr("id") === "compose-send-button" ||
+        $focused_elt.parents(".dropdown-list-container").length >= 1
     );
 }
 
@@ -268,13 +273,12 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (popovers.any_active() || sidebar_ui.any_sidebar_expanded_as_overlay()) {
+    if (popovers.any_active()) {
         if (user_card_popover.manage_menu.is_open()) {
             user_card_popover.manage_menu.hide();
             $("#user_card_popover .user-card-popover-manage-menu-btn").trigger("focus");
             return true;
         }
-        sidebar_ui.hide_all();
         popovers.hide_all();
         return true;
     }
@@ -296,7 +300,7 @@ export function process_escape_key(e) {
         }
 
         if (stream_list.searching()) {
-            stream_list.escape_search();
+            stream_list.clear_and_hide_search();
             return true;
         }
 
@@ -318,7 +322,7 @@ export function process_escape_key(e) {
             // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
             if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
-                $("#compose-textarea").trigger("focus");
+                $("textarea#compose-textarea").trigger("focus");
                 return true;
             }
 
@@ -333,9 +337,21 @@ export function process_escape_key(e) {
             return true;
         }
 
+        // When the input is focused, we blur and clear the input. A second "Esc"
+        // will zoom out, handled below.
+        if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
+            topic_list.clear_topic_search(e);
+            return true;
+        }
+
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
         $("input:focus,textarea:focus").trigger("blur");
+        return true;
+    }
+
+    if (sidebar_ui.any_sidebar_expanded_as_overlay()) {
+        sidebar_ui.hide_all();
         return true;
     }
 
@@ -349,10 +365,10 @@ export function process_escape_key(e) {
         return true;
     }
 
-    /* The Ctrl+[ hotkey navigates to the default view
+    /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
-    if (user_settings.escape_navigates_to_default_view || e.which === 219) {
-        hashchange.set_hash_to_default_view();
+    if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
+        hashchange.set_hash_to_home_view();
         return true;
     }
 
@@ -471,7 +487,7 @@ export function process_enter_key(e) {
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
     if (e.target.id === "send_later") {
-        $("#send_later i").trigger("click");
+        scheduled_messages_popover.toggle();
         return true;
     }
 
@@ -618,7 +634,7 @@ export function process_shift_tab_key() {
         return emoji_picker.navigate("shift_tab");
     }
 
-    if ($("#stream_message_recipient_topic").is(":focus")) {
+    if ($("input#stream_message_recipient_topic").is(":focus")) {
         compose_recipient.open_compose_recipient_dropdown();
         return true;
     }
@@ -733,17 +749,6 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (hotkey.message_view_only && popover_menus.is_gear_menu_popover_displayed()) {
-        // Inside the gear menu, we don't process most hotkeys; the
-        // exception is that the gear_menu hotkey should toggle the
-        // menu closed again.
-        if (event_name === "gear_menu") {
-            gear_menu.toggle();
-            return true;
-        }
-        return false;
-    }
-
     if (overlays.settings_open() && !user_card_popover.user_card.is_open()) {
         return false;
     }
@@ -775,6 +780,14 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
+        return true;
+    }
+
+    // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    if (
+        navbar_menus.is_navbar_menus_displayed() &&
+        navbar_menus.handle_keyboard_events(event_name)
+    ) {
         return true;
     }
 
@@ -906,7 +919,10 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
-            narrow.narrow_to_next_topic({trigger: "hotkey"});
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            return true;
+        case "narrow_to_next_unread_followed_topic":
+            narrow.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
             return true;
         case "p_key":
             narrow.narrow_to_next_pm_string({trigger: "hotkey"});
@@ -1041,13 +1057,17 @@ export function process_hotkey(e, hotkey) {
         // ':': open reactions to message
         case "toggle_reactions_popover": {
             const $row = message_lists.current.selected_row();
-            emoji_picker.toggle_emoji_popover(
-                msg.sent_by_me
-                    ? $row.find(".message-actions-menu-button")[0]
-                    : $row.find(".emoji-message-control-button-container")[0],
-                msg.id,
-                {placement: "bottom"},
-            );
+            const $emoji_icon = $row.find(".emoji-message-control-button-container");
+            let emoji_picker_reference;
+            if ($emoji_icon.is(":visible")) {
+                emoji_picker_reference = $emoji_icon[0];
+            } else {
+                emoji_picker_reference = $row.find(".message-actions-menu-button")[0];
+            }
+
+            emoji_picker.toggle_emoji_popover(emoji_picker_reference, msg.id, {
+                placement: "bottom",
+            });
             return true;
         }
         case "thumbs_up_emoji": {

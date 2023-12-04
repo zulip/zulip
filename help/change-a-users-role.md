@@ -2,9 +2,9 @@
 
 {!admin-only.md!}
 
-Users join as [owners, administrators, moderators, members, or
-guests](/help/roles-and-permissions), depending on how they were
-invited.
+Users join as [owners, administrators, moderators, members
+](/help/roles-and-permissions), or [guests](/help/guest-users),
+depending on how they were invited.
 
 An organization owner can change the role of any user.  An
 organization administrator can change the role of most users, but
@@ -27,11 +27,7 @@ organization](/help/deactivate-your-organization) instead).
 
 1. Click **Save changes**. The new permissions will take effect immediately.
 
-!!! tip ""
-
-    You can also access the **Manage user** tab by clicking the **pencil and
-    paper** (<i class="fa fa-edit"></i>) icon at the top of the [user
-    profile](/help/view-someones-profile).
+{!manage-user-tab-tip.md!}
 
 {tab|via-organization-settings}
 
@@ -50,3 +46,5 @@ organization](/help/deactivate-your-organization) instead).
 
 * [Change a user's name](/help/change-a-users-name)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Manage a user](/help/manage-a-user)
+* [Guest users](/help/guest-users)

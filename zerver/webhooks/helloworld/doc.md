@@ -7,7 +7,9 @@ integration](/api/incoming-webhooks-walkthrough).
     by default in the Zulip development environment. If you are running
     Zulip in production, you should make sure that this stream exists.
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. To trigger a notification using this example webhook, you can use
     `send_webhook_fixture_message` from a [Zulip development

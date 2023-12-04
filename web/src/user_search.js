@@ -44,6 +44,8 @@ export class UserSearch {
         return this.text() === "";
     }
 
+    // This clears search input but doesn't close
+    // the search widget unless it was already empty.
     clear_search() {
         buddy_data.set_is_searching_users(false);
 
@@ -57,14 +59,11 @@ export class UserSearch {
         this._reset_items();
     }
 
-    escape_search() {
-        if (this.empty()) {
-            this.close_widget();
-            return;
-        }
-
-        this.$input.val("");
+    // This always clears and closes search.
+    clear_and_hide_search() {
+        this.clear_search();
         this._update_list();
+        this.close_widget();
     }
 
     hide_widget() {
@@ -81,14 +80,6 @@ export class UserSearch {
 
     widget_shown() {
         return this.$widget.hasClass("notdisplayed");
-    }
-
-    clear_and_hide_search() {
-        if (!this.empty()) {
-            this.$input.val("");
-            this._update_list();
-        }
-        this.close_widget();
     }
 
     close_widget() {

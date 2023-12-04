@@ -32,13 +32,23 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from typing_extensions import TypeAlias, override
 
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from zerver.actions.realm_settings import (
+    do_set_push_notifications_enabled_end_timestamp,
+    do_set_realm_property,
+)
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
+from zerver.lib.remote_server import (
+    send_json_to_push_bouncer,
+    send_realms_only_to_push_bouncer,
+    send_to_push_bouncer,
+)
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     AbstractPushDeviceToken,
@@ -46,6 +56,7 @@ from zerver.models import (
     Message,
     NotificationTriggers,
     PushDeviceToken,
+    Realm,
     Recipient,
     Stream,
     UserGroup,
@@ -144,13 +155,17 @@ class APNsContext:
     loop: asyncio.AbstractEventLoop
 
 
+def has_apns_credentials() -> bool:
+    return settings.APNS_TOKEN_KEY_FILE is not None or settings.APNS_CERT_FILE is not None
+
+
 @lru_cache(maxsize=None)
 def get_apns_context() -> Optional[APNsContext]:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
     import aioapns
 
-    if settings.APNS_CERT_FILE is None:  # nocoverage
+    if not has_apns_credentials():  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
@@ -170,18 +185,21 @@ def get_apns_context() -> Optional[APNsContext]:
     async def make_apns() -> aioapns.APNs:
         return aioapns.APNs(
             client_cert=settings.APNS_CERT_FILE,
-            topic=settings.APNS_TOPIC,
+            key=settings.APNS_TOKEN_KEY_FILE,
+            key_id=settings.APNS_TOKEN_KEY_ID,
+            team_id=settings.APNS_TEAM_ID,
             max_connection_attempts=APNS_MAX_RETRIES,
             use_sandbox=settings.APNS_SANDBOX,
             err_func=err_func,
+            # The actual APNs topic will vary between notifications,
+            # so we set it there, overriding any value we put here.
+            # We can't just leave this out, though, because then
+            # the constructor attempts to guess.
+            topic="invalid.nonsense",
         )
 
     apns = loop.run_until_complete(make_apns())
     return APNsContext(apns=apns, loop=loop)
-
-
-def apns_enabled() -> bool:
-    return settings.APNS_CERT_FILE is not None
 
 
 def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -218,9 +236,9 @@ def send_apple_push_notification(
     devices: Sequence[DeviceToken],
     payload_data: Mapping[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
-) -> None:
+) -> int:
     if not devices:
-        return
+        return 0
     # We lazily do the APNS imports as part of optimizing Zulip's base
     # import time; since these are only needed in the push
     # notification queue worker, it's best to only import them in the
@@ -234,7 +252,7 @@ def send_apple_push_notification(
             "APNs: Dropping a notification because nothing configured.  "
             "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
         )
-        return
+        return 0
 
     if remote:
         assert settings.ZILENCER_ENABLED
@@ -258,12 +276,27 @@ def send_apple_push_notification(
     payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
 
+    have_missing_app_id = False
+    for device in devices:
+        if device.ios_app_id is None:
+            # This should be present for all APNs tokens, as an invariant maintained
+            # by the views that add the token to our database.
+            logger.error(
+                "APNs: Missing ios_app_id for user %s device %s", user_identity, device.token
+            )
+            have_missing_app_id = True
+    if have_missing_app_id:
+        devices = [device for device in devices if device.ios_app_id is not None]
+
     async def send_all_notifications() -> Iterable[
         Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]
     ]:
         requests = [
             aioapns.NotificationRequest(
-                device_token=device.token, message=message, time_to_live=24 * 3600
+                apns_topic=device.ios_app_id,
+                device_token=device.token,
+                message=message,
+                time_to_live=24 * 3600,
             )
             for device in devices
         ]
@@ -275,6 +308,7 @@ def send_apple_push_notification(
 
     results = apns_context.loop.run_until_complete(send_all_notifications())
 
+    successfully_sent_count = 0
     for device, result in results:
         if isinstance(result, aioapns.exceptions.ConnectionError):
             logger.error(
@@ -290,6 +324,7 @@ def send_apple_push_notification(
                 exc_info=result,
             )
         elif result.is_successful:
+            successfully_sent_count += 1
             logger.info(
                 "APNs: Success sending for user %s to device %s", user_identity, device.token
             )
@@ -309,6 +344,8 @@ def send_apple_push_notification(
                 device.token,
                 result.description,
             )
+
+    return successfully_sent_count
 
 
 #
@@ -346,7 +383,7 @@ else:
     gcm_client = None
 
 
-def gcm_enabled() -> bool:  # nocoverage
+def has_gcm_credentials() -> bool:  # nocoverage
     return gcm_client is not None
 
 
@@ -411,7 +448,7 @@ def send_android_push_notification(
     data: Dict[str, Any],
     options: Dict[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
-) -> None:
+) -> int:
     """
     Send a GCM message to the given devices.
 
@@ -424,13 +461,13 @@ def send_android_push_notification(
         For details, see `parse_gcm_options`.
     """
     if not devices:
-        return
+        return 0
     if not gcm_client:
         logger.debug(
             "Skipping sending a GCM push notification since "
             "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset"
         )
-        return
+        return 0
 
     if remote:
         logger.info(
@@ -463,11 +500,13 @@ def send_android_push_notification(
         )
     except OSError:
         logger.warning("Error while pushing to GCM", exc_info=True)
-        return
+        return 0
 
+    successfully_sent_count = 0
     if res and "success" in res:
         for reg_id, msg_id in res["success"].items():
             logger.info("GCM: Sent %s as %s", reg_id, msg_id)
+        successfully_sent_count = len(res["success"].keys())
 
     if remote:
         assert settings.ZILENCER_ENABLED
@@ -520,6 +559,8 @@ def send_android_push_notification(
                 for reg_id in reg_ids:
                     logger.warning("GCM: Delivery to %s failed: %s", reg_id, error)
 
+    return successfully_sent_count
+
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
 
@@ -533,17 +574,22 @@ def uses_notification_bouncer() -> bool:
     return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
 
 
+def sends_notifications_directly() -> bool:
+    return has_apns_credentials() and has_gcm_credentials() and not uses_notification_bouncer()
+
+
 def send_notifications_to_bouncer(
-    user_profile_id: int,
+    user_profile: UserProfile,
     apns_payload: Dict[str, Any],
     gcm_payload: Dict[str, Any],
     gcm_options: Dict[str, Any],
 ) -> Tuple[int, int]:
     post_data = {
-        "user_uuid": str(get_user_profile_by_id(user_profile_id).uuid),
+        "user_uuid": str(user_profile.uuid),
         # user_uuid is the intended future format, but we also need to send user_id
         # to avoid breaking old mobile registrations, which were made with user_id.
-        "user_id": user_profile_id,
+        "user_id": user_profile.id,
+        "realm_uuid": str(user_profile.realm.uuid),
         "apns_payload": apns_payload,
         "gcm_payload": gcm_payload,
         "gcm_options": gcm_options,
@@ -553,7 +599,19 @@ def send_notifications_to_bouncer(
     assert isinstance(response_data["total_android_devices"], int)
     assert isinstance(response_data["total_apple_devices"], int)
 
-    return response_data["total_android_devices"], response_data["total_apple_devices"]
+    total_android_devices, total_apple_devices = (
+        response_data["total_android_devices"],
+        response_data["total_apple_devices"],
+    )
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["mobile_pushes_sent::day"],
+        None,
+        timezone_now(),
+        increment=total_android_devices + total_apple_devices,
+    )
+
+    return total_android_devices, total_apple_devices
 
 
 #
@@ -596,6 +654,7 @@ def add_push_device_token(
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
             "user_uuid": str(user_profile.uuid),
+            "realm_uuid": str(user_profile.realm.uuid),
             # user_id is sent so that the bouncer can delete any pre-existing registrations
             # for this user+device to avoid duplication upon adding the uuid registration.
             "user_id": str(user_profile.id),
@@ -665,7 +724,7 @@ def clear_push_device_tokens(user_profile_id: int) -> None:
 #
 
 
-def push_notifications_enabled() -> bool:
+def push_notifications_configured() -> bool:
     """True just if this server has configured a way to send push notifications."""
     if (
         uses_notification_bouncer()
@@ -677,12 +736,12 @@ def push_notifications_enabled() -> bool:
         # works -- e.g., that we have ever successfully sent to the bouncer --
         # but this is a good start.
         return True
-    if settings.DEVELOPMENT and (apns_enabled() or gcm_enabled()):  # nocoverage
+    if settings.DEVELOPMENT and (has_apns_credentials() or has_gcm_credentials()):  # nocoverage
         # Since much of the notifications logic is platform-specific, the mobile
         # developers often work on just one platform at a time, so we should
         # only require one to be configured.
         return True
-    elif apns_enabled() and gcm_enabled():  # nocoverage
+    elif has_apns_credentials() and has_gcm_credentials():  # nocoverage
         # We have the needed configuration to send through APNs and GCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
@@ -690,15 +749,70 @@ def push_notifications_enabled() -> bool:
 
 
 def initialize_push_notifications() -> None:
-    if not push_notifications_enabled():
-        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+    """Called during startup of the push notifications worker to check
+    whether we expect mobile push notifications to work on this server
+    and update state accordingly.
+    """
+
+    if sends_notifications_directly():
+        # This server sends push notifications directly. Make sure we
+        # are set to report to clients that push notifications are
+        # enabled.
+        for realm in Realm.objects.filter(push_notifications_enabled=False):
+            do_set_realm_property(realm, "push_notifications_enabled", True, acting_user=None)
+            do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
+        return
+
+    if not push_notifications_configured():
+        for realm in Realm.objects.filter(push_notifications_enabled=True):
+            do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+            do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:
             # Avoid unnecessary spam on development environment startup
-            return
+            return  # nocoverage
         logger.warning(
             "Mobile push notifications are not configured.\n  "
             "See https://zulip.readthedocs.io/en/latest/"
             "production/mobile-push-notifications.html"
         )
+        return
+
+    if uses_notification_bouncer():
+        # If we're using the notification bouncer, check if we can
+        # actually send push notifications.
+
+        try:
+            realms = send_realms_only_to_push_bouncer()
+        except Exception:
+            # An exception was thrown trying to ask the bouncer service whether we can send
+            # push notifications or not. There may be certain transient failures that we could
+            # ignore here, but the default explanation is that there is something wrong either
+            # with our credentials being corrupted or our ability to reach the bouncer service
+            # over the network, so we immediately move to reporting push notifications as likely not working,
+            # as whatever failed here is likely to also fail when trying to send a push notification.
+            for realm in Realm.objects.filter(push_notifications_enabled=True):
+                do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+                do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
+            logger.exception("Exception while sending realms only data to push bouncer")
+            return
+
+        for realm_uuid, data in realms.items():
+            realm = Realm.objects.get(uuid=realm_uuid)
+            do_set_realm_property(
+                realm, "push_notifications_enabled", data["can_push"], acting_user=None
+            )
+            do_set_push_notifications_enabled_end_timestamp(
+                realm, data["expected_end_timestamp"], acting_user=None
+            )
+        return
+
+    logger.warning(  # nocoverage
+        "Mobile push notifications are not fully configured.\n  "
+        "See https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html"
+    )
+    for realm in Realm.objects.filter(push_notifications_enabled=True):  # nocoverage
+        do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+        do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
 
 
 def get_mobile_push_content(rendered_content: str) -> str:
@@ -768,6 +882,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         )
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
+    change_katex_to_raw_latex(elem)
     plain_text = process(elem)
     return plain_text
 
@@ -991,7 +1106,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     mobile app, when the message is read on the server, to remove the
     message from the notification.
     """
-    if not push_notifications_enabled():
+    if not push_notifications_configured():
         return
 
     user_profile = get_user_profile_by_id(user_profile_id)
@@ -1029,7 +1144,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     if uses_notification_bouncer():
-        send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
+        send_notifications_to_bouncer(user_profile, apns_payload, gcm_payload, gcm_options)
     else:
         user_identity = UserPushIdentityCompat(user_id=user_profile_id)
         android_devices = list(
@@ -1038,10 +1153,21 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         apple_devices = list(
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
         )
-        if android_devices:
-            send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
-        if apple_devices:
-            send_apple_push_notification(user_identity, apple_devices, apns_payload)
+
+        android_successfully_sent_count = send_android_push_notification(
+            user_identity, android_devices, gcm_payload, gcm_options
+        )
+        apple_successfully_sent_count = send_apple_push_notification(
+            user_identity, apple_devices, apns_payload
+        )
+
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["mobile_pushes_sent::day"],
+            None,
+            timezone_now(),
+            increment=android_successfully_sent_count + apple_successfully_sent_count,
+        )
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1059,7 +1185,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     missed_message is the event received by the
     zerver.worker.queue_processors.PushNotificationWorker.consume function.
     """
-    if not push_notifications_enabled():
+    if not push_notifications_configured():
         return
     user_profile = get_user_profile_by_id(user_profile_id)
 
@@ -1164,7 +1290,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     if uses_notification_bouncer():
         total_android_devices, total_apple_devices = send_notifications_to_bouncer(
-            user_profile_id, apns_payload, gcm_payload, gcm_options
+            user_profile, apns_payload, gcm_payload, gcm_options
         )
         logger.info(
             "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
@@ -1189,8 +1315,21 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         len(apple_devices),
     )
     user_identity = UserPushIdentityCompat(user_id=user_profile.id)
-    send_apple_push_notification(user_identity, apple_devices, apns_payload)
-    send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
+
+    apple_successfully_sent_count = send_apple_push_notification(
+        user_identity, apple_devices, apns_payload
+    )
+    android_successfully_sent_count = send_android_push_notification(
+        user_identity, android_devices, gcm_payload, gcm_options
+    )
+
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["mobile_pushes_sent::day"],
+        None,
+        timezone_now(),
+        increment=apple_successfully_sent_count + android_successfully_sent_count,
+    )
 
 
 def send_test_push_notification_directly_to_devices(

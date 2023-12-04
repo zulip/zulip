@@ -407,9 +407,9 @@ def main(options: argparse.Namespace) -> NoReturn:
     # Here we install node.
     proxy_env = [
         "env",
-        "http_proxy=" + os.environ.get("http_proxy", ""),  # noqa: SIM112
-        "https_proxy=" + os.environ.get("https_proxy", ""),  # noqa: SIM112
-        "no_proxy=" + os.environ.get("no_proxy", ""),  # noqa: SIM112
+        "http_proxy=" + os.environ.get("http_proxy", ""),
+        "https_proxy=" + os.environ.get("https_proxy", ""),
+        "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
     run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
 

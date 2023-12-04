@@ -155,3 +155,45 @@ below are for a webhook named `MyWebHook`.
   testing with live data from the service you're integrating and can help you
   spot why something isn't working or if the service is using custom HTTP
   headers.
+
+## URLs
+
+The base URL for an incoming webhook integration bot is
+`{{ api_url }}/v1/external/INTEGRATION_NAME?api_key=API_KEY` where
+`INTEGRATION_NAME` is the name of the specific webhook integration and
+`API_KEY` is the API key of the bot created by the user for the
+integration.
+
+The list of existing webhook integrations can be found in
+`zerver/lib/integrations.py` (at `WEBHOOK_INTEGRATIONS`) or by browsing
+the [Integrations documentation](/integrations).
+
+Parameters accepted in the URL include:
+
+* `api_key`: **Required**. The API key of the bot created by the user
+  for the integration. To get a bot's API key, see the [API
+  keys](/api/api-keys) documentation.
+
+* `stream`: The stream for the integration to send notifications to.
+  Can be either the stream ID or the [URL-encoded][url-encoder] stream
+  name. By default the integration will send direct messages to the
+  bot's owner.
+
+    !!! tip ""
+
+        A stream ID can be found when [browsing streams][browse-streams]
+        in the web app via the URL.
+
+* `topic`: The topic in the specified stream for the integration to
+  send notifications to. The topic should also be
+  [URL-encoded][url-encoder]. By default the integration will have a
+  topic configured for stream messages.
+
+* `only_events`, `exclude_events`: Some incoming webhook integrations
+  support these parameters to filter which events will trigger a
+  notification. For details, see the integration's [integration
+  documentation](/integrations) page.
+
+[browse-streams]: /help/browse-and-subscribe-to-streams
+[add-bot]: /help/add-a-bot-or-integration
+[url-encoder]: https://www.urlencoder.org/

@@ -3,23 +3,20 @@ import {z} from "zod";
 
 import * as loading from "../loading";
 
-import {page_params} from "./page_params";
+export type FormDataObject = Record<string, string>;
 
-type FormDataObject = Record<string, string>;
+export const schedule_schema = z.enum(["monthly", "annual"]);
+export type Prices = Record<z.infer<typeof schedule_schema>, number>;
 
-export type Prices = {
-    monthly: number;
-    annual: number;
-};
-
-export type DiscountDetails = {
-    opensource: string;
-    research: string;
-    nonprofit: string;
-    event: string;
-    education: string;
-    education_nonprofit: string;
-};
+export const organization_type_schema = z.enum([
+    "opensource",
+    "research",
+    "nonprofit",
+    "event",
+    "education",
+    "education_nonprofit",
+]);
+export type DiscountDetails = Record<z.infer<typeof organization_type_schema>, string>;
 
 export const stripe_session_url_schema = z.object({
     stripe_session_url: z.string(),
@@ -31,6 +28,7 @@ export function create_ajax_request(
     ignored_inputs: string[] = [],
     type = "POST",
     success_callback: (response: unknown) => void,
+    error_callback: (xhr: JQuery.jqXHR) => void = () => {},
 ): void {
     const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
@@ -39,9 +37,6 @@ export function create_ajax_request(
     const form_error = `#${CSS.escape(form_name)}-error`;
     const form_loading = `#${CSS.escape(form_name)}-loading`;
 
-    const zulip_limited_section = "#zulip-limited-section";
-    const free_trial_alert_message = "#free-trial-alert-message";
-
     loading.make_indicator($(form_loading_indicator), {
         text: "Processing ...",
         abs_positioned: true,
@@ -49,8 +44,6 @@ export function create_ajax_request(
     $(form_input_section).hide();
     $(form_error).hide();
     $(form_loading).show();
-    $(zulip_limited_section).hide();
-    $(free_trial_alert_message).hide();
 
     const data: FormDataObject = {};
 
@@ -84,12 +77,12 @@ export function create_ajax_request(
                 $(form_error).show().text(xhr.responseJSON.msg);
             }
             $(form_input_section).show();
-            $(zulip_limited_section).show();
-            $(free_trial_alert_message).show();
+            error_callback(xhr);
         },
     });
 }
 
+// This function imitates the behavior of the format_money in views/billing_page.py
 export function format_money(cents: number): string {
     // allow for small floating point errors
     cents = Math.ceil(cents - 0.001);
@@ -105,11 +98,7 @@ export function format_money(cents: number): string {
     }).format(Number.parseFloat((cents / 100).toFixed(precision)));
 }
 
-export function update_charged_amount(prices: Prices, schedule: keyof Prices): void {
-    $("#charged_amount").text(format_money(page_params.seat_count * prices[schedule]));
-}
-
-export function update_discount_details(organization_type: keyof DiscountDetails): void {
+export function update_discount_details(organization_type: string): void {
     let discount_notice =
         "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
     const discount_details: DiscountDetails = {
@@ -121,23 +110,21 @@ export function update_discount_details(organization_type: keyof DiscountDetails
         education_nonprofit:
             "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
     };
-    if (discount_details[organization_type]) {
-        discount_notice = discount_details[organization_type];
+
+    try {
+        const parsed_organization_type = organization_type_schema.parse(organization_type);
+        discount_notice = discount_details[parsed_organization_type];
+    } catch {
+        // This will likely fail if organization_type is not in organization_type_schema or
+        // parsed_organization_type is not preset in discount_details. In either case, we will
+        // fallback to the default discount_notice.
+        //
+        // Why use try / catch?
+        // Because organization_type_schema.options.includes wants organization_type to be of type
+        // opensource | research | ... and defining a type like that is not useful.
     }
+
     $("#sponsorship-discount-details").text(discount_notice);
-}
-
-export function show_license_section(license: string): void {
-    $("#license-automatic-section").hide();
-    $("#license-manual-section").hide();
-
-    $("#automatic_license_count").prop("disabled", true);
-    $("#manual_license_count").prop("disabled", true);
-
-    const section_id = `#license-${CSS.escape(license)}-section`;
-    $(section_id).show();
-    const input_id = `#${CSS.escape(license)}_license_count`;
-    $(input_id).prop("disabled", false);
 }
 
 let current_page: string;
@@ -162,18 +149,25 @@ export function set_tab(page: string): void {
     window.addEventListener("hashchange", handle_hashchange);
 }
 
-export function set_sponsorship_form(): void {
-    $("#sponsorship-button").on("click", (e) => {
-        if (!is_valid_input($("#sponsorship-form"))) {
-            return;
-        }
-        e.preventDefault();
-        create_ajax_request("/json/billing/sponsorship", "sponsorship", [], "POST", () =>
-            window.location.replace("/"),
-        );
-    });
-}
-
 export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
     return elem[0].checkValidity();
+}
+
+export function redirect_to_billing_with_successful_upgrade(billing_base_url: string): void {
+    window.location.replace(
+        billing_base_url +
+            "/billing/?success_message=" +
+            encodeURIComponent("Your organization has been upgraded to PLAN_NAME."),
+    );
+}
+
+export function get_upgrade_page_url(
+    is_manual_license_management_upgrade_session: boolean | undefined,
+    billing_base_url: string,
+): string {
+    let redirect_to = "/upgrade";
+    if (is_manual_license_management_upgrade_session) {
+        redirect_to += "/?manual_license_management=true";
+    }
+    return billing_base_url + redirect_to;
 }

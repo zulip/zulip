@@ -17,11 +17,12 @@ const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {
         autosize_called = true;
     },
+    cursor_inside_code_block: () => false,
 });
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
     warn_if_topic_resolved: noop,
-    wildcard_mention_allowed: () => true,
+    stream_wildcard_mention_allowed: () => true,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
@@ -62,24 +63,35 @@ const ct = composebox_typeahead;
 ct.__Rewire__("max_num_items", 15);
 
 run_test("verify wildcard mentions typeahead for stream message", () => {
+    compose_state.set_message_type("stream");
     const mention_all = ct.broadcast_mentions()[0];
     const mention_everyone = ct.broadcast_mentions()[1];
     const mention_stream = ct.broadcast_mentions()[2];
+    const mention_topic = ct.broadcast_mentions()[3];
     assert.equal(mention_all.email, "all");
     assert.equal(mention_all.full_name, "all");
     assert.equal(mention_everyone.email, "everyone");
     assert.equal(mention_everyone.full_name, "everyone");
     assert.equal(mention_stream.email, "stream");
     assert.equal(mention_stream.full_name, "stream");
+    assert.equal(mention_topic.email, "topic");
+    assert.equal(mention_topic.full_name, "topic");
 
     assert.equal(mention_all.special_item_text, "all (translated: Notify stream)");
     assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify stream)");
     assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
+    assert.equal(mention_topic.special_item_text, "topic (translated: Notify topic)");
 
-    compose_validate.wildcard_mention_allowed = () => false;
+    compose_validate.stream_wildcard_mention_allowed = () => false;
+    compose_validate.topic_wildcard_mention_allowed = () => true;
+    const mention_topic_only = ct.broadcast_mentions()[0];
+    assert.equal(mention_topic_only.full_name, "topic");
+
+    compose_validate.stream_wildcard_mention_allowed = () => false;
+    compose_validate.topic_wildcard_mention_allowed = () => false;
     const mentionNobody = ct.broadcast_mentions();
     assert.equal(mentionNobody.length, 0);
-    compose_validate.wildcard_mention_allowed = () => true;
+    compose_validate.stream_wildcard_mention_allowed = () => true;
 });
 
 run_test("verify wildcard mentions typeahead for direct message", () => {
@@ -182,6 +194,7 @@ const me_slash = {
     name: "me",
     aliases: "",
     text: "translated: /me is excited (Display action text)",
+    placeholder: "translated: is …",
 };
 
 const my_slash = {
@@ -475,6 +488,11 @@ test("content_typeahead_selected", ({override}) => {
     fake_this.completing = "mention";
 
     override(compose_validate, "warn_if_mentioning_unsubscribed_user", () => {});
+    override(
+        compose_validate,
+        "convert_mentions_to_silent_in_direct_messages",
+        (mention_text) => mention_text,
+    );
 
     fake_this.query = "@**Mark Tw";
     fake_this.token = "Mark Tw";
@@ -576,7 +594,7 @@ test("content_typeahead_selected", ({override}) => {
     fake_this.query = "/m";
     fake_this.completing = "slash";
     actual_value = ct.content_typeahead_selected.call(fake_this, me_slash);
-    expected_value = "/me ";
+    expected_value = "/me translated: is …";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/da";
@@ -740,7 +758,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     override(stream_topic_history_util, "get_server_history", () => {});
 
     let topic_typeahead_called = false;
-    $("#stream_message_recipient_topic").typeahead = (options) => {
+    $("input#stream_message_recipient_topic").typeahead = (options) => {
         override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
             return sweden_topics_to_show;
@@ -961,7 +979,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
 
     let compose_textarea_typeahead_called = false;
-    $("#compose-textarea").typeahead = (options) => {
+    $("textarea#compose-textarea").typeahead = (options) => {
         // options.source()
         //
         // For now we only test that get_sorted_filtered_items has been
@@ -1158,14 +1176,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.target.id = "some_non_existing_id";
     $("form#send_message_form").trigger(event);
 
-    $("#compose-textarea")[0] = {
+    $("textarea#compose-textarea")[0] = {
         selectionStart: 0,
         selectionEnd: 0,
     };
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n");
     });
-    $("#compose-textarea").caret = () => $("#compose-textarea")[0].selectionStart;
+    $("textarea#compose-textarea").caret = () => $("textarea#compose-textarea")[0].selectionStart;
 
     event.key = "Enter";
     event.target.id = "stream_message_recipient_topic";
@@ -1187,19 +1205,19 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     // Cover cases where there's at least one character there.
 
     // Test automatic bulleting.
-    $("#compose-textarea").val("- List item 1\n- List item 2");
-    $("#compose-textarea")[0].selectionStart = 27;
-    $("#compose-textarea")[0].selectionEnd = 27;
+    $("textarea#compose-textarea").val("- List item 1\n- List item 2");
+    $("textarea#compose-textarea")[0].selectionStart = 27;
+    $("textarea#compose-textarea")[0].selectionEnd = 27;
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n- ");
     });
     $("form#send_message_form").trigger(event);
 
     // Test removal of bullet.
-    $("#compose-textarea").val("- List item 1\n- List item 2\n- ");
-    $("#compose-textarea")[0].selectionStart = 30;
-    $("#compose-textarea")[0].selectionEnd = 30;
-    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+    $("textarea#compose-textarea").val("- List item 1\n- List item 2\n- ");
+    $("textarea#compose-textarea")[0].selectionStart = 30;
+    $("textarea#compose-textarea")[0].selectionEnd = 30;
+    $("textarea#compose-textarea")[0].setSelectionRange = (start, end) => {
         assert.equal(start, 28);
         assert.equal(end, 30);
     };
@@ -1209,19 +1227,19 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").trigger(event);
 
     // Test automatic numbering.
-    $("#compose-textarea").val("1. List item 1\n2. List item 2");
-    $("#compose-textarea")[0].selectionStart = 29;
-    $("#compose-textarea")[0].selectionEnd = 29;
+    $("textarea#compose-textarea").val("1. List item 1\n2. List item 2");
+    $("textarea#compose-textarea")[0].selectionStart = 29;
+    $("textarea#compose-textarea")[0].selectionEnd = 29;
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n3. ");
     });
     $("form#send_message_form").trigger(event);
 
     // Test removal of numbering.
-    $("#compose-textarea").val("1. List item 1\n2. List item 2\n3. ");
-    $("#compose-textarea")[0].selectionStart = 33;
-    $("#compose-textarea")[0].selectionEnd = 33;
-    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+    $("textarea#compose-textarea").val("1. List item 1\n2. List item 2\n3. ");
+    $("textarea#compose-textarea")[0].selectionStart = 33;
+    $("textarea#compose-textarea")[0].selectionEnd = 33;
+    $("textarea#compose-textarea")[0].setSelectionRange = (start, end) => {
         assert.equal(start, 30);
         assert.equal(end, 33);
     };
@@ -1230,9 +1248,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
     $("form#send_message_form").trigger(event);
 
-    $("#compose-textarea").val("A");
-    $("#compose-textarea")[0].selectionStart = 4;
-    $("#compose-textarea")[0].selectionEnd = 4;
+    $("textarea#compose-textarea").val("A");
+    $("textarea#compose-textarea")[0].selectionStart = 4;
+    $("textarea#compose-textarea")[0].selectionEnd = 4;
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n");
     });
@@ -1258,7 +1276,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
     // We trigger keydown in order to make nextFocus !== false
     $("form#send_message_form").trigger(event);
-    $("#stream_message_recipient_topic").off("mouseup");
+    $("input#stream_message_recipient_topic").off("mouseup");
     event.type = "keyup";
     $("form#send_message_form").trigger(event);
     event.key = "Tab";
@@ -1267,7 +1285,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.key = "a";
     $("form#send_message_form").trigger(event);
 
-    $("#stream_message_recipient_topic").off("focus");
+    $("input#stream_message_recipient_topic").off("focus");
     $("#private_message_recipient").off("focus");
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
@@ -1741,8 +1759,8 @@ test("typeahead_results", () => {
     // Verify we're not matching on a terms that only appear in the description.
     assert_mentions_matches("characters of", []);
 
-    // Verify we suggest only the first matching wildcard mention,
-    // irrespective of how many equivalent wildcard mentions match.
+    // Verify we suggest only the first matching stream wildcard mention,
+    // irrespective of how many equivalent stream wildcard mentions match.
     const mention_everyone = ct.broadcast_mentions()[1];
     // Here, we suggest only "everyone" instead of both the matching
     // "everyone" and "stream" wildcard mentions.
@@ -1758,6 +1776,12 @@ test("typeahead_results", () => {
         hamletcharacters,
         call_center,
     ]);
+
+    // Verify we suggest both 'the first matching stream wildcard' and
+    // 'topic wildcard' mentions. Not only one matching wildcard mention.
+    const mention_topic = ct.broadcast_mentions()[3];
+    // Here, we suggest both "everyone" and "topic".
+    assert_mentions_matches("o", [othello, mention_everyone, mention_topic, cordelia]);
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);

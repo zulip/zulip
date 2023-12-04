@@ -32,6 +32,7 @@ import ldap
 import orjson
 import requests
 import responses
+import time_machine
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -95,7 +96,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.types import Validator
 from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.users import get_all_api_keys, get_api_key, get_raw_user_data
+from zerver.lib.users import get_all_api_keys, get_api_key, get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -1931,7 +1932,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         result = self.social_auth_test(
             account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
         )
-        with mock.patch("zerver.models.timezone_now", return_value=now):
+        with time_machine.travel(now, tick=False):
             self.stage_two_of_registration(
                 result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
             )
@@ -4985,7 +4986,8 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
         self.remove_ldap_user_attr("hamlet", "department")
 
-        # Test wrong configuration
+        # Test a realm that's not configured in the setting. Such a realm should not be affected,
+        # and just allow normal ldap login.
         with override_settings(
             AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={"not_zulip": [{"department": "zulip"}]}
         ):
@@ -4993,7 +4995,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_error(result, "Your username or password is incorrect", 401)
+            self.assert_json_success(result)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
@@ -6424,6 +6426,26 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertIs(user_profile, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_login_failure_user_account_control(self) -> None:
+        self.change_ldap_user_attr("hamlet", "userAccountControl", "2")
+
+        with self.settings(
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_USER_ATTR_MAP={"userAccountControl": "userAccountControl"},
+        ), self.assertLogs("django_auth_ldap", "DEBUG") as debug_log:
+            user_profile = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=self.example_email("hamlet"),
+                password=self.ldap_password("hamlet"),
+                realm=get_realm("zulip"),
+            )
+            self.assertIs(user_profile, None)
+            self.assertIn(
+                "DEBUG:django_auth_ldap:Authentication failed for hamlet: User has been deactivated",
+                debug_log.output,
+            )
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     @override_settings(
         AUTH_LDAP_USER_ATTR_MAP={
             "full_name": "cn",
@@ -7219,7 +7241,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
         self.realm = get_realm("zulip")
         self.user_profile = get_user_by_delivery_email(self.email, self.realm)
         self.api_key = get_api_key(self.user_profile)
-        self.raw_user_data = get_raw_user_data(
+        self.raw_user_data = get_users_for_api(
             self.user_profile.realm,
             self.user_profile,
             target_user=self.user_profile,

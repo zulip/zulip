@@ -1,3 +1,5 @@
+import * as blueslip from "./blueslip";
+
 const unsuspend_callbacks: (() => void)[] = [];
 let watchdog_time = Date.now();
 
@@ -35,7 +37,17 @@ export function check_for_unsuspend(): void {
         // Our app's JS wasn't running, which probably means the machine was
         // asleep.
         for (const callback of unsuspend_callbacks) {
-            callback();
+            try {
+                callback();
+            } catch (error) {
+                blueslip.error(
+                    `Error while executing callback '${
+                        callback.name || "Anonymous function"
+                    }' from unsuspend_callbacks.`,
+                    undefined,
+                    error,
+                );
+            }
         }
     }
     watchdog_time = new_time;

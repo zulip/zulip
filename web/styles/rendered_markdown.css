@@ -178,19 +178,13 @@
         display: inline-block;
     }
 
-    .user-mention,
-    .topic-mention {
+    .user-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
 
         &.user-mention-me {
             color: var(--color-text-self-direct-mention);
             font-weight: 600;
-
-            &[data-user-id="*"] {
-                color: var(--color-text-self-group-mention);
-                background-color: var(--color-background-text-group-mention);
-            }
         }
 
         &:hover {
@@ -198,7 +192,9 @@
         }
     }
 
-    .user-group-mention {
+    .user-mention[data-user-id="*"],
+    .user-group-mention,
+    .topic-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-group-mention);
 
@@ -206,7 +202,9 @@
             color: var(--color-text-self-group-mention);
             font-weight: 600;
         }
+    }
 
+    .user-group-mention {
         &:hover {
             background-color: var(--color-background-text-hover-group-mention);
         }
@@ -649,20 +647,20 @@
     }
 
     & a {
-        color: hsl(200deg 100% 40%);
+        color: var(--color-markdown-link);
         text-decoration: none;
 
         & code {
-            color: hsl(200deg 100% 40%);
+            color: var(--color-markdown-code-link);
         }
 
         &:hover,
         &:focus {
-            color: hsl(200deg 100% 25%);
+            color: var(--color-markdown-link-hover);
             text-decoration: underline;
 
             & code {
-                color: hsl(200deg 100% 25%);
+                color: var(--color-markdown-code-link-hover);
             }
         }
     }
@@ -678,9 +676,7 @@
         word-wrap: normal;
         margin: 5px 0;
         padding: 5px 7px 3px;
-        color: hsl(0deg 0% 20%);
         display: block;
-        border: 1px solid hsl(0deg 0% 0% / 15%);
         border-radius: 4px;
 
         &:hover .copy_codeblock,
@@ -694,6 +690,8 @@
         padding: 0;
         white-space: inherit;
         overflow-x: scroll;
+        /* Unset to avoid compounding alpha values */
+        background-color: unset;
         color: inherit;
         border: 0;
     }
@@ -705,11 +703,10 @@
         font-size: 0.825em;
         unicode-bidi: embed;
         direction: ltr;
-        color: hsl(0deg 0% 0%);
         white-space: pre-wrap;
-        padding: 0 4px;
-        background-color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(240deg 13% 90%);
+        padding: 1px 2px;
+        color: var(--color-markdown-code-text);
+        background-color: var(--color-markdown-code-background);
         border-radius: 3px;
     }
 
@@ -741,6 +738,23 @@
         &:hover {
             color: hsl(200deg 100% 40%);
         }
+    }
+}
+
+.group_mention,
+.direct_mention {
+    & .rendered_markdown pre {
+        background-color: var(--color-markdown-pre-background-mentions);
+        border-color: var(--color-markdown-pre-border-mentions);
+    }
+
+    & .rendered_markdown code {
+        background-color: var(--color-markdown-code-background-mentions);
+    }
+
+    & .rendered_markdown pre code {
+        background-color: unset;
+        border-color: unset;
     }
 }
 
@@ -805,6 +819,14 @@
     display: block !important;
     border: none !important;
     background: none !important;
+
+    & pre {
+        color: var(--color-markdown-pre-text);
+        /* This is necessary to remove the background color
+           set by Pygments. */
+        background-color: var(--color-markdown-pre-background);
+        border: 1px solid var(--color-markdown-pre-border);
+    }
 }
 
 /* Both the horizontal scrollbar in <pre/> as well as

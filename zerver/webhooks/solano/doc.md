@@ -2,7 +2,9 @@ Get Zulip notifications for your Solano CI builds!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to your Solano CI **Organizations** page, and click on
    **Organization Settings**. Click on **Web Hooks**.

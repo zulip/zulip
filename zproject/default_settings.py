@@ -309,6 +309,12 @@ TUTORIAL_ENABLED = True
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 
+# The push bouncer expects to get its requests on the root subdomain,
+# but that makes it more of a hassle to test bouncer endpoints in
+# the development environment - so this setting allows us to disable
+# that check.
+DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+
 
 # These settings are not documented in prod_settings_template.py.
 # They should either be documented here, or documented there.
@@ -401,9 +407,12 @@ POST_MIGRATION_CACHE_FLUSHING = False
 # rebuilding the mobile app with a different push notifications
 # server.
 APNS_CERT_FILE: Optional[str] = None
+APNS_TOKEN_KEY_FILE: Optional[str] = None
+APNS_TOKEN_KEY_ID = get_secret("apns_token_key_id", development_only=True)
+APNS_TEAM_ID = get_secret("apns_team_id", development_only=True)
 APNS_SANDBOX = True
-APNS_TOPIC = "org.zulip.Zulip"
-ZULIP_IOS_APP_ID = "org.zulip.Zulip"
+# APNS_TOPIC is obsolete. Clients now pass the APNs topic to use.
+# ZULIP_IOS_APP_ID is obsolete. Clients now pass the iOS app ID to use for APNs.
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
@@ -434,6 +443,9 @@ FIND_TEAM_LINK_DISABLED = True
 ROOT_SUBDOMAIN_ALIASES = ["www"]
 # Whether the root domain is a landing page or can host a realm.
 ROOT_DOMAIN_LANDING_PAGE = False
+
+# Subdomain for serving endpoints to users from self-hosted deployments.
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN: Optional[str] = None
 
 # If using the Zephyr mirroring supervisord configuration, the
 # hostname to connect to in order to transfer credentials from webathena.
@@ -473,6 +485,8 @@ WELCOME_EMAIL_SENDER: Optional[Dict[str, str]] = None
 
 # Whether to send periodic digests of activity.
 SEND_DIGEST_EMAILS = True
+# The variable part of email sender names to be used for outgoing emails.
+INSTALLATION_NAME = EXTERNAL_HOST
 
 # Used to change the Zulip logo in portico pages.
 CUSTOM_LOGO_URL: Optional[str] = None
@@ -587,3 +601,19 @@ TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 5000
 # How often a client should send start notifications to the server to
 # indicate that the user is still interacting with the compose UI.
 TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
+
+# The maximum number of subscribers for a stream to have typing
+# notifications enabled. Default is set to avoid excessive Tornado
+# load in large organizations.
+MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
+
+# Limiting guest access to other users via the
+# can_access_all_users_group setting makes presence queries much more
+# expensive. This can be a significant performance problem for
+# installations with thousands of users with many guests limited in
+# this way, pending further optimization of the relevant code paths.
+CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
+
+# General expiry time for signed tokens we may generate
+# in some places through the codebase.
+SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60

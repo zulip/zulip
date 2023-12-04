@@ -7,16 +7,11 @@
 <title>{{ title }} | Zulip analytics</title>
 {% endblock %}
 
-
 {% block content %}
-
-    {% if not is_home %}
+<div class="activity-page">
     <a class="show-all" href="/activity">Home</a>
     <br />
-    {% endif %}
-
     <h4>{{ title }} {% if realm_stats_link %}{{ realm_stats_link }}{% endif %}</h4>
-
 
     <ul class="nav nav-tabs">
         {% for name, activity in data %}
@@ -27,15 +22,11 @@
     </ul>
 
     <div class="tab-content">
-
         {% for name, activity in data %}
-
         <div class="tab-pane {% if loop.first %} active {% endif %}" id="{{ name|slugify }}">
             {{ activity|safe }}
         </div>
-
         {% endfor %}
-
     </div>
-
+</div>
 {% endblock %}

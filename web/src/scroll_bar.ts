@@ -29,8 +29,4 @@ export function handle_overlay_scrollbars(): void {
 
 export function initialize(): void {
     set_layout_width();
-    handle_overlay_scrollbars();
-    const middle_column = $(".app .column-middle").expectOne()[0];
-    const resize_observer = new ResizeObserver(handle_overlay_scrollbars);
-    resize_observer.observe(middle_column);
 }

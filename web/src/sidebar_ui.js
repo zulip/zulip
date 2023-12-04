@@ -1,8 +1,15 @@
 import $ from "jquery";
 
+import render_left_sidebar from "../templates/left_sidebar.hbs";
+import render_right_sidebar from "../templates/right_sidebar.hbs";
+
+import {page_params} from "./page_params";
+import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
+import {user_settings} from "./user_settings";
 
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
@@ -125,4 +132,54 @@ export function initialize() {
         },
         {capture: true},
     );
+}
+
+export function initialize_left_sidebar() {
+    const rendered_sidebar = render_left_sidebar({
+        is_guest: page_params.is_guest,
+        development_environment: page_params.development_environment,
+        is_inbox_home_view:
+            user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
+        is_all_messages_home_view:
+            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
+        is_recent_view_home_view:
+            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
+        hide_unread_counts: settings_data.should_mask_unread_count(),
+    });
+
+    $("#left-sidebar-container").html(rendered_sidebar);
+}
+
+export function initialize_right_sidebar() {
+    const rendered_sidebar = render_right_sidebar({
+        realm_rendered_description: page_params.realm_rendered_description,
+    });
+
+    $("#right-sidebar-container").html(rendered_sidebar);
+    update_invite_user_option();
+    if (page_params.is_spectator) {
+        rendered_markdown.update_elements(
+            $(".right-sidebar .realm-description .rendered_markdown"),
+        );
+    }
+
+    $("#buddy-list-users-matching-view").on("mouseenter", ".user_sidebar_entry", (e) => {
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
+        if ($status_emoji.length) {
+            const animated_url = $status_emoji.data("animated-url");
+            if (animated_url) {
+                $status_emoji.attr("src", animated_url);
+            }
+        }
+    });
+
+    $("#buddy-list-users-matching-view").on("mouseleave", ".user_sidebar_entry", (e) => {
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
+        if ($status_emoji.length) {
+            const still_url = $status_emoji.data("still-url");
+            if (still_url) {
+                $status_emoji.attr("src", still_url);
+            }
+        }
+    });
 }

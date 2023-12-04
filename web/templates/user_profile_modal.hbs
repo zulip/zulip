@@ -3,9 +3,15 @@
         <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <div class="modal__header">
                 {{#unless is_bot}}
-                <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
-                    <span class="{{user_circle_class}} user_circle user_profile_presence"></span>
-                </div>
+                    {{#if is_active}}
+                        <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
+                            <span class="{{user_circle_class}} user_circle user_profile_presence"></span>
+                        </div>
+                    {{else}}
+                        <div>
+                            <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
+                        </div>
+                    {{/if}}
                 {{/unless}}
                 <h1 class="modal__title user_profile_name_heading" id="name">
                     {{#if is_bot}}
@@ -13,7 +19,7 @@
                     {{/if}}
                     <span class="user_profile_name">{{> user_full_name name=full_name}}</span>
                     {{#if is_me}}
-                        <a href="/#settings/profile">
+                        <a id="user_profile_manage_own_edit_link" href="/#settings/profile">
                             <i class="fa fa-edit tippy-zulip-tooltip user_profile_manage_own_edit_button" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
                         </a>
                     {{/if}}

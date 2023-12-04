@@ -53,6 +53,10 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                         <div id="id_realm_type" class="not-editable-realm-field">{{ selected_realm_type_name }}</div>
                     </div>
                     <div class="input-box">
+                        <label for="id_realm_default_language" class="inline-block label-title">{{ _('Organization language') }}</label>
+                        <div id="id_realm_default_language" class="not-editable-realm-field">{{ selected_realm_default_language_name }}</div>
+                    </div>
+                    <div class="input-box">
                         <label for="id_realm_subdomain" class="inline-block label-title">{{ _('Organization URL') }}</label>
                         <div id="id_realm_subdomain" class="not-editable-realm-field">{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}.{% endif %}{{external_host}}</div>
                     </div>

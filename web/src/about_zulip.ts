@@ -17,10 +17,14 @@ export function launch(): void {
         },
     });
 
-    const clipboard = new ClipboardJS("#about-zulip .fa-copy");
+    const zulip_version_clipboard = new ClipboardJS("#about-zulip .fa-copy.zulip-version");
+    zulip_version_clipboard.on("success", () => {
+        show_copied_confirmation($("#about-zulip .fa-copy.zulip-version")[0]);
+    });
 
-    clipboard.on("success", () => {
-        show_copied_confirmation($("#about-zulip .fa-copy")[0]);
+    const zulip_merge_base_clipboard = new ClipboardJS("#about-zulip .fa-copy.zulip-merge-base");
+    zulip_merge_base_clipboard.on("success", () => {
+        show_copied_confirmation($("#about-zulip .fa-copy.zulip-merge-base")[0]);
     });
 }
 
@@ -32,5 +36,5 @@ export function initialize(): void {
             page_params.zulip_merge_base &&
             page_params.zulip_merge_base !== page_params.zulip_version,
     });
-    $(".app").append(rendered_about_zulip);
+    $("#about-zulip-modal-container").append(rendered_about_zulip);
 }

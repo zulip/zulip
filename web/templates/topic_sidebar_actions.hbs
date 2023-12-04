@@ -8,62 +8,26 @@
 
     <hr />
 
-    {{#if development}}
-        <li class="hidden-for-spectators">
-            <div class="tabs-container">
-                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
-                    <i class="zulip-icon zulip-icon-mute-new"></i>
-                </div>
-                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.INHERIT}}" data-tippy-content="{{t 'Default' }}" aria-label="{{t 'Default' }}">
-                    <i class="zulip-icon zulip-icon-inherit"></i>
-                </div>
-                {{#if (or stream_muted topic_unmuted)}}
-                    <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}">
-                        <i class="zulip-icon zulip-icon-unmute-new"></i>
-                    </div>
-                {{/if}}
-                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
-                    <i class="zulip-icon zulip-icon-follow"></i>
-                </div>
+    <li class="hidden-for-spectators">
+        <div class="tabs-container">
+            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
+                <i class="zulip-icon zulip-icon-mute-new"></i>
             </div>
-        </li>
+            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.INHERIT}}" data-tippy-content="{{t 'Default' }}" aria-label="{{t 'Default' }}">
+                <i class="zulip-icon zulip-icon-inherit"></i>
+            </div>
+            {{#if (or stream_muted topic_unmuted)}}
+                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}">
+                    <i class="zulip-icon zulip-icon-unmute-new"></i>
+                </div>
+            {{/if}}
+            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
+                <i class="zulip-icon zulip-icon-follow"></i>
+            </div>
+        </div>
+    </li>
 
-        <hr/>
-    {{else}}
-        {{#if stream_muted}}
-            {{#unless topic_unmuted}}
-                <li class="hidden-for-spectators">
-                    <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                        <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
-                        {{t "Unmute topic"}}
-                    </a>
-                </li>
-            {{else}}
-                <li class="hidden-for-spectators">
-                    <a tabindex="0" class="sidebar-popover-remove-unmute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                        <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-                        {{t "Mute topic"}}
-                    </a>
-                </li>
-            {{/unless}}
-        {{else}}
-            {{#unless topic_muted}}
-            <li class="hidden-for-spectators">
-                <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                    <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-                    {{t "Mute topic"}}
-                </a>
-            </li>
-            {{else}}
-            <li class="hidden-for-spectators">
-                <a tabindex="0" class="sidebar-popover-remove-mute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                    <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
-                    {{t "Unmute topic"}}
-                </a>
-            </li>
-            {{/unless}}
-        {{/if}}
-    {{/if}}
+    <hr class="hidden-for-spectators" />
 
     {{#if has_starred_messages}}
     <li class="hidden-for-spectators">

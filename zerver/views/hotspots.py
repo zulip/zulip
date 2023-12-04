@@ -15,7 +15,7 @@ from zerver.models import UserProfile
 def mark_hotspot_as_read(
     request: HttpRequest, user: UserProfile, hotspot: str = REQ()
 ) -> HttpResponse:
-    if hotspot not in ALL_HOTSPOTS:
+    if not any(h.name == hotspot for h in ALL_HOTSPOTS):
         raise JsonableError(_("Unknown hotspot: {hotspot}").format(hotspot=hotspot))
     do_mark_hotspot_as_read(user, hotspot)
     return json_success(request)

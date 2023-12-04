@@ -7,6 +7,7 @@ from django.db.models import F
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.settings import STATUS_REVOKED
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -25,7 +26,9 @@ from zerver.lib.users import (
     can_access_delivery_email,
     check_bot_name_available,
     check_full_name,
+    get_user_ids_who_can_access_user,
     get_users_with_access_to_real_email,
+    user_access_restricted_in_realm,
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -36,7 +39,6 @@ from zerver.models import (
     ScheduledMessageNotificationEmail,
     UserPresence,
     UserProfile,
-    active_user_ids,
     bot_owner_user_ids,
     get_client,
     get_user_profile_by_id,
@@ -50,14 +52,27 @@ def send_user_email_update_event(user_profile: UserProfile) -> None:
     send_event_on_commit(
         user_profile.realm,
         event,
-        active_user_ids(user_profile.realm_id),
+        get_user_ids_who_can_access_user(user_profile),
     )
 
 
 def send_delivery_email_update_events(
     user_profile: UserProfile, old_visibility_setting: int, visibility_setting: int
 ) -> None:
-    active_users = user_profile.realm.get_active_users()
+    if not user_access_restricted_in_realm(user_profile):
+        active_users = user_profile.realm.get_active_users()
+    else:
+        # The get_user_ids_who_can_access_user returns user IDs and not
+        # user objects and we instead do one more query for UserProfile
+        # objects. We need complete UserProfile objects only for a couple
+        # of cases and it is not worth to query the whole UserProfile
+        # objects in all the cases and it is fine to do the extra query
+        # wherever needed.
+        user_ids_who_can_access_user = get_user_ids_who_can_access_user(user_profile)
+        active_users = UserProfile.objects.filter(
+            id__in=user_ids_who_can_access_user, is_active=True
+        )
+
     delivery_email_now_visible_user_ids = []
     delivery_email_now_invisible_user_ids = []
 
@@ -141,6 +156,11 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         realm=user_profile.realm,
     )
 
+    # Deactivate existing email change requests
+    EmailChangeStatus.objects.filter(realm=user_profile.realm, user_profile=user_profile).exclude(
+        id=obj.id,
+    ).update(status=STATUS_REVOKED)
+
     activation_url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
     from zerver.context_processors import common_context
 
@@ -213,7 +233,7 @@ def do_change_full_name(
     send_event(
         user_profile.realm,
         dict(type="realm_user", op="update", person=payload),
-        active_user_ids(user_profile.realm_id),
+        get_user_ids_who_can_access_user(user_profile),
     )
     if user_profile.is_bot:
         send_event(
@@ -343,7 +363,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
     send_event_on_commit(
         user_profile.realm,
         event,
-        active_user_ids(user_profile.realm_id),
+        get_user_ids_who_can_access_user(user_profile),
     )
 
 
@@ -488,7 +508,7 @@ def do_change_user_setting(
         send_event_on_commit(
             user_profile.realm,
             timezone_event,
-            active_user_ids(user_profile.realm_id),
+            get_user_ids_who_can_access_user(user_profile),
         )
 
     if setting_name == "email_address_visibility":

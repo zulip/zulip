@@ -594,6 +594,12 @@ export function update_dom_with_unread_counts(counts) {
 }
 
 export function update_dom_unread_counts_visibility() {
+    const $streams_header = $("#streams_header");
+    if (settings_data.should_mask_unread_count()) {
+        $streams_header.addClass("hide_unread_counts");
+    } else {
+        $streams_header.removeClass("hide_unread_counts");
+    }
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 
@@ -744,7 +750,7 @@ const update_streams_for_search = _.throttle(actually_update_streams_for_search,
 export function initialize_stream_cursor() {
     stream_cursor = new ListCursor({
         list: {
-            scroll_container_sel: "#left_sidebar_scroll_container",
+            scroll_container_selector: "#left_sidebar_scroll_container",
             find_li(opts) {
                 const stream_id = opts.key;
                 const $li = get_stream_li(stream_id);
@@ -817,7 +823,7 @@ export function set_event_handlers({on_stream_click}) {
         const scroll_position = $(
             "#left_sidebar_scroll_container .simplebar-content-wrapper",
         ).scrollTop();
-        const pm_list_height = $("#private_messages_list").height();
+        const pm_list_height = $("#direct-messages-list").height();
         if (scroll_position > pm_list_height) {
             $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
             $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
@@ -874,16 +880,6 @@ export function searching() {
     return $(".stream-list-filter").expectOne().is(":focus");
 }
 
-export function escape_search() {
-    const $filter = $(".stream-list-filter").expectOne();
-    if ($filter.val() === "") {
-        clear_and_hide_search();
-        return;
-    }
-    $filter.val("");
-    update_streams_for_search();
-}
-
 export function clear_search(e) {
     e.stopPropagation();
     const $filter = $(".stream-list-filter").expectOne();
@@ -897,16 +893,19 @@ export function clear_search(e) {
 }
 
 export function show_search_section() {
+    $("#streams_header").addClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().removeClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
 
 export function hide_search_section() {
+    $("#streams_header").removeClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().addClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
 
 export function initiate_search() {
+    popovers.hide_all();
     show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();
@@ -925,7 +924,7 @@ export function initiate_search() {
 }
 
 export function clear_and_hide_search() {
-    const $filter = $(".stream-list-filter");
+    const $filter = $(".stream-list-filter").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
         update_streams_for_search();

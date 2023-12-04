@@ -2,8 +2,6 @@
 
 from django.db import migrations, models
 
-AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER = 4
-
 
 class Migration(migrations.Migration):
     dependencies = [
@@ -15,28 +13,28 @@ class Migration(migrations.Migration):
             model_name="realmuserdefault",
             name="automatically_follow_topics_policy",
             field=models.PositiveSmallIntegerField(
-                default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+                null=True,
             ),
         ),
         migrations.AddField(
             model_name="realmuserdefault",
             name="automatically_unmute_topics_in_muted_streams_policy",
             field=models.PositiveSmallIntegerField(
-                default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+                null=True,
             ),
         ),
         migrations.AddField(
             model_name="userprofile",
             name="automatically_follow_topics_policy",
             field=models.PositiveSmallIntegerField(
-                default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+                null=True,
             ),
         ),
         migrations.AddField(
             model_name="userprofile",
             name="automatically_unmute_topics_in_muted_streams_policy",
             field=models.PositiveSmallIntegerField(
-                default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+                null=True,
             ),
         ),
     ]

@@ -25,8 +25,8 @@ const util = zrequire("util");
 // The most basic unit tests load up code, call functions,
 // and assert truths:
 
-assert.ok(!util.find_wildcard_mentions("boring text"));
-assert.ok(util.find_wildcard_mentions("mention @**everyone**"));
+assert.ok(!util.find_stream_wildcard_mentions("boring text"));
+assert.ok(util.find_stream_wildcard_mentions("mention @**everyone**"));
 
 // Let's test with people.js next.  We'll show this technique:
 //  * get a false value

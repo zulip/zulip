@@ -1,5 +1,5 @@
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 from django_stubs_ext import StrPromise
@@ -140,7 +140,6 @@ class RawStreamDict(TypedDict):
     can_remove_subscribers_group_id: int
     date_created: datetime.datetime
     description: str
-    email_token: str
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
     id: int
@@ -182,7 +181,6 @@ class SubscriptionStreamDict(TypedDict):
     date_created: int
     description: str
     desktop_notifications: Optional[bool]
-    email_address: str
     email_notifications: Optional[bool]
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
@@ -262,7 +260,6 @@ class APISubscriptionDict(APIStreamDict):
     push_notifications: Optional[bool]
     wildcard_mentions_notify: Optional[bool]
     # Computed fields not specified in `Subscription.API_FIELDS`
-    email_address: str
     in_home_view: bool
     subscribers: List[int]
 
@@ -291,3 +288,35 @@ class GroupPermissionSetting:
     default_group_name: str
     id_field_name: str
     default_for_system_groups: Optional[str] = None
+    allowed_system_groups: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ServerSupportedPermissionSettings:
+    realm: Dict[str, GroupPermissionSetting]
+    stream: Dict[str, GroupPermissionSetting]
+    group: Dict[str, GroupPermissionSetting]
+
+
+class RawUserDict(TypedDict):
+    id: int
+    full_name: str
+    email: str
+    avatar_source: str
+    avatar_version: int
+    is_active: bool
+    role: int
+    is_billing_admin: bool
+    is_bot: bool
+    timezone: str
+    date_joined: datetime.datetime
+    bot_owner_id: Optional[int]
+    delivery_email: str
+    bot_type: Optional[int]
+    long_term_idle: bool
+    email_address_visibility: int
+
+
+class RemoteRealmDictValue(TypedDict):
+    can_push: bool
+    expected_end_timestamp: Optional[int]

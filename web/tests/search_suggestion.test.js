@@ -95,7 +95,7 @@ test("basic_get_suggestions_for_spectator", () => {
 
     const query = "";
     const suggestions = get_suggestions(query);
-    assert.deepEqual(suggestions.strings, ["", "has:link", "has:image", "has:attachment"]);
+    assert.deepEqual(suggestions.strings, ["has:link", "has:image", "has:attachment"]);
     page_params.is_spectator = false;
 });
 
@@ -419,7 +419,6 @@ test("empty_query_suggestions", () => {
     const suggestions = get_suggestions(query);
 
     const expected = [
-        "",
         "streams:public",
         "is:dm",
         "is:starred",

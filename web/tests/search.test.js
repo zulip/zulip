@@ -319,7 +319,7 @@ run_test("initiate_search", () => {
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
     // this test ever fails unexpectedly.
-    narrow_state.filter = () => ({is_search: () => false});
+    narrow_state.filter = () => ({is_keyword_search: () => false});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
     $("#search_query").typeahead = (lookup) => {

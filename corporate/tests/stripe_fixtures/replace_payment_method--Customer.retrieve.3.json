@@ -2,7 +2,8 @@
   "address": null,
   "balance": 0,
   "created": 1000000000,
-  "currency": "usd",
+  "currency": null,
+  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
@@ -27,22 +28,22 @@
         "phone": null
       },
       "card": {
-        "brand": "mastercard",
+        "brand": "visa",
         "checks": {
           "address_line1_check": null,
           "address_postal_code_check": null,
           "cvc_check": "pass"
         },
         "country": "US",
-        "exp_month": 3,
-        "exp_year": 2033,
-        "fingerprint": "NORMALIZED000002",
+        "exp_month": 12,
+        "exp_year": 2024,
+        "fingerprint": "NORMALIZED000001",
         "funding": "credit",
         "generated_from": null,
-        "last4": "4444",
+        "last4": "4242",
         "networks": {
           "available": [
-            "mastercard"
+            "visa"
           ],
           "preferred": null
         },
@@ -53,13 +54,14 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1K2OZiHSaWXyvFpKfWT05Ado",
+      "id": "pm_1OIlZeDEQaroqDjsfUfdHhhh",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
       "type": "card"
     },
-    "footer": null
+    "footer": null,
+    "rendering_options": null
   },
   "livemode": false,
   "metadata": {
@@ -67,10 +69,11 @@
     "realm_str": "zulip"
   },
   "name": null,
-  "next_invoice_sequence": 3,
+  "next_invoice_sequence": 1,
   "object": "customer",
   "phone": null,
   "preferred_locales": [],
   "shipping": null,
-  "tax_exempt": "none"
+  "tax_exempt": "none",
+  "test_clock": null
 }

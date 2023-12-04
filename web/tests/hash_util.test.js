@@ -75,6 +75,18 @@ run_test("test_get_hash_section", () => {
     assert.deepEqual(hash_parser.get_current_hash_section(), "profile");
 });
 
+run_test("get_current_nth_hash_section", () => {
+    window.location.hash = "#settings/profile";
+    assert.equal(hash_parser.get_current_nth_hash_section(1), "#settings");
+    assert.equal(hash_parser.get_current_nth_hash_section(2), "profile");
+
+    window.location.hash = "#settings/10/general";
+    assert.equal(hash_parser.get_current_nth_hash_section(1), "#settings");
+    assert.equal(hash_parser.get_current_nth_hash_section(2), "10");
+    assert.equal(hash_parser.get_current_nth_hash_section(3), "general");
+    assert.equal(hash_parser.get_current_nth_hash_section(4), "");
+});
+
 run_test("build_reload_url", () => {
     window.location.hash = "#settings/profile";
     assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fprofile");
@@ -136,7 +148,10 @@ run_test("test_stream_edit_url", () => {
         name: "research & development",
         stream_id: 42,
     };
-    assert.equal(hash_util.stream_edit_url(sub), "#streams/42/research.20.26.20development");
+    assert.equal(
+        hash_util.stream_edit_url(sub, "general"),
+        "#streams/42/research.20.26.20development/general",
+    );
 });
 
 run_test("test_by_conversation_and_time_url", () => {

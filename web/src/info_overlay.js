@@ -294,9 +294,9 @@ export function set_up_toggler() {
 
     $(".informational-overlays .overlay-tabs").append($elem);
 
-    $("#go-to-default-view-hotkey-help").toggleClass(
+    $("#go-to-home-view-hotkey-help").toggleClass(
         "notdisplayed",
-        !user_settings.escape_navigates_to_default_view,
+        !user_settings.web_escape_navigates_to_home_view,
     );
     common.adjust_mac_kbd_tags(".hotkeys_table .hotkey kbd");
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");

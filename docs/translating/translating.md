@@ -209,8 +209,8 @@ properly capitalized in a way consistent with how Zulip does
 capitalization in general. This means that:
 
 - The first letter of a sentence or phrase should be capitalized.
-  - Correct: "Manage streams"
-  - Incorrect: "Manage Streams"
+  - Correct: "Stream settings"
+  - Incorrect: "Stream Settings"
 - All proper nouns should be capitalized.
   - Correct: "This is Zulip"
   - Incorrect: "This is zulip"

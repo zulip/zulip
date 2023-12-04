@@ -1,9 +1,8 @@
 import urllib
 from contextlib import suppress
-from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -49,28 +48,22 @@ from zerver.models import (
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.ZILENCER_ENABLED:
+    from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
     from zilencer.models import RemoteZulipServer
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import approve_sponsorship as do_approve_sponsorship
     from corporate.lib.stripe import (
-        attach_discount_to_realm,
-        downgrade_at_the_end_of_billing_cycle,
-        downgrade_now_without_creating_additional_invoices,
-        get_discount_for_realm,
-        get_latest_seat_count,
-        make_end_of_cycle_updates_if_needed,
-        switch_realm_from_standard_to_plus_plan,
-        update_billing_method_of_current_plan,
-        update_sponsorship_status,
-        void_all_open_invoices,
+        RealmBillingSession,
+        RemoteServerBillingSession,
+        SupportType,
+        SupportViewRequest,
     )
-    from corporate.models import (
-        Customer,
-        CustomerPlan,
-        get_current_plan_by_realm,
-        get_customer_by_realm,
+    from corporate.lib.support import (
+        PlanData,
+        get_current_plan_data_for_support_view,
+        get_customer_discount_for_support_view,
     )
+    from corporate.models import CustomerPlan
 
 
 def get_plan_name(plan_type: int) -> str:
@@ -132,7 +125,7 @@ VALID_MODIFY_PLAN_METHODS = [
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
-    "upgrade_to_plus",
+    "upgrade_plan_tier",
 ]
 
 VALID_STATUS_VALUES = [
@@ -140,18 +133,10 @@ VALID_STATUS_VALUES = [
     "deactivated",
 ]
 
-VALID_BILLING_METHODS = [
+VALID_BILLING_MODALITY_VALUES = [
     "send_invoice",
     "charge_automatically",
 ]
-
-
-@dataclass
-class PlanData:
-    customer: Optional["Customer"] = None
-    current_plan: Optional["CustomerPlan"] = None
-    licenses: Optional[int] = None
-    licenses_used: Optional[int] = None
 
 
 @require_server_admin
@@ -163,8 +148,8 @@ def support(
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
     new_subdomain: Optional[str] = REQ(default=None),
     status: Optional[str] = REQ(default=None, str_validator=check_string_in(VALID_STATUS_VALUES)),
-    billing_method: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_BILLING_METHODS)
+    billing_modality: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)
     ),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
@@ -182,6 +167,8 @@ def support(
         context["success_message"] = request.session["success_message"]
         del request.session["success_message"]
 
+    acting_user = request.user
+    assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
         # We check that request.POST only has two keys in it: The
         # realm_id and a field to change.
@@ -194,9 +181,33 @@ def support(
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
-        acting_user = request.user
-        assert isinstance(acting_user, UserProfile)
-        if plan_type is not None:
+        support_view_request = None
+
+        if approve_sponsorship:
+            support_view_request = SupportViewRequest(support_type=SupportType.approve_sponsorship)
+        elif sponsorship_pending is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_sponsorship_status,
+                sponsorship_status=sponsorship_pending,
+            )
+        elif discount is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.attach_discount,
+                discount=discount,
+            )
+        elif billing_modality is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_billing_modality,
+                billing_modality=billing_modality,
+            )
+        elif modify_plan is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.modify_plan,
+                plan_modification=modify_plan,
+            )
+            if modify_plan == "upgrade_plan_tier":
+                support_view_request["new_plan_tier"] = CustomerPlan.TIER_CLOUD_PLUS
+        elif plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(plan_type)} "
@@ -206,12 +217,6 @@ def support(
             do_change_realm_org_type(realm, org_type, acting_user=acting_user)
             msg = f"Org type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
             context["success_message"] = msg
-        elif discount is not None:
-            current_discount = get_discount_for_realm(realm) or 0
-            attach_discount_to_realm(realm, discount, acting_user=acting_user)
-            context[
-                "success_message"
-            ] = f"Discount of {realm.string_id} changed to {discount}% from {current_discount}%."
         elif new_subdomain is not None:
             old_subdomain = realm.string_id
             try:
@@ -235,51 +240,6 @@ def support(
             elif status == "deactivated":
                 do_deactivate_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} deactivated."
-        elif billing_method is not None:
-            if billing_method == "send_invoice":
-                update_billing_method_of_current_plan(
-                    realm, charge_automatically=False, acting_user=acting_user
-                )
-                context[
-                    "success_message"
-                ] = f"Billing method of {realm.string_id} updated to pay by invoice."
-            elif billing_method == "charge_automatically":
-                update_billing_method_of_current_plan(
-                    realm, charge_automatically=True, acting_user=acting_user
-                )
-                context[
-                    "success_message"
-                ] = f"Billing method of {realm.string_id} updated to charge automatically."
-        elif sponsorship_pending is not None:
-            if sponsorship_pending:
-                update_sponsorship_status(realm, True, acting_user=acting_user)
-                context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
-            else:
-                update_sponsorship_status(realm, False, acting_user=acting_user)
-                context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
-        elif approve_sponsorship:
-            do_approve_sponsorship(realm, acting_user=acting_user)
-            context["success_message"] = f"Sponsorship approved for {realm.string_id}"
-        elif modify_plan is not None:
-            if modify_plan == "downgrade_at_billing_cycle_end":
-                downgrade_at_the_end_of_billing_cycle(realm)
-                context[
-                    "success_message"
-                ] = f"{realm.string_id} marked for downgrade at the end of billing cycle"
-            elif modify_plan == "downgrade_now_without_additional_licenses":
-                downgrade_now_without_creating_additional_invoices(realm)
-                context[
-                    "success_message"
-                ] = f"{realm.string_id} downgraded without creating additional invoices"
-            elif modify_plan == "downgrade_now_void_open_invoices":
-                downgrade_now_without_creating_additional_invoices(realm)
-                voided_invoices_count = void_all_open_invoices(realm)
-                context[
-                    "success_message"
-                ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"
-            elif modify_plan == "upgrade_to_plus":
-                switch_realm_from_standard_to_plus_plan(realm)
-                context["success_message"] = f"{realm.string_id} upgraded to Plus"
         elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)
             context["success_message"] = f"{realm.string_id} scrubbed."
@@ -289,6 +249,13 @@ def support(
             assert user_profile_for_deletion.realm == realm
             do_delete_user_preserving_messages(user_profile_for_deletion)
             context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
+
+        if support_view_request is not None:
+            billing_session = RealmBillingSession(
+                user=acting_user, realm=realm, support_session=True
+            )
+            success_message = billing_session.process_support_view_request(support_view_request)
+            context["success_message"] = success_message
 
     if query:
         key_words = get_invitee_emails_set(query)
@@ -366,22 +333,9 @@ def support(
         )
         plan_data: Dict[int, PlanData] = {}
         for realm in all_realms:
-            current_plan = get_current_plan_by_realm(realm)
-            plan_data[realm.id] = PlanData(
-                customer=get_customer_by_realm(realm),
-                current_plan=current_plan,
-            )
-            if current_plan is not None:
-                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
-                    current_plan, timezone_now()
-                )
-                if last_ledger_entry is not None:
-                    if new_plan is not None:
-                        plan_data[realm.id].current_plan = new_plan
-                    else:
-                        plan_data[realm.id].current_plan = current_plan
-                    plan_data[realm.id].licenses = last_ledger_entry.licenses
-                    plan_data[realm.id].licenses_used = get_latest_seat_count(realm)
+            billing_session = RealmBillingSession(user=None, realm=realm)
+            realm_plan_data = get_current_plan_data_for_support_view(billing_session)
+            plan_data[realm.id] = realm_plan_data
         context["plan_data"] = plan_data
 
     def get_realm_owner_emails_as_string(realm: Realm) -> str:
@@ -400,7 +354,7 @@ def support(
 
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
-    context["get_discount_for_realm"] = get_discount_for_realm
+    context["get_discount"] = get_customer_discount_for_support_view
     context["get_org_type_display_name"] = get_org_type_display_name
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
@@ -429,8 +383,54 @@ def get_remote_servers_for_support(
 @require_server_admin
 @has_request_variables
 def remote_servers_support(
-    request: HttpRequest, query: Optional[str] = REQ("q", default=None)
+    request: HttpRequest,
+    query: Optional[str] = REQ("q", default=None),
+    remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
+    context: Dict[str, Any] = {}
+
+    if "success_message" in request.session:
+        context["success_message"] = request.session["success_message"]
+        del request.session["success_message"]
+
+    acting_user = request.user
+    assert isinstance(acting_user, UserProfile)
+    if settings.BILLING_ENABLED and request.method == "POST":
+        # We check that request.POST only has two keys in it: The
+        # remote_server_id and a field to change.
+        keys = set(request.POST.keys())
+        if "csrfmiddlewaretoken" in keys:
+            keys.remove("csrfmiddlewaretoken")
+        if len(keys) != 2:
+            raise JsonableError(_("Invalid parameters"))
+
+        assert remote_server_id is not None
+        remote_server = RemoteZulipServer.objects.get(id=remote_server_id)
+
+        support_view_request = None
+
+        if approve_sponsorship:
+            support_view_request = SupportViewRequest(support_type=SupportType.approve_sponsorship)
+        elif sponsorship_pending is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_sponsorship_status,
+                sponsorship_status=sponsorship_pending,
+            )
+        elif discount is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.attach_discount,
+                discount=discount,
+            )
+        if support_view_request is not None:
+            billing_session = RemoteServerBillingSession(
+                support_staff=acting_user, remote_server=remote_server
+            )
+            success_message = billing_session.process_support_view_request(support_view_request)
+            context["success_message"] = success_message
+
     email_to_search = None
     hostname_to_search = None
     if query:
@@ -442,10 +442,26 @@ def remote_servers_support(
     remote_servers = get_remote_servers_for_support(
         email_to_search=email_to_search, hostname_to_search=hostname_to_search
     )
+    remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
+    plan_data: Dict[int, PlanData] = {}
+    for remote_server in remote_servers:
+        billing_session = RemoteServerBillingSession(remote_server=remote_server)
+        remote_server_plan_data = get_current_plan_data_for_support_view(billing_session)
+        plan_data[remote_server.id] = remote_server_plan_data
+        try:
+            remote_server_to_max_monthly_messages[remote_server.id] = compute_max_monthly_messages(
+                remote_server
+            )
+        except MissingDataError:
+            remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
+
+    context["remote_servers"] = remote_servers
+    context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
+    context["plan_data"] = plan_data
+    context["get_discount"] = get_customer_discount_for_support_view
+
     return render(
         request,
         "analytics/remote_server_support.html",
-        context=dict(
-            remote_servers=remote_servers,
-        ),
+        context=context,
     )

@@ -67,9 +67,6 @@ from zerver.openapi.openapi import openapi_spec
 # This list of exemptions represents details we should fix in Zulip's
 # API structure and/or validators.
 EXEMPT_OPENAPI_NAMES = [
-    # users field missing
-    "update_display_settings_event",
-    "update_global_notifications_event",
     # Additional keys(push_users_notify) due to bug in API.
     "message_event",
     # tuple handling

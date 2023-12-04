@@ -3,7 +3,9 @@ is pushed to Heroku using the Zulip Heroku plugin!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to your project on Heroku
    and click the **Resources** tab. Add the **Deploy Hooks** add-on.

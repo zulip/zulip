@@ -60,6 +60,13 @@ run_test("narrowing", () => {
     assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("active-filter"));
     assert.ok($(".top_left_inbox").hasClass("active-filter"));
+
+    left_sidebar_navigation_area.highlight_all_messages_view();
+    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
+    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_recent_view").hasClass("active-filter"));
+    assert.ok(!$(".top_left_inbox").hasClass("active-filter"));
+    assert.ok($(".top_left_all_messages").hasClass("active-filter"));
 });
 
 run_test("update_count_in_dom", () => {
@@ -74,15 +81,22 @@ run_test("update_count_in_dom", () => {
     const counts = {
         mentioned_message_count: 222,
         home_unread_messages: 333,
+        stream_unread_messages: 666,
     };
 
     make_elem($(".top_left_mentions"), "<mentioned-count>");
 
     make_elem($(".top_left_inbox"), "<home-count>");
 
+    make_elem($(".selected-home-view"), "<home-count>");
+
     make_elem($(".top_left_starred_messages"), "<starred-count>");
 
     make_elem($(".top_left_scheduled_messages"), "<scheduled-count>");
+
+    make_elem($("#streams_header"), "<stream-count>");
+
+    make_elem($("#topics_header"), "<topics-count>");
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     left_sidebar_navigation_area.update_starred_count(444);
@@ -93,6 +107,8 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
     assert.equal($("<scheduled-count>").text(), "555");
+    assert.equal($("<stream-count>").text(), "666");
+    assert.equal($("<topics-count>").text(), "666");
 
     counts.mentioned_message_count = 0;
     scheduled_messages.get_count = () => 0;

@@ -1,4 +1,3 @@
-import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -34,6 +33,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
+import {is_same_day} from "./time_zone_util";
 import * as timerender from "./timerender";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -42,7 +42,11 @@ function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    return isSameDay(earlier_msg.msg.timestamp * 1000, later_msg.msg.timestamp * 1000);
+    return is_same_day(
+        earlier_msg.msg.timestamp * 1000,
+        later_msg.msg.timestamp * 1000,
+        timerender.display_time_zone,
+    );
 }
 
 function same_sender(a, b) {
@@ -120,17 +124,13 @@ function render_group_display_date(group, message_container) {
 }
 
 function update_group_date(group, message_container, prev) {
-    const time = new Date(message_container.msg.timestamp * 1000);
-    const today = new Date();
-
-    // Show the date in the recipient bar if the previous message was from a different day.
+    // Mark whether we should display a date marker because this
+    // message has a different date than the previous one.
     group.date_unchanged = same_day(message_container, prev);
-    group.group_date_html = timerender.render_date(time, today)[0].outerHTML;
 }
 
 function clear_group_date(group) {
     group.date_unchanged = false;
-    group.group_date_html = undefined;
 }
 
 function clear_message_date_divider(msg) {
@@ -230,20 +230,16 @@ function populate_group_from_message_container(group, message_container) {
             group.stream_id = -1;
         } else {
             group.stream_id = sub.stream_id;
-            group.stream_muted = sub.is_muted;
         }
         group.is_subscribed = stream_data.is_subscribed(group.stream_id);
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
-        group.topic_muted = user_topics.is_topic_muted(group.stream_id, group.topic);
-        group.topic_unmuted = user_topics.is_topic_unmuted(group.stream_id, group.topic);
         group.visibility_policy = user_topics.get_topic_visibility_policy(
             group.stream_id,
             group.topic,
         );
 
-        // The following two fields are not specific to this group, but this is the
+        // The following field is not specific to this group, but this is the
         // easiest way we've figured out for passing the data to the template rendering.
-        group.development = page_params.development_environment;
         group.all_visibility_policies = user_topics.all_visibility_policies;
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
@@ -305,6 +301,9 @@ export class MessageListView {
         // what range of messages is currently rendered in the dOM.
         this._render_win_start = 0;
         this._render_win_end = 0;
+
+        // ID of message under the sticky recipient bar if there is one.
+        this.sticky_recipient_message_id = undefined;
     }
 
     // Number of messages to render at a time
@@ -422,7 +421,16 @@ export class MessageListView {
             // message didn't include a user mention, then it was a usergroup/wildcard
             // mention (which is the only other option for `mentioned` being true).
             if (message_container.msg.mentioned_me_directly && is_user_mention) {
-                message_container.mention_classname = "direct_mention";
+                // Highlight messages having personal mentions only in DMs and subscribed streams.
+                if (
+                    message_container.msg.type === "private" ||
+                    stream_data.is_user_subscribed(
+                        message_container.msg.stream_id,
+                        people.my_current_user_id(),
+                    )
+                ) {
+                    message_container.mention_classname = "direct_mention";
+                }
             } else {
                 message_container.mention_classname = "group_mention";
             }
@@ -867,7 +875,7 @@ export class MessageListView {
 
             $rendered_groups = this._render_group({
                 message_groups: message_actions.prepend_groups,
-                use_match_properties: this.list.is_search(),
+                use_match_properties: this.list.is_keyword_search(),
                 table_name: this.table_name,
             });
 
@@ -894,7 +902,7 @@ export class MessageListView {
 
                 $rendered_groups = this._render_group({
                     message_groups: [message_group],
-                    use_match_properties: this.list.is_search(),
+                    use_match_properties: this.list.is_keyword_search(),
                     table_name: this.table_name,
                 });
 
@@ -931,7 +939,7 @@ export class MessageListView {
 
             $rendered_groups = this._render_group({
                 message_groups: message_actions.append_groups,
-                use_match_properties: this.list.is_search(),
+                use_match_properties: this.list.is_keyword_search(),
                 table_name: this.table_name,
             });
 
@@ -1121,7 +1129,7 @@ export class MessageListView {
             // the current compose is bigger than the empty, open
             // compose box.
             const compose_textarea_default_height = 42;
-            const compose_textarea_current_height = $("#compose-textarea").height();
+            const compose_textarea_current_height = $("textarea#compose-textarea").height();
             const expected_change =
                 compose_textarea_current_height - compose_textarea_default_height;
             const expected_offset = offset - expected_change;
@@ -1542,7 +1550,7 @@ export class MessageListView {
         const partially_hidden_header_position = visible_top - 1;
 
         function is_sticky(header) {
-            // header has a box-shodow of `1px` at top but since it doesn't impact
+            // header has a box-shadow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
             // This value is dependent upon space between two `recipient_row` message groups.
@@ -1615,14 +1623,23 @@ export class MessageListView {
                 $message_row = $sticky_header.nextAll(".message_row").first();
             }
         }
+        // We expect message information to be available for the message row even for failed or
+        // local echo messages. If for some reason we don't have the data for message row, we can't
+        // update the sticky header date or identify the message under it for other use cases.
+        this.sticky_recipient_message_id = undefined;
         const msg_id = rows.id($message_row);
         if (msg_id === undefined) {
+            blueslip.error(`Missing message id for sticky recipient row.`);
             return;
         }
         const message = message_store.get(msg_id);
         if (!message) {
+            blueslip.error(
+                `Message not found for the message id identified for sticky header: ${msg_id}.`,
+            );
             return;
         }
+        this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
         const today = new Date();
         const rendered_date = timerender.render_date(time, undefined, today);

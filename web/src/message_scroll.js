@@ -11,8 +11,6 @@ import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 
-let actively_scrolling = false;
-
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
@@ -57,12 +55,8 @@ $(document).on("keydown", (e) => {
     $("#scroll-to-bottom-button-container").removeClass("show");
 });
 
-export function is_actively_scrolling() {
-    return actively_scrolling;
-}
-
 export function scroll_finished() {
-    actively_scrolling = false;
+    message_scroll_state.set_actively_scrolling(false);
     message_lists.current.view.update_sticky_recipient_headers();
     hide_scroll_to_bottom();
 
@@ -106,7 +100,7 @@ export function scroll_finished() {
 
 let scroll_timer;
 function scroll_finish() {
-    actively_scrolling = true;
+    message_scroll_state.set_actively_scrolling(true);
 
     // Don't present the "scroll to bottom" widget if the current
     // scroll was triggered by the keyboard.

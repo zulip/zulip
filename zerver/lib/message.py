@@ -213,6 +213,7 @@ class SendMessageRequest:
     service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: Optional[int] = None
+    recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -266,7 +267,15 @@ def messages_for_ids(
 
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
-        msg_dict.update(flags=user_message_flags[message_id])
+        flags = user_message_flags[message_id]
+        # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
+        # the `stream_wildcard_mentioned` and `topic_wildcard_mentioned` flags.  The
+        # `wildcard_mentioned` flag exists for backwards-compatibility with older
+        # clients.  Remove this when we no longer support legacy clients that have not
+        # been updated to access `stream_wildcard_mentioned`.
+        if "stream_wildcard_mentioned" in flags or "topic_wildcard_mentioned" in flags:
+            flags.append("wildcard_mentioned")
+        msg_dict.update(flags=flags)
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
         # Make sure that we never send message edit history to clients
@@ -1379,7 +1388,9 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
-    if "wildcard_mentioned" in flags and message_id in state["unmuted_stream_msgs"]:
+    if (
+        "stream_wildcard_mentioned" in flags or "topic_wildcard_mentioned" in flags
+    ) and message_id in state["unmuted_stream_msgs"]:
         state["mentions"].add(message_id)
 
 
@@ -1670,14 +1681,13 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     return recipient_map
 
 
-def wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
-    # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
-    # allow sending.  In the future, we may want to make this behavior
-    # a default, and also just allow explicitly setting whether this
-    # applies to a stream as an override.
-    if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
-        return True
-
+def wildcard_mention_policy_authorizes_user(sender: UserProfile, realm: Realm) -> bool:
+    """Helper function for 'topic_wildcard_mention_allowed' and
+    'stream_wildcard_mention_allowed' to check if the sender is allowed to use
+    wildcard mentions based on the 'wildcard_mention_policy' setting of that realm.
+    This check is used only if the participants count in the topic or the subscribers
+    count in the stream is greater than 'Realm.WILDCARD_MENTION_THRESHOLD'.
+    """
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_NOBODY:
         return False
 
@@ -1697,6 +1707,24 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) 
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
+
+
+def topic_wildcard_mention_allowed(
+    sender: UserProfile, topic_participant_count: int, realm: Realm
+) -> bool:
+    if topic_participant_count <= Realm.WILDCARD_MENTION_THRESHOLD:
+        return True
+    return wildcard_mention_policy_authorizes_user(sender, realm)
+
+
+def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
+    # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
+    # allow sending.  In the future, we may want to make this behavior
+    # a default, and also just allow explicitly setting whether this
+    # applies to a stream as an override.
+    if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
+        return True
+    return wildcard_mention_policy_authorizes_user(sender, realm)
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[int]) -> None:

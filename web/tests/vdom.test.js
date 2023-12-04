@@ -26,7 +26,7 @@ run_test("basics", () => {
 
 run_test("attribute escaping", () => {
     // So far most of the time our attributes are
-    // hard-coded classes like "pm-list",
+    // hard-coded classes like "dm-list",
     // but we need to be defensive about future code
     // that might use data from possibly malicious users.
     const opts = {

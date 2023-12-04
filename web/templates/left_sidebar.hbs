@@ -1,30 +1,32 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
         <div id="views-label-container" class="showing-expanded-navigation hidden-for-spectators">
-            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down" aria-hidden="true"></i>
+            <i id="toggle-top-left-navigation-area-icon" class="fa fa-sm fa-caret-down views-tooltip-target" aria-hidden="true"></i>
             {{~!-- squash whitespace --~}}
-            <h4 class="sidebar-title">{{t 'VIEWS' }}</h4>
+            <h4 class="left-sidebar-title"><span class="views-tooltip-target">{{t 'VIEWS' }}</span></h4>
             <ul id="left-sidebar-navigation-list-condensed" class="filters">
-                <li class="top_left_inbox left-sidebar-navigation-condensed-item">
-                    <a href="#inbox" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">
+                <li class="top_left_inbox left-sidebar-navigation-condensed-item {{#if is_inbox_home_view}}selected-home-view{{/if}}">
+                    <a href="#inbox" {{#if is_inbox_home_view}}tabindex="0"{{/if}} class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="inbox-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                         </span>
                         <span class="unread_count"></span>
                     </a>
                 </li>
-                <li class="top_left_recent_view left-sidebar-navigation-condensed-item">
-                    <a href="#recent" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="recent-conversations-tooltip-template">
+                <li class="top_left_recent_view left-sidebar-navigation-condensed-item {{#if is_recent_view_home_view}}selected-home-view{{/if}}">
+                    <a href="#recent" {{#if is_recent_view_home_view}}tabindex="0"{{/if}} class="tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="recent-conversations-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-clock" aria-hidden="true"></i>
                         </span>
+                        <span class="unread_count"></span>
                     </a>
                 </li>
-                <li class="top_left_all_messages left-sidebar-navigation-condensed-item">
-                    <a href="#all_messages" class="home-link tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
+                <li class="top_left_all_messages left-sidebar-navigation-condensed-item {{#if is_all_messages_home_view}}selected-home-view{{/if}}">
+                    <a href="#all_messages" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link tippy-views-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="all-message-tooltip-template">
                         <span class="filter-icon">
                             <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                         </span>
+                        <span class="unread_count"></span>
                     </a>
                 </li>
                 <li class="top_left_mentions left-sidebar-navigation-condensed-item">
@@ -49,8 +51,8 @@
             </div>
         </div>
         <ul id="left-sidebar-navigation-list" class="left-sidebar-navigation-list filters">
-            <li class="top_left_inbox top_left_row hidden-for-spectators">
-                <a href="#inbox" class="tippy-left-sidebar-tooltip left-sidebar-navigation-label-container" data-tooltip-template-id="inbox-tooltip-template">
+            <li class="tippy-views-tooltip top_left_inbox top_left_row hidden-for-spectators {{#if is_inbox_home_view}}selected-home-view{{/if}}" data-tooltip-template-id="inbox-tooltip-template">
+                <a href="#inbox" {{#if is_inbox_home_view}}tabindex="0"{{/if}} class="left-sidebar-navigation-label-container">
                     <span class="filter-icon">
                         <i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>
                     </span>
@@ -60,28 +62,36 @@
                 </a>
                 <span class="arrow sidebar-menu-icon inbox-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_recent_view top_left_row">
-                <a href="#recent" class="tippy-left-sidebar-tooltip left-sidebar-navigation-label-container" data-tooltip-template-id="recent-conversations-tooltip-template">
+            <li class="tippy-views-tooltip top_left_recent_view top_left_row {{#if is_recent_view_home_view}}selected-home-view{{/if}}" data-tooltip-template-id="recent-conversations-tooltip-template">
+                <a href="#recent" {{#if is_recent_view_home_view}}tabindex="0"{{/if}} class="left-sidebar-navigation-label-container">
                     <span class="filter-icon">
-                        <i class="fa fa-clock-o" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-clock" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Recent conversations' }}</span>
+                    <span class="unread_count"></span>
                 </a>
+                <span class="arrow sidebar-menu-icon recent-view-sidebar-menu-icon hidden-for-spectators {{#if is_recent_view_home_view}}hide{{/if}}">
+                    <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
+                </span>
             </li>
-            <li class="top_left_all_messages top_left_row">
-                <a href="#all_messages" class="home-link tippy-left-sidebar-tooltip left-sidebar-navigation-label-container" data-tooltip-template-id="all-message-tooltip-template">
+            <li class="tippy-views-tooltip top_left_all_messages top_left_row {{#if is_all_messages_home_view}}selected-home-view{{/if}}" data-tooltip-template-id="all-message-tooltip-template">
+                <a href="#all_messages" {{#if is_all_messages_home_view}}tabindex="0"{{/if}} class="home-link left-sidebar-navigation-label-container">
                     <span class="filter-icon">
-                        <i class="fa fa-align-left" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-all-messages" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'All messages' }}</span>
+                    <span class="unread_count"></span>
                 </a>
+                <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators {{#if is_all_messages_home_view}}hide{{/if}}">
+                    <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
+                </span>
             </li>
             <li class="top_left_mentions top_left_row hidden-for-spectators">
                 <a class="left-sidebar-navigation-label-container" href="#narrow/is/mentioned">
                     <span class="filter-icon">
-                        <i class="fa fa-at" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Mentions' }}</span>
@@ -99,10 +109,10 @@
                 </a>
                 <span class="arrow sidebar-menu-icon starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_drafts top_left_row hidden-for-spectators">
-                <a href="#drafts" class="tippy-left-sidebar-tooltip left-sidebar-navigation-label-container" data-tooltip-template-id="drafts-tooltip-template">
+            <li class="tippy-left-sidebar-tooltip top_left_drafts top_left_row hidden-for-spectators" data-tooltip-template-id="drafts-tooltip-template">
+                <a href="#drafts" class="left-sidebar-navigation-label-container">
                     <span class="filter-icon">
-                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-drafts" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Drafts' }}</span>
@@ -113,7 +123,7 @@
             <li class="top_left_scheduled_messages top_left_row hidden-for-spectators">
                 <a class="left-sidebar-navigation-label-container" href="#scheduled">
                     <span class="filter-icon">
-                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-scheduled-messages" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Scheduled messages' }}</span>
@@ -123,35 +133,41 @@
         </ul>
     </div>
 
-    <div id="private_messages_sticky_header" class="private_messages_container zoom-out hidden-for-spectators">
+    <div id="private_messages_sticky_header" class="direct-messages-container zoom-out hidden-for-spectators">
         <div id="private_messages_section">
             <div id="private_messages_section_header" class="zoom-out zoom-in-sticky">
-                <span id="pm_tooltip_container">
-                    <i id="toggle_private_messages_section_icon" class="fa fa-sm fa-caret-down toggle_private_messages_section zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
-                    <h4 class="sidebar-title toggle_private_messages_section">{{t 'DIRECT MESSAGES' }}</h4>
-                </span>
-                <span class="unread_count"></span>
-                <a id="show_all_private_messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-pms-template">
-                    <i class="fa fa-align-right" aria-label="{{t 'All direct messages' }}"></i>
-                </a>
+                <i id="toggle_private_messages_section_icon" class="fa fa-sm fa-caret-down dm-tooltip-target toggle_private_messages_section zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
+                <h4 class="left-sidebar-title toggle_private_messages_section"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
+                <div class="heading-markers-and-controls">
+                    <a id="show_all_private_messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-pms-template">
+                        <i class="fa fa-align-right" aria-label="{{t 'All direct messages' }}"></i>
+                    </a>
+                    <span class="unread_count"></span>
+                </div>
             </div>
         </div>
-        <a class="zoom-out-hide" id="hide_more_private_messages">
+        <a class="zoom-out-hide" id="hide-more-direct-messages">
             <span> {{t 'back to streams' }}</span>
         </a>
     </div>
     {{~!-- squash whitespace --~}}
     <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar>
-        <div class="private_messages_container zoom-out hidden-for-spectators">
-            <div id="private_messages_list"></div>
+        <div class="direct-messages-container zoom-out hidden-for-spectators">
+            <div id="direct-messages-list"></div>
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'STREAMS' }}</h4>
-                <span id="add_streams_tooltip" class="streams_inline_icon_wrapper hidden-for-spectators" data-tippy-content="{{t 'Add streams' }}">
-                    <i id="streams_inline_icon" class='fa fa-plus' aria-hidden="true" ></i>
-                </span>
-                <i id="filter_streams_tooltip" class="streams_filter_icon fa fa-filter" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
+            <div id="streams_header" class="zoom-in-hide {{#if hide_unread_counts}}hide_unread_counts{{/if}}">
+                <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'STREAMS' }}</span></h4>
+                <div class="heading-markers-and-controls">
+                    <i id="filter_streams_tooltip" class="streams_filter_icon fa fa-filter" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
+                    <span id="add_streams_tooltip" class="hidden-for-spectators" data-tippy-content="{{t 'Add streams' }}">
+                        <i id="streams_inline_icon" class='fa fa-plus' aria-hidden="true" ></i>
+                    </span>
+                    <span class="unread_count"></span>
+                    <span class="masked_unread_count"></span>
+                </div>
+
                 <div class="input-append notdisplayed stream_search_section">
                     <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter streams' }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
@@ -160,7 +176,7 @@
                 </div>
             </div>
             <div id="topics_header">
-                <a class="show-all-streams" tabindex="0">{{t 'Back to streams' }}</a>
+                <a class="show-all-streams" tabindex="0">{{t 'Back to streams' }}</a> <span class="unread_count"></span>
             </div>
             <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
@@ -169,7 +185,7 @@
                 {{/unless}}
                 <div id="login-link-container" class="only-visible-for-spectators">
                     <a class="login_button">
-                        <i class="fa fa-sign-in" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-log-in" aria-hidden="true"></i>
                         {{~!-- squash whitespace --~}}
                         {{t 'Log in to browse more streams'}}
                     </a>

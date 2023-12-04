@@ -76,43 +76,32 @@
                     <div class="messagebox-wrapper">
                         <div class="messagebox">
                             <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
-                            <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
-                                <div class="markdown_preview_spinner"></div>
-                                <div class="preview_content rendered_markdown"></div>
+                            <div id="preview-message-area-container">
+                                <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
+                                    <div class="markdown_preview_spinner"></div>
+                                    <div class="preview_content rendered_markdown"></div>
+                                </div>
                             </div>
                             <div class="drag"></div>
-                            <div id="below-compose-content">
-                                <div class="compose_bottom_top_container">
-                                    <div class="compose_right_float_container order-3">
-                                        <button type="submit" id="compose-send-button" class="button small send_message compose-submit-button animated-purple-button">
-                                            <img class="loader" alt="" src="" />
-                                            <span>{{t 'Send' }}</span>
-                                        </button>
-                                        <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
-                                            <div class="separator-line"></div>
-                                            <i class="zulip-icon zulip-icon-more-vertical"></i>
-                                        </button>
-                                    </div>
-                                    {{> compose_control_buttons }}
+
+                            <div id="message-send-controls-container">
+                                <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip_template">
+                                    {{t 'Drafts' }}
+                                </a>
+                                <span id="compose-limit-indicator"></span>
+                                <div class="message-send-controls">
+                                    <button type="submit" id="compose-send-button" class="send_message compose-submit-button compose-send-or-save-button" aria-label="{{t 'Send' }}">
+                                        <img class="loader" alt="" src="" />
+                                        <i class="zulip-icon zulip-icon-send"></i>
+                                    </button>
+                                    <button class="send-control-button send-related-action-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send options' }}">
+                                        <i class="zulip-icon zulip-icon-more-vertical"></i>
+                                    </button>
                                 </div>
-                                <div class="compose_bottom_bottom_container">
-                                    <span id="compose_limit_indicator"></span>
-                                    <div class="open_enter_sends_dialog">
-                                        <span class="enter_sends_true">
-                                            {{#tr}}
-                                                <z-shortcut></z-shortcut> to send
-                                                {{#*inline "z-shortcut"}}<kbd>Enter</kbd>{{/inline}}
-                                            {{/tr}}
-                                        </span>
-                                        <span class="enter_sends_false">
-                                            {{#tr}}
-                                                <z-shortcut></z-shortcut> to send
-                                                {{#*inline "z-shortcut"}}<kbd>Ctrl</kbd>+<kbd>Enter</kbd>{{/inline}}
-                                            {{/tr}}
-                                        </span>
-                                        <i class="fa fa-caret-down" aria-hidden="true"></i>
-                                    </div>
-                                </div>
+                            </div>
+
+                            <div id="message-formatting-controls-container">
+                                {{> compose_control_buttons }}
                             </div>
                         </div>
                     </div>

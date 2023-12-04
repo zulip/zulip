@@ -163,6 +163,21 @@ def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
     return result
 
 
+def get_users_for_streams(stream_ids: Set[int]) -> Dict[int, Set[UserProfile]]:
+    all_subs = (
+        get_active_subscriptions_for_stream_ids(stream_ids)
+        .select_related("user_profile", "recipient")
+        .order_by("recipient__type_id")
+    )
+
+    result: Dict[int, Set[UserProfile]] = defaultdict(set)
+    for stream_id, rows in itertools.groupby(all_subs, key=lambda obj: obj.recipient.type_id):
+        users = {row.user_profile for row in rows}
+        result[stream_id] = users
+
+    return result
+
+
 def bulk_get_subscriber_peer_info(
     realm: Realm,
     streams: Collection[Stream],
@@ -198,8 +213,7 @@ def bulk_get_subscriber_peer_info(
         realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
 
         for stream_id in private_stream_ids:
-            # This is the same business rule as we use in
-            # bulk_get_private_peers. Realm admins can see all private stream
+            # Realm admins can see all private stream
             # subscribers.
             subscribed_user_ids = stream_user_ids.get(stream_id, set())
             subscribed_ids[stream_id] = subscribed_user_ids
@@ -213,34 +227,6 @@ def bulk_get_subscriber_peer_info(
         subscribed_ids=subscribed_ids,
         private_peer_dict=private_peer_dict,
     )
-
-
-def bulk_get_private_peers(
-    realm: Realm,
-    private_streams: List[Stream],
-) -> Dict[int, Set[int]]:
-    if not private_streams:
-        return {}
-
-    for stream in private_streams:
-        # Our caller should only pass us private streams.
-        assert stream.invite_only
-
-    peer_ids: Dict[int, Set[int]] = {}
-
-    realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
-
-    stream_ids = {stream.id for stream in private_streams}
-    stream_user_ids = get_user_ids_for_streams(stream_ids)
-
-    for stream in private_streams:
-        # This is the same business rule as we use in
-        # bulk_get_subscriber_peer_info.  Realm admins can see all private
-        # stream subscribers.
-        subscribed_user_ids = stream_user_ids.get(stream.id, set())
-        peer_ids[stream.id] = subscribed_user_ids | realm_admin_ids
-
-    return peer_ids
 
 
 def handle_stream_notifications_compatibility(

@@ -16,7 +16,6 @@ from django.http import HttpResponse, HttpResponseBase
 from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.utils import translation
-from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, one_click_unsubscribe_link
@@ -360,7 +359,7 @@ class PasswordResetTest(ZulipTestCase):
         # The email might be sent in different languages for i18n testing
         self.assertRegex(
             self.email_display_from(message),
-            rf'^{_("Zulip Account Security")} <{self.TOKENIZED_NOREPLY_REGEX}>\Z',
+            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
@@ -748,7 +747,7 @@ class PasswordResetTest(ZulipTestCase):
         self.assert_in_success_response(["/accounts/home/"], result)
 
         result = self.client_get(
-            "/accounts/new/send_confirm/?email=alice@example.com&realm_name=Zulip+test&realm_type=10&realm_subdomain=zuliptest"
+            "/accounts/new/send_confirm/?email=alice@example.com&realm_name=Zulip+test&realm_type=10&realm_default_language=en&realm_subdomain=zuliptest"
         )
         self.assert_in_success_response(["/new/"], result)
 
@@ -935,7 +934,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(103), self.assert_memcached_count(18):
+        with self.assert_database_query_count(104), self.assert_memcached_count(18):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -1256,7 +1255,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(org_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(org_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1264,6 +1263,7 @@ class RealmCreationTest(ZulipTestCase):
         prereg_realm = PreregistrationRealm.objects.get(email=email)
         self.assertEqual(prereg_realm.name, "Zulip Test")
         self.assertEqual(prereg_realm.org_type, Realm.ORG_TYPES["business"]["id"])
+        self.assertEqual(prereg_realm.default_language, "en")
         self.assertEqual(prereg_realm.string_id, string_id)
 
         # Check confirmation email has the correct subject and body, extract
@@ -1295,6 +1295,7 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check defaults
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["business"]["id"])
+        self.assertEqual(realm.default_language, "en")
         self.assertEqual(realm.emails_restricted_to_domains, False)
         self.assertEqual(realm.invite_required, True)
 
@@ -1397,14 +1398,16 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
@@ -1443,7 +1446,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1492,7 +1495,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1552,7 +1555,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1597,7 +1600,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1648,7 +1651,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=35&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=35&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1683,6 +1686,77 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIn("Using Zulip for a class guide", welcome_msg.content)
         self.assertIn("demo organization", welcome_msg.content)
 
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_realm_with_custom_language(self) -> None:
+        email = "user1@test.com"
+        password = "test"
+        string_id = "custom-test"
+        realm_name = "Zulip Test"
+        realm_language = "it"
+
+        # Make sure the realm does not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        # Create new realm with the email
+        result = self.submit_realm_creation_form(
+            email,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+            realm_default_language=realm_language,
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language={realm_language}&realm_subdomain={string_id}"
+            )
+        )
+        result = self.client_get(result["Location"])
+        self.assert_in_response("check your email", result)
+
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        # Check default_language field of PreregistrationRealm object
+        self.assertEqual(prereg_realm.default_language, realm_language)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+            realm_default_language=realm_language,
+        )
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result["Location"], subdomain=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "http://custom-test.testserver")
+
+        # Make sure the realm is created and check default_language field
+        realm = get_realm(string_id)
+        self.assertEqual(realm.string_id, string_id)
+        self.assertEqual(realm.default_language, realm_language)
+
+        # Check welcome messages
+        with_the_topic_in_italian = "con l'argomento"
+        private_stream_in_italian = "canale privato"
+
+        for stream_name, text, message_count in [
+            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, with_the_topic_in_italian, 3),
+            (Realm.INITIAL_PRIVATE_STREAM_NAME, private_stream_in_italian, 1),
+        ]:
+            stream = get_stream(stream_name, realm)
+            recipient = stream.recipient
+            messages = Message.objects.filter(realm_id=realm.id, recipient=recipient).order_by(
+                "date_sent"
+            )
+            self.assert_length(messages, message_count)
+            self.assertIn(text, messages[0].content)
+
     @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:
         password = "test"
@@ -1700,13 +1774,15 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
@@ -1716,12 +1792,10 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assertEqual(
-            result["Location"], "http://custom-test.testserver/upgrade/?onboarding=true"
-        )
+        self.assertEqual(result["Location"], "http://custom-test.testserver/upgrade/")
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assert_in_success_response(["Not ready to start your trial?"], result)
+        self.assert_in_success_response(["Your card will not be charged", "free trial"], result)
 
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)
@@ -1756,12 +1830,14 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(first_realm_name)}&realm_type=10&realm_subdomain={first_string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(first_realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={first_string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
-        first_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        first_confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 1)
 
         result = self.submit_realm_creation_form(
@@ -1770,12 +1846,14 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(second_realm_name)}&realm_type=10&realm_subdomain={second_string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(second_realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={second_string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
-        second_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        second_confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
 
         self.assertNotEqual(first_confirmation_url, second_confirmation_url)
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 2)
@@ -1971,6 +2049,12 @@ class RealmCreationTest(ZulipTestCase):
                 ["Subdomain reserved. Please choose a different one."], result
             )
 
+        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
+            result = self.client_get("/json/realm/subdomain/zulipselfhosting")
+            self.assert_in_success_response(
+                ["Subdomain reserved. Please choose a different one."], result
+            )
+
         result = self.client_get("/json/realm/subdomain/hufflepuff")
         self.assert_in_success_response(["available"], result)
         self.assert_not_in_success_response(["already in use"], result)
@@ -2042,7 +2126,9 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="You recently signed up for Zulip. Awesome!"
+        )
         result = self.client_get(confirmation_url, **client_kwargs)
         self.assertEqual(result.status_code, 200)
 

@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import unicodedata
 from subprocess import CalledProcessError, check_output
 from typing import Any, Dict, List
 
@@ -129,8 +130,8 @@ class Command(compilemessages.Command):
                 with override_language(code):
                     name_local = _(name)
 
-            info["name"] = name
-            info["name_local"] = name_local
+            info["name"] = unicodedata.normalize("NFC", name)
+            info["name_local"] = unicodedata.normalize("NFC", name_local)
             info["code"] = code
             info["locale"] = locale
             info["percent_translated"] = percentage

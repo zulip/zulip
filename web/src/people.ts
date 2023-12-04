@@ -1,5 +1,4 @@
 import md5 from "blueimp-md5";
-import {format, utcToZonedTime} from "date-fns-tz";
 import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead";
@@ -12,8 +11,9 @@ import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
+import * as timerender from "./timerender";
 import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./types";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 export type ProfileData = {
@@ -23,7 +23,7 @@ export type ProfileData = {
 
 export type User = {
     user_id: number;
-    delivery_email?: string | null;
+    delivery_email: string | null;
     email: string;
     full_name: string;
     date_joined: string;
@@ -364,26 +364,20 @@ export function emails_to_full_names_string(emails: string[]): string {
         .join(", ");
 }
 
-export function get_user_time_preferences(
-    user_id: number,
-): settings_data.TimePreferences | undefined {
+export function get_user_time(user_id: number): string | undefined {
     const user_timezone = get_by_user_id(user_id)!.timezone;
     if (user_timezone) {
-        return settings_data.get_time_preferences(user_timezone);
-    }
-    return undefined;
-}
-
-export function get_user_time(user_id: number): string | undefined {
-    const user_pref = get_user_time_preferences(user_id);
-    if (user_pref) {
-        const current_date = utcToZonedTime(new Date(), user_pref.timezone);
-        // This could happen if the timezone is invalid.
-        if (Number.isNaN(current_date.getTime())) {
-            blueslip.error("Got invalid date for timezone", {timezone: user_pref.timezone});
-            return undefined;
+        try {
+            return new Date().toLocaleTimeString(user_settings.default_language, {
+                ...timerender.get_format_options_for_type(
+                    "time",
+                    user_settings.twenty_four_hour_time,
+                ),
+                timeZone: user_timezone,
+            });
+        } catch (error) {
+            blueslip.warn(`Error formatting time in ${user_timezone}: ${String(error)}`);
         }
-        return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
     }
     return undefined;
 }

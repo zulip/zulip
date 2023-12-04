@@ -147,7 +147,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     send_account_registered_email(get_user_by_delivery_email("iago@zulip.com", realm))
 
     # Onboarding emails for admin user
-    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm))
+    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True)
 
     # Realm reactivation email
     do_send_realm_reactivation_email(realm, acting_user=None)

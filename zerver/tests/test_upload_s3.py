@@ -238,7 +238,8 @@ class S3Test(ZulipTestCase):
         # The original url shouldn't work when logged out:
         with self.settings(DEVELOPMENT=False):
             result = self.client_get(url)
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result.headers["Location"].endswith(f"/login/?next={url}"))
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")

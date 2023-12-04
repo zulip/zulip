@@ -18,6 +18,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.users import check_can_access_user
 from zerver.models import (
     UserActivity,
     UserPresence,
@@ -47,6 +48,11 @@ def get_presence_backend(
 
     if target.is_bot:
         raise JsonableError(_("Presence is not supported for bot users."))
+
+    if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE and not check_can_access_user(
+        target, user_profile
+    ):
+        raise JsonableError(_("Insufficient permission"))
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:

@@ -34,7 +34,7 @@
         }
     }
 
-    & ul.pm-list,
+    & ul.dm-list,
     & ul.filters {
         color: hsl(0deg 0% 100% / 80%);
 
@@ -59,10 +59,14 @@
     }
 
     /************************* MODAL DARK THEME *******************/
-    .dialog_exit_button {
-        background-color: hsl(211deg 29% 14%);
-        color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(0deg 0% 0% / 60%);
+    .user_profile_manage_own_edit_button,
+    .user_profile_manage_others_edit_button {
+        color: hsl(200deg 100% 50%);
+        cursor: pointer;
+
+        &:hover {
+            color: hsl(200deg 79% 66%);
+        }
     }
 
     .modal__content.simplebar-scrollable-y + .modal__footer {
@@ -84,7 +88,6 @@
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
-    .open_enter_sends_dialog,
     .enter_sends_choices {
         color: hsl(236deg 33% 90%);
 
@@ -101,7 +104,7 @@
     }
 
     .modal__btn:disabled,
-    .disabled-compose-send-button-container button {
+    .disabled-message-send-controls button {
         opacity: 1;
         background-color: hsl(0deg 0% 83% / 50%);
     }
@@ -125,38 +128,6 @@
 
             &.compose_control_button:hover {
                 color: hsl(200deg 79% 66%);
-            }
-        }
-
-        &[data-placement^="top"] {
-            > .tippy-arrow {
-                &::before {
-                    border-top-color: hsl(235deg 18% 7%);
-                }
-            }
-        }
-
-        &[data-placement^="bottom"] {
-            > .tippy-arrow {
-                &::before {
-                    border-bottom-color: hsl(235deg 18% 7%);
-                }
-            }
-        }
-
-        &[data-placement^="left"] {
-            > .tippy-arrow {
-                &::before {
-                    border-left-color: hsl(235deg 18% 7%);
-                }
-            }
-        }
-
-        &[data-placement^="right"] {
-            > .tippy-arrow {
-                &::before {
-                    border-right-color: hsl(235deg 18% 7%);
-                }
             }
         }
     }
@@ -214,7 +185,7 @@
     .app-main,
     .column-middle,
     #streams_header,
-    .private_messages_container {
+    .direct-messages-container {
         background-color: var(--color-background);
     }
 
@@ -412,16 +383,10 @@
         color: inherit;
     }
 
-    .message_reactions .message_reaction_count,
-    .message_reactions .reaction_button i,
-    .message_reactions:hover .message_reaction + .reaction_button {
-        color: inherit !important;
-    }
-
     .active_private_messages_section {
         #private_messages_section,
-        #private_messages_list,
-        #hide_more_private_messages {
+        #direct-messages-list,
+        #hide-more-direct-messages {
             background-color: hsl(199deg 33% 46% / 20%);
         }
     }
@@ -430,14 +395,10 @@
     :disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
-    #org-join-settings .dropdown-widget-button:disabled {
+    #org-join-settings .dropdown-widget-button:disabled,
+    #org-guest-settings .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
-    }
-
-    .sidebar-title {
-        color: inherit;
-        opacity: 0.75;
     }
 
     .rendered_markdown button,
@@ -490,6 +451,7 @@
     .user-status-content-wrapper,
     #custom-expiration-time-input,
     #org-join-settings .dropdown-widget-button,
+    #org-guest-settings .dropdown-widget-button,
     #compose_recipient_box {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
@@ -563,8 +525,7 @@
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
-    .emoji-popover .reaction.reacted,
-    .message_reactions .message_reaction.reacted {
+    .emoji-popover .reaction.reacted {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
     }
@@ -575,17 +536,6 @@
 
     .message_time:hover {
         color: var(--color-message-action-interactive);
-    }
-
-    .message_reactions:hover .message_reaction + .reaction_button,
-    .message_reactions .message_reaction {
-        background-color: transparent;
-        border-color: hsl(0deg 0% 0% / 80%);
-        color: inherit;
-
-        &:hover {
-            border-color: hsl(236deg 33% 90%);
-        }
     }
 
     .emoji-popover .reaction:focus {
@@ -601,8 +551,12 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose_control_buttons_container .divider {
-        color: hsl(236deg 33% 90% / 50%);
+    .compose-control-buttons-container .divider {
+        color: hsl(236deg 33% 90% / 25%);
+    }
+
+    .compose_control_button:hover {
+        background-color: hsl(0deg 0% 100% / 10%);
     }
 
     #compose-content {
@@ -627,16 +581,8 @@
         background-color: inherit;
     }
 
-    .spectator_narrow_login_button,
     .top-navbar-border {
         border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    #message_view_header .sub_count {
-        &::before,
-        &::after {
-            color: hsl(0deg 0% 100% / 50%);
-        }
     }
 
     & div.overlay,
@@ -669,12 +615,6 @@
         }
     }
 
-    .tippy-box[data-theme~="light-border"],
-    .dropdown-menu ul,
-    .dropdown .dropdown-menu {
-        background-color: hsl(212deg 32% 14%);
-    }
-
     /* Undo default dropdown background color for dark mode. */
     #searchbox_form .dropdown-menu ul {
         background-color: unset;
@@ -684,7 +624,6 @@
         color: inherit;
     }
 
-    .dropdown .dropdown-menu li.divider,
     .popover hr,
     hr {
         color: hsl(212deg 28% 18%);
@@ -721,36 +660,6 @@
         color: hsl(0deg 0% 100%);
     }
 
-    .spectator_login_buttons a {
-        color: hsl(236deg 33% 90%);
-
-        &:hover {
-            color: hsl(0deg 0% 100%);
-        }
-    }
-
-    .spectator_narrow_login_button .login_button i {
-        color: hsl(236deg 33% 90%);
-    }
-
-    #streamlist-toggle,
-    #userlist-toggle {
-        color: inherit;
-    }
-
-    #streamlist-toggle-button {
-        color: inherit;
-        background-color: inherit;
-    }
-
-    #userlist-toggle-button {
-        color: hsl(221deg 9% 54%);
-
-        &:hover {
-            color: inherit;
-        }
-    }
-
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
@@ -764,8 +673,8 @@
         }
     }
 
-    #user_presences li:hover,
-    #user_presences li.highlighted_user {
+    #buddy-list-users-matching-view li:hover,
+    #buddy-list-users-matching-view li.highlighted_user {
         background-color: hsl(136deg 25% 73% / 20%);
     }
 
@@ -904,9 +813,9 @@
     .subscriptions-container .left,
     .user-groups-container .left,
     .subscriber-list-box,
-    .subscriber-list-box .subscriber_list_container .subscriber-list tr,
+    .subscriber-list-box .subscriber_list_container .subscriber-list td,
     .member-list-box,
-    .member-list-box .member_list_container .member-list tr,
+    .member-list-box .member_list_container .member-list td,
     #subscription_overlay .subsection-parent div,
     #subscription_overlay .settings-radio-input-parent,
     #settings_page .sidebar-wrapper,
@@ -940,192 +849,6 @@
 
     .selected_message .messagebox-content {
         border-color: hsl(217deg 64% 59% / 70%);
-    }
-
-    .rendered_markdown {
-        .alert-word {
-            background-color: hsl(22deg 70% 35%);
-        }
-
-        .codehilite code,
-        .codehilite pre {
-            color: hsl(212deg 98% 82%);
-            background-color: hsl(212deg 0% 11%);
-        }
-
-        .codehilite pre {
-            border: 1px solid hsl(0deg 0% 0% / 50%);
-        }
-
-        .codehilite .hll {
-            background-color: hsl(0deg 0% 13%);
-        }
-
-        .codehilite .err {
-            color: hsl(1deg 67% 66%);
-            background-color: hsl(0deg 7% 22%);
-        }
-
-        .codehilite .k {
-            color: hsl(31deg 85% 59%);
-        }
-
-        .codehilite .p {
-            color: hsl(179deg 27% 35%);
-        }
-
-        .codehilite .cs {
-            color: hsl(0deg 100% 40%);
-            font-weight: 700;
-        }
-
-        .codehilite .gd {
-            color: hsl(0deg 100% 40%);
-        }
-
-        .codehilite .ge {
-            color: hsl(0deg 0% 80%);
-            font-style: italic;
-        }
-
-        .codehilite .gr {
-            color: hsl(0deg 100% 50%);
-        }
-
-        .codehilite .go {
-            color: hsl(0deg 0% 50%);
-        }
-
-        .codehilite .gs {
-            color: hsl(0deg 0% 80%);
-            font-weight: 700;
-        }
-
-        .codehilite .gu {
-            color: hsl(300deg 100% 25%);
-            font-weight: 700;
-        }
-
-        .codehilite .gt {
-            color: hsl(222deg 100% 41%);
-        }
-
-        .codehilite .kc {
-            color: hsl(0deg 45% 75%);
-        }
-
-        .codehilite .kd {
-            color: hsl(60deg 100% 76%);
-        }
-
-        .codehilite .kn {
-            color: hsl(24deg 56% 72%);
-            font-weight: 700;
-        }
-
-        .codehilite .kp {
-            color: hsl(62deg 36% 71%);
-        }
-
-        .codehilite .kr {
-            color: hsl(359deg 58% 56%);
-        }
-
-        .codehilite .ni {
-            color: hsl(359deg 35% 63%);
-        }
-
-        .codehilite .ne {
-            color: hsl(53deg 23% 69%);
-            font-weight: 700;
-        }
-
-        .codehilite .nn {
-            color: hsl(204deg 54% 72%);
-        }
-
-        .codehilite .vi {
-            color: hsl(60deg 100% 89%);
-        }
-
-        .codehilite .c,
-        .codehilite .g,
-        .codehilite .cm,
-        .codehilite .cp,
-        .codehilite .c1 {
-            color: hsl(209deg 15% 55%);
-        }
-
-        .codehilite .l,
-        .codehilite .x,
-        .codehilite .no,
-        .codehilite .nd,
-        .codehilite .nl,
-        .codehilite .nx,
-        .codehilite .py,
-        .codehilite .w {
-            color: hsl(0deg 0% 80%);
-        }
-
-        .codehilite .n,
-        .codehilite .nv,
-        .codehilite .vg {
-            color: hsl(60deg 19% 83%);
-        }
-
-        .codehilite .o,
-        .codehilite .ow {
-            color: hsl(58deg 52% 88%);
-        }
-
-        .codehilite .gh,
-        .codehilite .gp {
-            color: hsl(60deg 19% 83%);
-            font-weight: 700;
-        }
-
-        .codehilite .gi,
-        .codehilite .kt {
-            color: hsl(120deg 100% 40%);
-        }
-
-        .codehilite .ld,
-        .codehilite .s,
-        .codehilite .sb,
-        .codehilite .sc,
-        .codehilite .sd,
-        .codehilite .s2,
-        .codehilite .se,
-        .codehilite .sh,
-        .codehilite .si,
-        .codehilite .sx,
-        .codehilite .sr,
-        .codehilite .s1,
-        .codehilite .ss {
-            color: hsl(0deg 36% 69%);
-        }
-
-        .codehilite .m,
-        .codehilite .mf,
-        .codehilite .mh,
-        .codehilite .mi,
-        .codehilite .mo,
-        .codehilite .il {
-            color: hsl(183deg 45% 69%);
-        }
-
-        .codehilite .na,
-        .codehilite .nt {
-            color: hsl(127deg 25% 68%);
-        }
-
-        .codehilite .nb,
-        .codehilite .nc,
-        .codehilite .nf,
-        .codehilite .bp,
-        .codehilite .vc {
-            color: hsl(60deg 75% 75%);
-        }
     }
 
     #message-edit-history {
@@ -1255,14 +978,6 @@
         box-shadow: 0 5px 10px hsl(0deg 0% 0% / 40%);
     }
 
-    #invite-user-modal {
-        #clipboard_image {
-            & path {
-                fill: hsl(236deg 33% 90%);
-            }
-        }
-    }
-
     #user-profile-modal {
         #default-section {
             .default-field {
@@ -1345,7 +1060,6 @@
     }
 
     #feedback_container,
-    code,
     .typeahead.dropdown-menu {
         background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);
@@ -1522,20 +1236,6 @@
                     color: hsl(0deg 0% 100%);
                 }
             }
-        }
-    }
-
-    .visibility_policy_popover {
-        .visibility_policy_option {
-            &:hover:not(.selected_visibility_policy) {
-                background-color: hsl(0deg 0% 17% / 50%);
-                border: 1px solid hsl(0deg 0% 100% / 12%);
-            }
-        }
-
-        .selected_visibility_policy {
-            background-color: hsl(0deg 0% 17% / 50%);
-            border: 1px solid hsl(0deg 0% 100% / 12%);
         }
     }
 }

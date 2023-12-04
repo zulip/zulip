@@ -108,6 +108,7 @@ message_lists.current = {
     selected_row() {
         const $row = $.create("selected-row-stub");
         $row.set_find_results(".message-actions-menu-button", []);
+        $row.set_find_results(".emoji-message-control-button-container", {is: () => false});
         return $row;
     },
     selected_message() {
@@ -182,6 +183,7 @@ run_test("mappings", () => {
     assert.equal(map_down(13).name, "enter");
     assert.equal(map_down(46).name, "delete");
     assert.equal(map_down(13, true).name, "enter");
+    assert.equal(map_down(78, true).name, "narrow_to_next_unread_followed_topic");
 
     assert.equal(map_press(47).name, "search"); // slash
     assert.equal(map_press(106).name, "vim_down"); // j
@@ -231,11 +233,15 @@ run_test("mappings", () => {
     navigator.platform = "";
 });
 
-function process(s) {
+function process(s, shiftKey, keydown = false) {
     const e = {
         which: s.codePointAt(0),
+        shiftKey,
     };
     try {
+        if (keydown) {
+            return hotkey.process_keydown(e);
+        }
         return hotkey.process_keypress(e);
     } catch (error) /* istanbul ignore next */ {
         // An exception will be thrown here if a different
@@ -247,9 +253,9 @@ function process(s) {
     }
 }
 
-function assert_mapping(c, module, func_name, shiftKey) {
+function assert_mapping(c, module, func_name, shiftKey, keydown) {
     stubbing(module, func_name, (stub) => {
-        assert.ok(process(c, shiftKey));
+        assert.ok(process(c, shiftKey, keydown));
         assert.equal(stub.num_calls, 1);
     });
 }
@@ -440,6 +446,10 @@ run_test("n/p keys", () => {
     assert_mapping("n", narrow, "narrow_to_next_topic");
     assert_mapping("p", narrow, "narrow_to_next_pm_string");
     assert_mapping("n", narrow, "narrow_to_next_topic");
+});
+
+run_test("narrow next unread followed topic", () => {
+    assert_mapping("N", narrow, "narrow_to_next_topic", true, true);
 });
 
 run_test("motion_keys", () => {

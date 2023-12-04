@@ -96,7 +96,7 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
         failed_message_success(message_id);
     }
 
-    function on_error(response) {
+    function on_error(response, _server_error_code) {
         message_send_error(message.id, response);
         setTimeout(() => {
             hide_retry_spinner($row);

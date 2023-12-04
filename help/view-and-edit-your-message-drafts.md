@@ -37,7 +37,7 @@ saved for 30 days.
 
 {tab|desktop-web}
 
-{relative|message|drafts}
+{!go-to-draft-messages.md!}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the draft you
    want to edit.
@@ -51,13 +51,15 @@ saved for 30 days.
 
 {end_tabs}
 
-## Delete a draft
+## Delete drafts
+
+### Delete a draft
 
 {start_tabs}
 
 {tab|desktop-web}
 
-{relative|message|drafts}
+{!go-to-draft-messages.md!}
 
 1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the draft you
    want to delete.
@@ -69,13 +71,30 @@ saved for 30 days.
 
 {end_tabs}
 
+### Delete multiple drafts
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!go-to-draft-messages.md!}
+
+1. Click **Select all drafts** in the upper right corner of
+   the drafts view, or select the drafts you want to delete
+   by toggling the checkboxes on the right.
+
+1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon in the
+   upper right corner of the drafts view to delete all selected drafts.
+
+{end_tabs}
+
 ## View your drafts
 
 {start_tabs}
 
 {tab|desktop-web}
 
-{relative|message|drafts}
+{!go-to-draft-messages.md!}
 
 !!! keyboard_tip ""
 

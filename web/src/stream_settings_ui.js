@@ -29,6 +29,7 @@ import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
+import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_list from "./stream_list";
 import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_components from "./stream_settings_components";
@@ -92,7 +93,7 @@ function should_list_all_streams() {
 }
 
 export function toggle_pin_to_top_stream(sub) {
-    stream_settings_api.set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
+    stream_settings_api.set_stream_property(sub, {property: "pin_to_top", value: !sub.pin_to_top});
 }
 
 export function update_stream_name(sub, new_name) {
@@ -523,7 +524,7 @@ export function setup_page(callback) {
     // so it's too risky a change for now.
     //
     // The history behind setting up the page from scratch every
-    // time we go into "Manage streams" is that we used to have
+    // time we go into "Stream settings" is that we used to have
     // some live-update issues, so being able to re-launch the
     // streams page is kind of a workaround for those bugs, since
     // we will re-populate the widget.
@@ -532,7 +533,7 @@ export function setup_page(callback) {
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
-        // Sort by name by default when opening "Manage streams".
+        // Sort by name by default when opening "Stream settings".
         sort_order = "by-stream-name";
         const sort_toggler = components.toggle({
             values: [
@@ -564,7 +565,7 @@ export function setup_page(callback) {
         $("#streams_overlay_container .list-toggler-container").prepend(sort_toggler.get());
 
         // Reset our internal state to reflect that we're initially in
-        // the "Subscribed" tab if we're reopening "Manage streams".
+        // the "Subscribed" tab if we're reopening "Stream settings".
         stream_ui_updates.set_subscribed_only(true);
         toggler = components.toggle({
             child_wants_focus: true,
@@ -679,7 +680,7 @@ export function setup_page(callback) {
     }
 }
 
-export function switch_to_stream_row(stream_id) {
+export function switch_to_stream_row(stream_id, right_side_tab) {
     const $stream_row = stream_ui_updates.row_for_stream_id(stream_id);
     const $container = $(".streams-list");
 
@@ -688,12 +689,8 @@ export function switch_to_stream_row(stream_id) {
 
     scroll_util.scroll_element_into_container($stream_row, $container);
 
-    // It's dubious that we need this timeout any more.
-    setTimeout(() => {
-        if (stream_id === stream_settings_components.get_active_data().id) {
-            $stream_row.trigger("click");
-        }
-    }, 100);
+    stream_edit.open_edit_panel_for_row($stream_row, right_side_tab);
+    stream_edit_toggler.toggler.goto(right_side_tab);
 }
 
 function show_right_section() {
@@ -702,7 +699,7 @@ function show_right_section() {
     resize.resize_stream_subscribers_list();
 }
 
-export function change_state(section) {
+export function change_state(section, right_side_tab) {
     // if in #streams/new form.
     if (section === "new") {
         if (!page_params.is_guest) {
@@ -740,7 +737,7 @@ export function change_state(section) {
             toggler.goto("subscribed");
         } else {
             show_right_section();
-            switch_to_stream_row(stream_id);
+            switch_to_stream_row(stream_id, right_side_tab);
         }
         return;
     }
@@ -749,7 +746,7 @@ export function change_state(section) {
     toggler.goto("subscribed");
 }
 
-export function launch(section) {
+export function launch(section, right_side_tab) {
     setup_page(() => {
         overlays.open_overlay({
             name: "subscriptions",
@@ -759,7 +756,7 @@ export function launch(section) {
                 $(".colorpicker").spectrum("destroy");
             },
         });
-        change_state(section);
+        change_state(section, right_side_tab);
     });
     if (!stream_settings_components.get_active_data().id) {
         if (section === "new") {
@@ -797,7 +794,7 @@ export function switch_rows(event) {
     const row_data = get_row_data($switch_row);
     if (row_data) {
         const stream_id = row_data.id;
-        switch_to_stream_row(stream_id);
+        switch_to_stream_row(stream_id, "general");
     } else if (event === "up_arrow" && !row_data) {
         $("#search_stream_name").trigger("focus");
     }

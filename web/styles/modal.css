@@ -1,4 +1,13 @@
 /* Styles for the Micromodal-based modals */
+:root {
+    /* Exit buttons are sometimes Cancel, but sometimes
+       other "Nah, forget it" actions. */
+    --color-exit-button-text: hsl(0deg 0% 0%);
+    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
+    --color-exit-button-background: hsl(0deg 0% 100%);
+    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+}
+
 .modal__overlay {
     position: fixed;
     inset: 0;
@@ -60,12 +69,13 @@
         text-overflow: ellipsis;
     }
 
+    .user_profile_manage_own_edit_button,
     .user_profile_manage_others_edit_button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
         &:hover {
-            color: hsl(200deg 79% 66%);
+            color: hsl(200deg 100% 25%);
         }
     }
 }
@@ -127,11 +137,12 @@
 }
 
 .dialog_exit_button {
-    background: hsl(0deg 0% 100%);
-    border: 1px solid hsl(300deg 2% 11% / 30%);
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+    border: 1px solid var(--color-exit-button-border);
 
     &:hover {
-        background: hsl(0deg 0% 97%);
+        background: var(--color-exit-button-background-interactive);
     }
 }
 
@@ -381,5 +392,83 @@
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#add-poll-modal {
+    /* this height allows 3-4 option rows
+    to fit in without need for scrolling */
+    height: 450px;
+    overflow: hidden;
+
+    .modal__content {
+        flex-grow: 1;
+
+        .simplebar-content {
+            box-sizing: border-box;
+            height: 100%;
+        }
+    }
+
+    #add-poll-form {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 100%;
+
+        .poll-label {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .poll-question-input-container {
+            display: flex;
+            margin-bottom: 10px;
+
+            #poll-question-input {
+                flex-grow: 1;
+            }
+        }
+
+        .poll-options-list {
+            margin: 0;
+            height: 0;
+            overflow: auto;
+            flex-grow: 1;
+
+            .option-row {
+                list-style-type: none;
+                cursor: move;
+                margin-top: 10px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+
+                .drag-icon {
+                    color: hsl(0deg 0% 75%);
+                }
+
+                .poll-option-input {
+                    flex-grow: 1;
+                }
+            }
+
+            .option-row:first-child {
+                margin-top: 0;
+            }
+
+            .option-row:last-child {
+                cursor: default;
+
+                .delete-option {
+                    visibility: hidden;
+                }
+
+                .drag-icon {
+                    visibility: hidden;
+                }
+            }
+        }
     }
 }

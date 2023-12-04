@@ -1,5 +1,19 @@
 {{#with item}}
     <li class="list-item" role="presentation" data-unique-id="{{unique_id}}" data-name="{{name}}" tabindex="0">
+        {{#if description}}
+        <a class="dropdown-list-item-common-styles">
+            <span class="dropdown-list-item-name">
+                {{#if bold_current_selection}}
+                    <span class="dropdown-list-bold-selected">{{name}}</span>
+                {{else}}
+                    {{name}}
+                {{/if}}
+            </span>
+            <span class="dropdown-list-item-description">
+                {{description}}
+            </span>
+        </a>
+        {{else}}
         <a class="dropdown-list-item-common-styles">
             {{#if stream}}
                 {{> inline_decorated_stream_name stream=stream show_colored_icon=true}}
@@ -8,8 +22,13 @@
             {{else if is_setting_disabled}}
                 <span class="setting-disabled-option"><i class="fa fa-ban" aria-hidden="true"></i>{{t "Disable" }}</span>
             {{else}}
-                {{name}}
+                {{#if bold_current_selection}}
+                    <span class="dropdown-list-bold-selected">{{name}}</span>
+                {{else}}
+                    {{name}}
+                {{/if}}
             {{/if}}
         </a>
+        {{/if}}
     </li>
 {{/with}}

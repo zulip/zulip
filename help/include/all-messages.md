@@ -9,12 +9,12 @@ view](/help/configure-home-view#configure-home-view) for the Zulip web app.
 
 {tab|desktop-web}
 
-{relative|message|all}
+{!go-to-all-messages.md!}
 
 {tab|mobile}
 
 1. Tap the **All messages**
-   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
    tab in the upper left corner of the app.
 
 {end_tabs}

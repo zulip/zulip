@@ -7,14 +7,15 @@ the messages where you were mentioned from a dedicated tab.
 !!! warn ""
 
     Because [silent mentions](/help/mention-a-user-or-group#silently-mention-a-user)
-    are designed not to attract attention, they are excluded from the **Mentions** tab.
+    are designed not to attract attention, they are excluded from the
+    **Mentions** tab.
 
 ## View your mentions
 
 {!view-mentions.md!}
 
-Topics with unread @-mentions are marked with an **@** indicator next to the number
-of unread messages.
+Topics with unread @-mentions are marked with an **@** indicator next to the
+number of unread messages.
 
 ## Related articles
 

@@ -8,24 +8,26 @@
     "billing": [
         "./src/billing/page_params",
         "./src/bundles/portico",
-        "./src/portico/landing-page",
-        "./styles/portico/landing_page.css",
         "./src/billing/helpers",
         "./src/billing/billing",
-        "./src/templates",
-        "./src/loading",
+        "./styles/portico/billing.css"
+    ],
+    "sponsorship": [
+        "./src/billing/page_params",
+        "./src/bundles/portico",
+        "jquery-validation",
+        "./src/portico/signup",
+        "./src/billing/sponsorship",
         "./styles/portico/billing.css"
     ],
     "upgrade": [
         "./src/billing/page_params",
         "./src/bundles/portico",
         "./src/portico/tippyjs",
-        "./src/portico/landing-page",
-        "./styles/portico/landing_page.css",
         "./src/billing/helpers",
         "./src/billing/upgrade",
-        "./src/templates",
-        "./src/loading",
+        "jquery-validation",
+        "./src/billing/legacy_server_login",
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [
@@ -57,6 +59,14 @@
         "./src/portico/landing-page",
         "./src/portico/header",
         "./styles/portico/svg_icons.css",
+        "./styles/portico/hello.css",
+        "./styles/portico/navbar.css",
+        "./styles/portico/footer.css"
+    ],
+    "plans-page": [
+        "./src/bundles/hello",
+        "./src/portico/landing-page",
+        "./src/portico/header",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css"

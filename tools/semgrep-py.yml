@@ -266,3 +266,32 @@ rules:
     message: "Replace functools.partial with returns.curry.partial for type safety"
     languages: [python]
     severity: ERROR
+
+  - id: timedelta-positional-argument
+    patterns:
+      - pattern: timedelta(...)
+      - pattern-not: timedelta(0)
+      - pattern-not: timedelta(..., days=..., ...)
+      - pattern-not: timedelta(..., seconds=..., ...)
+      - pattern-not: timedelta(..., microseconds=..., ...)
+      - pattern-not: timedelta(..., milliseconds=..., ...)
+      - pattern-not: timedelta(..., minutes=..., ...)
+      - pattern-not: timedelta(..., hours=..., ...)
+      - pattern-not: timedelta(..., weeks=..., ...)
+    message: |
+      Specify timedelta with named arguments.
+    languages: [python]
+    severity: ERROR
+
+  - id: time-machine
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: patch("$FUNCTION", return_value=$TIME)
+          - pattern: mock.patch("$FUNCTION", return_value=$TIME)
+      - metavariable-regex:
+          metavariable: $FUNCTION
+          regex: .*timezone_now
+    fix: time_machine.travel($TIME, tick=False)
+    severity: ERROR
+    message: "Use the time_machine package, rather than mocking timezone_now"

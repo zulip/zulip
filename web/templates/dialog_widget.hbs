@@ -18,10 +18,12 @@
                 {{#unless single_footer_button}}
                 <button class="modal__btn dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{{ html_exit_button }}}</button>
                 {{/unless}}
-                <button class="modal__btn dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
-                    <span>{{{ html_submit_button }}}</span>
-                    <div class="modal__spinner"></div>
-                </button>
+                <div class="dialog_submit_button_container">
+                    <button class="modal__btn dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
+                        <span>{{{ html_submit_button }}}</span>
+                        <div class="modal__spinner"></div>
+                    </button>
+                </div>
             </footer>
         </div>
     </div>

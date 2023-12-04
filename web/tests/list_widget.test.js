@@ -844,7 +844,7 @@ run_test("Multiselect dropdown retain_selected_items", () => {
 
     const expected_value = [
         {
-            element: 'li[data-value = "one"]',
+            element: 'li[data-value="one"]',
             appended_class: "checked",
             prepended_data: "<i>",
         },

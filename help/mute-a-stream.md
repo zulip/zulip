@@ -55,7 +55,7 @@
 
 {!select-stream-view-personal.md!}
 
-1. Under **Personal settings**, toggle **Mute stream**.
+1. Under **Notification settings**, toggle **Mute stream**.
 
 {tab|mobile}
 

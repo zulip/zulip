@@ -1,22 +1,27 @@
 {
   "application": null,
+  "automatic_payment_methods": null,
   "cancellation_reason": null,
-  "client_secret": "seti_1K2OZiHSaWXyvFpKeqkWvden_secret_KhoCvt7mE4zIPJtZts8o7SCEELmIzIq",
+  "client_secret": "seti_1OIlZxDEQaroqDjsPzt3hBNY_secret_P6zZbDxpsvwhp4CS1HeM87iKybdqTJj",
   "created": 1000000000,
   "customer": "cus_NORMALIZED0001",
   "description": null,
-  "id": "seti_1K2OZiHSaWXyvFpKeqkWvden",
+  "flow_directions": null,
+  "id": "seti_1OIlZxDEQaroqDjsPzt3hBNY",
   "last_setup_error": null,
-  "latest_attempt": "setatt_1K2OZiHSaWXyvFpK7DLDLi27",
+  "latest_attempt": "setatt_1OIlZxDEQaroqDjs3OfhknKz",
   "livemode": false,
   "mandate": null,
   "metadata": {},
   "next_action": null,
   "object": "setup_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_1K2OZiHSaWXyvFpKfWT05Ado",
+  "payment_method": "pm_1OIlZxDEQaroqDjsOkOpLsAE",
+  "payment_method_configuration_details": null,
   "payment_method_options": {
     "card": {
+      "mandate_options": null,
+      "network": null,
       "request_three_d_secure": "automatic"
     }
   },

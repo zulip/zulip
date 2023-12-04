@@ -101,10 +101,10 @@
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     {% if plan_data[realm.id].current_plan and plan_data[realm.id].current_plan.fixed_price %}
-    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" disabled />
+    <input type="number" name="discount" value="{{ get_discount(plan_data[realm.id].customer) }}" disabled />
     <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
     {% else %}
-    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" required />
+    <input type="number" name="discount" value="{{ get_discount(plan_data[realm.id].customer) }}" required />
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
     {% endif %}
 </form>
@@ -113,7 +113,7 @@
     <h3>📅 Current plan</h3>
     <b>Name</b>: {{ plan_data[realm.id].current_plan.name }}<br />
     <b>Status</b>: {{plan_data[realm.id].current_plan.get_plan_status_as_text()}}<br />
-    <b>Billing schedule</b>: {% if plan_data[realm.id].current_plan.billing_schedule == plan_data[realm.id].current_plan.ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
+    <b>Billing schedule</b>: {% if plan_data[realm.id].current_plan.billing_schedule == plan_data[realm.id].current_plan.BILLING_SCHEDULE_ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
     <b>Licenses</b>: {{ plan_data[realm.id].licenses_used }}/{{ plan_data[realm.id].licenses }} ({% if plan_data[realm.id].current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br />
     {% if plan_data[realm.id].current_plan.price_per_license %}
     <b>Price per license</b>: ${{ plan_data[realm.id].current_plan.price_per_license/100 }}<br />
@@ -123,12 +123,12 @@
     <b>Next invoice date</b>: {{ plan_data[realm.id].current_plan.next_invoice_date.strftime('%d %B %Y') }}<br />
 </div>
 
-<form method="POST" class="billing-method-form">
+<form method="POST" class="billing-modality-form">
     <br />
-    <b>Billing method</b><br />
+    <b>Billing collection method</b><br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-    <select name="billing_method" class="billing-method-select" required>
+    <select name="billing_modality" class="billing-modality-select" required>
         <option value="charge_automatically" {% if plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
         <option value="send_invoice" {% if not plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
     </select>
@@ -145,7 +145,7 @@
         <option value="downgrade_at_billing_cycle_end">Downgrade at the end of current billing cycle</option>
         <option value="downgrade_now_without_additional_licenses">Downgrade now without creating additional invoices</option>
         <option value="downgrade_now_void_open_invoices">Downgrade now and void open invoices</option>
-        <option value="upgrade_to_plus">Upgrade to the Plus plan</option>
+        <option value="upgrade_plan_tier">Upgrade to the Plus plan</option>
     </select>
     <button type="submit" class="btn btn-default support-submit-button">Modify</button>
 </form>

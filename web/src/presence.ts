@@ -1,9 +1,6 @@
-import * as blueslip from "./blueslip";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as reload_state from "./reload_state";
 import {user_settings} from "./user_settings";
-import * as watchdog from "./watchdog";
 
 export type RawPresence = {
     server_timestamp: number;
@@ -167,7 +164,7 @@ export function update_info_from_event(
 }
 
 export function set_info(
-    presences: Map<number, Omit<RawPresence, "server_timestamp">>,
+    presences: Record<number, Omit<RawPresence, "server_timestamp">>,
     server_timestamp: number,
 ): void {
     /*
@@ -206,11 +203,15 @@ export function set_info(
         // system are common in both situations.
         const person = people.maybe_get_user_by_id(user_id, true);
         if (person === undefined) {
-            if (!(watchdog.suspects_user_is_offline() || reload_state.is_in_progress())) {
-                // If we're online, and we get a user who we don't
-                // know about in the presence data, throw an error.
-                blueslip.error("Unknown user ID in presence data", {user_id});
-            }
+            // There are a number of situations where it is expected
+            // that we get presence data for a user ID that we do
+            // not have in our user database, including when we're
+            // offline/reloading (watchdog.suspects_user_is_offline()
+            // || reload_state.is_in_progress()), when
+            // CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is disabled,
+            // and whenever presence wins a race with the events system
+            // for events regarding a newly created or visible user.
+            //
             // Either way, we deal by skipping this user and
             // continuing with processing everyone else.
             continue;
@@ -278,7 +279,7 @@ export function last_active_date(user_id: number): Date | undefined {
 }
 
 export function initialize(params: {
-    presences: Map<number, Omit<RawPresence, "server_timestamp">>;
+    presences: Record<number, Omit<RawPresence, "server_timestamp">>;
     server_timestamp: number;
 }): void {
     set_info(params.presences, params.server_timestamp);

@@ -12,7 +12,7 @@ import {page_params} from "./page_params";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
-import {LONG_HOVER_DELAY} from "./tippyjs";
+import {INTERACTIVE_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
 import {parse_html} from "./ui_util";
 
 // We need to store all message list instances together to destroy them in case of re-rendering.
@@ -105,6 +105,7 @@ export function initialize() {
     // message reaction tooltip showing who reacted.
     let observer;
     message_list_tooltip(".message_reaction, .message_reactions .reaction_button", {
+        delay: INTERACTIVE_HOVER_DELAY,
         placement: "bottom",
         onShow(instance) {
             if (!document.body.contains(instance.reference)) {

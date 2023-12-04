@@ -48,7 +48,7 @@ test("feature_check", ({override}) => {
 });
 
 test("get_item", () => {
-    assert.equal(upload.get_item("textarea", {mode: "compose"}), $("#compose-textarea"));
+    assert.equal(upload.get_item("textarea", {mode: "compose"}), $("textarea#compose-textarea"));
     assert.equal(
         upload.get_item("upload_banner_message", {mode: "compose"}, "id_1"),
         $("#compose_banners .upload_banner.file_id_1 .upload_msg"),
@@ -194,7 +194,7 @@ test("show_error_message", ({mock_template}) => {
     $("#compose-send-button").prop("disabled", true);
 
     upload.show_error_message({mode: "compose"}, "Error message");
-    assert.equal($("#compose-send-button").prop("disabled"), false);
+    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
@@ -237,9 +237,9 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         assert.equal(config.mode, "compose");
     });
     const config = {mode: "compose"};
-    $("#compose-send-button").prop("disabled", false);
+    $(".message-send-controls").removeClass("disabled-message-send-controls");
     await upload.upload_files(uppy, config, []);
-    assert.ok(!$("#compose-send-button").prop("disabled"));
+    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     let banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
@@ -277,7 +277,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     $("#compose .undo_markdown_preview").on("click", () => {
         markdown_preview_hide_button_clicked = true;
     });
-    $("#compose-send-button").prop("disabled", false);
+    $(".message-send-controls").removeClass("disabled-message-send-controls");
     $("#compose_banners .upload_banner").remove();
     $("#compose .undo_markdown_preview").show();
 
@@ -286,7 +286,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         banner_shown = true;
     });
     await upload.upload_files(uppy, config, files);
-    assert.ok($("#compose-send-button").prop("disabled"));
+    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
     assert.ok(compose_ui_insert_syntax_and_focus_called);
     assert.ok(compose_ui_autosize_textarea_called);
@@ -319,11 +319,11 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     hide_upload_banner_called = false;
     let compose_ui_replace_syntax_called = false;
 
-    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
+    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading budapest.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal(textarea, $("#compose-textarea"));
+        assert.equal($textarea, $("textarea#compose-textarea"));
     });
     on_click_close_button_callback();
     assert.ok(remove_file_called);
@@ -333,14 +333,14 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     hide_upload_banner_called = false;
     compose_ui_replace_syntax_called = false;
     remove_file_called = false;
-    $("#compose-textarea").val("user modified text");
+    $("textarea#compose-textarea").val("user modified text");
 
     on_click_close_button_callback();
     assert.ok(remove_file_called);
     assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
     assert.ok(compose_ui_replace_syntax_called);
-    assert.equal($("#compose-textarea").val(), "user modified text");
+    assert.equal($("textarea#compose-textarea").val(), "user modified text");
 });
 
 test("uppy_config", () => {
@@ -543,14 +543,14 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     };
 
     let compose_ui_replace_syntax_called = false;
-    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
+    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
             "[copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
-        assert.equal(textarea, $("#compose-textarea"));
+        assert.equal($textarea, $("textarea#compose-textarea"));
     });
     let compose_ui_autosize_textarea_called = false;
     override_rewire(compose_ui, "autosize_textarea", () => {
@@ -586,19 +586,19 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     compose_ui_replace_syntax_called = false;
     const on_restriction_failed_callback = callbacks["restriction-failed"];
     on_info_visible_callback();
-    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
+    override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal(textarea, $("#compose-textarea"));
+        assert.equal($textarea, $("textarea#compose-textarea"));
     });
     on_restriction_failed_callback(file, null, null);
     assert.ok(compose_ui_replace_syntax_called);
     compose_ui_replace_syntax_called = false;
-    $("#compose-textarea").val("user modified text");
+    $("textarea#compose-textarea").val("user modified text");
     on_restriction_failed_callback(file, null, null);
     assert.ok(compose_ui_replace_syntax_called);
-    assert.equal($("#compose-textarea").val(), "user modified text");
+    assert.equal($("textarea#compose-textarea").val(), "user modified text");
 
     state = {
         type: "error",
@@ -635,10 +635,10 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     $("#compose_banners .upload_banner .upload_msg").text("");
     assert.ok(hide_upload_banner_called);
-    $("#compose-textarea").val("user modified text");
+    $("textarea#compose-textarea").val("user modified text");
     on_upload_error_callback(file, null);
     assert.ok(compose_ui_replace_syntax_called);
-    assert.equal($("#compose-textarea").val(), "user modified text");
+    assert.equal($("textarea#compose-textarea").val(), "user modified text");
 });
 
 test("main_file_drop_compose_mode", ({override, override_rewire}) => {
@@ -662,12 +662,12 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     };
 
     // dragover event test
-    const dragover_handler = $(".app-main").get_on_handler("dragover");
+    const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");
     dragover_handler(drag_event);
     assert.equal(prevent_default_counter, 1);
 
     // dragenter event test
-    const dragenter_handler = $(".app-main").get_on_handler("dragenter");
+    const dragenter_handler = $(".app, #navbar-fixed-container").get_on_handler("dragenter");
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
@@ -686,7 +686,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
 
     $(".message_edit_form form").last = () => ({length: 0});
 
-    const drop_handler = $(".app-main").get_on_handler("drop");
+    const drop_handler = $(".app, #navbar-fixed-container").get_on_handler("drop");
 
     // Test drop on compose box
     let upload_files_called = false;
@@ -764,11 +764,11 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
     const $drag_drop_container = $(`#zfilt${CSS.escape(40)} .message_edit_form`);
 
     // Dragover event test
-    const dragover_handler = $(".app-main").get_on_handler("dragover");
+    const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");
     dragover_handler(drag_event);
     assert.equal(prevent_default_counter, 1);
     // Dragenter event test
-    const dragenter_handler = $(".app-main").get_on_handler("dragenter");
+    const dragenter_handler = $(".app, #navbar-fixed-container").get_on_handler("dragenter");
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
@@ -784,7 +784,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
             },
         },
     };
-    const drop_handler = $(".app-main").get_on_handler("drop");
+    const drop_handler = $(".app, #navbar-fixed-container").get_on_handler("drop");
     let upload_files_called = false;
     let dropped_row_id = -1;
     override_rewire(upload, "upload_files", (_, config) => {

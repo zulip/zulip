@@ -1,3 +1,4 @@
+import hashlib
 import os
 import time
 from argparse import ArgumentParser
@@ -10,9 +11,9 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
+from analytics.lib.counts import ALL_COUNT_STATS, logger, process_count_stat
 from scripts.lib.zulip_tools import ENDC, WARNING
-from zerver.lib.remote_server import send_analytics_to_remote_server
+from zerver.lib.remote_server import send_analytics_to_push_bouncer
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
@@ -74,9 +75,9 @@ class Command(BaseCommand):
         fill_to_time = floor_to_hour(fill_to_time.astimezone(timezone.utc))
 
         if options["stat"] is not None:
-            stats = [COUNT_STATS[options["stat"]]]
+            stats = [ALL_COUNT_STATS[options["stat"]]]
         else:
-            stats = list(COUNT_STATS.values())
+            stats = list(ALL_COUNT_STATS.values())
 
         logger.info("Starting updating analytics counts through %s", fill_to_time)
         if options["verbose"]:
@@ -95,5 +96,14 @@ class Command(BaseCommand):
             )
         logger.info("Finished updating analytics counts through %s", fill_to_time)
 
-        if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
-            send_analytics_to_remote_server()
+        if settings.PUSH_NOTIFICATION_BOUNCER_URL:
+            # Skew 0-10 minutes based on a hash of settings.ZULIP_ORG_ID, so
+            # that each server will report in at a somewhat consistent time.
+            assert settings.ZULIP_ORG_ID
+            delay = int.from_bytes(
+                hashlib.sha256(settings.ZULIP_ORG_ID.encode()).digest(), byteorder="big"
+            ) % (60 * 10)
+            logger.info("Sleeping %d seconds before reporting...", delay)
+            time.sleep(delay)
+
+            send_analytics_to_push_bouncer()

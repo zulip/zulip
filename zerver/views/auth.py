@@ -57,7 +57,7 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
-from zerver.lib.push_notifications import push_notifications_enabled
+from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -66,7 +66,7 @@ from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key, get_raw_user_data, is_2fa_verified
+from zerver.lib.users import get_api_key, get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import check_bool, validate_login_email
 from zerver.models import (
@@ -143,12 +143,14 @@ def create_preregistration_realm(
     name: str,
     string_id: str,
     org_type: int,
+    default_language: str,
 ) -> PreregistrationRealm:
     return PreregistrationRealm.objects.create(
         email=email,
         name=name,
         string_id=string_id,
         org_type=org_type,
+        default_language=default_language,
     )
 
 
@@ -392,7 +394,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
         from corporate.lib.stripe import is_free_trial_offer_enabled
 
         if is_free_trial_offer_enabled():
-            redirect_to = "{}?onboarding=true".format(reverse("initial_upgrade"))
+            redirect_to = reverse("upgrade_page")
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
@@ -1021,7 +1023,7 @@ def jwt_fetch_api_key(
     }
 
     if include_profile:
-        members = get_raw_user_data(
+        members = get_users_for_api(
             realm,
             user_profile,
             target_user=user_profile,
@@ -1107,7 +1109,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         zulip_version=ZULIP_VERSION,
         zulip_merge_base=ZULIP_MERGE_BASE,
         zulip_feature_level=API_FEATURE_LEVEL,
-        push_notifications_enabled=push_notifications_enabled(),
+        push_notifications_enabled=push_notifications_configured(),
         is_incompatible=check_server_incompatibility(request),
     )
     context = zulip_default_context(request)

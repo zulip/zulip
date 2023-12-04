@@ -30,20 +30,22 @@ messages) from desktop notifications.
 
 ## Wildcard mentions
 
-By default, wildcard mentions (`@**all**`, `@**everyone**`, or `@**stream**`)
-trigger email/push notifications as though they were personal @-mentions.  You
-can toggle whether you receive notifications for wildcard mentions.
+By default, wildcard mentions (`@**all**`, `@**everyone**`, `@**stream**`,
+or `@**topic**`) trigger email/push notifications as though they were
+personal @-mentions. You can toggle whether you receive notifications
+for wildcard mentions.
 
 !!! tip ""
 
     Unlike personal mentions, wildcard mentions do not trigger notifications
-    in muted streams.
+    in muted streams or topics.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1.  In the **Notification triggers** table, toggle the **@all** checkbox for **Streams**.
+1.  In the **Notification triggers** table, toggle the **@all** checkbox for
+    **Streams** or **Followed topics**.
 
 {end_tabs}
 

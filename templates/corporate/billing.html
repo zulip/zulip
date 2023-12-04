@@ -5,259 +5,388 @@
 <title>{{ _("Billing") }} | Zulip</title>
 {% endblock %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
-
-{% block content %}
-
-<div class="app portico-page">
-
-    {% include 'zerver/billing_nav.html' %}
-
-    <div class="billing-upgrade-page">
-        <div class="hero small-hero"></div>
-
-        <div class="page-content">
-            <div class="main">
-                <div class="alert alert-danger" id="error-message-box"></div>
-                <h1>{{ _("Billing") }}</h1>
-                {% if admin_access and has_active_plan %}
-                <ul class="nav nav-tabs" id="billing-tabs">
-                    <li class="active"><a data-toggle="tab" href="#overview">Overview</a></li>
-                    <li><a data-toggle="tab" href="#payment-method">Payment method</a></li>
-                    <li><a data-toggle="tab" href="#settings">Settings</a></li>
-                    <li><a data-toggle="tab" href="#sponsorship">💚 Request sponsorship</a></li>
-                </ul>
-
-                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
-                <div class="tab-content">
-                    <div class="tab-pane active" id="overview">
-                        {% if free_trial %}
-                        <p>Your current plan is <strong>{{ plan_name }} Free Trial</strong>.</p>
+{% block portico_content %}
+<div id="billing-page" class="register-account flex full-page" data-billing-base-url="{{ billing_base_url }}">
+    <div class="center-block new-style">
+        {% if admin_access and has_active_plan %}
+        {% if is_sponsorship_pending %}
+        <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
+            This organization has requested sponsorship for a <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+        </div>
+        {% endif %}
+        {% if success_message %}
+        <div class="alert alert-success billing-page-success" id="billing-success-message-top">
+            {{ success_message.replace("PLAN_NAME", plan_name) }}
+        </div>
+        {% endif %}
+        <div class="pitch">
+            <h1>
+                Zulip
+                {% if is_self_hosted_billing %}
+                {% else %}
+                Cloud
+                {% endif %}
+                billing for {{ org_name }}
+            </h1>
+        </div>
+        <div class="alert alert-danger" id="error-message-box"></div>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+        <div class="white-box">
+            <div id="billing-page-details">
+                <div class="input-box billing-page-field no-validation">
+                    <label for="org-current-plan" class="inline-block label-title">Your plan</label>
+                    <div id="org-current-plan" class="not-editable-realm-field">
+                        {% if free_trial or downgrade_at_end_of_free_trial %}
+                        {{ plan_name }} <i>(free trial)</i>
+                        {% elif is_server_on_legacy_plan %}
+                        {{ plan_name }} <i>(legacy plan)</i>
                         {% else %}
-                        <p>Your current plan is <strong>{{ plan_name }}</strong>.</p>
+                        {{ plan_name }}
                         {% endif %}
-                        <p>
-                            You are using <strong>{{ seat_count }} of {{ licenses }} licenses</strong>.
-                            {% if automanage_licenses %}
-                            Licenses are automatically managed by Zulip; when you add or deactivate a user, the number of
-                            licenses will be immediately updated to reflect your new usage.
-                            {% else %}
-                            Licenses are manually managed. You will not be able to add new users to your organization once
-                            you are using all of your licenses.
-                            {% endif %}
-                        </p>
-                        <p>
-                            {% if renewal_amount %}
-                                {% if free_trial %}
-                                Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
-                                <strong>${{ renewal_amount }}</strong>.
-                                {% elif downgrade_at_end_of_cycle %}
-                                Your plan will be downgraded to <strong>Zulip Free</strong> on <strong>{{ renewal_date }}</strong>.
-                                {% elif switch_to_annual_at_end_of_cycle %}
-                                Your plan will be switched from monthly to annual billing on <strong>{{ renewal_date }}</strong>.
-                                {% else %}
-                                Your plan will renew on <strong>{{ renewal_date }}</strong> for
-                                <strong>${{ renewal_amount }}</strong>.
-                                {% endif %}
-                            {% else %}
-                                Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
-                            {% endif %}
-                        </p>
                     </div>
-                    <div class="tab-pane" id="payment-method">
-                        <div id="cardchange-error" class="alert alert-danger"></div>
-                        <div id="cardchange-input-section">
-                            <form id="cardchange-form">
-                                <p>Billing email: <strong>{{ stripe_email }}</strong></p>
-                                <p>Current payment method: <strong>{{ payment_method }}</strong></p>
-                                {% if charge_automatically %}
-                                <button class="btn-info" id="update-card-button" class="stripe-button-el">Update card</button>
-                                {% endif %}
-                            </form>
-                        </div>
-                        <div id="cardchange-loading">
-                            <div class="zulip-loading-logo">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
-                                    <circle cx="386.56" cy="386.56" r="386.56"/>
-                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
-                                </svg>
-                            </div>
-                            <div id="cardchange_loading_indicator"></div>
-                        </div>
-                        <div id="cardchange-success" class="alert alert-success">
-                            Redirecting to Stripe checkout page for updating Card details.
-                        </div>
+                </div>
+                {% if is_server_on_legacy_plan %}
+                <div class="input-box billing-page-field no-validation">
+                    <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
+                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}</i>
                     </div>
-
-                    <div class="tab-pane" id="settings">
-                        {% if not automanage_licenses and not downgrade_at_end_of_cycle %}
-                        <div id="licensechange-error" class="alert alert-danger"></div>
-                        <div id="licensechange-input-section" data-licenses="{{ licenses }}">
-                            <form id="licensechange-form">
-                                <h3>Licenses</h3>
-                                <h4>Number of licenses in the current billing period</h4>
-                                <p>
-                                    You can only increase the number of licenses.
-                                </p>
-                                <input min="{{ licenses }}" type="number" name="licenses" value="{{ licenses }}" autocomplete="off" id="new_licenses_input" required/>
-                                <br />
-                                <button class="btn-info" id="update-licenses-button">Update</button>
-                                <br />
-                                <br />
-                                <h4>Licenses in next renewal</h4>
-                                <p>
-                                    You can increase or decrease the number of licenses.
-                                </p>
-                                <input type="number" name="licenses_at_next_renewal" value="{{ licenses_at_next_renewal }}" autocomplete="off" id="licenses_at_next_renewal_input"/>
-                                <br />
-                                <button class="btn-info" id="update-licenses-at-next-renewal-button">Update</button>
-                            </form>
-                        </div>
-                        <div id="licensechange-loading">
-                            <div class="zulip-loading-logo">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
-                                    <circle cx="386.56" cy="386.56" r="386.56"/>
-                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
-                                </svg>
-                            </div>
-                            <div id="licensechange_loading_indicator"></div>
-                        </div>
-                        <div id="licensechange-success" class="alert alert-success">
-                            Plan updated. The page will now reload.
-                        </div>
-                        {% endif %}
-
-                        <div id="planchange-error" class="alert alert-danger"></div>
-                        <div id="planchange-input-section">
-                            <form id="planchange-form">
-                                <h3>Downgrade</h3>
-                                {% if free_trial %}
-                                    <p>
-                                        End Free Trial and downgrade plan to <strong>Zulip Free</strong>.
-                                    </p>
-                                    <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
-                                    <button class="btn-danger" id="change-plan-status">End free trial</button>
-                                {% else %}
-                                    {% if downgrade_at_end_of_cycle %}
-                                    <p>
-                                        You plan is scheduled for downgrade on <strong>{{ renewal_date }}</strong>.
-                                    </p>
-                                    <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
-                                    <button class="btn-info" id="change-plan-status">Cancel downgrade</button>
-                                    {% else %}
-                                    <p>
-                                        Downgrade to <strong>Zulip Free</strong> at the end of current billing period.
-                                    </p>
-                                    <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
-                                    <button class="btn-danger" id="change-plan-status">Start downgrade process</button>
-                                    {% endif %}
-                                {% endif %}
-                            </form>
-                        </div>
-                        <div id="planchange-loading">
-                            <div class="zulip-loading-logo">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
-                                    <circle cx="386.56" cy="386.56" r="386.56"/>
-                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
-                                </svg>
-                            </div>
-                            <div id="planchange_loading_indicator"></div>
-                        </div>
-                        <div id="planchange-success" class="alert alert-success">
-                            Plan updated. The page will now reload.
-                        </div>
-                        <div class="tab-pane" id="loading">
-                        </div>
-                    </div>
-
-                    {% include "corporate/sponsorship.html" %}
-                </div>
-
-                <div id="goto-zulip-organization-link">
-                    {% if onboarding %}
-                    <br />
-                    <h3>
-                        <b><a href="/">Go to your Zulip organization</a></b>
-                    </h3>
-                    {% endif %}
-                </div>
-                <hr />
-                <div class="support-link">
-                    <p>
-                        <a href="mailto:support@zulip.com">Contact Zulip support</a>
-                        for billing history or to make changes to your subscription or billing email.
-                    </p>
-                </div>
-                {% elif admin_access and not has_active_plan %}
-                <div class="tab-content">
-                    {% if sponsorship_pending %}
-                    <h3>Your organization has requested sponsored or discounted hosting.</h3>
-                    <br />
-                    Please <a href="mailto:support@zulip.com">contact Zulip support</a> if you have any questions or concerns.
-                    {% elif is_sponsored %}
-                    <center>
-                        <p>
-                            <h3>💚 Your organization is fully sponsored and is on the <b>Zulip Cloud Standard</b> plan.</h3>
-                        </p>
-                    </center>
-                    {% else %}
-                    <center>
-                        <p>
-                            <h2>Your organization is on the <b>Zulip Free</b> plan.</h2>
-                            <a href="/upgrade/">
-                                <button type="submit" class="button green">Upgrade to Standard</button>
-                            </a>
-                            <a href="/plans/">
-                                <button type="submit">View all plans</button>
-                            </a>
-                        </p>
-                    </center>
-                    {% endif %}
-                </div>
-                {% if not sponsorship_pending %}
-                {# In the other case, we're displaying a different message about contacting support. #}
-                <div class="support-link">
-                    <p>
-                        <a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.
-                    </p>
                 </div>
                 {% endif %}
+                <div class="input-box billing-page-field no-validation org-billing-frequency-wrapper"
+                  data-current-billing-frequency="{{ billing_frequency }}"
+                  {%if free_trial %}data-free-trial="true"{% endif %}
+                  {%if downgrade_at_end_of_cycle %}data-downgrade-eoc="true"{% endif %}
+                  {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
+                  {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
+                    <label for="org-billing-frequency">Billing frequency</label>
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan %}
+                    <div class="not-editable-realm-field">
+                        {{ billing_frequency }}
+                    </div>
+                    {% elif switch_to_annual_at_end_of_cycle %}
+                    <select name="schedule" id="org-billing-frequency-annual" class="billing-frequency-select">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Annual" selected>Annual</option>
+                    </select>
+                    <div class="billing-frequency-message not-editable-realm-field">
+                        Your plan will switch to annual billing on {{ renewal_date }}.
+                    </div>
+                    {%elif switch_to_monthly_at_end_of_cycle %}
+                    <select name="schedule" id="org-billing-frequency-monthly" class="billing-frequency-select">
+                        <option value="Monthly" selected>Monthly</option>
+                        <option value="Annual">Annual</option>
+                    </select>
+                    <div class="billing-frequency-message not-editable-realm-field">
+                        Your plan will switch to monthly billing on {{ renewal_date }}.
+                    </div>
+                    {% else %}
+                    <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select">
+                        <option value="Monthly" {% if billing_frequency == "Monthly" %}selected{% endif %}>Monthly</option>
+                        <option value="Annual" {% if billing_frequency == "Annual" %}selected{% endif %}>Annual</option>
+                    </select>
+                    {% endif %}
+                    <button id="org-billing-frequency-confirm-button" class="hide">
+                        <span class="billing-button-text">Update</span>
+                        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                    </button>
+                    <div id="org-billing-frequency-change-error" class="alert alert-danger billing-page-error"></div>
+                </div>
+                {% if automanage_licenses %}
+                <div class="input-box billing-page-field no-validation">
+                    <label for="automatic-license-count" class="inline-block label-title">
+                        Number of licenses
+                        <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                    </label>
+                    <div id="automatic-license-count" class="not-editable-realm-field">
+                        {{ licenses }} (managed automatically)
+                    </div>
+                </div>
                 {% else %}
+                <div class="input-box billing-page-field no-validation input-box-number">
+                    <label for="current-manual-license-count" class="inline-block label-title">
+                        Number of licenses for current billing period
+                        <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                    </label>
+                    <div class="number-input-with-label">
+                        <form id="current-license-change-form">
+                            <input min="{{ licenses }}" type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" required/>
+                        </form>
+                        <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
+                        <button id="current-manual-license-count-update-button" class="license-count-update-button hide">
+                            <span class="billing-button-text">Update</span>
+                            <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                        </button>
+                    </div>
+                    <div id="current-license-change-error" class="alert alert-danger billing-page-error"></div>
+                </div>
+                {% if not downgrade_at_end_of_cycle %}
+                <div class="input-box billing-page-field no-validation input-box-number">
+                    <label for="next-manual-license-count" class="inline-block label-title">
+                        Number of licenses for next billing period
+                        <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                    </label>
+                    <div class="number-input-with-label">
+                        <form id="next-license-change-form">
+                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" required/>
+                        </form>
+                        <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
+                        <button id="next-manual-license-count-update-button" class="license-count-update-button hide">
+                            <span class="billing-button-text">Update</span>
+                            <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                        </button>
+                    </div>
+                    <div id="next-license-change-error" class="alert alert-danger billing-page-error"></div>
+                </div>
+                {% endif %}
+                {% endif %}
+                <div id="cardchange-error" class="alert alert-danger"></div>
+                <div class="input-box billing-page-field no-validation">
+                    <label for="customer-payment-method" class="inline-block label-title">Payment method</label>
+                    <div id="customer-payment-method" class="not-editable-realm-field">
+                        {{ payment_method }}
+                    </div>
+                </div>
+                {% if charge_automatically %}
+                <div class="user-stripe-card-update input-box billing-page-field no-validation">
+                    <button class="user-stripe-card-update-button" id="update-card-button">
+                        <span class="billing-button-text">Update card</span>
+                        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                    </button>
+                </div>
+                {% endif %}
+                <div class="input-box billing-page-field no-validation">
+                    <div class="next-payment-info not-editable-realm-field">
+                        {% if renewal_amount %}
+                            {% if downgrade_at_end_of_cycle %}
+                            Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
+                            period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
+                            <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
+                            {% elif downgrade_at_end_of_free_trial %}
+                            Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the free trial
+                            (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
+                            <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
+                            {% else %}
+                            {% if charge_automatically %}
+                            {% if is_server_on_legacy_plan %}
+                            Your plan will automatically upgrade to {{ legacy_remote_server_new_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+                            {% else %}
+                            Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
+                            {% endif %}
+                            {% else %}
+                            Your next invoice is due on <strong>{{ renewal_date }}</strong>.
+                            {% endif %}
+                            <br />
+                            Expected charge: <strong>${{ renewal_amount }}</strong>
+                            {% if not fixed_price %}
+                                (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
+                                {% if switch_to_annual_at_end_of_cycle %}
+                                    12 months
+                                {% elif switch_to_monthly_at_end_of_cycle %}
+                                    1 month
+                                {% else %}
+                                    {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
+                                {% endif %})
+                                {% if discount_percent %}
+                                <br />
+                                <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
+                                {% endif %}
+                            {% endif %}
+                            {% endif %}
+                        {% else %}
+                            Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="input-box no-validation billing-page-field">
+                    <label for="billing-contact" class="inline-block label-title">Billing contact</label>
+                    <div id="billing-contact" class="not-editable-realm-field">
+                        <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
+                    </div>
+                </div>
+                <div id="planchange-error" class="alert alert-danger"></div>
+                <div id="planchange-input-section">
+                    {% if free_trial and not downgrade_at_end_of_free_trial %}
+                        <div class="end-free-trial plan-toggle-action input-box billing-page-field no-validation" id="end-free-trial">
+                            <button class="end-free-trial-button plan-toggle-action-button">
+                                <span class="billing-button-text">Cancel plan</span>
+                                <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                    {% elif downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial %}
+                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
+                            <button class="reactivate-current-plan-button plan-toggle-action-button">
+                                <span class="billing-button-text">
+                                    {% if downgrade_at_end_of_free_trial %}
+                                    Cancel downgrade
+                                    {% else %}
+                                    Reactivate subscription
+                                    {% endif %}
+                                </span>
+                                <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                    {% elif is_server_on_legacy_plan %}
+                        <div class="plan-toggle-action input-box billing-page-field no-validation" id="cancel-legacy-server-upgrade">
+                            <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
+                                <span class="billing-button-text">Cancel upgrade</span>
+                                <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field no-validation" id="cancel-subscription">
+                            <button class="cancel-current-plan-button plan-toggle-action-button">
+                                <span class="billing-button-text">Cancel plan</span>
+                                <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+                <form id="planchange-form">
+                    {% if free_trial %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL }}" />
+                    {% elif downgrade_at_end_of_free_trial %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.FREE_TRIAL }}" />
+                    {% elif downgrade_at_end_of_cycle %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
+                    {% else %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <hr />
+        <div class="support-link">
+            <p>
+                To make changes to your plan or view your billing history <a href="mailto:support@zulip.com">contact Zulip support</a>.
+            </p>
+        </div>
+        {% else %}
+        <!-- For sponsored or sponsorship pending organizations we redirect to /sponsorship page. -->
+        <!-- For organizations on free plan we redirect to /plans page. -->
+        <div class="billing-status-page">
+            <div class="pitch">
+                <h1>Zulip Cloud billing for {{ org_name }}</h1>
+            </div>
+            <div class="white-box">
                 <p>
                     You must be an organization owner or a billing administrator to view this page.
                 </p>
-                {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
-
-
-<div id="confirm-licenses-modal" class="micromodal" aria-hidden="true">
+<div id="confirm-end-free-trial" class="micromodal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
                 <h1 class="modal__title dialog_heading">
-                    {{ _('Confirm license increase') }}
+                    Downgrade {{ org_name }} to Zulip Cloud Free?
                 </h1>
                 <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
                 <p>
-                    Are you sure you want to increase the licenses from
-                    <b><span id="current_license_count_holder"></span></b> to
-                    <b><span id="new_license_count_holder"></span></b>?
+                    Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of your free trial
+                    ({{ renewal_date }}). You will lose access to unlimited search history and
+                    <a href="{{ billing_base_url }}/plans/">other features</a>
+                    of your current plan. Are you sure you want to continue?
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Downgrade') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="confirm-licenses-modal-increase" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Confirm adding licenses
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Are you sure you want to increase the number of licenses from
+                    <b><span class="current_license_count_holder"></span></b> to
+                    <b><span class="new_license_count_holder"></span></b>?
                 </p>
                 <p>
-                    You would be charged for the additional licenses.
+                    You will be charged for
+                    <b><span class="difference_license_count_holder"></span></b> additional licenses.
                 </p>
             </main>
             <footer class="modal__footer">
                 <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
                 <button class="modal__btn dialog_submit_button">
                     <span>{{ _('Confirm') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="confirm-licenses-modal-decrease" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Confirm decreasing licenses
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Are you sure you want to decrease the number of licenses from
+                    <b><span class="current_license_count_holder"></span></b> to
+                    <b><span class="new_license_count_holder"></span></b>?
+                </p>
+                <p>
+                    Your organization will be limited to at most
+                    <b><span class="new_license_count_holder"></span></b> users.
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Confirm') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="confirm-cancel-subscription-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Downgrade {{ org_name }} to Zulip Cloud Free?
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
+                    period ({{ renewal_date }}). You will lose access to unlimited search history and
+                    <a href="{{ billing_base_url }}/plans/">other features</a>
+                    of your current plan. Are you sure you want to continue?
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Downgrade') }}</span>
                 </button>
             </footer>
         </div>

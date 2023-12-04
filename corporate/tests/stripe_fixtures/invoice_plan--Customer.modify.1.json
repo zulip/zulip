@@ -3,6 +3,7 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
+  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
@@ -12,8 +13,9 @@
   "invoice_prefix": "NORMA01",
   "invoice_settings": {
     "custom_fields": null,
-    "default_payment_method": null,
-    "footer": null
+    "default_payment_method": "pm_1OIlXRDEQaroqDjsBqWvm4B5",
+    "footer": null,
+    "rendering_options": null
   },
   "livemode": false,
   "metadata": {
@@ -26,5 +28,6 @@
   "phone": null,
   "preferred_locales": [],
   "shipping": null,
-  "tax_exempt": "none"
+  "tax_exempt": "none",
+  "test_clock": null
 }

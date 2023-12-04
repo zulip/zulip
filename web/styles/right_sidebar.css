@@ -7,13 +7,20 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.right-sidebar-title {
+    color: var(--color-text-sidebar-heading);
+    font-size: inherit;
+    font-weight: normal;
+    display: inline;
+}
+
 #buddy_list_wrapper {
     position: relative;
     margin-left: 0;
     overflow: auto;
 }
 
-#user_presences {
+#buddy-list-users-matching-view {
     max-width: 95%;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
@@ -249,17 +256,6 @@ $user_status_emoji_width: 24px;
         opacity: 1;
         cursor: pointer;
     }
-}
-
-#keyboard-icon {
-    position: relative;
-    cursor: pointer;
-    font-size: 20px;
-    margin-right: 15px;
-}
-
-#sidebar-keyboard-shortcuts {
-    color: inherit;
 }
 
 .right-sidebar-shortcuts {

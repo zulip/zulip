@@ -14,6 +14,8 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
 )
 from zerver.lib.bulk_create import create_users
+from zerver.lib.push_notifications import sends_notifications_directly
+from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import ensure_stream, get_signups_stream
 from zerver.lib.user_groups import (
@@ -122,8 +124,8 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
 def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
-    for setting_name, permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-        group_name = permissions_configuration.default_group_name
+    for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        group_name = permission_configuration.default_group_name
         setattr(realm, setting_name, system_groups_dict[group_name])
 
     realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
@@ -159,14 +161,17 @@ def do_create_realm(
     invite_required: Optional[bool] = None,
     plan_type: Optional[int] = None,
     org_type: Optional[int] = None,
+    default_language: Optional[str] = None,
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: bool = False,
     enable_read_receipts: Optional[bool] = None,
     enable_spectator_access: Optional[bool] = None,
     prereg_realm: Optional[PreregistrationRealm] = None,
 ) -> Realm:
-    if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
-        raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
+    if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
+        raise AssertionError(
+            "Creating a realm on SOCIAL_AUTH_SUBDOMAIN or SELF_HOSTING_MANAGEMENT_SUBDOMAIN is not allowed!"
+        )
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
     if not server_initialized():
@@ -184,6 +189,8 @@ def do_create_realm(
         kwargs["plan_type"] = plan_type
     if org_type is not None:
         kwargs["org_type"] = org_type
+    if default_language is not None:
+        kwargs["default_language"] = default_language
     if enable_spectator_access is not None:
         if enable_spectator_access:
             # Realms with LIMITED plan cannot have spectators enabled.
@@ -209,6 +216,9 @@ def do_create_realm(
         kwargs["enable_read_receipts"] = (
             invite_required is None or invite_required is True or emails_restricted_to_domains
         )
+    # Initialize this property correctly in the case that no network activity
+    # is required to do so correctly.
+    kwargs["push_notifications_enabled"] = sends_notifications_directly()
 
     with transaction.atomic():
         realm = Realm(string_id=string_id, name=name, **kwargs)
@@ -221,8 +231,8 @@ def do_create_realm(
 
         # For now a dummy value of -1 is given to groups fields which
         # is changed later before the transaction is committed.
-        for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-            setattr(realm, permissions_configuration.id_field_name, -1)
+        for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+            setattr(realm, permission_configuration.id_field_name, -1)
 
         realm.save()
 
@@ -259,6 +269,8 @@ def do_create_realm(
                 for backend_name in all_implemented_backend_names()
             ]
         )
+
+    enqueue_register_realm_with_push_bouncer_if_needed(realm)
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(

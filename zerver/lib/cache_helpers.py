@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Iterable, Tuple
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
+from django.db import connection
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 from django_stubs_ext import ValuesQuerySet
@@ -23,7 +24,7 @@ from zerver.lib.cache import (
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
-from zerver.models import Client, Huddle, UserProfile, get_client_cache_key, huddle_hash_cache_key
+from zerver.models import Client, UserProfile, get_client_cache_key
 
 
 def user_cache_items(
@@ -40,10 +41,6 @@ def user_cache_items(
 
 def client_cache_items(items_for_remote_cache: Dict[str, Tuple[Client]], client: Client) -> None:
     items_for_remote_cache[get_client_cache_key(client.name)] = (client,)
-
-
-def huddle_cache_items(items_for_remote_cache: Dict[str, Tuple[Huddle]], huddle: Huddle) -> None:
-    items_for_remote_cache[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
 
 def session_cache_items(
@@ -97,14 +94,24 @@ cache_fillers: Dict[
         3600 * 24 * 7,
         10000,
     ),
-    "huddle": (
-        lambda: Huddle.objects.select_related("recipient").all(),
-        huddle_cache_items,
-        3600 * 24 * 7,
-        10000,
-    ),
     "session": (lambda: Session.objects.all(), session_cache_items, 3600 * 24 * 7, 10000),
 }
+
+
+class SQLQueryCounter:
+    def __init__(self) -> None:
+        self.count = 0
+
+    def __call__(
+        self,
+        execute: Callable[[str, Any, bool, Dict[str, Any]], Any],
+        sql: str,
+        params: Any,
+        many: bool,
+        context: Dict[str, Any],
+    ) -> Any:
+        self.count += 1
+        return execute(sql, params, many, context)
 
 
 def fill_remote_cache(cache: str) -> None:
@@ -113,16 +120,20 @@ def fill_remote_cache(cache: str) -> None:
     items_for_remote_cache: Dict[str, Any] = {}
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
-    for obj in objects():
-        items_filler(items_for_remote_cache, obj)
-        count += 1
-        if count % batch_size == 0:
-            cache_set_many(items_for_remote_cache, timeout=3600 * 24)
-            items_for_remote_cache = {}
-    cache_set_many(items_for_remote_cache, timeout=3600 * 24 * 7)
+    db_query_counter = SQLQueryCounter()
+    with connection.execute_wrapper(db_query_counter):
+        for obj in objects():
+            items_filler(items_for_remote_cache, obj)
+            count += 1
+            if count % batch_size == 0:
+                cache_set_many(items_for_remote_cache, timeout=3600 * 24)
+                items_for_remote_cache = {}
+        cache_set_many(items_for_remote_cache, timeout=3600 * 24 * 7)
     logging.info(
-        "Successfully populated %s cache!  Consumed %s remote cache queries (%s time)",
+        "Successfully populated %s cache: %d items, %d DB queries, %d memcached sets, %.2f seconds",
         cache,
+        count,
+        db_query_counter.count,
         get_remote_cache_requests() - remote_cache_requests_start,
-        round(get_remote_cache_time() - remote_cache_time_start, 2),
+        get_remote_cache_time() - remote_cache_time_start,
     )

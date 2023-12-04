@@ -1,4 +1,5 @@
 import collections
+import itertools
 import os
 import re
 import sys
@@ -38,14 +39,14 @@ from django.test import override_settings
 from django.urls import URLResolver
 from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
-from typing_extensions import override
+from typing_extensions import ParamSpec, override
 
 from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib import cache
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
-from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
+from zerver.lib.db import Params, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
@@ -150,35 +151,38 @@ def queries_captured(
 
     queries: List[CapturedQuery] = []
 
-    def wrapper_execute(
-        self: TimeTrackingCursor,
-        action: Callable[[Query, ParamsT], None],
-        sql: Query,
-        params: ParamsT,
-    ) -> None:
+    def cursor_execute(self: TimeTrackingCursor, sql: Query, vars: Optional[Params] = None) -> None:
         start = time.time()
         try:
-            return action(sql, params)
+            return super(TimeTrackingCursor, self).execute(sql, vars)
         finally:
             stop = time.time()
             duration = stop - start
             if include_savepoints or not isinstance(sql, str) or "SAVEPOINT" not in sql:
                 queries.append(
                     CapturedQuery(
-                        sql=self.mogrify(sql, params).decode(),
+                        sql=self.mogrify(sql, vars).decode(),
                         time=f"{duration:.3f}",
                     )
                 )
 
-    def cursor_execute(
-        self: TimeTrackingCursor, sql: Query, params: Optional[Params] = None
-    ) -> None:
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
-
-    def cursor_executemany(self: TimeTrackingCursor, sql: Query, params: Iterable[Params]) -> None:
-        return wrapper_execute(
-            self, super(TimeTrackingCursor, self).executemany, sql, params
-        )  # nocoverage -- doesn't actually get used in tests
+    def cursor_executemany(
+        self: TimeTrackingCursor, sql: Query, vars_list: Iterable[Params]
+    ) -> None:  # nocoverage -- doesn't actually get used in tests
+        vars_list, vars_list1 = itertools.tee(vars_list)
+        start = time.time()
+        try:
+            return super(TimeTrackingCursor, self).executemany(sql, vars_list)
+        finally:
+            stop = time.time()
+            duration = stop - start
+            queries.extend(
+                CapturedQuery(
+                    sql=self.mogrify(sql, vars).decode(),
+                    time=f"{duration:.3f}",
+                )
+                for vars in vars_list1
+            )
 
     if not keep_cache_warm:
         cache = get_cache_backend(None)
@@ -527,6 +531,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "scim/v2/ServiceProviderConfig",
             "scim/v2/Groups(?:/(?P<uuid>[^/]+))?",
             "scim/v2/Groups/.search",
+            # TODO: This endpoint and the rest of its system are a work in progress,
+            # we are not testing it yet.
+            "self-hosted-billing/",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
@@ -556,15 +563,15 @@ def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> E
     return data
 
 
-FuncT = TypeVar("FuncT", bound=Callable[..., None])
+P = ParamSpec("P")
 
 
-def use_s3_backend(method: FuncT) -> FuncT:
+def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)
-    def new_method(*args: Any, **kwargs: Any) -> Any:
+    def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
         with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
             return method(*args, **kwargs)
 

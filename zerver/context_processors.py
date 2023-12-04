@@ -14,6 +14,7 @@ from version import (
     ZULIP_VERSION,
 )
 from zerver.lib.exceptions import InvalidSubdomainError
+from zerver.lib.i18n import get_language_list
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
@@ -106,6 +107,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
 
+    skip_footer = False
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
     find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
@@ -119,6 +121,11 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         login_link_disabled = True
         find_team_link_disabled = False
         allow_search_engine_indexing = True
+    elif realm is None:
+        register_link_disabled = True
+        login_link_disabled = True
+        find_team_link_disabled = False
+        skip_footer = True
 
     apps_page_web = settings.ROOT_DOMAIN_URI + "/accounts/go/"
 
@@ -185,6 +192,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
         "is_isolated_page": is_isolated_page(request),
+        "skip_footer": skip_footer,
         "default_page_params": default_page_params,
         "corporate_enabled": corporate_enabled,
     }
@@ -259,6 +267,7 @@ def latest_info_context() -> Dict[str, str]:
 
 def get_realm_create_form_context() -> Dict[str, Any]:
     context = {
+        "language_list": get_language_list(),
         "MAX_REALM_NAME_LENGTH": str(Realm.MAX_REALM_NAME_LENGTH),
         "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         "root_domain_available": is_root_domain_available(),

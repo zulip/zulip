@@ -2,7 +2,9 @@ Get Ansible Tower notifications in Zulip!
 
  1. {!create-stream.md!}
 
- 1. {!create-bot-construct-url.md!}
+ 1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
  1. Go to your Ansible Tower or AWX Admin Portal. Click **Notifications** on
     the left sidebar, and click **Add**.

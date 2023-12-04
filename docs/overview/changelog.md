@@ -5,41 +5,47 @@ This page contains the release history for the Zulip server. See also the
 
 ## Zulip Server 8.x series
 
-### Zulip Server 8.0
+### Zulip Server 8.0-beta1
 
-_Unreleased_
-
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of all changes.
+_Released 2023-11-16_
 
 #### Highlights
 
 - New Inbox view shows all unread messages in a conveniently
-  browsable experience, similar to the mobile home screen.
-- (Incomplete) Added support for following a topic, with configurable
-  notification settings for followed topics and flexible configuration
-  options to automatically follow topics when sending a message or
-  otherwise interacting with it.
-- (Incomplete) New @topic mentions support mentioning only users who
-  have participated in a topic.
-- (Incomplete) Typing notifications now support stream messages.
+  browsable experience, similar to the mobile home screen. It is an
+  option for the user's home view.
+- Added support for following a topic, with configurable notification
+  settings for followed topics and flexible configuration options to
+  automatically follow topics when sending a message or otherwise
+  interacting with it. New `Shift + N` keyboard shortcut navigates to
+  the next unread followed topic.
+- New @topic mentions support mentioning only users who have
+  participated in a topic by sending a message or emoji reaction.
+- Typing notifications now support streams with 100 or fewer
+  subscribers.
 - Clicking on a message in search views now directly takes the user to
-  the target message, instead of starting a reply.
+  the target message, instead of starting a reply, since it's rare one
+  wants to reply without full context.
+- The left sidebar now allows collapsing the global views for users
+  who want more space for streams and conversations.
 - Added new unread count display style setting, controlling in which
   streams to display a numeric unread count or a simple dot unread
   indicator. Defaults to numeric counts in normal streams, but a dot
   indicator in muted streams.
 - Added support for creating voice calls.
 - Major visual design improvements in the message feed, search
-  area/navbar, and left sidebar.
+  area/navbar, and left sidebar. The gear menu was replaced with three
+  new redesigned menus: A help menu, a personal/avatar menu, and a
+  more focused gear menu.
 - Added thumbnails and lightbox player support for video links and
   video files uploaded directly in Zulip. Previously, Zulip only
   supported this for videos hosted by third-party platforms that
   provide an embedded player, like YouTube and Vimeo.
-- (Incomplete) Pasting HTML into the compose box will now convert it
-  into corresponding Zulip markup. Improved pasting URLs with text
-  selected. New formatting buttons for bulleted and numbered lists.
+- The compose area was redesigned, with new formatting buttons for
+  bulleted and numbered lists. Improved pasting URLs with text
+  selected. Topic typeahead now indicates whether one would be
+  creating a new topic, and user typeahead now shows pronouns if a
+  pronoun custom profile field is configured.
 
 #### Full feature changelog
 
@@ -53,7 +59,8 @@ log][commit-log] for an up-to-date list of all changes.
   the user experience.
 - The LDAP integration now supports syncing user groups.
 - The SCIM integration now supports syncing user roles.
-- Added support for sorting the recent view by unread count.
+- The recent view now indicates the date range it is displaying, and
+  supports fetching more conversations and sorting by unread count.
 - Added support for printing a message feed as a lightweight
   conversation export experience.
 - Added support for muting bot users.
@@ -62,28 +69,43 @@ log][commit-log] for an up-to-date list of all changes.
 - Added support for subscribing users in user profile streams tab.
 - Added new permissions setting for who can create reusable invitation
   links.
+- Added new setting for whether guest users should be displayed with
+  "(guest)" appended to their name to highlight their status.
 - Added new setting to configure the Jitsi server URL to use.
 - Added new settings warnings for making a stream private that one is
   not subscribed to, and for archiving a stream used for automated
   notifications.
-- Added new wizard for creating incoming webhook URLs.
+- Added new wizard for creating incoming webhook integration URLs.
 - Added bulk-delete UI for drafts.
+- Added new API endpoint for sending a test push notification, to
+  support an upcoming mobile feature. Realms now have a UUID sent to
+  the push notifications service to simplify migrating via
+  export/import into a different server.
 - Display settings was renamed to Preferences.
-- Default streams can now be managed via the manage streams UI.
+- "Default view" was renamed to "home view".
+- The manage streams UI has a cleaner design for changing
+  subscriptions, can now directly manage default streams, and has
+  a cleaner UI for managing notification settings.
 - Linkifiers and code playgrounds now use RFC 6570 compliant URL
   templates to specify the target URL.
 - Linkifiers are now processed in a defined, editable order.
+- Scheduled messages are now displayed when viewing the conversation
+  where they will be sent.
 - Message edit history has a Shift+H keyboard shortuct and is now
   accessed via the mouse exclusively by clicking on EDITED/MOVED
   notices, simplifying the main message actions popover.
+- Users can now delete messages sent by bots that they control as
+  though they had sent the message themselves.
 - Simplified and clarified recipient bar inline topic editing.
 - The compose/edit interfaces now disable formatting buttons in
   preview mode.
+- The organization creation form now explicitly asks the user to
+  choose a default language for the organization.
 - Improved design for /todo widgets.
 - Improved semantics and explanations of reactivating previously
   deactivated bot users.
-- Improved dozens of existing help center articles, including mobile
-  documentation for many common workflows and a new system for message
+- Improved over 100 help center articles, adding mobile documentation
+  for many common workflows and a new indexing system for message
   formatting documentation.
 - Improved content and styling for many tooltips across the web
   application, including several new "Copied!" tooltips.
@@ -93,13 +115,15 @@ log][commit-log] for an up-to-date list of all changes.
 - Webhook integrations now return a 200 success status code when
   processing requests that match the format for an integration but
   where the specific event type is not implemented.
-- New /health healthcehck endpoint designed for reverse proxies in
+- New /health health check endpoint designed for reverse proxies in
   front of the Zulip server.
 - Rewrote all popovers, fixing many bugs involving positioning, mobile
   web UI, and keyboard navigation.
 - Rewrote message feed layout using CSS grid, fixing many subtle
   layout bugs.
 - Fixed dozens of rare exceptions in the web application.
+- Fixed email notifications incorrectly containing extra context
+  messages when subscribed to email notifications for a stream.
 - Fixed several longstanding performance issues both in the web
   application and the server.
 - Fixed several subtle bugs in error reporting internals.
@@ -119,16 +143,67 @@ log][commit-log] for an up-to-date list of all changes.
   the web codebase is now TypeScript, most of the legacy Bootstrap
   code has been deleted, and most import cycles have been cut.
 - Added new request parsing framework based on Pydantic 2.
-- Upgraded many dependnecies.
+- Upgraded many dependencies.
 
 #### Upgrade notes for 8.0
 
+- Installations using the [Mobile Push Notifications
+  Service][mobile-push] now regularly upload [basic
+  metadata][mobile-push-metadata] about the organizations hosted by
+  the installation to the Mobile Push Notifications
+  Service. Previously, basic metadata was uploaded only when uploading
+  usage statistics was also enabled via the `SUBMIT_USAGE_STATISTICS`
+  setting.
+- This release contains several expensive migrations, most notably
+  `0472_add_message_realm_id_indexes.py`,
+  `0485_alter_usermessage_flags_and_add_index.py`, and
+  `0486_clear_old_data_for_unused_usermessage_flags.py`. Migration
+  `0486`, in particular, cleans up stale that should only be present
+  on Zulip servers that were originally installed with Zulip 1.3.x or
+  older. If your server has millions of messages, plan for the
+  migrations in this release to take 15 minutes or more to complete.
 - Minor: User group names starting with `@`, `role:`, `user:`, and
   various certain other special patterns are now forbidden. In the
   unlikely event that existing user groups have names matching these
   patterns, they will be automatically renamed on upgrade.
+- The behavior of the `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` has
+  subtly changed. Previously, using this setting at all would block
+  LDAP authentication in organizations that are configured to use LDAP
+  authentication but not explicitly configured with advanced access
+  controls. This behavior was removed to simplify hosting multiple
+  organizations with different LDAP configuration preferences.
+
+[mobile-push-metadata]: ../production/mobile-push-notifications.md#uploading-usage-statistics
 
 ## Zulip Server 7.x series
+
+### Zulip Server 7.5
+
+_Released 2023-11-16_
+
+- CVE-2023-47642: Invalid metadata access for formerly subscribed streams.
+  It was discovered by the Zulip development team that active users who had
+  previously been subscribed to a stream incorrectly continued being able to use
+  the Zulip API to access metadata for that stream. As a result, users who had
+  been removed from a stream, but still had an account in the organization,
+  could still view metadata for that stream (including the stream name,
+  description, settings, and an email address used to send emails into the
+  stream via the incoming email integration). This potentially allowed users to
+  see changes to a stream’s metadata after they had lost access to the stream.
+  This bug was present in all Zulip releases prior to Zulip Server 7.5.
+- Fixed a bug where [backups](../production/export-and-import.md#backups) might
+  be written using `postgresql-client-16`, which could not be straightforwardly
+  restored into a Zulip instance, as the format is not backwards-compatible, and
+  Zulip does not yet support PostgreSQL 16.
+- Renamed the `reactivate_stream` management command to `unarchive_stream`, to
+  match terminology in the app, and [documented
+  it](https://zulip.com/help/archive-a-stream#unarchiving-archived-streams).
+- Fixed a regression, introduced in 6.0, where users created via the API or LDAP
+  would have English set as their language, ignoring the configured realm
+  default.
+- Improved [documentation on `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL`](../production/authentication-methods.md#restricting-ldap-user-access-to-specific-organizations).
+- Improved error messages for subdomains being reserved versus being in use.
+- Upgraded Python dependencies.
 
 ### Zulip Server 7.4
 
@@ -2405,11 +2480,9 @@ _Released 2019-03-01_
 
 - This release adds support for submitting basic usage statistics to
   help the Zulip core team. This feature can be enabled only if a server
-  is using the [Mobile Push Notification Service][mpns-statistics-docs],
+  is using the [Mobile Push Notification Service][mobile-push],
   and is enabled by default in that case. To disable it, set
   `SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
-
-[mpns-statistics-docs]: ../production/mobile-push-notifications.md#submitting-statistics
 
 #### Full feature changelog
 
@@ -2648,7 +2721,7 @@ _Released 2018-11-07_
 _Released 2018-05-07_
 
 - Added an automated tool (`manage.py register_server`) to sign up for
-  the [mobile push notifications service](../production/mobile-push-notifications.md).
+  the [mobile push notifications service][mobile-push].
 - Improved rendering of block quotes in mobile push notifications.
 - Improved some installer error messages.
 - Fixed several minor bugs with the new Slack import feature.

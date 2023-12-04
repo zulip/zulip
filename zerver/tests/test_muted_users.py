@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from unittest import mock
 
+import time_machine
+
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
 from zerver.lib.muted_users import get_mute_object, get_muting_users, get_user_mutes
@@ -19,7 +21,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(muted_users, [])
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
 
-        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
@@ -85,7 +87,7 @@ class MutedUsersTests(ZulipTestCase):
         if deactivate_user:
             do_deactivate_user(cordelia, acting_user=None)
 
-        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
@@ -139,12 +141,12 @@ class MutedUsersTests(ZulipTestCase):
         if deactivate_user:
             do_deactivate_user(cordelia, acting_user=None)
 
-        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
 
-        with mock.patch("zerver.actions.muted_users.timezone_now", return_value=mute_time):
+        with time_machine.travel(mute_time, tick=False):
             # To test that `RealmAuditLog` entry has correct `event_time`.
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_delete(hamlet, url)
@@ -364,3 +366,34 @@ class MutedUsersTests(ZulipTestCase):
             # `maybe_enqueue_notifications` wasn't called for Hamlet after message edit which mentioned him,
             # because the sender (Cordelia) was muted.
             m.assert_not_called()
+
+    def test_muting_and_unmuting_restricted_users(self) -> None:
+        # NOTE: It is a largely unintended side effect of how we use
+        # the access_user_by_id API that limited guests can't mute
+        # inaccessible users. These tests verify the expected
+        # behavior.
+
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
+        result = self.api_post(polonius, url)
+        self.assert_json_error(result, "Insufficient permission")
+
+        url = f"/api/v1/users/me/muted_users/{iago.id}"
+        result = self.api_post(polonius, url)
+        self.assert_json_success(result)
+        muted_users = get_user_mutes(polonius)
+        self.assert_length(muted_users, 1)
+
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
+        result = self.api_delete(polonius, url)
+        self.assert_json_error(result, "Insufficient permission")
+
+        url = f"/api/v1/users/me/muted_users/{iago.id}"
+        result = self.api_delete(polonius, url)
+        self.assert_json_success(result)
+        muted_users = get_user_mutes(polonius)
+        self.assert_length(muted_users, 0)

@@ -204,46 +204,33 @@ run_test("wildcard_mentions_regexp", () => {
         "some_email@**stream**.com",
     ];
 
-    const messages_without_topic_mentions = [
-        "some text before @topic some text after",
-        "@topic",
-        "`@topic`",
-        "some_email@topic.com",
-        "`@**topic**`",
-        "some_email@**topic**.com",
-    ];
-
     let i;
     for (i = 0; i < messages_with_all_mentions.length; i += 1) {
-        assert.ok(util.find_wildcard_mentions(messages_with_all_mentions[i]));
+        assert.ok(util.find_stream_wildcard_mentions(messages_with_all_mentions[i]));
     }
 
     for (i = 0; i < messages_with_everyone_mentions.length; i += 1) {
-        assert.ok(util.find_wildcard_mentions(messages_with_everyone_mentions[i]));
+        assert.ok(util.find_stream_wildcard_mentions(messages_with_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_with_stream_mentions.length; i += 1) {
-        assert.ok(util.find_wildcard_mentions(messages_with_stream_mentions[i]));
+        assert.ok(util.find_stream_wildcard_mentions(messages_with_stream_mentions[i]));
     }
 
     for (i = 0; i < messages_with_topic_mentions.length; i += 1) {
-        assert.ok(util.find_wildcard_mentions(messages_with_topic_mentions[i]));
+        assert.ok(!util.find_stream_wildcard_mentions(messages_with_topic_mentions[i]));
     }
 
     for (i = 0; i < messages_without_all_mentions.length; i += 1) {
-        assert.ok(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
+        assert.ok(!util.find_stream_wildcard_mentions(messages_without_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_without_everyone_mentions.length; i += 1) {
-        assert.ok(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
+        assert.ok(!util.find_stream_wildcard_mentions(messages_without_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_without_stream_mentions.length; i += 1) {
-        assert.ok(!util.find_wildcard_mentions(messages_without_stream_mentions[i]));
-    }
-
-    for (i = 0; i < messages_without_topic_mentions.length; i += 1) {
-        assert.ok(!util.find_wildcard_mentions(messages_without_topic_mentions[i]));
+        assert.ok(!util.find_stream_wildcard_mentions(messages_without_stream_mentions[i]));
     }
 });
 

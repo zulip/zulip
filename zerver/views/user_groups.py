@@ -70,11 +70,7 @@ def add_user_group(
                 setting_value_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permission_config.require_system_group,
-                allow_internet_group=permission_config.allow_internet_group,
-                allow_owners_group=permission_config.allow_owners_group,
-                allow_nobody_group=permission_config.allow_nobody_group,
-                allow_everyone_group=permission_config.allow_everyone_group,
+                permission_configuration=permission_config,
             )
             group_settings_map[setting_name] = setting_value_group
 
@@ -136,11 +132,7 @@ def edit_user_group(
                 setting_value_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permission_config.require_system_group,
-                allow_internet_group=permission_config.allow_internet_group,
-                allow_owners_group=permission_config.allow_owners_group,
-                allow_nobody_group=permission_config.allow_nobody_group,
-                allow_everyone_group=permission_config.allow_everyone_group,
+                permission_configuration=permission_config,
             )
             do_change_user_group_permission_setting(
                 user_group, setting_name, setting_value_group, acting_user=user_profile

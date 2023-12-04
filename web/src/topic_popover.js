@@ -12,7 +12,7 @@ import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
-import {parse_html} from "./ui_util";
+import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
 
@@ -23,6 +23,7 @@ export function initialize() {
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
                 popover_menus.on_show_prep(instance);
                 let stream_id;
                 let topic_name;
@@ -48,7 +49,9 @@ export function initialize() {
                     topic_name,
                     url,
                 });
-                instance.setContent(parse_html(render_topic_sidebar_actions(instance.context)));
+                instance.setContent(
+                    ui_util.parse_html(render_topic_sidebar_actions(instance.context)),
+                );
             },
             onMount(instance) {
                 const $popper = $(instance.popper);
@@ -163,6 +166,7 @@ export function initialize() {
             onHidden(instance) {
                 instance.destroy();
                 popover_menus.popover_instances.topics_menu = undefined;
+                ui_util.hide_left_sidebar_menu_icon();
             },
         },
     );

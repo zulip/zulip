@@ -5,6 +5,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -42,13 +43,13 @@ export function clear_private_stream_alert() {
 }
 
 export function clear_preview_area() {
-    $("#compose-textarea").show();
-    $("#compose-textarea").trigger("focus");
+    $("textarea#compose-textarea").show();
+    $("textarea#compose-textarea").trigger("focus");
     $("#compose .undo_markdown_preview").hide();
     $("#compose .preview_message_area").hide();
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
-    autosize.update($("#compose-textarea"));
+    autosize.update($("textarea#compose-textarea"));
 
     // While in preview mode we disable unneeded compose_control_buttons,
     // so here we are re-enabling those compose_control_buttons
@@ -107,22 +108,23 @@ export function clear_compose_box() {
     if (compose_ui.is_full_size()) {
         compose_ui.make_compose_box_original_size();
     }
-    $("#compose-textarea").val("").trigger("focus");
+    $("textarea#compose-textarea").val("").trigger("focus");
     compose_validate.check_overflow_text();
     compose_validate.clear_topic_resolved_warning();
-    $("#compose-textarea").removeData("draft-id");
-    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("textarea#compose-textarea").removeData("draft-id");
+    compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
+    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
 }
 
 export function send_message_success(request, data) {
     if (!request.locally_echoed) {
-        if ($("#compose-textarea").data("draft-id")) {
-            drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
+        if ($("textarea#compose-textarea").data("draft-id")) {
+            drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
         }
         clear_compose_box();
     }
@@ -179,16 +181,26 @@ export function send_message(request = create_message_object()) {
         send_message_success(request, data);
     }
 
-    function error(response) {
-        // If we're not local echo'ing messages, or if this message was not
-        // locally echoed, show error in compose box
+    function error(response, server_error_code) {
+        // Error callback for failed message send attempts.
         if (!locally_echoed) {
-            compose_banner.show_error_message(
-                response,
-                compose_banner.CLASSNAMES.generic_compose_error,
-                $("#compose_banners"),
-                $("#compose-textarea"),
-            );
+            if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
+                // The topic wildcard mention permission code path has
+                // a special error.
+                const new_row = render_wildcard_mention_not_allowed_error({
+                    banner_type: compose_banner.ERROR,
+                    classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                });
+                compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
+            } else {
+                compose_banner.show_error_message(
+                    response,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $("#compose_banners"),
+                    $("textarea#compose-textarea"),
+                );
+            }
+
             // For messages that were not locally echoed, we're
             // responsible for hiding the compose spinner to restore
             // the compose box so one can send a next message.
@@ -367,7 +379,7 @@ function schedule_message_to_custom_date() {
 
     const $banner_container = $("#compose_banners");
     const success = function (data) {
-        drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
+        drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
         clear_compose_box();
         const new_row = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
@@ -384,7 +396,7 @@ function schedule_message_to_custom_date() {
             response,
             compose_banner.CLASSNAMES.generic_compose_error,
             $banner_container,
-            $("#compose-textarea"),
+            $("textarea#compose-textarea"),
         );
     };
 

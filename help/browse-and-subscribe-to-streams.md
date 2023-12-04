@@ -9,8 +9,9 @@
 1. Scroll through the list of streams. You can use the **search box** near the
    top of the menu to filter the list by stream name or description.
 
-1. Hover over a stream, and click the gray checkmark to its left to subscribe to
-   the stream.
+1. Click the **plus**
+   (<img src="/static/images/help/desktop-web-plus-icon.svg" alt="plus" class="help-center-icon"/>)
+   icon to the left of a stream to subscribe to it.
 
 !!! tip ""
 
@@ -26,7 +27,7 @@
 1. Scroll through the list of streams.
 
 1. Tap the **plus**
-   (<img src="/static/images/help/mobile-plus-icon.svg" alt="plus" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-plus-icon.svg" alt="plus" class="help-center-icon"/>)
    icon to the right of a stream to subscribe to it.
 
 !!! tip ""

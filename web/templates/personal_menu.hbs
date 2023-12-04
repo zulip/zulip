@@ -28,7 +28,7 @@
                     <ul class="navbar-dropdown-menu-inner-list">
                         {{#if status_content_available}}
                         <li class="text-item navbar-dropdown-menu-inner-list-item">
-                            <span>
+                            <span class="personal-menu-status-wrapper">
                                 {{#if status_emoji_info}}
                                     {{#if status_emoji_info.emoji_alt_code}}
                                     <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
@@ -38,24 +38,28 @@
                                     <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
                                     {{/if}}
                                 {{/if}}
-                                <span class="status_text">
-                                    {{status_text}}
+                                <span class="status_text personal-menu-status-text">
+                                    {{#if show_placeholder_for_status_text}}
+                                        <i class="personal-menu-no-status-text">{{t "No status text"}}</i>
+                                    {{else}}
+                                        {{status_text}}
+                                    {{/if}}
                                 </span>
                             </span>
-                            <a href="" class="clear_status navbar-dropdown-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-x-circle"></i>
+                            <a href="" class="personal-menu-clear-status navbar-dropdown-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
+                                <i class="personal-menu-clear-status-icon navbar-dropdown-icon zulip-icon zulip-icon-x-circle"></i>
                             </a>
                         </li>
                         <li class="link-item navbar-dropdown-menu-inner-list-item">
                             <a href="" class="update_status_text navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile"></i>
+                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile-smaller"></i>
                                 {{#tr}}Edit status{{/tr}}
                             </a>
                         </li>
                         {{else}}
                         <li class="link-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
                             <a href="" class="update_status_text navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile"></i>
+                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile-smaller"></i>
                                 {{#tr}}Set status{{/tr}}
                             </a>
                         </li>
@@ -114,7 +118,7 @@
                     <ul class="navbar-dropdown-menu-inner-list">
                         <li class="link-item navbar-dropdown-menu-inner-list-item">
                             <a class="logout_button hidden-for-spectators navbar-dropdown-menu-link" tabindex="0">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-power" aria-hidden="true"></i>
+                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-log-out" aria-hidden="true"></i>
                                 {{t 'Log out' }}
                             </a>
                         </li>

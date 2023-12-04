@@ -78,6 +78,12 @@ export function update(event: UserGroupUpdateEvent): void {
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }
+
+    if (event.data.can_mention_group !== undefined) {
+        group.can_mention_group = event.data.can_mention_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
 }
 
 export function get_user_group_from_name(name: string): UserGroup | undefined {
@@ -223,9 +229,12 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
 
 export function get_realm_user_groups_for_dropdown_list_widget(
     setting_name: string,
+    setting_type: "realm" | "stream" | "group",
 ): UserGroupForDropdownListWidget[] {
-    const group_setting_config =
-        group_permission_settings.get_group_permission_setting_config(setting_name);
+    const group_setting_config = group_permission_settings.get_group_permission_setting_config(
+        setting_name,
+        setting_type,
+    );
 
     if (group_setting_config === undefined) {
         return [];
@@ -237,6 +246,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         allow_owners_group,
         allow_nobody_group,
         allow_everyone_group,
+        allowed_system_groups,
     } = group_setting_config;
 
     const system_user_groups = settings_config.system_user_groups_list
@@ -254,6 +264,10 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             }
 
             if (!allow_everyone_group && group.name === "role:everyone") {
+                return false;
+            }
+
+            if (allowed_system_groups.length && !allowed_system_groups.includes(group.name)) {
                 return false;
             }
 

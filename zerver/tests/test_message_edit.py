@@ -35,6 +35,7 @@ from zerver.models import (
     Message,
     Realm,
     Stream,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -2127,7 +2128,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "topic_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2185,11 +2186,11 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "stream_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["stream_wildcard_mentioned"],
                 },
             ],
             key=itemgetter("id"),
@@ -2234,7 +2235,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "topic_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2283,18 +2284,11 @@ class EditMessageTest(EditMessageTestCase):
             acting_user=None,
         )
 
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
-            result = self.client_patch(
-                "/json/messages/" + str(message_id),
-                {
-                    "content": "Hello @**topic**",
-                },
-            )
-        self.assert_json_error(
-            result, "You do not have permission to use wildcard mentions in this stream."
-        )
-
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
+        # Less than 'Realm.WILDCARD_MENTION_THRESHOLD' participants
+        participants_user_ids = set(range(1, 10))
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
@@ -2303,9 +2297,27 @@ class EditMessageTest(EditMessageTestCase):
             )
         self.assert_json_success(result)
 
+        # More than 'Realm.WILDCARD_MENTION_THRESHOLD' participants.
+        participants_user_ids = set(range(1, 20))
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**topic**",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use topic wildcard mentions in this topic."
+        )
+
+        # Shiva is moderator
         self.login("shiva")
         message_id = self.send_stream_message(shiva, stream_name, "Hi everyone")
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
@@ -2329,11 +2341,11 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["read", "wildcard_mentioned"],
+                    "flags": ["read", "stream_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["stream_wildcard_mentioned"],
                 },
             ],
             key=itemgetter("id"),
@@ -2388,7 +2400,7 @@ class EditMessageTest(EditMessageTestCase):
                 },
             )
         self.assert_json_error(
-            result, "You do not have permission to use wildcard mentions in this stream."
+            result, "You do not have permission to use stream wildcard mentions in this stream."
         )
 
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
@@ -2425,7 +2437,7 @@ class EditMessageTest(EditMessageTestCase):
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
 
         moderators_system_group = UserGroup.objects.get(
-            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 
         self.login("cordelia")

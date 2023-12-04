@@ -1,13 +1,10 @@
 import {
-    differenceInCalendarDays,
     differenceInHours,
     differenceInMinutes,
-    format,
     formatISO,
     isEqual,
     isValid,
     parseISO,
-    startOfToday,
 } from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
@@ -15,13 +12,24 @@ import _ from "lodash";
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
 import {$t} from "./i18n";
+import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
 let next_timerender_id = 0;
 
+export let display_time_zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+const formatter_map = new Map<string, Intl.DateTimeFormat>();
+
 export function clear_for_testing(): void {
     next_timerender_id = 0;
+}
+
+// Exported for testing only; we do not support live-updating the time zone.
+export function set_display_time_zone(time_zone: string): void {
+    display_time_zone = time_zone;
+    formatter_map.clear();
 }
 
 type DateFormat = "weekday" | "dayofyear" | "weekday_dayofyear_year" | "dayofyear_year";
@@ -44,9 +52,10 @@ type DateOrTimeFormat = DateFormat | TimeFormat | DateWithTimeFormat;
 // for any formats that display the name for a month/weekday, but
 // possibly in more subtle ways for languages with different
 // punctuation schemes for date and times.
-function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeFormatOptions {
-    const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
-
+export function get_format_options_for_type(
+    type: DateOrTimeFormat,
+    is_twenty_four_hour_time: boolean,
+): Intl.DateTimeFormatOptions {
     const time_format_options: Intl.DateTimeFormatOptions = is_twenty_four_hour_time
         ? {hourCycle: "h23", hour: "2-digit", minute: "2-digit"}
         : {
@@ -56,7 +65,12 @@ function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeForma
           };
 
     const weekday_format_options: Intl.DateTimeFormatOptions = {weekday: "long"};
-    const full_format_options: Intl.DateTimeFormatOptions = {dateStyle: "full"};
+    const full_format_options: Intl.DateTimeFormatOptions = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    };
 
     const dayofyear_format_options: Intl.DateTimeFormatOptions = {day: "numeric", month: "short"};
     const dayofyear_year_format_options: Intl.DateTimeFormatOptions = {
@@ -94,17 +108,6 @@ function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeForma
     }
 }
 
-function get_user_locale(): string {
-    const user_default_language = user_settings.default_language;
-    let locale = "";
-    try {
-        locale = Intl.DateTimeFormat.supportedLocalesOf(user_default_language)[0];
-    } catch {
-        locale = "default";
-    }
-    return locale;
-}
-
 // Common function for all date/time rendering in the project. Handles
 // localization using the user's configured locale and the
 // twenty_four_hour_time setting.
@@ -114,14 +117,27 @@ export function get_localized_date_or_time_for_format(
     date: Date | number,
     format: DateOrTimeFormat,
 ): string {
-    const locale = get_user_locale();
-    return new Intl.DateTimeFormat(locale, get_format_options_for_type(format)).format(date);
+    const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
+    const format_key = `${user_settings.default_language}:${is_twenty_four_hour_time}:${format}`;
+
+    if (!formatter_map.has(format_key)) {
+        formatter_map.set(
+            format_key,
+            new Intl.DateTimeFormat(user_settings.default_language, {
+                timeZone: display_time_zone,
+                ...get_format_options_for_type(format, is_twenty_four_hour_time),
+            }),
+        );
+    }
+    return formatter_map.get(format_key)!.format(date);
 }
 
 // Exported for tests only.
 export function get_tz_with_UTC_offset(time: number | Date): string {
-    const tz_offset = format(time, "xxx");
-    let timezone = new Intl.DateTimeFormat(undefined, {timeZoneName: "short"})
+    let timezone = new Intl.DateTimeFormat(user_settings.default_language, {
+        timeZone: display_time_zone,
+        timeZoneName: "short",
+    })
         .formatToParts(time)
         .find(({type}) => type === "timeZoneName")?.value;
 
@@ -134,7 +150,10 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
 
-    const tz_UTC_offset = `(UTC${tz_offset})`;
+    const offset_minutes = Math.round(get_offset(time, display_time_zone) / 60000);
+    const tz_UTC_offset = `(UTC${offset_minutes < 0 ? "-" : "+"}${String(
+        Math.floor(Math.abs(offset_minutes) / 60),
+    ).padStart(2, "0")}:${String(Math.abs(offset_minutes) % 60).padStart(2, "0")})`;
 
     if (timezone) {
         return timezone + " " + tz_UTC_offset;
@@ -167,7 +186,7 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     // Presumably the result of diffDays will be an integer in this
     // case, but round it to be sure before comparing to integer
     // constants.
-    const days_old = differenceInCalendarDays(today, time);
+    const days_old = difference_in_calendar_days(today, time, display_time_zone);
 
     if (days_old === 0) {
         time_str = $t({defaultMessage: "Today"});
@@ -211,7 +230,7 @@ export function relative_time_string_from_date({
         return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
     }
 
-    const days_old = differenceInCalendarDays(current_date, date);
+    const days_old = difference_in_calendar_days(current_date, date, display_time_zone);
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
@@ -253,7 +272,7 @@ export function last_seen_status_from_date(
         return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
     }
 
-    const days_old = differenceInCalendarDays(current_date, last_active_date);
+    const days_old = difference_in_calendar_days(current_date, last_active_date, display_time_zone);
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
@@ -311,7 +330,19 @@ let update_list: UpdateEntry[] = [];
 let last_update: Date;
 
 export function initialize(): void {
-    last_update = startOfToday();
+    if (
+        display_time_zone === undefined || // https://bugs.chromium.org/p/chromium/issues/detail?id=1487920
+        display_time_zone === "Etc/Unknown" // https://bugs.chromium.org/p/chromium/issues/detail?id=1473422
+    ) {
+        display_time_zone = user_settings.timezone;
+        try {
+            new Intl.DateTimeFormat(undefined, {timeZone: display_time_zone});
+        } catch {
+            display_time_zone = "UTC";
+        }
+    }
+
+    last_update = start_of_day(new Date(), display_time_zone);
 }
 
 function maybe_add_update_list_entry(entry: UpdateEntry): void {
@@ -364,7 +395,7 @@ export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragm
 // This isn't expected to be called externally except manually for
 // testing purposes.
 export function update_timestamps(): void {
-    const today = startOfToday();
+    const today = start_of_day(new Date(), display_time_zone);
     if (!isEqual(today, last_update)) {
         const to_process = update_list;
         update_list = [];
@@ -423,7 +454,7 @@ export function stringify_time(time: number | Date): string {
 
 export function format_time_modern(time: number | Date, today = new Date()): string {
     const hours = differenceInHours(today, time);
-    const days_old = differenceInCalendarDays(today, time);
+    const days_old = difference_in_calendar_days(today, time, display_time_zone);
 
     if (time > today) {
         /* For timestamps in the future, we always show the year*/
@@ -467,8 +498,9 @@ export function get_full_datetime_clarification(
     time: Date,
     time_format: TimeFormat = "time_sec",
 ): string {
-    const locale = get_user_locale();
-    const date_string = time.toLocaleDateString(locale);
+    const date_string = time.toLocaleDateString(user_settings.default_language, {
+        timeZone: display_time_zone,
+    });
     let time_string = get_localized_date_or_time_for_format(time, time_format);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
@@ -503,7 +535,7 @@ export function get_time_limit_setting_in_appropriate_unit(
 export function should_display_profile_incomplete_alert(timestamp: number): boolean {
     const today = new Date(Date.now());
     const time = new Date(timestamp);
-    const days_old = differenceInCalendarDays(today, time);
+    const days_old = difference_in_calendar_days(today, time, display_time_zone);
 
     if (days_old >= 15) {
         return true;

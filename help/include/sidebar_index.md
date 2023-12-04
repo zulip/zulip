@@ -10,8 +10,8 @@
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Set up your account](/help/set-up-your-account)
 * [Streams and topics](/help/streams-and-topics)
-* [Finding a conversation to read](/help/finding-a-topic-to-read)
-* [Reading conversations](/help/reading-topics)
+* [Finding a conversation to read](/help/finding-a-conversation-to-read)
+* [Reading conversations](/help/reading-conversations)
 * [Starting a new topic](/help/starting-a-new-topic)
 * [Starting a new direct message](/help/starting-a-new-direct-message)
 * [Replying to messages](/help/replying-to-messages)
@@ -46,6 +46,7 @@
 
 ## Preferences
 * [Dark theme](/help/dark-theme)
+* [Font size](/help/font-size)
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
 * [Change the time format](/help/change-the-time-format)
@@ -66,7 +67,8 @@
 * [Animated GIFs](/help/animated-gifs-from-giphy)
 * [Text emphasis](/help/text-emphasis)
 * [Paragraph and section formatting](/help/paragraph-and-section-formatting)
-* [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
+* [Bulleted lists](/help/bulleted-lists)
+* [Numbered lists](/help/numbered-lists)
 * [Tables](/help/tables)
 * [Code blocks](/help/code-blocks)
 * [LaTeX](/help/latex)
@@ -75,7 +77,7 @@
 * [Polls](/help/create-a-poll)
 * [Collaborative to-do lists](/help/collaborative-to-do-lists)
 * [Global times](/help/global-times)
-* [Video calls](/help/start-a-call)
+* [Start a call](/help/start-a-call)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)
@@ -102,7 +104,7 @@
 * [Emoji reactions](/help/emoji-reactions)
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
-* [View and browse images](/help/view-and-browse-images)
+* [View images and videos](/help/view-images-and-videos)
 * [View messages sent by a user](/help/view-messages-sent-by-a-user)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Searching for messages](/help/search-for-messages)
@@ -137,6 +139,7 @@
 
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
+* [Topic notifications](/help/topic-notifications)
 * [Follow a topic](/help/follow-a-topic)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Mute or unmute a stream](/help/mute-a-stream)
@@ -179,6 +182,8 @@
 * [Roles and permissions](/help/roles-and-permissions)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
+* [Guest users](/help/guest-users)
+* [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Custom profile fields](/help/custom-profile-fields)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
@@ -224,6 +229,7 @@
 ## Bots & integrations
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Generate integration URL](/help/generate-integration-url)
 * [Edit a bot](/help/edit-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Request an integration](/help/request-an-integration)

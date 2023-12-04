@@ -6,14 +6,14 @@
   "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
-  "id": "ii_NORMALIZED00000000000003",
+  "id": "ii_NORMALIZED00000000000001",
   "invoice": null,
   "livemode": false,
   "metadata": {},
   "object": "invoiceitem",
   "period": {
-    "end": 1000000000,
-    "start": 1000000000
+    "end": 1357095845,
+    "start": 1325473445
   },
   "plan": null,
   "price": {
@@ -21,13 +21,14 @@
     "billing_scheme": "per_unit",
     "created": 1000000000,
     "currency": "usd",
-    "id": "price_NORMALIZED00000000000003",
+    "custom_unit_amount": null,
+    "id": "price_NORMALIZED00000000000001",
     "livemode": false,
     "lookup_key": null,
     "metadata": {},
     "nickname": null,
     "object": "price",
-    "product": "prod_NORMALIZED0003",
+    "product": "prod_NORMALIZED0001",
     "recurring": null,
     "tax_behavior": "unspecified",
     "tiers_mode": null,
@@ -40,6 +41,7 @@
   "quantity": 6,
   "subscription": null,
   "tax_rates": [],
+  "test_clock": null,
   "unit_amount": 1200,
   "unit_amount_decimal": "1200"
 }

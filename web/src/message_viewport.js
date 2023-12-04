@@ -3,7 +3,6 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as message_scroll_state from "./message_scroll_state";
-import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
 import * as util from "./util";
 
@@ -403,7 +402,6 @@ export function maybe_scroll_to_show_message_top() {
     const message_height = $selected_message.outerHeight(true) ?? 0;
     if (message_top < viewport_info.visible_top) {
         set_message_position(message_top, message_height, viewport_info, 0);
-        popover_menus.set_suppress_scroll_hide();
     }
 }
 

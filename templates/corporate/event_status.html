@@ -12,16 +12,13 @@
 {% block content %}
 
 <div class="app portico-page">
-
-    {% include 'zerver/billing_nav.html' %}
-
     <div class="billing-upgrade-page">
         <div class="hero small-hero"></div>
 
         <div class="page-content">
             <div class="main">
                 <br />
-                <div id="data" data-stripe-session-id="{{ stripe_session_id}}" data-stripe-payment-intent-id="{{ stripe_payment_intent_id }}"></div>
+                <div id="data" data-stripe-session-id="{{ stripe_session_id}}" data-stripe-payment-intent-id="{{ stripe_payment_intent_id }}" data-billing-base-url="{{ billing_base_url }}"></div>
                 <div class="alert alert-success" id="webhook-success"></div>
                 <div class="alert alert-danger" id="webhook-error"></div>
                 <div id="webhook-loading">

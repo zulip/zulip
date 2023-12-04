@@ -87,7 +87,7 @@ export const web_stream_unreads_count_display_policy_values = {
     },
 };
 
-export const default_view_values = {
+export const web_home_view_values = {
     inbox: {
         code: "inbox",
         description: $t({defaultMessage: "Inbox"}),
@@ -553,7 +553,7 @@ export const display_settings_labels = {
                 "Display names of reacting users when few users have reacted to a message",
         }),
     ),
-    escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to home view"}),
+    web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     default_language_settings_label: $t({defaultMessage: "Language"}),
 };
 
@@ -872,14 +872,18 @@ export const realm_name_in_email_notifications_policy_values = {
 export const desktop_icon_count_display_values = {
     messages: {
         code: 1,
-        description: $t({defaultMessage: "All unreads"}),
+        description: $t({defaultMessage: "All unread messages"}),
     },
-    notifiable: {
+    dm_mention_followed_topic: {
         code: 2,
-        description: $t({defaultMessage: "Direct messages and mentions"}),
+        description: $t({defaultMessage: "DMs, mentions, and followed topics"}),
+    },
+    dm_mention: {
+        code: 3,
+        description: $t({defaultMessage: "DMs and mentions"}),
     },
     none: {
-        code: 3,
+        code: 4,
         description: $t({defaultMessage: "None"}),
     },
 };

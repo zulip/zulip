@@ -310,6 +310,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
                 "email": email,
                 "realm_name": "Zulip test",
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_default_language": "en",
                 "realm_subdomain": "custom-test",
             },
         )
@@ -337,12 +338,13 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
                 "email": email,
                 "realm_name": realm_name,
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_default_language": "en",
                 "realm_subdomain": string_id,
             },
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
-            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}",
+            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}",
             result["Location"],
         )
         result = self.client_get(result["Location"])
@@ -400,7 +402,7 @@ class TestPasswordRestEmail(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(outbox[0]),
-            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn("reset your password", outbox[0].body)
 

@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {ElementHandle, Page} from "puppeteer";
+import type {Page} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 
@@ -13,8 +13,8 @@ const zuliprc_regex =
     /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 async function get_decoded_url_in_selector(page: Page, selector: string): Promise<string> {
-    const a = (await page.$(selector)) as ElementHandle<HTMLAnchorElement>;
-    return decodeURIComponent(await (await a.getProperty("href")).jsonValue());
+    const a = await page.$(`a:is(${selector})`);
+    return decodeURIComponent(await (await a!.getProperty("href")).jsonValue());
 }
 
 async function open_settings(page: Page): Promise<void> {
@@ -198,9 +198,8 @@ async function test_edit_bot_form(page: Page): Promise<void> {
 
     const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
-    const name_field_selector = edit_form_selector + " [name=full_name]";
     assert.equal(
-        await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
+        await page.$eval(`${edit_form_selector} input[name=full_name]`, (el) => el.value),
         "Bot 1",
     );
 
@@ -233,9 +232,8 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 
     const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
-    const name_field_selector = edit_form_selector + " [name=full_name]";
     assert.equal(
-        await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
+        await page.$eval(`${edit_form_selector} input[name=full_name]`, (el) => el.value),
         "Bot one",
     );
 

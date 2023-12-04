@@ -153,6 +153,10 @@ export function should_enter_send(e) {
 }
 
 function handle_bulleting_or_numbering($textarea, e) {
+    // We only want this functionality if the cursor is not in a code block
+    if (compose_ui.cursor_inside_code_block($textarea)) {
+        return;
+    }
     // handles automatic insertion or removal of bulleting or numbering
     const before_text = split_at_cursor($textarea.val(), $textarea)[0];
     const previous_line = bulleted_numbered_list_util.get_last_line(before_text);
@@ -241,7 +245,7 @@ function handle_keydown(e, {on_enter_send}) {
             target_sel = `#${CSS.escape(e.target.id)}`;
         }
 
-        const on_topic = target_sel === "#stream_message_recipient_topic";
+        const on_topic = target_sel === "input#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 
@@ -276,11 +280,11 @@ function handle_keydown(e, {on_enter_send}) {
                     return;
                 }
 
-                handle_enter($("#compose-textarea"), e);
+                handle_enter($("textarea#compose-textarea"), e);
             }
         } else if (on_topic || on_pm) {
             // We are doing the focusing on keyup to not abort the typeahead.
-            $nextFocus = $("#compose-textarea");
+            $nextFocus = $("textarea#compose-textarea");
         }
     }
 }
@@ -372,20 +376,28 @@ export function tokenize_compose_str(s) {
     return "";
 }
 
-export function broadcast_mentions() {
-    if (!compose_validate.wildcard_mention_allowed()) {
-        return [];
-    }
-    const wildcard_mention_array = ["all", "everyone"];
-    let wildcard_string = "";
+function get_wildcard_string(mention) {
     if (compose_state.get_message_type() === "private") {
-        wildcard_string = $t({defaultMessage: "Notify recipients"});
-    } else {
-        wildcard_string = $t({defaultMessage: "Notify stream"});
-        wildcard_mention_array.push("stream");
+        return $t({defaultMessage: "Notify recipients"});
     }
+    if (mention === "topic") {
+        return $t({defaultMessage: "Notify topic"});
+    }
+    return $t({defaultMessage: "Notify stream"});
+}
+
+export function broadcast_mentions() {
+    let wildcard_mention_array = [];
+    if (compose_state.get_message_type() === "private") {
+        wildcard_mention_array = ["all", "everyone"];
+    } else if (compose_validate.stream_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["all", "everyone", "stream", "topic"];
+    } else if (compose_validate.topic_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["topic"];
+    }
+
     return wildcard_mention_array.map((mention, idx) => ({
-        special_item_text: `${mention} (${wildcard_string})`,
+        special_item_text: `${mention} (${get_wildcard_string(mention)})`,
         email: mention,
 
         // Always sort above, under the assumption that names will
@@ -445,6 +457,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
         aliases: "",
+        placeholder: $t({defaultMessage: "is …"}),
     },
     {
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
@@ -861,15 +874,20 @@ export function content_typeahead_selected(item, event) {
                 // that functionality yet, and we haven't gotten much
                 // feedback on this being an actual pitfall.
             } else {
-                const mention_text = people.get_mention_syntax(
+                let mention_text = people.get_mention_syntax(
                     item.full_name,
                     item.user_id,
                     is_silent,
                 );
-                beginning += mention_text + " ";
-                if (!is_silent) {
+                if (!is_silent && !item.is_broadcast) {
                     compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
+                    mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
+                        mention_text,
+                        item.full_name,
+                        item.user_id,
+                    );
                 }
+                beginning += mention_text + " ";
             }
             break;
         }
@@ -1132,7 +1150,7 @@ export function initialize({on_enter_send}) {
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("#stream_message_recipient_topic").typeahead({
+    $("input#stream_message_recipient_topic").typeahead({
         source() {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1194,7 +1212,7 @@ export function initialize({on_enter_send}) {
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 
-    initialize_compose_typeahead("#compose-textarea");
+    initialize_compose_typeahead("textarea#compose-textarea");
 
     $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();

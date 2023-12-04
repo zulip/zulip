@@ -96,7 +96,8 @@ export type MessageWithBooleans = (
     starred: boolean;
     mentioned: boolean;
     mentioned_me_directly: boolean;
-    wildcard_mentioned: boolean;
+    stream_wildcard_mentioned: boolean;
+    topic_wildcard_mentioned: boolean;
     collapsed: boolean;
     alerted: boolean;
 };
@@ -158,6 +159,7 @@ export type UserGroupUpdateEvent = {
     data: {
         name?: string;
         description?: string;
+        can_mention_group?: number;
     };
 };
 
@@ -192,3 +194,15 @@ export type UpdateMessageEvent = {
 // TODO/typescript: Move the User and Stream placeholder
 // types to their appropriate modules.
 export type User = Record<string, never>;
+
+export type GroupPermissionSetting = {
+    require_system_group: boolean;
+    allow_internet_group: boolean;
+    allow_owners_group: boolean;
+    allow_nobody_group: boolean;
+    allow_everyone_group: boolean;
+    default_group_name: string;
+    id_field_name: string;
+    default_for_system_groups: string | null;
+    allowed_system_groups: string[];
+};

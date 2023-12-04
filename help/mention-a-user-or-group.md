@@ -55,17 +55,37 @@ notification. Silent mentions start with `@_` instead of `@`.
 
 {end_tabs}
 
+## Mention all topic participants
+
+Using the `@**topic**` mention, you can mention everyone who has previously
+participated in the topic by sending a message or
+[reacting](/help/emoji-reactions) with an emoji. This lets you notify just those
+who have already engaged in the conversation.
+
+Users can disable notifications for `@**topic**` mentions by:
+
+- Disabling notifications for wildcard mentions
+[globally](/help/dm-mention-alert-notifications) or for [individual
+streams](/help/stream-notifications).
+
+- Muting the [topic](/help/mute-a-topic) or [stream](/help/mute-a-stream).
+
 ## Mention everyone on a stream
 
 You can mention everyone on a stream with the `@**all**` mention (or,
-equivalently, `@**everyone**` or `@**stream**`). Use sparingly! Used improperly,
-wildcard mentions can be annoying.
+equivalently, `@**everyone**` or `@**stream**`). It's best to use these mentions
+only when your message requires timely attention from many stream subscribers.
+An organization can be configured to
+[restrict](/help/restrict-wildcard-mentions) wildcard mentions in large streams.
 
-Note that this will not notify anyone who has muted the stream, and
-users can disable receiving email/push notifications for these
-wildcard mentions, either
+Users can disable notifications for `@**all**`, `@**everyone**`, and
+`@**stream**` mentions by:
+
+- Disabling notifications for wildcard mentions
 [globally](/help/dm-mention-alert-notifications) or for [individual
 streams](/help/stream-notifications).
+
+- Muting the [topic](/help/mute-a-topic) or [stream](/help/mute-a-stream).
 
 ## Examples
 

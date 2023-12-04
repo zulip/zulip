@@ -22,6 +22,7 @@ def wrapper_execute(
     finally:
         stop = time.time()
         duration = stop - start
+        assert isinstance(self.connection, TimeTrackingConnection)
         self.connection.queries.append(
             {
                 "time": f"{duration:.3f}",
@@ -37,8 +38,8 @@ class TimeTrackingCursor(cursor):
         wrapper_execute(self, super().execute, query, vars)
 
     @override
-    def executemany(self, query: Query, vars: Iterable[Params]) -> None:  # nocoverage
-        wrapper_execute(self, super().executemany, query, vars)
+    def executemany(self, query: Query, vars_list: Iterable[Params]) -> None:  # nocoverage
+        wrapper_execute(self, super().executemany, query, vars_list)
 
 
 CursorT = TypeVar("CursorT", bound=cursor)

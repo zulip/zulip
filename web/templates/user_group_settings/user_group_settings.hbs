@@ -1,12 +1,21 @@
 <div class="group_settings_header" data-group-id="{{group.id}}">
     <div class="tab-container"></div>
     <div class="button-group">
+        <div class="join_leave_button_wrapper inline-block {{#unless can_edit}}tippy-zulip-tooltip{{/unless}}">
+            <button class="button small rounded join_leave_button" type="button" name="button" {{#unless can_edit}}disabled="disabled"{{/unless}}>
+                {{#if is_member}}
+                    {{t "Leave group" }}
+                {{else}}
+                    {{t "Join group" }}
+                {{/if}}
+            </button>
+        </div>
         {{#if can_edit}}
         <button class="button small rounded btn-danger deactivate tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Delete group'}}" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
         {{/if}}
     </div>
 </div>
-<div class="user_group_settings_wrapper hide" data-group-id="{{group.id}}">
+<div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
     <div class="inner-box">
 
         <div class="group_general_settings group_setting_section">
@@ -25,6 +34,16 @@
                 <span class="group-description">
                     {{group.description}}
                 </span>
+            </div>
+
+            <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
+                <div class="subsection-header">
+                    <h3 class="user_group_setting_subsection_title">{{t "Group permissions" }}
+                    </h3>
+                    {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
+                </div>
+
+                {{> group_permissions can_mention_group_widget_name="can_mention_group"}}
             </div>
         </div>
 

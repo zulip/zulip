@@ -27,6 +27,8 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.push_notifications import sends_notifications_directly
+from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -63,6 +65,7 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
+    SystemGroups,
     UserActivity,
     UserActivityInterval,
     UserGroup,
@@ -192,7 +195,7 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
 def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
     table = get_db_table(Stream)
     admins_group = UserGroup.objects.get(
-        name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+        name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
     )
     for stream in data[table]:
         stream["can_remove_subscribers_group"] = admins_group
@@ -972,13 +975,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm_properties = dict(**data["zerver_realm"][0])
     realm_properties["deactivated"] = True
 
+    # Initialize whether we expect push notifications to work.
+    realm_properties["push_notifications_enabled"] = sends_notifications_directly()
+
     with transaction.atomic(durable=True):
         realm = Realm(**realm_properties)
         if "zerver_usergroup" not in data:
             # For now a dummy value of -1 is given to groups fields which
             # is changed later before the transaction is committed.
-            for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-                setattr(realm, permissions_configuration.id_field_name, -1)
+            for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+                setattr(realm, permission_configuration.id_field_name, -1)
 
         realm.save()
 
@@ -1415,6 +1421,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm.deactivated = data["zerver_realm"][0]["deactivated"]
     realm.save()
 
+    # Ask the push notifications service if this realm can send
+    # notifications, if we're using it. Needs to happen after the
+    # Realm object is reactivated.
+    enqueue_register_realm_with_push_bouncer_if_needed(realm)
+
     return realm
 
 
@@ -1675,7 +1686,7 @@ def add_users_to_system_user_groups(
     realm: Realm, user_profiles: List[UserProfile], role_system_groups_dict: Dict[int, UserGroup]
 ) -> None:
     full_members_system_group = UserGroup.objects.get(
-        name=UserGroup.FULL_MEMBERS_GROUP_NAME,
+        name=SystemGroups.FULL_MEMBERS,
         realm=realm,
         is_system_group=True,
     )

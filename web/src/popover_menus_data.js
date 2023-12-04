@@ -118,7 +118,6 @@ export function get_actions_popover_content_context(message_id) {
 
 export function get_topic_popover_content_context({stream_id, topic_name, url}) {
     const sub = sub_store.get(stream_id);
-    const topic_muted = user_topics.is_topic_muted(sub.stream_id, topic_name);
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
@@ -130,7 +129,6 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         stream_id: sub.stream_id,
         stream_muted: sub.is_muted,
         topic_name,
-        topic_muted,
         topic_unmuted,
         can_move_topic,
         can_rename_topic,
@@ -141,7 +139,6 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         url,
         visibility_policy,
         all_visibility_policies,
-        development: page_params.development_environment,
     };
 }
 
@@ -181,6 +178,7 @@ export function get_personal_menu_content_context() {
 
         // user status
         status_content_available: Boolean(status_text || status_emoji_info),
+        show_placeholder_for_status_text: !status_text && status_emoji_info,
         status_text,
         status_emoji_info,
         user_time: people.get_user_time(my_user_id),
@@ -188,15 +186,23 @@ export function get_personal_menu_content_context() {
 }
 
 export function get_gear_menu_content_context() {
+    const user_has_billing_access = page_params.is_billing_admin || page_params.is_owner;
+    const is_plan_standard = page_params.realm_plan_type === 3;
+    const is_plan_plus = page_params.realm_plan_type === 10;
+    const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
     return {
         realm_name: page_params.realm_name,
         realm_url: new URL(page_params.realm_uri).hostname,
         is_owner: page_params.is_owner,
         is_admin: page_params.is_admin,
+        is_spectator: page_params.is_spectator,
         is_self_hosted: page_params.realm_plan_type === 1,
+        is_development_environment: page_params.development_environment,
         is_plan_limited: page_params.realm_plan_type === 2,
-        is_plan_standard: page_params.realm_plan_type === 3,
+        is_plan_standard,
         is_plan_standard_sponsored_for_free: page_params.realm_plan_type === 4,
+        is_plan_plus,
+        is_org_on_paid_plan,
         is_business_org: page_params.realm_org_type === 10,
         is_education_org: page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
         standard_plan_name: "Zulip Cloud Standard",
@@ -205,12 +211,14 @@ export function get_gear_menu_content_context() {
         apps_page_url: page_params.apps_page_url,
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
-        corporate_enabled: page_params.corporate_enabled,
         is_guest: page_params.is_guest,
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",
         promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
         show_billing: page_params.show_billing,
+        show_remote_billing: page_params.show_remote_billing,
         show_plans: page_params.show_plans,
         show_webathena: page_params.show_webathena,
+        sponsorship_pending: page_params.sponsorship_pending,
+        user_has_billing_access,
     };
 }

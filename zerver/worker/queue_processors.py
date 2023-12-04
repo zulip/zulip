@@ -78,7 +78,10 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import SimpleQueueClient, retry_event
-from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.remote_server import (
+    PushNotificationBouncerRetryLaterError,
+    send_realms_only_to_push_bouncer,
+)
 from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
@@ -1167,6 +1170,13 @@ class DeferredWorker(QueueProcessingWorker):
             )
             user_profile = get_user_profile_by_id(event["user_profile_id"])
             reactivate_user_if_soft_deactivated(user_profile)
+        elif event["type"] == "register_realm_with_push_bouncer":
+            # In the future we may use the realm_id to send only that single realm's info.
+            realm_id = event["realm_id"]
+            logger.info(
+                "Running send_realms_only_to_push_bouncer, requested due to realm %s", realm_id
+            )
+            send_realms_only_to_push_bouncer()
 
         end = time.time()
         logger.info(

@@ -57,8 +57,8 @@ python-gcm
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
-# and to use a maintained cchardet fork: https://github.com/mailgun/talon/pull/233
-https://github.com/zulip/talon/archive/5529af43ff5172ff30c1a7b99111a68dcd997810.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
+# and chardet, cchardet: https://github.com/mailgun/talon/pull/239
+https://github.com/zulip/talon/archive/e3879d82331aa8b5a87e9d41b3ba3693caa24cd2.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
 css-inline
@@ -94,7 +94,7 @@ tornado
 orjson
 
 # Needed for iOS push notifications
-aioapns
+https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git  # https://github.com/Fatal1ty/aioapns/pull/52
 
 python-twitter
 
@@ -116,8 +116,8 @@ python-magic
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
-https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip==0.8.2+git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip_bots==0.8.2+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/0.9.0.zip#egg=zulip==0.9.0+git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.9.0.zip#egg=zulip_bots==0.9.0+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
@@ -161,6 +161,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
+jsonschema-specifications<2023.11.1  # https://github.com/python-openapi/openapi-core/pull/686
 importlib-resources ; python_version < "3.9"
 
 # For reporting errors to sentry.io

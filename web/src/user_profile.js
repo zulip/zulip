@@ -183,7 +183,7 @@ function format_user_stream_list_item_html(stream, user) {
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.stream_edit_url(stream),
+        stream_edit_url: hash_util.stream_edit_url(stream, "general"),
     });
 }
 
@@ -351,25 +351,26 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         !user.is_system_bot &&
         !people.is_my_user_id(user.user_id);
     const args = {
-        user_id: user.user_id,
-        full_name: user.full_name,
-        email: user.delivery_email,
-        profile_data,
-        user_avatar: people.medium_avatar_url_for_person(user),
-        is_me: people.is_current_user(user.email),
-        is_bot: user.is_bot,
+        can_manage_profile,
         date_joined: timerender.get_localized_date_or_time_for_format(
             parseISO(user.date_joined),
             "dayofyear_year",
         ),
-        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+        email: user.delivery_email,
+        full_name: user.full_name,
+        is_active: people.is_person_active(user.user_id),
+        is_bot: user.is_bot,
+        is_me: people.is_current_user(user.email),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
+        profile_data,
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        show_user_subscribe_widget,
+        user_avatar: people.medium_avatar_url_for_person(user),
+        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+        user_id: user.user_id,
+        user_is_guest: user.is_guest,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
-        user_is_guest: user.is_guest,
-        show_user_subscribe_widget,
-        can_manage_profile,
-        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
     };
 
     if (user.is_bot) {
@@ -881,7 +882,7 @@ export function initialize() {
             (people.is_my_user_id(target_user_id) ||
                 peer_data.get_subscriber_count(stream_id) === 1)
         ) {
-            const new_hash = hash_util.stream_edit_url(sub);
+            const new_hash = hash_util.stream_edit_url(sub, "general");
             hide_user_profile();
             browser_history.go_to_location(new_hash);
             return;

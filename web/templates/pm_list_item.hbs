@@ -1,22 +1,20 @@
-<li class='{{#if is_active}}active-sub-filter{{/if}} {{#if is_zero}}zero-pm-unreads{{/if}} pm-list-item bottom_left_row' data-user-ids-string='{{user_ids_string}}'>
-    <span class='pm-box pm_user_status' data-user-ids-string='{{user_ids_string}}' data-is-group='{{is_group}}'>
+<li class="{{#if is_active}}active-sub-filter{{/if}} {{#if is_zero}}zero-dm-unreads{{/if}} dm-list-item bottom_left_row" data-user-ids-string="{{user_ids_string}}">
+    <div class="dm-box dm-user-status" data-user-ids-string="{{user_ids_string}}" data-is-group="{{is_group}}">
 
-        <div class="pm_left_col">
-            {{#if is_group}}
-            <span class="fa fa-group"></span>
-            {{else if is_bot}}
-            <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
-            {{else}}
-            <span class="{{user_circle_class}} user_circle"></span>
-            {{/if}}
-        </div>
+        {{#if is_group}}
+        <span class="conversation-partners-icon fa fa-group"></span>
+        {{else if is_bot}}
+        <span class="conversation-partners-icon zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+        {{else}}
+        <span class="conversation-partners-icon {{user_circle_class}} user_circle"></span>
+        {{/if}}
 
-        <a href='{{url}}' class="conversation-partners">
+        <a href="{{url}}" class="conversation-partners">
             <span class="conversation-partners-list">{{recipients}}</span>
             {{> status_emoji status_emoji_info}}
         </a>
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
             {{unread}}
         </span>
-    </span>
+    </div>
 </li>

@@ -94,7 +94,7 @@ async function renderGIPHYGrid(targetEl) {
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
                 onGifClick(props) {
-                    let $textarea = $("#compose-textarea");
+                    let $textarea = $("textarea#compose-textarea");
                     if (edit_message_id !== undefined) {
                         $textarea = $(
                             `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,

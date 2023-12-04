@@ -377,6 +377,17 @@ td .button {
     }
 }
 
+/* For consistent custom select dropdowns that match with dropdown-widget */
+select.modal_select,
+select.list_select,
+select.settings_select {
+    appearance: none;
+    background-image: var(--icon-chevron-down);
+    background-repeat: no-repeat;
+    background-position: 98%;
+    background-size: 14px;
+}
+
 #admin-user-list,
 #admin-bot-list {
     .table tr:first-of-type td {
@@ -810,15 +821,11 @@ input[type="checkbox"] {
     margin: 20px 0 0;
 }
 
-#org-join-settings {
+#org-join-settings,
+#org-guest-settings {
     .dropdown-widget-button {
         width: 325px;
         color: hsl(0deg 0% 33%);
-
-        & i {
-            font-size: 10px;
-            margin-right: -3px;
-        }
 
         &:disabled {
             cursor: not-allowed;
@@ -1171,8 +1178,7 @@ $option_title_width: 180px;
         text-align: left;
         white-space: nowrap;
         text-overflow: ellipsis;
-        overflow-x: hidden;
-        overflow-y: visible;
+        overflow: hidden visible;
         position: relative;
 
         .user-name-and-status-text {

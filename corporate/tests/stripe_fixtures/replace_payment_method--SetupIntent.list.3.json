@@ -2,12 +2,14 @@
   "data": [
     {
       "application": null,
+      "automatic_payment_methods": null,
       "cancellation_reason": null,
-      "client_secret": "seti_1K2OZaHSaWXyvFpKgXCxfwC6_secret_KhoBoZvsF9xFIwVHl6war6C6OtsE7BL",
+      "client_secret": "seti_1OIlZqDEQaroqDjsucpwOQo9_secret_P6zYY9AlN3kSppaNkZqGFfPeZZqqWzb",
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
       "description": null,
-      "id": "seti_1K2OZaHSaWXyvFpKgXCxfwC6",
+      "flow_directions": null,
+      "id": "seti_1OIlZqDEQaroqDjsucpwOQo9",
       "last_setup_error": null,
       "latest_attempt": null,
       "livemode": false,
@@ -17,8 +19,11 @@
       "object": "setup_intent",
       "on_behalf_of": null,
       "payment_method": null,
+      "payment_method_configuration_details": null,
       "payment_method_options": {
         "card": {
+          "mandate_options": null,
+          "network": null,
           "request_three_d_secure": "automatic"
         }
       },

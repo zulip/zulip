@@ -29,7 +29,7 @@
 <div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
     <div class="inner-box">
 
-        <div class="general_settings stream_section">
+        <div class="stream_section" data-stream-section="general">
             {{#with sub}}
             <div class="stream-settings-tip-container">
                 {{> stream_settings_tip}}
@@ -75,11 +75,14 @@
                   can_remove_subscribers_setting_widget_name="can_remove_subscribers_group" }}
             </div>
             {{/with}}
-            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
-                <h3 class="stream_setting_subsection_title">
-                    {{t "Email address" }}
-                    {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
-                </h3>
+            <div class="stream-email-box" {{#unless can_access_stream_email}}style="display: none;"{{/unless}}>
+                <div class="stream-email-box-header">
+                    <h3 class="stream_setting_subsection_title">
+                        {{t "Email address" }}
+                        {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
+                    </h3>
+                    <div class="stream_email_address_error alert-notification"></div>
+                </div>
                 <p>
                     {{t "You can use email to send messages to Zulip streams."}}
                 </p>
@@ -91,7 +94,7 @@
             </div>
         </div>
 
-        <div id="personal-stream-settings" class="personal_settings stream_section">
+        <div id="personal-stream-settings" class="stream_section" data-stream-section="personal">
             <div class="subsection-header">
                 <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
                 <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
@@ -120,13 +123,13 @@
                     </div>
                 </div>
                 <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
+                <p>{{t "In muted streams, stream notification settings apply only to unmuted topics." }}</p>
                 <div class="subsection-parent">
                     {{#each notification_settings}}
                         <div class="input-group">
                             {{> stream_settings_checkbox
                               setting_name=name
                               is_checked=is_checked
-                              is_muted=(lookup ../sub "is_muted")
                               stream_id=(lookup ../sub "stream_id")
                               notification_setting=true
                               disabled_realm_setting=disabled_realm_setting
@@ -138,7 +141,7 @@
             </div>
         </div>
 
-        <div class="subscriber_settings stream_section">
+        <div class="stream_section" data-stream-section="subscribers">
             {{#with sub}}
             <div class="edit_subscribers_for_stream">
                 {{> stream_members}}

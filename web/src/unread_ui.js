@@ -62,16 +62,9 @@ export function notify_messages_remain_unread() {
 
 export function set_count_toggle_button($elem, count) {
     if (count === 0) {
-        if ($elem.is(":animated")) {
-            return $elem.stop(true, true).hide();
-        }
-        return $elem.hide(500);
-    } else if (count > 0 && count < 1000) {
-        $elem.show(500);
-        return $elem.text(count);
+        return $elem.hide();
     }
-    $elem.show(500);
-    return $elem.text("1k+");
+    return $elem.show();
 }
 
 export function update_unread_counts(skip_animations = false) {
@@ -86,16 +79,8 @@ export function update_unread_counts(skip_animations = false) {
         hook(res, skip_animations);
     }
 
-    // Set the unread counts that we show in the buttons that
-    // toggle open the sidebar menus when we have a thin window.
+    // Set the unread indicator on the toggle for the left sidebar
     set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
-    // Bots and group direct messages do not appear in the right
-    // sidebar user list, so we show unread counts for only non-bot,
-    // 1:1 direct messages there.
-    set_count_toggle_button(
-        $("#userlist-toggle-unreadcount"),
-        res.right_sidebar_direct_message_count,
-    );
 }
 
 export function should_display_bankruptcy_banner() {

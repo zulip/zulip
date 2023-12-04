@@ -60,7 +60,7 @@ export function more_private_conversations_li(
 
 export function pm_ul(nodes: vdom.Node[]): vdom.Tag {
     const attrs: [string, string][] = [
-        ["class", "pm-list"],
+        ["class", "dm-list"],
         ["data-name", "private"],
     ];
     return vdom.ul({

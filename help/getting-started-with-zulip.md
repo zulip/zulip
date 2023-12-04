@@ -36,11 +36,11 @@ it, you'll never want to use a different team chat app!
 
 #### From the left sidebar
 
-{!left-sidebar-topics.md!}
+{!left-sidebar-conversations.md!}
 
 ### Reading conversations
 
-{!reading-topics.md!}
+{!reading-conversations.md!}
 
 ## Sending messages
 

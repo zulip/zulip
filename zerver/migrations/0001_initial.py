@@ -615,7 +615,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
         migrations.AddField(
             model_name="preregistrationuser",
             name="streams",
-            field=models.ManyToManyField(null=True, to="zerver.Stream"),
+            field=models.ManyToManyField(to="zerver.Stream"),
         ),
         migrations.AddField(
             model_name="message",

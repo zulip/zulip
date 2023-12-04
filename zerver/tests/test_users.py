@@ -50,6 +50,7 @@ from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     Account,
     access_user_by_id,
+    access_user_by_id_including_cross_realm,
     get_accounts_for_email,
     get_cross_realm_dicts,
     user_ids_to_users,
@@ -67,7 +68,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
-    UserGroup,
+    SystemGroups,
     UserGroupMembership,
     UserHotspot,
     UserProfile,
@@ -428,18 +429,41 @@ class PermissionTest(ZulipTestCase):
 
     def test_access_user_by_id(self) -> None:
         iago = self.example_user("iago")
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
 
         # Must be a valid user ID in the realm
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, 1234, for_admin=False)
         with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, 1234, for_admin=False)
+        with self.assertRaises(JsonableError):
             access_user_by_id(iago, self.mit_user("sipbtest").id, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(
+                iago, self.mit_user("sipbtest").id, for_admin=False
+            )
 
         # Can only access bot users if allow_bots is passed
         bot = self.example_user("default_bot")
         access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
+        access_user_by_id_including_cross_realm(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, bot.id, for_admin=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, bot.id, for_admin=True)
+
+        # Only the including_cross_realm variant works for system bots.
+        system_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=False)
+        access_user_by_id_including_cross_realm(
+            iago, system_bot.id, allow_bots=True, for_admin=False
+        )
+        # And even then, only if `allow_bots` was passed.
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, system_bot.id, for_admin=False)
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
@@ -447,16 +471,32 @@ class PermissionTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=False)
         with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=False)
+
+        with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=True)
         access_user_by_id(iago, hamlet.id, allow_deactivated=True, for_admin=True)
+        access_user_by_id_including_cross_realm(
+            iago, hamlet.id, allow_deactivated=True, for_admin=True
+        )
 
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
             access_user_by_id(
                 self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
             )
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(
+                self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
+            )
+
         # But does have read-only access to it.
         access_user_by_id(
+            self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
+        )
+        access_user_by_id_including_cross_realm(
             self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
         )
 
@@ -826,7 +866,7 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(92):
+        with self.assert_database_query_count(94):
             with self.assert_memcached_count(23):
                 with self.capture_send_event_calls(expected_num_events=11) as events:
                     fred = do_create_user(
@@ -891,8 +931,8 @@ class BulkCreateUserTest(ZulipTestCase):
 
         now = timezone_now()
         expected_user_group_names = {
-            UserGroup.MEMBERS_GROUP_NAME,
-            UserGroup.FULL_MEMBERS_GROUP_NAME,
+            SystemGroups.MEMBERS,
+            SystemGroups.FULL_MEMBERS,
         }
         create_users(realm, name_list)
         bono = get_user_by_delivery_email("bono@zulip.com", realm)
@@ -1212,7 +1252,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(cordelia, "default_language", "de", acting_user=None)
-        do_change_user_setting(cordelia, "default_view", "all_messages", acting_user=None)
+        do_change_user_setting(cordelia, "web_home_view", "all_messages", acting_user=None)
         do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
         do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(
@@ -1284,7 +1324,7 @@ class UserProfileTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
 
-        realm_user_default.default_view = "recent_topics"
+        realm_user_default.web_home_view = "recent_topics"
         realm_user_default.emojiset = "twitter"
         realm_user_default.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
         realm_user_default.enable_offline_email_notifications = False
@@ -1299,7 +1339,7 @@ class UserProfileTest(ZulipTestCase):
         with self.capture_send_event_calls(expected_num_events=0):
             copy_default_settings(realm_user_default, cordelia)
 
-        self.assertEqual(cordelia.default_view, "recent_topics")
+        self.assertEqual(cordelia.web_home_view, "recent_topics")
         self.assertEqual(cordelia.emojiset, "twitter")
         self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_LIGHT)
         self.assertEqual(cordelia.enable_offline_email_notifications, False)
@@ -1431,6 +1471,17 @@ class UserProfileTest(ZulipTestCase):
         self.login("polonius")
         self.assertTrue(polonius.is_guest)
         self.assertTrue(stream.is_web_public)
+
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertTrue(result["is_subscribed"])
+
+        # Test case when guest cannot access all users in the realm.
+        self.set_up_db_for_testing_user_access()
+        cordelia = self.example_user("cordelia")
+        result = self.client_get(f"/json/users/{cordelia.id}/subscriptions/{stream.id}")
+        self.assert_json_error(result, "Insufficient permission")
 
         result = orjson.loads(
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
@@ -2504,6 +2555,122 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
+    def test_restricted_access_to_users(self) -> None:
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        shiva = self.example_user("shiva")
+        zoe = self.example_user("ZOE")
+        polonius = self.example_user("polonius")
+
+        self.set_up_db_for_testing_user_access()
+
+        self.login("polonius")
+        with self.assert_database_query_count(9):
+            result = orjson.loads(self.client_get("/json/users").content)
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        # The user can access 3 bot users and 7 human users.
+        self.assert_length(accessible_users, 10)
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        # The user can access the following 7 human users -
+        # 1. Hamlet and Iago - they are subscribed to common streams.
+        # 2. Prospero - Because Polonius sent a DM to Prospero when
+        # they were allowed to access all users.
+        # 3. Aaron and Zoe - Because they are particapting in a
+        # group DM with Polonius.
+        # 4. Shiva - Because Shiva sent a DM to Polonius.
+        # 5. Polonius - A user can obviously access themselves.
+        self.assert_length(accessible_human_users, 7)
+        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
+        self.assertCountEqual(
+            accessible_user_ids,
+            [polonius.id, hamlet.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id],
+        )
+
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id])
+
+        do_deactivate_user(hamlet, acting_user=None)
+        do_deactivate_user(aaron, acting_user=None)
+        do_deactivate_user(shiva, acting_user=None)
+        result = orjson.loads(self.client_get("/json/users").content)
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        self.assert_length(accessible_users, 9)
+        # Guests can only access those deactivated users who were involved in
+        # DMs and not those who were subscribed to some common streams.
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        self.assert_length(accessible_human_users, 6)
+        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
+        self.assertCountEqual(
+            accessible_user_ids, [polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id]
+        )
+
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(
+            inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id, hamlet.id]
+        )
+
+    def test_get_user_with_restricted_access(self) -> None:
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        zoe = self.example_user("ZOE")
+        shiva = self.example_user("shiva")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        reset_email_visibility_to_everyone_in_zulip_realm()
+
+        self.set_up_db_for_testing_user_access()
+
+        self.login("polonius")
+
+        accessible_users = [polonius, iago, shiva, hamlet, aaron, zoe, shiva, prospero]
+        for user in accessible_users:
+            result = self.client_get(f"/json/users/{user.id}")
+            self.assert_json_success(result)
+            user_dict = orjson.loads(result.content)["user"]
+            self.assertEqual(user_dict["user_id"], user.id)
+            self.assertEqual(user_dict["full_name"], user.full_name)
+            self.assertEqual(user_dict["delivery_email"], user.delivery_email)
+
+        # Guest user cannot access -
+        # 1. othello, even though he sent a message to test_stream1
+        # because he is not subscribed to the stream now.
+        # 2. cordelia, because the guest user is not subscribed
+        # to Verona anymore to which cordelia is subscribed.
+        # 3. desdemona, because she is not subscribed to any
+        # streams that the guest is subscribed to and is not
+        # involved in any DMs with guest.
+        inaccessible_users = [othello, cordelia, desdemona]
+        for user in inaccessible_users:
+            result = self.client_get(f"/json/users/{user.id}")
+            self.assert_json_error(result, "Insufficient permission")
+
 
 class DeleteUserTest(ZulipTestCase):
     def test_do_delete_user(self) -> None:
@@ -2653,27 +2820,27 @@ class DeleteUserTest(ZulipTestCase):
 class FakeEmailDomainTest(ZulipTestCase):
     def test_get_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual("zulip.testserver", get_fake_email_domain(realm))
+        self.assertEqual("zulip.testserver", get_fake_email_domain(realm.host))
 
         with self.settings(EXTERNAL_HOST="example.com"):
-            self.assertEqual("zulip.example.com", get_fake_email_domain(realm))
+            self.assertEqual("zulip.example.com", get_fake_email_domain(realm.host))
 
     @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_get_fake_email_domain_realm_host_is_ip_addr(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual("fakedomain.com", get_fake_email_domain(realm))
+        self.assertEqual("fakedomain.com", get_fake_email_domain(realm.host))
 
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
         with self.assertRaises(InvalidFakeEmailDomainError):
-            get_fake_email_domain(realm)
+            get_fake_email_domain(realm.host)
 
     @override_settings(FAKE_EMAIL_DOMAIN="127.0.0.1", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain_ip(self) -> None:
         with self.assertRaises(InvalidFakeEmailDomainError):
             realm = get_realm("zulip")
-            get_fake_email_domain(realm)
+            get_fake_email_domain(realm.host)
 
 
 class TestBulkRegenerateAPIKey(ZulipTestCase):

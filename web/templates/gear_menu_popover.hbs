@@ -21,24 +21,45 @@
                             <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">Zulip Cloud Standard</a>
                         {{else if is_plan_standard_sponsored_for_free}}
                             <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">Zulip Cloud Standard (sponsored)</a>
+                        {{else if is_plan_plus}}
+                            <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">Zulip Cloud Plus</a>
                         {{/if}}
                     </li>
                 {{/if}}
-                {{#if (and is_plan_limited is_owner) }}
-                <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
-                    <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Upgrade to {standard_plan_name}" }}</a>
-                </li>
-                {{/if}}
-                {{#if is_plan_limited }}
-                    {{#if is_education_org }}
+                {{#if (and (not is_self_hosted) user_has_billing_access (not is_plan_standard_sponsored_for_free)) }}
+                    {{#if sponsorship_pending }}
                     <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
-                        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request education pricing' }}</a>
+                        <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Sponsorship request pending" }}</a>
                     </li>
-                    {{else if (not is_business_org) }}
+                    {{else}}
+                    {{#if is_plan_limited }}
                     <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
-                        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request sponsorship' }}</a>
+                        <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Upgrade to {standard_plan_name}" }}</a>
                     </li>
                     {{/if}}
+                    {{#unless is_org_on_paid_plan}}
+                        {{#if is_education_org }}
+                        <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                            <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request education pricing' }}</a>
+                        </li>
+                        {{else if (not is_business_org) }}
+                        <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                            <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t 'Request sponsorship' }}</a>
+                        </li>
+                        {{/if}}
+                    {{/unless}}
+                    {{/if}}
+                {{/if}}
+
+                {{#if (and is_development_environment show_remote_billing) }}
+                {{! This is only shown in development environment until the UI is ready. Added to help test the flow directly from gear menu.}}
+                {{! TODO: Add these above with proper conditions once the UI is ready. }}
+                <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                    <a href="/self-hosted-billing/?next_page=sponsorship" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Request sponsorship" }}</a>
+                </li>
+                <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                    <a href="/self-hosted-billing/?next_page=upgrade" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Upgrade" }}</a>
+                </li>
                 {{/if}}
             </ul>
         </li>
@@ -46,7 +67,7 @@
             <ul class="navbar-dropdown-menu-inner-list">
                 <li class="link-item navbar-dropdown-menu-inner-list-item hidden-for-spectators">
                     <a href="#streams/subscribed" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i> {{t 'Manage streams' }}
+                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i> {{t 'Stream settings' }}
                     </a>
                 </li>
                 <li class="link-item navbar-dropdown-menu-inner-list-item hidden-for-spectators">
@@ -85,43 +106,6 @@
                 </li>
             </ul>
         </li>
-        <li class="navbar-dropdown-menu-outer-list-item">
-            <ul class="navbar-dropdown-menu-inner-list">
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a href="/help/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-help" aria-hidden="true"></i> {{t 'Help center' }}
-                    </a>
-                </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a tabindex="0" class="navigate-link-on-enter navbar-dropdown-menu-link" data-overlay-trigger="keyboard-shortcuts">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-keyboard" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span>
-                    </a>
-                </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item hidden-for-spectators">
-                    <a tabindex="0" class="navigate-link-on-enter navbar-dropdown-menu-link" data-overlay-trigger="message-formatting">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i> {{t 'Message formatting' }}
-                    </a>
-                </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a tabindex="0" class="navigate-link-on-enter navbar-dropdown-menu-link" data-overlay-trigger="search-operators">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-manage-search" aria-hidden="true"></i> {{t 'Search filters' }}
-                    </a>
-                </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item" id="gear_menu_about_zulip">
-                    <a href="#about-zulip" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-info"></i>
-                        {{t "About Zulip" }}
-                    </a>
-                </li>
-                {{#if corporate_enabled}}
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-life-buoy" aria-hidden="true"></i> {{t 'Contact support' }}
-                    </a>
-                </li>
-                {{/if}}
-            </ul>
-        </li>
         <li class="hidden-for-spectators navbar-dropdown-menu-outer-list-item">
             <ul class="navbar-dropdown-menu-inner-list">
                 <li class="link-item navbar-dropdown-menu-inner-list-item">
@@ -146,6 +130,14 @@
                     </a>
                 </li>
                 {{/if}}
+                {{#if (and is_development_environment show_remote_billing) }}
+                {{! This is only shown in development environment until the UI is ready.}}
+                <li class="link-item navbar-dropdown-menu-inner-list-item">
+                    <a href="/self-hosted-billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
+                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
+                    </a>
+                </li>
+                {{/if}}
                 {{#if promote_sponsoring_zulip}}
                 <li class="link-item navbar-dropdown-menu-inner-list-item">
                     <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
@@ -162,6 +154,7 @@
                 {{/if}}
             </ul>
         </li>
+        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator show_webathena)}}
         <li class="navbar-dropdown-menu-outer-list-item">
             <ul class="navbar-dropdown-menu-inner-list">
                 {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
@@ -180,10 +173,11 @@
                 {{/if}}
                 <li class="link-item navbar-dropdown-menu-inner-list-item only-visible-for-spectators">
                     <a href="{{login_link}}" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-power" aria-hidden="true"></i> {{t 'Log in' }}
+                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-log-in" aria-hidden="true"></i> {{t 'Log in' }}
                     </a>
                 </li>
             </ul>
         </li>
+        {{/if}}
     </ul>
 </div>

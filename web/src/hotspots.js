@@ -25,7 +25,7 @@ const HOTSPOT_LOCATIONS = new Map([
     [
         "intro_streams",
         {
-            element: "#streams_header .sidebar-title",
+            element: "#streams_header .left-sidebar-title",
             offset_x: 1.35,
             offset_y: 0.39,
         },
@@ -261,9 +261,11 @@ function insert_hotspot_into_DOM(hotspot) {
     });
 
     setTimeout(() => {
-        $("body").prepend(hotspot_icon_HTML);
+        if (!hotspot.has_trigger) {
+            $("body").prepend(hotspot_icon_HTML);
+        }
         $("body").prepend(hotspot_overlay_HTML);
-        if (place_icon(hotspot)) {
+        if (hotspot.has_trigger || place_icon(hotspot)) {
             place_popover(hotspot);
         }
 
@@ -272,7 +274,7 @@ function insert_hotspot_into_DOM(hotspot) {
             window.addEventListener(
                 event_name,
                 _.debounce(() => {
-                    if (place_icon(hotspot)) {
+                    if (hotspot.has_trigger || place_icon(hotspot)) {
                         place_popover(hotspot);
                     }
                 }, 10),
@@ -284,6 +286,10 @@ function insert_hotspot_into_DOM(hotspot) {
 
 export function is_open() {
     return meta.opened_hotspot_name !== null;
+}
+
+function is_hotspot_displayed(hotspot_name) {
+    return $(`#hotspot_${hotspot_name}_overlay`).length;
 }
 
 export function close_hotspot_icon(elem) {
@@ -306,6 +312,28 @@ function close_read_hotspots(new_hotspots) {
 
     for (const hotspot_name of unwanted_hotspots) {
         close_hotspot_icon($(`#hotspot_${CSS.escape(hotspot_name)}_icon`));
+        $(`#hotspot_${CSS.escape(hotspot_name)}_overlay`).remove();
+    }
+}
+
+export function open_popover_if_hotspot_exist(hotspot_name, bind_element = null) {
+    const overlay_name = "hotspot_" + hotspot_name + "_overlay";
+
+    if (is_hotspot_displayed(hotspot_name)) {
+        overlays.open_overlay({
+            name: overlay_name,
+            $overlay: $(`#${CSS.escape(overlay_name)}`),
+            on_close: function () {
+                // close popover
+                $(this).css({display: "block"});
+                $(this).animate(
+                    {opacity: 1},
+                    {
+                        duration: 300,
+                    },
+                );
+            }.bind(bind_element),
+        });
     }
 }
 
@@ -313,7 +341,9 @@ export function load_new(new_hotspots) {
     close_read_hotspots(new_hotspots);
     for (const hotspot of new_hotspots) {
         hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
-        insert_hotspot_into_DOM(hotspot);
+        if (!is_hotspot_displayed(hotspot.name) && hotspot.location) {
+            insert_hotspot_into_DOM(hotspot);
+        }
     }
 }
 
@@ -329,24 +359,8 @@ export function initialize() {
         const [, hotspot_name] = /^hotspot_(.*)_icon$/.exec(
             $(e.target).closest(".hotspot-icon").attr("id"),
         );
-        const overlay_name = "hotspot_" + hotspot_name + "_overlay";
 
-        overlays.open_overlay({
-            name: overlay_name,
-            $overlay: $(`#${CSS.escape(overlay_name)}`),
-            on_close: function () {
-                // close popover
-                $(this).css({display: "block"});
-                $(this).animate(
-                    {opacity: 1},
-                    {
-                        duration: 300,
-                    },
-                );
-
-                meta.opened_hotspot_name = null;
-            }.bind(this),
-        });
+        open_popover_if_hotspot_exist(hotspot_name, this);
 
         meta.opened_hotspot_name = hotspot_name;
         e.preventDefault();
@@ -367,6 +381,10 @@ export function initialize() {
 
         overlays.close_overlay(overlay_name);
         $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
+
+        // We are removing the hotspot overlay after it's read as it will help us avoid
+        // multiple copies of the hotspots when ALWAYS_SEND_ALL_HOTSPOTS is set to true.
+        $(`#${overlay_name}`).remove();
     });
 
     // stop propagation

@@ -1,5 +1,44 @@
 <ul id="send_later_popover" class="nav nav-list">
     <li>
+        <div class="enter_sends_choices grey-box">
+            <label class="enter_sends_choice">
+                <input type="radio" name="enter_sends_choice" class="prop-element" value="true"{{#if enter_sends_true }} checked{{/if}} />
+                <div class="enter_sends_choice_text">
+                    <span>
+                        {{#tr}}
+                            <z-shortcut></z-shortcut> to send
+                            {{#*inline "z-shortcut"}}<kbd>Enter</kbd>{{/inline}}
+                        {{/tr}}
+                    </span>
+                    <span class="enter_sends_minor">
+                        {{#tr}}
+                            <z-shortcut></z-shortcut> to add a new line
+                            {{#*inline "z-shortcut"}}<kbd>Ctrl</kbd>+<kbd>Enter</kbd>{{/inline}}
+                        {{/tr}}
+                    </span>
+                </div>
+            </label>
+            <label class="enter_sends_choice">
+                <input type="radio" name="enter_sends_choice" class="prop-element" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
+                <div class="enter_sends_choice_text">
+                    <span>
+                        {{#tr}}
+                            <z-shortcut></z-shortcut> to send
+                            {{#*inline "z-shortcut"}}<kbd>Ctrl</kbd>+<kbd>Enter</kbd>{{/inline}}
+                        {{/tr}}
+                    </span>
+                    <span class="enter_sends_minor">
+                        {{#tr}}
+                            <z-shortcut></z-shortcut> to add a new line
+                            {{#*inline "z-shortcut"}}<kbd>Enter</kbd>{{/inline}}
+                        {{/tr}}
+                    </span>
+                </div>
+            </label>
+        </div>
+    </li>
+    <hr />
+    <li>
         <a class="open_send_later_modal" tabindex="0">{{t "Schedule message" }}</a>
     </li>
     {{#if formatted_send_later_time}}
@@ -7,8 +46,11 @@
             <a class="send_later_selected_send_later_time" tabindex="0">{{t 'Schedule for {formatted_send_later_time}' }}</a>
         </li>
     {{/if}}
-    <hr />
     <li>
-        <a href="#scheduled" tabindex="0">{{t "View scheduled messages" }}</a>
+        <a href="#scheduled" class="navigate-link-on-enter" tabindex="0">{{t "View scheduled messages" }}</a>
+    </li>
+    <hr class="drafts-item-in-popover" />
+    <li class="drafts-item-in-popover">
+        <a href="#drafts">{{t "Drafts"}}</a>
     </li>
 </ul>

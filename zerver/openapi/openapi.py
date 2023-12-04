@@ -8,12 +8,11 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union, cast
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
 
 import openapi_core
 import orjson
 from openapi_core import Spec
-from openapi_core.protocols import Response
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 
@@ -294,7 +293,10 @@ def generate_openapi_fixture(endpoint: str, method: str) -> List[str]:
 
 def get_openapi_description(endpoint: str, method: str) -> str:
     """Fetch a description from the full spec object."""
-    return openapi_spec.openapi()["paths"][endpoint][method.lower()]["description"]
+    endpoint_documentation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
+    endpoint_description = endpoint_documentation["description"]
+    check_deprecated_consistency(endpoint_documentation, endpoint_description)
+    return endpoint_description
 
 
 def get_openapi_summary(endpoint: str, method: str) -> str:
@@ -348,17 +350,6 @@ def find_openapi_endpoint(path: str) -> Optional[str]:
     return None
 
 
-def fix_events(content: Dict[str, Any]) -> None:
-    """Remove undocumented events from events array. This is a makeshift
-    function so that further documentation of `/events` can happen with
-    only zulip.yaml changes and minimal other changes. It should be removed
-    as soon as `/events` documentation is complete.
-    """
-    # 'user' is deprecated so remove its occurrences from the events array
-    for event in content["events"]:
-        event.pop("user", None)
-
-
 def validate_against_openapi_schema(
     content: Dict[str, Any], path: str, method: str, status_code: str
 ) -> bool:
@@ -396,12 +387,6 @@ def validate_against_openapi_schema(
         # response have been defined this should be removed.
         return True
 
-    if endpoint == "/events" and method == "get":
-        # This a temporary function for checking only documented events
-        # as all events haven't been documented yet.
-        # TODO: Remove this after all events have been documented.
-        fix_events(content)
-
     mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
     mock_response = MockResponse(
         # TODO: Use original response content instead of re-serializing it.
@@ -409,9 +394,7 @@ def validate_against_openapi_schema(
         status_code=int(status_code),
     )
     try:
-        openapi_core.validate_response(
-            mock_request, cast(Response, mock_response), spec=openapi_spec.spec()
-        )
+        openapi_core.validate_response(mock_request, mock_response, spec=openapi_spec.spec())
     except OpenAPIValidationError as error:
         message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
         message += f"\n\n{type(error).__name__}: {error}"
@@ -449,19 +432,19 @@ def validate_schema(schema: Dict[str, Any]) -> None:
             validate_schema(schema["additionalProperties"])
 
 
-def likely_deprecated_parameter(parameter_description: str) -> bool:
-    if "**Changes**: Deprecated" in parameter_description:
+def deprecated_note_in_description(description: str) -> bool:
+    if "**Changes**: Deprecated" in description:
         return True
 
-    return "**Deprecated**" in parameter_description
+    return "**Deprecated**" in description
 
 
 def check_deprecated_consistency(argument: Mapping[str, Any], description: str) -> None:
     # Test to make sure deprecated parameters are marked so.
-    if likely_deprecated_parameter(description):
+    if deprecated_note_in_description(description):
         assert argument["deprecated"]
     if "deprecated" in argument:
-        assert likely_deprecated_parameter(description)
+        assert deprecated_note_in_description(description)
 
 
 # Skip those JSON endpoints whose query parameters are different from

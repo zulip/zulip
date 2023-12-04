@@ -1,6 +1,7 @@
 import itertools
 import os
 import random
+import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
@@ -37,6 +38,7 @@ from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
+from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
@@ -72,6 +74,8 @@ from zerver.models import (
     get_user_by_delivery_email,
     get_user_profile_by_id,
 )
+from zilencer.models import RemoteZulipServer
+from zilencer.views import update_remote_realm_data_for_server
 
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
@@ -372,6 +376,18 @@ class Command(BaseCommand):
                 # mention-related tests simple.
                 zulip_realm.wildcard_mention_policy = Realm.WILDCARD_MENTION_POLICY_MEMBERS
                 zulip_realm.save(update_fields=["wildcard_mention_policy"])
+
+            # Realms should have matching RemoteRealm entries - simulating having realms registered
+            # with the bouncer, which is going to be the primary case for modern servers. Tests
+            # wanting to have missing registrations, or simulating legacy server scenarios,
+            # should delete RemoteRealms to explicit set things up.
+            server = RemoteZulipServer.objects.create(
+                uuid=uuid.uuid4(),
+                api_key="magic_secret_api_key",
+                hostname="demo.example.com",
+                last_updated=timezone_now(),
+            )
+            update_remote_realm_data_for_server(server, get_realms_info_for_push_bouncer())
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -829,28 +845,29 @@ class Command(BaseCommand):
             UserProfile.objects.filter(is_bot=False, realm=zulip_realm)
         )
 
-        # As we plan to change the default values for 'automatically_follow_topics_policy' and
-        # 'automatically_unmute_topics_in_muted_streams_policy' in the future, it will lead to
-        # skewing a lot of our tests, which now need to take into account extra events and database queries.
-        #
-        # We explicitly set the values for both settings to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER'
-        # to make the tests independent of the default values.
-        #
-        # We have separate tests to verify events generated, database query counts,
-        # and other important details related to the above-mentioned settings.
-        for user in user_profiles:
-            do_change_user_setting(
-                user,
-                "automatically_follow_topics_policy",
-                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
-                acting_user=None,
-            )
-            do_change_user_setting(
-                user,
-                "automatically_unmute_topics_in_muted_streams_policy",
-                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
-                acting_user=None,
-            )
+        if options["test_suite"]:
+            # As we plan to change the default values for 'automatically_follow_topics_policy' and
+            # 'automatically_unmute_topics_in_muted_streams_policy' in the future, it will lead to
+            # skewing a lot of our tests, which now need to take into account extra events and database queries.
+            #
+            # We explicitly set the values for both settings to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER'
+            # to make the tests independent of the default values.
+            #
+            # We have separate tests to verify events generated, database query counts,
+            # and other important details related to the above-mentioned settings.
+            for user in user_profiles:
+                do_change_user_setting(
+                    user,
+                    "automatically_follow_topics_policy",
+                    UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                    acting_user=None,
+                )
+                do_change_user_setting(
+                    user,
+                    "automatically_unmute_topics_in_muted_streams_policy",
+                    UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                    acting_user=None,
+                )
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")

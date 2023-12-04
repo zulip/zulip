@@ -100,7 +100,7 @@
             }
         }
 
-        @media (width < $sm_min) {
+        @media (height < $short_navbar_cutoff_height) {
             #searchbox-input-container .search_icon {
                 font-size: 18px;
             }
@@ -185,14 +185,6 @@
         height: var(--search-box-height);
     }
 
-    @media ($md_min <= width < $xl_min) {
-        /* Add some space between the search input and the userlist toggle
-           in this width range so that hover state of userlist-toggle looks good. */
-        .navbar-search:not(.expanded) {
-            right: 2px;
-        }
-    }
-
     @media (width >= $md_min) {
         .navbar-search {
             background: var(--color-background-search);
@@ -213,11 +205,27 @@
         }
     }
 
-    @media (width < $sm_min) {
-        #searchbox_form {
+    @media (height < $short_navbar_cutoff_height) {
+        #searchbox_form:not(.expanded) {
             margin: 0;
+            /* Now that the header is shorter, the search box will take up the whole
+               height (which looks weird), so add 2px of space above and below it.
+               The extra pixel is to account for the header's bottom border (box shadow). */
+            margin-top: 2px;
+            height: calc(var(--header-height) - 5px);
+
+            #searchbox-input-container {
+                height: calc(var(--search-box-height) - 5px);
+            }
         }
 
+        /* It looks fine to fill the navbar when the typeahead is open. */
+        #searchbox_form.expanded {
+            margin-top: 0;
+        }
+    }
+
+    @media (width < $sm_min) {
         #searchbox_form.expanded {
             position: fixed;
             left: 0;
@@ -225,13 +233,8 @@
             width: 100%;
             border-radius: 0;
             box-shadow: none;
-            /* To be visible over `#streamlist-toggle-unreadcount`
-            and `#userlist-toggle-unreadcount`. */
+            /* To be visible over `#streamlist-toggle-unreadcount` */
             z-index: 20;
-        }
-
-        .typeahead.dropdown-menu {
-            box-shadow: 0 1px 5px var(--color-search-shadow-wide);
         }
     }
 

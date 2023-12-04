@@ -4,15 +4,12 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
-from datetime import datetime, timezone
-from unittest import skip
+from unittest.mock import patch
 
-import orjson
 from django.db.migrations.state import StateApps
 from typing_extensions import override
 
 from zerver.lib.test_classes import MigrationsTestCase
-from zerver.lib.test_helpers import use_db_models
 
 # Important note: These tests are very expensive, and details of
 # Django's database transaction model mean it does not super work to
@@ -25,82 +22,55 @@ from zerver.lib.test_helpers import use_db_models
 #
 #   django.db.utils.OperationalError: cannot ALTER TABLE
 #   "zerver_subscription" because it has pending trigger events
-#
-# As a result, we generally mark these tests as skipped once they have
-# been tested for a migration being merged.
 
 
-@skip("Cannot be run because there is a non-atomic migration that has been merged after it")
-class ScheduledEmailData(MigrationsTestCase):
-    migrate_from = "0467_rename_extradata_realmauditlog_extra_data_json"
-    migrate_to = "0468_rename_followup_day_email_templates"
+class UserMessageIndex(MigrationsTestCase):
+    migrate_from = "0485_alter_usermessage_flags_and_add_index"
+    migrate_to = "0486_clear_old_data_for_unused_usermessage_flags"
 
-    @use_db_models
+    @override
+    def setUp(self) -> None:
+        with patch("builtins.print") as _:
+            super().setUp()
+
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        iago = self.example_user("iago")
-        ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
-        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+        UserMessage = apps.get_model("zerver", "usermessage")
 
-        templates = [
-            ["zerver/emails/followup_day1", "a", True, 10],
-            ["zerver/emails/followup_day2", "b", False, 20],
-            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
-        ]
+        um_1 = UserMessage.objects.get(id=1)
+        um_1.flags.topic_wildcard_mentioned = True
+        um_1.flags.stream_wildcard_mentioned = True
+        um_1.flags.force_expand = True
+        um_1.save()
 
-        for template in templates:
-            email_fields = {
-                "template_prefix": template[0],
-                "string_context": template[1],
-                "boolean_context": template[2],
-                "integer_context": template[3],
-            }
+        um_2 = UserMessage.objects.get(id=2)
+        um_2.flags.group_mentioned = True
+        um_2.flags.topic_wildcard_mentioned = True
+        um_2.flags.mentioned = True
+        um_2.flags.force_collapse = True
+        um_2.save()
 
-            email = ScheduledEmail.objects.create(
-                type=1,
-                realm=iago.realm,
-                scheduled_timestamp=send_date,
-                data=orjson.dumps(email_fields).decode(),
-            )
-            email.users.add(iago.id)
+        um_1 = UserMessage.objects.get(id=1)
+        um_2 = UserMessage.objects.get(id=2)
 
-    def test_updated_email_templates(self) -> None:
-        ScheduledEmail = self.apps.get_model("zerver", "ScheduledEmail")
-        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+        self.assertTrue(um_1.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_1.flags.stream_wildcard_mentioned)
+        self.assertTrue(um_1.flags.force_expand)
+        self.assertTrue(um_2.flags.group_mentioned)
+        self.assertTrue(um_2.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_2.flags.mentioned)
+        self.assertTrue(um_2.flags.force_collapse)
 
-        old_templates = [
-            "zerver/emails/followup_day1",
-            "zerver/emails/followup_day2",
-        ]
+    def test_clear_topic_wildcard_and_group_mentioned_flags(self) -> None:
+        UserMessage = self.apps.get_model("zerver", "usermessage")
 
-        current_templates = [
-            "zerver/emails/account_registered",
-            "zerver/emails/onboarding_zulip_guide",
-            "zerver/emails/onboarding_zulip_topics",
-        ]
+        um_1 = UserMessage.objects.get(id=1)
+        um_2 = UserMessage.objects.get(id=2)
 
-        email_data = [
-            ["zerver/emails/account_registered", "a", True, 10],
-            ["zerver/emails/onboarding_zulip_topics", "b", False, 20],
-            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
-        ]
-
-        scheduled_emails = ScheduledEmail.objects.all()
-        self.assert_length(scheduled_emails, 3)
-
-        checked_emails = []
-        for email in scheduled_emails:
-            self.assertEqual(email.type, 1)
-            self.assertEqual(email.scheduled_timestamp, send_date)
-
-            updated_data = orjson.loads(email.data)
-            template_prefix = updated_data["template_prefix"]
-            self.assertFalse(template_prefix in old_templates)
-            for data in email_data:
-                if template_prefix == data[0]:
-                    self.assertEqual(updated_data["string_context"], data[1])
-                    self.assertEqual(updated_data["boolean_context"], data[2])
-                    self.assertEqual(updated_data["integer_context"], data[3])
-                    checked_emails.append(template_prefix)
-
-        self.assertEqual(current_templates, sorted(checked_emails))
+        self.assertFalse(um_1.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_1.flags.stream_wildcard_mentioned)
+        self.assertFalse(um_1.flags.force_expand)
+        self.assertFalse(um_2.flags.group_mentioned)
+        self.assertFalse(um_2.flags.topic_wildcard_mentioned)
+        self.assertTrue(um_2.flags.mentioned)
+        self.assertFalse(um_2.flags.force_collapse)

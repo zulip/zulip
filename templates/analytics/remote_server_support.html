@@ -18,13 +18,76 @@
         </center>
     </form>
 
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <center>
+            {{ error_message }}
+        </center>
+    </div>
+    {% elif success_message %}
+    <div class="alert alert-success">
+        <center>
+            {{ success_message }}
+        </center>
+    </div>
+    {% endif %}
+
     <div id="remote-server-query-results">
         {% for remote_server in remote_servers %}
         <div class="support-query-result">
-            <span class="label">remote server</span>
-            <h3>{{ remote_server.hostname }}</h3>
-            <b>Contact email</b>: {{ remote_server.contact_email }}<br />
-            <b>Last updated</b>: {{ remote_server.last_updated|timesince }} ago<br />
+            <div class="remote-server-information">
+                <span class="label">remote server</span>
+                <h3>{{ remote_server.hostname }}</h3>
+                <b>Contact email</b>: {{ remote_server.contact_email }}
+                <a title="Copy email" class="copy-button" data-copytext="{{ remote_server.contact_email }}">
+                    <i class="fa fa-copy"></i>
+                </a>
+                <br />
+                <b>Last updated</b>: {{ remote_server.last_updated|timesince }} ago<br />
+                <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
+                {% if remote_server.plan_type == 100 %}
+                    <h4>On 100% sponsored Zulip Community plan.</h4>
+                {% endif %}
+            </div>
+
+            {% if remote_server.plan_type != 100 %}
+            <form method="POST" class="remote-server-form">
+                <b>Sponsorship pending</b>:<br />
+                {{ csrf_input }}
+                <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                <select name="sponsorship_pending">
+                    <option value="true" {% if plan_data[remote_server.id].customer and plan_data[remote_server.id].customer.sponsorship_pending %}selected{% endif %}>Yes</option>
+                    <option value="false" {% if not plan_data[remote_server.id].customer or not plan_data[remote_server.id].customer.sponsorship_pending %}selected{% endif %}>No</option>
+                </select>
+                <button type="submit" class="btn btn-default support-submit-button">Update</button>
+            </form>
+            {% endif %}
+
+            {% if plan_data[remote_server.id].customer and plan_data[remote_server.id].customer.sponsorship_pending %}
+            <form method="POST" class="">
+                {{ csrf_input }}
+                <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                <input type="hidden" name="approve_sponsorship" value="true" />
+                <button class="btn btn-default sea-green small approve-sponsorship-button">
+                    Approve full sponsorship
+                </button>
+            </form>
+            {% endif %}
+
+            {% if remote_server.plan_type != 100 %}
+            <form method="POST" class="remote-server-form">
+                <b>Discount</b>:<br />
+                {{ csrf_input }}
+                <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                {% if plan_data[remote_server.id].current_plan and plan_data[remote_server.id].current_plan.fixed_price %}
+                <input type="number" name="discount" value="{{ get_discount(plan_data[remote_server.id].customer) }}" disabled />
+                <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
+                {% else %}
+                <input type="number" name="discount" value="{{ get_discount(plan_data[remote_server.id].customer) }}" required />
+                <button type="submit" class="btn btn-default support-submit-button">Update</button>
+                {% endif %}
+            </form>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

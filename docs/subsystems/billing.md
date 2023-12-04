@@ -116,7 +116,7 @@ our code is:
 - Go to the [Stripe Dashboard](https://dashboard.stripe.com/developers) in
   your Stripe account.
 - Upgrade the API version.
-- Run `tools/test-backend --generate-stripe-fixtures`.
+- Run `tools/test-backend --generate-stripe-fixtures --parallel=1 corporate/`.
 - Fix any failing tests, and manually look through `git diff` to understand
   the changes. Ensure that there are no material changes.
 - Update the value of `STRIPE_API_VERSION` in `corporate/lib/stripe.py`.

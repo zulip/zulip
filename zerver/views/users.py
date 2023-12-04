@@ -34,7 +34,7 @@ from zerver.actions.users import (
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
-from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import (
@@ -54,19 +54,21 @@ from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementVal
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
+    APIUserDict,
     access_bot_by_id,
     access_user_by_email,
     access_user_by_id,
     add_service,
     check_bot_creation_policy,
     check_bot_name_available,
+    check_can_access_user,
     check_full_name,
     check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
     get_api_key,
-    get_raw_user_data,
+    get_users_for_api,
     max_message_id_for_user,
     validate_user_custom_profile_data,
 )
@@ -306,8 +308,16 @@ def avatar(
             avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(
                 int(email_or_id), realm
             )
-        # If there is a valid user account passed in, use its avatar
-        url = avatar_url(avatar_user_profile, medium=medium)
+
+        url: Optional[str] = None
+        if maybe_user_profile.is_authenticated and not check_can_access_user(
+            avatar_user_profile, maybe_user_profile
+        ):
+            url = get_avatar_for_inaccessible_user()
+        else:
+            # If there is a valid user account passed in, use its avatar
+            url = avatar_url(avatar_user_profile, medium=medium)
+        assert url is not None
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         email = email_or_id
@@ -637,7 +647,7 @@ def get_user_data(
     """
     realm = user_profile.realm
 
-    members = get_raw_user_data(
+    members = get_users_for_api(
         realm,
         user_profile,
         target_user=target_user,
@@ -734,14 +744,14 @@ def create_user_backend(
 
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    raw_user_data = get_raw_user_data(
+    raw_user_data = get_users_for_api(
         user_profile.realm,
         user_profile,
         target_user=user_profile,
         client_gravatar=False,
         user_avatar_url_field_optional=False,
     )
-    result: Dict[str, Any] = raw_user_data[user_profile.id]
+    result: APIUserDict = raw_user_data[user_profile.id]
 
     result["max_message_id"] = max_message_id_for_user(user_profile)
 

@@ -39,6 +39,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
 const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
+    filter: noop,
 });
 
 mock_esm("../src/reload_state", {
@@ -57,6 +58,9 @@ mock_esm("../src/message_lists", {
 });
 mock_esm("../src/resize", {
     reset_compose_message_max_height: noop,
+});
+mock_esm("../src/popovers", {
+    hide_all: noop,
 });
 
 const people = zrequire("people");
@@ -196,11 +200,11 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     start("private", opts);
 
-    assert_hidden("#stream_message_recipient_topic");
+    assert_hidden("input#stream_message_recipient_topic");
     assert_visible("#compose-direct-recipient");
 
     assert.equal(compose_state.private_message_recipient(), "foo@example.com");
-    assert.equal($("#compose-textarea").val(), "hello");
+    assert.equal($("textarea#compose-textarea").val(), "hello");
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
 
@@ -227,7 +231,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     });
 
     compose_actions.register_compose_cancel_hook(compose_setup.abort_xhr);
-    $("#compose-textarea").set_height(50);
+    $("textarea#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");
     cancel();
@@ -260,10 +264,11 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
         type: "private",
         sender_id: person.user_id,
     };
-    override(message_lists.current, "selected_message", () => msg);
+    override(message_lists.current, "get", (id) => (id === 100 ? msg : undefined));
 
     let opts = {
         reply_type: "personal",
+        message_id: 100,
     };
 
     respond_to_message(opts);
@@ -283,6 +288,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
         stream_id: denmark.stream_id,
         topic: "python",
     };
+    override(message_lists.current, "selected_message", () => msg);
 
     opts = {};
 
@@ -316,6 +322,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
+    override(message_lists.current, "get", (_id) => undefined);
     override(message_lists.current, "selected_message", () => msg);
 
     let syntax_to_insert;
@@ -366,7 +373,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_private_message_recipient({override});
 
     let selected_message;
-    override(message_lists.current, "selected_message", () => selected_message);
+    override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
     let expected_replacement;
     let replaced;
@@ -397,8 +404,6 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
         success_function = opts.success;
     });
 
-    override(message_lists.current, "selected_id", () => 100);
-
     override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
         assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(mode, "block");
@@ -406,9 +411,11 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     const opts = {
         reply_type: "personal",
+        message_id: 100,
     };
 
-    $("#compose-textarea").caret = noop;
+    $("textarea#compose-textarea").caret = noop;
+    $("textarea#compose-textarea").attr("id", "compose-textarea");
 
     replaced = false;
     expected_replacement =
@@ -435,6 +442,10 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     quote_and_reply(opts);
     assert.ok(replaced);
 
+    delete opts.message_id;
+    override(message_lists.current, "selected_id", () => 100);
+    override(message_lists.current, "selected_message", () => selected_message);
+
     selected_message = {
         type: "stream",
         stream_id: denmark_stream.stream_id,
@@ -454,16 +465,16 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 test("focus_in_empty_compose", () => {
     document.activeElement = {id: "compose-textarea"};
     compose_state.set_message_type("stream");
-    $("#compose-textarea").val("");
+    $("textarea#compose-textarea").val("");
     assert.ok(compose_state.focus_in_empty_compose());
 
     compose_state.set_message_type(false);
     assert.ok(!compose_state.focus_in_empty_compose());
 
-    $("#compose-textarea").val("foo");
+    $("textarea#compose-textarea").val("foo");
     assert.ok(!compose_state.focus_in_empty_compose());
 
-    $("#compose-textarea").trigger("blur");
+    $("textarea#compose-textarea").trigger("blur");
     assert.ok(!compose_state.focus_in_empty_compose());
 });
 

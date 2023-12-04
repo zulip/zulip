@@ -429,7 +429,7 @@ class HelpTest(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/help/message-a-stream-by-email", subdomain="")
         self.assertEqual(result.status_code, 200)
-        self.assertIn("<strong>Manage streams</strong>", str(result.content))
+        self.assertIn("<strong>Stream settings</strong>", str(result.content))
         self.assertNotIn("/#streams", str(result.content))
 
 
@@ -502,8 +502,8 @@ class PlansPageTest(ZulipTestCase):
         root_domain = ""
         result = self.client_get("/plans/", subdomain=root_domain)
         self.assert_in_success_response(["Self-host Zulip"], result)
-        self.assert_not_in_success_response(["/upgrade/#sponsorship"], result)
-        self.assert_in_success_response(["/accounts/go/?next=%2Fupgrade%2F%23sponsorship"], result)
+        self.assert_not_in_success_response(["/sponsorship/"], result)
+        self.assert_in_success_response(["/accounts/go/?next=%2Fsponsorship%2F"], result)
 
         non_existent_domain = "moo"
         result = self.client_get("/plans/", subdomain=non_existent_domain)
@@ -526,10 +526,8 @@ class PlansPageTest(ZulipTestCase):
         self.login(organization_member)
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
-        self.assert_in_success_response(["/upgrade/#sponsorship"], result)
-        self.assert_not_in_success_response(
-            ["/accounts/go/?next=%2Fupgrade%2F%23sponsorship"], result
-        )
+        self.assert_in_success_response(["/sponsorship/"], result)
+        self.assert_not_in_success_response(["/accounts/go/?next=%2Fsponsorship%2F"], result)
 
         # Test root domain, with login on different domain
         result = self.client_get("/plans/", subdomain="")
@@ -577,7 +575,7 @@ class PlansPageTest(ZulipTestCase):
 
         with self.settings(FREE_TRIAL_DAYS=60):
             result = self.client_get("/plans/", subdomain="zulip")
-            self.assert_in_success_response([current_plan, "Start 60 day free trial"], result)
+            self.assert_in_success_response([current_plan, "Start 60-day free trial"], result)
             self.assert_not_in_success_response(
                 [sign_up_now, sponsorship_pending, upgrade_to_standard], result
             )
@@ -601,10 +599,10 @@ class PlansPageTest(ZulipTestCase):
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
         plan = CustomerPlan.objects.create(
             customer=customer,
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.FREE_TRIAL,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.MONTHLY,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
         )
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan (free trial)"], result)

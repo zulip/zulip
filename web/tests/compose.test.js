@@ -133,8 +133,8 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
 
     function reset() {
-        $("#compose-textarea").val("foobarfoobar");
-        $("#compose-textarea").trigger("blur");
+        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
     }
 
@@ -165,8 +165,8 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     let data = {id: 12, automatic_new_visibility_policy: 2};
     compose.send_message_success(request, data);
 
-    assert.equal($("#compose-textarea").val(), "");
-    assert.ok($("#compose-textarea").is_focused());
+    assert.equal($("textarea#compose-textarea").val(), "");
+    assert.ok($("textarea#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
 
@@ -189,8 +189,8 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     data = {id: 12};
     compose.send_message_success(request, data);
 
-    assert.equal($("#compose-textarea").val(), "");
-    assert.ok($("#compose-textarea").is_focused());
+    assert.equal($("textarea#compose-textarea").val(), "");
+    assert.ok($("textarea#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
 });
@@ -266,8 +266,8 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             stub_state.reify_message_id_checked += 1;
         });
 
-        $("#compose-textarea").val("[foobar](/user_uploads/123456)");
-        $("#compose-textarea").trigger("blur");
+        $("textarea#compose-textarea").val("[foobar](/user_uploads/123456)");
+        $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
 
         compose.send_message();
@@ -278,8 +278,8 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             send_msg_called: 1,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal($("#compose-textarea").val(), "");
-        assert.ok($("#compose-textarea").is_focused());
+        assert.equal($("textarea#compose-textarea").val(), "");
+        assert.ok($("textarea#compose-textarea").is_focused());
         assert.ok(!$(".compose-submit-button .loader").visible());
     })();
 
@@ -320,10 +320,10 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             banner_rendered = true;
         });
         stub_state = initialize_state_stub_dict();
-        $("#compose-textarea").val("foobarfoobar");
-        $("#compose-textarea").trigger("blur");
+        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
-        $("#compose-textarea").off("select");
+        $("textarea#compose-textarea").off("select");
         echo_error_msg_checked = false;
         override_rewire(echo, "try_deliver_locally", () => {});
 
@@ -339,15 +339,15 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
-        assert.equal($("#compose-textarea").val(), "foobarfoobar");
-        assert.ok($("#compose-textarea").is_focused());
+        assert.equal($("textarea#compose-textarea").val(), "foobarfoobar");
+        assert.ok($("textarea#compose-textarea").is_focused());
         assert.ok(!$(".compose-submit-button .loader").visible());
     })();
 });
 
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
-    $("#compose-textarea").toggleClass = noop;
+    $("textarea#compose-textarea").toggleClass = noop;
     mock_stream_header_colorblock();
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(document, "to_$", () => $("document-stub"));
@@ -363,8 +363,8 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     compose_state.set_message_type("stream");
     compose_state.set_stream_id(social.stream_id);
 
-    $("#compose-textarea").val("message me");
-    $("#compose-textarea").hide();
+    $("textarea#compose-textarea").val("message me");
+    $("textarea#compose-textarea").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .preview_message_area").show();
     $("#compose .markdown_preview").hide();
@@ -375,7 +375,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         send_message_called = true;
     });
     compose.enter_with_preview_open();
-    assert.ok($("#compose-textarea").visible());
+    assert.ok($("textarea#compose-textarea").visible());
     assert.ok(!$("#compose .undo_markdown_preview").visible());
     assert.ok(!$("#compose .preview_message_area").visible());
     assert.ok($("#compose .markdown_preview").visible());
@@ -384,12 +384,12 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     assert.ok(show_button_spinner_called);
 
     user_settings.enter_sends = false;
-    $("#compose-textarea").trigger("blur");
+    $("textarea#compose-textarea").trigger("blur");
     compose.enter_with_preview_open();
-    assert.ok($("#compose-textarea").is_focused());
+    assert.ok($("textarea#compose-textarea").is_focused());
 
     // Test sending a message without content.
-    $("#compose-textarea").val("");
+    $("textarea#compose-textarea").val("");
     $("#compose .preview_message_area").show();
     user_settings.enter_sends = true;
 
@@ -409,7 +409,7 @@ test_ui("finish", ({override, override_rewire}) => {
     });
 
     (function test_when_compose_validation_fails() {
-        $("#compose-textarea").toggleClass = (classname, value) => {
+        $("textarea#compose-textarea").toggleClass = (classname, value) => {
             assert.equal(classname, "invalid");
             assert.equal(value, true);
         };
@@ -417,8 +417,8 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
         $(".compose-submit-button .loader").hide();
-        $("#compose-textarea").off("select");
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").off("select");
+        $("textarea#compose-textarea").val("");
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);
@@ -433,7 +433,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compsoe").addClass("preview_mode");
-        $("#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("foobarfoobar");
         override_rewire(compose_ui, "compose_spinner_visible", false);
         compose_state.set_message_type("private");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
@@ -448,7 +448,7 @@ test_ui("finish", ({override, override_rewire}) => {
             send_message_called = true;
         });
         assert.ok(compose.finish());
-        assert.ok($("#compose-textarea").visible());
+        assert.ok($("textarea#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
@@ -617,7 +617,7 @@ test_ui("on_events", ({override, override_rewire}) => {
     (function test_markdown_preview_compose_clicked() {
         // Tests setup
         function setup_visibilities() {
-            $("#compose-textarea").show();
+            $("textarea#compose-textarea").show();
             $("#compose .markdown_preview").show();
             $("#compose .undo_markdown_preview").hide();
             $("#compose .preview_message_area").hide();
@@ -625,7 +625,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         }
 
         function assert_visibilities() {
-            assert.ok(!$("#compose-textarea").visible());
+            assert.ok(!$("textarea#compose-textarea").visible());
             assert.ok(!$("#compose .markdown_preview").visible());
             assert.ok($("#compose .undo_markdown_preview").visible());
             assert.ok($("#compose .preview_message_area").visible());
@@ -689,7 +689,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         const handler = $("#compose").get_on_handler("click", ".markdown_preview");
 
         // Tests start here
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").val("");
         setup_visibilities();
 
         const event = {
@@ -703,7 +703,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert_visibilities();
 
         let make_indicator_called = false;
-        $("#compose-textarea").val("```foobarfoobar```");
+        $("textarea#compose-textarea").val("```foobarfoobar```");
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
         setup_mock_markdown_is_status_message("```foobarfoobar```", false);
@@ -721,7 +721,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert_visibilities();
 
         let apply_markdown_called = false;
-        $("#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("foobarfoobar");
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
         setup_mock_markdown_is_status_message("foobarfoobar", false);
@@ -744,7 +744,7 @@ test_ui("on_events", ({override, override_rewire}) => {
     (function test_undo_markdown_preview_clicked() {
         const handler = $("#compose").get_on_handler("click", ".undo_markdown_preview");
 
-        $("#compose-textarea").hide();
+        $("textarea#compose-textarea").hide();
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
@@ -759,7 +759,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         handler(event);
 
-        assert.ok($("#compose-textarea").visible());
+        assert.ok($("textarea#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
@@ -772,8 +772,8 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     mock_banners();
 
     compose_state.set_stream_id(social.stream_id);
-    $("#stream_message_recipient_topic").val("lunch");
-    $("#compose-textarea").val("burrito");
+    $("input#stream_message_recipient_topic").val("lunch");
+    $("textarea#compose-textarea").val("burrito");
 
     compose_state.set_message_type("stream");
 

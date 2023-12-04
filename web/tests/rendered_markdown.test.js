@@ -28,6 +28,8 @@ const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
+const rows = zrequire("rows");
+const message_store = zrequire("message_store");
 
 const iago = {
     email: "iago@zulip.com",
@@ -86,20 +88,41 @@ const $array = (array) => {
     return {each};
 };
 
-function set_closest_dot_find_result($content, value) {
-    $content.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".recipient_row");
-        const find = (find_opts) => {
-            assert.equal(find_opts, ".message_header.message_header_stream");
-            return value;
+function set_message_for_message_content($content, value) {
+    // no message row found
+    if (value === undefined) {
+        $content.closest = (closest_opts) => {
+            assert.equal(closest_opts, ".message_row");
+            return [];
         };
-        return {find};
+        return;
+    }
+    // message row found
+    const $message_row = $.create(".message-row");
+    $content.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".message_row");
+        return $message_row;
+    };
+    $message_row.length = 1;
+    $message_row.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".overlay-message-row");
+        return [];
+    };
+    const message_id = 100;
+    rows.id = (message_row) => {
+        assert.equal(message_row, $message_row);
+        return message_id;
+    };
+    message_store.get = (message_id_opt) => {
+        assert.equal(message_id_opt, message_id);
+        return value;
     };
 }
 
 const get_content_element = () => {
     const $content = $.create("content-stub");
     $content.set_find_results(".user-mention", $array([]));
+    $content.set_find_results(".topic-mention", $array([]));
     $content.set_find_results(".user-group-mention", $array([]));
     $content.set_find_results("a.stream", $array([]));
     $content.set_find_results("a.stream-topic", $array([]));
@@ -109,7 +132,7 @@ const get_content_element = () => {
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
-    set_closest_dot_find_result($content, []);
+    set_message_for_message_content($content, undefined);
 
     // Fend off dumb security bugs by forcing devs to be
     // intentional about HTML manipulation.
@@ -183,12 +206,16 @@ run_test("user-mention", () => {
     assert.equal($polonius.text(), "never-been-set");
 
     rm.update_elements($content);
-
-    // Final asserts
-    assert.ok($iago.hasClass("user-mention-me"));
+    assert.ok(!$iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), `@${iago.full_name}`);
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
     assert.equal($polonius.text(), `translated: @${polonius.full_name} (guest)`);
+
+    // message row found
+    const message = {mentioned_me_directly: true};
+    set_message_for_message_content($content, message);
+    rm.update_elements($content);
+    assert.ok($iago.hasClass("user-mention-me"));
 });
 
 run_test("user-mention without guest indicator", () => {
@@ -203,47 +230,18 @@ run_test("user-mention without guest indicator", () => {
     assert.equal($polonius.text(), `@${polonius.full_name}`);
 });
 
-run_test("user-mention PM (wildcard)", () => {
+run_test("user-mention (stream wildcard)", () => {
     // Setup
     const $content = get_content_element();
     const $mention = $.create("mention");
     $mention.attr("data-user-id", "*");
     $content.set_find_results(".user-mention", $array([$mention]));
+    const message = {stream_wildcard_mentioned: true};
+    set_message_for_message_content($content, message);
 
     assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert.ok($mention.hasClass("user-mention-me"));
-});
-
-run_test("user-mention Stream subbed (wildcard)", ({override_rewire}) => {
-    // Setup
-    const $content = get_content_element();
-    const $mention = $.create("mention");
-    $mention.attr("data-user-id", "*");
-    $content.set_find_results(".user-mention", $array([$mention]));
-    const attr = () => stream.stream_id;
-    set_closest_dot_find_result($content, {attr, length: 1});
-    override_rewire(stream_data, "is_user_subscribed", () => true);
-
-    assert.ok(!$mention.hasClass("user-mention-me"));
-    rm.update_elements($content);
-    assert.ok($mention.hasClass("user-mention-me"));
-});
-
-run_test("user-mention Stream not subbed (wildcard)", ({override_rewire}) => {
-    // Setup
-    const $content = get_content_element();
-    const $mention = $.create("mention");
-    $mention.attr("data-user-id", "*");
-    $content.set_find_results(".user-mention", $array([$mention]));
-    const attr = () => 1;
-    set_closest_dot_find_result($content, {attr, length: 1});
-    override_rewire(stream_data, "is_user_subscribed", () => false);
-
-    // Don't add user-mention-me class.
-    assert.ok(!$mention.hasClass("user-mention-me"));
-    rm.update_elements($content);
-    assert.ok(!$mention.hasClass("user-mention-me"));
 });
 
 run_test("user-mention (email)", () => {
@@ -264,6 +262,44 @@ run_test("user-mention (missing)", () => {
     const $mention = $.create("mention");
     $content.set_find_results(".user-mention", $array([$mention]));
 
+    rm.update_elements($content);
+    assert.ok(!$mention.hasClass("user-mention-me"));
+});
+
+run_test("topic-mention", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $content.set_find_results(".topic-mention", $array([$mention]));
+
+    // when no message row found
+    assert.ok(!$mention.hasClass("user-mention-me"));
+    rm.update_elements($content);
+    assert.ok(!$mention.hasClass("user-mention-me"));
+
+    // message row found
+    const message = {
+        topic_wildcard_mentioned: true,
+    };
+    set_message_for_message_content($content, message);
+
+    assert.ok(!$mention.hasClass("user-mention-me"));
+    rm.update_elements($content);
+    assert.ok($mention.hasClass("user-mention-me"));
+});
+
+run_test("topic-mention not topic participant", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $content.set_find_results(".topic-mention", $array([$mention]));
+
+    const message = {
+        topic_wildcard_mentioned: false,
+    };
+    set_message_for_message_content($content, message);
+
+    assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert.ok(!$mention.hasClass("user-mention-me"));
 });

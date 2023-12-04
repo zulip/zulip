@@ -1,8 +1,8 @@
 import datetime
 import sys
 from typing import Sequence
-from unittest import mock
 
+import time_machine
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -54,8 +54,8 @@ class SendLoginEmailTest(ZulipTestCase):
             )
             user_tz = zoneinfo.ZoneInfo(user.timezone)
             mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
-            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M%p %Z")
-            with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M %p %Z")
+            with time_machine.travel(mock_time, tick=False):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
                 )
@@ -71,7 +71,7 @@ class SendLoginEmailTest(ZulipTestCase):
             self.logout()  # We just logged in, we'd be redirected without this
             user.twenty_four_hour_time = True
             user.save()
-            with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+            with time_machine.travel(mock_time, tick=False):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
                 )
@@ -116,13 +116,13 @@ class SendLoginEmailTest(ZulipTestCase):
 
         do_change_user_setting(user, "enable_login_emails", False, acting_user=None)
         self.assertFalse(user.enable_login_emails)
-        with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+        with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
         self.assert_length(mail.outbox, 0)
 
         do_change_user_setting(user, "enable_login_emails", True, acting_user=None)
         self.assertTrue(user.enable_login_emails)
-        with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+        with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
         self.assert_length(mail.outbox, 1)
 

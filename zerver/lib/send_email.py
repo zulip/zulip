@@ -70,7 +70,9 @@ class FromAddress:
             language = user_profile.default_language
 
         with override_language(language):
-            return _("Zulip Account Security")
+            return _("{service_name} account security").format(
+                service_name=settings.INSTALLATION_NAME
+            )
 
 
 def build_email(

@@ -3,7 +3,7 @@ import $ from "jquery";
 const list_selectors = [
     "#stream_filters",
     "#left-sidebar-navigation-list",
-    "#user_presences",
+    "#buddy-list-users-matching-view",
     "#send_later_options",
 ];
 

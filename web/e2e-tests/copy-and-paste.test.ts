@@ -37,7 +37,7 @@ async function copy_messages(
                     ctrlKey: true,
                     keyCode: 67,
                     which: 67,
-                } as KeyboardEventInit),
+                }),
             );
 
             // find temp div with copied text

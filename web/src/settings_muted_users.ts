@@ -12,6 +12,7 @@ export let loaded = false;
 type MutedUserItem = {
     user_id: number;
     user_name: string;
+    date_muted: number;
     date_muted_str: string;
 };
 
@@ -19,6 +20,7 @@ export function populate_list(): void {
     const all_muted_users = muted_users.get_muted_users().map((user) => ({
         user_id: user.id,
         user_name: people.get_full_name(user.id),
+        date_muted: user.date_muted,
         date_muted_str: user.date_muted_str,
     }));
     const $muted_users_table = $("#muted_users_table");

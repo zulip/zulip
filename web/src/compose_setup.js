@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_add_poll_modal from "../templates/add_poll_modal.hbs";
+
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
@@ -9,10 +11,13 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as dialog_widget from "./dialog_widget";
 import * as flatpickr from "./flatpickr";
+import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
+import * as poll_modal from "./poll_modal";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -23,6 +28,7 @@ import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import {get_timestamp_for_flatpickr} from "./timerender";
+import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as user_topics from "./user_topics";
 
@@ -44,21 +50,25 @@ export function initialize() {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
 
-    $("#below-compose-content .video_link").toggle(compose_call.compute_show_video_chat_button());
-    $("#below-compose-content .audio_link").toggle(compose_call.compute_show_audio_chat_button());
+    $(".compose-control-buttons-container .video_link").toggle(
+        compose_call.compute_show_video_chat_button(),
+    );
+    $(".compose-control-buttons-container .audio_link").toggle(
+        compose_call.compute_show_audio_chat_button(),
+    );
 
-    $("#compose-textarea").on("keydown", (event) => {
-        compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
+    $("textarea#compose-textarea").on("keydown", (event) => {
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea").expectOne());
     });
-    $("#compose-textarea").on("keyup", (event) => {
-        compose_ui.handle_keyup(event, $("#compose-textarea").expectOne());
+    $("textarea#compose-textarea").on("keyup", (event) => {
+        compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
-    $("#compose-textarea").on("input propertychange", () => {
+    $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
         const compose_text_length = compose_validate.check_overflow_text();
-        if (compose_text_length !== 0 && $("#compose-textarea").hasClass("invalid")) {
-            $("#compose-textarea").toggleClass("invalid", false);
+        if (compose_text_length !== 0 && $("textarea#compose-textarea").hasClass("invalid")) {
+            $("textarea#compose-textarea").toggleClass("invalid", false);
         }
         // Change compose close button tooltip as per condition.
         // We save compose text in draft only if its length is > 2.
@@ -69,6 +79,13 @@ export function initialize() {
             );
         } else {
             $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
+        }
+
+        // The poll widget requires an empty compose box.
+        if (compose_text_length > 0) {
+            $(".add-poll").parent().addClass("disabled-on-hover");
+        } else {
+            $(".add-poll").parent().removeClass("disabled-on-hover");
         }
     });
 
@@ -104,8 +121,8 @@ export function initialize() {
             event.preventDefault();
             const {$banner_container, is_edit_input} = get_input_info(event);
             const $row = $(event.target).closest(".message_row");
-            compose_validate.clear_wildcard_warnings($banner_container);
-            compose_validate.set_user_acknowledged_wildcard_flag(true);
+            compose_validate.clear_stream_wildcard_warnings($banner_container);
+            compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
@@ -114,7 +131,7 @@ export function initialize() {
                 // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
                 // would again show the wildcard warning banner when we actually send the message from 'send-later' modal.
-                compose_validate.set_user_acknowledged_wildcard_flag(true);
+                compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
             } else {
                 compose.finish();
             }
@@ -229,7 +246,7 @@ export function initialize() {
                     error_message,
                     compose_banner.CLASSNAMES.generic_compose_error,
                     $banner_container,
-                    $("#compose-textarea"),
+                    $("textarea#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
             }
@@ -237,6 +254,15 @@ export function initialize() {
             const sub = sub_store.get(stream_id);
 
             subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(compose_banner.CLASSNAMES.search_view)} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            narrow.to_compose_target();
         },
     );
 
@@ -321,6 +347,44 @@ export function initialize() {
         }
     });
 
+    $("body").on("click", ".compose_control_button_container:not(.disabled) .add-poll", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        function validate_input() {
+            const question = $("#poll-question-input").val().trim();
+
+            if (question === "") {
+                ui_report.error(
+                    $t_html({defaultMessage: "Please enter a question."}),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
+            return true;
+        }
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Create a poll"}),
+            html_body: render_add_poll_modal(),
+            html_submit_button: $t_html({defaultMessage: "Add poll"}),
+            close_on_submit: true,
+            on_click(e) {
+                // frame a message using data input in modal, then populate the compose textarea with it
+                e.preventDefault();
+                e.stopPropagation();
+                const poll_message_content = poll_modal.frame_poll_message_content();
+                compose_ui.insert_syntax_and_focus(poll_message_content);
+            },
+            validate_input,
+            form_id: "add-poll-form",
+            id: "add-poll-modal",
+            post_render: poll_modal.poll_options_setup,
+            help_link: "https://zulip.com/help/create-a-poll",
+        });
+    });
+
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -330,8 +394,8 @@ export function initialize() {
         $("#compose").addClass("preview_mode");
         $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-        const content = $("#compose-textarea").val();
-        $("#compose-textarea").hide();
+        const content = $("textarea#compose-textarea").val();
+        $("textarea#compose-textarea").hide();
         $("#compose .markdown_preview").hide();
         $("#compose .undo_markdown_preview").show();
         $("#compose .undo_markdown_preview").trigger("focus");
@@ -370,12 +434,12 @@ export function initialize() {
         compose_ui.make_compose_box_original_size();
     });
 
-    $("#compose-textarea").on("focus", () => {
+    $("textarea#compose-textarea").on("focus", () => {
         compose_recipient.update_placeholder_text();
     });
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
-        const $input = $("#stream_message_recipient_topic");
+        const $input = $("input#stream_message_recipient_topic");
         const $button = $("#recipient_box_clear_topic_button");
 
         $input.val("");
@@ -383,7 +447,7 @@ export function initialize() {
         $button.hide();
     });
 
-    $("#compose_recipient_box").on("input", "#stream_message_recipient_topic", (e) => {
+    $("#compose_recipient_box").on("input", "input#stream_message_recipient_topic", (e) => {
         const $button = $("#recipient_box_clear_topic_button");
         const value = $(e.target).val();
         if (value.length === 0) {
@@ -393,11 +457,11 @@ export function initialize() {
         }
     });
 
-    $("#stream_message_recipient_topic").on("focus", () => {
+    $("input#stream_message_recipient_topic").on("focus", () => {
         compose_recipient.update_placeholder_text();
     });
 
-    $("#stream_message_recipient_topic").on("input", () => {
+    $("input#stream_message_recipient_topic").on("input", () => {
         compose_recipient.update_placeholder_text();
     });
 

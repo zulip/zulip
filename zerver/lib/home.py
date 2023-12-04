@@ -16,6 +16,7 @@ from zerver.lib.i18n import (
     get_language_translation_data,
 )
 from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.push_notifications import uses_notification_bouncer
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
@@ -27,6 +28,8 @@ from zproject.config import get_config
 class BillingInfo:
     show_billing: bool
     show_plans: bool
+    sponsorship_pending: bool
+    show_remote_billing: bool
 
 
 @dataclass
@@ -75,25 +78,36 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
 
 
 def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
+    # See https://zulip.com/help/roles-and-permissions for clarity.
     show_billing = False
     show_plans = False
-    if settings.CORPORATE_ENABLED and user_profile is not None:
-        if user_profile.has_billing_access:
-            from corporate.models import CustomerPlan, get_customer_by_realm
+    sponsorship_pending = False
+    show_remote_billing = (
+        user_profile is not None and user_profile.has_billing_access and uses_notification_bouncer()
+    )
 
-            customer = get_customer_by_realm(user_profile.realm)
-            if customer is not None:
-                if customer.sponsorship_pending:
-                    show_billing = True
-                elif CustomerPlan.objects.filter(customer=customer).exists():
-                    show_billing = True
+    # This query runs on home page load, so we want to avoid
+    # hitting the database if possible. So, we only run it for the user
+    # types that can actually see the billing info.
+    if settings.CORPORATE_ENABLED and user_profile is not None and user_profile.has_billing_access:
+        from corporate.models import CustomerPlan, get_customer_by_realm
 
-        if not user_profile.is_guest and user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
+        customer = get_customer_by_realm(user_profile.realm)
+        if customer is not None:
+            if customer.sponsorship_pending:
+                sponsorship_pending = True
+
+            if CustomerPlan.objects.filter(customer=customer).exists():
+                show_billing = True
+
+        if user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
             show_plans = True
 
     return BillingInfo(
         show_billing=show_billing,
         show_plans=show_plans,
+        sponsorship_pending=sponsorship_pending,
+        show_remote_billing=show_remote_billing,
     )
 
 
@@ -200,8 +214,10 @@ def build_page_params_for_home_page_load(
         two_fa_enabled=two_fa_enabled,
         apps_page_url=get_apps_page_url(),
         show_billing=billing_info.show_billing,
+        show_remote_billing=billing_info.show_remote_billing,
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
         show_plans=billing_info.show_plans,
+        sponsorship_pending=billing_info.sponsorship_pending,
         show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.

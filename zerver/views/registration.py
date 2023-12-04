@@ -52,7 +52,11 @@ from zerver.forms import (
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import RateLimitedError
-from zerver.lib.i18n import get_default_language_for_new_user
+from zerver.lib.i18n import (
+    get_browser_language_code,
+    get_default_language_for_new_user,
+    get_language_name,
+)
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.request import REQ, has_request_variables
@@ -70,6 +74,7 @@ from zerver.lib.validator import (
 )
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
+    MAX_LANGUAGE_ID_LENGTH,
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
@@ -193,6 +198,16 @@ def get_selected_realm_type_name(prereg_realm: Optional[PreregistrationRealm]) -
         return None
 
     return get_org_type_display_name(prereg_realm.org_type)
+
+
+def get_selected_realm_default_language_name(
+    prereg_realm: Optional[PreregistrationRealm],
+) -> Optional[str]:
+    if prereg_realm is None:
+        # We show the selected realm language only when creating new realm.
+        return None
+
+    return get_language_name(prereg_realm.default_language)
 
 
 @add_google_analytics
@@ -361,6 +376,7 @@ def registration_helper(
             initial_data = {
                 "realm_name": prereg_realm.name,
                 "realm_type": prereg_realm.org_type,
+                "realm_default_language": prereg_realm.default_language,
                 "realm_subdomain": prereg_realm.string_id,
             }
 
@@ -440,11 +456,13 @@ def registration_helper(
             string_id = form.cleaned_data["realm_subdomain"]
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
+            realm_default_language = form.cleaned_data["realm_default_language"]
             is_demo_organization = form.cleaned_data["is_demo_organization"]
             realm = do_create_realm(
                 string_id,
                 realm_name,
                 org_type=realm_type,
+                default_language=realm_default_language,
                 is_demo_organization=is_demo_organization,
                 prereg_realm=prereg_realm,
             )
@@ -654,6 +672,9 @@ def registration_helper(
         "corporate_enabled": settings.CORPORATE_ENABLED,
         "default_email_address_visibility": default_email_address_visibility,
         "selected_realm_type_name": get_selected_realm_type_name(prereg_realm),
+        "selected_realm_default_language_name": get_selected_realm_default_language_name(
+            prereg_realm
+        ),
         "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
         "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
         "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
@@ -727,8 +748,11 @@ def prepare_realm_activation_url(
     realm_name: str,
     string_id: str,
     org_type: int,
+    default_language: str,
 ) -> str:
-    prereg_realm = create_preregistration_realm(email, realm_name, string_id, org_type)
+    prereg_realm = create_preregistration_realm(
+        email, realm_name, string_id, org_type, default_language
+    )
     activation_url = create_confirmation_link(
         prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
     )
@@ -743,8 +767,17 @@ def send_confirm_registration_email(
     activation_url: str,
     *,
     realm: Optional[Realm] = None,
+    realm_subdomain: Optional[str] = None,
+    realm_type: Optional[int] = None,
     request: Optional[HttpRequest] = None,
 ) -> None:
+    org_url = ""
+    org_type = ""
+    if realm is None:
+        assert realm_subdomain is not None
+        org_url = f"{realm_subdomain}.{settings.EXTERNAL_HOST}"
+        assert realm_type is not None
+        org_type = get_org_type_display_name(realm_type)
     send_email(
         "zerver/emails/confirm_registration",
         to_emails=[email],
@@ -754,6 +787,8 @@ def send_confirm_registration_email(
             "create_realm": realm is None,
             "activate_url": activation_url,
             "corporate_enabled": settings.CORPORATE_ENABLED,
+            "organization_url": org_url,
+            "organization_type": org_type,
         },
         realm=realm,
         request=request,
@@ -802,9 +837,15 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             email = form.cleaned_data["email"]
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
+            realm_default_language = form.cleaned_data["realm_default_language"]
             realm_subdomain = form.cleaned_data["realm_subdomain"]
             activation_url = prepare_realm_activation_url(
-                email, request.session, realm_name, realm_subdomain, realm_type
+                email,
+                request.session,
+                realm_name,
+                realm_subdomain,
+                realm_type,
+                realm_default_language,
             )
             if key_record is not None and key_record.presume_email_valid:
                 # The user has a token created from the server command line;
@@ -815,7 +856,13 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 return HttpResponseRedirect(activation_url)
 
             try:
-                send_confirm_registration_email(email, activation_url, request=request)
+                send_confirm_registration_email(
+                    email,
+                    activation_url,
+                    realm_subdomain=realm_subdomain,
+                    realm_type=realm_type,
+                    request=request,
+                )
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
@@ -830,13 +877,21 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                     "email": email,
                     "realm_name": realm_name,
                     "realm_type": realm_type,
+                    "realm_default_language": realm_default_language,
                     "realm_subdomain": realm_subdomain,
                 }
             )
             url = append_url_query_string(new_realm_send_confirm_url, query)
             return HttpResponseRedirect(url)
     else:
-        form = RealmCreationForm()
+        default_language_code = get_browser_language_code(request)
+        if default_language_code is None:
+            default_language_code = "en"
+
+        initial_data = {
+            "realm_default_language": default_language_code,
+        }
+        form = RealmCreationForm(initial=initial_data)
 
     context = get_realm_create_form_context()
     context.update(
@@ -868,6 +923,7 @@ def new_realm_send_confirm(
     email: str = REQ("email"),
     realm_name: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_NAME_LENGTH)),
     realm_type: int = REQ(json_validator=check_int_in(Realm.ORG_TYPE_IDS)),
+    realm_default_language: str = REQ(str_validator=check_capped_string(MAX_LANGUAGE_ID_LENGTH)),
     realm_subdomain: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH)),
 ) -> HttpResponse:
     return TemplateResponse(
@@ -880,6 +936,7 @@ def new_realm_send_confirm(
             # creation.
             "new_realm_name": realm_name,
             "realm_type": realm_type,
+            "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
             "realm_creation": True,
         },

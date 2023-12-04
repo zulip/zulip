@@ -161,6 +161,12 @@ test("test_basics", () => {
 
         bot = bot_data.get(43);
         assert.equal(bot.owner_id, fred.user_id);
+
+        bot_data.update(43, {...test_bot, is_active: false});
+        assert.ok(!bot_data.get(43).is_active);
+
+        bot_data.update(43, {...test_bot, is_active: true});
+        assert.ok(bot_data.get(43).is_active);
     })();
 
     (function test_embedded_bot_update() {
@@ -174,19 +180,6 @@ test("test_basics", () => {
         });
         assert.equal("87654321", services[0].config_data.key);
         assert.equal("embedded bot service", services[0].service_name);
-    })();
-
-    (function test_remove() {
-        let bot;
-
-        bot_data.add({...test_bot, is_active: true});
-
-        bot = bot_data.get(43);
-        assert.equal("Bot 1", bot.full_name);
-        assert.ok(bot.is_active);
-        bot_data.deactivate(43);
-        bot = bot_data.get(43);
-        assert.equal(bot.is_active, false);
     })();
 
     (function test_all_user_ids() {

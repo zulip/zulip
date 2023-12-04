@@ -2,7 +2,9 @@ See your Splunk Search alerts in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
     If you do not specify a topic, the name of the search is used
     (truncated to fit if needed).

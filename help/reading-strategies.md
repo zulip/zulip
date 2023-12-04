@@ -28,11 +28,20 @@ in Zulip.
 
 #### From the left sidebar
 
-{!left-sidebar-topics.md!}
+{!left-sidebar-conversations.md!}
 
 ### Reading conversations
 
-{!reading-topics.md!}
+{!reading-conversations.md!}
+
+### Following, muting and unmuting conversations
+
+You can improve your workflow for catching up on messages by taking advantage of
+[following topics](/help/follow-a-topic), as well as muting and unmuting
+[streams](/help/mute-a-stream) and [topics](/help/mute-a-topic). Some example
+workflows:
+
+{!followed-topic-workflows.md!}
 
 ## Combined views
 
@@ -48,13 +57,14 @@ You can see all your direct messages in one place.
 
 {tab|desktop-web}
 
-1. Click on the **All direct messages** icon next to **DIRECT MESSAGES** in the left sidebar.
+1. Click on the **All direct messages** (<i class="fa fa-align-right"></i>)
+   icon next to **DIRECT MESSAGES** in the left sidebar.
 
 1. Read your direct messages, starting from your first unread message. You can
-  scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
+   scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
 
-1. You can click on a conversation in the left sidebar or a message recipient bar to
-   narrow to messages from that conversation.
+1. You can click on a conversation in the left sidebar or a message recipient
+   bar to narrow to messages from that conversation.
 
 !!! keyboard_tip ""
 

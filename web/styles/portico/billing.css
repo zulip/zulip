@@ -7,20 +7,8 @@
     background-color: hsl(0deg 0% 98%);
     height: 100vh;
 
-    .hero {
-        background-color: hsl(153deg 32% 55%);
-        color: hsl(153deg 32% 55%);
-        position: absolute;
-        top: 0;
-        width: 100%;
-    }
-
     .page-content {
         padding: 100px 0 30px;
-    }
-
-    .small-hero {
-        padding: 120px 50px 0;
     }
 
     .main {
@@ -318,11 +306,6 @@
         margin-left: -25px;
     }
 
-    #license-automatic-section,
-    #license-manual-section {
-        display: none;
-    }
-
     & select,
     input,
     textarea {
@@ -342,7 +325,6 @@ input[name="licenses"] {
 
 #license-manual-section,
 #licensechange-input-section,
-#sponsorship-form,
 #invoice-form {
     & input {
         padding: 4px 6px;
@@ -365,68 +347,330 @@ input[name="licenses"] {
     }
 }
 
-#sponsorship-form {
-    & input {
-        box-sizing: border-box;
-    }
-
-    & textarea {
-        box-sizing: border-box;
-        color: hsl(0deg 0% 33%);
-        background-color: hsl(0deg 0% 100%);
-        border-radius: 4px;
-        vertical-align: middle;
-        border: 1px solid hsl(0deg 0% 80%);
-        padding: 4px 6px;
-        margin-bottom: 10px;
-        line-height: 20px;
-
-        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition:
-            border linear 0.2s,
-            box-shadow linear 0.2s;
-
-        &:focus {
-            border-color: hsl(206.5deg 80% 62% / 80%);
-            outline: 0;
-
-            box-shadow:
-                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-                0 0 8px hsl(206.5deg 80% 62% / 60%);
-
-            &:invalid {
-                border-color: hsl(2deg 81% 55%);
-                box-shadow: 0 0 6px hsl(2deg 82% 85%);
-                color: hsl(1deg 45% 50%);
-            }
-        }
-    }
-
-    & select {
-        height: 30px;
-        width: 100%;
-        padding: 0 6px;
-        font-size: 14px;
-        color: hsl(0deg 0% 33%);
-        border-radius: 4px;
-        border: 1px solid hsl(0deg 0% 80%);
-        margin-bottom: 10px;
-        cursor: pointer;
-        background-color: hsl(0deg 0% 100%);
-    }
-
-    & input[name="website"] {
-        width: 100%;
-    }
-
-    & textarea[name="description"] {
-        width: 100%;
-    }
-}
-
 #confirm-licenses-modal .dialog_submit_button:active {
     /* This is needed to avoid button background changing
     when clicking on it due to "button:active" CSS in
     landing_page.css. */
     background-color: hsl(240deg 96% 68%);
+}
+
+#upgrade-page .white-box,
+#billing-page .white-box,
+.sponsorship-page .white-box {
+    margin: 30px;
+}
+
+#upgrade-page #billing-page-details,
+#billing-page #billing-page-details,
+.sponsorship-page #sponsorship-form {
+    margin: 0;
+}
+
+#sponsorship-discount-details {
+    font-weight: normal;
+    margin: 2px 14px;
+    padding-top: 0;
+    text-align: left;
+    overflow-wrap: break-word;
+    width: 450px;
+}
+
+@media (width < 600px) {
+    #billing-page,
+    .sponsorship-page {
+        transform: scale(0.8);
+        margin: -50px;
+    }
+
+    .sponsorship-status-page {
+        transform: scale(0.8);
+        margin: -10px -50px -50px;
+    }
+
+    #upgrade-page {
+        transform: scale(0.8);
+        margin: -50px 0;
+    }
+}
+
+@media (width < 460px) {
+    #upgrade-page,
+    #billing-page,
+    .sponsorship-page {
+        transform: scale(0.6);
+        margin: -150px -100px;
+    }
+
+    .sponsorship-status-page {
+        transform: scale(0.6);
+        margin: -50px -150px -100px;
+    }
+
+    #upgrade-page {
+        transform: scale(0.6);
+        margin: -150px 0;
+    }
+}
+
+#billing-page .billing-status-page .pitch {
+    width: 100%;
+}
+
+.billing-status-page {
+    font-weight: 400;
+}
+
+.sponsorship-status-page .white-box {
+    font-weight: 400;
+    margin: 30px;
+    padding: 0;
+}
+
+.billing-status-page p:last-child,
+.sponsorship-status-page p:last-child {
+    margin-bottom: 0;
+}
+
+.upgrade-page-error,
+.sponsorship-field-error,
+.billing-page-error,
+.billing-page-success {
+    text-align: left;
+    margin-left: 2px;
+    margin-top: 5px;
+}
+
+.header.portico-header {
+    display: block;
+}
+
+#upgrade-page #upgrade-manual-license-count-wrapper,
+#billing-page .input-box-number {
+    text-align: left;
+}
+
+.sponsorship-page .pitch,
+.sponsorship-status-page .pitch,
+#upgrade-page .pitch,
+#billing-page .pitch {
+    width: 600px;
+}
+
+#billing-page .number-input-with-label {
+    display: flex;
+    align-items: flex-end;
+}
+
+#upgrade-page #manual_license_count,
+#billing-page
+    .white-box
+    .input-box-number
+    .number-input-with-label
+    .short-width-number-input {
+    width: 100px;
+}
+
+#billing-page .number-input-with-label .licence-count-in-use {
+    padding-left: 10px;
+    vertical-align: bottom;
+    position: relative;
+    bottom: 15px;
+}
+
+#billing-page #org-billing-frequency-confirm-button,
+#billing-page .license-count-update-button {
+    margin: 0 auto;
+    font-size: 1.1rem;
+    margin-right: 0;
+    width: 100px;
+}
+
+#billing-page #org-billing-frequency-confirm-button.hide,
+#billing-page .license-count-update-button.hide {
+    display: none;
+}
+
+#billing-page #org-billing-frequency-confirm-button {
+    margin: 0;
+    display: block;
+    position: absolute;
+    top: 25px;
+    right: 0;
+}
+
+#billing-page #current-license-change-form,
+#billing-page #next-license-change-form {
+    margin-bottom: 0;
+}
+
+.billing-page-success {
+    display: none;
+}
+
+#billing-page-details .input-box.billing-page-field.plan-toggle-action,
+#billing-page-details .input-box.billing-page-field.user-stripe-card-update {
+    margin-top: 10px;
+    text-align: left;
+}
+
+#billing-page-details .plan-toggle-action .plan-toggle-action-button {
+    margin: 20px auto 0;
+    background-color: hsl(0deg 70% 40%);
+}
+
+#org-upgrade-button {
+    margin: 0;
+    width: 100%;
+
+    &:disabled,
+    .permanent-disabled {
+        color: hsl(0deg 0% 80%);
+
+        &:hover {
+            cursor: not-allowed;
+        }
+    }
+}
+
+#upgrade-page-details #upgrade-add-card-button,
+#billing-page-details .user-stripe-card-update .user-stripe-card-update-button {
+    margin: 0;
+    width: 150px;
+}
+
+#billing-page-details #legacy-server-push-notification-notice,
+#billing-page-details .next-payment-info {
+    width: 450px;
+    padding-top: 0;
+}
+
+#sponsorship-status-page-details .input-box.sponsorship-form-field:first-child,
+#billing-page-details .input-box.billing-page-field:first-child {
+    margin-top: 10px;
+}
+
+.sponsorship-status-page .support-link,
+#billing-page .support-link {
+    text-align: center;
+}
+
+.micromodal {
+    .modal__title {
+        font-weight: 600;
+    }
+
+    .modal__content {
+        font-weight: 400;
+    }
+}
+
+#upgrade-page-details #free-trial-top-banner {
+    margin-top: 10px;
+}
+
+#billing-page-details .billing-frequency-message.not-editable-realm-field,
+#free-trial-top-banner .not-editable-realm-field,
+#upgrade-page-details .license-management-section .not-editable-realm-field {
+    padding-top: 0;
+}
+
+#upgrade-page-details {
+    margin: 0;
+}
+
+#free-trial-alert-message,
+#free-trial-top-banner {
+    text-align: left;
+}
+
+#billing-sponsorship-pending-message-top,
+#sponsorship-status-success-message-top,
+#billing-success-message-top {
+    display: block;
+    text-align: center;
+    font-weight: 400;
+    padding: 10px 20px;
+    width: 600px;
+}
+
+.upgrade-page-success {
+    display: none;
+    padding: 8px 0;
+    width: 450px;
+    text-align: center;
+    margin: auto;
+}
+
+#upgrade-payment-info {
+    display: grid;
+    grid-template: auto auto 1fr / 1fr auto;
+    grid-template-areas:
+        "payment-info add-card"
+        "alert-message alert-message";
+    width: 450px;
+    margin: auto;
+    padding-bottom: 25px;
+}
+
+#upgrade-payment-info .alert {
+    grid-area: alert-message;
+}
+
+#upgrade-page-details #upgrade-payment-menthod-wrapper {
+    margin-left: 0;
+    grid-area: payment-info;
+    width: auto;
+}
+
+/* Used class twice to increase specificity */
+#upgrade-payment-info .upgrade-add-card-container.upgrade-add-card-container {
+    grid-area: add-card;
+    width: auto;
+    margin-right: 0;
+}
+
+#billing-page-details
+    .org-billing-frequency-wrapper.input-box
+    .billing-frequency-select {
+    width: 150px;
+}
+
+#billing-page-details .org-billing-frequency-wrapper.billing-page-field,
+#upgrade-page-details .upgrade-add-card-container {
+    text-align: left;
+}
+
+#autopay-error {
+    font-weight: 400;
+    margin-left: 0;
+}
+
+#sponsorship-status-page-details .input-box.sponsorship-form-field {
+    margin: 20px;
+}
+
+#sponsorship-form #sponsorship-button {
+    width: 100%;
+}
+
+.billing-page-discount {
+    opacity: 0.8;
+    font-weight: 400;
+}
+
+.server-login-button-loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
+}
+
+#server-login-error {
+    text-align: center;
+}
+
+#upgrade-page-details #due-today-for-future-update-wrapper {
+    display: none;
 }

@@ -142,18 +142,18 @@ export function update_toggler_for_sub(sub) {
         return;
     }
     if (sub.subscribed) {
-        stream_edit_toggler.toggler.enable_tab("personal_settings");
+        stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {
-        if (stream_edit_toggler.select_tab === "personal_settings") {
+        if (stream_edit_toggler.select_tab === "personal") {
             // Go to the general settings tab, if the user is not
             // subscribed. Also preserve the previous selected tab,
             // to render next time a stream row is selected.
-            stream_edit_toggler.toggler.goto("general_settings");
+            stream_edit_toggler.toggler.goto("general");
         } else {
             stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
         }
-        stream_edit_toggler.toggler.disable_tab("personal_settings");
+        stream_edit_toggler.toggler.disable_tab("personal");
     }
     enable_or_disable_subscribers_tab(sub);
 }
@@ -164,14 +164,14 @@ export function enable_or_disable_subscribers_tab(sub) {
     }
 
     if (!stream_data.can_view_subscribers(sub)) {
-        stream_edit_toggler.toggler.disable_tab("subscriber_settings");
-        if (stream_edit_toggler.select_tab === "subscriber_settings") {
-            stream_edit_toggler.toggler.goto("general_settings");
+        stream_edit_toggler.toggler.disable_tab("subscribers");
+        if (stream_edit_toggler.select_tab === "subscribers") {
+            stream_edit_toggler.toggler.goto("general");
         }
         return;
     }
 
-    stream_edit_toggler.toggler.enable_tab("subscriber_settings");
+    stream_edit_toggler.toggler.enable_tab("subscribers");
 }
 
 export function update_settings_button_for_sub(sub) {
@@ -212,10 +212,10 @@ export function update_regular_sub_settings(sub) {
     }
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
     if (sub.subscribed) {
-        $settings.find(".personal_settings").addClass("in");
+        $settings.find(".personal").addClass("in");
         $settings.find(".stream-email-box").show();
     } else {
-        $settings.find(".personal_settings").removeClass("in");
+        $settings.find(".personal").removeClass("in");
         $settings.find(".stream-email-box").hide();
     }
 }

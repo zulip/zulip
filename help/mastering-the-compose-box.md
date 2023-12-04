@@ -81,8 +81,9 @@ Zulip so that the <kbd>Enter</kbd> key sends your message.
 
 {!start-composing.md!}
 
-1. Click **<kbd>Ctrl</kbd> + <kbd>Enter</kbd> to send** in the bottom right
-   corner of the compose box, just below the **Send** button.
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+   in the bottom right corner of the compose box, next to the **Send**
+   (<i class="zulip-icon zulip-icon-send"></i>) button.
 
 1. Select **<kbd>Enter</kbd> to send**.
 
@@ -94,8 +95,9 @@ Zulip so that the <kbd>Enter</kbd> key sends your message.
 
 {!start-composing.md!}
 
-1. Click **<kbd>Enter</kbd> to send** in the bottom right
-   corner of the compose box, just below the **Send** button.
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+   in the bottom right corner of the compose box, next to the **Send**
+   (<i class="zulip-icon zulip-icon-send"></i>) button.
 
 1. Select **<kbd>Ctrl</kbd> + <kbd>Enter</kbd> to send**.
 

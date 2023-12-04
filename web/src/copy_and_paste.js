@@ -294,29 +294,190 @@ function get_end_tr_from_endc($endc) {
     return $endc.parents(".selectable_row").first();
 }
 
+function deduplicate_newlines(attribute) {
+    // We replace any occurrences of one or more consecutive newlines followed by
+    // zero or more whitespace characters with a single newline character.
+    return attribute ? attribute.replaceAll(/(\n+\s*)+/g, "\n") : "";
+}
+
+function image_to_zulip_markdown(_content, node) {
+    if (node.nodeName === "IMG" && node.classList.contains("emoji") && node.hasAttribute("alt")) {
+        // For Zulip's custom emoji
+        return node.getAttribute("alt");
+    }
+    const src = node.getAttribute("src") || node.getAttribute("href") || "";
+    const title = deduplicate_newlines(node.getAttribute("title")) || "";
+    // Using Zulip's link like syntax for images
+    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") || "";
+}
+
 export function paste_handler_converter(paste_html) {
-    const turndownService = new TurndownService();
-    turndownService.addRule("headings", {
-        filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
-        replacement(content) {
-            return content;
+    const copied_html_fragment = new DOMParser()
+        .parseFromString(paste_html, "text/html")
+        .querySelector("body");
+    const copied_within_single_element =
+        copied_html_fragment.childNodes.length === 1 &&
+        copied_html_fragment.firstElementChild &&
+        copied_html_fragment.firstElementChild.innerHTML;
+    const outer_elements_to_retain = ["PRE", "UL", "OL", "A"];
+    // If the entire selection copied is within a single HTML element (like an
+    // `h1`), we don't want to retain its styling, except when it is needed to
+    // identify the intended structure of the copied content.
+    if (
+        copied_within_single_element &&
+        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
+    ) {
+        paste_html = copied_html_fragment.firstChild.innerHTML;
+    }
+
+    // turning off escaping (for now) to remove extra `/`
+    TurndownService.prototype.escape = (string) => string;
+
+    const turndownService = new TurndownService({
+        emDelimiter: "*",
+        codeBlockStyle: "fenced",
+        headingStyle: "atx",
+        br: "",
+    });
+    turndownService.addRule("style", {
+        filter: "style",
+        replacement() {
+            return "";
         },
     });
-    turndownService.addRule("emphasis", {
-        filter: ["em", "i"],
+    turndownService.addRule("strikethrough", {
+        filter: ["del", "s", "strike"],
         replacement(content) {
-            return "*" + content + "*";
+            return "~~" + content + "~~";
         },
     });
-    // Checks for raw links without custom text or title.
     turndownService.addRule("links", {
-        filter(node) {
+        filter: ["a"],
+        replacement(content, node) {
+            if (node.href === content) {
+                // Checks for raw links without custom text.
+                return content;
+            }
+            if (node.childNodes.length === 1 && node.firstChild.nodeName === "IMG") {
+                // ignore link's url if it only has an image
+                return content;
+            }
+            return "[" + content + "](" + node.href + ")";
+        },
+    });
+    turndownService.addRule("listItem", {
+        // We override the original upstream implementation of this rule
+        // to have a custom indent of 2 spaces for list items, instead of
+        // the default 4 spaces. Everything else is the same as upstream.
+        filter: "li",
+        replacement(content, node) {
+            content = content
+                .replace(/^\n+/, "") // remove leading newlines
+                .replace(/\n+$/, "\n") // replace trailing newlines with just a single one
+                .replaceAll(/\n/gm, "\n  "); // custom 2 space indent
+            let prefix = "* ";
+            const parent = node.parentNode;
+            if (parent.nodeName === "OL") {
+                const start = parent.getAttribute("start");
+                const index = Array.prototype.indexOf.call(parent.children, node);
+                prefix = (start ? Number(start) + index : index + 1) + ". ";
+            }
+            return prefix + content + (node.nextSibling && !/\n$/.test(content) ? "\n" : "");
+        },
+    });
+    turndownService.addRule("zulipCodeBlock", {
+        // We create a new rule to exclusively handle code blocks in Zulip messages since
+        // the `fencedCodeBlock` rule in upstream won't work for them. The reason is that
+        // `fencedCodeBlock` only works for `pre` elements that have `code` elements as
+        // their 1st child, while Zulip code blocks have an empty span as the 1st child
+        // of the `pre` element, and then the `code` element. This new rule is a variation
+        // of upstream's `fencedCodeBlock` rule.
+
+        // We modify the filter of upstream's `fencedCodeBlock` rule to only apply to
+        // Zulip code blocks with the Zulip specific class of `zulip-code-block`.
+        filter(node, options) {
             return (
-                node.nodeName === "A" && node.href === node.innerHTML && node.href === node.title
+                options.codeBlockStyle === "fenced" &&
+                node.nodeName === "CODE" &&
+                node.parentElement?.nodeName === "PRE" &&
+                node.parentElement.parentElement?.classList.contains("zulip-code-block")
             );
         },
-        replacement(content) {
-            return content;
+
+        // We modify the replacement of upstream's `fencedCodeBlock` rule only slightly
+        // to extract and add the language of the code block (if any) to the fence.
+        replacement(content, node, options) {
+            const language = node.closest(".codehilite")?.dataset?.codeLanguage || "";
+
+            const fenceChar = options.fence.charAt(0);
+            let fenceSize = 3;
+            const fenceInCodeRegex = new RegExp("^" + fenceChar + "{3,}", "gm");
+
+            let match;
+            while ((match = fenceInCodeRegex.exec(content))) {
+                if (match[0].length >= fenceSize) {
+                    fenceSize = match[0].length + 1;
+                }
+            }
+
+            const fence = fenceChar.repeat(fenceSize);
+
+            return (
+                "\n\n" +
+                fence +
+                language +
+                "\n" +
+                content.replace(/\n$/, "") +
+                "\n" +
+                fence +
+                "\n\n"
+            );
+        },
+    });
+    turndownService.addRule("zulipImagePreview", {
+        filter(node) {
+            // select image previews in Zulip messages
+            return (
+                node.classList.contains("message_inline_image") && node.firstChild.nodeName === "A"
+            );
+        },
+
+        replacement(content, node) {
+            // We parse the copied html to then check if the generating link (which, if
+            // present, always comes before the preview in the copied html) is also there.
+
+            // If the preview has an aria-label, it means it does have a named link in the
+            // message, and if the 1st element with the same image link in the copied html
+            // does not have the `message_inline_image` class, it means it is the generating
+            // link, and not the preview, meaning the generating link is copied as well.
+            const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
+            if (
+                node.firstChild.hasAttribute("aria-label") &&
+                !copied_html
+                    .querySelector("a[href='" + node.firstChild.getAttribute("href") + "']")
+                    ?.parentNode?.classList.contains("message_inline_image")
+            ) {
+                // We skip previews which have their generating link copied too, to avoid
+                // double pasting the same link.
+                return "";
+            }
+            return image_to_zulip_markdown(content, node.firstChild);
+        },
+    });
+    turndownService.addRule("images", {
+        filter: "img",
+
+        replacement: image_to_zulip_markdown,
+    });
+    turndownService.addRule("math", {
+        // We don't have a way to get the original LaTeX code from the rendered
+        // `math` so we drop it to avoid pasting gibberish.
+        // In the future, we could have a data-original-latex feature in Zulip HTML
+        // if we wanted to paste the original LaTeX for Zulip messages.
+        filter: "math",
+
+        replacement() {
+            return "";
         },
     });
 
@@ -389,22 +550,25 @@ export function paste_handler(event) {
             return;
         }
 
-        if (paste_html && page_params.development_environment) {
-            const text = paste_handler_converter(paste_html);
-            const mdImageRegex = /^!\[.*]\(.*\)$/;
-            if (mdImageRegex.test(text)) {
-                // This block catches cases where we are pasting an
-                // image into Zulip, which is handled by upload.js.
-                return;
-            }
+        // We do not paste formatted markdoown when inside a code block.
+        // Unlike Chrome, Firefox doesn't automatically paste plainly on using Ctrl+Shift+V,
+        // hence we need to handle it ourselves, by checking if shift key is pressed, and only
+        // if not, we proceed with the default formatted paste.
+        if (
+            !compose_ui.cursor_inside_code_block($textarea) &&
+            paste_html &&
+            !compose_ui.shift_pressed &&
+            page_params.development_environment
+        ) {
             event.preventDefault();
             event.stopPropagation();
-            compose_ui.insert_syntax_and_focus(text);
+            const text = paste_handler_converter(paste_html);
+            compose_ui.insert_and_scroll_into_view(text, $textarea);
         }
     }
 }
 
 export function initialize() {
-    $("#compose-textarea").on("paste", paste_handler);
+    $("textarea#compose-textarea").on("paste", paste_handler);
     $("body").on("paste", ".message_edit_content", paste_handler);
 }

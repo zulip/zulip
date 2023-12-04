@@ -15,7 +15,11 @@
     {% endfor %}
 </ul>
 
-<p>{% trans %}If you have trouble logging in, please contact Zulip support by replying to this email.{% endtrans %}</p>
+<p>
+    {% trans help_url="https://zulip.com/help/change-your-password#if-youve-forgotten-or-never-had-a-password" %}
+    If you have trouble logging in, you can <a href="{{ help_url }}">reset your password</a>.
+    {% endtrans %}
+</p>
 
 <p>{{ _("Thanks for using Zulip!") }}</p>
 {% endblock %}

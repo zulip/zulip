@@ -39,7 +39,9 @@ from zerver.lib.exceptions import (
     JsonableError,
     MarkdownRenderingError,
     StreamDoesNotExistError,
+    StreamWildcardMentionNotAllowedError,
     StreamWithIDDoesNotExistError,
+    TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
 from zerver.lib.markdown import MessageRenderingResult
@@ -52,9 +54,10 @@ from zerver.lib.message import (
     normalize_body,
     render_markdown,
     set_visibility_policy_possible,
+    stream_wildcard_mention_allowed,
+    topic_wildcard_mention_allowed,
     truncate_topic,
     visibility_policy_for_send_message,
-    wildcard_mention_allowed,
 )
 from zerver.lib.muted_users import get_muting_users
 from zerver.lib.notification_data import (
@@ -75,6 +78,13 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
+from zerver.lib.users import (
+    check_can_access_user,
+    check_user_can_access_all_users,
+    get_accessible_user_ids,
+    get_subscribers_of_target_user_subscriptions,
+    get_users_involved_in_dms_with_target_users,
+)
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
@@ -84,6 +94,7 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
+    SystemGroups,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -570,6 +581,7 @@ def build_message_send_dict(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -697,6 +709,7 @@ def build_message_send_dict(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
+        recipients_for_user_creation_events=recipients_for_user_creation_events,
     )
 
     return message_send_dict
@@ -725,7 +738,7 @@ def create_user_messages(
 
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
-        base_flags |= UserMessage.flags.wildcard_mentioned
+        base_flags |= UserMessage.flags.stream_wildcard_mentioned
     if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
         base_flags |= UserMessage.flags.is_private
 
@@ -772,7 +785,7 @@ def create_user_messages(
             rendering_result.mentions_topic_wildcard
             and user_profile_id in topic_participant_user_ids
         ):
-            flags |= UserMessage.flags.wildcard_mentioned
+            flags |= UserMessage.flags.topic_wildcard_mentioned
 
         if (
             user_profile_id in long_term_idle_user_ids
@@ -933,7 +946,7 @@ def do_send_messages(
         if send_request.message.is_stream_message():
             if send_request.stream is None:
                 stream_id = send_request.message.recipient.type_id
-                send_request.stream = Stream.objects.select_related().get(id=stream_id)
+                send_request.stream = Stream.objects.get(id=stream_id)
             # assert needed because stubs for django are missing
             assert send_request.stream is not None
             realm_id = send_request.stream.realm_id
@@ -1009,6 +1022,13 @@ def do_send_messages(
         users: List[UserData] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
+            # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
+            # the `stream_wildcard_mentioned` and `topic_wildcard_mentioned` flags.  The
+            # `wildcard_mentioned` flag exists for backwards-compatibility with older
+            # clients.  Remove this when we no longer support legacy clients that have not
+            # been updated to access `stream_wildcard_mentioned`.
+            if "stream_wildcard_mentioned" in flags or "topic_wildcard_mentioned" in flags:
+                flags.append("wildcard_mentioned")
             user_data: UserData = dict(id=user_id, flags=flags, mentioned_user_group_id=None)
 
             if user_id in send_request.mentioned_user_groups_map:
@@ -1048,6 +1068,15 @@ def do_send_messages(
             sender_id=sender.id,
             user_notifications_data_list=user_notifications_data_list,
         )
+
+        if send_request.recipients_for_user_creation_events is not None:
+            from zerver.actions.create_user import notify_created_user
+
+            for (
+                new_accessible_user,
+                notify_user_ids,
+            ) in send_request.recipients_for_user_creation_events.items():
+                notify_created_user(new_accessible_user, list(notify_user_ids))
 
         event = dict(
             type="message",
@@ -1453,6 +1482,74 @@ def check_private_message_policy(
         raise JsonableError(_("Direct messages are disabled in this organization."))
 
 
+def check_sender_can_access_recipients(
+    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> None:
+    if check_user_can_access_all_users(sender):
+        return
+
+    users_accessible_to_sender = set(get_accessible_user_ids(realm, sender))
+    # Guest users can access all the bots (including cross-realm bots).
+    non_bot_recipient_user_ids = {user.id for user in user_profiles if not user.is_bot}
+
+    inaccessible_recipients = non_bot_recipient_user_ids - users_accessible_to_sender
+    if inaccessible_recipients:
+        raise JsonableError(_("You do not have permission to access some of the recipients."))
+
+
+def get_recipients_for_user_creation_events(
+    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> Dict[UserProfile, Set[int]]:
+    """
+    This function returns a dictionary with data about which users would
+    receive stream creation events due to gaining access to a user.
+    The key of the dictionary is a user object and the value is a set of
+    user_ids that would gain access to that user.
+    """
+    recipients_for_user_creation_events: Dict[UserProfile, Set[int]] = defaultdict(set)
+
+    # If none of the users in the direct message conversation are
+    # guests, then there is no possible can_access_all_users_group
+    # policy that would mean sending this message changes any user's
+    # user access to other users.
+    guest_recipients = [user for user in user_profiles if user.is_guest]
+    if len(guest_recipients) == 0:
+        return recipients_for_user_creation_events
+
+    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+        return recipients_for_user_creation_events
+
+    if len(user_profiles) == 1:
+        if not check_can_access_user(sender, user_profiles[0]):
+            recipients_for_user_creation_events[sender].add(user_profiles[0].id)
+        return recipients_for_user_creation_events
+
+    users_involved_in_dms = get_users_involved_in_dms_with_target_users(guest_recipients, realm)
+    subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
+        guest_recipients
+    )
+
+    for recipient_user in guest_recipients:
+        for user in user_profiles:
+            if user.id == recipient_user.id or user.is_bot:
+                continue
+
+            if (
+                user.id not in users_involved_in_dms[recipient_user.id]
+                and user.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
+            ):
+                recipients_for_user_creation_events[user].add(recipient_user.id)
+
+        if (
+            not sender.is_bot
+            and sender.id not in users_involved_in_dms[recipient_user.id]
+            and sender.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
+        ):
+            recipients_for_user_creation_events[sender].add(recipient_user.id)
+
+    return recipients_for_user_creation_events
+
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(
@@ -1485,6 +1582,7 @@ def check_message(
     if realm is None:
         realm = sender.realm
 
+    recipients_for_user_creation_events = None
     if addressee.is_stream():
         topic_name = addressee.topic()
         topic_name = truncate_topic(topic_name)
@@ -1538,7 +1636,13 @@ def check_message(
             "JabberMirror",
         ]
 
+        check_sender_can_access_recipients(realm, sender, user_profiles)
+
         check_private_message_policy(realm, sender, user_profiles)
+
+        recipients_for_user_creation_events = get_recipients_for_user_creation_events(
+            realm, sender, user_profiles
+        )
 
         # API super-users who set the `forged` flag are allowed to
         # forge messages sent by any user, so we disable the
@@ -1604,16 +1708,23 @@ def check_message(
         mention_backend=mention_backend,
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
+        recipients_for_user_creation_events=recipients_for_user_creation_events,
     )
 
     if (
         stream is not None
-        and message_send_dict.rendering_result.has_wildcard_mention()
-        and not wildcard_mention_allowed(sender, stream, realm)
+        and message_send_dict.rendering_result.mentions_stream_wildcard
+        and not stream_wildcard_mention_allowed(sender, stream, realm)
     ):
-        raise JsonableError(
-            _("You do not have permission to use wildcard mentions in this stream.")
-        )
+        raise StreamWildcardMentionNotAllowedError
+
+    topic_participant_count = len(message_send_dict.topic_participant_user_ids)
+    if (
+        stream is not None
+        and message_send_dict.rendering_result.mentions_topic_wildcard
+        and not topic_wildcard_mention_allowed(sender, topic_participant_count, realm)
+    ):
+        raise TopicWildcardMentionNotAllowedError
 
     if message_send_dict.rendering_result.mentions_user_group_ids:
         mentioned_group_ids = list(message_send_dict.rendering_result.mentions_user_group_ids)

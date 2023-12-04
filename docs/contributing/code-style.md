@@ -61,7 +61,7 @@ lint checks in parallel, including:
 - JavaScript ([ESLint](https://eslint.org/),
   [Prettier](https://prettier.io/))
 - Python ([mypy](http://mypy-lang.org/),
-  [ruff](https://github.com/charliermarsh/ruff),
+  [ruff](https://github.com/astral-sh/ruff),
   [Black](https://github.com/psf/black),
   [isort](https://pycqa.github.io/isort/))
 - templates

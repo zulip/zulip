@@ -28,48 +28,14 @@ kbd {
     user-select: none;
 }
 
-@media (width < $mc_min) {
-    .hide-mc {
-        display: none !important;
-    }
-
-    .show-mc {
-        display: block !important;
-    }
-}
-
-@media (width < $md_min) {
-    .hide-md {
-        display: none !important;
-    }
-
-    .show-md {
-        display: flex !important;
-    }
-}
-
 @media (width < $sm_min) {
     .hide-sm {
         display: none !important;
     }
 
-    .show-sm {
-        display: block !important;
-    }
-
     #settings_page .save-button-controls {
         display: block;
         margin: 10px 0 0;
-    }
-}
-
-@media (width < $lg_min) {
-    .hide-lg {
-        display: none !important;
-    }
-
-    .show-lg {
-        display: block !important;
     }
 }
 
@@ -647,7 +613,7 @@ div.overlay {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: hsl(0deg 0% 80%);
+    background-color: var(--color-masked-unread-marker);
     display: none;
 }
 
@@ -869,7 +835,8 @@ div.overlay {
 }
 
 #stream_settings .save-button-controls,
-#settings_page .save-button-controls {
+#settings_page .save-button-controls,
+#user_group_settings .save-button-controls {
     display: inline;
     margin-left: 15px;
 
@@ -1155,8 +1122,14 @@ div.overlay {
         position: relative;
         top: -1px;
     }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
 }
 
+.dropdown-current-value-not-in-options,
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);
 

@@ -348,7 +348,7 @@ export function narrowed_to_topic() {
 }
 
 export function narrowed_to_search() {
-    return current_filter !== undefined && current_filter.is_search();
+    return current_filter !== undefined && current_filter.is_keyword_search();
 }
 
 export function narrowed_to_starred() {

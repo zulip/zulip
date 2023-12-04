@@ -4,7 +4,9 @@ CircleCI with GitHub, BitBucket and GitLab.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
 
 1. Go to your project on CircleCI and click on **Project
    Settings**. Select **Webhooks** from the list on the left.

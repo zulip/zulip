@@ -2,7 +2,9 @@ Get Zulip notifications for your Librato/AppOptics alerts!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-integration-url.md!}
    By default, the integration will use the name of the alert.
 
 1. Go to your AppOptics/Librato homepage, and click on **Settings**

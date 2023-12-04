@@ -2657,8 +2657,7 @@ button {
         grid-column-gap: 5%;
         grid-template-columns: 43% auto;
         max-width: 1300px;
-        align-items: center;
-        justify-items: center;
+        place-items: center;
         margin: auto;
 
         .alternate-grid& {

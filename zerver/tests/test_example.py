@@ -2,6 +2,7 @@ import datetime
 from unittest import mock
 
 import orjson
+import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.users import do_change_can_create_users, do_change_user_role
@@ -402,7 +403,7 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
             )
             # logger.output is a list of all the log messages captured. Verify it is as expected.
-            self.assertEqual(logger.output, [output_log] * 17)
+            self.assertEqual(logger.output, [output_log] * 18)
 
             # Now, lets actually go the URL the above call redirects to, i.e., /emails/
             result = self.client_get(result["Location"])
@@ -491,10 +492,7 @@ class TestMocking(ZulipTestCase):
             seconds=MESSAGE_CONTENT_EDIT_LIMIT + 100
         )  # There's a buffer time applied to the limit, hence the extra 100s.
 
-        with mock.patch(
-            "zerver.actions.message_edit.timezone_now",
-            return_value=time_beyond_edit_limit,
-        ):
+        with time_machine.travel(time_beyond_edit_limit, tick=False):
             result = self.client_patch(
                 f"/json/messages/{sent_message_id}", {"content": "I actually want pizza."}
             )

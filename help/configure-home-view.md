@@ -46,6 +46,12 @@ organization settings:
    shortcut twice to exit the settings and navigate to your home view
    (<kbd>Ctrl</kbd> + <kbd>[</kbd> or <kbd>Esc</kbd> if enabled).
 
+!!! tip ""
+
+    You can also hover over your desired home view in the left sidebar, and
+    choose the option to **make it your home view** in the **ellipsis**
+    (<i class="zulip-icon zulip-icon-more-vertical"></i>) menu.
+
 {end_tabs}
 
 ## Configure whether <kbd>Esc</kbd> navigates to the home view
