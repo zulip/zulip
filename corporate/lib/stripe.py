@@ -2656,8 +2656,25 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def get_type_of_plan_tier_change(
         self, current_plan_tier: int, new_plan_tier: int
     ) -> PlanTierChangeType:
-        # TBD
-        return PlanTierChangeType.INVALID
+        valid_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            CustomerPlan.TIER_SELF_HOSTED_PLUS,
+        ]
+        if (
+            current_plan_tier not in valid_plan_tiers
+            or new_plan_tier not in valid_plan_tiers
+            or current_plan_tier == new_plan_tier
+        ):
+            return PlanTierChangeType.INVALID
+        if (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+        ):
+            return PlanTierChangeType.UPGRADE
+        else:
+            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            return PlanTierChangeType.DOWNGRADE
 
     @override
     def has_billing_access(self) -> bool:
@@ -2918,8 +2935,37 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     def get_type_of_plan_tier_change(
         self, current_plan_tier: int, new_plan_tier: int
     ) -> PlanTierChangeType:
-        # TBD
-        return PlanTierChangeType.INVALID
+        valid_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            CustomerPlan.TIER_SELF_HOSTED_PLUS,
+        ]
+        if (
+            current_plan_tier not in valid_plan_tiers
+            or new_plan_tier not in valid_plan_tiers
+            or current_plan_tier == new_plan_tier
+        ):
+            return PlanTierChangeType.INVALID
+
+        if current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY and new_plan_tier in (
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            CustomerPlan.TIER_SELF_HOSTED_PLUS,
+        ):
+            return PlanTierChangeType.UPGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+        ):
+            return PlanTierChangeType.UPGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ):
+            return PlanTierChangeType.DOWNGRADE
+        else:
+            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            return PlanTierChangeType.DOWNGRADE
 
     @override
     def has_billing_access(self) -> bool:
