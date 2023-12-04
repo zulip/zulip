@@ -41,7 +41,10 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             group by server_id
         ),
         remote_push_devices as (
-            select server_id, count(distinct(user_id)) as push_user_count from zilencer_remotepushdevicetoken
+            select
+                server_id,
+                count(distinct(user_id, user_uuid)) as push_user_count
+            from zilencer_remotepushdevicetoken
             group by server_id
         )
         select
