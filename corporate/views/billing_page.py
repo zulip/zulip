@@ -218,8 +218,8 @@ def update_plan(
     return json_success(request)
 
 
-@authenticated_remote_realm_management_endpoint
 @has_request_variables
+@authenticated_remote_realm_management_endpoint
 def update_plan_for_remote_realm(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
@@ -244,8 +244,8 @@ def update_plan_for_remote_realm(
     return json_success(request)
 
 
-@authenticated_remote_server_management_endpoint
 @has_request_variables
+@authenticated_remote_server_management_endpoint
 def update_plan_for_remote_server(
     request: HttpRequest,
     billing_session: RemoteServerBillingSession,
