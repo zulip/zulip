@@ -608,6 +608,7 @@ class UpgradePageContext(TypedDict):
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
+    remote_server_legacy_plan_end_date: Optional[str]
     salt: str
     seat_count: int
     signed_seat_count: str
@@ -766,6 +767,31 @@ class BillingSession(ABC):
         if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
             return True
         return False
+
+    def get_remote_server_legacy_plan(
+        self, customer: Optional[Customer], status: int = CustomerPlan.ACTIVE
+    ) -> Optional[CustomerPlan]:
+        # status = CustomerPlan.ACTIVE means that the legacy plan is not scheduled for an upgrade.
+        # status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END means that the legacy plan is scheduled for an upgrade.
+        if customer is None:
+            return None
+
+        return CustomerPlan.objects.filter(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            status=status,
+            next_invoice_date=None,
+        ).first()
+
+    def get_formatted_remote_server_legacy_plan_end_date(
+        self, customer: Optional[Customer], status: int = CustomerPlan.ACTIVE
+    ) -> Optional[str]:  # nocoverage
+        plan = self.get_remote_server_legacy_plan(customer, status)
+        if plan is None:
+            return None
+
+        assert plan.end_date is not None
+        return plan.end_date.strftime("%B %d, %Y")
 
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
@@ -1514,9 +1540,14 @@ class BillingSession(ABC):
         if self.is_sponsored_or_pending(customer):
             return f"{self.billing_session_url}/sponsorship", None
 
-        billing_page_url = reverse("billing_page")
-        if customer is not None and (get_current_plan_by_customer(customer) is not None):
-            return billing_page_url, None
+        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+            customer
+        )
+        # Show upgrade page for remote servers on legacy plan.
+        if customer is not None and remote_server_legacy_plan_end_date is None:
+            customer_plan = get_current_plan_by_customer(customer)
+            if customer_plan is not None:
+                return f"{self.billing_session_url}/billing", None
 
         percent_off = Decimal(0)
         if customer is not None and customer.default_discount is not None:
@@ -1540,13 +1571,18 @@ class BillingSession(ABC):
         signed_seat_count, salt = sign_string(str(seat_count))
         tier = initial_upgrade_request.tier
 
-        free_trial_days = settings.FREE_TRIAL_DAYS
+        free_trial_days = None
         free_trial_end_date = None
-        if free_trial_days is not None:
-            _, _, free_trial_end, _ = compute_plan_parameters(
-                tier, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, None, True
-            )
-            free_trial_end_date = f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
+        # Don't show free trial for remote servers on legacy plan.
+        if remote_server_legacy_plan_end_date is None:
+            free_trial_days = settings.FREE_TRIAL_DAYS
+            if free_trial_days is not None:
+                _, _, free_trial_end, _ = compute_plan_parameters(
+                    tier, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, None, True
+                )
+                free_trial_end_date = (
+                    f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
+                )
 
         context: UpgradePageContext = {
             "customer_name": customer_specific_context["customer_name"],
@@ -1557,6 +1593,7 @@ class BillingSession(ABC):
             "free_trial_days": free_trial_days,
             "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
+            "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "page_params": {
