@@ -1932,7 +1932,7 @@ class BillingSession(ABC):
         # TODO: Implement downgrade that is a change from and to a paid plan
         # tier. This should keep the same billing cycle schedule and change
         # the plan when it's next invoiced vs immediately. Note this will need
-        # new CustomerPlan.status value, e.g. SWITCH_PLAN_TIER_AT_END_OF_CYCLE.
+        # new CustomerPlan.status value, e.g. SWITCH_PLAN_TIER_AT_PLAN_END.
         assert type_of_tier_change == PlanTierChangeType.DOWNGRADE  # nocoverage
         return ""  # nocoverage
 
@@ -2938,6 +2938,57 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             self.remote_server.org_type = org_type
             self.remote_server.save(update_fields=["org_type"])
 
+    def add_server_to_legacy_plan(
+        self,
+        renewal_date: datetime,
+        end_date: datetime,
+    ) -> None:
+        # Set stripe_customer_id to None to avoid customer being charged without a payment method.
+        customer = Customer.objects.create(
+            remote_server=self.remote_server, stripe_customer_id=None
+        )
+
+        # Servers on legacy plan which are scheduled to be upgraded have 2 plans.
+        # This plan will be used to track the current status of SWITCH_PLAN_TIER_AT_PLAN_END
+        # and will not charge the customer. The other plan will be used to track the new plan
+        # customer will move to the end of this plan.
+        legacy_plan_anchor = renewal_date
+        legacy_plan_params = {
+            "billing_cycle_anchor": legacy_plan_anchor,
+            "status": CustomerPlan.ACTIVE,
+            "tier": CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            # End when the new plan starts.
+            "end_date": end_date,
+            # The primary mechanism for preventing charges under this
+            # plan is setting a null `next_invoice_date`, but setting
+            # a 0 price is useful defense in depth here.
+            "next_invoice_date": None,
+            "price_per_license": 0,
+            "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            "automanage_licenses": True,
+        }
+        legacy_plan = CustomerPlan.objects.create(
+            customer=customer,
+            **legacy_plan_params,
+        )
+
+        # Create a ledger entry for the legacy plan for tracking purposes.
+        billed_licenses = self.current_count_for_billed_licenses()
+        ledger_entry = LicenseLedger.objects.create(
+            plan=legacy_plan,
+            is_renewal=True,
+            event_time=legacy_plan_anchor,
+            licenses=billed_licenses,
+            licenses_at_next_renewal=billed_licenses,
+        )
+        legacy_plan.invoiced_through = ledger_entry
+        legacy_plan.save(update_fields=["invoiced_through"])
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+            event_time=legacy_plan_anchor,
+            extra_data=legacy_plan_params,
+        )
+
 
 def stripe_customer_has_credit_card_as_default_payment_method(
     stripe_customer: stripe.Customer,
@@ -3138,6 +3189,7 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         if plan.customer.realm is not None:
             RealmBillingSession(realm=plan.customer.realm).invoice_plan(plan, event_time)
+        # TODO: Assert that we never invoice legacy plans.
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:
