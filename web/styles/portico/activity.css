@@ -96,6 +96,7 @@ tr.admin td:first-child {
     padding-top: 14px;
     border-radius: 7px;
     box-shadow: 0 10px 7px -6px hsl(0deg 2% 45%);
+    margin-bottom: 10px;
 
     & select {
         height: 30px;
