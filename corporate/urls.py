@@ -184,12 +184,12 @@ urlpatterns = list(i18n_urlpatterns)
 
 urlpatterns += [
     path(
-        "remote-billing-login/<signed_billing_access_token>", remote_server_billing_finalize_login
+        "remote-billing-login/<signed_billing_access_token>/", remote_server_billing_finalize_login
     ),
     # Remote server billing endpoints.
-    path("realm/<realm_uuid>/plans", remote_realm_plans_page, name="remote_realm_plans_page"),
+    path("realm/<realm_uuid>/plans/", remote_realm_plans_page, name="remote_realm_plans_page"),
     path(
-        "server/<server_uuid>/plans",
+        "server/<server_uuid>/plans/",
         remote_server_plans_page,
         name="remote_server_plans_page",
     ),
@@ -201,19 +201,21 @@ urlpatterns += [
         remote_server_billing_page,
         name="remote_server_billing_page",
     ),
-    path("realm/<realm_uuid>/upgrade", remote_realm_upgrade_page, name="remote_realm_upgrade_page"),
     path(
-        "server/<server_uuid>/upgrade",
+        "realm/<realm_uuid>/upgrade/", remote_realm_upgrade_page, name="remote_realm_upgrade_page"
+    ),
+    path(
+        "server/<server_uuid>/upgrade/",
         remote_server_upgrade_page,
         name="remote_server_upgrade_page",
     ),
     path(
-        "realm/<realm_uuid>/sponsorship",
+        "realm/<realm_uuid>/sponsorship/",
         remote_realm_sponsorship_page,
         name="remote_realm_sponsorship_page",
     ),
     path(
-        "server/<server_uuid>/sponsorship",
+        "server/<server_uuid>/sponsorship/",
         remote_server_sponsorship_page,
         name="remote_server_sponsorship_page",
     ),
@@ -223,12 +225,12 @@ urlpatterns += [
         name="remote_billing_legacy_server_login",
     ),
     path(
-        "realm/<realm_uuid>/billing/event_status",
+        "realm/<realm_uuid>/billing/event_status/",
         remote_realm_event_status_page,
         name="remote_realm_event_status_page",
     ),
     path(
-        "server/<server_uuid>/billing/event_status",
+        "server/<server_uuid>/billing/event_status/",
         remote_server_event_status_page,
         name="remote_server_event_status_page",
     ),
