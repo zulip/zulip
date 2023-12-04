@@ -3145,10 +3145,6 @@ def is_realm_on_free_trial(realm: Realm) -> bool:
     return plan is not None and plan.is_free_trial()
 
 
-def is_sponsored_realm(realm: Realm) -> bool:
-    return realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE
-
-
 def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
     plan.status = status
     plan.save(update_fields=["status"])

@@ -67,7 +67,6 @@ from corporate.lib.stripe import (
     invoice_plans_as_needed,
     is_free_trial_offer_enabled,
     is_realm_on_free_trial,
-    is_sponsored_realm,
     next_month,
     sign_string,
     stripe_customer_has_credit_card_as_default_payment_method,
@@ -4557,14 +4556,6 @@ class BillingHelpersTest(ZulipTestCase):
         plan.status = CustomerPlan.FREE_TRIAL
         plan.save(update_fields=["status"])
         self.assertTrue(is_realm_on_free_trial(realm))
-
-    def test_is_sponsored_realm(self) -> None:
-        realm = get_realm("zulip")
-        self.assertFalse(is_sponsored_realm(realm))
-
-        realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
-        realm.save()
-        self.assertTrue(is_sponsored_realm(realm))
 
     def test_change_remote_server_plan_type(self) -> None:
         server_uuid = str(uuid.uuid4())
