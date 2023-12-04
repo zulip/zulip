@@ -47,7 +47,7 @@ export function fetch_and_render_message_history(message) {
                     continue;
                 }
 
-                const person = people.get_by_user_id(msg.user_id);
+                const person = people.get_user_by_id_assert_valid(msg.user_id);
                 const full_name = person.full_name;
 
                 if (index === 0) {
