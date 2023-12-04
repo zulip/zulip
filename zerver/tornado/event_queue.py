@@ -655,7 +655,8 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
     pc.start()
 
-    send_restart_events(immediate=settings.DEVELOPMENT)
+    if settings.DEVELOPMENT:
+        send_restart_events(immediate=settings.DEVELOPMENT)
 
 
 def fetch_events(
