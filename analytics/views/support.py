@@ -392,6 +392,9 @@ def remote_servers_support(
     billing_modality: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)
     ),
+    modify_plan: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
+    ),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -431,6 +434,11 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.update_billing_modality,
                 billing_modality=billing_modality,
+            )
+        elif modify_plan is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.modify_plan,
+                plan_modification=modify_plan,
             )
         if support_view_request is not None:
             billing_session = RemoteServerBillingSession(

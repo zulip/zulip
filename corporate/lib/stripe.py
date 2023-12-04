@@ -551,6 +551,7 @@ class AuditLogEventType(Enum):
     BILLING_MODALITY_CHANGED = 7
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 8
     CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 9
+    BILLING_ENTITY_PLAN_TYPE_CHANGED = 10
 
 
 class PlanTierChangeType(Enum):
@@ -2657,6 +2658,8 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
+        elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
+            return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -2789,10 +2792,17 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def process_downgrade(self, plan: CustomerPlan) -> None:
-        self.remote_realm.plan_type = RemoteRealm.PLAN_TYPE_SELF_HOSTED
-        self.remote_realm.save(update_fields=["plan_type"])
+        with transaction.atomic():
+            old_plan_type = self.remote_realm.plan_type
+            new_plan_type = RemoteRealm.PLAN_TYPE_SELF_HOSTED
+            self.remote_realm.plan_type = new_plan_type
+            self.remote_realm.save(update_fields=["plan_type"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
+                event_time=timezone_now(),
+                extra_data={"old_value": old_plan_type, "new_value": new_plan_type},
+            )
 
-        # TODO: Write audit log entry
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
 
@@ -2937,6 +2947,8 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
+        elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
+            return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -3044,10 +3056,17 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def process_downgrade(self, plan: CustomerPlan) -> None:
-        self.remote_server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
-        self.remote_server.save(update_fields=["plan_type"])
+        with transaction.atomic():
+            old_plan_type = self.remote_server.plan_type
+            new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+            self.remote_server.plan_type = new_plan_type
+            self.remote_server.save(update_fields=["plan_type"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
+                event_time=timezone_now(),
+                extra_data={"old_value": old_plan_type, "new_value": new_plan_type},
+            )
 
-        # TODO: Write audit log entry
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
 
