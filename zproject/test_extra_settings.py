@@ -82,7 +82,6 @@ AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch(
     "ou=users,dc=zulip,dc=com", ldap.SCOPE_ONELEVEL, "(mail=%(email)s)"
 )
 
-TEST_SUITE = True
 RATE_LIMITING = False
 RATE_LIMITING_AUTHENTICATE = False
 # Don't use RabbitMQ from the test suite -- the user_profile_ids for
