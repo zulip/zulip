@@ -117,14 +117,19 @@ export function register_click_handlers() {
 }
 
 function fetch_group_members(member_ids) {
-    return member_ids
-        .map((m) => people.maybe_get_user_by_id(m))
-        .filter((m) => m !== undefined && people.is_active_user_for_popover(m.user_id))
-        .map((p) => ({
-            ...p,
-            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-        }));
+    return (
+        member_ids
+            .map((m) => people.get_user_by_id_assert_valid(m))
+            // We need to include inaccessible users here separately, since
+            // we do not include them in active_user_dict, but we want to
+            // show them in the popover as "Unknown user".
+            .filter((m) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user)
+            .map((p) => ({
+                ...p,
+                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+            }))
+    );
 }
 
 function sort_group_members(members) {
