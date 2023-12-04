@@ -23,5 +23,21 @@ else:
     from .prod_settings_template import *  # noqa: F403 isort: skip
     from .dev_settings import *  # noqa: F403 isort: skip
 
+    # Support for local overrides to dev_settings.py is implemented here.
+    #
+    # We're careful to avoid those overrides applying to automated tests.
+    if not TEST_SUITE:  # nocoverage
+        import contextlib
+
+        with contextlib.suppress(ImportError):
+            from zproject.custom_dev_settings import *  # type: ignore[import, unused-ignore] # noqa: F403
+
+            # Print that we've got settings changes, so you know if you're testing non-base code.
+            #
+            # TODO: Figure out how to make this not be printed several
+            # times, and maybe print the actual keys that are
+            # overridden.
+            print("Using custom settings from zproject/custom_dev_settings.py.")
+
 # Do not add any code after these wildcard imports!  Add it to
 # computed_settings instead.
