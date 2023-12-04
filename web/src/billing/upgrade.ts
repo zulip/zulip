@@ -14,6 +14,13 @@ const prices: Prices = {
 
 const ls = localstorage();
 const ls_selected_schedule = ls.get("selected_schedule");
+const ls_remote_server_plan_start_date = ls.get("remote_server_plan_start_date");
+// The special value "billing_cycle_end_date" is used internally; it
+// should not appear in the UI.
+let remote_server_plan_start_date: string =
+    typeof ls_remote_server_plan_start_date === "string"
+        ? ls_remote_server_plan_start_date
+        : "billing_cycle_end_date";
 let selected_schedule: string =
     typeof ls_selected_schedule === "string" ? ls_selected_schedule : "monthly";
 let current_license_count = page_params.seat_count;
@@ -37,6 +44,27 @@ function update_due_today(schedule: string): void {
     );
     const unit_price = prices[schedule_typed] / num_months;
     $("#due-today .due-today-unit-price").text(helpers.format_money(unit_price));
+}
+
+function update_due_today_for_remote_server(start_date: string): void {
+    const $due_today_for_future_update_wrapper = $("#due-today-for-future-update-wrapper");
+    if ($due_today_for_future_update_wrapper.length === 0) {
+        // Only present legacy remote server page.
+        return;
+    }
+    if (start_date === "billing_cycle_end_date") {
+        $due_today_for_future_update_wrapper.show();
+        $("#due-today-title").hide();
+        $("#due-today-remote-server-title").show();
+        $("#org-future-upgrade-button-text-remote-server").show();
+        $("#org-today-upgrade-button-text").hide();
+    } else {
+        $due_today_for_future_update_wrapper.hide();
+        $("#due-today-title").show();
+        $("#due-today-remote-server-title").hide();
+        $("#org-future-upgrade-button-text-remote-server").hide();
+        $("#org-today-upgrade-button-text").show();
+    }
 }
 
 function update_license_count(license_count: number): void {
@@ -120,6 +148,14 @@ export const initialize = (): void => {
         selected_schedule = this.value;
         ls.set("selected_schedule", selected_schedule);
         update_due_today(selected_schedule);
+    });
+
+    update_due_today_for_remote_server(remote_server_plan_start_date);
+    $("#remote-server-plan-start-date-select").val(remote_server_plan_start_date);
+    $<HTMLInputElement>("#remote-server-plan-start-date-select").on("change", function () {
+        remote_server_plan_start_date = this.value;
+        ls.set("remote_server_plan_start_date", remote_server_plan_start_date);
+        update_due_today_for_remote_server(remote_server_plan_start_date);
     });
 
     $("#autopay_annual_price_per_month").text(

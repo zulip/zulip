@@ -859,7 +859,7 @@ class StripeTest(StripeTestCase):
         # Check that we can no longer access /upgrade
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual("/billing/", response["Location"])
+        self.assertEqual("http://zulip.testserver/billing", response["Location"])
 
         # Check /billing/ has the correct information
         with time_machine.travel(self.now, tick=False):
@@ -1007,7 +1007,7 @@ class StripeTest(StripeTestCase):
         # Check that we can no longer access /upgrade
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual("/billing/", response["Location"])
+        self.assertEqual("http://zulip.testserver/billing", response["Location"])
 
         # Check /billing/ has the correct information
         with time_machine.travel(self.now, tick=False):
@@ -1983,12 +1983,12 @@ class StripeTest(StripeTestCase):
             )
             response = self.client_get("/upgrade/")
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response["Location"], "/billing/")
+            self.assertEqual(response["Location"], "http://zulip.testserver/billing")
 
             with self.settings(FREE_TRIAL_DAYS=30):
                 response = self.client_get("/upgrade/")
                 self.assertEqual(response.status_code, 302)
-                self.assertEqual(response["Location"], "/billing/")
+                self.assertEqual(response["Location"], "http://zulip.testserver/billing")
 
     def test_get_latest_seat_count(self) -> None:
         realm = get_realm("zulip")

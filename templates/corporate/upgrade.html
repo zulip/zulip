@@ -58,6 +58,16 @@
                     </div>
                     {% endif %}
 
+                    {% if remote_server_legacy_plan_end_date %}
+                    <div class="input-box upgrade-page-field no-validation">
+                        <select name="remote_server_plan_start_date" id="remote-server-plan-start-date-select">
+                            <option value="billing_cycle_end_date">{{ remote_server_legacy_plan_end_date }}</option>
+                            <option value="today">Today</option>
+                        </select>
+                        <label for="remote-server-plan-start-date-select">Plan start date</label>
+                    </div>
+                    {% endif %}
+
                     {% if manual_license_management %}
                     <div class="input-box upgrade-page-field" id="upgrade-manual-license-count-wrapper">
                         <label for="licenses" class="inline-block label-title">Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</label>
@@ -69,13 +79,32 @@
                     <input type="hidden" name="license_management" value="automatic" />
                     {% endif %}
 
+                    {% if remote_server_legacy_plan_end_date %}
+                        <div class="input-box upgrade-page-field no-validation" id="due-today-for-future-update-wrapper">
+                            <label for="due-today-for-future-update" class="inline-block label-title">
+                                Due today
+                            </label>
+                            <div id="due-today-for-future-update" class="not-editable-realm-field">
+                                <h1>$0</h1>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <div class="input-box upgrade-page-field no-validation">
-                        <label for="due-today" class="inline-block label-title">Due
-                            {% if free_trial_days %}
-                            on {{ free_trial_end_date }}
-                            {% else %}
-                            today
+                        <label for="due-today" class="inline-block label-title">
+                            {% if remote_server_legacy_plan_end_date %}
+                            <span id="due-today-remote-server-title">
+                                Due {{ remote_server_legacy_plan_end_date }}
+                            </span>
                             {% endif %}
+                            <span id="due-today-title">
+                                Due
+                                {% if free_trial_days %}
+                                on {{ free_trial_end_date }}
+                                {% else %}
+                                today
+                                {% endif %}
+                            </span>
                         </label>
                         <div id="due-today" class="not-editable-realm-field">
                             $<span class="due-today-unit-price"></span> x
@@ -149,11 +178,18 @@
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                         <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not payment_method %}disabled{% endif %}>
                             <span id="org-upgrade-button-text">
-                                {% if free_trial_days %}
-                                    Start {{ free_trial_days }}-day free trial
-                                {% else %}
-                                    Purchase {{ plan }}
+                                {% if remote_server_legacy_plan_end_date %}
+                                    <span id="org-future-upgrade-button-text-remote-server">
+                                        Schedule upgrade to {{ plan }}
+                                    </span>
                                 {% endif %}
+                                <span id="org-today-upgrade-button-text">
+                                    {% if free_trial_days %}
+                                        Start {{ free_trial_days }}-day free trial
+                                    {% else %}
+                                        Purchase {{ plan }}
+                                    {% endif %}
+                                </span>
                             </span>
                             <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>
