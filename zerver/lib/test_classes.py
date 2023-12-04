@@ -2385,11 +2385,12 @@ def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: st
 class BouncerTestCase(ZulipTestCase):
     @override
     def setUp(self) -> None:
-        # Set a deterministic uuid for convenience.
+        # Set a deterministic uuid and a nice hostname for convenience.
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
         self.server = RemoteZulipServer.objects.all().latest("id")
 
         self.server.uuid = self.server_uuid
+        self.server.hostname = "demo.example.com"
         self.server.save()
 
         super().setUp()
