@@ -1,21 +1,27 @@
 import contextlib
+import datetime
+import uuid
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import stripe
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import RealmBillingSession, add_months
+from corporate.lib.stripe import RealmBillingSession, RemoteServerBillingSession, add_months
 from corporate.models import Customer, CustomerPlan, LicenseLedger
+from scripts.lib.zulip_tools import TIMESTAMP_FORMAT
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.apps import flush_cache
 from zerver.lib.streams import create_stream_if_needed
 from zerver.models import Realm, UserProfile, get_realm
+from zilencer.models import RemoteZulipServer
 from zproject.config import get_secret
+
+current_time = timezone_now().strftime(TIMESTAMP_FORMAT)
 
 
 @dataclass
@@ -23,16 +29,27 @@ class CustomerProfile:
     unique_id: str
     billing_schedule: int = CustomerPlan.BILLING_SCHEDULE_ANNUAL
     tier: Optional[int] = None
+    new_plan_tier: Optional[int] = None
     automanage_licenses: bool = False
     status: int = CustomerPlan.ACTIVE
     sponsorship_pending: bool = False
     is_sponsored: bool = False
     card: str = ""
     charge_automatically: bool = True
+    renewal_date: str = current_time
+    end_date: str = "2030-10-10-01-10-10"
 
 
 class Command(BaseCommand):
     help = "Populate database with different types of realms that can exist."
+
+    @override
+    def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument(
+            "--only-remote-server",
+            action="store_true",
+            help="Whether to only run for remote servers",
+        )
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
@@ -110,11 +127,44 @@ class Command(BaseCommand):
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 status=CustomerPlan.FREE_TRIAL,
             ),
+            # Use `server` keyword in the unique_id to indicate that this is a profile for remote server.
+            CustomerProfile(
+                unique_id="legacy-server",
+                tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            ),
+            CustomerProfile(
+                unique_id="legacy-server-upgrade-scheduled",
+                tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END,
+                new_plan_tier=CustomerPlan.TIER_SELF_HOSTED_PLUS,
+            ),
+            CustomerProfile(
+                unique_id="business-server",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            ),
+            CustomerProfile(
+                unique_id="business-server-payment-starts-in-future",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            ),
         ]
 
-        # Create a realm for each customer profile
+        # Delete all existing remote servers
+        RemoteZulipServer.objects.all().delete()
+        flush_cache(None)
+
+        servers = []
         for customer_profile in customer_profiles:
-            populate_realm(customer_profile)
+            if "server" in customer_profile.unique_id:
+                server_conf = populate_remote_server(customer_profile)
+                servers.append(server_conf)
+            elif not options.get("only_remote_server"):
+                populate_realm(customer_profile)
+
+        print("-" * 40)
+        for server in servers:
+            for key, value in server.items():
+                print(f"{key}: {value}")
+            print("-" * 40)
 
 
 def populate_realm(customer_profile: CustomerProfile) -> None:
@@ -228,3 +278,49 @@ def populate_realm(customer_profile: CustomerProfile) -> None:
         is_renewal=True,
         plan=customer_plan,
     )
+
+
+def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
+    unique_id = customer_profile.unique_id
+
+    if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+        plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+    elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
+        plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
+    else:
+        raise AssertionError("Unexpected tier!")
+
+    server_uuid = str(uuid.uuid4())
+    api_key = server_uuid
+
+    remote_server = RemoteZulipServer.objects.create(
+        uuid=server_uuid,
+        api_key=api_key,
+        hostname=f"{unique_id}.example.com",
+        contact_email=f"{unique_id}@example.com",
+        plan_type=plan_type,
+    )
+
+    if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+        # Create customer plan for these servers for temporary period.
+        billing_session = RemoteServerBillingSession(remote_server)
+        renewal_date = renewal_date = datetime.datetime.strptime(
+            customer_profile.renewal_date, TIMESTAMP_FORMAT
+        ).replace(tzinfo=datetime.timezone.utc)
+        end_date = datetime.datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
+            tzinfo=datetime.timezone.utc
+        )
+        billing_session.add_server_to_legacy_plan(renewal_date, end_date)
+    elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
+        # TBD
+        pass
+
+    if customer_profile.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+        # TBD
+        pass
+
+    return {
+        "unique_id": unique_id,
+        "server_uuid": server_uuid,
+        "api_key": api_key,
+    }
