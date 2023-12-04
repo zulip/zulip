@@ -840,6 +840,17 @@ class PushNotificationsWorker(QueueProcessingWorker):
     MAX_CONSUME_SECONDS = None
 
     @override
+    def __init__(
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
+    ) -> None:
+        if settings.MOBILE_NOTIFICATIONS_SHARDS > 1 and worker_num is not None:
+            self.queue_name = self.queue_name + f"_shard{worker_num}"
+        super().__init__(threaded, disable_timeout, worker_num)
+
+    @override
     def start(self) -> None:
         # initialize_push_notifications doesn't strictly do anything
         # beyond printing some logging warnings if push notifications
