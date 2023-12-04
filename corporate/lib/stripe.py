@@ -501,6 +501,7 @@ class UpgradeRequest:
     license_management: Optional[str]
     licenses: Optional[int]
     tier: int
+    remote_server_plan_start_date: Optional[str]
 
 
 @dataclass
@@ -1036,6 +1037,22 @@ class BillingSession(ABC):
         )
         return stripe_payment_intent_id
 
+    def ensure_current_plan_is_upgradable(
+        self, customer: Customer, new_plan_tier: int
+    ) -> None:  # nocoverage
+        # Upgrade for customers with an existing plan is only supported for remote servers right now.
+        if not hasattr(self, "remote_server"):
+            ensure_customer_does_not_have_active_plan(customer)
+            return
+
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        type_of_plan_change = self.get_type_of_plan_tier_change(plan.tier, new_plan_tier)
+        if type_of_plan_change != PlanTierChangeType.UPGRADE:
+            raise BillingError(
+                f"Cannot upgrade from {plan.name} to {CustomerPlan.name_from_tier(new_plan_tier)}"
+            )
+
     # Only used for cloud signups
     @catch_stripe_errors
     def process_initial_upgrade(
@@ -1046,10 +1063,17 @@ class BillingSession(ABC):
         billing_schedule: int,
         charge_automatically: bool,
         free_trial: bool,
+        remote_server_legacy_plan: Optional[CustomerPlan] = None,
+        should_schedule_upgrade_for_legacy_remote_server: bool = False,
     ) -> None:
         customer = self.update_or_create_stripe_customer()
         assert customer.stripe_customer_id is not None  # for mypy
-        ensure_customer_does_not_have_active_plan(customer)
+        self.ensure_current_plan_is_upgradable(customer, plan_tier)
+        billing_cycle_anchor = None
+        if should_schedule_upgrade_for_legacy_remote_server:  # nocoverage
+            assert remote_server_legacy_plan is not None
+            billing_cycle_anchor = remote_server_legacy_plan.end_date
+
         (
             billing_cycle_anchor,
             next_invoice_date,
@@ -1061,6 +1085,7 @@ class BillingSession(ABC):
             billing_schedule,
             customer.default_discount,
             free_trial,
+            billing_cycle_anchor,
         )
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
@@ -1096,13 +1121,67 @@ class BillingSession(ABC):
                             _("Please add a credit card before starting your free trial."),
                         )
 
+            event_time = billing_cycle_anchor
+            if should_schedule_upgrade_for_legacy_remote_server:  # nocoverage
+                # In this code path, we are currently on a legacy plan
+                # and are scheduling an upgrade to a non-legacy plan
+                # that should occur when the legacy plan expires.
+                #
+                # We will create a new NEVER_STARTED plan for the
+                # customer, scheduled to start when the current one
+                # expires.
+                assert remote_server_legacy_plan is not None
+                if charge_automatically:
+                    remote_server_legacy_plan.charge_automatically = True
+                    # Ensure customers not paying via invoice have a default payment method set.
+                    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+                    if not stripe_customer_has_credit_card_as_default_payment_method(
+                        stripe_customer
+                    ):
+                        raise BillingError(
+                            "no payment method",
+                            _("Please add a credit card to schedule upgrade."),
+                        )
+
+                # Settings status > CustomerPLan.LIVE_STATUS_THRESHOLD makes sure we don't have
+                # to worry about this plan being used for any other purpose.
+                # NOTE: This is the 2nd plan for the customer.
+                plan_params["status"] = CustomerPlan.NEVER_STARTED
+                event_time = timezone_now().replace(microsecond=0)
+
+                # Schedule switching to the new plan at plan end date.
+                #
+                # HACK: We set price_per_license on the legacy plan
+                # here in order to make the billing page display
+                # something reasonable. We avoid any charges, because
+                # next_invoice_date is None for this plan.
+                #
+                # This hack is a workaround for the billing page not
+                # having first-class support for displaying a future
+                # NEVER_STARTED plan.
+                assert remote_server_legacy_plan.end_date == billing_cycle_anchor
+                remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+                remote_server_legacy_plan.price_per_license = price_per_license
+                remote_server_legacy_plan.save(
+                    update_fields=["status", "charge_automatically", "price_per_license"]
+                )
+            elif remote_server_legacy_plan is not None:  # nocoverage
+                remote_server_legacy_plan.status = CustomerPlan.ENDED
+                remote_server_legacy_plan.save(update_fields=["status"])
+
             plan = CustomerPlan.objects.create(
                 customer=customer, next_invoice_date=next_invoice_date, **plan_params
             )
+            # HACK: In theory, we should be creating these ledger
+            # entries only outside the code path for
+            # should_schedule_upgrade_for_legacy_remote_server; they
+            # exist mainly to help the existing code display accurate
+            # information about the second NEVER_STARTED plan on the
+            # billing page.
             ledger_entry = LicenseLedger.objects.create(
                 plan=plan,
                 is_renewal=True,
-                event_time=billing_cycle_anchor,
+                event_time=event_time,
                 licenses=billed_licenses,
                 licenses_at_next_renewal=billed_licenses,
             )
@@ -1110,11 +1189,12 @@ class BillingSession(ABC):
             plan.save(update_fields=["invoiced_through"])
             self.write_to_audit_log(
                 event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
-                event_time=billing_cycle_anchor,
+                event_time=event_time,
                 extra_data=plan_params,
             )
 
-        if not free_trial:
+        if not (free_trial or should_schedule_upgrade_for_legacy_remote_server):
+            assert plan is not None
             stripe.InvoiceItem.create(
                 currency="usd",
                 customer=customer.stripe_customer_id,
@@ -1149,7 +1229,7 @@ class BillingSession(ABC):
     def do_upgrade(self, upgrade_request: UpgradeRequest) -> Dict[str, Any]:
         customer = self.get_customer()
         if customer is not None:
-            ensure_customer_does_not_have_active_plan(customer)
+            self.ensure_current_plan_is_upgradable(customer, upgrade_request.tier)
         billing_modality = upgrade_request.billing_modality
         schedule = upgrade_request.schedule
         license_management = upgrade_request.license_management
@@ -1183,8 +1263,17 @@ class BillingSession(ABC):
         }[schedule]
         data: Dict[str, Any] = {}
         free_trial = is_free_trial_offer_enabled()
+        remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
+        should_schedule_upgrade_for_legacy_remote_server = (
+            remote_server_legacy_plan is not None
+            and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
+        )
         # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
-        if free_trial or not charge_automatically:
+        if (
+            should_schedule_upgrade_for_legacy_remote_server
+            or free_trial
+            or not charge_automatically
+        ):
             self.process_initial_upgrade(
                 upgrade_request.tier,
                 licenses,
@@ -1192,6 +1281,8 @@ class BillingSession(ABC):
                 billing_schedule,
                 charge_automatically,
                 is_free_trial_offer_enabled(),
+                remote_server_legacy_plan,
+                should_schedule_upgrade_for_legacy_remote_server,
             )
             data["organization_upgrade_successful"] = True
         else:
@@ -1288,6 +1379,9 @@ class BillingSession(ABC):
         ):
             assert plan.next_invoice_date is not None
             next_billing_cycle = plan.next_invoice_date
+        elif plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
+            assert plan.end_date is not None
+            next_billing_cycle = plan.end_date
         else:
             next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
 
@@ -1321,6 +1415,28 @@ class BillingSession(ABC):
                 plan.save(update_fields=["invoiced_through", "billing_cycle_anchor", "status"])
                 return None, LicenseLedger.objects.create(
                     plan=plan,
+                    is_renewal=True,
+                    event_time=next_billing_cycle,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+
+            if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
+                # Only plan tier we do this for right now.
+                assert plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+                plan.status = CustomerPlan.ENDED
+                plan.save(update_fields=["status"])
+
+                assert plan.end_date is not None
+                new_plan = CustomerPlan.objects.get(
+                    customer=plan.customer,
+                    billing_cycle_anchor=plan.end_date,
+                    status=CustomerPlan.NEVER_STARTED,
+                )
+                new_plan.status = CustomerPlan.ACTIVE
+                new_plan.save(update_fields=["status"])
+                return None, LicenseLedger.objects.create(
+                    plan=new_plan,
                     is_renewal=True,
                     event_time=next_billing_cycle,
                     licenses=licenses_at_next_renewal,
@@ -3126,11 +3242,14 @@ def compute_plan_parameters(
     billing_schedule: int,
     discount: Optional[Decimal],
     free_trial: bool = False,
+    billing_cycle_anchor: Optional[datetime] = None,
 ) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
     # TODO talk about leap seconds?
-    billing_cycle_anchor = timezone_now().replace(microsecond=0)
+    if billing_cycle_anchor is None:
+        billing_cycle_anchor = timezone_now().replace(microsecond=0)
+
     if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
         period_end = add_months(billing_cycle_anchor, 12)
     elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
