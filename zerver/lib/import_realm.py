@@ -1023,8 +1023,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         if "zerver_usergroup" not in data:
             set_default_for_realm_permission_group_settings(realm)
 
-    enqueue_register_realm_with_push_bouncer_if_needed(realm)
-
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
@@ -1422,6 +1420,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Activate the realm
     realm.deactivated = data["zerver_realm"][0]["deactivated"]
     realm.save()
+
+    # Ask the push notifications service if this realm can send
+    # notifications, if we're using it. Needs to happen after the
+    # Realm object is reactivated.
+    enqueue_register_realm_with_push_bouncer_if_needed(realm)
 
     return realm
 
