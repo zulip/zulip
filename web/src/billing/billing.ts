@@ -29,7 +29,7 @@ export function create_update_current_cycle_license_request(): void {
         `/json${billing_base_url}/billing/plan`,
         "current-license-change",
         [],
-        "post",
+        "PATCH",
         () => {
             window.location.replace(
                 `${billing_base_url}/billing/?success_message=` +
@@ -54,7 +54,7 @@ export function create_update_next_cycle_license_request(): void {
         `/json${billing_base_url}/billing/plan`,
         "next-license-change",
         [],
-        "post",
+        "PATCH",
         () => {
             window.location.replace(
                 `${billing_base_url}/billing/?success_message=` +
@@ -193,7 +193,7 @@ export function initialize(): void {
             `/json${billing_base_url}/billing/plan`,
             "planchange",
             [],
-            "post",
+            "PATCH",
             () =>
                 window.location.replace(
                     `${billing_base_url}/billing/?success_message=` +
@@ -208,7 +208,7 @@ export function initialize(): void {
             `/json${billing_base_url}/billing/plan`,
             "planchange",
             [],
-            "post",
+            "PATCH",
             () =>
                 window.location.replace(
                     `${billing_base_url}/billing/?success_message=` +
@@ -225,7 +225,7 @@ export function initialize(): void {
             `/json${billing_base_url}/billing/plan`,
             "planchange",
             [],
-            "post",
+            "PATCH",
             () =>
                 window.location.replace(
                     `${billing_base_url}/billing/?success_message=` +
@@ -342,7 +342,7 @@ export function initialize(): void {
         };
         e.preventDefault();
         void $.ajax({
-            type: "post",
+            type: "PATCH",
             url: `/json${billing_base_url}/billing/plan`,
             data,
             success() {
