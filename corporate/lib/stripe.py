@@ -794,6 +794,23 @@ class BillingSession(ABC):
         assert plan.end_date is not None
         return plan.end_date.strftime("%B %d, %Y")
 
+    def get_legacy_remote_server_new_plan_name(
+        self, customer: Customer
+    ) -> Optional[str]:  # nocoverage
+        legacy_plan = self.get_remote_server_legacy_plan(
+            customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
+        if legacy_plan is None:
+            return None
+
+        # This also asserts that such a plan should exist.
+        assert legacy_plan.end_date is not None
+        return CustomerPlan.objects.get(
+            customer=customer,
+            billing_cycle_anchor=legacy_plan.end_date,
+            status=CustomerPlan.NEVER_STARTED,
+        ).name
+
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
         stripe_customer_data = self.get_data_for_stripe_customer()
@@ -1621,6 +1638,14 @@ class BillingSession(ABC):
                     if plan.fixed_price is not None
                     else None
                 )
+                remote_server_legacy_plan_end_date = (
+                    self.get_formatted_remote_server_legacy_plan_end_date(
+                        customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+                    )
+                )
+                legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(
+                    customer
+                )
                 context = {
                     "plan_name": plan.name,
                     "has_active_plan": True,
@@ -1645,6 +1670,9 @@ class BillingSession(ABC):
                     "is_sponsorship_pending": customer.sponsorship_pending,
                     "discount_percent": format_discount_percentage(customer.default_discount),
                     "is_self_hosted_billing": not isinstance(self, RealmBillingSession),
+                    "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
+                    "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
+                    "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
                 }
         return context
 

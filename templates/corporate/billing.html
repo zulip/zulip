@@ -38,11 +38,20 @@
                     <div id="org-current-plan" class="not-editable-realm-field">
                         {% if free_trial or downgrade_at_end_of_free_trial %}
                         {{ plan_name }} <i>(free trial)</i>
+                        {% elif is_server_on_legacy_plan %}
+                        {{ plan_name }} <i>(legacy plan)</i>
                         {% else %}
                         {{ plan_name }}
                         {% endif %}
                     </div>
                 </div>
+                {% if is_server_on_legacy_plan %}
+                <div class="input-box billing-page-field no-validation">
+                    <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
+                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}</i>
+                    </div>
+                </div>
+                {% endif %}
                 <div class="input-box billing-page-field no-validation org-billing-frequency-wrapper"
                   data-current-billing-frequency="{{ billing_frequency }}"
                   {%if free_trial %}data-free-trial="true"{% endif %}
@@ -50,7 +59,7 @@
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
                     <label for="org-billing-frequency">Billing frequency</label>
-                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle %}
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan %}
                     <div class="not-editable-realm-field">
                         {{ billing_frequency }}
                     </div>
@@ -164,7 +173,11 @@
                             <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
                             {% else %}
                             {% if charge_automatically %}
+                            {% if is_server_on_legacy_plan %}
+                            Your plan will automatically upgrade to {{ legacy_remote_server_new_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+                            {% else %}
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
+                            {% endif %}
                             {% else %}
                             Your next invoice is due on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
@@ -183,7 +196,6 @@
                                 <br />
                                 <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
                                 {% endif %}
-
                             {% endif %}
                             {% endif %}
                         {% else %}
@@ -216,6 +228,13 @@
                                     Reactivate subscription
                                     {% endif %}
                                 </span>
+                                <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                    {% elif is_server_on_legacy_plan %}
+                        <div class="plan-toggle-action input-box billing-page-field no-validation" id="cancel-legacy-server-upgrade">
+                            <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
+                                <span class="billing-button-text">Cancel upgrade</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>

@@ -538,6 +538,7 @@ input[name="licenses"] {
     width: 150px;
 }
 
+#billing-page-details #legacy-server-push-notification-notice,
 #billing-page-details .next-payment-info {
     width: 450px;
     padding-top: 0;
@@ -668,4 +669,8 @@ input[name="licenses"] {
 
 #server-login-error {
     text-align: center;
+}
+
+#upgrade-page-details #due-today-for-future-update-wrapper {
+    display: none;
 }
