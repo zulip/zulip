@@ -1,7 +1,6 @@
 import itertools
 import os
 import random
-import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
@@ -381,10 +380,13 @@ class Command(BaseCommand):
             # with the bouncer, which is going to be the primary case for modern servers. Tests
             # wanting to have missing registrations, or simulating legacy server scenarios,
             # should delete RemoteRealms to explicit set things up.
+
+            assert isinstance(settings.ZULIP_ORG_ID, str)
+            assert isinstance(settings.ZULIP_ORG_KEY, str)
             server = RemoteZulipServer.objects.create(
-                uuid=uuid.uuid4(),
-                api_key="magic_secret_api_key",
-                hostname="demo.example.com",
+                uuid=settings.ZULIP_ORG_ID,
+                api_key=settings.ZULIP_ORG_KEY,
+                hostname=settings.EXTERNAL_HOST,
                 last_updated=timezone_now(),
             )
             update_remote_realm_data_for_server(server, get_realms_info_for_push_bouncer())
