@@ -83,7 +83,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # TODO: The redirect URL will vary depending on the billing state of the user's
         # realm/server when we implement proper logic for that. For now, we can simply
         # hard-code an assert about the endpoint.
-        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
 
         # Go to the URL we're redirected to after authentication and assert
         # some basic expected content.
@@ -122,7 +122,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # The user's realm should now be registered:
         self.assertTrue(RemoteRealm.objects.filter(uuid=realm.uuid).exists())
 
-        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
 
         result = self.client_get(result["Location"], subdomain="selfhosting")
         self.assert_in_success_response(["Your remote user info:"], result)
@@ -142,7 +142,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         with time_machine.travel(now, tick=False):
             result = self.execute_remote_billing_authentication_flow(desdemona)
 
-        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
 
         final_url = result["Location"]
 
@@ -175,7 +175,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             # So let's test that and assert that we end up successfully re-authed on the /plans
             # page.
             result = self.execute_remote_billing_authentication_flow(desdemona, next_page="plans")
-            self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+            self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
             result = self.client_get(result["Location"], subdomain="selfhosting")
             self.assert_in_success_response(["Your remote user info:"], result)
             self.assert_in_success_response([desdemona.delivery_email], result)
@@ -191,11 +191,11 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         send_realms_only_to_push_bouncer()
 
         # Straight-up access without authing at all:
-        result = self.client_get(f"/realm/{realm.uuid!s}/plans", subdomain="selfhosting")
+        result = self.client_get(f"/realm/{realm.uuid!s}/plans/", subdomain="selfhosting")
         self.assert_json_error(result, "User not authenticated", 401)
 
         result = self.execute_remote_billing_authentication_flow(desdemona)
-        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans")
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
 
         final_url = result["Location"]
 
@@ -244,7 +244,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
 
         result = self.execute_remote_billing_authentication_flow(desdemona, "sponsorship")
 
-        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/sponsorship")
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/sponsorship/")
 
         # Go to the URL we're redirected to after authentication and assert
         # some basic expected content.
@@ -264,7 +264,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
 
         result = self.execute_remote_billing_authentication_flow(desdemona, "upgrade")
 
-        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/upgrade")
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/upgrade/")
 
         # Go to the URL we're redirected to after authentication and assert
         # some basic expected content.
@@ -328,7 +328,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             )
 
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade")
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade/")
 
         # Verify the authed data that should have been stored in the session.
         identity_dict = LegacyServerIdentityDict(
@@ -343,7 +343,7 @@ class LegacyServerLoginTest(BouncerTestCase):
         result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
         # The server has no plan, so the /billing page redirects to /upgrade
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade")
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade/")
 
         # Access on the upgrade page is granted, assert a basic string proving that.
         result = self.client_get(result["Location"], subdomain="selfhosting")
@@ -371,7 +371,7 @@ class LegacyServerLoginTest(BouncerTestCase):
         )
         # We should be redirected to the page dictated by the next_page param.
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"/server/{self.uuid}/sponsorship")
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/sponsorship/")
 
         result = self.client_get(result["Location"], subdomain="selfhosting")
         # TODO Update the string when we have a complete sponsorship page for legacy servers.
@@ -422,7 +422,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             )
 
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade")
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade/")
 
         # Sanity check: access on the upgrade page is granted.
         result = self.client_get(result["Location"], subdomain="selfhosting")
@@ -435,6 +435,6 @@ class LegacyServerLoginTest(BouncerTestCase):
             now + datetime.timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
             tick=False,
         ):
-            result = self.client_get(f"/server/{self.uuid}/upgrade", subdomain="selfhosting")
+            result = self.client_get(f"/server/{self.uuid}/upgrade/", subdomain="selfhosting")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/serverlogin/?next_page=upgrade")
