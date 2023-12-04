@@ -1,16 +1,16 @@
 <div class="compose-control-buttons-container order-1">
     <input type="file" class="file_input notvisible" multiple />
-    {{#if file_upload_enabled }}
-    <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Upload files' }}">
-        <a role="button" class="compose_control_button compose_upload_file zulip-icon zulip-icon-attachment notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0></a>
-    </div>
-    {{/if}}
     <div class="compose_control_button_container" data-tippy-content="{{t 'Preview' }}">
         <a role="button" class="markdown_preview compose_control_button zulip-icon zulip-icon-preview" aria-label="{{t 'Preview' }}" tabindex=0></a>
     </div>
     <div class="compose_control_button_container" data-tippy-content="{{t 'Write' }}">
         <a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;"></a>
     </div>
+    {{#if file_upload_enabled }}
+    <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Upload files' }}">
+        <a role="button" class="compose_control_button compose_upload_file zulip-icon zulip-icon-attachment notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0></a>
+    </div>
+    {{/if}}
     <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add video call' }}">
         <a role="button" class="compose_control_button zulip-icon zulip-icon-video-call video_link" aria-label="{{t 'Add video call' }}" tabindex=0></a>
     </div>
