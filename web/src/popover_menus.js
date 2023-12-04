@@ -208,10 +208,16 @@ export const default_popover_props = {
                     // }
 
                     // Hide popover if the reference element is below compose, sticky header or navbar.
-                    const elements_at_reference_position = document.elementsFromPoint(
-                        reference_rect.left,
-                        reference_rect.top,
-                    );
+
+                    // These are elements covering the reference element (intersection of elements at top
+                    // top left and bottom right)
+                    const elements_at_reference_position = document
+                        .elementsFromPoint(reference_rect.left, reference_rect.top)
+                        .filter((element) =>
+                            document
+                                .elementsFromPoint(reference_rect.right, reference_rect.bottom)
+                                .includes(element),
+                        );
 
                     if (
                         elements_at_reference_position.some(
