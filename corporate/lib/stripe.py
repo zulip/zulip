@@ -725,10 +725,6 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        pass
-
-    @abstractmethod
     def get_sponsorship_request_session_specific_context(
         self,
     ) -> SponsorshipRequestSessionSpecificContext:
@@ -765,6 +761,11 @@ class BillingSession(ABC):
     @abstractmethod
     def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
         pass
+
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
+            return True
+        return False
 
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
@@ -2325,12 +2326,6 @@ class RealmBillingSession(BillingSession):
         return self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE
 
     @override
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
-            return True
-        return False
-
-    @override
     def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
         assert self.user is not None
         return {
@@ -2590,12 +2585,6 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @override
     def is_sponsored(self) -> bool:
         return self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY
-
-    @override
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
-            return True
-        return False
 
     @override
     def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
@@ -2867,11 +2856,6 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @override
     def is_sponsored(self) -> bool:
         return self.remote_server.plan_type == self.remote_server.PLAN_TYPE_COMMUNITY
-
-    @override
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        # TBD
-        return False
 
     @override
     def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
