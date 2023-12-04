@@ -416,6 +416,11 @@ li.show-more-topics {
     }
 }
 
+#login-link-container .login_button {
+    display: flex;
+    align-items: center;
+}
+
 ul.filters {
     list-style-type: none;
     margin-left: 0;
