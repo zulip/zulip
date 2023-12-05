@@ -1,18 +1,21 @@
 # https://github.com/typeddjango/django-stubs/issues/1698
 # mypy: disable-error-code="explicit-override"
 
+from dataclasses import dataclass
+from datetime import datetime
 from typing import List, Tuple
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q, UniqueConstraint
+from django.db.models import Max, Q, UniqueConstraint
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.rate_limiter import rules as rate_limiter_rules
-from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog, Realm
+from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog, Realm, UserProfile
 
 
 def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
@@ -309,3 +312,54 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
     @override
     def rules(self) -> List[Tuple[int, int]]:
         return rate_limiter_rules[self.domain]
+
+
+@dataclass
+class RemoteCustomerUserCount:
+    guest_user_count: int
+    non_guest_user_count: int
+
+
+def get_remote_server_guest_and_non_guest_count(
+    server_id: int, event_time: datetime = timezone_now()
+) -> RemoteCustomerUserCount:
+    # For each realm hosted on the server, find the latest audit log
+    # entry indicating the number of active users in that realm.
+    realm_last_audit_log_ids = (
+        RemoteRealmAuditLog.objects.filter(
+            server_id=server_id,
+            event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
+            event_time__lte=event_time,
+        )
+        # Important: extra_data is empty for some pre-2020 audit logs
+        # prior to the introduction of realm_user_count_by_role
+        # logging. Meanwhile, modern Zulip servers using
+        # bulk_create_users to create the users in the system bot
+        # realm also generate such audit logs. Such audit logs should
+        # never be the latest in a normal realm.
+        .exclude(extra_data={})
+        .values("realm_id")
+        .annotate(max_id=Max("id"))
+        .values_list("max_id", flat=True)
+    )
+
+    extra_data_list = RemoteRealmAuditLog.objects.filter(
+        id__in=list(realm_last_audit_log_ids)
+    ).values_list("extra_data", flat=True)
+
+    # Now we add up the user counts from the different realms.
+    guest_count = 0
+    non_guest_count = 0
+    for extra_data in extra_data_list:
+        humans_count_dict = extra_data[RemoteRealmAuditLog.ROLE_COUNT][
+            RemoteRealmAuditLog.ROLE_COUNT_HUMANS
+        ]
+        for role_type in UserProfile.ROLE_TYPES:
+            if role_type == UserProfile.ROLE_GUEST:
+                guest_count += humans_count_dict[str(role_type)]
+            else:
+                non_guest_count += humans_count_dict[str(role_type)]
+
+    return RemoteCustomerUserCount(
+        non_guest_user_count=non_guest_count, guest_user_count=guest_count
+    )

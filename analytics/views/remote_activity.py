@@ -11,6 +11,7 @@ from analytics.views.activity_common import (
     remote_installation_support_link,
 )
 from zerver.decorator import require_server_admin
+from zilencer.models import get_remote_server_guest_and_non_guest_count
 
 
 @require_server_admin
@@ -73,6 +74,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Mobile users",
         "Last update time",
         "Mobile pushes forwarded",
+        "Non guest users",
+        "Guest users",
         "Links",
     ]
 
@@ -83,6 +86,9 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         stats = remote_installation_stats_link(row[0])
         support = remote_installation_support_link(row[1])
         links = stats + " " + support
+        remote_server_counts = get_remote_server_guest_and_non_guest_count(row[0])
+        row.append(remote_server_counts.non_guest_user_count)
+        row.append(remote_server_counts.guest_user_count)
         row.append(links)
     for i, col in enumerate(cols):
         if col == "Last update time":
