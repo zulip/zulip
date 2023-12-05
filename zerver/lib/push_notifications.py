@@ -880,7 +880,9 @@ def get_mobile_push_content(rendered_content: str) -> str:
 
     def format_as_quote(quote_text: str) -> str:
         return "".join(
-            f"> {line}\n" for line in quote_text.splitlines() if line  # Remove empty lines
+            f"> {line}\n"
+            for line in quote_text.splitlines()
+            if line  # Remove empty lines
         )
 
     def render_olist(ol: lxml.html.HtmlElement) -> str:

@@ -38,8 +38,8 @@ Also you can use optional keys to configure the script and change default values
                     self-signed certificates. Default value: False.
 
 -t                  Disable sending request to the Zulip server. Default value: False.
-
 """
+
 import argparse
 import base64
 import json

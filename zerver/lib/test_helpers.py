@@ -585,7 +585,7 @@ TestCaseT = TypeVar("TestCaseT", bound="MigrationsTestCase")
 
 
 def use_db_models(
-    method: Callable[[TestCaseT, StateApps], None]
+    method: Callable[[TestCaseT, StateApps], None],
 ) -> Callable[[TestCaseT, StateApps], None]:  # nocoverage
     def method_patched_with_mock(self: TestCaseT, apps: StateApps) -> None:
         ArchivedAttachment = apps.get_model("zerver", "ArchivedAttachment")

@@ -24,7 +24,7 @@ METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH")
 
 
 def default_never_cache_responses(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     """Patched version of the standard Django never_cache_responses
     decorator that adds headers to a response so that it will never be

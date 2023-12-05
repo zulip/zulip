@@ -968,7 +968,8 @@ def get_base_query_for_search(
             # zerver_messages, since the user_profile_id limit in
             # usermessage is more selective, and the query planner
             # can't know about that cross-table correlation.
-            .where(column("user_profile_id", Integer) == literal(user_profile.id)).select_from(
+            .where(column("user_profile_id", Integer) == literal(user_profile.id))
+            .select_from(
                 join(
                     table("zerver_usermessage"),
                     table("zerver_message"),

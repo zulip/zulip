@@ -523,7 +523,8 @@ def get_remote_realm_guest_and_non_guest_count(
         # bulk_create_users to create the users in the system bot
         # realm also generate such audit logs. Such audit logs should
         # never be the latest in a normal realm.
-        .exclude(extra_data={}).last()
+        .exclude(extra_data={})
+        .last()
     )
 
     guest_count = 0

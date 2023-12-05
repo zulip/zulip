@@ -924,7 +924,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "stream",
                 "to": "Verona",
-                "topic": "Test\uFFFETopic",
+                "topic": "Test\ufffeTopic",
                 "content": "Test message",
             },
         )

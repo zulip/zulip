@@ -1461,9 +1461,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ), self.assertLogs("zilencer.views", level="INFO"):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1522,9 +1520,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ), self.assertLogs("zilencer.views", level="INFO"):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1582,9 +1578,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ), self.assertLogs("zilencer.views", level="INFO"):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",

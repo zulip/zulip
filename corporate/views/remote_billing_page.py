@@ -138,7 +138,7 @@ def get_identity_dict_from_signed_access_token(
 
 
 def is_tos_consent_needed_for_user(
-    remote_user: Union[RemoteRealmBillingUser, RemoteServerBillingUser]
+    remote_user: Union[RemoteRealmBillingUser, RemoteServerBillingUser],
 ) -> bool:
     assert settings.TERMS_OF_SERVICE_VERSION is not None
     return int(settings.TERMS_OF_SERVICE_VERSION.split(".")[0]) > int(
@@ -299,9 +299,9 @@ def remote_realm_billing_finalize_login(
 
     identity_dict["remote_billing_user_id"] = remote_user.id
     request.session["remote_billing_identities"] = {}
-    request.session["remote_billing_identities"][
-        f"remote_realm:{remote_realm_uuid}"
-    ] = identity_dict
+    request.session["remote_billing_identities"][f"remote_realm:{remote_realm_uuid}"] = (
+        identity_dict
+    )
 
     next_page = identity_dict["next_page"]
     assert next_page in VALID_NEXT_PAGES

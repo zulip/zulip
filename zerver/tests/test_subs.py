@@ -3996,7 +3996,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # For Cn category
         post_data_cn = {
             "subscriptions": orjson.dumps(
-                [{"name": "new\uFFFEstream", "description": "this is description"}]
+                [{"name": "new\ufffestream", "description": "this is description"}]
             ).decode(),
             "invite_only": orjson.dumps(False).decode(),
         }
@@ -4023,7 +4023,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\n\rname"})
         self.assert_json_error(result, "Invalid character in stream name, at position 5!")
         # Check for Cn characters
-        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\uFFFEame"})
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\ufffeame"})
         self.assert_json_error(result, "Invalid character in stream name, at position 5!")
 
     def test_successful_subscriptions_list(self) -> None:

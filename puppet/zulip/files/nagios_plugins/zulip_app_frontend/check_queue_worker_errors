@@ -3,6 +3,7 @@
 """
 Nagios plugin to check that none of our queue workers have reported errors.
 """
+
 import glob
 import os
 import sys

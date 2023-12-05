@@ -972,8 +972,9 @@ class Command(BaseCommand):
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
                     # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
-                    "조리법 "
-                    + raw_emojis[0]: {"description": "Everything cooking, from pasta to Пельмени"},
+                    "조리법 " + raw_emojis[0]: {
+                        "description": "Everything cooking, from pasta to Пельмени"
+                    },
                 }
 
                 extra_stream_names = [
@@ -1107,7 +1108,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple messages per subject
 # - both single and multi-line content
 def generate_and_send_messages(
-    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int]
+    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int],
 ) -> int:
     realm = get_realm("zulip")
     (tot_messages, personals_pairs, options, random_seed) = data

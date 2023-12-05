@@ -120,7 +120,8 @@ def serve_local(
         # the response to; serve it directly ourselves.  FileResponse
         # handles setting Content-Type, Content-Disposition, etc.
         response: HttpResponseBase = FileResponse(
-            open(local_path, "rb"), as_attachment=download  # noqa: SIM115
+            open(local_path, "rb"),  # noqa: SIM115
+            as_attachment=download,
         )
         patch_cache_control(response, private=True, immutable=True)
         return response

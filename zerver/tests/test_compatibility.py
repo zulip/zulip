@@ -10,10 +10,9 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class VersionTest(ZulipTestCase):
-    data = (
-        [
-            case.split()
-            for case in """
+    data = [
+        case.split()
+        for case in """
         1.2.3    <  1.2.4
         1.2.3    =  1.2.3
         1.4.1    >  1.2.3
@@ -30,15 +29,11 @@ class VersionTest(ZulipTestCase):
         15.1.95  <  16.2.96
         16.2.96  =  16.2.96
         20.0.103 >  16.2.96
-    """.strip().split(
-                "\n"
-            )
-        ]
-        + [
-            ["", "?", "1"],
-            ["", "?", "a"],
-        ]
-    )
+    """.strip().split("\n")
+    ] + [
+        ["", "?", "1"],
+        ["", "?", "a"],
+    ]
 
     def test_version_lt(self) -> None:
         for ver1, cmp, ver2 in self.data:
@@ -65,9 +60,7 @@ class VersionTest(ZulipTestCase):
       ios     ZulipMobile/1.2.3 (iPhone OS 2.1)
       ios     ZulipMobile/1.2.3 (iOS 6)
       None    ZulipMobile/1.2.3 (Windows 8)
-    """.strip().split(
-            "\n"
-        )
+    """.strip().split("\n")
     ]
 
     def test_find_mobile_os(self) -> None:
@@ -97,9 +90,7 @@ class CompatibilityTest(ZulipTestCase):
       ok  ZulipMobile/1 CFNetwork/974.2.1 Darwin/18.0.0
       ok  ZulipMobile/20.0.103 (Android 6.0.1)
       ok  ZulipMobile/20.0.103 (iOS 12.1)
-    """.strip().split(
-            "\n"
-        )
+    """.strip().split("\n")
         if case
     ]
 

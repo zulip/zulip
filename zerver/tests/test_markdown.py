@@ -1302,7 +1302,7 @@ class MarkdownTest(ZulipTestCase):
         assert_conversion("Hello #123World", False)
         assert_conversion("Hello#123 World", False)
         assert_conversion("Hello#123World", False)
-        assert_conversion("Hello\u00A0#123\u00A0World")
+        assert_conversion("Hello\u00a0#123\u00a0World")
         # Ideally, these should be converted, but Markdown doesn't
         # handle word boundary detection in languages that don't use
         # whitespace for that correctly yet.

@@ -231,8 +231,6 @@ if change_symlink and "PWD" in os.environ:
 which has now changed. Your shell will not see this change until you run:
   cd {}
 to traverse the symlink again.{}
-""".format(
-                    WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC
-                ),
+""".format(WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC),
                 file=sys.stderr,
             )
