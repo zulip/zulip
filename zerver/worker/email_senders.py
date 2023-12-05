@@ -46,8 +46,13 @@ def retry_send_email_failures(
 
 @assign_queue("email_senders")
 class EmailSendingWorker(LoopQueueProcessingWorker):
-    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
-        super().__init__(threaded, disable_timeout)
+    def __init__(
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
+    ) -> None:
+        super().__init__(threaded, disable_timeout, worker_num)
         self.connection: Optional[BaseEmailBackend] = None
 
     @retry_send_email_failures
