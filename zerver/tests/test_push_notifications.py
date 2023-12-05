@@ -252,9 +252,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
             "zerver.lib.push_notifications.send_apple_push_notification"
         ) as mock_send_apple_push_notification, mock.patch(
             "zerver.lib.push_notifications.send_android_push_notification"
-        ) as mock_send_android_push_notification, time_machine.travel(
-            time_now, tick=False
-        ):
+        ) as mock_send_android_push_notification, time_machine.travel(time_now, tick=False):
             result = self.api_post(user, endpoint, subdomain="zulip")
 
         mock_send_android_push_notification.assert_called_once_with(
@@ -591,9 +589,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ), self.assertLogs("zilencer.views", level="INFO"):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -665,9 +661,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         ) as apple_push, mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), time_machine.travel(
-            time_sent, tick=False
-        ), self.assertLogs(
+        ), time_machine.travel(time_sent, tick=False), self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
             result = self.uuid_post(
@@ -985,9 +979,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ) as logger:
+        ), self.assertLogs("zilencer.views", level="INFO") as logger:
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -2647,9 +2639,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             return_value=10,
         ), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
-        ) as pn_logger, self.assertLogs(
-            "zilencer.views", level="INFO"
-        ) as views_logger:
+        ) as pn_logger, self.assertLogs("zilencer.views", level="INFO") as views_logger:
             apns_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
@@ -2740,9 +2730,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             return_value=100,
         ) as mock_current_count, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
-        ) as pn_logger, self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ) as pn_logger, self.assertLogs("zilencer.views", level="INFO"):
             handle_push_notification(self.user_profile.id, missed_message)
 
             self.assertEqual(
@@ -2811,9 +2799,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             return_value=10,
         ), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
-        ) as pn_logger, self.assertLogs(
-            "zilencer.views", level="INFO"
-        ) as views_logger:
+        ) as pn_logger, self.assertLogs("zilencer.views", level="INFO") as views_logger:
             apns_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)

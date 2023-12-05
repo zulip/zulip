@@ -570,9 +570,7 @@ class WorkerTest(ZulipTestCase):
                 "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError
             ), mock_queue_publish(
                 "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
-            ), self.assertLogs(
-                level="ERROR"
-            ) as m:
+            ), self.assertLogs(level="ERROR") as m:
                 worker.start()
                 self.assertIn("failed due to exception EmailNotDeliveredError", m.output[0])
 

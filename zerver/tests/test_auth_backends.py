@@ -7242,9 +7242,7 @@ class LDAPBackendTest(ZulipTestCase):
             "zproject.backends.ZulipLDAPAuthBackend.get_or_build_user", side_effect=error
         ), mock.patch("django_auth_ldap.backend._LDAPUser._authenticate_user_dn"), self.assertLogs(
             "django_auth_ldap", "WARNING"
-        ) as warn_log, self.assertLogs(
-            "django.request", level="ERROR"
-        ):
+        ) as warn_log, self.assertLogs("django.request", level="ERROR"):
             response = self.client_post("/login/", data)
             self.assertEqual(response.status_code, 500)
             self.assert_in_response("Configuration error", response)

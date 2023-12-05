@@ -631,7 +631,7 @@ def oauth_redirect_to_root(
 
 
 def handle_desktop_flow(
-    func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(

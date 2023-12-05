@@ -603,8 +603,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         for field in custom_profile_fields_for_realm(self.realm_id):
             field_values = user_data.get(field.id, None)
             if field_values:
-                value, rendered_value = field_values.get("value"), field_values.get(
-                    "rendered_value"
+                value, rendered_value = (
+                    field_values.get("value"),
+                    field_values.get("rendered_value"),
                 )
             else:
                 value, rendered_value = None, None

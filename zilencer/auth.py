@@ -103,7 +103,7 @@ def validate_remote_server(
 
 
 def authenticated_remote_server_view(
-    view_func: Callable[Concatenate[HttpRequest, RemoteZulipServer, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, RemoteZulipServer, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(

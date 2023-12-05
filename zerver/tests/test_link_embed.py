@@ -196,9 +196,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
           <head>
             <meta property="og:title" content="中文" />
           </head>
-        </html>""".encode(
-            "big5"
-        )
+        </html>""".encode("big5")
         parser = OpenGraphParser(html, "text/html; charset=Big5")
         result = parser.extract_data()
         self.assertEqual(result.title, "中文")
@@ -209,9 +207,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
             <meta content-type="text/html; charset=Big5" />
             <meta property="og:title" content="中文" />
           </head>
-        </html>""".encode(
-            "big5"
-        )
+        </html>""".encode("big5")
         parser = OpenGraphParser(html, "text/html")
         result = parser.extract_data()
         self.assertEqual(result.title, "中文")

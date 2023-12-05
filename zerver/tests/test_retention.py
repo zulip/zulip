@@ -760,9 +760,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
             http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
             http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-        """.format(
-            id=realm_id, host=host
-        )
+        """.format(id=realm_id, host=host)
 
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
         # Simulate a reply with the same contents.
@@ -821,9 +819,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
             http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
             http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-        """.format(
-            id=realm_id, host=host
-        )
+        """.format(id=realm_id, host=host)
 
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
 

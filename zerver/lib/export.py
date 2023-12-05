@@ -565,9 +565,7 @@ def export_from_config(
     if config.custom_tables:
         exported_tables = config.custom_tables
     else:
-        assert (
-            table is not None
-        ), """
+        assert table is not None, """
             You must specify config.custom_tables if you
             are not specifying config.table"""
         exported_tables = [table]

@@ -8,6 +8,7 @@ It supports both munin and nagios outputs
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
+
 import argparse
 import os
 import random

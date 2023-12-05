@@ -98,9 +98,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         expected_message = """
 Requester Bob <requester-bob@example.com> added a {} note to \
 [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).
-""".strip().format(
-            note_type
-        )
+""".strip().format(note_type)
         self.api_stream_message(
             self.test_user,
             fixture,
