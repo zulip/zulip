@@ -2310,6 +2310,35 @@ class BillingSession(ABC):
         else:
             raise AssertionError("Pass licenses or licenses_at_next_renewal")
 
+    def update_license_ledger_for_automanaged_plan(
+        self, plan: CustomerPlan, event_time: datetime
+    ) -> None:
+        new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, event_time)
+        if last_ledger_entry is None:
+            return
+        if new_plan is not None:
+            plan = new_plan
+        licenses_at_next_renewal = self.current_count_for_billed_licenses()
+        licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
+
+        LicenseLedger.objects.create(
+            plan=plan,
+            event_time=event_time,
+            licenses=licenses,
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+
+    def update_license_ledger_if_needed(self, event_time: datetime) -> None:
+        customer = self.get_customer()
+        if customer is None:
+            return
+        plan = get_current_plan_by_customer(customer)
+        if plan is None:
+            return
+        if not plan.automanage_licenses:
+            return
+        self.update_license_ledger_for_automanaged_plan(plan, event_time)
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -3372,37 +3401,6 @@ def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
         server=remote_server,
         event_time=timezone_now(),
     )
-
-
-def update_license_ledger_for_automanaged_plan(
-    realm: Realm, plan: CustomerPlan, event_time: datetime
-) -> None:
-    billing_session = RealmBillingSession(user=None, realm=realm)
-    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-        plan, event_time
-    )
-    if last_ledger_entry is None:
-        return
-    if new_plan is not None:
-        plan = new_plan
-    licenses_at_next_renewal = get_latest_seat_count(realm)
-    licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
-
-    LicenseLedger.objects.create(
-        plan=plan,
-        event_time=event_time,
-        licenses=licenses,
-        licenses_at_next_renewal=licenses_at_next_renewal,
-    )
-
-
-def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
-    plan = get_current_plan_by_realm(realm)
-    if plan is None:
-        return
-    if not plan.automanage_licenses:
-        return
-    update_license_ledger_for_automanaged_plan(realm, plan, event_time)
 
 
 def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> datetime:

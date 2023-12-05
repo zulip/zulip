@@ -72,8 +72,6 @@ from corporate.lib.stripe import (
     stripe_customer_has_credit_card_as_default_payment_method,
     stripe_get_customer,
     unsign_string,
-    update_license_ledger_for_automanaged_plan,
-    update_license_ledger_if_needed,
 )
 from corporate.models import (
     Customer,
@@ -1136,8 +1134,9 @@ class StripeTest(StripeTestCase):
                 self.assert_in_response(substring, response)
             self.assert_not_in_success_response(["Go to your Zulip organization"], response)
 
+            billing_session = RealmBillingSession(user=user, realm=realm)
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=12):
-                update_license_ledger_if_needed(realm, self.now)
+                billing_session.update_license_ledger_if_needed(self.now)
             self.assertEqual(
                 LicenseLedger.objects.order_by("-id")
                 .values_list("licenses", "licenses_at_next_renewal")
@@ -1146,7 +1145,7 @@ class StripeTest(StripeTestCase):
             )
 
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=15):
-                update_license_ledger_if_needed(realm, self.next_month)
+                billing_session.update_license_ledger_if_needed(self.next_month)
             self.assertEqual(
                 LicenseLedger.objects.order_by("-id")
                 .values_list("licenses", "licenses_at_next_renewal")
@@ -1201,7 +1200,7 @@ class StripeTest(StripeTestCase):
             [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=19):
-                update_license_ledger_if_needed(realm, add_months(free_trial_end_date, 10))
+                billing_session.update_license_ledger_if_needed(add_months(free_trial_end_date, 10))
             self.assertEqual(
                 LicenseLedger.objects.order_by("-id")
                 .values_list("licenses", "licenses_at_next_renewal")
@@ -2250,8 +2249,9 @@ class StripeTest(StripeTestCase):
 
         # Verify that we still write LicenseLedger rows during the remaining
         # part of the cycle
+        billing_session = RealmBillingSession(user=user, realm=user.realm)
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
-            update_license_ledger_if_needed(user.realm, self.now)
+            billing_session.update_license_ledger_if_needed(self.now)
         self.assertEqual(
             LicenseLedger.objects.order_by("-id")
             .values_list("licenses", "licenses_at_next_renewal")
@@ -2267,7 +2267,7 @@ class StripeTest(StripeTestCase):
 
         # Check that we downgrade properly if the cycle is over
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
-            update_license_ledger_if_needed(user.realm, self.next_year)
+            billing_session.update_license_ledger_if_needed(self.next_year)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_LIMITED)
@@ -2281,7 +2281,7 @@ class StripeTest(StripeTestCase):
 
         # Verify that we don't write LicenseLedger rows once we've downgraded
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=40):
-            update_license_ledger_if_needed(user.realm, self.next_year)
+            billing_session.update_license_ledger_if_needed(self.next_year)
         self.assertEqual(
             LicenseLedger.objects.order_by("-id")
             .values_list("licenses", "licenses_at_next_renewal")
@@ -2309,7 +2309,7 @@ class StripeTest(StripeTestCase):
 
         # Check that we don't call invoice_plan after that final call
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=50):
-            update_license_ledger_if_needed(user.realm, self.next_year + timedelta(days=80))
+            billing_session.update_license_ledger_if_needed(self.next_year + timedelta(days=80))
 
         mocked = self.setup_mocked_stripe(
             invoice_plans_as_needed, self.next_year + timedelta(days=400)
@@ -2352,8 +2352,9 @@ class StripeTest(StripeTestCase):
             ["Your plan will switch to annual billing on February 2, 2012"], response
         )
 
+        billing_session = RealmBillingSession(user=user, realm=user.realm)
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
-            update_license_ledger_if_needed(user.realm, self.now)
+            billing_session.update_license_ledger_if_needed(self.now)
         self.assertEqual(LicenseLedger.objects.filter(plan=monthly_plan).count(), 2)
         self.assertEqual(
             LicenseLedger.objects.order_by("-id")
@@ -2364,7 +2365,7 @@ class StripeTest(StripeTestCase):
 
         with time_machine.travel(self.next_month, tick=False):
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=25):
-                update_license_ledger_if_needed(user.realm, self.next_month)
+                billing_session.update_license_ledger_if_needed(self.next_month)
         self.assertEqual(LicenseLedger.objects.filter(plan=monthly_plan).count(), 2)
         customer = get_customer_by_realm(user.realm)
         assert customer is not None
@@ -2464,7 +2465,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(monthly_plan_invoice_item[key], value)
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
-            update_license_ledger_if_needed(user.realm, add_months(self.next_month, 1))
+            billing_session.update_license_ledger_if_needed(add_months(self.next_month, 1))
         invoice_plans_as_needed(add_months(self.next_month, 1))
 
         [invoice0, invoice1, invoice2, invoice3] = iter(
@@ -2660,8 +2661,9 @@ class StripeTest(StripeTestCase):
             ["Your plan will switch to monthly billing on January 2, 2013"], response
         )
 
+        billing_session = RealmBillingSession(user=user, realm=user.realm)
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
-            update_license_ledger_if_needed(user.realm, self.now)
+            billing_session.update_license_ledger_if_needed(self.now)
         self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 2)
         self.assertEqual(
             LicenseLedger.objects.order_by("-id")
@@ -2676,7 +2678,7 @@ class StripeTest(StripeTestCase):
         assert annual_plan.next_invoice_date is not None
         with time_machine.travel(annual_plan.next_invoice_date, tick=False):
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=25):
-                update_license_ledger_if_needed(user.realm, annual_plan.next_invoice_date)
+                billing_session.update_license_ledger_if_needed(annual_plan.next_invoice_date)
 
         annual_plan.refresh_from_db()
         self.assertEqual(annual_plan.status, CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE)
@@ -2731,7 +2733,7 @@ class StripeTest(StripeTestCase):
         # Check that we switch to monthly plan at the end of current billing cycle.
         with time_machine.travel(self.next_year, tick=False):
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=25):
-                update_license_ledger_if_needed(user.realm, self.next_year)
+                billing_session.update_license_ledger_if_needed(self.next_year)
         self.assertEqual(LicenseLedger.objects.filter(plan=annual_plan).count(), 3)
         customer = get_customer_by_realm(user.realm)
         assert customer is not None
@@ -2997,8 +2999,9 @@ class StripeTest(StripeTestCase):
             self.assertEqual(plan.status, CustomerPlan.FREE_TRIAL)
 
             # Add some extra users before the realm is deactivated
+            billing_session = RealmBillingSession(user=user, realm=user.realm)
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=21):
-                update_license_ledger_if_needed(user.realm, self.now)
+                billing_session.update_license_ledger_if_needed(self.now)
 
             last_ledger_entry = LicenseLedger.objects.order_by("id").last()
             assert last_ledger_entry is not None
@@ -3084,10 +3087,11 @@ class StripeTest(StripeTestCase):
                         response,
                     )
 
+            billing_session = RealmBillingSession(user=user, realm=user.realm)
             # Verify that we still write LicenseLedger rows during the remaining
             # part of the cycle
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
-                update_license_ledger_if_needed(user.realm, self.now)
+                billing_session.update_license_ledger_if_needed(self.now)
             self.assertEqual(
                 LicenseLedger.objects.order_by("-id")
                 .values_list("licenses", "licenses_at_next_renewal")
@@ -3103,7 +3107,7 @@ class StripeTest(StripeTestCase):
 
             # Check that we downgrade properly if the cycle is over
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
-                update_license_ledger_if_needed(user.realm, free_trial_end_date)
+                billing_session.update_license_ledger_if_needed(free_trial_end_date)
             plan = CustomerPlan.objects.first()
             assert plan is not None
             self.assertIsNone(plan.next_invoice_date)
@@ -3118,7 +3122,7 @@ class StripeTest(StripeTestCase):
 
             # Verify that we don't write LicenseLedger rows once we've downgraded
             with patch("corporate.lib.stripe.get_latest_seat_count", return_value=40):
-                update_license_ledger_if_needed(user.realm, self.next_year)
+                billing_session.update_license_ledger_if_needed(self.next_year)
             self.assertEqual(
                 LicenseLedger.objects.order_by("-id")
                 .values_list("licenses", "licenses_at_next_renewal")
@@ -3546,8 +3550,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.status, CustomerPlan.ACTIVE)
 
         # Add some extra users before the realm is deactivated
+        billing_session = RealmBillingSession(user=user, realm=user.realm)
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
-            update_license_ledger_if_needed(user.realm, self.now)
+            billing_session.update_license_ledger_if_needed(self.now)
 
         last_ledger_entry = LicenseLedger.objects.order_by("id").last()
         assert last_ledger_entry is not None
@@ -4681,8 +4686,9 @@ class LicenseLedgerTest(StripeTestCase):
 
     def test_update_license_ledger_if_needed(self) -> None:
         realm = get_realm("zulip")
+        billing_session = RealmBillingSession(user=None, realm=realm)
         # Test no Customer
-        update_license_ledger_if_needed(realm, self.now)
+        billing_session.update_license_ledger_if_needed(self.now)
         self.assertFalse(LicenseLedger.objects.exists())
         # Test plan not automanaged
         self.local_upgrade(
@@ -4692,18 +4698,18 @@ class LicenseLedgerTest(StripeTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 1)
         self.assertEqual(plan.licenses(), self.seat_count + 1)
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count + 1)
-        update_license_ledger_if_needed(realm, self.now)
+        billing_session.update_license_ledger_if_needed(self.now)
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Test no active plan
         plan.automanage_licenses = True
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["automanage_licenses", "status"])
-        update_license_ledger_if_needed(realm, self.now)
+        billing_session.update_license_ledger_if_needed(self.now)
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Test update needed
         plan.status = CustomerPlan.ACTIVE
         plan.save(update_fields=["status"])
-        update_license_ledger_if_needed(realm, self.now)
+        billing_session.update_license_ledger_if_needed(self.now)
         self.assertEqual(LicenseLedger.objects.count(), 2)
 
     def test_update_license_ledger_for_automanaged_plan(self) -> None:
@@ -4716,25 +4722,27 @@ class LicenseLedgerTest(StripeTestCase):
         assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
+
+        billing_session = RealmBillingSession(user=None, realm=realm)
         # Simple increase
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=23):
-            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+            billing_session.update_license_ledger_for_automanaged_plan(plan, self.now)
             self.assertEqual(plan.licenses(), 23)
             self.assertEqual(plan.licenses_at_next_renewal(), 23)
         # Decrease
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
-            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+            billing_session.update_license_ledger_for_automanaged_plan(plan, self.now)
             self.assertEqual(plan.licenses(), 23)
             self.assertEqual(plan.licenses_at_next_renewal(), 20)
         # Increase, but not past high watermark
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=21):
-            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+            billing_session.update_license_ledger_for_automanaged_plan(plan, self.now)
             self.assertEqual(plan.licenses(), 23)
             self.assertEqual(plan.licenses_at_next_renewal(), 21)
         # Increase, but after renewal date, and below last year's high watermark
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=22):
-            update_license_ledger_for_automanaged_plan(
-                realm, plan, self.next_year + timedelta(seconds=1)
+            billing_session.update_license_ledger_for_automanaged_plan(
+                plan, self.next_year + timedelta(seconds=1)
             )
             self.assertEqual(plan.licenses(), 22)
             self.assertEqual(plan.licenses_at_next_renewal(), 22)
@@ -4884,24 +4892,25 @@ class InvoiceTest(StripeTestCase):
         self.login_user(user)
         with time_machine.travel(self.now, tick=False):
             self.add_card_and_upgrade(user)
+        realm = get_realm("zulip")
+        billing_session = RealmBillingSession(user=user, realm=realm)
         # Increase
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count + 3):
-            update_license_ledger_if_needed(get_realm("zulip"), self.now + timedelta(days=100))
+            billing_session.update_license_ledger_if_needed(self.now + timedelta(days=100))
         # Decrease
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
-            update_license_ledger_if_needed(get_realm("zulip"), self.now + timedelta(days=200))
+            billing_session.update_license_ledger_if_needed(self.now + timedelta(days=200))
         # Increase, but not past high watermark
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count + 1):
-            update_license_ledger_if_needed(get_realm("zulip"), self.now + timedelta(days=300))
+            billing_session.update_license_ledger_if_needed(self.now + timedelta(days=300))
         # Increase, but after renewal date, and below last year's high watermark
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count + 2):
-            update_license_ledger_if_needed(get_realm("zulip"), self.now + timedelta(days=400))
+            billing_session.update_license_ledger_if_needed(self.now + timedelta(days=400))
         # Increase, but after event_time
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count + 3):
-            update_license_ledger_if_needed(get_realm("zulip"), self.now + timedelta(days=500))
+            billing_session.update_license_ledger_if_needed(self.now + timedelta(days=500))
         plan = CustomerPlan.objects.first()
         assert plan is not None
-        billing_session = RealmBillingSession(realm=user.realm)
         billing_session.invoice_plan(plan, self.now + timedelta(days=400))
         stripe_customer_id = plan.customer.stripe_customer_id
         assert stripe_customer_id is not None
