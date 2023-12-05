@@ -167,6 +167,25 @@ class Command(BaseCommand):
             print("-" * 40)
 
 
+def add_card_to_customer(customer: Customer) -> None:
+    # Set the Stripe API key
+    stripe.api_key = get_secret("stripe_secret_key")
+
+    # Create a card payment method and attach it to the customer
+    payment_method = stripe.PaymentMethod.create(
+        type="card",
+        card={"token": "tok_visa"},
+    )
+
+    # Attach the payment method to the customer
+    stripe.PaymentMethod.attach(payment_method.id, customer=customer.stripe_customer_id)
+
+    # Set the default payment method for the customer
+    stripe.Customer.modify(
+        customer.stripe_customer_id,
+        invoice_settings={"default_payment_method": payment_method.id},
+    )
+
 def populate_realm(customer_profile: CustomerProfile) -> None:
     unique_id = customer_profile.unique_id
     if customer_profile.tier is None:
@@ -233,26 +252,8 @@ def populate_realm(customer_profile: CustomerProfile) -> None:
     billing_session = RealmBillingSession(user)
     customer = billing_session.update_or_create_stripe_customer()
     assert customer.stripe_customer_id is not None
-
-    # Add a test card to the customer.
     if customer_profile.card:
-        # Set the Stripe API key
-        stripe.api_key = get_secret("stripe_secret_key")
-
-        # Create a card payment method and attach it to the customer
-        payment_method = stripe.PaymentMethod.create(
-            type="card",
-            card={"token": "tok_visa"},
-        )
-
-        # Attach the payment method to the customer
-        stripe.PaymentMethod.attach(payment_method.id, customer=customer.stripe_customer_id)
-
-        # Set the default payment method for the customer
-        stripe.Customer.modify(
-            customer.stripe_customer_id,
-            invoice_settings={"default_payment_method": payment_method.id},
-        )
+        add_card_to_customer(customer)
 
     months = 12
     if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
