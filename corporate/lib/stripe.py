@@ -2161,8 +2161,28 @@ class BillingSession(ABC):
         raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
 
     def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
-        context: Dict[str, Any] = {}
         customer = self.get_customer()
+        is_remotely_hosted = isinstance(
+            self, (RemoteRealmBillingSession, RemoteServerBillingSession)
+        )
+
+        # We only support sponsorships for these plans.
+        sponsored_plan_name = CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD)
+        if is_remotely_hosted:
+            sponsored_plan_name = CustomerPlan.name_from_tier(
+                CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            )
+
+        plan_name = "Zulip Cloud Free"
+        if is_remotely_hosted:
+            plan_name = "Self-managed"
+
+        context: Dict[str, Any] = {
+            "billing_base_url": self.billing_base_url,
+            "is_remotely_hosted": is_remotely_hosted,
+            "sponsored_plan_name": sponsored_plan_name,
+            "plan_name": plan_name,
+        }
 
         if customer is not None and customer.sponsorship_pending:
             if self.on_paid_plan():
@@ -2178,12 +2198,6 @@ class BillingSession(ABC):
             if plan is not None:
                 context["plan_name"] = plan.name
                 context["free_trial"] = plan.is_free_trial()
-            elif self.is_sponsored():
-                # We don't create CustomerPlan objects for fully sponsored realms via support page.
-                context["plan_name"] = "Zulip Cloud Standard"
-            else:
-                # TODO: Don't hardcode this plan name.
-                context["plan_name"] = "Zulip Cloud Free"
 
         self.add_sponsorship_info_to_context(context)
         return context
@@ -2578,6 +2592,7 @@ class RealmBillingSession(BillingSession):
                 key=sponsorship_org_type_key_helper,
             ),
         )
+        context["org_name"] = self.realm.name
 
     @override
     def get_sponsorship_request_session_specific_context(
@@ -2856,6 +2871,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
                 key=sponsorship_org_type_key_helper,
             ),
         )
+        context["org_name"] = self.remote_realm.host
 
     @override
     def get_sponsorship_request_session_specific_context(
@@ -3147,6 +3163,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
                 key=sponsorship_org_type_key_helper,
             ),
         )
+        context["org_name"] = self.remote_server.hostname
 
     @override
     def get_sponsorship_request_session_specific_context(
