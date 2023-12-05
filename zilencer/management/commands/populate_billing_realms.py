@@ -5,12 +5,14 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import stripe
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from corporate.lib.stripe import (
     RealmBillingSession,
+    RemoteRealmBillingSession,
     RemoteServerBillingSession,
     UpgradeRequest,
     add_months,
@@ -22,9 +24,11 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.apps import flush_cache
+from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.streams import create_stream_if_needed
 from zerver.models import Realm, UserProfile, get_realm
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.views import update_remote_realm_data_for_server
 from zproject.config import get_secret
 
 current_time = timezone_now().strftime(TIMESTAMP_FORMAT)
@@ -58,6 +62,12 @@ class Command(BaseCommand):
             "--only-remote-server",
             action="store_true",
             help="Whether to only run for remote servers",
+        )
+
+        parser.add_argument(
+            "--only-remote-realm",
+            action="store_true",
+            help="Whether to only run for remote realms",
         )
 
     @override
@@ -129,7 +139,8 @@ class Command(BaseCommand):
                 unique_id="sponsored",
                 is_sponsored=True,
                 billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                # Customer plan might not exist for sponsored realms.
+                tier=CustomerPlan.TIER_CLOUD_COMMUNITY,
             ),
             CustomerProfile(
                 unique_id="free-trial",
@@ -173,27 +184,64 @@ class Command(BaseCommand):
             ),
             CustomerProfile(
                 unique_id="server-sponsored",
-                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                tier=CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
                 is_sponsored=True,
                 is_remote_server=True,
             ),
+            CustomerProfile(
+                unique_id="free-tier-remote-realm",
+                is_remote_realm=True,
+            ),
+            CustomerProfile(
+                unique_id="business-remote-realm",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                is_remote_realm=True,
+            ),
+            CustomerProfile(
+                unique_id="business-remote-free-trial",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                status=CustomerPlan.FREE_TRIAL,
+                is_remote_realm=True,
+            ),
+            CustomerProfile(
+                unique_id="business-remote-sponsorship-pending",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                sponsorship_pending=True,
+                is_remote_realm=True,
+            ),
+            CustomerProfile(
+                unique_id="remote-sponsorship-pending",
+                sponsorship_pending=True,
+                is_remote_realm=True,
+            ),
+            CustomerProfile(
+                unique_id="remote-realm-sponsored",
+                tier=CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+                is_sponsored=True,
+                is_remote_realm=True,
+            ),
         ]
 
-        # Delete all existing remote servers
-        RemoteZulipServer.objects.all().delete()
-        flush_cache(None)
-
         servers = []
+        remote_realms = []
         for customer_profile in customer_profiles:
-            if customer_profile.is_remote_server:
+            if customer_profile.is_remote_server and not options.get("only_remote_realm"):
                 server_conf = populate_remote_server(customer_profile)
                 servers.append(server_conf)
-            elif not options.get("only_remote_server"):
+            elif customer_profile.is_remote_realm and not options.get("only_remote_server"):
+                remote_realm_conf = populate_remote_realms(customer_profile)
+                remote_realms.append(remote_realm_conf)
+            elif not options.get("only_remote_server") and not options.get("only_remote_realm"):
                 populate_realm(customer_profile)
 
         print("-" * 40)
         for server in servers:
             for key, value in server.items():
+                print(f"{key}: {value}")
+            print("-" * 40)
+
+        for remote_realm_conf in remote_realms:
+            for key, value in remote_realm_conf.items():
                 print(f"{key}: {value}")
             print("-" * 40)
 
@@ -247,11 +295,14 @@ def create_plan_for_customer(customer: Customer, customer_profile: CustomerProfi
     )
 
 
+def populate_realm(customer_profile: CustomerProfile) -> Optional[Realm]:
     unique_id = customer_profile.unique_id
-    if customer_profile.tier is None:
+    if customer_profile.is_remote_realm:
+        plan_type = Realm.PLAN_TYPE_SELF_HOSTED
+    elif customer_profile.tier is None:
         plan_type = Realm.PLAN_TYPE_LIMITED
     elif (
-        customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD and customer_profile.is_sponsored
+        customer_profile.tier == CustomerPlan.TIER_CLOUD_COMMUNITY and customer_profile.is_sponsored
     ):
         plan_type = Realm.PLAN_TYPE_STANDARD_FREE
     elif customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD:
@@ -290,6 +341,7 @@ def create_plan_for_customer(customer: Customer, customer_profile: CustomerProfi
         full_name,
         role=UserProfile.ROLE_REALM_OWNER,
         acting_user=None,
+        tos_version=settings.TERMS_OF_SERVICE_VERSION,
     )
 
     stream, _ = create_stream_if_needed(
@@ -299,15 +351,19 @@ def create_plan_for_customer(customer: Customer, customer_profile: CustomerProfi
 
     bulk_add_subscriptions(realm, [stream], [user], acting_user=None)
 
+    if customer_profile.is_remote_realm:
+        # Remote realm billing data on their local server is irrelevant.
+        return realm
+
     if customer_profile.sponsorship_pending:
         customer = Customer.objects.create(
             realm=realm,
             sponsorship_pending=customer_profile.sponsorship_pending,
         )
-        return
+        return realm
 
     if customer_profile.tier is None:
-        return
+        return realm
 
     billing_session = RealmBillingSession(user)
     customer = billing_session.update_or_create_stripe_customer()
@@ -335,6 +391,11 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
 
     server_uuid = str(uuid.uuid4())
     api_key = server_uuid
+    hostname = f"{unique_id}.example.com"
+
+    # Delete existing remote server.
+    RemoteZulipServer.objects.filter(hostname=hostname).delete()
+    flush_cache(None)
 
     remote_server = RemoteZulipServer.objects.create(
         uuid=server_uuid,
@@ -389,4 +450,41 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
         "unique_id": unique_id,
         "server_uuid": server_uuid,
         "api_key": api_key,
+    }
+
+
+def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
+    local_realm = populate_realm(customer_profile)
+    assert local_realm is not None
+
+    remote_server_uuid = settings.ZULIP_ORG_ID
+    assert remote_server_uuid is not None
+    remote_server = RemoteZulipServer.objects.filter(
+        uuid=remote_server_uuid,
+    ).first()
+
+    if remote_server is None:
+        raise AssertionError("Remote server not found! Please run manage.py register_server")
+
+    update_remote_realm_data_for_server(
+        remote_server, get_realms_info_for_push_bouncer(local_realm.id)
+    )
+
+    remote_realm = RemoteRealm.objects.get(uuid=local_realm.uuid)
+    billing_session = RemoteRealmBillingSession(remote_realm)
+    customer = billing_session.update_or_create_stripe_customer()
+    assert customer.stripe_customer_id is not None
+    add_card_to_customer(customer)
+    if customer_profile.tier is not None:
+        billing_session.do_change_plan_type(
+            tier=customer_profile.tier, is_sponsored=customer_profile.is_sponsored
+        )
+        create_plan_for_customer(customer, customer_profile)
+
+    if customer_profile.sponsorship_pending:
+        billing_session.update_customer_sponsorship_status(True)
+
+    return {
+        "unique_id": customer_profile.unique_id,
+        "login_url": local_realm.uri + "/self-hosted-billing/",
     }
