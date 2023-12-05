@@ -1889,7 +1889,7 @@ class BillingSession(ABC):
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
             )
-            update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
+            self.update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
             return
 
         licenses_at_next_renewal = update_plan_request.licenses_at_next_renewal
@@ -1912,7 +1912,7 @@ class BillingSession(ABC):
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
             )
-            update_license_ledger_for_manual_plan(
+            self.update_license_ledger_for_manual_plan(
                 plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
             )
             return
@@ -2281,6 +2281,35 @@ class BillingSession(ABC):
                 success_message = self.do_change_plan_to_new_tier(new_plan_tier)
 
         return success_message
+
+    def update_license_ledger_for_manual_plan(
+        self,
+        plan: CustomerPlan,
+        event_time: datetime,
+        licenses: Optional[int] = None,
+        licenses_at_next_renewal: Optional[int] = None,
+    ) -> None:
+        if licenses is not None:
+            if not plan.customer.exempt_from_license_number_check:
+                assert self.current_count_for_billed_licenses() <= licenses
+            assert licenses > plan.licenses()
+            LicenseLedger.objects.create(
+                plan=plan,
+                event_time=event_time,
+                licenses=licenses,
+                licenses_at_next_renewal=licenses,
+            )
+        elif licenses_at_next_renewal is not None:
+            if not plan.customer.exempt_from_license_number_check:
+                assert self.current_count_for_billed_licenses() <= licenses_at_next_renewal
+            LicenseLedger.objects.create(
+                plan=plan,
+                event_time=event_time,
+                licenses=plan.licenses(),
+                licenses_at_next_renewal=licenses_at_next_renewal,
+            )
+        else:
+            raise AssertionError("Pass licenses or licenses_at_next_renewal")
 
 
 class RealmBillingSession(BillingSession):
@@ -3362,34 +3391,6 @@ def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
         server=remote_server,
         event_time=timezone_now(),
     )
-
-
-def update_license_ledger_for_manual_plan(
-    plan: CustomerPlan,
-    event_time: datetime,
-    licenses: Optional[int] = None,
-    licenses_at_next_renewal: Optional[int] = None,
-) -> None:
-    if licenses is not None:
-        assert plan.customer.realm is not None
-        if not plan.customer.exempt_from_license_number_check:
-            assert get_latest_seat_count(plan.customer.realm) <= licenses
-        assert licenses > plan.licenses()
-        LicenseLedger.objects.create(
-            plan=plan, event_time=event_time, licenses=licenses, licenses_at_next_renewal=licenses
-        )
-    elif licenses_at_next_renewal is not None:
-        assert plan.customer.realm is not None
-        if not plan.customer.exempt_from_license_number_check:
-            assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
-        LicenseLedger.objects.create(
-            plan=plan,
-            event_time=event_time,
-            licenses=plan.licenses(),
-            licenses_at_next_renewal=licenses_at_next_renewal,
-        )
-    else:
-        raise AssertionError("Pass licenses or licenses_at_next_renewal")
 
 
 def update_license_ledger_for_automanaged_plan(
