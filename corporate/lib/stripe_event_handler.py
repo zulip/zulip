@@ -6,11 +6,11 @@ from django.conf import settings
 
 from corporate.lib.stripe import (
     BillingError,
+    InvalidPlanUpgradeError,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     UpgradeWithExistingPlanError,
-    ensure_customer_does_not_have_active_plan,
 )
 from corporate.models import Customer, CustomerPlan, Event, PaymentIntent, Session
 from zerver.models import get_active_user_profile_by_id_in_realm
@@ -123,10 +123,13 @@ def handle_payment_intent_succeeded_event(
         description=description,
         discountable=False,
     )
+    billing_session = get_billing_session_for_stripe_webhook(
+        payment_intent.customer, metadata.get("user_id")
+    )
     plan_tier = int(metadata["plan_tier"])
     try:
-        ensure_customer_does_not_have_active_plan(payment_intent.customer)
-    except UpgradeWithExistingPlanError as e:
+        billing_session.ensure_current_plan_is_upgradable(payment_intent.customer, plan_tier)
+    except (UpgradeWithExistingPlanError, InvalidPlanUpgradeError) as e:
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
             collection_method="charge_automatically",
@@ -138,9 +141,6 @@ def handle_payment_intent_succeeded_event(
         stripe.Invoice.finalize_invoice(stripe_invoice)
         raise e
 
-    billing_session = get_billing_session_for_stripe_webhook(
-        payment_intent.customer, metadata.get("user_id")
-    )
     billing_session.process_initial_upgrade(
         plan_tier,
         int(metadata["licenses"]),
@@ -148,4 +148,5 @@ def handle_payment_intent_succeeded_event(
         int(metadata["billing_schedule"]),
         True,
         False,
+        billing_session.get_remote_server_legacy_plan(payment_intent.customer),
     )

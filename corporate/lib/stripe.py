@@ -408,6 +408,14 @@ class UpgradeWithExistingPlanError(BillingError):
         )
 
 
+class InvalidPlanUpgradeError(BillingError):
+    def __init__(self, message: str) -> None:
+        super().__init__(
+            "invalid plan upgrade",
+            message,
+        )
+
+
 class InvalidBillingScheduleError(Exception):
     def __init__(self, billing_schedule: int) -> None:
         self.message = f"Unknown billing_schedule: {billing_schedule}"
@@ -1066,7 +1074,7 @@ class BillingSession(ABC):
         assert plan is not None
         type_of_plan_change = self.get_type_of_plan_tier_change(plan.tier, new_plan_tier)
         if type_of_plan_change != PlanTierChangeType.UPGRADE:
-            raise BillingError(
+            raise InvalidPlanUpgradeError(
                 f"Cannot upgrade from {plan.name} to {CustomerPlan.name_from_tier(new_plan_tier)}"
             )
 
