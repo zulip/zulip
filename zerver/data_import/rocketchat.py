@@ -182,7 +182,7 @@ def convert_channel_data(
         # should be allowed to post in the converted Zulip stream.
         # For more details: https://zulip.com/help/stream-sending-policy
         #
-        # See `Stream` model in `zerver/models.py` to know about what each
+        # See `Stream` model in `zerver/models/__init__.py` to know about what each
         # number represent.
         stream_post_policy = 4 if channel_dict.get("ro", False) else 1
 
@@ -886,7 +886,7 @@ def map_receiver_id_to_recipient_id(
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
-# This is inspired by get_huddle_hash from zerver/models.py. It
+# This is inspired by get_huddle_hash from zerver/models/__init__.py. It
 # expects strings identifying Rocket.Chat users, like
 # `LdBZ7kPxtKESyHPEe`, not integer IDs.
 #

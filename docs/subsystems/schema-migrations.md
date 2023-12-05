@@ -9,9 +9,9 @@ This page documents some important issues related to writing schema
 migrations.
 
 - If your database migration is just to reflect new fields in
-  `models.py`, you'll typically want to just:
+  `models/*.py`, you'll typically want to just:
   - Rebase your branch before you start (this may save work later).
-  - Update the model class definitions in `zerver/models.py`.
+  - Update the model class definitions in `zerver/models/*.py`.
   - Run `./manage.py makemigrations` to generate a migration file
   - Rename the migration file to have a descriptive name if Django
     generated used a date-based name like `0089_auto_20170710_1353.py`
@@ -33,7 +33,7 @@ migrations.
   - If your migrations were automatically generated using
     `manage.py makemigrations`, a good option is to just remove your
     migration and rerun the command after rebasing. Remember to
-    `git rebase` to do this in the the commit that changed `models.py`
+    `git rebase` to do this in the the commit that changed `models/*.py`
     if you have a multi-commit branch.
   - If you wrote code as part of preparing your migrations, or prefer
     this workflow, you can use run `./tools/renumber-migrations`,
