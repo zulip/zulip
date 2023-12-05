@@ -18,7 +18,7 @@ from zerver.lib.remote_server import send_realms_only_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserProfile
-from zilencer.models import RemoteRealm
+from zilencer.models import RemoteRealm, RemoteRealmBillingUser
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -27,7 +27,11 @@ if TYPE_CHECKING:
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class RemoteBillingAuthenticationTest(BouncerTestCase):
     def execute_remote_billing_authentication_flow(
-        self, user: UserProfile, next_page: Optional[str] = None
+        self,
+        user: UserProfile,
+        next_page: Optional[str] = None,
+        expect_tos: bool = True,
+        confirm_tos: bool = True,
     ) -> "TestHttpResponse":
         now = timezone_now()
 
@@ -42,10 +46,24 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
 
         # We've received a redirect to an URL that will grant us an authenticated
         # session for remote billing.
+        signed_auth_url = result["Location"]
         with time_machine.travel(now, tick=False):
-            result = self.client_get(result["Location"], subdomain="selfhosting")
-        # When successful, we receive a final redirect.
-        self.assertEqual(result.status_code, 302)
+            result = self.client_get(signed_auth_url, subdomain="selfhosting")
+        # When successful, we see a confirmation page.
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Log in to Zulip server billing"], result)
+        self.assert_in_success_response([user.realm.host], result)
+
+        params = {}
+        if expect_tos:
+            self.assert_in_success_response(["I agree", "Terms of Service"], result)
+        if confirm_tos:
+            params = {"tos_consent": "true"}
+
+        result = self.client_post(signed_auth_url, params, subdomain="selfhosting")
+        if result.status_code >= 400:
+            # Failures should be returned early so the caller can assert about them.
+            return result
 
         # Verify the authed data that should have been stored in the session.
         identity_dict = RemoteBillingIdentityDict(
@@ -129,6 +147,62 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         self.assert_in_success_response([desdemona.delivery_email], result)
 
     @responses.activate
+    def test_remote_billing_authentication_flow_tos_consent_failure(self) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
+        self.add_mock_response()
+        send_realms_only_to_push_bouncer()
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona,
+            expect_tos=True,
+            confirm_tos=False,
+        )
+
+        self.assert_json_error(result, "You must accept the Terms of Service to proceed.")
+
+    @responses.activate
+    def test_remote_billing_authentication_flow_tos_consent_update(self) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
+        self.add_mock_response()
+        send_realms_only_to_push_bouncer()
+
+        with self.settings(TERMS_OF_SERVICE_VERSION="1.0"):
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona,
+                expect_tos=True,
+                confirm_tos=True,
+            )
+
+        self.assertEqual(result.status_code, 302)
+
+        remote_billing_user = RemoteRealmBillingUser.objects.last()
+        assert remote_billing_user is not None
+        self.assertEqual(remote_billing_user.user_uuid, desdemona.uuid)
+        self.assertEqual(remote_billing_user.tos_version, "1.0")
+
+        # Now bump the ToS version. They need to agree again.
+        with self.settings(TERMS_OF_SERVICE_VERSION="2.0"):
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona,
+                expect_tos=True,
+                confirm_tos=False,
+            )
+            self.assert_json_error(result, "You must accept the Terms of Service to proceed.")
+
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona,
+                expect_tos=True,
+                confirm_tos=True,
+            )
+        remote_billing_user.refresh_from_db()
+        self.assertEqual(remote_billing_user.user_uuid, desdemona.uuid)
+        self.assertEqual(remote_billing_user.tos_version, "2.0")
+
+    @responses.activate
     def test_remote_billing_authentication_flow_expired_session(self) -> None:
         now = timezone_now()
 
@@ -174,7 +248,13 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             # flow via execute_remote_billing_authentication_flow with next_page="plans".
             # So let's test that and assert that we end up successfully re-authed on the /plans
             # page.
-            result = self.execute_remote_billing_authentication_flow(desdemona, next_page="plans")
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona,
+                next_page="plans",
+                # ToS has already been confirmed earlier.
+                expect_tos=False,
+                confirm_tos=False,
+            )
             self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
             result = self.client_get(result["Location"], subdomain="selfhosting")
             self.assert_in_success_response(["Your remote user info:"], result)

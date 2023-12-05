@@ -150,6 +150,18 @@ class RemoteRealm(models.Model):
         return f"{self.host} {str(self.uuid)[0:12]}"
 
 
+class RemoteRealmBillingUser(models.Model):
+    remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE)
+
+    # The .uuid of the UserProfile on the remote server
+    user_uuid = models.UUIDField()
+    full_name = models.TextField(default="")
+    email = models.EmailField()
+
+    TOS_VERSION_BEFORE_FIRST_LOGIN = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+    tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
+
+
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
     """Audit data associated with a remote Zulip server (not specific to a
     realm).  Used primarily for tracking registration and billing

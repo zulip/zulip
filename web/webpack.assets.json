@@ -28,6 +28,7 @@
         "./src/billing/upgrade",
         "jquery-validation",
         "./src/billing/legacy_server_login",
+        "./src/billing/remote_billing_confirmation",
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [
