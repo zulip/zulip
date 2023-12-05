@@ -63,7 +63,6 @@ from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Message,
     Reaction,
     Realm,
@@ -80,6 +79,7 @@ from zerver.models import (
     get_usermessage_by_message_id,
     query_for_ids,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 
 class MessageDetailsDict(TypedDict, total=False):
