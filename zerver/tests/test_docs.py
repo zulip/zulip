@@ -546,7 +546,7 @@ class PlansPageTest(ZulipTestCase):
         sign_up_now = "Create organization"
         upgrade_to_standard = "Upgrade to Standard"
         current_plan = "Current plan"
-        sponsorship_pending = "Sponsorship pending"
+        sponsorship_pending = "Sponsorship requested"
 
         # Root domain
         result = self.client_get("/plans/", subdomain="")

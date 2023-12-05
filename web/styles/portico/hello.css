@@ -20,6 +20,12 @@ body {
     color: hsl(0deg 0% 100%);
 }
 
+body :target {
+    /* Keep elements targeted by URL fragments visible below the
+    floating top menu; coordinate the value here with the menu's height. */
+    scroll-margin-top: 60px;
+}
+
 a {
     text-decoration: none;
     color: inherit;
