@@ -79,7 +79,7 @@ def further_validated_draft_dict(
 
 
 def draft_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
     def draft_view_func(

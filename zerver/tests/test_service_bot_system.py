@@ -422,7 +422,7 @@ ParamT = ParamSpec("ParamT")
 
 
 def for_all_bot_types(
-    test_func: Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]
+    test_func: Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None],
 ) -> Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]:
     @wraps(test_func)
     def _wrapped(
@@ -443,7 +443,7 @@ def patch_queue_publish(
     Callable[["TestServiceBotEventTriggers"], None],
 ]:
     def inner(
-        func: Callable[["TestServiceBotEventTriggers", mock.Mock], None]
+        func: Callable[["TestServiceBotEventTriggers", mock.Mock], None],
     ) -> Callable[["TestServiceBotEventTriggers"], None]:
         @wraps(func)
         def _wrapped(self: "TestServiceBotEventTriggers") -> None:

@@ -9,6 +9,7 @@ run out of cron.
 
 See puppet/kandra/files/cron.d/zephyr-mirror for the crontab details.
 """
+
 import os
 import sys
 import time

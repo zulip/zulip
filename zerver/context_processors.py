@@ -93,9 +93,8 @@ def zulip_default_corporate_context(request: HttpRequest) -> Dict[str, Any]:
     from corporate.lib.decorator import is_self_hosting_management_subdomain
 
     # Check if view function is in corporate app.
-    if (
-        request.resolver_match is not None
-        and not request.resolver_match.func.__module__.startswith("corporate")
+    if request.resolver_match is not None and not request.resolver_match.func.__module__.startswith(
+        "corporate"
     ):
         return {
             "is_self_hosting_management_page": False,

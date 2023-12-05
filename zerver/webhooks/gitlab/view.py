@@ -189,7 +189,7 @@ def get_assignees(payload: WildValue) -> Union[List[WildValue], WildValue]:
 
 
 def replace_assignees_username_with_name(
-    assignees: Union[List[WildValue], WildValue]
+    assignees: Union[List[WildValue], WildValue],
 ) -> List[Dict[str, str]]:
     """Replace the username of each assignee with their (full) name.
 

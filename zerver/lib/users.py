@@ -747,9 +747,9 @@ def get_subscribers_of_target_user_subscriptions(
     for user_id in target_user_ids:
         target_user_subbed_recipients = target_user_subscriptions_dict[user_id]
         for recipient_id in target_user_subbed_recipients:
-            users_subbed_to_target_user_subscriptions_dict[
-                user_id
-            ] |= subscribers_dict_by_recipient_ids[recipient_id]
+            users_subbed_to_target_user_subscriptions_dict[user_id] |= (
+                subscribers_dict_by_recipient_ids[recipient_id]
+            )
 
     return users_subbed_to_target_user_subscriptions_dict
 

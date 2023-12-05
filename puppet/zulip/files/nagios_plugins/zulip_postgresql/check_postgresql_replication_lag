@@ -6,6 +6,7 @@ connects to PostgreSQL as has been granted the `pg_monitor` role.
 
 This can only use stdlib modules from python.
 """
+
 import configparser
 import re
 import subprocess

@@ -3,6 +3,7 @@
 Fetch contributors data from GitHub using their API, convert it to structured
 JSON data for the /team/ page contributors section.
 """
+
 import argparse
 import json
 import logging

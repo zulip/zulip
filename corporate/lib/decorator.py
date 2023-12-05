@@ -38,7 +38,7 @@ def is_self_hosting_management_subdomain(request: HttpRequest) -> bool:
 
 
 def self_hosting_management_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -52,7 +52,7 @@ def self_hosting_management_endpoint(
 
 
 def authenticated_remote_realm_management_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, RemoteRealmBillingSession, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, RemoteRealmBillingSession, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -152,7 +152,7 @@ def get_next_page_param_from_request_path(request: HttpRequest) -> Optional[str]
 
 
 def authenticated_remote_server_management_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, RemoteServerBillingSession, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, RemoteServerBillingSession, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(

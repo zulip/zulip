@@ -724,7 +724,8 @@ class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
 
         try:
             return self.cached_function(
-                *args, **kwargs  # type: ignore[arg-type] # might be unhashable
+                *args,
+                **kwargs,  # type: ignore[arg-type] # might be unhashable
             )
         except TypeError:
             # args or kwargs contains an element which is unhashable. In
@@ -750,7 +751,7 @@ def ignore_unhashable_lru_cache(
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 
     def decorator(
-        user_function: Callable[ParamT, ReturnT]
+        user_function: Callable[ParamT, ReturnT],
     ) -> IgnoreUnhashableLruCacheWrapper[ParamT, ReturnT]:
         return IgnoreUnhashableLruCacheWrapper(user_function, internal_decorator(user_function))
 

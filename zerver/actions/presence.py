@@ -133,9 +133,7 @@ def do_update_user_presence(
         # and also is under the risk of being shown by clients as offline before the next regular presence checkin
         # (so at least `settings.OFFLINE_THRESHOLD_SECS - settings.PRESENCE_PING_INTERVAL_SECS - 10`).
         # These two values happen to be the same in the default configuration.
-        seconds=settings.OFFLINE_THRESHOLD_SECS
-        - settings.PRESENCE_PING_INTERVAL_SECS
-        - 10
+        seconds=settings.OFFLINE_THRESHOLD_SECS - settings.PRESENCE_PING_INTERVAL_SECS - 10
     )
     became_online = status == UserPresence.LEGACY_STATUS_ACTIVE_INT and now_online
 

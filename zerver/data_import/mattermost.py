@@ -806,7 +806,7 @@ def write_emoticon_data(
 
 
 def create_username_to_user_mapping(
-    user_data_list: List[Dict[str, Any]]
+    user_data_list: List[Dict[str, Any]],
 ) -> Dict[str, Dict[str, Any]]:
     username_to_user = {}
     for user in user_data_list:

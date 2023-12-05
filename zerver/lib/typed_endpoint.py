@@ -278,7 +278,7 @@ def parse_single_parameter(
 
 
 def parse_view_func_signature(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], object]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], object],
 ) -> ViewFuncInfo:
     """This is responsible for inspecting the function signature and getting the
     metadata from the parameters. We want to keep this function as pure as

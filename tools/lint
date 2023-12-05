@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import re
 import sys
 
 tools_dir = os.path.dirname(os.path.abspath(__file__))
@@ -168,13 +167,11 @@ def run() -> None:
         description="Formats CSS, JavaScript, YAML",
     )
     linter_config.external_linter(
-        "black",
-        ["black"],
+        "ruff-format",
+        ["ruff", "format"],
         ["py", "pyi"],
         description="Reformats Python code",
         check_arg=["--check"],
-        suppress_line=lambda line: line == "All done! ✨ 🍰 ✨\n"
-        or re.fullmatch(r"\d+ files? would be left unchanged\.\n", line) is not None,
     )
 
     semgrep_command = [

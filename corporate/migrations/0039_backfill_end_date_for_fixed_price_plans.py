@@ -51,7 +51,6 @@ def backfill_end_date_for_fixed_price_plans(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("corporate", "0038_customerplanoffer_sent_invoice_id_invoice"),
     ]

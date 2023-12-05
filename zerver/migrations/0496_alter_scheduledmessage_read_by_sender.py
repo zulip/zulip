@@ -29,9 +29,7 @@ def populate_read_by_sender(apps: StateApps, schema_editor: BaseDatabaseSchemaEd
         | Q(sending_client_name_lower__contains="desktop app"),
         ~Q(recipient=F("sender__recipient")),
         read_by_sender=None,
-    ).update(
-        read_by_sender=True
-    )
+    ).update(read_by_sender=True)
     ScheduledMessage.objects.filter(read_by_sender=None).update(read_by_sender=False)
 
 

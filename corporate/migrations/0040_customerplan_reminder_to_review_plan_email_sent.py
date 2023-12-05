@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("corporate", "0039_backfill_end_date_for_fixed_price_plans"),
     ]

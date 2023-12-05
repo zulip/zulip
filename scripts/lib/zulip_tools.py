@@ -31,7 +31,7 @@ FAIL = "\033[91m"
 ENDC = "\033[0m"
 BLACKONYELLOW = "\x1b[0;30;43m"
 WHITEONRED = "\x1b[0;37;41m"
-BOLDRED = "\x1B[1;31m"
+BOLDRED = "\x1b[1;31m"
 BOLD = "\x1b[1m"
 GRAY = "\x1b[90m"
 

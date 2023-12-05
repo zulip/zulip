@@ -17,7 +17,6 @@ def set_initial_value_for_zulip_update_announcements_stream(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0499_rename_signup_notifications_stream_realm_signup_announcements_stream"),
     ]
