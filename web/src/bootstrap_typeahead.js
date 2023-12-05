@@ -130,6 +130,19 @@
  *
  *   This allows us to have things like a close button, and be able
  *   to move focus there without the typeahead closing.
+ *
+ * 15. Add `allowNoHighlight` and `shouldHighlightFirstResult` options:
+ *
+ *   Allow none of the typeahead options to be highlighted, which lets
+ *   the user remove highlight by going navigating (with the keyboard)
+ *   past the last item or before the first item.
+ *
+ *   Why? A main way to initiate a search is to press enter from the
+ *   search box, but if an item is highlighted then the enter key selects
+ *   that item to add it as a pill to the search box.
+ *
+ *   `shouldHighlightFirstResult` relatedly lets us decide whether
+ *   the first result should be highlighted when the typeahead opens.
  * ============================================================ */
 
 import $ from "jquery";
@@ -163,6 +176,7 @@ const defaults = {
     dropup: false,
     advanceKeyCodes: [],
     tabIsEnter: true,
+    shouldHighlightFirstResult: () => true,
 };
 
 const Typeahead = function (element, options) {
@@ -370,7 +384,9 @@ Typeahead.prototype = {
             return $i[0];
         });
 
-        $items.first().addClass("active");
+        if (!(this.options.allowNoHighlight && !this.options.shouldHighlightFirstResult())) {
+            $items.first().addClass("active");
+        }
         this.$menu.empty().append($items);
         return this;
     },
@@ -378,6 +394,13 @@ Typeahead.prototype = {
     next() {
         const $active = this.$menu.find(".active").removeClass("active");
         let $next = $active.next();
+
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (this.options.allowNoHighlight && $active.length && !$next.length) {
+            return;
+        }
 
         if (!$next.length) {
             $next = $(this.$menu.find("li")[0]);
@@ -393,6 +416,13 @@ Typeahead.prototype = {
     prev() {
         const $active = this.$menu.find(".active").removeClass("active");
         let $prev = $active.prev();
+
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (this.options.allowNoHighlight && $active.length && !$prev.length) {
+            return;
+        }
 
         if (!$prev.length) {
             $prev = this.$menu.find("li").last();
