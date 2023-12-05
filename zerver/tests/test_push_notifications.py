@@ -1396,6 +1396,112 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
+    def test_analytics_api_foreign_keys_to_remote_realm(self) -> None:
+        self.add_mock_response()
+
+        user = self.example_user("hamlet")
+        end_time = self.TIME_ZERO
+
+        # Create some rows we'll send to remote server
+        realm_stat = LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY)
+        realm_count = RealmCount.objects.create(
+            realm=user.realm, property=realm_stat.property, end_time=end_time, value=5
+        )
+        installation_count = InstallationCount.objects.create(
+            property=realm_stat.property,
+            end_time=end_time,
+            value=5,
+        )
+        realm_audit_log = RealmAuditLog.objects.create(
+            realm=user.realm,
+            modified_user=user,
+            event_type=RealmAuditLog.USER_CREATED,
+            event_time=end_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
+        )
+        realm_count_data, installation_count_data, realmauditlog_data = build_analytics_data(
+            RealmCount.objects.all(), InstallationCount.objects.all(), RealmAuditLog.objects.all()
+        )
+
+        # Send the data to the bouncer without any realms data. This should lead
+        # to successful saving of the data, but with the remote_realm foreign key
+        # set to NULL.
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/server/analytics",
+            {
+                "realm_counts": orjson.dumps(realm_count_data).decode(),
+                "installation_counts": orjson.dumps(installation_count_data).decode(),
+                "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
+                "realms": orjson.dumps([]).decode(),
+            },
+            subdomain="",
+        )
+        self.assert_json_success(result)
+        remote_realm_count = RemoteRealmCount.objects.latest("id")
+        remote_installation_count = RemoteInstallationCount.objects.latest("id")
+        remote_realm_audit_log = RemoteRealmAuditLog.objects.latest("id")
+
+        self.assertEqual(remote_realm_count.remote_id, realm_count.id)
+        self.assertEqual(remote_realm_count.remote_realm, None)
+        self.assertEqual(remote_installation_count.remote_id, installation_count.id)
+        # InstallationCont/RemoteInstallationCount don't have realm/remote_realm foreign
+        # keys, because they're aggregated over all realms.
+
+        self.assertEqual(remote_realm_audit_log.remote_id, realm_audit_log.id)
+        self.assertEqual(remote_realm_audit_log.remote_realm, None)
+
+        send_analytics_to_push_bouncer()
+
+        remote_realm_count.refresh_from_db()
+        remote_installation_count.refresh_from_db()
+        remote_realm_audit_log.refresh_from_db()
+
+        remote_realm = RemoteRealm.objects.get(uuid=user.realm.uuid)
+
+        self.assertEqual(remote_realm_count.remote_realm, remote_realm)
+        self.assertEqual(remote_realm_audit_log.remote_realm, remote_realm)
+
+        current_remote_realm_count_amount = RemoteRealmCount.objects.count()
+        current_remote_realm_audit_log_amount = RemoteRealmAuditLog.objects.count()
+
+        # Now create and send new data (including realm info) and verify it has .remote_realm
+        # set as it should.
+        RealmCount.objects.create(
+            realm=user.realm,
+            property=realm_stat.property,
+            end_time=end_time + timedelta(days=1),
+            value=6,
+        )
+        InstallationCount.objects.create(
+            property=realm_stat.property, end_time=end_time + timedelta(days=1), value=6
+        )
+        RealmAuditLog.objects.create(
+            realm=user.realm,
+            modified_user=user,
+            event_type=RealmAuditLog.USER_CREATED,
+            event_time=end_time,
+            extra_data={"data": "foo"},
+        )
+        send_analytics_to_push_bouncer()
+
+        # Make sure new data was created, so that we're actually testing what we think.
+        self.assertEqual(RemoteRealmCount.objects.count(), current_remote_realm_count_amount + 1)
+        self.assertEqual(
+            RemoteRealmAuditLog.objects.count(), current_remote_realm_audit_log_amount + 1
+        )
+
+        for remote_realm_count in RemoteRealmCount.objects.filter(realm_id=user.realm.id):
+            self.assertEqual(remote_realm_count.remote_realm, remote_realm)
+        for remote_realm_audit_log in RemoteRealmAuditLog.objects.filter(realm_id=user.realm.id):
+            self.assertEqual(remote_realm_audit_log.remote_realm, remote_realm)
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
     def test_analytics_api_invalid(self) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
