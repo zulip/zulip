@@ -10,10 +10,12 @@
 
 {!start-composing.md!}
 
-1. _(optional)_ Select the text you want to format.
+1. _(optional)_ Select the text you want to hide inside the spoiler.
 
 1. Click the **Spoiler** (<i class="zulip-icon zulip-icon-spoiler"></i>)
    icon at the bottom of the compose box to insert spoiler formatting.
+
+1. Replace `Header` with the desired heading text.
 
 !!! tip ""
 
