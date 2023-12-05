@@ -4,6 +4,16 @@
 
 ## Insert code formatting
 
+Zulip's compose box has a smart **Code** (<i class="zulip-icon
+zulip-icon-code"></i>) button, which inserts contextually appropriate code
+formatting:
+
+- If no text is selected, the button inserts code block (` ``` `) formatting.
+- If selected text is on one line, the button inserts code span (`` ` ``)
+  formatting.
+- If selected text is on multiple lines, the button inserts code block (` ``` `)
+  formatting.
+
 {start_tabs}
 
 {tab|via-compose-box-buttons}
@@ -13,9 +23,11 @@
 1. _(optional)_ Select the text you want to format.
 
 1. Click the **Code** (<i class="zulip-icon zulip-icon-code"></i>) icon at the
-   bottom of the compose box to insert code formatting. The appropriate inline
-   or block formatting will be applied automatically depending on whether you
-   selected a whole line, part of a line, or multiple lines.
+   bottom of the compose box to insert code formatting.
+
+1. _(optional)_ To enable syntax highlighting in a code bock, start typing the
+   name of the desired programming language directly after the initial ` ``` `.
+   Select the language from the auto-complete suggestions.
 
 !!! tip ""
 
