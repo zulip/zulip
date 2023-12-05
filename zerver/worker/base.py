@@ -97,10 +97,16 @@ class QueueProcessingWorker(ABC):
     # startup and steady-state memory.
     PREFETCH = 100
 
-    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
+    def __init__(
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
+    ) -> None:
         self.q: Optional[SimpleQueueClient] = None
         self.threaded = threaded
         self.disable_timeout = disable_timeout
+        self.worker_num = worker_num
         if not hasattr(self, "queue_name"):
             raise WorkerDeclarationError("Queue worker declared without queue_name")
 
