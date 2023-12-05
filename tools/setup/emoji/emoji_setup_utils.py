@@ -107,7 +107,7 @@ def emoji_is_supported(emoji_dict: Dict[str, Any]) -> bool:
 
 
 def generate_codepoint_to_names_map(
-    emoji_name_maps: Dict[str, Dict[str, Any]]
+    emoji_name_maps: Dict[str, Dict[str, Any]],
 ) -> Dict[str, List[str]]:
     # The first element of the names list is always the canonical name.
     return {

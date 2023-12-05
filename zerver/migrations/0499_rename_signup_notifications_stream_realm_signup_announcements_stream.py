@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0498_rename_notifications_stream_realm_new_stream_announcements_stream"),
     ]

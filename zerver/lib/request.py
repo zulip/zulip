@@ -335,7 +335,7 @@ ReturnT = TypeVar("ReturnT")
 # expected to call json_success or raise JsonableError, as it uses JsonableError
 # internally when it encounters an error
 def has_request_variables(
-    req_func: Callable[Concatenate[HttpRequest, ParamT], ReturnT]
+    req_func: Callable[Concatenate[HttpRequest, ParamT], ReturnT],
 ) -> Callable[Concatenate[HttpRequest, ParamT], ReturnT]:
     num_params = req_func.__code__.co_argcount
     default_param_values = cast(FunctionType, req_func).__defaults__

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zilencer", "0058_remoteinstallationcount_add_mobile_pushes_forwarded_index"),
     ]

@@ -6,6 +6,7 @@ Nagios plugin to check that our MIT users' Zephyr mirrors are running.
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
+
 import os
 import sys
 from datetime import timedelta

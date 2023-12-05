@@ -272,7 +272,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
 
 
 def do_soft_deactivate_users(
-    users: Union[Sequence[UserProfile], QuerySet[UserProfile]]
+    users: Union[Sequence[UserProfile], QuerySet[UserProfile]],
 ) -> List[UserProfile]:
     BATCH_SIZE = 100
     users_soft_deactivated = []

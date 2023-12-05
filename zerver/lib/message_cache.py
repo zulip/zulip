@@ -262,7 +262,7 @@ class MessageDict:
 
     @staticmethod
     def sew_submessages_and_reactions_to_msgs(
-        messages: List[Dict[str, Any]]
+        messages: List[Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
         msg_ids = [msg["id"] for msg in messages]
         submessages = SubMessage.get_raw_db_rows(msg_ids)
