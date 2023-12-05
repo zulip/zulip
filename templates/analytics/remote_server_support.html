@@ -45,6 +45,7 @@
                 <br />
                 <b>Last updated</b>: {{ remote_server.last_updated|timesince }} ago<br />
                 <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
+                <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
                 {% if remote_server.plan_type == 100 %}
                     <h4>On 100% sponsored Zulip Community plan.</h4>
                 {% endif %}

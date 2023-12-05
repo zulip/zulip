@@ -66,13 +66,17 @@ if settings.BILLING_ENABLED:
     from corporate.models import CustomerPlan
 
 
-def get_plan_name(plan_type: int) -> str:
+def get_plan_type_string(plan_type: int) -> str:
     return {
-        Realm.PLAN_TYPE_SELF_HOSTED: "self-hosted",
-        Realm.PLAN_TYPE_LIMITED: "limited",
-        Realm.PLAN_TYPE_STANDARD: "standard",
-        Realm.PLAN_TYPE_STANDARD_FREE: "open source",
-        Realm.PLAN_TYPE_PLUS: "plus",
+        Realm.PLAN_TYPE_SELF_HOSTED: "Self-hosted",
+        Realm.PLAN_TYPE_LIMITED: "Limited",
+        Realm.PLAN_TYPE_STANDARD: "Standard",
+        Realm.PLAN_TYPE_STANDARD_FREE: "Standard free",
+        Realm.PLAN_TYPE_PLUS: "Plus",
+        RemoteZulipServer.PLAN_TYPE_SELF_HOSTED: "Self-hosted",
+        RemoteZulipServer.PLAN_TYPE_COMMUNITY: "Community",
+        RemoteZulipServer.PLAN_TYPE_BUSINESS: "Business",
+        RemoteZulipServer.PLAN_TYPE_ENTERPRISE: "Enterprise",
     }[plan_type]
 
 
@@ -210,7 +214,7 @@ def support(
         elif plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
-            msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(plan_type)} "
+            msg = f"Plan type of {realm.string_id} changed from {get_plan_type_string(current_plan_type)} to {get_plan_type_string(plan_type)} "
             context["success_message"] = msg
         elif org_type is not None:
             current_realm_type = realm.org_type
@@ -475,6 +479,7 @@ def remote_servers_support(
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
     context["plan_data"] = plan_data
     context["get_discount"] = get_customer_discount_for_support_view
+    context["get_plan_type_name"] = get_plan_type_string
 
     return render(
         request,

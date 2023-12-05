@@ -504,7 +504,7 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             m.assert_called_once_with(get_realm("zulip"), 2, acting_user=iago)
             self.assert_in_success_response(
-                ["Plan type of zulip changed from self-hosted to limited"], result
+                ["Plan type of zulip changed from Self-hosted to Limited"], result
             )
 
         with mock.patch("analytics.views.support.do_change_realm_plan_type") as m:
@@ -513,7 +513,7 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             m.assert_called_once_with(get_realm("zulip"), 10, acting_user=iago)
             self.assert_in_success_response(
-                ["Plan type of zulip changed from self-hosted to plus"], result
+                ["Plan type of zulip changed from Self-hosted to Plus"], result
             )
 
     def test_change_org_type(self) -> None:
