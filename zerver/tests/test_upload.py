@@ -2,10 +2,10 @@ import io
 import os
 import re
 import time
-import urllib
 from io import StringIO
 from unittest import mock
 from unittest.mock import patch
+from urllib.parse import quote
 
 import orjson
 from django.conf import settings
@@ -572,7 +572,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
         for expected in ["Здравейте.txt", "test"]:
             fp = StringIO("bah!")
-            fp.name = urllib.parse.quote(expected)
+            fp.name = quote(expected)
 
             result = self.client_post("/json/user_uploads", {"f1": fp})
             response_dict = self.assert_json_success(result)
@@ -590,7 +590,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             ("**", "uploaded-file"),
         ]:
             fp = StringIO("bah!")
-            fp.name = urllib.parse.quote(uploaded_filename)
+            fp.name = quote(uploaded_filename)
 
             result = self.client_post("/json/user_uploads", {"f1": fp})
             response_dict = self.assert_json_success(result)

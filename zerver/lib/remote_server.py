@@ -1,6 +1,6 @@
 import logging
-import urllib
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from urllib.parse import urljoin
 
 import orjson
 import requests
@@ -88,9 +88,7 @@ def send_to_push_bouncer(
     assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
     assert settings.ZULIP_ORG_ID is not None
     assert settings.ZULIP_ORG_KEY is not None
-    url = urllib.parse.urljoin(
-        settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint
-    )
+    url = urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint)
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
 
     headers = {"User-agent": f"ZulipServer/{ZULIP_VERSION}"}

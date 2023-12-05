@@ -6,8 +6,6 @@ import logging
 import mimetypes
 import re
 import time
-import urllib
-import urllib.parse
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -28,7 +26,7 @@ from typing import (
     Union,
     cast,
 )
-from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
+from urllib.parse import parse_qs, quote, urlencode, urljoin, urlparse, urlsplit, urlunparse
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -488,7 +486,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
 
 
 def get_tweet_id(url: str) -> Optional[str]:
-    parsed_url = urllib.parse.urlparse(url)
+    parsed_url = urlparse(url)
     if not (parsed_url.netloc == "twitter.com" or parsed_url.netloc.endswith(".twitter.com")):
         return None
     to_match = parsed_url.path
@@ -717,13 +715,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview URLs to image URLs.
         # See https://github.com/zulip/zulip/issues/4658 for more information
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlparse(url)
         if parsed_url.netloc == "github.com" or parsed_url.netloc.endswith(".github.com"):
             # https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png ->
             # https://raw.githubusercontent.com/zulip/zulip/main/static/images/logo/zulip-icon-128x128.png
             split_path = parsed_url.path.split("/")
             if len(split_path) > 3 and split_path[3] == "blob":
-                return urllib.parse.urljoin(
+                return urljoin(
                     "https://raw.githubusercontent.com", "/".join(split_path[0:3] + split_path[4:])
                 )
 
@@ -732,7 +730,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url: str) -> bool:
         if not self.zmd.image_preview_enabled:
             return False
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlparse(url)
         # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
@@ -744,7 +742,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # wikipedia.org to point to the actual image URL.  It's
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlparse(url)
         if parsed_url.netloc.lower().endswith(".wikipedia.org") and parsed_url.path.startswith(
             "/wiki/File:"
         ):
@@ -759,7 +757,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def dropbox_image(self, url: str) -> Optional[Dict[str, Any]]:
         # TODO: The returned Dict could possibly be a TypedDict in future.
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlparse(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
             is_album = parsed_url.path.startswith("/sc/") or parsed_url.path.startswith("/photos/")
             # Only allow preview Dropbox shared links
@@ -911,7 +909,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     "type": "mention",
                     "start": match.start(),
                     "end": match.end(),
-                    "url": "https://twitter.com/" + urllib.parse.quote(screen_name),
+                    "url": "https://twitter.com/" + quote(screen_name),
                     "text": mention_string,
                 }
                 for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE)
@@ -1260,7 +1258,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # `/user_uploads` and beginning with `user_uploads`.
                 # This urllib construction converts the latter into
                 # the former.
-                parsed_url = urllib.parse.urlsplit(urllib.parse.urljoin("/", url))
+                parsed_url = urlsplit(urljoin("/", url))
                 host = parsed_url.netloc
 
                 if host != "" and (
@@ -1568,7 +1566,7 @@ def sanitize_url(url: str) -> Optional[str]:
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
     try:
-        parts = urllib.parse.urlparse(url.replace(" ", "%20"))
+        parts = urlparse(url.replace(" ", "%20"))
         scheme, netloc, path, params, query, fragment = parts
     except ValueError:
         # Bad URL - so bad it couldn't be parsed.
@@ -1580,10 +1578,10 @@ def sanitize_url(url: str) -> Optional[str]:
         scheme = "mailto"
     elif scheme == "" and netloc == "" and len(path) > 0 and path[0] == "/":
         # Allow domain-relative links
-        return urllib.parse.urlunparse(("", "", path, params, query, fragment))
+        return urlunparse(("", "", path, params, query, fragment))
     elif (scheme, netloc, path, params, query) == ("", "", "", "", "") and len(fragment) > 0:
         # Allow fragment links
-        return urllib.parse.urlunparse(("", "", "", "", "", fragment))
+        return urlunparse(("", "", "", "", "", fragment))
 
     # Zulip modification: If scheme is not specified, assume http://
     # We re-enter sanitize_url because netloc etc. need to be re-parsed.
@@ -1608,7 +1606,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # the colon check, which would also forbid a lot of legitimate URLs.
 
     # URL passes all tests. Return URL as-is.
-    return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
+    return urlunparse((scheme, netloc, path, params, query, fragment))
 
 
 def url_to_a(

@@ -10,7 +10,6 @@ import socket
 import tempfile
 import threading
 import time
-import urllib
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
 from datetime import timedelta
@@ -31,6 +30,7 @@ from typing import (
     Type,
     TypeVar,
 )
+from urllib.parse import urlparse
 
 import orjson
 import sentry_sdk
@@ -1132,7 +1132,7 @@ class DeferredWorker(QueueProcessingWorker):
             assert public_url is not None
 
             # Update the extra_data field now that the export is complete.
-            extra_data["export_path"] = urllib.parse.urlparse(public_url).path
+            extra_data["export_path"] = urlparse(public_url).path
             export_event.extra_data = extra_data
             export_event.save(update_fields=["extra_data"])
 

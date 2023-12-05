@@ -4,7 +4,6 @@ import re
 import shutil
 import subprocess
 import tempfile
-import urllib
 from contextlib import contextmanager
 from datetime import timedelta
 from typing import (
@@ -25,6 +24,7 @@ from typing import (
     cast,
 )
 from unittest import TestResult, mock, skipUnless
+from urllib.parse import parse_qs, quote, urlencode
 
 import lxml.html
 import orjson
@@ -278,7 +278,7 @@ Output:
         url_split = url.split("?")
         data = {}
         if len(url_split) == 2:
-            data = urllib.parse.parse_qs(url_split[1])
+            data = parse_qs(url_split[1])
         url = url_split[0]
         url = url.replace("/json/", "/").replace("/api/v1/", "/")
         return (url, data)
@@ -342,7 +342,7 @@ Output:
         """
         We need to urlencode, since Django's function won't do it for us.
         """
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -434,7 +434,7 @@ Output:
         headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -477,7 +477,7 @@ Output:
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -807,9 +807,7 @@ Output:
     def register(self, email: str, password: str, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
         response = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response["Location"], f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-        )
+        self.assertEqual(response["Location"], f"/accounts/send_confirm/?email={quote(email)}")
         response = self.submit_reg_form_for_user(email, password, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], f"http://{Realm.host_for_subdomain(subdomain)}/")
@@ -2408,7 +2406,7 @@ class BouncerTestCase(ZulipTestCase):
             kwargs = dict(content_type="application/json")
         else:
             assert isinstance(request.body, str) or request.body is None
-            params: Dict[str, List[str]] = urllib.parse.parse_qs(request.body)
+            params: Dict[str, List[str]] = parse_qs(request.body)
             # In Python 3, the values of the dict from `parse_qs` are
             # in a list, because there might be multiple values.
             # But since we are sending values with no same keys, hence
