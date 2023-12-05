@@ -145,6 +145,10 @@
         }
     }
 
+    .request-sponsorship {
+        margin-bottom: 10px;
+    }
+
     .pricing-pane-scroll-container {
         grid-area: pricing;
         overflow-x: auto;
