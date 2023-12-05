@@ -1,5 +1,4 @@
 import logging
-import urllib
 from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import urlencode, urljoin
@@ -1109,7 +1108,7 @@ def find_account(
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
-            data = urllib.parse.urlencode({"emails": ",".join(emails)})
+            data = urlencode({"emails": ",".join(emails)})
             return redirect(append_url_query_string(url, data))
     else:
         form = FindMyTeamForm()

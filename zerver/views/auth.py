@@ -1,9 +1,8 @@
 import logging
 import secrets
-import urllib
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, cast
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 import jwt
 import orjson
@@ -115,7 +114,7 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
         # Mark as safe to prevent Pysa from surfacing false positives for
         # open redirects. In this branch, we have already checked that the URL
         # points to the specified 'redirect_host', or is relative.
-        return urllib.parse.urljoin(redirect_host, mark_sanitized(url))
+        return urljoin(redirect_host, mark_sanitized(url))
     else:
         return redirect_host
 
@@ -478,7 +477,7 @@ def create_response_for_otp_flow(
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)
-    response["Location"] = append_url_query_string("zulip://login", urllib.parse.urlencode(params))
+    response["Location"] = append_url_query_string("zulip://login", urlencode(params))
 
     return response
 
@@ -628,7 +627,7 @@ def oauth_redirect_to_root(
 
     params = {**params, **extra_url_params}
 
-    return redirect(append_url_query_string(main_site_url, urllib.parse.urlencode(params)))
+    return redirect(append_url_query_string(main_site_url, urlencode(params)))
 
 
 def handle_desktop_flow(

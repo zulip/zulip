@@ -1,9 +1,9 @@
 import io
 import os
 import re
-import urllib
 from io import BytesIO, StringIO
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import botocore.exceptions
 from django.conf import settings
@@ -191,7 +191,7 @@ class S3Test(ZulipTestCase):
         # In development, this is just a redirect
         response = self.client_get(url)
         redirect_url = response["Location"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlparse(redirect_url).path
         assert path.startswith("/")
         key = path[len("/") :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -200,7 +200,7 @@ class S3Test(ZulipTestCase):
         with self.settings(DEVELOPMENT=False):
             response = self.client_get(url)
         redirect_url = response["X-Accel-Redirect"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlparse(redirect_url).path
         assert path.startswith(prefix)
         key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -210,7 +210,7 @@ class S3Test(ZulipTestCase):
         with self.settings(DEVELOPMENT=False):
             response = self.client_get(download_url)
         redirect_url = response["X-Accel-Redirect"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlparse(redirect_url).path
         assert path.startswith(prefix)
         key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -230,7 +230,7 @@ class S3Test(ZulipTestCase):
         with self.settings(DEVELOPMENT=False):
             self.client_get(url_only_url)
         redirect_url = response["X-Accel-Redirect"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlparse(redirect_url).path
         assert path.startswith(prefix)
         key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -532,5 +532,5 @@ class S3Test(ZulipTestCase):
             warn_log.output,
             ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
         )
-        path_id = urllib.parse.urlparse(url).path
+        path_id = urlparse(url).path
         self.assertEqual(delete_export_tarball(path_id), path_id)

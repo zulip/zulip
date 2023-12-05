@@ -1,7 +1,7 @@
 import logging
-import urllib
 from contextlib import suppress
 from typing import Any, Dict, List, Optional
+from urllib.parse import unquote
 
 import tornado.web
 from asgiref.sync import sync_to_async
@@ -108,7 +108,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # HttpRequest object with the original Tornado request's HTTP
         # headers, parameters, etc.
         environ = fake_wsgi_container.environ(self.request)
-        environ["PATH_INFO"] = urllib.parse.unquote(environ["PATH_INFO"])
+        environ["PATH_INFO"] = unquote(environ["PATH_INFO"])
 
         # Django WSGIRequest setup code that should match logic from
         # Django's WSGIHandler.__call__ before the call to

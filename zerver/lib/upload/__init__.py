@@ -1,10 +1,9 @@
 import io
 import logging
-import urllib
 from datetime import datetime
 from mimetypes import guess_type
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple, Union
-from urllib.parse import urljoin
+from urllib.parse import unquote, urljoin
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -47,7 +46,7 @@ def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
             # different content-type from the filename.
             content_type = "application/octet-stream"
 
-    uploaded_file_name = urllib.parse.unquote(uploaded_file_name)
+    uploaded_file_name = unquote(uploaded_file_name)
 
     return uploaded_file_name, content_type
 

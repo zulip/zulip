@@ -5,12 +5,12 @@ import http.client
 import json
 import logging
 import time
-import urllib.parse
+from urllib.parse import urlencode
 
 
 def fetch_metric(metric_id: str, query: str) -> float:
     logging.info("Fetching %s", metric_id)
-    params = urllib.parse.urlencode({"query": query})
+    params = urlencode({"query": query})
     conn = http.client.HTTPConnection("localhost:9090")
     conn.request("GET", "/api/v1/query?" + params)
     response = conn.getresponse()

@@ -1,6 +1,5 @@
 import os
 import re
-import urllib
 from io import BytesIO, StringIO
 from urllib.parse import urlparse
 
@@ -258,5 +257,5 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             warn_log.output,
             ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
         )
-        path_id = urllib.parse.urlparse(url).path
+        path_id = urlparse(url).path
         self.assertEqual(delete_export_tarball(path_id), path_id)

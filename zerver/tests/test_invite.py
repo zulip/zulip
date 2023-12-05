@@ -1,9 +1,8 @@
 import re
-import urllib
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, List, Optional, Sequence, Union
 from unittest.mock import patch
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import orjson
 import time_machine
@@ -2294,9 +2293,7 @@ class MultiuseInviteTest(ZulipTestCase):
         result = self.client_post(invite_link, {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
