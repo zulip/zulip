@@ -11,13 +11,20 @@
     <div class="center-block new-style">
         <div class="alert alert-success sponsorship-page-success" id="sponsorship-status-success-message-top">
             {% if is_sponsored %}
-            Zulip is sponsoring a free <a href="/plans/">Zulip Cloud Standard</a> plan for this organization. 🎉
+            Zulip is sponsoring a free <a href="{{ billing_base_url }}/plans/">{{ sponsored_plan_name }}</a> plan for this organization. 🎉
             {% else %}
-            This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            This organization has requested sponsorship for a <a href="{{ billing_base_url }}/plans/">{{ sponsored_plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
             {% endif %}
         </div>
         <div class="pitch">
-            <h1>Zulip Cloud billing for {{realm_name}}</h1>
+            <h1>
+                Zulip
+                {% if is_remotely_hosted %}
+                {% else %}
+                Cloud
+                {% endif %}
+                billing for {{ org_name }}
+            </h1>
         </div>
         <div class="white-box">
             <div id="sponsorship-status-page-details">
@@ -49,16 +56,22 @@
 <div class="register-account flex full-page sponsorship-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Request Zulip Cloud sponsorship</h1>
+            <h1>
+                Request Zulip
+                {% if is_remotely_hosted %}
+                {% else %}
+                Cloud
+                {% endif %} sponsorship
+            </h1>
         </div>
         <div class="white-box">
             <div id="sponsorship-error" class="alert alert-danger"></div>
             <div id="sponsorship-input-section">
-                <form id="sponsorship-form" method="post">
+                <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-name" class="inline-block label-title">Organization</label>
-                        <div id="org-name" class="not-editable-realm-field">{{ realm_name }}</div>
+                        <div id="org-name" class="not-editable-realm-field">{{ org_name }}</div>
                     </div>
                     <div class="input-box sponsorship-form-field">
                         <div class="inline-block relative">

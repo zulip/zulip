@@ -53,10 +53,10 @@ function create_ajax_request(): void {
         return;
     }
 
+    const billing_base_url = $form.attr("data-billing-base-url") ?? "";
     void $.ajax({
         type: "post",
-        // TODO: This needs to be conditional on billing session type
-        url: "/json/billing/sponsorship",
+        url: `/json${billing_base_url}/billing/sponsorship`,
         data,
         success() {
             window.location.reload();
