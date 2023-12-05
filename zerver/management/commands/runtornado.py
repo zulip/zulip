@@ -98,6 +98,9 @@ class Command(BaseCommand):
                 set_current_port(port)
                 translation.activate(settings.LANGUAGE_CODE)
 
+                if settings.CUSTOM_DEVELOPMENT_SETTINGS:
+                    print("Using custom settings from zproject/custom_dev_settings.py.")
+
                 # We pass display_num_errors=False, since Django will
                 # likely display similar output anyway.
                 self.check(display_num_errors=False)

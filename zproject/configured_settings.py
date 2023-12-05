@@ -14,6 +14,7 @@ from .default_settings import *  # noqa: F403 isort: skip
 from .config import PRODUCTION
 
 TEST_SUITE = os.getenv("ZULIP_TEST_SUITE") == "true"
+CUSTOM_DEVELOPMENT_SETTINGS = False
 
 if PRODUCTION:  # nocoverage
     from .prod_settings import *  # noqa: F403 isort: skip
@@ -32,12 +33,9 @@ else:
         with contextlib.suppress(ImportError):
             from zproject.custom_dev_settings import *  # type: ignore[import, unused-ignore] # noqa: F403
 
-            # Print that we've got settings changes, so you know if you're testing non-base code.
-            #
-            # TODO: Figure out how to make this not be printed several
-            # times, and maybe print the actual keys that are
-            # overridden.
-            print("Using custom settings from zproject/custom_dev_settings.py.")
+            # Track that we've got settings changes, so you know if
+            # you're testing non-base code; runtornado will log.
+            CUSTOM_DEVELOPMENT_SETTINGS = True
 
 # Do not add any code after these wildcard imports!  Add it to
 # computed_settings instead.
