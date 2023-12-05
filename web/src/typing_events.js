@@ -107,7 +107,6 @@ export function hide_notification(event) {
 
 export function display_notification(event) {
     const sender_id = event.sender.user_id;
-    event.sender.name = people.get_by_user_id(sender_id).full_name;
 
     const key = get_key(event);
     typing_data.add_typist(key, sender_id);
