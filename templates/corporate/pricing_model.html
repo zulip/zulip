@@ -33,14 +33,14 @@
                         </div>
                         <div class="bottom">
                             <div class="text-content">
-                                {% if not realm or realm.plan_type == realm.PLAN_TYPE_SELF_HOSTED %}
-                                <a href="/new/" class="button get-started-button">
-                                    Create organization
-                                </a>
-                                {% elif realm.plan_type == realm.PLAN_TYPE_LIMITED or sponsorship_pending %}
+                                {% if is_cloud_realm and on_free_tier %}
                                 <div class="pricing-details"></div>
                                 <a href='/upgrade/' class="button current-plan-button" type="button">
                                     Current plan
+                                </a>
+                                {% elif not is_cloud_realm or is_new_customer %}
+                                <a href="/new/" class="button get-started-button">
+                                    Create organization
                                 </a>
                                 {% endif %}
                             </div>
@@ -69,7 +69,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                {% if not realm %}
+                                {% if is_cloud_realm and on_free_tier and not sponsorship_pending %}
                                 <a href="/upgrade/" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
@@ -77,16 +77,17 @@
                                     Upgrade to Standard
                                     {% endif %}
                                 </a>
-                                {% elif realm.plan_type in [realm.PLAN_TYPE_STANDARD, realm.PLAN_TYPE_STANDARD_FREE] %}
+                                <!-- Sponsored realm may not have customer plan. -->
+                                {% elif (is_cloud_realm and is_sponsored) or (customer_plan and customer_plan.tier == customer_plan.TIER_CLOUD_STANDARD) %}
                                 <a href='/billing' class="button current-plan-button" type="button">
                                     <i class="icon current-plan-icon"></i>
-                                    {% if realm_on_free_trial %}
+                                    {% if on_free_trial %}
                                     Current plan (free trial)
                                     {% else %}
                                     Current plan
                                     {% endif %}
                                 </a>
-                                {% elif sponsorship_pending %}
+                                {% elif is_cloud_realm and sponsorship_pending %}
                                 <a href="/billing/" class="button current-plan-button" type="button">
                                     Sponsorship pending
                                 </a>
@@ -158,12 +159,79 @@
                         </div>
                         <div class="bottom">
                             <div class="text-content">
+                                {% if is_self_hosted_realm and on_free_tier %}
+                                <a href='{{ billing_base_url }}/billing' class="button current-plan-button" type="button">
+                                    <i class="icon current-plan-icon"></i>
+                                    Current plan
+                                </a>
+                                {% elif not is_self_hosted_realm %}
                                 <a href="/self-hosting/" class="button get-started-button">
                                     Self-host Zulip
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
+
+                    {% if development_environment %}
+                    <div class="price-box" tabindex="-1">
+                        <div class="text-content">
+                            <h2>Business</h2>
+                            <ul class="feature-list">
+                                <li><span>All Free features included</span></li>
+                                <li><span>Professional support with SLAs</span></li>
+                                <li><span>High availability</span></li>
+                                <li><span>Incident collaboration</span></li>
+                                <li><span>Advanced compliance</span></li>
+                                <li><span>Funds the Zulip open source project</span></li>
+                            </ul>
+                        </div>
+                        <div class="bottom">
+                            <div class="text-content">
+                                {% if is_self_hosted_realm and on_free_tier and not sponsorship_pending %}
+                                <a href="{{ billing_base_url }}/sponsorship/" class="button current-plan-button request-sponsorship">
+                                    Request sponsorship
+                                </a>
+                                <a href="{{ billing_base_url }}/upgrade/" class="button upgrade-button">
+                                    {% if free_trial_days %}
+                                    Start {{ free_trial_days }}-day free trial
+                                    {% else %}
+                                    Upgrade to Business
+                                    {% endif %}
+                                </a>
+                                {% elif is_self_hosted_realm and (is_sponsored or (customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_BUSINESS)) %}
+                                <a href='{{ billing_base_url }}/billing' class="button current-plan-button" type="button">
+                                    <i class="icon current-plan-icon"></i>
+                                    {% if on_free_trial %}
+                                    Current plan (free trial)
+                                    {% else %}
+                                    Current plan
+                                    {% endif %}
+                                </a>
+                                {% elif is_self_hosted_realm and sponsorship_pending %}
+                                <a href="{{ billing_base_url }}/billing/" class="button current-plan-button" type="button">
+                                    Sponsorship pending
+                                </a>
+                                {% elif is_self_hosted_realm %}
+                                <a href="{{ billing_base_url }}/sponsorship/" class="button upgrade-button request-sponsorship">
+                                    Request sponsorship
+                                </a>
+                                <a href="{{ billing_base_url }}/upgrade/" class="button upgrade-button">
+                                    {% if free_trial_days %}
+                                    Start {{ free_trial_days }}-day free trial
+                                    {% else %}
+                                    Upgrade to Business
+                                    {% endif %}
+                                </a>
+                                {% else %}
+                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Contact sales
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
 
                     <div class="price-box" tabindex="-1">
                         <div class="text-content">
@@ -179,9 +247,16 @@
                         </div>
                         <div class="bottom">
                             <div class="text-content">
+                                {% if is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_ENTERPRISE %}
+                                <a href='{{ billing_base_url }}/billing' class="button current-plan-button" type="button">
+                                    <i class="icon current-plan-icon"></i>
+                                    Current plan
+                                </a>
+                                {% else %}
                                 <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
                                     Contact sales
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

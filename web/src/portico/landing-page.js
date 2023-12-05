@@ -136,12 +136,18 @@ $(() => {
         render_tabs(contributors);
     }
 
-    if (window.location.pathname === "/plans/" && window.location.hash === "#self-hosted") {
+    if (window.location.pathname.endsWith("/plans/")) {
+        const tabs = ["#cloud", "#self-hosted"];
+        if (!tabs.includes(window.location.hash)) {
+            return;
+        }
+        const tab_to_show = window.location.hash;
+
         // Don't scroll to the target element
         window.scroll({top: 0});
         const $pricing_wrapper = $(".portico-pricing");
-        $pricing_wrapper.removeClass("showing-cloud");
-        $pricing_wrapper.addClass("showing-self-hosted");
+        $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
+        $pricing_wrapper.addClass(`showing-${tab_to_show.slice(1)}`);
     }
 });
 

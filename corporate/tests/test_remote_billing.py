@@ -106,8 +106,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # Go to the URL we're redirected to after authentication and assert
         # some basic expected content.
         result = self.client_get(result["Location"], subdomain="selfhosting")
-        self.assert_in_success_response(["Your remote user info:"], result)
-        self.assert_in_success_response([desdemona.delivery_email], result)
+        self.assert_in_success_response(["showing-self-hosted", "Retain full control"], result)
 
     @responses.activate
     def test_remote_billing_authentication_flow_realm_not_registered(self) -> None:
@@ -143,8 +142,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
 
         result = self.client_get(result["Location"], subdomain="selfhosting")
-        self.assert_in_success_response(["Your remote user info:"], result)
-        self.assert_in_success_response([desdemona.delivery_email], result)
+        self.assert_in_success_response(["showing-self-hosted", "Retain full control"], result)
 
     @responses.activate
     def test_remote_billing_authentication_flow_tos_consent_failure(self) -> None:
@@ -227,8 +225,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             tick=False,
         ):
             result = self.client_get(final_url, subdomain="selfhosting")
-        self.assert_in_success_response(["Your remote user info:"], result)
-        self.assert_in_success_response([desdemona.delivery_email], result)
+        self.assert_in_success_response(["showing-self-hosted", "Retain full control"], result)
 
         # Now go there again, simulating doing this after the session has expired.
         # We should be denied access and redirected to re-auth.
@@ -257,8 +254,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             )
             self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
             result = self.client_get(result["Location"], subdomain="selfhosting")
-            self.assert_in_success_response(["Your remote user info:"], result)
-            self.assert_in_success_response([desdemona.delivery_email], result)
+            self.assert_in_success_response(["showing-self-hosted", "Retain full control"], result)
 
     @responses.activate
     def test_remote_billing_unauthed_access(self) -> None:
@@ -408,7 +404,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             )
 
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade/")
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/plans/")
 
         # Verify the authed data that should have been stored in the session.
         identity_dict = LegacyServerIdentityDict(

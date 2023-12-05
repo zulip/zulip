@@ -27,13 +27,13 @@ from corporate.views.portico import (
     hello_view,
     landing_view,
     plans_view,
+    remote_realm_plans_page,
+    remote_server_plans_page,
     team_view,
 )
 from corporate.views.remote_billing_page import (
     remote_billing_legacy_server_login,
     remote_realm_billing_finalize_login,
-    remote_realm_plans_page,
-    remote_server_plans_page,
 )
 from corporate.views.session import (
     start_card_update_stripe_session,
