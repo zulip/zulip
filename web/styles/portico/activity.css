@@ -152,7 +152,8 @@ tr.admin td:first-child {
     }
 }
 
-.remote-server-information {
+.remote-server-information,
+.remote-realm-information {
     padding-bottom: 15px;
 }
 

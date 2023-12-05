@@ -1,0 +1,7 @@
+<div class="remote-realm-information">
+    <span class="label">remote realm</span>
+    <h3>{{ remote_realm.name }}</h3>
+    <b>Remote server hostname:</b> {{ remote_realm.host }}<br />
+    <b>Date created</b>: {{ remote_realm.realm_date_created.strftime('%d %B %Y') }}<br />
+    <b>Org type</b>: {{ get_org_type_display_name(remote_realm.org_type) }}<br />
+</div>
