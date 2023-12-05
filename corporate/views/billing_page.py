@@ -98,33 +98,36 @@ def remote_realm_billing_page(
     *,
     success_message: str = "",
 ) -> HttpResponse:  # nocoverage
+    realm_uuid = billing_session.remote_realm.uuid
     context: Dict[str, Any] = {
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
         "org_name": billing_session.remote_realm.name,
-        "billing_base_url": f"/realm/{billing_session.remote_realm.uuid}",
+        "billing_base_url": f"/realm/{realm_uuid}",
     }
 
     if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:
-        return HttpResponseRedirect(reverse("remote_realm_sponsorship_page"))
+        return HttpResponseRedirect(reverse("remote_realm_sponsorship_page", args=(realm_uuid,)))
 
     customer = billing_session.get_customer()
     if customer is not None and customer.sponsorship_pending:
         # Don't redirect to sponsorship page if the remote realm is on a paid plan
         if not billing_session.on_paid_plan():
-            return HttpResponseRedirect(reverse("remote_realm_sponsorship_page"))
+            return HttpResponseRedirect(
+                reverse("remote_realm_sponsorship_page", args=(realm_uuid,))
+            )
         # If the realm is on a paid plan, show the sponsorship pending message
         context["sponsorship_pending"] = True
 
     if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED:
-        return HttpResponseRedirect(reverse("remote_realm_plans_page"))
+        return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
 
     if customer is None:
-        return HttpResponseRedirect(reverse("remote_realm_upgrade_page"))
+        return HttpResponseRedirect(reverse("remote_realm_upgrade_page", args=(realm_uuid,)))
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
-        return HttpResponseRedirect(reverse("remote_realm_upgrade_page"))
+        return HttpResponseRedirect(reverse("remote_realm_upgrade_page", args=(realm_uuid,)))
 
     main_context = billing_session.get_billing_page_context()
     if main_context:
