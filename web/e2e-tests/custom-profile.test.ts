@@ -27,8 +27,14 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(
-        'xpath///*[@id="admin_profile_fields_table"]//tr[last()]/td[normalize-space()="Teams"]',
+        'xpath///*[@id="admin_profile_fieldds_table"]//tr[last()]/td[normalize-space()="Teams"]',
     );
+    
+    assert.strictEqual(
+        await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
+        "No custom profile fields configured",
+    );
+    
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
         "Short text",
