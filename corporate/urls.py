@@ -233,8 +233,8 @@ urlpatterns += [
         name="remote_server_event_status_page",
     ),
     # Remote variants of above API endpoints.
-    path("json/realm/<realm_uuid>/sponsorship", remote_realm_sponsorship),
-    path("json/server/<server_uuid>/sponsorship", remote_server_sponsorship),
+    path("json/realm/<realm_uuid>/billing/sponsorship", remote_realm_sponsorship),
+    path("json/server/<server_uuid>/billing/sponsorship", remote_server_sponsorship),
     path(
         "json/realm/<realm_uuid>/billing/session/start_card_update_session",
         start_card_update_stripe_session_for_remote_realm,

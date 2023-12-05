@@ -299,6 +299,7 @@ class CustomerPlan(models.Model):
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
             CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Self-managed",
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
+            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
         }[tier]
 
     @property
