@@ -25,10 +25,11 @@ export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
             name: data.name,
             url_template: data.url_template,
         };
-        if (map_language_to_playground_info.has(data.pygments_language)) {
-            map_language_to_playground_info.get(data.pygments_language)!.push(element_to_push);
+        const languageKey = data.pygments_language.toLowerCase()
+        if (map_language_to_playground_info.has(languageKey)) {
+            map_language_to_playground_info.get(languageKey)!.push(element_to_push);
         } else {
-            map_language_to_playground_info.set(data.pygments_language, [element_to_push]);
+            map_language_to_playground_info.set(languageKey, [element_to_push]);
         }
     }
 }
