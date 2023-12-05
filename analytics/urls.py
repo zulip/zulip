@@ -1,5 +1,6 @@
 from typing import List, Union
 
+from django.conf import settings
 from django.conf.urls import include
 from django.urls import path
 from django.urls.resolvers import URLPattern, URLResolver
@@ -9,13 +10,10 @@ from analytics.views.installation_activity import (
     get_integrations_activity,
 )
 from analytics.views.realm_activity import get_realm_activity
-from analytics.views.remote_activity import get_remote_server_activity
 from analytics.views.stats import (
     get_chart_data,
     get_chart_data_for_installation,
     get_chart_data_for_realm,
-    get_chart_data_for_remote_installation,
-    get_chart_data_for_remote_realm,
     get_chart_data_for_stream,
     stats,
     stats_for_installation,
@@ -30,7 +28,6 @@ from zerver.lib.rest import rest_path
 i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
     # Server admin (user_profile.is_staff) visible stats pages
     path("activity", get_installation_activity),
-    path("activity/remote", get_remote_server_activity),
     path("activity/integrations", get_integrations_activity),
     path("activity/support", support, name="support"),
     path("activity/remote/support", remote_servers_support, name="remote_servers_support"),
@@ -38,13 +35,25 @@ i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
     path("user_activity/<user_profile_id>/", get_user_activity),
     path("stats/realm/<realm_str>/", stats_for_realm),
     path("stats/installation", stats_for_installation),
-    path("stats/remote/<int:remote_server_id>/installation", stats_for_remote_installation),
-    path(
-        "stats/remote/<int:remote_server_id>/realm/<int:remote_realm_id>/", stats_for_remote_realm
-    ),
     # User-visible stats page
     path("stats", stats, name="stats"),
 ]
+
+if settings.ZILENCER_ENABLED:
+    from analytics.views.remote_activity import get_remote_server_activity
+    from analytics.views.stats import (
+        get_chart_data_for_remote_installation,
+        get_chart_data_for_remote_realm,
+    )
+
+    i18n_urlpatterns += [
+        path("activity/remote", get_remote_server_activity),
+        path("stats/remote/<int:remote_server_id>/installation", stats_for_remote_installation),
+        path(
+            "stats/remote/<int:remote_server_id>/realm/<int:remote_realm_id>/",
+            stats_for_remote_realm,
+        ),
+    ]
 
 # These endpoints are a part of the API (V1), which uses:
 # * REST verbs
