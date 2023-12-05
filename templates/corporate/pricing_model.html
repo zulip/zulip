@@ -188,7 +188,11 @@
                         </div>
                         <div class="bottom">
                             <div class="text-content">
-                                {% if is_self_hosted_realm and on_free_tier and not sponsorship_pending %}
+                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS %}
+                                <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
+                                    Upgrade is scheduled
+                                </a>
+                                {% elif is_self_hosted_realm and on_free_tier and not sponsorship_pending %}
                                 <a href="{{ billing_base_url }}/sponsorship/" class="button current-plan-button request-sponsorship">
                                     Request sponsorship
                                 </a>
@@ -247,7 +251,11 @@
                         </div>
                         <div class="bottom">
                             <div class="text-content">
-                                {% if is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_ENTERPRISE %}
+                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_ENTERPRISE %}
+                                <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
+                                    Upgrade is scheduled
+                                </a>
+                                {% elif is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_ENTERPRISE %}
                                 <a href='{{ billing_base_url }}/billing' class="button current-plan-button" type="button">
                                     <i class="icon current-plan-icon"></i>
                                     Current plan
