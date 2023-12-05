@@ -73,7 +73,6 @@ from zerver.lib.validator import (
 )
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
-    MAX_LANGUAGE_ID_LENGTH,
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
@@ -91,6 +90,7 @@ from zerver.models import (
     get_user_by_delivery_email,
     name_changes_disabled,
 )
+from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
 from zerver.views.auth import (
     create_preregistration_realm,
     create_preregistration_user,
