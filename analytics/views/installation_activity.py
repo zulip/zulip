@@ -22,7 +22,7 @@ from analytics.views.activity_common import (
     realm_support_link,
     realm_url_link,
 )
-from analytics.views.support import get_plan_name
+from analytics.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.models import Realm, get_org_type_display_name
@@ -204,7 +204,7 @@ def realm_summary_table() -> str:
         realms_with_default_discount = get_realms_with_default_discount_dict()
 
         for row in rows:
-            row["plan_type_string"] = get_plan_name(row["plan_type"])
+            row["plan_type_string"] = get_plan_type_string(row["plan_type"])
 
             string_id = row["string_id"]
 
