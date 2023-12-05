@@ -1,3 +1,4 @@
+from dataclasses import asdict, dataclass
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -6,9 +7,14 @@ from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
+from django.urls import reverse
 
-from corporate.lib.stripe import is_realm_on_free_trial
-from corporate.models import get_customer_by_realm
+from corporate.lib.decorator import (
+    authenticated_remote_realm_management_endpoint,
+    authenticated_remote_server_management_endpoint,
+)
+from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
+from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics
 from zerver.lib.github import (
@@ -47,16 +53,43 @@ def app_download_link_redirect(request: HttpRequest, platform: str) -> HttpRespo
         return TemplateResponse(request, "404.html", status=404)
 
 
+def is_customer_on_free_trial(customer_plan: CustomerPlan) -> bool:
+    return customer_plan.status in (
+        CustomerPlan.FREE_TRIAL,
+        CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+    )
+
+
+@dataclass
+class PlansPageContext:
+    sponsorship_url: str
+    free_trial_days: Optional[int]
+    on_free_trial: bool = False
+    sponsorship_pending: bool = False
+    is_sponsored: bool = False
+
+    is_cloud_realm: bool = False
+    is_self_hosted_realm: bool = False
+
+    is_new_customer: bool = False
+    on_free_tier: bool = False
+    customer_plan: Optional[CustomerPlan] = None
+
+    billing_base_url: str = ""
+
+
 @add_google_analytics
 def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
-    free_trial_days = settings.FREE_TRIAL_DAYS
-    sponsorship_pending = False
-    sponsorship_url = "/sponsorship/"
+    context = PlansPageContext(
+        is_cloud_realm=True,
+        sponsorship_url=reverse("sponsorship_request"),
+        free_trial_days=settings.FREE_TRIAL_DAYS,
+        is_sponsored=realm is not None and realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE,
+    )
     if is_subdomain_root_or_alias(request):
         # If we're on the root domain, we make this link first ask you which organization.
-        sponsorship_url = f"/accounts/go/?{urlencode({'next': sponsorship_url})}"
-    realm_on_free_trial = False
+        context.sponsorship_url = f"/accounts/go/?{urlencode({'next': context.sponsorship_url})}"
 
     if realm is not None:
         if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED and settings.PRODUCTION:
@@ -65,21 +98,99 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             return redirect_to_login(next="/plans/")
         if request.user.is_guest:
             return TemplateResponse(request, "404.html", status=404)
-        customer = get_customer_by_realm(realm)
-        if customer is not None:
-            sponsorship_pending = customer.sponsorship_pending
-            realm_on_free_trial = is_realm_on_free_trial(realm)
 
+        customer = get_customer_by_realm(realm)
+        context.on_free_tier = customer is None and not context.is_sponsored
+        if customer is not None:
+            context.sponsorship_pending = customer.sponsorship_pending
+            context.customer_plan = get_current_plan_by_customer(customer)
+            if context.customer_plan is None:
+                # Cloud realms on free tier don't have active customer plan unless they are sponsored.
+                context.on_free_tier = not context.is_sponsored
+            else:
+                context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
+
+    context.is_new_customer = (
+        not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
+    )
     return TemplateResponse(
         request,
         "corporate/plans.html",
-        context={
-            "realm": realm,
-            "free_trial_days": free_trial_days,
-            "realm_on_free_trial": realm_on_free_trial,
-            "sponsorship_pending": sponsorship_pending,
-            "sponsorship_url": sponsorship_url,
-        },
+        context=asdict(context),
+    )
+
+
+@add_google_analytics
+@authenticated_remote_realm_management_endpoint
+def remote_realm_plans_page(
+    request: HttpRequest, billing_session: RemoteRealmBillingSession
+) -> HttpResponse:
+    customer = billing_session.get_customer()
+    context = PlansPageContext(
+        is_self_hosted_realm=True,
+        sponsorship_url=reverse(
+            "remote_realm_sponsorship_page", args=(billing_session.remote_realm.uuid,)
+        ),
+        free_trial_days=settings.FREE_TRIAL_DAYS,
+        billing_base_url=billing_session.billing_base_url,
+        is_sponsored=billing_session.is_sponsored(),
+    )
+
+    context.on_free_tier = customer is None and not context.is_sponsored
+    if customer is not None:
+        context.sponsorship_pending = customer.sponsorship_pending
+        context.customer_plan = get_current_plan_by_customer(customer)
+        if context.customer_plan is None:
+            context.on_free_tier = not context.is_sponsored
+        else:
+            context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
+
+    context.is_new_customer = (
+        not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
+    )
+    return TemplateResponse(
+        request,
+        "corporate/plans.html",
+        context=asdict(context),
+    )
+
+
+@add_google_analytics
+@authenticated_remote_server_management_endpoint
+def remote_server_plans_page(
+    request: HttpRequest, billing_session: RemoteServerBillingSession
+) -> HttpResponse:
+    customer = billing_session.get_customer()
+    context = PlansPageContext(
+        is_self_hosted_realm=True,
+        sponsorship_url=reverse(
+            "remote_server_sponsorship_page", args=(billing_session.remote_server.uuid,)
+        ),
+        free_trial_days=settings.FREE_TRIAL_DAYS,
+        billing_base_url=billing_session.billing_base_url,
+        is_sponsored=billing_session.is_sponsored(),
+    )
+
+    context.on_free_tier = customer is None and not context.is_sponsored
+    if customer is not None:
+        context.sponsorship_pending = customer.sponsorship_pending
+        context.customer_plan = get_current_plan_by_customer(customer)
+        if context.customer_plan is None:
+            context.on_free_tier = not context.is_sponsored
+        else:
+            context.on_free_tier = context.customer_plan.tier in (
+                CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                CustomerPlan.TIER_SELF_HOSTED_BASE,
+            )
+            context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
+
+    context.is_new_customer = (
+        not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
+    )
+    return TemplateResponse(
+        request,
+        "corporate/plans.html",
+        context=asdict(context),
     )
 
 

@@ -13,7 +13,7 @@
 
 {% include 'zerver/landing_nav.html' %}
 
-<div class="portico-pricing plans showing-cloud">
+<div class="portico-pricing plans {% if is_self_hosted_realm %} showing-self-hosted {% else %} showing-cloud {% endif %}">
     <div class="main">
         {% include "corporate/pricing_model.html" %}
     </div>
