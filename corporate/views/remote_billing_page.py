@@ -38,6 +38,8 @@ billing_logger = logging.getLogger("corporate.stripe")
 VALID_NEXT_PAGES = [None, "sponsorship", "upgrade", "billing", "plans"]
 VALID_NEXT_PAGES_TYPE = Literal[None, "sponsorship", "upgrade", "billing", "plans"]
 
+REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 2 * 60 * 60
+
 
 @csrf_exempt
 @typed_endpoint
@@ -87,12 +89,14 @@ def remote_realm_billing_finalize_login(
 ) -> HttpResponse:
     # Sanity assert, because otherwise these make no sense.
     assert (
-        settings.SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS < REMOTE_BILLING_SESSION_VALIDITY_SECONDS
+        REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS
+        <= REMOTE_BILLING_SESSION_VALIDITY_SECONDS
     )
 
     try:
         identity_dict: RemoteBillingIdentityDict = signing.loads(
-            signed_billing_access_token, max_age=settings.SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS
+            signed_billing_access_token,
+            max_age=REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS,
         )
     except signing.SignatureExpired:
         raise JsonableError(_("Billing access token expired."))
