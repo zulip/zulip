@@ -8,10 +8,12 @@ never heard of Markdown, you are probably familiar with basic Markdown
 formatting, such as using `*` at the start of a line in a bulleted list, or
 around text to indicate emphasis.
 
-This page provides an overview of all the formatting available in Zulip. There
-is a convenient [message formatting reference](#message-formatting-reference)
-in the Zulip app that you can use whenever you need a reminder of the formatting
-syntax below.
+Formatting buttons in the compose box make it easy to format your message. For
+those who prefer to type the formatting they need, this page provides an
+overview of all the formatting available in Zulip. There is a convenient
+[message formatting reference](#message-formatting-reference) in the Zulip
+app that you can use whenever you need a reminder of the formatting syntax
+below.
 
 * [Text emphasis](#text-emphasis)
 * [Bulleted lists](#bulleted-lists)
