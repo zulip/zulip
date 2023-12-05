@@ -37,7 +37,7 @@ else:
             # TODO: Figure out how to make this not be printed several
             # times, and maybe print the actual keys that are
             # overridden.
-            print("Using custom settings from zproject/custom_dev_settings.py.")
+            # print("Using custom settings from zproject/custom_dev_settings.py.")
 
 # Do not add any code after these wildcard imports!  Add it to
 # computed_settings instead.
