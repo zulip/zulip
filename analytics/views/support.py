@@ -49,7 +49,7 @@ from zerver.views.invite import get_invitee_emails_set
 
 if settings.ZILENCER_ENABLED:
     from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
-    from zilencer.models import RemoteZulipServer
+    from zilencer.models import RemoteRealm, RemoteZulipServer
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
@@ -375,7 +375,9 @@ def get_remote_servers_for_support(
     if not email_to_search and not hostname_to_search:
         return []
 
-    remote_servers_query = RemoteZulipServer.objects.order_by("id")
+    remote_servers_query = RemoteZulipServer.objects.order_by("id").prefetch_related(
+        "remoterealm_set"
+    )
     if email_to_search:
         remote_servers_query = remote_servers_query.filter(contact_email__iexact=email_to_search)
     elif hostname_to_search:
@@ -464,7 +466,10 @@ def remote_servers_support(
     )
     remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
     plan_data: Dict[int, PlanData] = {}
+    remote_realms: Dict[int, List[RemoteRealm]] = {}
     for remote_server in remote_servers:
+        remote_realms_for_server = list(remote_server.remoterealm_set.all())
+        remote_realms[remote_server.id] = remote_realms_for_server
         billing_session = RemoteServerBillingSession(remote_server=remote_server)
         remote_server_plan_data = get_current_plan_data_for_support_view(billing_session)
         plan_data[remote_server.id] = remote_server_plan_data
@@ -476,10 +481,12 @@ def remote_servers_support(
             remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
 
     context["remote_servers"] = remote_servers
+    context["remote_realms"] = remote_realms
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
     context["plan_data"] = plan_data
     context["get_discount"] = get_customer_discount_for_support_view
     context["get_plan_type_name"] = get_plan_type_string
+    context["get_org_type_display_name"] = get_org_type_display_name
 
     return render(
         request,
