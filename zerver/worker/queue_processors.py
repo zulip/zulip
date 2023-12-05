@@ -164,9 +164,15 @@ def register_worker(
 
 
 def get_worker(
-    queue_name: str, threaded: bool = False, disable_timeout: bool = False
+    queue_name: str,
+    *,
+    threaded: bool = False,
+    disable_timeout: bool = False,
+    worker_num: Optional[int] = None,
 ) -> "QueueProcessingWorker":
-    return worker_classes[queue_name](threaded=threaded, disable_timeout=disable_timeout)
+    return worker_classes[queue_name](
+        threaded=threaded, disable_timeout=disable_timeout, worker_num=worker_num
+    )
 
 
 def get_active_worker_queues(only_test_queues: bool = False) -> List[str]:
@@ -226,10 +232,16 @@ class QueueProcessingWorker(ABC):
     # startup and steady-state memory.
     PREFETCH = 100
 
-    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
+    def __init__(
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
+    ) -> None:
         self.q: Optional[SimpleQueueClient] = None
         self.threaded = threaded
         self.disable_timeout = disable_timeout
+        self.worker_num = worker_num
         if not hasattr(self, "queue_name"):
             raise WorkerDeclarationError("Queue worker declared without queue_name")
 
@@ -786,8 +798,13 @@ class MissedMessageWorker(QueueProcessingWorker):
 
 @assign_queue("email_senders")
 class EmailSendingWorker(LoopQueueProcessingWorker):
-    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
-        super().__init__(threaded, disable_timeout)
+    def __init__(
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
+    ) -> None:
+        super().__init__(threaded, disable_timeout, worker_num)
         self.connection: BaseEmailBackend = initialize_connection(None)
 
     @retry_send_email_failures
@@ -1199,10 +1216,11 @@ class NoopWorker(QueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
         max_consume: int = 1000,
         slow_queries: Sequence[int] = [],
     ) -> None:
-        super().__init__(threaded, disable_timeout)
+        super().__init__(threaded, disable_timeout, worker_num)
         self.consumed = 0
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)
@@ -1228,10 +1246,11 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
         self,
         threaded: bool = False,
         disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
         max_consume: int = 1000,
         slow_queries: Sequence[int] = [],
     ) -> None:
-        super().__init__(threaded, disable_timeout)
+        super().__init__(threaded, disable_timeout, worker_num)
         self.consumed = 0
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)
