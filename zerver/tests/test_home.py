@@ -2,7 +2,7 @@ import calendar
 from datetime import timedelta, timezone
 from typing import TYPE_CHECKING, Any, Dict
 from unittest.mock import patch
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import orjson
 import time_machine
@@ -1011,7 +1011,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(result["Location"].endswith("/desktop_home/"))
         result = self.client_get("/desktop_home/")
         self.assertEqual(result.status_code, 302)
-        path = urlparse(result["Location"]).path
+        path = urlsplit(result["Location"]).path
         self.assertEqual(path, "/")
 
     @override_settings(SERVER_UPGRADE_NAG_DEADLINE_DAYS=365)

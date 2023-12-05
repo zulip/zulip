@@ -295,3 +295,12 @@ rules:
     fix: time_machine.travel($TIME, tick=False)
     severity: ERROR
     message: "Use the time_machine package, rather than mocking timezone_now"
+
+  - id: urlparse
+    languages: [python]
+    pattern-either:
+      - pattern: urllib.parse.urlparse
+      - pattern: urllib.parse.urlunparse
+      - pattern: urllib.parse.ParseResult
+    severity: ERROR
+    message: "Use urlsplit rather than urlparse"

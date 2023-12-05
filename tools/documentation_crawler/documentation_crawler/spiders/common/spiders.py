@@ -2,7 +2,7 @@ import json
 import os
 import re
 from typing import Callable, Iterator, List, Optional, Union
-from urllib.parse import urlparse, urlsplit
+from urllib.parse import urlsplit
 
 import scrapy
 from scrapy.http import Request, Response
@@ -233,7 +233,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             response = failure.value.response
             # Hack: The filtering above does not catch this URL,
             # likely due to a redirect.
-            if urlparse(response.url).netloc == "idmsa.apple.com":
+            if urlsplit(response.url).netloc == "idmsa.apple.com":
                 return None
             if response.status == 405 and response.request.method == "HEAD":
                 # Method 'HEAD' not allowed, repeat request with 'GET'

@@ -15,7 +15,7 @@ from typing import (
     cast,
     overload,
 )
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import django_otp
 from django.conf import settings
@@ -393,8 +393,8 @@ def zulip_redirect_to_login(
     resolved_login_url = resolve_url(login_url or settings.LOGIN_URL)
     # If the login URL is the same scheme and net location then just
     # use the path as the "next" url.
-    login_scheme, login_netloc = urlparse(resolved_login_url)[:2]
-    current_scheme, current_netloc = urlparse(path)[:2]
+    login_scheme, login_netloc = urlsplit(resolved_login_url)[:2]
+    current_scheme, current_netloc = urlsplit(path)[:2]
     if (not login_scheme or login_scheme == current_scheme) and (
         not login_netloc or login_netloc == current_netloc
     ):

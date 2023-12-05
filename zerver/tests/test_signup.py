@@ -3,7 +3,7 @@ import time
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
 from unittest.mock import MagicMock, patch
-from urllib.parse import quote, quote_plus, urlencode, urlparse
+from urllib.parse import quote, quote_plus, urlencode, urlsplit
 
 import orjson
 from django.conf import settings
@@ -1095,7 +1095,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # An unknown message type "fake" produces an error.
         user_profile = self.example_user("hamlet")
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "fake")
-        result = self.client_get(urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
         self.assert_in_response("Unknown email unsubscribe request", result)
 
     def test_message_notification_emails_unsubscribe(self) -> None:
@@ -1109,7 +1109,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile.save()
 
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
-        result = self.client_get(urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         self.assertEqual(result.status_code, 200)
 
@@ -1128,7 +1128,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-        result = self.client_get(urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
@@ -1166,7 +1166,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
-        result = self.client_get(urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)
@@ -1187,7 +1187,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile.save()
 
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "login")
-        result = self.client_get(urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         self.assertEqual(result.status_code, 200)
 
@@ -1204,7 +1204,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # Simulate unsubscribing from marketing e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
-        result = self.client_get(urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
         self.assertEqual(result.status_code, 200)
 
         # Circumvent user_profile caching.
@@ -1223,7 +1223,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Simulate unsubscribing from marketing e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
         client = Client(enforce_csrf_checks=True)
-        result = client.post(urlparse(unsubscribe_link).path, {"List-Unsubscribe": "One-Click"})
+        result = client.post(urlsplit(unsubscribe_link).path, {"List-Unsubscribe": "One-Click"})
         self.assertEqual(result.status_code, 200)
 
         # Circumvent user_profile caching.

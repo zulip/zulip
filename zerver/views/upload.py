@@ -4,7 +4,7 @@ import os
 from datetime import timedelta
 from mimetypes import guess_type
 from typing import List, Optional, Union
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlsplit
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -41,7 +41,7 @@ from zerver.models import UserProfile, validate_attachment_request
 
 
 def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
-    filename = os.path.basename(urlparse(url).path)
+    filename = os.path.basename(urlsplit(url).path)
     content_disposition = content_disposition_header(is_attachment, filename)
 
     if content_disposition is not None:
@@ -84,7 +84,7 @@ def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -
 
     # We over-escape the path, to work around it being impossible to
     # get the _unescaped_ new internal request URI in nginx.
-    parsed_url = urlparse(url)
+    parsed_url = urlsplit(url)
     assert parsed_url.hostname is not None
     assert parsed_url.path is not None
     assert parsed_url.query is not None

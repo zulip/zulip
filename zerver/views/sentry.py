@@ -1,7 +1,7 @@
 import logging
 from contextlib import suppress
 from typing import Type
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import orjson
 from circuitbreaker import CircuitBreakerError, circuit
@@ -34,7 +34,7 @@ def sentry_tunnel(
     try:
         envelope_header_line, envelope_items = request.body.split(b"\n", 1)
         envelope_header = to_wild_value("envelope_header", envelope_header_line.decode("utf-8"))
-        dsn = urlparse(envelope_header["dsn"].tame(check_url))
+        dsn = urlsplit(envelope_header["dsn"].tame(check_url))
     except Exception:
         raise JsonableError(_("Invalid request format"))
 
