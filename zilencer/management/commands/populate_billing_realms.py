@@ -9,7 +9,13 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import RealmBillingSession, RemoteServerBillingSession, add_months
+from corporate.lib.stripe import (
+    RealmBillingSession,
+    RemoteServerBillingSession,
+    UpgradeRequest,
+    add_months,
+    sign_string,
+)
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT
 from zerver.actions.create_realm import do_create_realm
@@ -36,8 +42,11 @@ class CustomerProfile:
     is_sponsored: bool = False
     card: str = ""
     charge_automatically: bool = True
+    is_remote_realm: bool = False
+    is_remote_server: bool = False
     renewal_date: str = current_time
     end_date: str = "2030-10-10-01-10-10"
+    remote_server_plan_start_date: str = "billing_cycle_end_date"
 
 
 class Command(BaseCommand):
@@ -127,24 +136,46 @@ class Command(BaseCommand):
                 tier=CustomerPlan.TIER_CLOUD_STANDARD,
                 status=CustomerPlan.FREE_TRIAL,
             ),
-            # Use `server` keyword in the unique_id to indicate that this is a profile for remote server.
             CustomerProfile(
                 unique_id="legacy-server",
                 tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                is_remote_server=True,
             ),
             CustomerProfile(
                 unique_id="legacy-server-upgrade-scheduled",
                 tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
                 status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END,
                 new_plan_tier=CustomerPlan.TIER_SELF_HOSTED_PLUS,
+                is_remote_server=True,
             ),
             CustomerProfile(
                 unique_id="business-server",
                 tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                is_remote_server=True,
             ),
             CustomerProfile(
-                unique_id="business-server-payment-starts-in-future",
+                unique_id="business-server-free-trial",
                 tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                status=CustomerPlan.FREE_TRIAL,
+                is_remote_server=True,
+            ),
+            CustomerProfile(
+                unique_id="business-server-sponsorship-pending",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                sponsorship_pending=True,
+                is_remote_server=True,
+            ),
+            CustomerProfile(
+                unique_id="self-hosted-server-sponsorship-pending",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BASE,
+                sponsorship_pending=True,
+                is_remote_server=True,
+            ),
+            CustomerProfile(
+                unique_id="server-sponsored",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                is_sponsored=True,
+                is_remote_server=True,
             ),
         ]
 
@@ -154,7 +185,7 @@ class Command(BaseCommand):
 
         servers = []
         for customer_profile in customer_profiles:
-            if "server" in customer_profile.unique_id:
+            if customer_profile.is_remote_server:
                 server_conf = populate_remote_server(customer_profile)
                 servers.append(server_conf)
             elif not options.get("only_remote_server"):
@@ -168,6 +199,7 @@ class Command(BaseCommand):
 
 
 def add_card_to_customer(customer: Customer) -> None:
+    assert customer.stripe_customer_id is not None
     # Set the Stripe API key
     stripe.api_key = get_secret("stripe_secret_key")
 
@@ -185,6 +217,7 @@ def add_card_to_customer(customer: Customer) -> None:
         customer.stripe_customer_id,
         invoice_settings={"default_payment_method": payment_method.id},
     )
+
 
 def populate_realm(customer_profile: CustomerProfile) -> None:
     unique_id = customer_profile.unique_id
@@ -284,10 +317,14 @@ def populate_realm(customer_profile: CustomerProfile) -> None:
 def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
     unique_id = customer_profile.unique_id
 
-    if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+    if customer_profile.is_sponsored:
+        plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
+    elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
         plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
     elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
         plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
+    elif customer_profile.tier is CustomerPlan.TIER_SELF_HOSTED_BASE:
+        plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
     else:
         raise AssertionError("Unexpected tier!")
 
@@ -302,6 +339,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
         plan_type=plan_type,
     )
 
+    billing_session = RemoteServerBillingSession(remote_server)
     if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
         # Create customer plan for these servers for temporary period.
         billing_session = RemoteServerBillingSession(remote_server)
@@ -312,13 +350,59 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
             tzinfo=datetime.timezone.utc
         )
         billing_session.add_server_to_legacy_plan(renewal_date, end_date)
-    elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
-        # TBD
-        pass
+        # Scheduled server to upgrade to business plan.
+        if customer_profile.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+            # This attaches stripe_customer_id to customer.
+            customer = billing_session.update_or_create_stripe_customer()
+            add_card_to_customer(customer)
+            seat_count = 10
+            signed_seat_count, salt = sign_string(str(seat_count))
+            upgrade_request = UpgradeRequest(
+                billing_modality="charge_automatically",
+                schedule="annual",
+                signed_seat_count=signed_seat_count,
+                salt=salt,
+                license_management="automatic",
+                licenses=seat_count,
+                tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+                remote_server_plan_start_date=customer_profile.remote_server_plan_start_date,
+            )
+            billing_session.do_upgrade(upgrade_request)
 
-    if customer_profile.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
-        # TBD
-        pass
+    elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
+        customer = billing_session.update_or_create_stripe_customer()
+        assert customer.stripe_customer_id is not None
+        add_card_to_customer(customer)
+
+        months = 12
+        if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+            months = 1
+        next_invoice_date = add_months(timezone_now(), months)
+
+        customer_plan = CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=customer_profile.billing_schedule,
+            tier=customer_profile.tier,
+            price_per_license=1200,
+            automanage_licenses=customer_profile.automanage_licenses,
+            status=customer_profile.status,
+            charge_automatically=customer_profile.charge_automatically,
+            next_invoice_date=next_invoice_date,
+        )
+
+        LicenseLedger.objects.create(
+            licenses=10,
+            licenses_at_next_renewal=10,
+            event_time=timezone_now(),
+            is_renewal=True,
+            plan=customer_plan,
+        )
+
+    if customer_profile.sponsorship_pending:
+        billing_session.update_customer_sponsorship_status(True)
+    elif customer_profile.is_sponsored:
+        billing_session.do_change_plan_type(tier=None, is_sponsored=True)
 
     return {
         "unique_id": unique_id,
