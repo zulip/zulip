@@ -304,7 +304,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
     if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
         # Create customer plan for these servers for temporary period.
         billing_session = RemoteServerBillingSession(remote_server)
-        renewal_date = renewal_date = datetime.datetime.strptime(
+        renewal_date = datetime.datetime.strptime(
             customer_profile.renewal_date, TIMESTAMP_FORMAT
         ).replace(tzinfo=datetime.timezone.utc)
         end_date = datetime.datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
