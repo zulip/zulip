@@ -47,7 +47,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Message,
     Realm,
     RealmDomain,
@@ -64,6 +63,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.views.message_send import InvalidMirrorInputError
 
 
