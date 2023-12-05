@@ -8,7 +8,7 @@ import signal
 import subprocess
 import sys
 from typing import List, Sequence
-from urllib.parse import urlunparse
+from urllib.parse import urlunsplit
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -204,7 +204,7 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
     host = ":".join((target_host, str(target_port)))
     # Here we are going to rewrite the path a bit so that it is in parity with
     # what we will have for production
-    newpath = urlunparse((protocol, host, path, "", query, ""))
+    newpath = urlunsplit((protocol, host, path, query, ""))
     return newpath
 
 

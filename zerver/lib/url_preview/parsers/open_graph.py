@@ -1,4 +1,4 @@
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 from typing_extensions import override
 
@@ -26,9 +26,9 @@ class OpenGraphParser(BaseParser):
                 data.description = tag["content"]
             elif tag["property"] == "og:image":
                 try:
-                    # We use urlparse and not URLValidator because we
+                    # We use urlsplit and not URLValidator because we
                     # need to support relative URLs.
-                    urlparse(tag["content"])
+                    urlsplit(tag["content"])
                 except ValueError:
                     continue
                 data.image = tag["content"]

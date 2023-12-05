@@ -26,7 +26,7 @@ from typing import (
     Union,
     cast,
 )
-from urllib.parse import parse_qs, quote, urlencode, urljoin, urlparse, urlsplit, urlunparse
+from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -486,7 +486,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
 
 
 def get_tweet_id(url: str) -> Optional[str]:
-    parsed_url = urlparse(url)
+    parsed_url = urlsplit(url)
     if not (parsed_url.netloc == "twitter.com" or parsed_url.netloc.endswith(".twitter.com")):
         return None
     to_match = parsed_url.path
@@ -715,7 +715,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview URLs to image URLs.
         # See https://github.com/zulip/zulip/issues/4658 for more information
-        parsed_url = urlparse(url)
+        parsed_url = urlsplit(url)
         if parsed_url.netloc == "github.com" or parsed_url.netloc.endswith(".github.com"):
             # https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png ->
             # https://raw.githubusercontent.com/zulip/zulip/main/static/images/logo/zulip-icon-128x128.png
@@ -730,7 +730,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url: str) -> bool:
         if not self.zmd.image_preview_enabled:
             return False
-        parsed_url = urlparse(url)
+        parsed_url = urlsplit(url)
         # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
@@ -742,7 +742,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # wikipedia.org to point to the actual image URL.  It's
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
-        parsed_url = urlparse(url)
+        parsed_url = urlsplit(url)
         if parsed_url.netloc.lower().endswith(".wikipedia.org") and parsed_url.path.startswith(
             "/wiki/File:"
         ):
@@ -757,7 +757,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def dropbox_image(self, url: str) -> Optional[Dict[str, Any]]:
         # TODO: The returned Dict could possibly be a TypedDict in future.
-        parsed_url = urlparse(url)
+        parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
             is_album = parsed_url.path.startswith("/sc/") or parsed_url.path.startswith("/photos/")
             # Only allow preview Dropbox shared links
@@ -1566,8 +1566,8 @@ def sanitize_url(url: str) -> Optional[str]:
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
     try:
-        parts = urlparse(url.replace(" ", "%20"))
-        scheme, netloc, path, params, query, fragment = parts
+        parts = urlsplit(url.replace(" ", "%20"))
+        scheme, netloc, path, query, fragment = parts
     except ValueError:
         # Bad URL - so bad it couldn't be parsed.
         return ""
@@ -1578,10 +1578,10 @@ def sanitize_url(url: str) -> Optional[str]:
         scheme = "mailto"
     elif scheme == "" and netloc == "" and len(path) > 0 and path[0] == "/":
         # Allow domain-relative links
-        return urlunparse(("", "", path, params, query, fragment))
-    elif (scheme, netloc, path, params, query) == ("", "", "", "", "") and len(fragment) > 0:
+        return urlunsplit(("", "", path, query, fragment))
+    elif (scheme, netloc, path, query) == ("", "", "", "") and len(fragment) > 0:
         # Allow fragment links
-        return urlunparse(("", "", "", "", "", fragment))
+        return urlunsplit(("", "", "", "", fragment))
 
     # Zulip modification: If scheme is not specified, assume http://
     # We re-enter sanitize_url because netloc etc. need to be re-parsed.
@@ -1606,7 +1606,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # the colon check, which would also forbid a lot of legitimate URLs.
 
     # URL passes all tests. Return URL as-is.
-    return urlunparse((scheme, netloc, path, params, query, fragment))
+    return urlunsplit((scheme, netloc, path, query, fragment))
 
 
 def url_to_a(

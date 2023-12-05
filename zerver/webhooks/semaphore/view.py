@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from typing import Optional, Tuple
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 from django.http import HttpRequest, HttpResponse
 
@@ -224,7 +224,7 @@ def semaphore_2(payload: WildValue) -> Tuple[str, str, Optional[str], str]:
 
 
 def is_github_repo(repo_url: str) -> bool:
-    return urlparse(repo_url).hostname == "github.com"
+    return urlsplit(repo_url).hostname == "github.com"
 
 
 def summary_line(message: str) -> str:

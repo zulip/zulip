@@ -2,7 +2,7 @@ from contextlib import suppress
 from datetime import timedelta
 from decimal import Decimal
 from typing import Any, Dict, Iterable, List, Optional, Union
-from urllib.parse import urlencode, urlparse
+from urllib.parse import urlencode, urlsplit
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -272,7 +272,7 @@ def support(
         for key_word in key_words:
             try:
                 URLValidator()(key_word)
-                parse_result = urlparse(key_word)
+                parse_result = urlsplit(key_word)
                 hostname = parse_result.hostname
                 assert hostname is not None
                 if parse_result.port:

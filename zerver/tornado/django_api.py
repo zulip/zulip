@@ -1,7 +1,7 @@
 from collections import defaultdict
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import orjson
 import requests
@@ -50,7 +50,7 @@ class TornadoAdapter(HTTPAdapter):
                 request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies
             )
         except ConnectionError:
-            parsed_url = urlparse(request.url)
+            parsed_url = urlsplit(request.url)
             logfile = (
                 f"tornado-{parsed_url.port}.log"
                 if settings.TORNADO_PROCESSES > 1

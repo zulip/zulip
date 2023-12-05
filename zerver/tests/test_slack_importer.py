@@ -4,7 +4,7 @@ from io import BytesIO
 from typing import Any, Dict, Iterator, List, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlsplit
 
 import orjson
 import responses
@@ -76,7 +76,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
     if request.url == "https://slack.com/api/users.list":
         return (200, {}, orjson.dumps({"ok": True, "members": "user_data"}))
 
-    query_from_url = str(urlparse(request.url).query)
+    query_from_url = str(urlsplit(request.url).query)
     qs = parse_qs(query_from_url)
     if request.url and "https://slack.com/api/users.info" in request.url:
         user2team_dict = {

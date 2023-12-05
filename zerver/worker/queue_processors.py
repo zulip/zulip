@@ -30,7 +30,7 @@ from typing import (
     Type,
     TypeVar,
 )
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import orjson
 import sentry_sdk
@@ -1132,7 +1132,7 @@ class DeferredWorker(QueueProcessingWorker):
             assert public_url is not None
 
             # Update the extra_data field now that the export is complete.
-            extra_data["export_path"] = urlparse(public_url).path
+            extra_data["export_path"] = urlsplit(public_url).path
             export_event.extra_data = extra_data
             export_event.save(update_fields=["extra_data"])
 

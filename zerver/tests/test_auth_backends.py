@@ -24,7 +24,7 @@ from typing import (
     Type,
 )
 from unittest import mock
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 import jwt
 import ldap
@@ -977,7 +977,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         headers: Any,
         **extra_data: Any,
     ) -> "TestHttpResponse":
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         csrf_state = parse_qs(parsed_url.query)["state"]
         result = self.client_get(self.AUTH_FINISH_URL, dict(state=csrf_state), **headers)
         return result
@@ -1157,7 +1157,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(data["redirect_to"], "/user_uploads/image")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -1181,7 +1181,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(data["redirect_to"], "/user_uploads/image")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -1307,7 +1307,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             )
         self.assertEqual(result.status_code, 302)
         redirect_url = result["Location"]
-        parsed_url = urlparse(redirect_url)
+        parsed_url = urlsplit(redirect_url)
         query_params = parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
@@ -1403,7 +1403,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(data["full_name"], self.example_user("hamlet").full_name)
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
         hamlet = self.example_user("hamlet")
@@ -1429,7 +1429,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(data["full_name"], name)
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -1472,7 +1472,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         if mobile_flow_otp:
             self.assertEqual(result.status_code, 302)
             redirect_url = result["Location"]
-            parsed_url = urlparse(redirect_url)
+            parsed_url = urlsplit(redirect_url)
             query_params = parse_qs(parsed_url.query)
             self.assertEqual(parsed_url.scheme, "zulip")
             self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
@@ -1715,7 +1715,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(data["full_name"], name)
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -1739,7 +1739,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(data["full_name"], name)
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -1995,7 +1995,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         assert "samlrequest" in result["Location"].lower()
 
         self.client.cookies = result.cookies
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         relay_state = parse_qs(parsed_url.query)["RelayState"][0]
         # Make sure params are getting encoded into RelayState:
         data = SAMLAuthBackend.get_data_from_redis(orjson.loads(relay_state)["state_token"])
@@ -2148,7 +2148,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         # Verify the redirect has the correct form - a LogoutRequest for hamlet
         # is delivered to the IdP in the SAMLRequest param.
-        query_dict = parse_qs(urlparse(result["Location"]).query)
+        query_dict = parse_qs(urlsplit(result["Location"]).query)
         saml_request_encoded = query_dict["SAMLRequest"][0]
         saml_request = OneLogin_Saml2_Utils.decode_base64_and_inflate(saml_request_encoded).decode()
         self.assertIn("<samlp:LogoutRequest", saml_request)
@@ -2330,7 +2330,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         redirect_to = result["Location"]
         self.assertIn(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS["test_idp"]["slo_url"], redirect_to)
 
-        parsed = urlparse(redirect_to)
+        parsed = urlsplit(redirect_to)
         query_dict = parse_qs(parsed.query)
 
         self.assertIn("SAMLResponse", query_dict)
@@ -3014,7 +3014,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["full_name"], self.name)
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -3049,7 +3049,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["full_name"], self.name)
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -3070,7 +3070,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["full_name"], self.name)
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -3344,7 +3344,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
         headers: Any,
         **extra_data: Any,
     ) -> "TestHttpResponse":
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         state = parse_qs(parsed_url.query)["state"]
         user_param = json.dumps(account_data_dict)
         self.client.session.flush()
@@ -3923,7 +3923,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         expect_noreply_email_allowed: bool = False,
         **extra_data: Any,
     ) -> "TestHttpResponse":
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         csrf_state = parse_qs(parsed_url.query)["state"]
         result = self.client_get(self.AUTH_FINISH_URL, dict(state=csrf_state), **headers)
 
@@ -4120,7 +4120,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(data["redirect_to"], "/user_uploads/image")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -4145,7 +4145,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(data["redirect_to"], "/user_uploads/image")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -4174,7 +4174,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(data["redirect_to"], "/user_uploads/image")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -4203,7 +4203,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(data["redirect_to"], "/user_uploads/image")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -4264,7 +4264,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(data["redirect_to"], "/user_uploads/image")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -4347,7 +4347,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self.assertEqual(data["full_name"], account_data_dict["name"])
         self.assertEqual(data["subdomain"], "zulip")
         self.assertEqual(result.status_code, 302)
-        parsed_url = urlparse(result["Location"])
+        parsed_url = urlsplit(result["Location"])
         url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
@@ -4486,7 +4486,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
         self.assertEqual(result.status_code, 302)
         redirect_url = result["Location"]
-        parsed_url = urlparse(redirect_url)
+        parsed_url = urlsplit(redirect_url)
         query_params = parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip-mobile.testserver"])
@@ -4531,7 +4531,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             )
         self.assertEqual(result.status_code, 302)
         redirect_url = result["Location"]
-        parsed_url = urlparse(redirect_url)
+        parsed_url = urlsplit(redirect_url)
         query_params = parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
@@ -5529,7 +5529,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         url = result["Location"]
-        parsed_url = urlparse(url)
+        parsed_url = urlsplit(url)
         self.assertEqual(parsed_url.path, "/accounts/login/sso/")
         self.assertEqual(parsed_url.query, "param1=value1&params=value2")
 
@@ -5673,7 +5673,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         redirect_url = result["Location"]
-        parsed_url = urlparse(redirect_url)
+        parsed_url = urlsplit(redirect_url)
         query_params = parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
@@ -5722,7 +5722,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         redirect_url = result["Location"]
-        parsed_url = urlparse(redirect_url)
+        parsed_url = urlsplit(redirect_url)
         query_params = parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])

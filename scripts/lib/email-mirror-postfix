@@ -50,7 +50,7 @@ import sys
 from configparser import RawConfigParser
 from typing import NoReturn
 from urllib.error import HTTPError
-from urllib.parse import urlencode, urljoin, urlparse
+from urllib.parse import urlencode, urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -131,7 +131,7 @@ def send_email_mirror(
     if test:
         return
 
-    if not urlparse(host).scheme:
+    if not urlsplit(host).scheme:
         config_file = get_config_file()
         http_only_config = get_config(config_file, "application_server", "http_only", "")
         http_only = http_only_config == "true"
