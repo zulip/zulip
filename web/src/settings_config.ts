@@ -1006,7 +1006,7 @@ export const stream_privacy_policy_values = {
 
 export const stream_post_policy_values = {
     // These strings should match the strings in the
-    // Stream.POST_POLICIES object in zerver/models.py.
+    // Stream.POST_POLICIES object in zerver/models/__init__.py.
     everyone: {
         code: StreamPostPolicy.EVERYONE,
         description: $t({defaultMessage: "Everyone"}),

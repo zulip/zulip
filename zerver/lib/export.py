@@ -307,7 +307,7 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
 
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
-    # configuration for every table declared in the `models.py` files.
+    # configuration for every table declared in the `models` modules.
     target_models = [
         *apps.get_app_config("analytics").get_models(include_auto_created=True),
         *apps.get_app_config("django_otp").get_models(include_auto_created=True),

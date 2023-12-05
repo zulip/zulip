@@ -17,9 +17,9 @@ paths will be familiar to Django developers.
   [Django routes file](https://docs.djangoproject.com/en/3.2/topics/http/urls/).
   Defines which URLs are handled by which view functions or templates.
 
-- `zerver/models.py` Main
+- `zerver/models/*.py`
   [Django models](https://docs.djangoproject.com/en/3.2/topics/db/models/)
-  file. Defines Zulip's database tables.
+  files. Defines Zulip's database tables.
 
 - `zerver/lib/*.py` Most library code.
 
