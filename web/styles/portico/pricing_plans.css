@@ -7,6 +7,7 @@
     --color-plan-tab-copy: hsl(223deg 40% 25% / 70%);
     --color-box-header: hsl(223deg 43% 25%);
     --color-box-copy: hsl(223deg 43% 25%);
+    --color-box-copy-fine-print: hsl(223deg 43% 55%);
     --color-link: hsl(210deg 94% 42%);
     --color-link-hover: hsl(210deg 100% 50%);
     --color-link-underline: hsl(210deg 94% 42% / 30%);
@@ -100,6 +101,23 @@
             flex: 0 0 auto;
             background: currentcolor;
             opacity: 0.3;
+        }
+    }
+
+    .unlimited-push-notifications {
+        padding-bottom: 21px;
+    }
+
+    .support-note {
+        margin-top: 15px;
+        font-size: 17px;
+        font-weight: 550;
+
+        &::before {
+            /* Hide the bullet on the support note,
+               but still keep its width to maintain
+               lefthand alignment. */
+            background: transparent;
         }
     }
 
@@ -247,8 +265,12 @@
         border-radius: 16px;
         color: var(--color-box-copy);
         background: var(--color-background-box);
-        min-width: 850px;
+        min-width: 1040px;
         margin: 0 16px;
+
+        &.self-hosted-plan-pricing {
+            min-width: 1220px;
+        }
 
         @media screen and (width <= 700px) {
             margin: 0 8px;
@@ -257,9 +279,27 @@
         h2 {
             font-weight: 550;
             font-size: 28px;
-            line-height: 1;
+            line-height: 28px;
             padding-left: 14px;
             margin: 8px 0 16px;
+
+            &.with-fine-print {
+                display: flex;
+                /* Keep fine-print to same distance from
+                   the dashed border to the right as the
+                   heading text is to the left. */
+                padding: 0 14px;
+
+                small {
+                    flex: 0 1 min-content;
+                    margin-left: auto;
+                    font-weight: 350;
+                    font-size: 14px;
+                    line-height: 14px;
+                    text-align: right;
+                    color: var(--color-box-copy-fine-print);
+                }
+            }
         }
 
         ul {
@@ -283,8 +323,20 @@
                 border-right: 0;
             }
 
+            /* Make sure flexing text-content boxes
+               occupy their full with, but account
+               for padding with border-box sizing. */
             .text-content {
+                box-sizing: border-box;
+                width: 100%;
                 margin: 0 auto;
+            }
+
+            /* Set right and left padding on the
+               bottom box so that buttons align
+               to the text column above. */
+            .bottom {
+                padding: 0 16px;
             }
         }
 
@@ -316,6 +368,7 @@
 
             .details p {
                 margin: 2px 0 0;
+                font-size: 15px;
                 line-height: 17px;
             }
         }
@@ -449,6 +502,14 @@
         border-radius: 4px;
     }
 
+    .button-placeholder {
+        /* Empty element for maintaining the
+           layout on plans that otherwise have
+           no button. */
+        height: 37.5px;
+        visibility: hidden;
+    }
+
     .get-started-button {
         color: hsl(0deg 0% 100%);
         background-color: hsl(146deg 92% 26%);
@@ -469,17 +530,14 @@
         }
     }
 
-    .current-plan-button {
+    .current-plan-button,
+    .current-plan-descriptor {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.5ch;
         color: hsl(147deg 57% 25%);
-
-        &:hover {
-            color: hsl(147deg 57% 25%);
-            background-color: hsl(152deg 79% 24% / 14%);
-        }
+        background-color: hsl(152deg 79% 24% / 5%);
 
         .current-plan-icon {
             width: 22px;
@@ -490,6 +548,20 @@
             mask-repeat: no-repeat;
             mask-image: var(--icon-current-plan-icon);
         }
+    }
+
+    .current-plan-descriptor {
+        /* Pad and lead the descriptor
+           to better match other buttons */
+        padding: 1.75px 0;
+        line-height: 16px;
+        background-color: transparent;
+        border: 1px solid hsl(152deg 79% 24% / 10%);
+    }
+
+    .current-plan-button:hover {
+        color: hsl(147deg 57% 25%);
+        background-color: hsl(152deg 79% 24% / 14%);
     }
 
     .sponsorship-button {
@@ -554,7 +626,7 @@
 
     &.showing-self-hosted {
         .pricing-container {
-            max-width: 960px;
+            max-width: 1400px;
         }
 
         .cloud-scroll,
@@ -598,16 +670,6 @@
                 h2 {
                     margin: 0;
                 }
-            }
-        }
-
-        .price-box {
-            .text-content {
-                max-width: 332px;
-            }
-
-            .bottom .text-content {
-                max-width: 268px;
             }
         }
     }
