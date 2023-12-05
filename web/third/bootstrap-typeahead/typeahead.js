@@ -503,9 +503,12 @@ import {get_string_diff} from "../../src/util";
     }
 
   , keypress: function (e) {
-      if (this.suppressKeyPressRepeat) return
-      this.move(e)
+    if (!this.suppressKeyPressRepeat) {
+      this.move(e);
+      return;
     }
+    this.maybeStopAdvance(e);
+  }
 
   , keyup: function (e) {
       const pseudo_keycode = get_pseudo_keycode(e);
