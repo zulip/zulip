@@ -1,5 +1,6 @@
 import * as channel from "./channel";
 import * as people from "./people";
+import type {StreamSubscription} from "./sub_store";
 
 /*
     This module simply encapsulates our legacy API for subscribing
@@ -8,7 +9,12 @@ import * as people from "./people";
     nor how to JSON.stringify things, nor the URL scheme.
 */
 
-export function add_user_ids_to_stream(user_ids, sub, success, failure) {
+export function add_user_ids_to_stream(
+    user_ids: number[],
+    sub: StreamSubscription,
+    success: () => void,
+    failure: (xhr: JQuery.jqXHR<unknown>) => void,
+): JQuery.jqXHR<unknown> | undefined {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
     if (user_ids.length === 1 && people.is_my_user_id(Number(user_ids[0]))) {
@@ -32,7 +38,12 @@ export function add_user_ids_to_stream(user_ids, sub, success, failure) {
     });
 }
 
-export function remove_user_id_from_stream(user_id, sub, success, failure) {
+export function remove_user_id_from_stream(
+    user_id: number[],
+    sub: StreamSubscription,
+    success: () => void,
+    failure: (xhr: JQuery.jqXHR<unknown>) => void,
+): JQuery.jqXHR<unknown> | undefined {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
     return channel.del({
