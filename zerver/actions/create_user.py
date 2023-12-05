@@ -55,7 +55,7 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed
+    from corporate.lib.stripe import RealmBillingSession
 
 
 MAX_NUM_ONBOARDING_MESSAGES = 1000
@@ -514,7 +514,8 @@ def do_create_user(
             event_time,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
         system_user_group = get_system_user_group_for_user(user_profile)
         UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
@@ -624,7 +625,8 @@ def do_activate_mirror_dummy_user(
             event_time,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
     notify_created_user(user_profile, [])
 
@@ -676,7 +678,8 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         event_time,
     )
     if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(event_time)
 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
