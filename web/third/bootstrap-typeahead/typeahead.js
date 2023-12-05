@@ -448,6 +448,14 @@ import {get_string_diff} from "../../src/util";
       }
   }
 
+  , maybeStopAdvance(e) {
+    const pseudo_keycode = get_pseudo_keycode(e);
+    if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
+        && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
+        e.stopPropagation();
+    }
+  }
+
   , move: function (e) {
       if (!this.shown) return
       const pseudo_keycode = get_pseudo_keycode(e);
@@ -471,10 +479,7 @@ import {get_string_diff} from "../../src/util";
           break
       }
 
-      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
-          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
-          e.stopPropagation()
-      }
+      this.maybeStopAdvance(e);
     }
 
   , mousemove: function(e) {
@@ -545,10 +550,7 @@ import {get_string_diff} from "../../src/util";
           this.lookup(hideOnEmpty)
       }
 
-      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
-          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
-          e.stopPropagation()
-      }
+      this.maybeStopAdvance(e);
 
       e.preventDefault()
   }
