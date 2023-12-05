@@ -13,7 +13,7 @@
 1. _(optional)_ Select the text you want to format.
 
 1. Click the **Quote** (<i class="zulip-icon zulip-icon-quote"></i>) icon at the
-   bottom of the compose box to insert quote formatting.
+   bottom of the compose box to insert quote block formatting.
 
 !!! tip ""
 
