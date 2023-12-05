@@ -212,6 +212,16 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
                 fields=["server", "realm_id", "remote_id"],
                 name="zilencer_remoterealmauditlog_server_realm_remote",
             ),
+            models.Index(
+                fields=["server", "realm_id"],
+                condition=Q(remote_realm__isnull=True),
+                name="zilencer_remoterealmauditlog_server_realm",
+            ),
+            models.Index(
+                fields=["server"],
+                condition=Q(remote_realm__isnull=True),
+                name="zilencer_remoterealmauditlog_server",
+            ),
         ]
 
 
@@ -295,6 +305,16 @@ class RemoteRealmCount(BaseRemoteCount):
             models.Index(
                 fields=["property", "end_time"],
                 name="zilencer_remoterealmcount_property_end_time_506a0b38_idx",
+            ),
+            models.Index(
+                fields=["server", "realm_id"],
+                condition=Q(remote_realm__isnull=True),
+                name="zilencer_remoterealmcount_server_realm",
+            ),
+            models.Index(
+                fields=["server"],
+                condition=Q(remote_realm__isnull=True),
+                name="zilencer_remoterealmcount_server",
             ),
         ]
 
