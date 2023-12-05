@@ -4,6 +4,16 @@
 
 ## Insert LaTeX formatting
 
+Zulip's compose box has a smart **LaTeX** (<i class="zulip-icon
+zulip-icon-math"></i>) button, which inserts contextually appropriate LaTeX
+formatting:
+
+- If no text is selected, the button inserts displayed LaTeX (````math`) formatting.
+- If selected text is on one line, the button inserts inline LaTeX (`$$`)
+  formatting.
+- If selected text is on multiple lines, the button inserts displayed LaTeX
+  (````math`) formatting.
+
 {start_tabs}
 
 {tab|via-compose-box-buttons}
@@ -13,9 +23,7 @@
 1. _(optional)_ Select the text you want to format.
 
 1. Click the **LaTeX** (<i class="zulip-icon zulip-icon-math"></i>) icon at the
-   bottom of the compose box to insert LaTeX formatting. The appropriate inline
-   or block formatting will be applied automatically depending on whether you
-   selected a whole line, part of a line, or multiple lines.
+   bottom of the compose box to insert LaTeX formatting.
 
 !!! tip ""
 
