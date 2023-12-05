@@ -73,7 +73,6 @@ from corporate.lib.stripe import (
     stripe_get_customer,
     unsign_string,
     update_license_ledger_for_automanaged_plan,
-    update_license_ledger_for_manual_plan,
     update_license_ledger_if_needed,
 )
 from corporate.models import (
@@ -4765,20 +4764,25 @@ class LicenseLedgerTest(StripeTestCase):
                 self.seat_count + 1, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
             )
 
+        billing_session = RealmBillingSession(user=None, realm=realm)
         plan = get_current_plan_by_realm(realm)
         assert plan is not None
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
-            update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count + 3)
+            billing_session.update_license_ledger_for_manual_plan(
+                plan, self.now, licenses=self.seat_count + 3
+            )
             self.assertEqual(plan.licenses(), self.seat_count + 3)
             self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count + 3)
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
             with self.assertRaises(AssertionError):
-                update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count)
+                billing_session.update_license_ledger_for_manual_plan(
+                    plan, self.now, licenses=self.seat_count
+                )
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
-            update_license_ledger_for_manual_plan(
+            billing_session.update_license_ledger_for_manual_plan(
                 plan, self.now, licenses_at_next_renewal=self.seat_count
             )
             self.assertEqual(plan.licenses(), self.seat_count + 3)
@@ -4786,16 +4790,17 @@ class LicenseLedgerTest(StripeTestCase):
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
             with self.assertRaises(AssertionError):
-                update_license_ledger_for_manual_plan(
+                billing_session.update_license_ledger_for_manual_plan(
                     plan, self.now, licenses_at_next_renewal=self.seat_count - 1
                 )
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
-            update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count + 10)
+            billing_session.update_license_ledger_for_manual_plan(
+                plan, self.now, licenses=self.seat_count + 10
+            )
             self.assertEqual(plan.licenses(), self.seat_count + 10)
             self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count + 10)
 
-        billing_session = RealmBillingSession(user=None, realm=realm)
         billing_session.make_end_of_cycle_updates_if_needed(plan, self.next_year)
         self.assertEqual(plan.licenses(), self.seat_count + 10)
 
@@ -4817,7 +4822,7 @@ class LicenseLedgerTest(StripeTestCase):
         )
 
         with self.assertRaises(AssertionError):
-            update_license_ledger_for_manual_plan(plan, self.now)
+            billing_session.update_license_ledger_for_manual_plan(plan, self.now)
 
     def test_user_changes(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
