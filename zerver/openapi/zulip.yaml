@@ -2298,6 +2298,7 @@ paths:
                                   "hotspots":
                                     [
                                       {
+                                        "type": "hotspot",
                                         "name": "intro_streams",
                                         "title": "Catch up on a stream",
                                         "description": "Messages sent to a stream are seen by everyone subscribed to that stream. Try clicking on one of the stream links below.",
@@ -18557,10 +18558,11 @@ components:
       description: |
         Dictionary containing details of a single hotspot.
       properties:
-        delay:
-          type: number
+        type:
+          type: string
           description: |
-            The delay after which the user should be shown the hotspot.
+            The type of the onboarding step. Valid values are either
+            'hotspot' or 'one_time_notice'.
         name:
           type: string
           description: |
@@ -18574,6 +18576,10 @@ components:
           description: |
             The description of the hotspot, as will be displayed to the
             user.
+        delay:
+          type: number
+          description: |
+            The delay after which the user should be shown the hotspot.
         has_trigger:
           type: boolean
           description: |

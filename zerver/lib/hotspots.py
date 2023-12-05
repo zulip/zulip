@@ -19,6 +19,7 @@ class Hotspot:
 
     def to_dict(self, delay: float = 0) -> Dict[str, Union[str, float, bool]]:
         return {
+            "type": "hotspot",
             "name": self.name,
             "title": str(self.title),
             "description": str(self.description),

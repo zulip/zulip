@@ -334,6 +334,7 @@ def check_heartbeat(
 
 _hotspot = DictType(
     required_keys=[
+        ("type", str),
         ("name", str),
         ("title", str),
         ("description", str),
