@@ -16,6 +16,11 @@
    (<i class="zulip-icon zulip-icon-unordered-list"></i>) icon at the
    bottom of the compose box to insert list formatting.
 
+1. Press <kbd>Enter</kbd> to automatically add a new bullet to the list.
+
+1. When your list is done, press <kbd>Enter</kbd> a second time to remove the
+   bullet.
+
 !!! tip ""
 
     You can also use the **Bulleted list**
@@ -31,10 +36,8 @@
 
 1. Press <kbd>Enter</kbd> to automatically add a new bullet to the list.
 
-!!! tip ""
-
-    Pressing <kbd>Enter</kbd> on a blank list item will remove the list
-    formatting on the current line.
+1. When your list is done, press <kbd>Enter</kbd> a second time to remove the
+   bullet.
 
 {end_tabs}
 
