@@ -674,3 +674,7 @@ input[name="licenses"] {
 #upgrade-page-details #due-today-for-future-update-wrapper {
     display: none;
 }
+
+#remote-realm-confirm-login-form .text-error {
+    margin-bottom: 15px;
+}

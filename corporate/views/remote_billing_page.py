@@ -3,6 +3,7 @@ from typing import Any, Dict, Literal, Optional
 
 from django.conf import settings
 from django.core import signing
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -29,8 +30,13 @@ from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.typed_endpoint import typed_endpoint
-from zilencer.models import RemoteRealm, RemoteZulipServer, get_remote_server_by_uuid
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zilencer.models import (
+    RemoteRealm,
+    RemoteRealmBillingUser,
+    RemoteZulipServer,
+    get_remote_server_by_uuid,
+)
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -83,10 +89,17 @@ def remote_realm_billing_entry(
 
 
 @self_hosting_management_endpoint
+@typed_endpoint
 def remote_realm_billing_finalize_login(
     request: HttpRequest,
-    signed_billing_access_token: str,
+    *,
+    signed_billing_access_token: PathOnly[str],
+    tos_consent: Literal[None, "true"] = None,
 ) -> HttpResponse:
+    if request.method not in ["GET", "POST"]:
+        return HttpResponseNotAllowed(["GET", "POST"])
+    tos_consent_given = tos_consent == "true"
+
     # Sanity assert, because otherwise these make no sense.
     assert (
         REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS
@@ -103,7 +116,82 @@ def remote_realm_billing_finalize_login(
     except signing.BadSignature:
         raise JsonableError(_("Invalid billing access token."))
 
+    # Now we want to fetch (or create) the RemoteRealmBillingUser object implied
+    # by the IdentityDict. We'll use this:
+    # (1) If the user came here via just GET, we want to show them a confirmation
+    #     page with the relevant info details before finalizing login. If they wish
+    #     to proceed, they'll approve the form, causing a POST, bring us to case (2).
+    # (2) If the user came here via POST, we finalize login, using the info from the
+    #     IdentityDict to update the RemoteRealmBillingUser object if needed.
     remote_realm_uuid = identity_dict["remote_realm_uuid"]
+    remote_server_uuid = identity_dict["remote_server_uuid"]
+    try:
+        remote_server = get_remote_server_by_uuid(remote_server_uuid)
+        remote_realm = RemoteRealm.objects.get(uuid=remote_realm_uuid, server=remote_server)
+    except ObjectDoesNotExist:
+        # These should definitely still exist, since the access token was signed
+        # pretty recently. (And we generally don't delete these at all.)
+        raise AssertionError
+
+    user_dict = identity_dict["user"]
+
+    user_email = user_dict["user_email"]
+    user_full_name = user_dict["user_full_name"]
+    user_uuid = user_dict["user_uuid"]
+
+    assert (
+        settings.TERMS_OF_SERVICE_VERSION is not None
+    ), "This is only run on the bouncer, which has ToS"
+
+    try:
+        remote_user = RemoteRealmBillingUser.objects.get(
+            remote_realm=remote_realm,
+            user_uuid=user_uuid,
+        )
+        tos_consent_needed = int(settings.TERMS_OF_SERVICE_VERSION.split(".")[0]) > int(
+            remote_user.tos_version.split(".")[0]
+        )
+    except RemoteRealmBillingUser.DoesNotExist:
+        # This is the first time this user is logging in, so ToS consent needed.
+        tos_consent_needed = True
+
+    if request.method == "GET":
+        context = {
+            "remote_server_uuid": remote_server_uuid,
+            "remote_realm_uuid": remote_realm_uuid,
+            "remote_realm_host": remote_realm.host,
+            "user_email": user_email,
+            "user_full_name": user_full_name,
+            "tos_consent_needed": tos_consent_needed,
+            "action_url": reverse(
+                remote_realm_billing_finalize_login, args=(signed_billing_access_token,)
+            ),
+        }
+        return render(
+            request,
+            "corporate/remote_realm_billing_finalize_login_confirmation.html",
+            context=context,
+        )
+
+    assert request.method == "POST"
+
+    if tos_consent_needed and not tos_consent_given:
+        # This shouldn't be possible without tampering with the form, so we
+        # don't need a pretty error.
+        raise JsonableError(_("You must accept the Terms of Service to proceed."))
+
+    remote_user, created = RemoteRealmBillingUser.objects.get_or_create(
+        defaults={"full_name": user_full_name, "email": user_email},
+        remote_realm=remote_realm,
+        user_uuid=user_uuid,
+    )
+
+    # The current approach is to just update the email and full_name
+    # based on the info provided by the remote server during auth.
+    remote_user.email = user_email
+    remote_user.full_name = user_full_name
+    remote_user.tos_version = settings.TERMS_OF_SERVICE_VERSION
+    remote_user.save(update_fields=["email", "full_name", "tos_version"])
 
     request.session["remote_billing_identities"] = {}
     request.session["remote_billing_identities"][
