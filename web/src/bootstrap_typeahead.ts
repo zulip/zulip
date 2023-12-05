@@ -133,6 +133,19 @@
  *
  * 15. To position typeaheads, we use Tippyjs except for typeaheads that are
  *    appended to a `non_tippy_parent_element`.
+ *
+ * 16. Add `requireHighlight` and `shouldHighlightFirstResult` options:
+ *
+ *   Allow none of the typeahead options to be highlighted, which lets
+ *   the user remove highlight by going navigating (with the keyboard)
+ *   past the last item or before the first item.
+ *
+ *   Why? A main way to initiate a search is to press enter from the
+ *   search box, but if an item is highlighted then the enter key selects
+ *   that item to add it as a pill to the search box.
+ *
+ *   `shouldHighlightFirstResult` relatedly lets us decide whether
+ *   the first result should be highlighted when the typeahead opens.
  * ============================================================ */
 
 import $ from "jquery";
@@ -234,6 +247,8 @@ export class Typeahead<ItemType extends string | object> {
     non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
+    requireHighlight: boolean;
+    shouldHighlightFirstResult: () => boolean;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -271,6 +286,8 @@ export class Typeahead<ItemType extends string | object> {
         this.naturalSearch = options.naturalSearch ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
+        this.requireHighlight = options.requireHighlight ?? true;
+        this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
 
         // The naturalSearch option causes arrow keys to immediately
         // update the search box with the underlying values from the
@@ -280,6 +297,10 @@ export class Typeahead<ItemType extends string | object> {
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
         const val = this.values.get(this.$menu.find(".active")[0]!);
+        // It's possible that we got here from pressing enter with nothing highlighted.
+        if (!this.requireHighlight && val === undefined) {
+            return this.hide();
+        }
         assert(val !== undefined);
         if (this.input_element.type === "contenteditable") {
             this.input_element.$element
@@ -464,7 +485,9 @@ export class Typeahead<ItemType extends string | object> {
             return $i;
         });
 
-        $items[0]!.addClass("active");
+        if (this.requireHighlight || this.shouldHighlightFirstResult()) {
+            $items[0]!.addClass("active");
+        }
         this.$menu.empty().append($items);
         return this;
     }
@@ -472,6 +495,13 @@ export class Typeahead<ItemType extends string | object> {
     next(): void {
         const $active = this.$menu.find(".active").removeClass("active");
         let $next = $active.next();
+
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (!this.requireHighlight && $active.length && !$next.length) {
+            return;
+        }
 
         if (!$next.length) {
             $next = this.$menu.find("li").first();
@@ -487,6 +517,13 @@ export class Typeahead<ItemType extends string | object> {
     prev(): void {
         const $active = this.$menu.find(".active").removeClass("active");
         let $prev = $active.prev();
+
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (!this.requireHighlight && $active.length && !$prev.length) {
+            return;
+        }
 
         if (!$prev.length) {
             $prev = this.$menu.find("li").last();
@@ -768,4 +805,6 @@ type TypeaheadOptions<ItemType> = {
         input_element: TypeaheadInputElement,
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
     ) => string | undefined;
+    requireHighlight?: boolean;
+    shouldHighlightFirstResult?: () => boolean;
 };
