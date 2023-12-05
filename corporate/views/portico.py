@@ -74,6 +74,8 @@ class PlansPageContext:
     is_new_customer: bool = False
     on_free_tier: bool = False
     customer_plan: Optional[CustomerPlan] = None
+    is_legacy_server_with_scheduled_upgrade: bool = False
+    legacy_server_new_plan: Optional[CustomerPlan] = None
 
     billing_base_url: str = ""
 
@@ -183,6 +185,16 @@ def remote_server_plans_page(
                 CustomerPlan.TIER_SELF_HOSTED_BASE,
             )
             context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
+            context.is_legacy_server_with_scheduled_upgrade = (
+                context.customer_plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            )
+            if context.is_legacy_server_with_scheduled_upgrade:
+                assert context.customer_plan.end_date is not None
+                context.legacy_server_new_plan = CustomerPlan.objects.get(
+                    customer=customer,
+                    billing_cycle_anchor=context.customer_plan.end_date,
+                    status=CustomerPlan.NEVER_STARTED,
+                )
 
     context.is_new_customer = (
         not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
