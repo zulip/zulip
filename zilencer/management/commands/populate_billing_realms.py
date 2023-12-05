@@ -219,7 +219,34 @@ def add_card_to_customer(customer: Customer) -> None:
     )
 
 
-def populate_realm(customer_profile: CustomerProfile) -> None:
+def create_plan_for_customer(customer: Customer, customer_profile: CustomerProfile) -> None:
+    assert customer_profile.tier is not None
+    months = 12
+    if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+        months = 1
+    next_invoice_date = add_months(timezone_now(), months)
+
+    customer_plan = CustomerPlan.objects.create(
+        customer=customer,
+        billing_cycle_anchor=timezone_now(),
+        billing_schedule=customer_profile.billing_schedule,
+        tier=customer_profile.tier,
+        price_per_license=1200,
+        automanage_licenses=customer_profile.automanage_licenses,
+        status=customer_profile.status,
+        charge_automatically=customer_profile.charge_automatically,
+        next_invoice_date=next_invoice_date,
+    )
+
+    LicenseLedger.objects.create(
+        licenses=10,
+        licenses_at_next_renewal=10,
+        event_time=timezone_now(),
+        is_renewal=True,
+        plan=customer_plan,
+    )
+
+
     unique_id = customer_profile.unique_id
     if customer_profile.tier is None:
         plan_type = Realm.PLAN_TYPE_LIMITED
@@ -288,30 +315,8 @@ def populate_realm(customer_profile: CustomerProfile) -> None:
     if customer_profile.card:
         add_card_to_customer(customer)
 
-    months = 12
-    if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-        months = 1
-    next_invoice_date = add_months(timezone_now(), months)
-
-    customer_plan = CustomerPlan.objects.create(
-        customer=customer,
-        billing_cycle_anchor=timezone_now(),
-        billing_schedule=customer_profile.billing_schedule,
-        tier=customer_profile.tier,
-        price_per_license=1200,
-        automanage_licenses=customer_profile.automanage_licenses,
-        status=customer_profile.status,
-        charge_automatically=customer_profile.charge_automatically,
-        next_invoice_date=next_invoice_date,
-    )
-
-    LicenseLedger.objects.create(
-        licenses=10,
-        licenses_at_next_renewal=10,
-        event_time=timezone_now(),
-        is_renewal=True,
-        plan=customer_plan,
-    )
+    create_plan_for_customer(customer, customer_profile)
+    return realm
 
 
 def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
@@ -373,31 +378,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
         customer = billing_session.update_or_create_stripe_customer()
         assert customer.stripe_customer_id is not None
         add_card_to_customer(customer)
-
-        months = 12
-        if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            months = 1
-        next_invoice_date = add_months(timezone_now(), months)
-
-        customer_plan = CustomerPlan.objects.create(
-            customer=customer,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=customer_profile.billing_schedule,
-            tier=customer_profile.tier,
-            price_per_license=1200,
-            automanage_licenses=customer_profile.automanage_licenses,
-            status=customer_profile.status,
-            charge_automatically=customer_profile.charge_automatically,
-            next_invoice_date=next_invoice_date,
-        )
-
-        LicenseLedger.objects.create(
-            licenses=10,
-            licenses_at_next_renewal=10,
-            event_time=timezone_now(),
-            is_renewal=True,
-            plan=customer_plan,
-        )
+        create_plan_for_customer(customer, customer_profile)
 
     if customer_profile.sponsorship_pending:
         billing_session.update_customer_sponsorship_status(True)
