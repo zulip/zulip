@@ -409,7 +409,7 @@ python_rules = RuleList(
         },
         {
             "pattern": r": *(?!Optional)[^\n ].*= models[.].*null=True",
-            "include_only": {"zerver/models.py"},
+            "include_only": {"zerver/models/"},
             "description": "Model variable with null=true not annotated as Optional.",
             "good_lines": [
                 "desc: Optional[Text] = models.TextField(null=True)",
@@ -425,7 +425,7 @@ python_rules = RuleList(
         {
             "pattern": r": *Optional.*= models[.].*\)",
             "exclude_pattern": "null=True",
-            "include_only": {"zerver/models.py"},
+            "include_only": {"zerver/models/"},
             "description": "Model variable annotated with Optional but variable does not have null=true.",
             "good_lines": [
                 "desc: Optional[Text] = models.TextField(null=True)",

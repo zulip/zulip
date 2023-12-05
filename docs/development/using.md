@@ -47,7 +47,7 @@ the development environment][authentication-dev-server].
   - The Python queue workers will also automatically restart when you
     save changes, as long as they haven't crashed (which can happen if
     they reloaded into a version with a syntax error).
-- If you change the database schema (`zerver/models.py`), you'll need
+- If you change the database schema (`zerver/models/*.py`), you'll need
   to use the [Django migrations
   process](../subsystems/schema-migrations.md); see also the [new
   feature tutorial][new-feature-tutorial] for an example.

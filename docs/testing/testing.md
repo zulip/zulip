@@ -32,7 +32,7 @@ because it takes a long time. Instead, your edit/refresh cycle will
 typically involve running subsets of the tests with commands like these:
 
 ```bash
-./tools/lint zerver/models.py # Lint the file you just changed
+./tools/lint zerver/models/__init__.py # Lint the file you just changed
 ./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
 ./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
 ./tools/test-js-with-node util
@@ -60,7 +60,7 @@ eventually work with, each with its own page detailing how it works:
 Additionally, Zulip also has about a dozen smaller tests suites:
 
 - `tools/test-migrations`: Checks whether the `zerver/migrations`
-  migration content the models defined in `zerver/models.py`. See our
+  migration content the models defined in `zerver/models/*.py`. See our
   [schema migration documentation](../subsystems/schema-migrations.md)
   for details on how to do database migrations correctly.
 - `tools/test-documentation`: Checks for broken links in this
