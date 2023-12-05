@@ -118,9 +118,7 @@ from zerver.lib.validator import (
     check_url,
     validate_select_field,
 )
-
-MAX_TOPIC_NAME_LENGTH = 60
-MAX_LANGUAGE_ID_LENGTH: int = 50
+from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH, MAX_TOPIC_NAME_LENGTH
 
 SECONDS_PER_DAY = 86400
 

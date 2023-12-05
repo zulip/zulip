@@ -31,7 +31,6 @@ from zerver.lib.user_topics import (
 )
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Message,
     Realm,
     Stream,
@@ -43,6 +42,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
