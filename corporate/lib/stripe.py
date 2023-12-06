@@ -1585,20 +1585,13 @@ class BillingSession(ABC):
             return None, None
         return None, last_ledger_entry
 
-    def get_billing_page_context(self) -> Dict[str, Any]:
-        context: Dict[str, Any] = {}
-        now = timezone_now()
-
-        customer = self.get_customer()
-        assert customer is not None
-
-        plan = get_current_plan_by_customer(customer)
-        assert plan is not None
-
-        new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
-        assert last_ledger_entry is not None
-        plan = new_plan if new_plan is not None else plan
-
+    def get_billing_context_from_plan(
+        self,
+        customer: Customer,
+        plan: CustomerPlan,
+        last_ledger_entry: LicenseLedger,
+        now: datetime,
+    ) -> Dict[str, Any]:
         downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         downgrade_at_end_of_free_trial = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
         switch_to_annual_at_end_of_cycle = (
@@ -1688,6 +1681,22 @@ class BillingSession(ABC):
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
         }
+        return context
+
+    def get_billing_page_context(self) -> Dict[str, Any]:
+        now = timezone_now()
+
+        customer = self.get_customer()
+        assert customer is not None
+
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+
+        new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
+        assert last_ledger_entry is not None
+        plan = new_plan if new_plan is not None else plan
+
+        context = self.get_billing_context_from_plan(customer, plan, last_ledger_entry, now)
         return context
 
     def get_initial_upgrade_context(
