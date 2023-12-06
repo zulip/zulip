@@ -56,6 +56,7 @@ from zerver.models import (
     get_realm,
     get_system_bot,
 )
+from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
@@ -64,6 +65,7 @@ from zilencer.models import (
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
     get_remote_server_guest_and_non_guest_count,
+    has_stale_audit_log,
 )
 from zproject.config import get_secret
 
@@ -2802,6 +2804,8 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def current_count_for_billed_licenses(self) -> int:
+        if has_stale_audit_log(self.remote_realm.server):
+            raise MissingDataError
         remote_realm_counts = get_remote_realm_guest_and_non_guest_count(self.remote_realm)
         return remote_realm_counts.non_guest_user_count + remote_realm_counts.guest_user_count
 
@@ -3115,6 +3119,8 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def current_count_for_billed_licenses(self) -> int:
+        if has_stale_audit_log(self.remote_server):
+            raise MissingDataError
         remote_server_counts = get_remote_server_guest_and_non_guest_count(self.remote_server.id)
         return remote_server_counts.non_guest_user_count + remote_server_counts.guest_user_count
 

@@ -2,7 +2,7 @@
 # mypy: disable-error-code="explicit-override"
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Tuple
 
 from django.conf import settings
@@ -66,6 +66,9 @@ class RemoteZulipServer(models.Model):
         default=Realm.ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
     )
+
+    # The last time 'RemoteRealmAuditlog' was updated for this server.
+    last_audit_log_update = models.DateTimeField(null=True)
 
     @override
     def __str__(self) -> str:
@@ -399,7 +402,7 @@ def get_remote_server_guest_and_non_guest_count(
 
 def get_remote_realm_guest_and_non_guest_count(
     remote_realm: RemoteRealm, event_time: datetime = timezone_now()
-) -> RemoteCustomerUserCount:  # nocoverage
+) -> RemoteCustomerUserCount:
     latest_audit_log = (
         RemoteRealmAuditLog.objects.filter(
             remote_realm=remote_realm,
@@ -430,3 +433,13 @@ def get_remote_realm_guest_and_non_guest_count(
     return RemoteCustomerUserCount(
         non_guest_user_count=non_guest_count, guest_user_count=guest_count
     )
+
+
+def has_stale_audit_log(server: RemoteZulipServer) -> bool:
+    if server.last_audit_log_update is None:
+        return True
+
+    if timezone_now() - server.last_audit_log_update > timedelta(days=2):
+        return True
+
+    return False

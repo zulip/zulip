@@ -344,10 +344,13 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
 
         # Go to the URL we're redirected to after authentication and assert
         # some basic expected content.
-        result = self.client_get(result["Location"], subdomain="selfhosting")
-        self.assert_in_success_response(
-            ["Upgrade", "Purchase Zulip", "Your subscription will renew automatically."], result
-        )
+        # TODO: Add test for the case when redirected to error page (not yet implemented)
+        # due to MissingDataError ('has_stale_audit_log' is True).
+        with mock.patch("corporate.lib.stripe.has_stale_audit_log", return_value=False):
+            result = self.client_get(result["Location"], subdomain="selfhosting")
+            self.assert_in_success_response(
+                ["Upgrade", "Purchase Zulip", "Your subscription will renew automatically."], result
+            )
 
 
 class LegacyServerLoginTest(BouncerTestCase):
@@ -424,8 +427,11 @@ class LegacyServerLoginTest(BouncerTestCase):
         self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade/")
 
         # Access on the upgrade page is granted, assert a basic string proving that.
-        result = self.client_get(result["Location"], subdomain="selfhosting")
-        self.assert_in_success_response([f"Upgrade {self.server.hostname}"], result)
+        # TODO: Add test for the case when redirected to error page (not yet implemented)
+        # due to MissingDataError ('has_stale_audit_log' is True).
+        with mock.patch("corporate.lib.stripe.has_stale_audit_log", return_value=False):
+            result = self.client_get(result["Location"], subdomain="selfhosting")
+            self.assert_in_success_response([f"Upgrade {self.server.hostname}"], result)
 
     def test_server_login_success_with_next_page(self) -> None:
         # First test an invalid next_page value.
@@ -501,8 +507,11 @@ class LegacyServerLoginTest(BouncerTestCase):
         self.assertEqual(result["Location"], f"/server/{self.uuid}/upgrade/")
 
         # Sanity check: access on the upgrade page is granted.
-        result = self.client_get(result["Location"], subdomain="selfhosting")
-        self.assert_in_success_response([f"Upgrade {self.server.hostname}"], result)
+        # TODO: Add test for the case when redirected to error page (Not yet implemented)
+        # due to MissingDataError i.e., when 'has_stale_audit_log' is True.
+        with mock.patch("corporate.lib.stripe.has_stale_audit_log", return_value=False):
+            result = self.client_get(result["Location"], subdomain="selfhosting")
+            self.assert_in_success_response([f"Upgrade {self.server.hostname}"], result)
 
         # Now we can simulate an expired identity dict in the session.
         with time_machine.travel(
