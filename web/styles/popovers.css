@@ -1208,15 +1208,22 @@ ul {
     border: solid 1px var(--color-border-dropdown-menu);
     background-color: var(--color-background-dropdown-menu);
     max-height: 85vh;
-    min-width: 230px;
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
     box-shadow: var(--box-shadow-navbar-dropdown-menu);
 
     .simplebar-content {
+        min-width: var(--popover-menu-min-width);
+        /*  This is necessary to set the dropdown menu width equal to
+            the width of the longest menu item, thus letting the menu
+            items control the width of the menu. */
+        width: min-content;
+    }
+
+    .navbar-dropdown-menu-inner-list-item {
         /*  This is necessary to keep long menu items on a single line. */
-        min-width: max-content;
+        white-space: nowrap;
     }
 
     .text-item,

@@ -104,6 +104,9 @@ body {
     --right-sidebar-width: 250px;
     --left-sidebar-header-icon-width: 15px;
 
+    /* Tippy popover related values */
+    --popover-menu-min-width: 230px;
+
     /*
     Message box elements and values.
     */
