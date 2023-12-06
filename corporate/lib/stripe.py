@@ -62,6 +62,7 @@ from zilencer.models import (
     RemoteRealmBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
+    get_remote_realm_guest_and_non_guest_count,
     get_remote_server_guest_and_non_guest_count,
 )
 from zproject.config import get_secret
@@ -2801,8 +2802,8 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def current_count_for_billed_licenses(self) -> int:
-        # TODO: Do the proper calculation here.
-        return 10
+        remote_realm_counts = get_remote_realm_guest_and_non_guest_count(self.remote_realm)
+        return remote_realm_counts.non_guest_user_count + remote_realm_counts.guest_user_count
 
     @override
     def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
