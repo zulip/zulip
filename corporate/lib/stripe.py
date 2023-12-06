@@ -2245,8 +2245,7 @@ class BillingSession(ABC):
         context = {
             "requested_by": user_info["name"],
             "user_role": user_info["role"],
-            # TODO: realm_string_id needs to be replaced by something more generic.
-            "string_id": request_context["realm_string_id"],
+            "billing_entity": self.billing_entity_display_name,
             "support_url": support_url,
             "organization_type": org_type_display_name,
             "website": sponsorship_request.org_website,
