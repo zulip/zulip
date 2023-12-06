@@ -687,19 +687,6 @@ input[type="checkbox"] {
     text-align: right;
 }
 
-#show-add-user-group-modal {
-    margin-bottom: 10px;
-}
-
-#add-user-group-form {
-    margin: 0;
-
-    /* This 14px is the border and padding of the input element */
-    #user_group_description {
-        width: calc(100% - 14px);
-    }
-}
-
 .add-new-export-box {
     margin: 10px 0;
 }
@@ -1218,102 +1205,6 @@ $option_title_width: 180px;
 .invite-user-link .fa-user-plus {
     text-decoration: none;
     margin-right: 5px;
-}
-
-#user-groups {
-    .user-group {
-        margin-bottom: 20px;
-        padding: 10px;
-        border-radius: 5px;
-
-        & h4 {
-            font-weight: normal;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: left;
-        }
-
-        & span[contenteditable] {
-            display: inline-block;
-            word-break: break-all;
-
-            &:empty::before {
-                opacity: 0.5;
-                display: inline-block;
-                content: attr(data-placeholder);
-            }
-        }
-
-        & span[contenteditable]:focus,
-        span[contenteditable="true"]:hover {
-            border-bottom: 1px solid hsl(0deg 0% 80%);
-            margin-bottom: -1px;
-            outline: none;
-        }
-
-        .pill-container .input[contenteditable]:empty::after {
-            content: attr(data-placeholder);
-            opacity: 0.5;
-        }
-    }
-
-    .user-group-status {
-        margin-bottom: 10px;
-    }
-
-    & p {
-        line-height: 2;
-        margin: 0;
-    }
-
-    .spacer {
-        margin: 0 2px;
-    }
-
-    .subscribers,
-    .user-group h4 > .name {
-        font-weight: bold;
-    }
-
-    .ntm {
-        cursor: not-allowed;
-
-        & h4 > .button {
-            cursor: not-allowed;
-            display: none;
-
-            &:hover {
-                border-color: hsl(4deg 56% 82%);
-            }
-        }
-    }
-
-    .save-status {
-        background-color: transparent;
-        padding: 2px 5px;
-        border-radius: 4px;
-        margin-left: 10px;
-        border-style: solid;
-        border-width: 1px;
-        display: none;
-        opacity: 0;
-    }
-
-    .checkmark {
-        height: 12px;
-    }
-
-    .delete {
-        margin-left: auto;
-    }
-
-    .save-instructions {
-        display: none;
-        opacity: 0;
-        color: hsl(0deg 0% 20%);
-        font-size: 0.9em;
-    }
 }
 
 /* -- new settings overlay -- */

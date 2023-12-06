@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
 
 const people = zrequire("people");
@@ -102,6 +103,9 @@ test("append", () => {
 
     assert.ok(appended);
     assert.ok(cleared);
+
+    blueslip.expect("warn", "Undefined user in function append_user");
+    user_pill.append_user(undefined, pill_widget);
 });
 
 test("get_items", () => {
