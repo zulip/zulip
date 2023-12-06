@@ -8,6 +8,11 @@
 {% block portico_content %}
 <div id="upgrade-page" class="register-account flex full-page">
     <div class="center-block new-style">
+        {% if success_message %}
+        <div class="alert alert-success billing-page-success" id="upgrade-success-message-top">
+            {{ success_message }}
+        </div>
+        {% endif %}
         <div class="pitch">
             <h1>
                 {% if free_trial_days %}

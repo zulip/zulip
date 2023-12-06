@@ -593,6 +593,7 @@ input[name="licenses"] {
 
 #billing-sponsorship-pending-message-top,
 #sponsorship-status-success-message-top,
+#upgrade-success-message-top,
 #billing-success-message-top {
     display: block;
     text-align: center;

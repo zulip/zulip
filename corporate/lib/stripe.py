@@ -528,6 +528,7 @@ class UpgradeRequest:
 class InitialUpgradeRequest:
     manual_license_management: bool
     tier: int
+    success_message: str = ""
 
 
 @dataclass
@@ -634,6 +635,7 @@ class UpgradePageContext(TypedDict):
     salt: str
     seat_count: int
     signed_seat_count: str
+    success_message: str
 
 
 class SponsorshipRequestForm(forms.Form):
@@ -1801,6 +1803,7 @@ class BillingSession(ABC):
             "salt": salt,
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
+            "success_message": initial_upgrade_request.success_message,
         }
 
         return None, context
