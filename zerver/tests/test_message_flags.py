@@ -1935,6 +1935,7 @@ class MarkUnreadTest(ZulipTestCase):
                 message_id=message_id,
             )
             self.assertTrue(um.flags.read)
+
     def test_stream_messages_wildcard_mention(self) -> None:
         sender = self.example_user("cordelia")
         receiver = self.example_user("hamlet")
@@ -2330,14 +2331,14 @@ class MarkUnreadTest(ZulipTestCase):
                 message_id=message_id,
             )
             self.assertTrue(um.flags.read)
+
     def test_pm_messages_wildcard_mention(self) -> None:
         sender = self.example_user("cordelia")
         receiver = self.example_user("hamlet")
         stream_name = "Denmark"
         self.subscribe(receiver, stream_name)
         message_ids = [
-            self.send_personal_message(sender, receiver, content="@here")
-            for i in range(4)
+            self.send_personal_message(sender, receiver, content="@here") for i in range(4)
         ]
         self.login("hamlet")
         for message_id in message_ids:
