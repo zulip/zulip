@@ -1238,6 +1238,10 @@
             }
         }
     }
+
+    .help_link_widget:hover {
+        color: inherit;
+    }
 }
 
 @media screen {
