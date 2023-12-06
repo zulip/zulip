@@ -233,10 +233,12 @@ def remote_server_upgrade_page(
     billing_session: RemoteServerBillingSession,
     *,
     manual_license_management: Json[bool] = False,
+    success_message: str = "",
 ) -> HttpResponse:  # nocoverage
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
         tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        success_message=success_message,
     )
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
 
