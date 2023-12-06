@@ -1593,107 +1593,99 @@ class BillingSession(ABC):
         assert plan is not None
         now = timezone_now()
         new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
-        if last_ledger_entry is not None:
-            if new_plan is not None:  # nocoverage
-                plan = new_plan
-            assert plan is not None  # for mypy
-            downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-            downgrade_at_end_of_free_trial = (
-                plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
-            )
-            switch_to_annual_at_end_of_cycle = (
-                plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
-            )
-            switch_to_monthly_at_end_of_cycle = (
-                plan.status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE
-            )
-            licenses = last_ledger_entry.licenses
-            licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
-            assert licenses_at_next_renewal is not None
-            seat_count = self.current_count_for_billed_licenses()
+        assert last_ledger_entry is not None
+        if new_plan is not None:  # nocoverage
+            plan = new_plan
+        assert plan is not None  # for mypy
+        downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+        downgrade_at_end_of_free_trial = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
+        switch_to_annual_at_end_of_cycle = (
+            plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
+        )
+        switch_to_monthly_at_end_of_cycle = (
+            plan.status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE
+        )
+        licenses = last_ledger_entry.licenses
+        licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+        assert licenses_at_next_renewal is not None
+        seat_count = self.current_count_for_billed_licenses()
 
-            # Should do this in JavaScript, using the user's time zone
-            if plan.is_free_trial() or downgrade_at_end_of_free_trial:
-                assert plan.next_invoice_date is not None
-                renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+        # Should do this in JavaScript, using the user's time zone
+        if plan.is_free_trial() or downgrade_at_end_of_free_trial:
+            assert plan.next_invoice_date is not None
+            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+        else:
+            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
+                dt=start_of_next_billing_cycle(plan, now)
+            )
+
+        billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+
+        if switch_to_annual_at_end_of_cycle:
+            annual_price_per_license = get_price_per_license(
+                plan.tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, customer.default_discount
+            )
+            renewal_cents = annual_price_per_license * licenses_at_next_renewal
+            price_per_license = format_money(annual_price_per_license / 12)
+        elif switch_to_monthly_at_end_of_cycle:
+            monthly_price_per_license = get_price_per_license(
+                plan.tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, customer.default_discount
+            )
+            renewal_cents = monthly_price_per_license * licenses_at_next_renewal
+            price_per_license = format_money(monthly_price_per_license)
+        else:
+            renewal_cents = renewal_amount(plan, now, last_ledger_entry)
+
+            if plan.price_per_license is None:
+                price_per_license = ""
+            elif billing_frequency == "Annual":
+                price_per_license = format_money(plan.price_per_license / 12)
             else:
-                renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
-                    dt=start_of_next_billing_cycle(plan, now)
-                )
+                price_per_license = format_money(plan.price_per_license)
 
-            billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+        charge_automatically = plan.charge_automatically
+        assert customer.stripe_customer_id is not None  # for mypy
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        if charge_automatically:
+            payment_method = payment_method_string(stripe_customer)
+        else:
+            payment_method = "Billed by invoice"
 
-            if switch_to_annual_at_end_of_cycle:
-                annual_price_per_license = get_price_per_license(
-                    plan.tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, customer.default_discount
-                )
-                renewal_cents = annual_price_per_license * licenses_at_next_renewal
-                price_per_license = format_money(annual_price_per_license / 12)
-            elif switch_to_monthly_at_end_of_cycle:
-                monthly_price_per_license = get_price_per_license(
-                    plan.tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, customer.default_discount
-                )
-                renewal_cents = monthly_price_per_license * licenses_at_next_renewal
-                price_per_license = format_money(monthly_price_per_license)
-            else:
-                renewal_cents = renewal_amount(plan, now, last_ledger_entry)
-
-                if plan.price_per_license is None:
-                    price_per_license = ""
-                elif billing_frequency == "Annual":
-                    price_per_license = format_money(plan.price_per_license / 12)
-                else:
-                    price_per_license = format_money(plan.price_per_license)
-
-            charge_automatically = plan.charge_automatically
-            assert customer.stripe_customer_id is not None  # for mypy
-            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-            if charge_automatically:
-                payment_method = payment_method_string(stripe_customer)
-            else:
-                payment_method = "Billed by invoice"
-
-            fixed_price = (
-                cents_to_dollar_string(plan.fixed_price)
-                if plan.fixed_price is not None
-                else None
-            )
-            remote_server_legacy_plan_end_date = (
-                self.get_formatted_remote_server_legacy_plan_end_date(
-                    customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-                )
-            )
-            legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(
-                customer
-            )
-            context = {
-                "plan_name": plan.name,
-                "has_active_plan": True,
-                "free_trial": plan.is_free_trial(),
-                "downgrade_at_end_of_cycle": downgrade_at_end_of_cycle,
-                "downgrade_at_end_of_free_trial": downgrade_at_end_of_free_trial,
-                "automanage_licenses": plan.automanage_licenses,
-                "switch_to_annual_at_end_of_cycle": switch_to_annual_at_end_of_cycle,
-                "switch_to_monthly_at_end_of_cycle": switch_to_monthly_at_end_of_cycle,
-                "licenses": licenses,
-                "licenses_at_next_renewal": licenses_at_next_renewal,
-                "seat_count": seat_count,
-                "renewal_date": renewal_date,
-                "renewal_amount": cents_to_dollar_string(renewal_cents),
-                "payment_method": payment_method,
-                "charge_automatically": charge_automatically,
-                "stripe_email": stripe_customer.email,
-                "CustomerPlan": CustomerPlan,
-                "billing_frequency": billing_frequency,
-                "fixed_price": fixed_price,
-                "price_per_license": price_per_license,
-                "is_sponsorship_pending": customer.sponsorship_pending,
-                "discount_percent": format_discount_percentage(customer.default_discount),
-                "is_self_hosted_billing": not isinstance(self, RealmBillingSession),
-                "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
-                "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
-                "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
-            }
+        fixed_price = (
+            cents_to_dollar_string(plan.fixed_price) if plan.fixed_price is not None else None
+        )
+        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+            customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
+        legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(customer)
+        context = {
+            "plan_name": plan.name,
+            "has_active_plan": True,
+            "free_trial": plan.is_free_trial(),
+            "downgrade_at_end_of_cycle": downgrade_at_end_of_cycle,
+            "downgrade_at_end_of_free_trial": downgrade_at_end_of_free_trial,
+            "automanage_licenses": plan.automanage_licenses,
+            "switch_to_annual_at_end_of_cycle": switch_to_annual_at_end_of_cycle,
+            "switch_to_monthly_at_end_of_cycle": switch_to_monthly_at_end_of_cycle,
+            "licenses": licenses,
+            "licenses_at_next_renewal": licenses_at_next_renewal,
+            "seat_count": seat_count,
+            "renewal_date": renewal_date,
+            "renewal_amount": cents_to_dollar_string(renewal_cents),
+            "payment_method": payment_method,
+            "charge_automatically": charge_automatically,
+            "stripe_email": stripe_customer.email,
+            "CustomerPlan": CustomerPlan,
+            "billing_frequency": billing_frequency,
+            "fixed_price": fixed_price,
+            "price_per_license": price_per_license,
+            "is_sponsorship_pending": customer.sponsorship_pending,
+            "discount_percent": format_discount_percentage(customer.default_discount),
+            "is_self_hosted_billing": not isinstance(self, RealmBillingSession),
+            "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
+            "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
+            "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
+        }
         return context
 
     def get_initial_upgrade_context(
