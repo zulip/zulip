@@ -651,7 +651,6 @@
     .clear_search_button:focus,
     .clear_search_button:active,
     .clear_search_button:disabled:hover,
-    #user-groups .save-instructions,
     .close {
         color: hsl(236deg 33% 80%);
     }

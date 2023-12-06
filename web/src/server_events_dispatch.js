@@ -62,7 +62,6 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
-import * as settings_user_groups_legacy from "./settings_user_groups_legacy";
 import * as settings_users from "./settings_users";
 import * as sidebar_ui from "./sidebar_ui";
 import * as starred_messages from "./starred_messages";
@@ -882,7 +881,6 @@ export function dispatch_normal_event(event) {
                     blueslip.error("Unexpected event type user_group/" + event.op);
                     break;
             }
-            settings_user_groups_legacy.reload();
             break;
 
         case "user_status":

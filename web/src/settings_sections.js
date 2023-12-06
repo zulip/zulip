@@ -15,7 +15,6 @@ import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
-import * as settings_user_groups_legacy from "./settings_user_groups_legacy";
 import * as settings_user_topics from "./settings_user_topics";
 import * as settings_users from "./settings_users";
 
@@ -72,7 +71,6 @@ export function initialize() {
     load_func_dict.set("linkifier-settings", settings_linkifiers.set_up);
     load_func_dict.set("playground-settings", settings_playgrounds.set_up);
     load_func_dict.set("invites-list-admin", settings_invites.set_up);
-    load_func_dict.set("user-groups-admin", settings_user_groups_legacy.set_up);
     load_func_dict.set("profile-field-settings", settings_profile_fields.set_up);
     load_func_dict.set("data-exports-admin", settings_exports.set_up);
     load_func_dict.set(
@@ -112,7 +110,6 @@ export function reset_sections() {
     settings_org.reset();
     settings_profile_fields.reset();
     settings_streams.reset();
-    settings_user_groups_legacy.reset();
     settings_user_topics.reset();
     settings_muted_users.reset();
     alert_words_ui.reset();
