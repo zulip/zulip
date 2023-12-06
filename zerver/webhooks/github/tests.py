@@ -478,6 +478,15 @@ A temporary team so that I can get some webhook fixtures!
             payload = orjson.dumps(data).decode()
             self.verify_post_is_ignored(payload, "pull_request")
 
+    def test_ignored_pull_request_review_actions(self) -> None:
+        ignored_actions = [
+            "edited",
+        ]
+        for action in ignored_actions:
+            data = dict(action=action, changes=dict())
+            payload = orjson.dumps(data).decode()
+            self.verify_post_is_ignored(payload, "pull_request_review")
+
     def test_ignored_team_actions(self) -> None:
         ignored_actions = [
             "added_to_repository",

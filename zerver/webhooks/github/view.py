@@ -871,6 +871,12 @@ def get_zulip_event_name(
             return "pull_request_auto_merge"
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
+    elif header_event == "pull_request_review":
+        action = payload["action"].tame(check_string)
+        changes = payload.get("changes", {})
+        if action == "edited" and len(changes) == 0:
+            return None
+        return "pull_request_review"
     elif header_event == "push":
         if is_merge_queue_push_event(payload):
             return None
