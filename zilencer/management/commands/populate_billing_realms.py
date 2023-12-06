@@ -49,6 +49,8 @@ class CustomerProfile:
     is_remote_realm: bool = False
     is_remote_server: bool = False
     renewal_date: str = current_time
+    # Use (timezone_now() + timedelta(minutes=1)).strftime(TIMESTAMP_FORMAT) as `end_date` for testing.
+    # `invoice_plan` is not implemented yet for remote servers and realms so no payment is generated in stripe.
     end_date: str = "2030-10-10-01-10-10"
     remote_server_plan_start_date: str = "billing_cycle_end_date"
 
