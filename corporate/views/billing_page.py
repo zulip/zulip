@@ -104,7 +104,7 @@ def remote_realm_billing_page(
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
         "org_name": billing_session.remote_realm.name,
-        "billing_base_url": f"/realm/{realm_uuid}",
+        "billing_base_url": billing_session.billing_base_url,
     }
 
     if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:
@@ -150,7 +150,7 @@ def remote_server_billing_page(
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
         "org_name": billing_session.remote_server.hostname,
-        "billing_base_url": f"/server/{billing_session.remote_server.uuid}",
+        "billing_base_url": billing_session.billing_base_url,
     }
 
     if billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY:
