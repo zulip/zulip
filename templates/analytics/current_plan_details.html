@@ -1,0 +1,15 @@
+<h4>📅 Current plan information:</h4>
+<b>Plan name</b>: {{ plan_data.current_plan.name }}<br />
+<b>Status</b>: {{ plan_data.current_plan.get_plan_status_as_text() }}<br />
+{% if plan_data.is_legacy_plan %}
+    <b>End date</b>: {{ plan_data.current_plan.end_date.strftime('%d %B %Y') }}<br />
+{% else %}
+    <b>Billing schedule</b>: {% if plan_data.current_plan.billing_schedule == plan_data.current_plan.BILLING_SCHEDULE_ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
+    <b>Licenses</b>: {{ plan_data.licenses_used }}/{{ plan_data.licenses }} ({% if plan_data.current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br />
+    {% if plan_data.current_plan.price_per_license %}
+        <b>Price per license</b>: ${{ plan_data.current_plan.price_per_license/100 }}<br />
+    {% elif plan_data.current_plan.fixed_price %}
+        <b>Fixed price</b>: ${{ plan_data.current_plan.fixed_price/100 }}<br />
+    {% endif %}
+    <b>Next invoice date</b>: {{ plan_data.current_plan.next_invoice_date.strftime('%d %B %Y') }}<br />
+{% endif %}

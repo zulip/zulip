@@ -18,6 +18,7 @@ class PlanData:
     current_plan: Optional["CustomerPlan"] = None
     licenses: Optional[int] = None
     licenses_used: Optional[int] = None
+    is_legacy_plan: bool = False
 
 
 def get_support_url(realm: Realm) -> str:
@@ -55,5 +56,9 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
                 plan_data.current_plan = new_plan  # nocoverage
             plan_data.licenses = last_ledger_entry.licenses
             plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
+        assert plan_data.current_plan is not None  # for mypy
+        plan_data.is_legacy_plan = (
+            plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        )
 
     return plan_data
