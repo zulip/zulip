@@ -18,7 +18,7 @@ trying to send a message to a group of people, you'll want to either
 
 {start_tabs}
 
-{settings_tab|user-groups-admin}
+{relative|group|all}
 
 1. Find the group.
 
@@ -37,7 +37,7 @@ trying to send a message to a group of people, you'll want to either
 
 {start_tabs}
 
-{settings_tab|user-groups-admin}
+{relative|group|all}
 
 1. Find the group.
 

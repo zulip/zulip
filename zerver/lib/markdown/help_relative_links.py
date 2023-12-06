@@ -25,6 +25,10 @@ gear_info = {
         '<i class="fa fa-bolt"></i> Organization settings',
         "/#organization/organization-profile",
     ],
+    "group-settings": [
+        '<i class="zulip-icon zulip-icon-user-cog"></i> Group settings',
+        "/#groups/your",
+    ],
     "integrations": ['<i class="fa fa-github"></i> Integrations', "/integrations/"],
     "stats": ['<i class="fa fa-bar-chart"></i> Usage statistics', "/stats"],
     "plans": ['<i class="fa fa-rocket"></i> Plans and pricing', "/plans/"],
@@ -104,6 +108,27 @@ def stream_handle_match(key: str) -> str:
     return stream_instructions_no_link
 
 
+group_info = {
+    "all": ["All groups", "/#groups/all"],
+    "subscribed": ["Your groups", "/#groups/your"],
+}
+
+group_instructions_no_link = """
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
+   right corner of the web or desktop app.
+
+1. Click **Group settings**.
+"""
+
+
+def group_handle_match(key: str) -> str:
+    if relative_help_links:
+        return f"1. Go to [{group_info[key][0]}]({group_info[key][1]})."
+    if key == "all":
+        return group_instructions_no_link + "\n\n1. Click **All groups** in the upper left."
+    return group_instructions_no_link
+
+
 draft_instructions = """
 1. Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
 """
@@ -163,6 +188,7 @@ LINK_TYPE_HANDLERS = {
     "stream": stream_handle_match,
     "message": message_handle_match,
     "help": help_handle_match,
+    "group": group_handle_match,
 }
 
 
