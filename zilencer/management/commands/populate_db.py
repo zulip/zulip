@@ -390,6 +390,7 @@ class Command(BaseCommand):
                 api_key=settings.ZULIP_ORG_KEY,
                 hostname=settings.EXTERNAL_HOST,
                 last_updated=timezone_now(),
+                contact_email="remotezulipserver@zulip.com",
             )
             update_remote_realm_data_for_server(server, get_realms_info_for_push_bouncer())
 
