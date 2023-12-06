@@ -131,6 +131,8 @@ not_yet_fully_covered = [
     "zerver/lib/migrate.py",
     # Branches in Django settings files are hard to test
     "zproject/computed_settings.py",
+    # Used to override settings
+    "zproject/custom_dev_settings.py",
     "zproject/dev_settings.py",
     "zproject/test_extra_settings.py",
     # Better tested in a full deployment
