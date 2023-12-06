@@ -1586,17 +1586,19 @@ class BillingSession(ABC):
         return None, last_ledger_entry
 
     def get_billing_page_context(self) -> Dict[str, Any]:
+        context: Dict[str, Any] = {}
+        now = timezone_now()
+
         customer = self.get_customer()
         assert customer is not None
+
         plan = get_current_plan_by_customer(customer)
-        context: Dict[str, Any] = {}
         assert plan is not None
-        now = timezone_now()
+
         new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
         assert last_ledger_entry is not None
-        if new_plan is not None:  # nocoverage
-            plan = new_plan
-        assert plan is not None  # for mypy
+        plan = new_plan if new_plan is not None else plan
+
         downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         downgrade_at_end_of_free_trial = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
         switch_to_annual_at_end_of_cycle = (
