@@ -1171,13 +1171,13 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
         self.assertEqual(zerver_message[1]["content"], "random")
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 @**Jane**: hey!")
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], "2015-06-12 @**Jane**: hey!1")
         # A new thread with a different date from 2015-06-12, starts the counter from 1.
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 1")
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], "2015-08-18 @**Jane**: hey!")
         # A new thread with a different timestamp, but the same date as 2015-08-18, starts the
         # counter from 2.
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 2")
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], "2015-08-18 random")
         self.assertEqual(
             zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
         )
