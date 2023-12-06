@@ -395,3 +395,38 @@ def get_remote_server_guest_and_non_guest_count(
     return RemoteCustomerUserCount(
         non_guest_user_count=non_guest_count, guest_user_count=guest_count
     )
+
+
+def get_remote_realm_guest_and_non_guest_count(
+    remote_realm: RemoteRealm, event_time: datetime = timezone_now()
+) -> RemoteCustomerUserCount:  # nocoverage
+    latest_audit_log = (
+        RemoteRealmAuditLog.objects.filter(
+            remote_realm=remote_realm,
+            event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
+            event_time__lte=event_time,
+        )
+        # Important: extra_data is empty for some pre-2020 audit logs
+        # prior to the introduction of realm_user_count_by_role
+        # logging. Meanwhile, modern Zulip servers using
+        # bulk_create_users to create the users in the system bot
+        # realm also generate such audit logs. Such audit logs should
+        # never be the latest in a normal realm.
+        .exclude(extra_data={}).last()
+    )
+
+    guest_count = 0
+    non_guest_count = 0
+    if latest_audit_log is not None:
+        humans_count_dict = latest_audit_log.extra_data[RemoteRealmAuditLog.ROLE_COUNT][
+            RemoteRealmAuditLog.ROLE_COUNT_HUMANS
+        ]
+        for role_type in UserProfile.ROLE_TYPES:
+            if role_type == UserProfile.ROLE_GUEST:
+                guest_count += humans_count_dict.get(str(role_type), 0)
+            else:
+                non_guest_count += humans_count_dict.get(str(role_type), 0)
+
+    return RemoteCustomerUserCount(
+        non_guest_user_count=non_guest_count, guest_user_count=guest_count
+    )
