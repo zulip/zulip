@@ -1090,7 +1090,6 @@ class BillingSession(ABC):
                 f"Cannot upgrade from {plan.name} to {CustomerPlan.name_from_tier(new_plan_tier)}"
             )
 
-    # Only used for cloud signups
     @catch_stripe_errors
     def process_initial_upgrade(
         self,
@@ -1169,7 +1168,6 @@ class BillingSession(ABC):
                 # expires.
                 assert remote_server_legacy_plan is not None
                 if charge_automatically:
-                    remote_server_legacy_plan.charge_automatically = True
                     # Ensure customers not paying via invoice have a default payment method set.
                     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
                     if not stripe_customer_has_credit_card_as_default_payment_method(
@@ -1187,21 +1185,9 @@ class BillingSession(ABC):
                 event_time = timezone_now().replace(microsecond=0)
 
                 # Schedule switching to the new plan at plan end date.
-                #
-                # HACK: We set price_per_license on the legacy plan
-                # here in order to make the billing page display
-                # something reasonable. We avoid any charges, because
-                # next_invoice_date is None for this plan.
-                #
-                # This hack is a workaround for the billing page not
-                # having first-class support for displaying a future
-                # NEVER_STARTED plan.
                 assert remote_server_legacy_plan.end_date == billing_cycle_anchor
                 remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
-                remote_server_legacy_plan.price_per_license = price_per_license
-                remote_server_legacy_plan.save(
-                    update_fields=["status", "charge_automatically", "price_per_license"]
-                )
+                remote_server_legacy_plan.save(update_fields=["status"])
             elif remote_server_legacy_plan is not None:  # nocoverage
                 remote_server_legacy_plan.status = CustomerPlan.ENDED
                 remote_server_legacy_plan.save(update_fields=["status"])
