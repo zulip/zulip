@@ -16,7 +16,7 @@ from corporate.lib.stripe import (
     UpdatePlanRequest,
 )
 from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
-from zerver.decorator import require_billing_access, zulip_login_required
+from zerver.decorator import process_as_post, require_billing_access, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
@@ -215,8 +215,9 @@ def update_plan(
     return json_success(request)
 
 
-@has_request_variables
 @authenticated_remote_realm_management_endpoint
+@process_as_post
+@has_request_variables
 def update_plan_for_remote_realm(
     request: HttpRequest,
     billing_session: RemoteRealmBillingSession,
@@ -241,8 +242,9 @@ def update_plan_for_remote_realm(
     return json_success(request)
 
 
-@has_request_variables
 @authenticated_remote_server_management_endpoint
+@process_as_post
+@has_request_variables
 def update_plan_for_remote_server(
     request: HttpRequest,
     billing_session: RemoteServerBillingSession,
