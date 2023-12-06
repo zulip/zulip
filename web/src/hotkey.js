@@ -784,8 +784,11 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    // Also handle hotkeys for navigating to login/signup button in spectator mode.
     if (
-        navbar_menus.is_navbar_menus_displayed() &&
+        ($(".signup_button").is(":focus") ||
+            $(".login_button").is(":focus") ||
+            navbar_menus.is_navbar_menus_displayed()) &&
         navbar_menus.handle_keyboard_events(event_name)
     ) {
         return true;
