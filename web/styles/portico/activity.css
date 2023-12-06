@@ -85,6 +85,7 @@ tr.admin td:first-child {
     color: hsl(120deg 100% 33%);
 }
 
+.current-plan-data-missing,
 .bad {
     font-weight: bold;
     color: hsl(0deg 100% 39%);
