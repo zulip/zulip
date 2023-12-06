@@ -21,6 +21,7 @@
                 </li>
             {{/each}}
         </ul>
+        {{#unless is_guest}}
         <hr />
         <ul class="nav nav-list manage-group">
             <li>
@@ -30,5 +31,6 @@
                 </a>
             </li>
         </ul>
+        {{/unless}}
     </div>
 </div>
