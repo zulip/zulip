@@ -38,7 +38,7 @@ from zerver.models import (
 from zproject.backends import all_implemented_backend_names
 
 if settings.CORPORATE_ENABLED:
-    from corporate.lib.support import get_support_url
+    from corporate.lib.support import get_realm_support_url
 
 
 def do_change_realm_subdomain(
@@ -310,7 +310,7 @@ def do_create_realm(
         admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
         sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
 
-        support_url = get_support_url(realm)
+        support_url = get_realm_support_url(realm)
         organization_type = get_org_type_display_name(realm.org_type)
 
         message = "[{name}]({support_link}) ([{subdomain}]({realm_link})). Organization type: {type}".format(

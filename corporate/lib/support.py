@@ -20,7 +20,7 @@ class PlanData:
     licenses_used: Optional[int] = None
 
 
-def get_support_url(realm: Realm) -> str:
+def get_realm_support_url(realm: Realm) -> str:
     support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
     support_url = urljoin(
         support_realm_uri,

@@ -9,6 +9,7 @@ from decimal import Decimal
 from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypedDict, TypeVar, Union
+from urllib.parse import urlencode, urljoin
 
 import stripe
 from django import forms
@@ -44,12 +45,14 @@ from zerver.lib.send_email import (
     send_email_to_billing_admins_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Realm,
     RealmAuditLog,
     UserProfile,
     get_org_type_display_name,
+    get_realm,
     get_system_bot,
 )
 from zilencer.models import (
@@ -372,6 +375,14 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     return _("Unknown payment method. Please contact {email}.").format(
         email=settings.ZULIP_ADMINISTRATOR,
     )  # nocoverage
+
+
+def build_support_url(support_view: str, query_text: str) -> str:
+    support_realm_url = get_realm(settings.STAFF_SUBDOMAIN).uri
+    support_url = urljoin(support_realm_url, reverse(support_view))
+    query = urlencode({"q": query_text})
+    support_url = append_url_query_string(support_url, query)
+    return support_url
 
 
 class BillingError(JsonableError):
@@ -2408,10 +2419,7 @@ class RealmBillingSession(BillingSession):
 
     @override
     def support_url(self) -> str:
-        # TODO: Refactor to not create an import cycle.
-        from corporate.lib.support import get_support_url
-
-        return get_support_url(self.realm)
+        return build_support_url("support", self.realm.string_id)
 
     @override
     def get_customer(self) -> Optional[Customer]:
@@ -2706,7 +2714,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def support_url(self) -> str:
-        return "TODO:not-implemented"
+        return build_support_url("remote_servers_support", self.remote_realm.server.hostname)
 
     @override
     def get_customer(self) -> Optional[Customer]:
@@ -2998,7 +3006,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def support_url(self) -> str:
-        return "TODO:not-implemented"
+        return build_support_url("remote_servers_support", self.remote_server.hostname)
 
     @override
     def get_customer(self) -> Optional[Customer]:
