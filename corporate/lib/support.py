@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from corporate.lib.stripe import BillingSession
 from corporate.models import Customer, CustomerPlan, get_current_plan_by_customer
 from zerver.models import Realm, get_realm
+from zilencer.lib.remote_counts import MissingDataError
 
 
 @dataclass
@@ -19,6 +20,7 @@ class PlanData:
     licenses: Optional[int] = None
     licenses_used: Optional[int] = None
     is_legacy_plan: bool = False
+    warning: Optional[str] = None
 
 
 def get_support_url(realm: Realm) -> str:
@@ -55,7 +57,10 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
             if new_plan is not None:
                 plan_data.current_plan = new_plan  # nocoverage
             plan_data.licenses = last_ledger_entry.licenses
-            plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
+            try:
+                plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
+            except MissingDataError:  # nocoverage
+                plan_data.warning = "Recent data missing: No information for used licenses"
         assert plan_data.current_plan is not None  # for mypy
         plan_data.is_legacy_plan = (
             plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
