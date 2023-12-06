@@ -749,6 +749,10 @@ def remote_server_post_analytics(
     batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 
     if realmauditlog_rows is not None:
+        # Important: Do not return early if we receive 0 rows; we must
+        # updated last_audit_log_update even if there are no new rows,
+        # to help identify server whose ability to connect to this
+        # endpoint is broken by a networking problem.
         remote_realm_audit_logs = []
         for row in realmauditlog_rows:
             extra_data = {}
@@ -773,6 +777,9 @@ def remote_server_post_analytics(
                 )
             )
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
+        RemoteZulipServer.objects.filter(uuid=server.uuid).update(
+            last_audit_log_update=timezone_now()
+        )
 
     remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
     remote_realms = RemoteRealm.objects.filter(server=server)
