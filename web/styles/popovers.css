@@ -858,9 +858,13 @@ ul {
 }
 
 .user-group-popover-root {
-    & ul.nav {
+    .group-info-popover ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
+
+        &.member-list {
+            padding-left: 6px;
+        }
     }
 
     & .tippy-box {
