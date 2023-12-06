@@ -4,6 +4,7 @@ import render_user_group_info_popover from "../templates/popovers/user_group_inf
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
@@ -82,6 +83,7 @@ export function toggle_user_group_info_popover(element, message_id) {
                     group_name: group.name,
                     group_description: group.description,
                     members: sort_group_members(fetch_group_members([...group.members])),
+                    group_edit_url: hash_util.group_edit_url(group),
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },
