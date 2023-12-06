@@ -25,25 +25,25 @@ const HOTSPOT_LOCATIONS = new Map([
     [
         "intro_streams",
         {
-            element: "#streams_header .left-sidebar-title",
-            offset_x: 1.35,
-            offset_y: 0.39,
+            element: "#streams_header .left-sidebar-title .streams-tooltip-target",
+            offset_x: 1.3,
+            offset_y: 0.44,
         },
     ],
     [
         "intro_topics",
         {
             element: ".topic-name",
-            offset_x: 0.8,
-            offset_y: 0.39,
+            offset_x: 1,
+            offset_y: 0.4,
         },
     ],
     [
         "intro_gear",
         {
-            element: "#settings-dropdown",
-            offset_x: -0.4,
-            offset_y: 1.2,
+            element: "#personal-menu",
+            offset_x: 0.45,
+            offset_y: 1.15,
             popover: LEFT_BOTTOM,
         },
     ],
@@ -51,8 +51,8 @@ const HOTSPOT_LOCATIONS = new Map([
         "intro_compose",
         {
             element: "#new_conversation_button",
-            offset_x: 0,
-            offset_y: 0,
+            offset_x: 0.5,
+            offset_y: -0.7,
         },
     ],
 ]);

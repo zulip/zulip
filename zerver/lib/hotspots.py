@@ -46,6 +46,9 @@ INTRO_HOTSPOTS: List[Hotspot] = [
         ),
     ),
     Hotspot(
+        # In theory, this should be renamed to intro_personal, since
+        # it's no longer attached to the gear menu, but renaming these
+        # requires a migration that is not worth doing at this time.
         name="intro_gear",
         title=gettext_lazy("Settings"),
         description=gettext_lazy("Go to Settings to configure your notifications and preferences."),

@@ -693,11 +693,13 @@ def remote_server_post_analytics(
     # duplicate submissions of the data
     server = RemoteZulipServer.objects.select_for_update().get(id=server.id)
 
+    remote_server_version_updated = False
     if version is not None:
         version = version[0 : RemoteZulipServer.VERSION_MAX_LENGTH]
     if version != server.last_version:
         server.last_version = version
         server.save(update_fields=["last_version"])
+        remote_server_version_updated = True
 
     validate_incoming_table_data(
         server, RemoteRealmCount, [dict(count) for count in realm_counts], True
@@ -713,9 +715,14 @@ def remote_server_post_analytics(
 
     if realms is not None:
         update_remote_realm_data_for_server(server, realms)
+        if remote_server_version_updated:
+            fix_remote_realm_foreign_keys(server, realms)
+
+    realm_id_to_remote_realm = build_realm_id_to_remote_realm_dict(server, realms)
 
     remote_realm_counts = [
         RemoteRealmCount(
+            remote_realm=realm_id_to_remote_realm.get(row.realm),
             property=row.property,
             realm_id=row.realm,
             remote_id=row.id,
@@ -755,6 +762,7 @@ def remote_server_post_analytics(
                 extra_data = row.extra_data
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
+                    remote_realm=realm_id_to_remote_realm.get(row.realm),
                     realm_id=row.realm,
                     remote_id=row.id,
                     server=server,
@@ -796,6 +804,46 @@ def remote_server_post_analytics(
         }
 
     return json_success(request, data={"realms": remote_realm_dict})
+
+
+def build_realm_id_to_remote_realm_dict(
+    server: RemoteZulipServer, realms: Optional[List[RealmDataForAnalytics]]
+) -> Dict[int, Optional[RemoteRealm]]:
+    if realms is None:
+        return {}
+
+    realm_uuids = [realm.uuid for realm in realms]
+    remote_realms = RemoteRealm.objects.filter(uuid__in=realm_uuids, server=server)
+
+    uuid_to_remote_realm_dict = {
+        str(remote_realm.uuid): remote_realm for remote_realm in remote_realms
+    }
+    return {realm.id: uuid_to_remote_realm_dict[str(realm.uuid)] for realm in realms}
+
+
+def fix_remote_realm_foreign_keys(
+    server: RemoteZulipServer, realms: List[RealmDataForAnalytics]
+) -> None:
+    """
+    Finds the RemoteRealmCount and RemoteRealmAuditLog entries without .remote_realm
+    set and sets it based on the "realms" data received from the remote server,
+    if possible.
+    """
+
+    if (
+        not RemoteRealmCount.objects.filter(server=server, remote_realm=None).exists()
+        and not RemoteRealmAuditLog.objects.filter(server=server, remote_realm=None).exists()
+    ):
+        return
+
+    realm_id_to_remote_realm = build_realm_id_to_remote_realm_dict(server, realms)
+    for realm_id in realm_id_to_remote_realm:
+        RemoteRealmCount.objects.filter(server=server, remote_realm=None, realm_id=realm_id).update(
+            remote_realm=realm_id_to_remote_realm[realm_id]
+        )
+        RemoteRealmAuditLog.objects.filter(
+            server=server, remote_realm=None, realm_id=realm_id
+        ).update(remote_realm=realm_id_to_remote_realm[realm_id])
 
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
