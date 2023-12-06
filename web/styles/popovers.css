@@ -1389,6 +1389,9 @@ ul {
             font-weight: 600;
             line-height: 22px;
             padding: 0 10px;
+            /* We set white-space to normal for the menu items
+               where we want to explicitly wrap. */
+            white-space: normal;
         }
 
         .org-plan,
