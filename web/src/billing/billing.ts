@@ -173,6 +173,26 @@ export function initialize(): void {
         portico_modals.open($modal.attr("id")!);
     });
 
+    $("#cancel-legacy-server-upgrade").on("click", (e) => {
+        e.preventDefault();
+        portico_modals.open("confirm-cancel-legacy-server-upgrade-modal");
+    });
+
+    $("#confirm-cancel-legacy-server-upgrade-modal .dialog_submit_button").on("click", (e) => {
+        helpers.create_ajax_request(
+            `/json${billing_base_url}/billing/plan`,
+            "planchange",
+            [],
+            "PATCH",
+            () =>
+                window.location.replace(
+                    `${billing_base_url}/upgrade/?success_message=` +
+                        encodeURIComponent("Your plan is no longer scheduled for an upgrade."),
+                ),
+        );
+        e.preventDefault();
+    });
+
     $("#confirm-licenses-modal-increase, #confirm-licenses-modal-decrease").on(
         "click",
         ".dialog_submit_button",

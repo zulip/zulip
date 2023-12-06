@@ -1869,7 +1869,14 @@ class BillingSession(ABC):
         if status is not None:
             if status == CustomerPlan.ACTIVE:
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
-                do_change_plan_status(plan, status)
+                with transaction.atomic():  # nocoverage
+                    # Switch to a different plan was cancelled. We end the next plan
+                    # and set the current one as active.
+                    if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+                        next_plan = self.get_next_plan(plan)
+                        assert next_plan is not None
+                        do_change_plan_status(next_plan, CustomerPlan.ENDED)
+                    do_change_plan_status(plan, status)
             elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
                 assert not plan.is_free_trial()
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
