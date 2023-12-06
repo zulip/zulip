@@ -1246,7 +1246,9 @@ class BillingSession(ABC):
             )
             stripe.Invoice.finalize_invoice(stripe_invoice)
 
-        self.do_change_plan_type(tier=plan_tier)
+        if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
+            # Tier and usage limit change will happen when plan becomes live.
+            self.do_change_plan_type(tier=plan_tier)
 
     def do_upgrade(self, upgrade_request: UpgradeRequest) -> Dict[str, Any]:
         customer = self.get_customer()
@@ -1457,6 +1459,7 @@ class BillingSession(ABC):
                 )
                 new_plan.status = CustomerPlan.ACTIVE
                 new_plan.save(update_fields=["status"])
+                self.do_change_plan_type(tier=new_plan.tier)
                 return None, LicenseLedger.objects.create(
                     plan=new_plan,
                     is_renewal=True,
