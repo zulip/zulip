@@ -142,7 +142,7 @@ class Command(BaseCommand):
                 is_sponsored=True,
                 billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                 # Customer plan might not exist for sponsored realms.
-                tier=CustomerPlan.TIER_CLOUD_COMMUNITY,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
             ),
             CustomerProfile(
                 unique_id="free-trial",
@@ -301,12 +301,10 @@ def populate_realm(customer_profile: CustomerProfile) -> Optional[Realm]:
     unique_id = customer_profile.unique_id
     if customer_profile.is_remote_realm:
         plan_type = Realm.PLAN_TYPE_SELF_HOSTED
+    elif customer_profile.is_sponsored:
+        plan_type = Realm.PLAN_TYPE_STANDARD_FREE
     elif customer_profile.tier is None:
         plan_type = Realm.PLAN_TYPE_LIMITED
-    elif (
-        customer_profile.tier == CustomerPlan.TIER_CLOUD_COMMUNITY and customer_profile.is_sponsored
-    ):
-        plan_type = Realm.PLAN_TYPE_STANDARD_FREE
     elif customer_profile.tier == CustomerPlan.TIER_CLOUD_STANDARD:
         plan_type = Realm.PLAN_TYPE_STANDARD
     elif customer_profile.tier == CustomerPlan.TIER_CLOUD_PLUS:
@@ -380,7 +378,10 @@ def populate_realm(customer_profile: CustomerProfile) -> Optional[Realm]:
 def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
     unique_id = customer_profile.unique_id
 
-    if customer_profile.is_sponsored:
+    if (
+        customer_profile.is_sponsored
+        and customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_COMMUNITY
+    ):
         plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
     elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
         plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
