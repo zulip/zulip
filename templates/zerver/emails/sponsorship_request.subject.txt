@@ -1,1 +1,1 @@
-Sponsorship request ({{ organization_type }}) for {{ string_id }}
+Sponsorship request ({{ organization_type }}) for {{ billing_entity }}
