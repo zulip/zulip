@@ -388,9 +388,9 @@ def get_remote_server_guest_and_non_guest_count(
         ]
         for role_type in UserProfile.ROLE_TYPES:
             if role_type == UserProfile.ROLE_GUEST:
-                guest_count += humans_count_dict[str(role_type)]
+                guest_count += humans_count_dict.get(str(role_type), 0)
             else:
-                non_guest_count += humans_count_dict[str(role_type)]
+                non_guest_count += humans_count_dict.get(str(role_type), 0)
 
     return RemoteCustomerUserCount(
         non_guest_user_count=non_guest_count, guest_user_count=guest_count
