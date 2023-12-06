@@ -73,7 +73,7 @@ from zerver.models import (
     get_user_by_delivery_email,
     get_user_profile_by_id,
 )
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
 from zilencer.views import update_remote_realm_data_for_server
 
 settings.USING_TORNADO = False
@@ -128,6 +128,8 @@ def clear_database() -> None:
         UserMessage,
         Client,
         DefaultStream,
+        RemoteRealm,
+        RemoteZulipServer,
     ]:
         model.objects.all().delete()
     Session.objects.all().delete()
