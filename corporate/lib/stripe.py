@@ -1209,21 +1209,20 @@ class BillingSession(ABC):
             plan = CustomerPlan.objects.create(
                 customer=customer, next_invoice_date=next_invoice_date, **plan_params
             )
-            # HACK: In theory, we should be creating these ledger
-            # entries only outside the code path for
-            # should_schedule_upgrade_for_legacy_remote_server; they
-            # exist mainly to help the existing code display accurate
-            # information about the second NEVER_STARTED plan on the
-            # billing page.
-            ledger_entry = LicenseLedger.objects.create(
-                plan=plan,
-                is_renewal=True,
-                event_time=event_time,
-                licenses=billed_licenses,
-                licenses_at_next_renewal=billed_licenses,
-            )
-            plan.invoiced_through = ledger_entry
-            plan.save(update_fields=["invoiced_through"])
+
+            if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
+                # LicenseLedger entries are way for us to charge customer and track their license usage.
+                # So, we should only create these entries for live plans.
+                ledger_entry = LicenseLedger.objects.create(
+                    plan=plan,
+                    is_renewal=True,
+                    event_time=event_time,
+                    licenses=billed_licenses,
+                    licenses_at_next_renewal=billed_licenses,
+                )
+                plan.invoiced_through = ledger_entry
+                plan.save(update_fields=["invoiced_through"])
+
             self.write_to_audit_log(
                 event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
                 event_time=event_time,
