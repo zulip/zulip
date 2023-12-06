@@ -15,7 +15,7 @@ from corporate.lib.stripe import (
     RemoteServerBillingSession,
     UpdatePlanRequest,
 )
-from corporate.models import CustomerPlan, get_customer_by_realm
+from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -76,10 +76,7 @@ def billing_page(
     if user.realm.plan_type == user.realm.PLAN_TYPE_LIMITED:
         return HttpResponseRedirect(reverse("plans"))
 
-    if customer is None:
-        return HttpResponseRedirect(reverse("upgrade_page"))
-
-    if not CustomerPlan.objects.filter(customer=customer).exists():
+    if customer is None or get_current_plan_by_customer(customer) is None:
         return HttpResponseRedirect(reverse("upgrade_page"))
 
     main_context = billing_session.get_billing_page_context()
@@ -123,10 +120,7 @@ def remote_realm_billing_page(
     if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED:
         return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
 
-    if customer is None:
-        return HttpResponseRedirect(reverse("remote_realm_upgrade_page", args=(realm_uuid,)))
-
-    if not CustomerPlan.objects.filter(customer=customer).exists():
+    if customer is None or get_current_plan_by_customer(customer) is None:
         return HttpResponseRedirect(reverse("remote_realm_upgrade_page", args=(realm_uuid,)))
 
     main_context = billing_session.get_billing_page_context()
@@ -177,7 +171,7 @@ def remote_server_billing_page(
     if (
         billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
         or customer is None
-        or not CustomerPlan.objects.filter(customer=customer).exists()
+        or get_current_plan_by_customer(customer) is None
     ):
         return HttpResponseRedirect(
             reverse(
