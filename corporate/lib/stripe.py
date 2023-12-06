@@ -1570,6 +1570,16 @@ class BillingSession(ABC):
             return None, None
         return None, last_ledger_entry
 
+    def get_next_plan(self, plan: CustomerPlan) -> Optional[CustomerPlan]:  # nocoverage
+        if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+            assert plan.end_date is not None
+            return CustomerPlan.objects.filter(
+                customer=plan.customer,
+                billing_cycle_anchor=plan.end_date,
+                status=CustomerPlan.NEVER_STARTED,
+            ).first()
+        return None
+
     def get_billing_context_from_plan(
         self,
         customer: Customer,
@@ -1682,6 +1692,27 @@ class BillingSession(ABC):
         plan = new_plan if new_plan is not None else plan
 
         context = self.get_billing_context_from_plan(customer, plan, last_ledger_entry, now)
+
+        next_plan = self.get_next_plan(plan)
+        if next_plan is not None:  # nocoverage
+            next_plan_context = self.get_billing_context_from_plan(
+                customer, next_plan, last_ledger_entry, now
+            )
+            # Settings we want to display from the next plan instead of the current one.
+            # HACK: Our billing page is not designed to handle two plans, so while this is hacky,
+            # it's the easiest way to get the UI we want without making things too complicated for us.
+            keys = [
+                "renewal_amount",
+                "payment_method",
+                "charge_automatically",
+                "billing_frequency",
+                "fixed_price",
+                "price_per_license",
+                "discount_percent",
+            ]
+
+            for key in keys:
+                context[key] = next_plan_context[key]
         return context
 
     def get_initial_upgrade_context(
