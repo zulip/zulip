@@ -1339,7 +1339,7 @@ ul {
 
         & li {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             font-size: 15px;
             font-style: normal;
             font-weight: 400;
@@ -1353,7 +1353,6 @@ ul {
             .navbar-dropdown-menu-link {
                 padding: 2px 10px;
                 flex-grow: 1;
-                text-align: center;
                 text-decoration: none;
 
                 &:hover {
