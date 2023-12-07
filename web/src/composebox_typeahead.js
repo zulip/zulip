@@ -41,7 +41,7 @@ import {user_settings} from "./user_settings";
 
 // This is what we use for direct message/compose typeaheads.
 // We export it to allow tests to mock it.
-export const max_num_items = 8;
+export const max_num_items = 50;
 
 export let emoji_collection = [];
 

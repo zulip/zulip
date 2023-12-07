@@ -1500,6 +1500,14 @@ strong {
    basic idea of this fix is to remove decorations from :hover and apply them only
    on :focus. */
 .typeahead-menu {
+    max-height: 215px;
+    overflow-y: auto;
+
+    .simplebar-content {
+        width: max-content;
+        min-width: 160px;
+    }
+
     & li {
         & a {
             display: block;
