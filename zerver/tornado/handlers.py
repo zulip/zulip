@@ -83,7 +83,7 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
 class AsyncDjangoHandler(tornado.web.RequestHandler):
     handler_id: int
 
-    SUPPORTED_METHODS: Collection[str] = {"GET", "HEAD", "POST", "DELETE"}  # type: ignore[assignment]  # https://github.com/tornadoweb/tornado/pull/3354
+    SUPPORTED_METHODS: Collection[str] = {"GET", "POST", "DELETE"}  # type: ignore[assignment]  # https://github.com/tornadoweb/tornado/pull/3354
 
     @override
     def initialize(self, django_handler: base.BaseHandler) -> None:
@@ -196,10 +196,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
             # resetting the urlconf and any cache/database
             # connections.
             await sync_to_async(response.close, thread_sensitive=True)()
-
-    @override
-    async def head(self, *args: Any, **kwargs: Any) -> None:
-        await self.get(*args, **kwargs)
 
     @override
     async def post(self, *args: Any, **kwargs: Any) -> None:
