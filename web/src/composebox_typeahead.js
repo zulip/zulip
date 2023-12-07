@@ -1193,10 +1193,15 @@ export function initialize({on_enter_send}) {
             if (user_groups.is_user_group(item)) {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);
-                    // filter out inserted users and current user from pill insertion
+                    // filter out inactive users, inserted users and current user
+                    // from pill insertion
                     const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
                     const current_user = people.is_current_user(user.email);
-                    if (!inserted_users.includes(user.user_id) && !current_user) {
+                    if (
+                        people.is_person_active(user_id) &&
+                        !inserted_users.includes(user.user_id) &&
+                        !current_user
+                    ) {
                         compose_pm_pill.set_from_typeahead(user);
                     }
                 }
