@@ -17,6 +17,8 @@ from django.conf import settings
 from django.core import signing
 from django.core.signing import Signer
 from django.db import transaction
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -3029,6 +3031,19 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         )
         return remote_realm_counts.non_guest_user_count + remote_realm_counts.guest_user_count
 
+    def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:
+        # The RemoteRealm error page code path should not really be
+        # possible, in that the self-hosted server will have uploaded
+        # current audit log data as needed as part of logging the user
+        # in.
+        missing_data_context: Dict[str, Any] = {
+            "remote_realm_session": True,
+            "supports_remote_realms": self.remote_realm.server.last_api_feature_level is not None,
+        }
+        return render(
+            request, "corporate/server_not_uploading_data.html", context=missing_data_context
+        )
+
     @override
     def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
         if event_type is AuditLogEventType.STRIPE_CUSTOMER_CREATED:
@@ -3406,6 +3421,17 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             self.remote_server.id, event_time
         )
         return remote_server_counts.non_guest_user_count + remote_server_counts.guest_user_count
+
+    def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:
+        # The remedy for a RemoteZulipServer login is usually
+        # upgrading to Zulip 8.0 or enabling SUBMIT_USAGE_STATISTICS.
+        missing_data_context = {
+            "remote_realm_session": False,
+            "supports_remote_realms": self.remote_server.last_api_feature_level is not None,
+        }
+        return render(
+            request, "corporate/server_not_uploading_data.html", context=missing_data_context
+        )
 
     @override
     def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
