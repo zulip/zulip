@@ -1,5 +1,5 @@
 <ul class="nav nav-list topics_popover">
-    <li>
+    <li class="topic-menu-item">
         <p class="topic-name">
             <i class="fa fa-chevron-right" aria-hidden="true" style="color: {{color}}"></i>
             <b>{{topic_name}}</b>
@@ -8,7 +8,7 @@
 
     <hr />
 
-    <li class="hidden-for-spectators">
+    <li class="topic-menu-item hidden-for-spectators">
         <div class="tabs-container">
             <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
                 <i class="zulip-icon zulip-icon-mute-new"></i>
@@ -30,7 +30,7 @@
     <hr class="hidden-for-spectators" />
 
     {{#if has_starred_messages}}
-    <li class="hidden-for-spectators">
+    <li class="topic-menu-item hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-unstar-all-in-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>
             {{t "Unstar all messages in topic" }}
@@ -38,14 +38,14 @@
     </li>
     {{/if}}
 
-    <li class="hidden-for-spectators">
+    <li class="topic-menu-item hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}
         </a>
     </li>
 
-    <li>
+    <li class="topic-menu-item">
         <a tabindex="0" class="sidebar-popover-copy-link-to-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" data-clipboard-text="{{ url }}">
             <i class="fa fa-link" aria-hidden="true"></i>
             {{t "Copy link to topic"}}
@@ -55,7 +55,7 @@
     {{#if can_move_topic}}
     <hr />
 
-    <li>
+    <li class="topic-menu-item">
         <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-arrows" aria-hidden="true"></i>
             {{t "Move topic"}}
@@ -64,7 +64,7 @@
     {{else if can_rename_topic}}
     <hr />
 
-    <li>
+    <li class="topic-menu-item">
         <a tabindex="0" class="sidebar-popover-rename-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-pencil" aria-hidden="true"></i>
             {{t "Rename topic"}}
@@ -73,7 +73,7 @@
     {{/if}}
 
     {{#if can_rename_topic}}
-    <li>
+    <li class="topic-menu-item">
         <a tabindex="0" class="sidebar-popover-toggle-resolved" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-check" aria-hidden="true"></i>
             {{# if topic_is_resolved }}
@@ -86,7 +86,7 @@
     {{/if}}
 
     {{#if is_realm_admin}}
-    <li>
+    <li class="topic-menu-item">
         <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-trash" aria-hidden="true"></i>
             {{t "Delete topic"}}
