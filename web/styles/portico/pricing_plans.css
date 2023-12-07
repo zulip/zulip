@@ -607,6 +607,14 @@
         }
     }
 
+    .is-self-hosted-realm {
+        /* Don't display buttons on cloud plans
+           when viewed by self-hosters. */
+        .cloud-plan-pricing .bottom .text-content {
+            display: none;
+        }
+    }
+
     @media screen and (width <= 940px) {
         h1 {
             font-size: 40px;
