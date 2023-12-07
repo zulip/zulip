@@ -247,7 +247,17 @@ export function is_known_user_id(user_id: number): boolean {
     the mention syntax by manually typing it instead of
     selecting some user from typeahead.
     */
-    return people_by_user_id_dict.has(user_id);
+
+    /*
+    This function also returns false for inaccessible users
+    even though we have the user_id for them as we do not
+    want to show the mention pill for them.
+    */
+    const person = maybe_get_user_by_id(user_id, true);
+    if (person === undefined || person.is_inaccessible_user) {
+        return false;
+    }
+    return true;
 }
 
 export function is_known_user(user: User): boolean {
@@ -1242,9 +1252,19 @@ export function filter_people_by_search_terms(
 }
 
 export const is_valid_full_name_and_user_id = (full_name: string, user_id: number): boolean => {
+    /*
+        This function is currently only used for checking
+        the mention syntax during markdown parsing. Since
+        we do not want to parse inaccessible users as
+        mention pill, this function returns false for
+        inaccessible users. We would need to update this
+        if we would want to use this function for other
+        cases where we might want to display inaccessible
+        users as "Unknown user".
+    */
     const person = people_by_user_id_dict.get(user_id);
 
-    if (!person) {
+    if (!person || person.is_inaccessible_user) {
         return false;
     }
 
@@ -1283,9 +1303,18 @@ export function get_user_id_from_name(full_name: string): number | undefined {
         exactly what we do with mentions.
     */
 
+    /*
+        Since we do not want to parse inaccessible users as
+        mention pill, this function returns false for
+        inaccessible users. We would need to update this if
+        we would want to use this function for other cases
+        where we might want to display inaccessible users
+        as "Unknown user".
+    */
+
     const person = people_by_name_dict.get(full_name);
 
-    if (!person) {
+    if (!person || person.is_inaccessible_user) {
         return undefined;
     }
 
