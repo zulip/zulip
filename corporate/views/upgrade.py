@@ -28,6 +28,7 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import UserProfile
+from zilencer.lib.remote_counts import MissingDataError
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -220,7 +221,10 @@ def remote_realm_upgrade_page(
         tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         success_message=success_message,
     )
-    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+    try:
+        redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+    except MissingDataError:
+        return billing_session.missing_data_error_page(request)
 
     if redirect_url:
         return HttpResponseRedirect(redirect_url)
@@ -243,7 +247,10 @@ def remote_server_upgrade_page(
         tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         success_message=success_message,
     )
-    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+    try:
+        redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+    except MissingDataError:
+        return billing_session.missing_data_error_page(request)
 
     if redirect_url:
         return HttpResponseRedirect(redirect_url)
