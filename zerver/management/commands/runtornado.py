@@ -5,13 +5,14 @@ from contextlib import AsyncExitStack
 from typing import Any
 from urllib.parse import SplitResult
 
-import __main__
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from tornado import autoreload
 from tornado.platform.asyncio import AsyncIOMainLoop
 from typing_extensions import override
+
+import __main__
 
 settings.RUNNING_INSIDE_TORNADO = True
 if settings.PRODUCTION:
