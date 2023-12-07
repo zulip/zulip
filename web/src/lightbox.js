@@ -91,6 +91,10 @@ export class PanZoomControl {
     }
 
     constrainImage(e) {
+        if (!this.isActive()) {
+            return;
+        }
+
         // Instead of using panzoom's built in bounds option which was buggy
         // at the time of this writing, we act on pan/zoom events and move the
         // image back in to view if it is moved beyond the image-preview container.
@@ -154,12 +158,20 @@ export class PanZoomControl {
     }
 
     zoomIn() {
+        if (!this.isActive()) {
+            return;
+        }
+
         const w = $(".image-preview").width();
         const h = $(".image-preview").height();
         this.panzoom.smoothZoom(w / 2, h / 2, Math.SQRT2);
     }
 
     zoomOut() {
+        if (!this.isActive()) {
+            return;
+        }
+
         const w = $(".image-preview").width();
         const h = $(".image-preview").height();
         this.panzoom.smoothZoom(w / 2, h / 2, Math.SQRT1_2);

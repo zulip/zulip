@@ -339,6 +339,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # setting also controls API access of web-public streams.
     enable_spectator_access = models.BooleanField(default=False)
 
+     # Add the new field below existing boolean fields and settings
+    add_custom_welcome_message_for_new_users = models.BooleanField(default=False)
+
     # Whether organization has given permission to be advertised in the
     # Zulip communities directory.
     want_advertise_in_communities_directory = models.BooleanField(default=False, db_index=True)

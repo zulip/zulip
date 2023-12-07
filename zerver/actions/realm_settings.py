@@ -38,6 +38,7 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
+
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
 
@@ -79,6 +80,14 @@ def do_set_realm_property(
         event = dict(
             type="realm",
             op="update_dict",
+            property="default",
+            data={name: value},
+        )
+
+    if name == "add_custom_welcome_message_for_new_users":
+        event = dict(
+            type="realm",
+            op="update_dict", 
             property="default",
             data={name: value},
         )
@@ -527,6 +536,27 @@ def do_change_realm_plan_type(
         "extra_data": {"upload_quota": realm.upload_quota_bytes()},
     }
     send_event_on_commit(realm, event, active_user_ids(realm.id))
+
+
+def update_custom_welcome_message(
+    realm: Realm, checkbox_state: bool, message_text: str, acting_user: Optional[UserProfile]
+    ) -> None:
+    # Update the new field in the Realm model
+    realm.add_custom_welcome_message_for_new_users = checkbox_state
+    realm.save(update_fields=['add_custom_welcome_message_for_new_users'])
+
+    # Send an event announcing the change
+    event_data = {
+        "enabled": checkbox_state,
+        "message_text": message_text if checkbox_state else None,
+    }
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property="custom_welcome_message",
+        data=event_data,
+    )
+    send_event(realm, event, active_user_ids(realm.id))
 
 
 def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
