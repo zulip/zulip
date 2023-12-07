@@ -323,6 +323,7 @@ ul {
             text-align: center;
             margin-top: 5px;
             margin-bottom: 5px;
+            white-space: normal;
 
             .fa-chevron-right {
                 font-size: 12px;
