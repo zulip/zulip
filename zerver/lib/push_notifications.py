@@ -908,6 +908,7 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     data["server"] = settings.EXTERNAL_HOST
     data["realm_id"] = user_profile.realm.id
     data["realm_uri"] = user_profile.realm.uri
+    data["realm_name"] = user_profile.realm.name
     data["user_id"] = user_profile.id
 
     return data
@@ -1398,7 +1399,7 @@ def send_test_push_notification_directly_to_devices(
     remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     payload = copy.deepcopy(base_payload)
-    payload["event"] = "test-by-device-token"
+    payload["event"] = "test"
 
     apple_devices = [device for device in devices if device.kind == PushDeviceToken.APNS]
     android_devices = [device for device in devices if device.kind == PushDeviceToken.GCM]
@@ -1408,10 +1409,13 @@ def send_test_push_notification_directly_to_devices(
     android_payload = copy.deepcopy(payload)
 
     realm_uri = base_payload["realm_uri"]
+    realm_name = base_payload["realm_name"]
     apns_data = {
         "alert": {
             "title": _("Test notification"),
-            "body": _("This is a test notification from {realm_uri}.").format(realm_uri=realm_uri),
+            "body": _("This is a test notification from {realm_name} ({realm_uri}).").format(
+                realm_name=realm_name, realm_uri=realm_uri
+            ),
         },
         "sound": "default",
         "custom": {"zulip": apple_payload},
