@@ -456,6 +456,10 @@ ul.filters {
         opacity: 0.5;
     }
 
+    .zulip-icon-follow {
+        opacity: 0.6;
+    }
+
     & li.muted_topic,
     li.out_of_home_view {
         color: hsl(0deg 0% 20% / 50%);
