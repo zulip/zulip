@@ -209,21 +209,21 @@ class ClientDescriptor:
         self.finish_current_handler()
 
     def finish_current_handler(self) -> bool:
-        if self.current_handler_id is not None:
-            try:
-                finish_handler(
-                    self.current_handler_id,
-                    self.event_queue.id,
-                    self.event_queue.contents(),
-                )
-            except Exception:
-                logging.exception(
-                    "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
-                )
-            finally:
-                self.disconnect_handler()
-            return True
-        return False
+        if self.current_handler_id is None:
+            return False
+        try:
+            finish_handler(
+                self.current_handler_id,
+                self.event_queue.id,
+                self.event_queue.contents(),
+            )
+        except Exception:
+            logging.exception(
+                "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
+            )
+        finally:
+            self.disconnect_handler()
+        return True
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
         if self.event_types is not None:
