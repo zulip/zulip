@@ -1,6 +1,6 @@
 import logging
 from contextlib import suppress
-from typing import Any, Dict, List, Optional
+from typing import Any, Collection, Dict, List, Optional
 from urllib.parse import unquote
 
 import tornado.web
@@ -82,6 +82,8 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
 
 class AsyncDjangoHandler(tornado.web.RequestHandler):
     handler_id: int
+
+    SUPPORTED_METHODS: Collection[str] = {"GET", "HEAD", "POST", "DELETE"}  # type: ignore[assignment]  # https://github.com/tornadoweb/tornado/pull/3354
 
     @override
     def initialize(self, django_handler: base.BaseHandler) -> None:
