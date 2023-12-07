@@ -22,6 +22,28 @@ export const stripe_session_url_schema = z.object({
     stripe_session_url: z.string(),
 });
 
+const cloud_discount_details: DiscountDetails = {
+    opensource: "Zulip Cloud Standard is free for open-source projects.",
+    research: "Zulip Cloud Standard is free for academic research.",
+    nonprofit: "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
+    event: "Zulip Cloud Standard is free for academic conferences and most non-profit events.",
+    education: "Zulip Cloud Standard is discounted 85% for education.",
+    education_nonprofit:
+        "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
+};
+
+const remote_discount_details: DiscountDetails = {
+    opensource: "The Community plan is free for open-source projects.",
+    research: "The Community plan is free for academic research.",
+    nonprofit:
+        "The Community plan is free for registered non-profits with up to 100 users. The Business plan is discounted 85+% with a purchase of 100+ licenses.",
+    event: "The Community plan is free for academic conferences and most non-profit events.",
+    education:
+        "The Community plan is free for education organizations with up to 100 users. The Business plan is discounted 85% with a purchase of 100+ licenses.",
+    education_nonprofit:
+        "The Community plan is free for education non-profits with up to 100 users. The Business plan is discounted 90% with online purchase of 100+ licenses.",
+};
+
 export function create_ajax_request(
     url: string,
     form_name: string,
@@ -98,22 +120,19 @@ export function format_money(cents: number): string {
     }).format(Number.parseFloat((cents / 100).toFixed(precision)));
 }
 
-export function update_discount_details(organization_type: string): void {
-    let discount_notice =
-        "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
-    const discount_details: DiscountDetails = {
-        opensource: "Zulip Cloud Standard is free for open-source projects.",
-        research: "Zulip Cloud Standard is free for academic research.",
-        nonprofit: "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
-        event: "Zulip Cloud Standard is free for academic conferences and most non-profit events.",
-        education: "Zulip Cloud Standard is discounted 85% for education.",
-        education_nonprofit:
-            "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
-    };
+export function update_discount_details(
+    organization_type: string,
+    is_remotely_hosted: boolean,
+): void {
+    let discount_notice = is_remotely_hosted
+        ? "Your organization may be eligible for a free Community plan, or a discounted Business plan."
+        : "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
 
     try {
         const parsed_organization_type = organization_type_schema.parse(organization_type);
-        discount_notice = discount_details[parsed_organization_type];
+        discount_notice = is_remotely_hosted
+            ? remote_discount_details[parsed_organization_type]
+            : cloud_discount_details[parsed_organization_type];
     } catch {
         // This will likely fail if organization_type is not in organization_type_schema or
         // parsed_organization_type is not preset in discount_details. In either case, we will
