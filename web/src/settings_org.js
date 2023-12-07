@@ -583,6 +583,21 @@ export function sync_realm_settings(property) {
         case "disallow_disposable_email_addresses":
             property = "org_join_restrictions";
             break;
+        case 'welcome_bot_custom_message_enabled':
+            if($('#welcome_bot_custom_message_enabled').length) {
+              // Checkbox exists in DOM
+      
+              if(page_params.welcome_bot_custom_message_enabled) {
+                // Checkbox should be checked
+                $('#welcome_bot_custom_message_enabled').prop('checked', true);
+      
+              } else {
+                // Make sure checkbox is unchecked  
+                $('#welcome_bot_custom_message_enabled').prop('checked', false);
+              }
+      
+            } 
+            break;
     }
     const $element = $(`#id_realm_${CSS.escape(property)}`);
     if ($element.length) {
@@ -595,6 +610,9 @@ export function save_organization_settings(data, $save_button, patch_url) {
     const $save_btn_container = $subsection_parent.find(".save-button-controls");
     const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
     settings_components.change_save_button_state($save_btn_container, "saving");
+    if($('#welcome_bot_custom_message_enabled').prop('checked')) {
+        data.welcome_bot_custom_message_enabled = true; 
+    }
     channel.patch({
         url: patch_url,
         data,
