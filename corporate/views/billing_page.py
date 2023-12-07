@@ -25,6 +25,7 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_int, check_int_in
 from zerver.models import UserProfile
+from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import RemoteRealm, RemoteZulipServer
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -130,7 +131,11 @@ def remote_realm_billing_page(
     ):
         return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
 
-    main_context = billing_session.get_billing_page_context()
+    try:
+        main_context = billing_session.get_billing_page_context()
+    except MissingDataError:
+        return billing_session.missing_data_error_page(request)
+
     if main_context:
         context.update(main_context)
         context["success_message"] = success_message
@@ -190,7 +195,11 @@ def remote_server_billing_page(
             )
         )
 
-    main_context = billing_session.get_billing_page_context()
+    try:
+        main_context = billing_session.get_billing_page_context()
+    except MissingDataError:
+        return billing_session.missing_data_error_page(request)
+
     if main_context:
         context.update(main_context)
         context["success_message"] = success_message
