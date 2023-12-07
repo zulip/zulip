@@ -479,6 +479,7 @@ html {
 
     .alert {
         &:not(
+                #server-login-error,
                 .alert-info,
                 .billing-page-success,
                 .upgrade-page-success,
@@ -923,6 +924,7 @@ button#register_auth_button_gitlab {
     }
 }
 
+#server-login-page-details,
 #upgrade-page-details,
 #billing-page-details,
 #sponsorship-form,
@@ -976,6 +978,7 @@ button#register_auth_button_gitlab {
             }
         }
 
+        &.server-login-form-field,
         &.upgrade-page-field,
         &.billing-page-field,
         &.support-form-field,
