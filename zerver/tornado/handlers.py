@@ -99,6 +99,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         self._request: Optional[HttpRequest] = None
 
     @override
+    def on_finish(self) -> None:
+        clear_handler_by_id(self.handler_id)
+
+    @override
     def __repr__(self) -> str:
         descriptor = get_descriptor_by_handler_id(self.handler_id)
         return f"AsyncDjangoHandler<{self.handler_id}, {descriptor}>"
@@ -184,10 +188,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
                 # For normal/synchronous requests that don't end up
                 # long-polling, we just need to write the HTTP
                 # response that Django prepared for us via Tornado.
-
-                # Mark this handler ID as finished for Zulip's own tracking.
-                clear_handler_by_id(self.handler_id)
-
                 assert isinstance(response, HttpResponse)
                 await self.write_django_response_as_tornado_response(response)
         finally:

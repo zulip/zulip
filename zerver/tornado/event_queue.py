@@ -48,12 +48,7 @@ from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.handlers import (
-    clear_handler_by_id,
-    finish_handler,
-    get_handler_by_id,
-    handler_stats_string,
-)
+from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -283,7 +278,6 @@ class ClientDescriptor:
     def disconnect_handler(self, client_closed: bool = False) -> None:
         if self.current_handler_id:
             clear_descriptor_by_handler_id(self.current_handler_id)
-            clear_handler_by_id(self.current_handler_id)
             if client_closed:
                 logging.info(
                     "Client disconnected for queue %s (%s via %s)",
