@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@8.10.2+sha256.487609e857f1c11780cc98dd0bfe4c8a8b11c7f23bc3a4493ac7d263d6fb6c8c",
+  "packageManager": "pnpm@8.11.0+sha256.5858806c3b292cbec89b5533662168a957358e2bbd86431516d441dc1aface89",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
@@ -124,7 +124,7 @@
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-no-jquery": "^2.7.0",
     "eslint-plugin-unicorn": "^49.0.0",
-    "jsdom": "^22.0.0",
+    "jsdom": "^23.0.1",
     "minimist": "^1.2.6",
     "mkdirp": "^3.0.1",
     "mockdate": "^3.0.2",
