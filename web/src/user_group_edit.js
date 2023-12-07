@@ -187,9 +187,8 @@ export function handle_member_edit_event(group_id, user_ids) {
     const group = user_groups.get_user_group_from_id(group_id);
 
     // update members list if currently rendered.
-    const members = [...group.members];
     if (is_editing_group(group_id)) {
-        user_group_edit_members.update_member_list_widget(group_id, members);
+        user_group_edit_members.update_member_list_widget(group);
         if (user_ids.includes(people.my_current_user_id())) {
             update_group_membership_button(group_id);
         }
