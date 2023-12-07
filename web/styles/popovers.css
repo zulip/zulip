@@ -312,6 +312,13 @@ ul {
     }
 
     &.topics_popover {
+        min-width: var(--popover-menu-min-width);
+        width: min-content;
+
+        .topic-menu-item {
+            white-space: nowrap;
+        }
+
         .topic-name {
             text-align: center;
             margin-top: 5px;
