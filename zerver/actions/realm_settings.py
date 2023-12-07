@@ -55,9 +55,10 @@ def do_set_realm_property(
     value to update and and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
-    assert isinstance(
-        value, property_type
-    ), f"Cannot update {name}: {value} is not an instance of {property_type}"
+    if property_type == bool:
+        assert isinstance(
+            value, property_type
+        ), f"Cannot update {name}: {value} is not an instance of {property_type}"
 
     old_value = getattr(realm, name)
     setattr(realm, name, value)
@@ -76,18 +77,10 @@ def do_set_realm_property(
         "edit_topic_policy",
         "message_content_edit_limit_seconds",
     ]
-    if name in message_edit_settings:
+    if name in message_edit_settings or name == "add_custom_welcome_message_for_new_users":
         event = dict(
             type="realm",
             op="update_dict",
-            property="default",
-            data={name: value},
-        )
-
-    if name == "add_custom_welcome_message_for_new_users":
-        event = dict(
-            type="realm",
-            op="update_dict", 
             property="default",
             data={name: value},
         )
@@ -540,7 +533,17 @@ def do_change_realm_plan_type(
 
 def update_custom_welcome_message(
     realm: Realm, checkbox_state: bool, message_text: str, acting_user: Optional[UserProfile]
-    ) -> None:
+) -> None:
+    
+    """
+    Update custom welcome message settings for a realm.
+
+    :param realm: The realm to update.
+    :param checkbox_state: The state of the checkbox setting.
+    :param message_text: The custom welcome message text.
+    :param acting_user: The user initiating the update.
+    """
+    
     # Update the new field in the Realm model
     realm.add_custom_welcome_message_for_new_users = checkbox_state
     realm.save(update_fields=['add_custom_welcome_message_for_new_users'])
@@ -557,6 +560,7 @@ def update_custom_welcome_message(
         data=event_data,
     )
     send_event(realm, event, active_user_ids(realm.id))
+
 
 
 def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:

@@ -90,6 +90,8 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
+from zerver.actions.realm_settings import update_custom_welcome_message
+
 
 
 class RestartEventError(Exception):
@@ -160,6 +162,12 @@ def fetch_initial_state_data(
     state["zulip_version"] = ZULIP_VERSION
     state["zulip_feature_level"] = API_FEATURE_LEVEL
     state["zulip_merge_base"] = ZULIP_MERGE_BASE
+
+    if want("realm_settings"):
+        # Add custom welcome message setting to realm_settings
+        state["realm_settings"] = {
+            "update_custom_welcome_message": realm.add_custom_welcome_message_for_new_users,
+        }
 
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
@@ -689,6 +697,23 @@ def fetch_initial_state_data(
     return state
 
 
+def handle_update_custom_welcome_message_event(
+    user_profile: UserProfile,
+    state: Dict[str, Any],
+    event: Dict[str, Any],
+) -> None:
+    # Extract relevant data from the event
+    checkbox_state = event.get("checkbox_state", False)
+    message_text = event.get("message_text", "")
+
+    # Update the server state based on the custom welcome message setting
+    update_custom_welcome_message(
+        user_profile.realm,
+        checkbox_state=checkbox_state,
+        message_text=message_text,
+        acting_user=user_profile,
+    )
+
 def apply_events(
     user_profile: UserProfile,
     *,
@@ -713,6 +738,9 @@ def apply_events(
             # `apply_event`.  For now, be careful in your choice of
             # `fetch_event_types`.
             continue
+        if event["type"] == "update_custom_welcome_message":
+            handle_update_custom_welcome_message_event(user_profile, state, event)
+
         apply_event(
             user_profile,
             state=state,
@@ -777,6 +805,9 @@ def apply_event(
             ):
                 stream_dict["first_message_id"] = event["message"]["id"]
 
+    elif event["type"] == "update_custom_welcome_message":
+        handle_update_custom_welcome_message_event(user_profile, state, event)
+    
     elif event["type"] == "heartbeat":
         # It may be impossible for a heartbeat event to actually reach
         # this code path. But in any case, they're noops.
