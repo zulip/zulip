@@ -10,12 +10,10 @@
         <ul class="nav nav-list member-list" data-simplebar data-simplebar-auto-hide="false">
             {{#each members}}
                 <li>
-                    {{#if is_active }}
-                        {{#if is_bot}}
-                        <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                        {{else}}
-                        <span class="user_circle {{user_circle_class}}  popover_user_presence" title="{{user_last_seen_time_status}}"></span>
-                        {{/if}}
+                    {{#if is_bot}}
+                    <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                    {{else}}
+                    <span class="user_circle {{user_circle_class}}  popover_user_presence" title="{{user_last_seen_time_status}}"></span>
                     {{/if}}
                     <span>{{full_name}}</span>
                 </li>
