@@ -51,8 +51,8 @@ export function update_favicon(new_message_count: number, pm_count: number): voi
             new_message_count === 0
                 ? ""
                 : pow < 5
-                ? `${Math.floor(new_message_count / 1e3 ** pow)}${suffix}`
-                : "∞";
+                  ? `${Math.floor(new_message_count / 1e3 ** pow)}${suffix}`
+                  : "∞";
         const count_long = count.length > 2;
         const rendered_favicon = render_favicon_svg({
             count,
