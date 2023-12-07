@@ -1,20 +1,22 @@
 import logging
-import urllib
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from urllib.parse import urljoin
 
 import orjson
 import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
-from pydantic import UUID4, BaseModel, ConfigDict
+from pydantic import UUID4, BaseModel, ConfigDict, Field, field_validator
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.export import floatify_datetime_fields
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.models import Realm, RealmAuditLog
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.types import RemoteRealmDictValue
+from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
 
 
 class PushBouncerSession(OutgoingSession):
@@ -36,11 +38,23 @@ class RealmDataForAnalytics(BaseModel):
     id: int
     host: str
     url: str
+    name: str = ""
+    org_type: int = 0
     date_created: float
     deactivated: bool
 
+    authentication_methods: Dict[str, bool] = Field(default_factory=dict)
+
     uuid: UUID4
     uuid_owner_secret: str
+
+    @field_validator("org_type")
+    @classmethod
+    def check_is_allowed_value(cls, value: int) -> int:
+        if value not in [org_type.value for org_type in OrgTypeEnum]:
+            raise ValueError("Not a valid org_type value")
+
+        return value
 
 
 class UserDataForRemoteBilling(BaseModel):
@@ -74,9 +88,7 @@ def send_to_push_bouncer(
     assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
     assert settings.ZULIP_ORG_ID is not None
     assert settings.ZULIP_ORG_KEY is not None
-    url = urllib.parse.urljoin(
-        settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint
-    )
+    url = urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint)
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
 
     headers = {"User-agent": f"ZulipServer/{ZULIP_VERSION}"}
@@ -214,6 +226,9 @@ def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[Rea
             url=realm.uri,
             deactivated=realm.deactivated,
             date_created=realm.date_created.timestamp(),
+            org_type=realm.org_type,
+            name=realm.name,
+            authentication_methods=realm.authentication_methods_dict(),
         )
         for realm in realms
     ]
@@ -230,27 +245,30 @@ def send_analytics_to_push_bouncer() -> None:
         logger.warning(e.msg, exc_info=True)
         return
 
+    # Gather only entries with IDs greater than the last ID received by the push bouncer.
+    # We don't re-send old data that's already been submitted.
     last_acked_realm_count_id = result["last_realm_count_id"]
     last_acked_installation_count_id = result["last_installation_count_id"]
     last_acked_realmauditlog_id = result["last_realmauditlog_id"]
 
-    # Gather only entries with IDs greater than the last ID received by the push bouncer.
-    # We don't re-send old data that's already been submitted.
-    (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
-        realm_count_query=RealmCount.objects.filter(id__gt=last_acked_realm_count_id),
-        installation_count_query=InstallationCount.objects.filter(
+    if settings.SUBMIT_USAGE_STATISTICS:
+        installation_count_query = InstallationCount.objects.filter(
             id__gt=last_acked_installation_count_id
-        ),
+        )
+        realm_count_query = RealmCount.objects.filter(id__gt=last_acked_realm_count_id)
+    else:
+        installation_count_query = InstallationCount.objects.none()
+        realm_count_query = RealmCount.objects.none()
+
+    (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
+        realm_count_query=realm_count_query,
+        installation_count_query=installation_count_query,
         realmauditlog_query=RealmAuditLog.objects.filter(
             event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS, id__gt=last_acked_realmauditlog_id
         ),
     )
 
     record_count = len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data)
-    if record_count == 0:
-        logger.info("No new records to report.")
-        return
-
     request = {
         "realm_counts": orjson.dumps(realm_count_data).decode(),
         "installation_counts": orjson.dumps(installation_count_data).decode(),
@@ -268,7 +286,7 @@ def send_analytics_to_push_bouncer() -> None:
     logger.info("Reported %d records", record_count)
 
 
-def send_realms_only_to_push_bouncer() -> None:
+def send_realms_only_to_push_bouncer() -> Dict[str, RemoteRealmDictValue]:
     request = {
         "realm_counts": "[]",
         "installation_counts": "[]",
@@ -280,4 +298,18 @@ def send_realms_only_to_push_bouncer() -> None:
 
     # We don't catch JsonableError here, because we want it to propagate further
     # to either explicitly, loudly fail or be error-handled by the caller.
-    send_to_push_bouncer("POST", "server/analytics", request)
+    response = send_to_push_bouncer("POST", "server/analytics", request)
+    assert isinstance(response["realms"], dict)  # for mypy
+
+    return response["realms"]
+
+
+def enqueue_register_realm_with_push_bouncer_if_needed(realm: Realm) -> None:
+    from zerver.lib.push_notifications import uses_notification_bouncer
+
+    if uses_notification_bouncer():
+        # Let the bouncer know about the new realm.
+        # We do this in a queue worker to avoid messing with the realm
+        # creation process due to network issues or latency.
+        event = {"type": "register_realm_with_push_bouncer", "realm_id": realm.id}
+        queue_json_publish("deferred_work", event)

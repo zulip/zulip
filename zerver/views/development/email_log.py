@@ -1,7 +1,7 @@
 import os
-import urllib
 from contextlib import suppress
 from typing import Optional
+from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -121,7 +121,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Verification for new email
     result = client.patch(
         "/json/settings",
-        urllib.parse.urlencode({"email": "hamlets-new@zulip.com"}),
+        urlencode({"email": "hamlets-new@zulip.com"}),
         content_type="application/x-www-form-urlencoded",
         HTTP_HOST=realm.host,
     )

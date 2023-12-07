@@ -1,9 +1,9 @@
 # Copyright: (c) 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 
 __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
-import datetime
 import secrets
 from base64 import b32encode
+from datetime import timedelta
 from typing import List, Mapping, Optional, Union
 from urllib.parse import urljoin
 
@@ -136,11 +136,9 @@ def create_confirmation_link(
             expiry_date = None
         else:
             assert validity_in_minutes is not None
-            expiry_date = current_time + datetime.timedelta(minutes=validity_in_minutes)
+            expiry_date = current_time + timedelta(minutes=validity_in_minutes)
     else:
-        expiry_date = current_time + datetime.timedelta(
-            days=_properties[confirmation_type].validity_in_days
-        )
+        expiry_date = current_time + timedelta(days=_properties[confirmation_type].validity_in_days)
 
     Confirmation.objects.create(
         content_object=obj,

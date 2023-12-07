@@ -581,8 +581,11 @@ ul {
         display: flex;
         justify-content: center;
         margin-bottom: 24px;
+        gap: 50px;
+        flex-wrap: wrap;
     }
 
+    .screen-5__badge-getapp img,
     .screen-5__badge-capterra img {
         opacity: 0.8;
         height: 128px;

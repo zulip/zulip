@@ -934,7 +934,6 @@ export function by_recipient(target_id, opts) {
     }
 }
 
-// Called by the narrow_to_compose_target hotkey.
 export function to_compose_target() {
     if (!compose_state.composing()) {
         return;
@@ -943,6 +942,8 @@ export function to_compose_target() {
     const opts = {
         trigger: "narrow_to_compose_target",
     };
+
+    compose_banner.clear_search_view_banner();
 
     if (compose_state.get_message_type() === "stream") {
         const stream_id = compose_state.stream_id();

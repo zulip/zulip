@@ -1,4 +1,8 @@
-.activity_head {
+.activity-page {
+    margin: 10px;
+}
+
+.activity-head {
     background-color: hsl(208deg 100% 97%);
 }
 
@@ -15,13 +19,13 @@
 }
 
 .summary-table,
-.analytics_table {
+.analytics-table {
     border: 1px solid hsl(0deg 0% 87%);
     border-collapse: separate;
     border-left: 0;
     border-radius: 4px;
     border-spacing: 0;
-    width: 100%;
+    margin: 0 10px;
 
     & th,
     td {
@@ -36,6 +40,7 @@
     th {
         vertical-align: bottom;
         padding: 8px;
+        max-width: fit-content;
     }
 
     td {
@@ -69,11 +74,6 @@
     }
 }
 
-.summary-table {
-    width: auto;
-    margin: 0 auto;
-}
-
 tr.admin td:first-child {
     font-weight: bold;
     color: hsl(240deg 100% 50%);
@@ -85,6 +85,7 @@ tr.admin td:first-child {
     color: hsl(120deg 100% 33%);
 }
 
+.current-plan-data-missing,
 .bad {
     font-weight: bold;
     color: hsl(0deg 100% 39%);
@@ -96,6 +97,7 @@ tr.admin td:first-child {
     padding-top: 14px;
     border-radius: 7px;
     box-shadow: 0 10px 7px -6px hsl(0deg 2% 45%);
+    margin-bottom: 10px;
 
     & select {
         height: 30px;
@@ -151,6 +153,15 @@ tr.admin td:first-child {
     }
 }
 
+.remote-server-information,
+.remote-realm-information {
+    padding-bottom: 15px;
+}
+
+.remote-server-form {
+    margin-bottom: 10px;
+}
+
 .support-realm-icon {
     max-width: 25px;
     position: relative;
@@ -179,7 +190,7 @@ tr.admin td:first-child {
 
 .current-plan-details {
     position: relative;
-    top: -15px;
+    top: -45px;
 }
 
 .approve-sponsorship-form {
@@ -187,7 +198,7 @@ tr.admin td:first-child {
     top: -40px;
 }
 
-.billing-method-form {
+.billing-modality-form {
     position: relative;
     top: -30px;
 }

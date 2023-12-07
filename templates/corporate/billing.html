@@ -6,19 +6,28 @@
 {% endblock %}
 
 {% block portico_content %}
-<div id="billing-page" class="register-account flex full-page">
+<div id="billing-page" class="register-account flex full-page" data-billing-base-url="{{ billing_base_url }}">
     <div class="center-block new-style">
         {% if admin_access and has_active_plan %}
         {% if is_sponsorship_pending %}
         <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
-            This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            This organization has requested sponsorship for a <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
         </div>
         {% endif %}
         {% if success_message %}
-        <div class="alert alert-success billing-page-success" id="billing-success-message-top">{{ success_message }}</div>
+        <div class="alert alert-success billing-page-success" id="billing-success-message-top">
+            {{ success_message.replace("PLAN_NAME", plan_name) }}
+        </div>
         {% endif %}
         <div class="pitch">
-            <h1>Zulip Cloud billing for {{ org_name }}</h1>
+            <h1>
+                Zulip
+                {% if is_self_hosted_billing %}
+                {% else %}
+                Cloud
+                {% endif %}
+                billing for {{ org_name }}
+            </h1>
         </div>
         <div class="alert alert-danger" id="error-message-box"></div>
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -27,13 +36,22 @@
                 <div class="input-box billing-page-field no-validation">
                     <label for="org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="org-current-plan" class="not-editable-realm-field">
-                        {% if free_trial %}
+                        {% if free_trial or downgrade_at_end_of_free_trial %}
                         {{ plan_name }} <i>(free trial)</i>
+                        {% elif is_server_on_legacy_plan %}
+                        {{ plan_name }} <i>(legacy plan)</i>
                         {% else %}
                         {{ plan_name }}
                         {% endif %}
                     </div>
                 </div>
+                {% if is_server_on_legacy_plan %}
+                <div class="input-box billing-page-field no-validation">
+                    <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
+                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}</i>
+                    </div>
+                </div>
+                {% endif %}
                 <div class="input-box billing-page-field no-validation org-billing-frequency-wrapper"
                   data-current-billing-frequency="{{ billing_frequency }}"
                   {%if free_trial %}data-free-trial="true"{% endif %}
@@ -41,7 +59,7 @@
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
                     <label for="org-billing-frequency">Billing frequency</label>
-                    {% if free_trial or downgrade_at_end_of_cycle %}
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan %}
                     <div class="not-editable-realm-field">
                         {{ billing_frequency }}
                     </div>
@@ -148,10 +166,18 @@
                             {% if downgrade_at_end_of_cycle %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                             period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
-                            <a href="/plans/">other features</a> of your current plan.
+                            <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
+                            {% elif downgrade_at_end_of_free_trial %}
+                            Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the free trial
+                            (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
+                            <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
                             {% else %}
                             {% if charge_automatically %}
+                            {% if is_server_on_legacy_plan %}
+                            Your plan will automatically upgrade to {{ legacy_remote_server_new_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+                            {% else %}
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
+                            {% endif %}
                             {% else %}
                             Your next invoice is due on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
@@ -170,7 +196,6 @@
                                 <br />
                                 <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
                                 {% endif %}
-
                             {% endif %}
                             {% endif %}
                         {% else %}
@@ -186,17 +211,30 @@
                 </div>
                 <div id="planchange-error" class="alert alert-danger"></div>
                 <div id="planchange-input-section">
-                    {% if free_trial %}
+                    {% if free_trial and not downgrade_at_end_of_free_trial %}
                         <div class="end-free-trial plan-toggle-action input-box billing-page-field no-validation" id="end-free-trial">
                             <button class="end-free-trial-button plan-toggle-action-button">
-                                <span class="billing-button-text">End free trial</span>
+                                <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
-                    {% elif downgrade_at_end_of_cycle %}
+                    {% elif downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial %}
                         <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
                             <button class="reactivate-current-plan-button plan-toggle-action-button">
-                                <span class="billing-button-text">Reactivate subscription</span>
+                                <span class="billing-button-text">
+                                    {% if downgrade_at_end_of_free_trial %}
+                                    Cancel downgrade
+                                    {% else %}
+                                    Reactivate subscription
+                                    {% endif %}
+                                </span>
+                                <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                            </button>
+                        </div>
+                    {% elif is_server_on_legacy_plan %}
+                        <div class="plan-toggle-action input-box billing-page-field no-validation" id="cancel-legacy-server-upgrade">
+                            <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
+                                <span class="billing-button-text">Cancel upgrade</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
@@ -211,7 +249,9 @@
                 </div>
                 <form id="planchange-form">
                     {% if free_trial %}
-                    <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
+                    <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL }}" />
+                    {% elif downgrade_at_end_of_free_trial %}
+                    <input name="status" type="hidden" value="{{ CustomerPlan.FREE_TRIAL }}" />
                     {% elif downgrade_at_end_of_cycle %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
                     {% else %}
@@ -247,19 +287,22 @@
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
                 <h1 class="modal__title dialog_heading">
-                    Confirm end free trial
+                    Downgrade {{ org_name }} to Zulip Cloud Free?
                 </h1>
                 <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
                 <p>
-                    Are you sure you want to end free trial and downgrade plan to <strong>Zulip Free</strong>?
+                    Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of your free trial
+                    ({{ renewal_date }}). You will lose access to unlimited search history and
+                    <a href="{{ billing_base_url }}/plans/">other features</a>
+                    of your current plan. Are you sure you want to continue?
                 </p>
             </main>
             <footer class="modal__footer">
                 <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
                 <button class="modal__btn dialog_submit_button">
-                    <span>{{ _('Confirm') }}</span>
+                    <span>{{ _('Downgrade') }}</span>
                 </button>
             </footer>
         </div>
@@ -336,7 +379,7 @@
                 <p>
                     Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                     period ({{ renewal_date }}). You will lose access to unlimited search history and
-                    <a href="/plans/">other features</a>
+                    <a href="{{ billing_base_url }}/plans/">other features</a>
                     of your current plan. Are you sure you want to continue?
                 </p>
             </main>

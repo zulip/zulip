@@ -6,8 +6,8 @@ import render_hotspot_icon from "../templates/hotspot_icon.hbs";
 import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
 
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as message_viewport from "./message_viewport";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 
@@ -25,25 +25,25 @@ const HOTSPOT_LOCATIONS = new Map([
     [
         "intro_streams",
         {
-            element: "#streams_header .left-sidebar-title",
-            offset_x: 1.35,
-            offset_y: 0.39,
+            element: "#streams_header .left-sidebar-title .streams-tooltip-target",
+            offset_x: 1.3,
+            offset_y: 0.44,
         },
     ],
     [
         "intro_topics",
         {
             element: ".topic-name",
-            offset_x: 0.8,
-            offset_y: 0.39,
+            offset_x: 1,
+            offset_y: 0.4,
         },
     ],
     [
         "intro_gear",
         {
-            element: "#settings-dropdown",
-            offset_x: -0.4,
-            offset_y: 1.2,
+            element: "#personal-menu",
+            offset_x: 0.45,
+            offset_y: 1.15,
             popover: LEFT_BOTTOM,
         },
     ],
@@ -51,8 +51,8 @@ const HOTSPOT_LOCATIONS = new Map([
         "intro_compose",
         {
             element: "#new_conversation_button",
-            offset_x: 0,
-            offset_y: 0,
+            offset_x: 0.5,
+            offset_y: -0.7,
         },
     ],
 ]);
@@ -104,19 +104,7 @@ function compute_placement($elt, popover_height, popover_width, prefer_vertical_
 }
 
 export function post_hotspot_as_read(hotspot_name) {
-    channel.post({
-        url: "/json/users/me/hotspots",
-        data: {hotspot: hotspot_name},
-        error(err) {
-            if (err.readyState !== 0) {
-                blueslip.error("Failed to fetch hotspots", {
-                    readyState: err.readyState,
-                    status: err.status,
-                    body: err.responseText,
-                });
-            }
-        },
-    });
+    onboarding_steps.post_onboarding_step_as_read(hotspot_name);
 }
 
 function place_icon(hotspot) {
@@ -348,7 +336,7 @@ export function load_new(new_hotspots) {
 }
 
 export function initialize() {
-    load_new(page_params.hotspots);
+    load_new(onboarding_steps.filter_new_hotspots(page_params.onboarding_steps));
 
     // open
     $("body").on("click", ".hotspot-icon", function (e) {

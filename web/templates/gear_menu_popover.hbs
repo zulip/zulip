@@ -50,6 +50,17 @@
                     {{/unless}}
                     {{/if}}
                 {{/if}}
+
+                {{#if (and is_development_environment show_remote_billing) }}
+                {{! This is only shown in development environment until the UI is ready. Added to help test the flow directly from gear menu.}}
+                {{! TODO: Add these above with proper conditions once the UI is ready. }}
+                <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                    <a href="/self-hosted-billing/?next_page=sponsorship" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Request sponsorship" }}</a>
+                </li>
+                <li class="org-upgrade navbar-dropdown-menu-inner-list-item">
+                    <a href="/self-hosted-billing/?next_page=upgrade" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">{{t "Upgrade" }}</a>
+                </li>
+                {{/if}}
             </ul>
         </li>
         <li class="navbar-dropdown-menu-outer-list-item">
@@ -143,6 +154,7 @@
                 {{/if}}
             </ul>
         </li>
+        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator show_webathena)}}
         <li class="navbar-dropdown-menu-outer-list-item">
             <ul class="navbar-dropdown-menu-inner-list">
                 {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
@@ -161,10 +173,11 @@
                 {{/if}}
                 <li class="link-item navbar-dropdown-menu-inner-list-item only-visible-for-spectators">
                     <a href="{{login_link}}" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-power" aria-hidden="true"></i> {{t 'Log in' }}
+                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-log-in" aria-hidden="true"></i> {{t 'Log in' }}
                     </a>
                 </li>
             </ul>
         </li>
+        {{/if}}
     </ul>
 </div>

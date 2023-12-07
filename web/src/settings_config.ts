@@ -771,6 +771,7 @@ type NotificationSettingCheckbox = {
     setting_name: string;
     is_disabled: boolean;
     is_checked: boolean;
+    is_mobile_checkbox: boolean;
 };
 
 export function get_notifications_table_row_data(
@@ -784,6 +785,7 @@ export function get_notifications_table_row_data(
                 setting_name: "",
                 is_disabled: true,
                 is_checked: false,
+                is_mobile_checkbox: false,
             };
         }
 
@@ -796,9 +798,11 @@ export function get_notifications_table_row_data(
             setting_name,
             is_disabled: false,
             is_checked: checked,
+            is_mobile_checkbox: false,
         };
         if (column === "mobile") {
             checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+            checkbox.is_mobile_checkbox = true;
         }
         return checkbox;
     });

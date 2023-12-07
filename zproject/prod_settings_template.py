@@ -101,6 +101,13 @@ EXTERNAL_HOST = "zulip.example.com"
 ## confirmation emails when ADD_TOKENS_TO_NOREPLY_ADDRESS=False.
 # NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
+## Emails sent by the Zulip server will use a sender name starting
+## with INSTALLATION_NAME. The default is EXTERNAL_HOST. If INSTALLATION_NAME is
+## "zulip.example.com", email senders names will include:
+## * "zulip.example.com notifications" (message notification emails).
+## * "zulip.example.com account security" (account security emails).
+# INSTALLATION_NAME = "My Zulip Server"
+
 ## Many countries and bulk mailers require certain types of email to display
 ## a physical mailing address to comply with anti-spam legislation.
 ## Non-commercial and non-public-facing installations are unlikely to need

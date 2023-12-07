@@ -404,11 +404,11 @@ webpack: bundle is now VALID.
 ```
 
 Now the Zulip server should be running and accessible. Verify this by
-navigating to <http://localhost:9991/> in the browser on your main machine.
+navigating to <http://localhost:9991/devlogin> in the browser on your main machine.
 
 You should see something like this:
 
-![Image of Zulip development environment](../images/zulip-dev.png)
+![Image of Zulip devlogin](../images/zulip-devlogin.png)
 
 The Zulip server will continue to run and send output to the terminal window.
 When you navigate to Zulip in your browser, check your terminal and you

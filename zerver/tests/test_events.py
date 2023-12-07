@@ -5,8 +5,8 @@
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
-import datetime
 import time
+from datetime import timedelta
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
 from unittest import mock
@@ -43,7 +43,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
-from zerver.actions.hotspots import do_mark_hotspot_as_read
+from zerver.actions.hotspots import do_mark_onboarding_step_as_read
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -76,6 +76,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
     do_deactivate_realm,
+    do_set_push_notifications_enabled_end_timestamp,
     do_set_realm_authentication_methods,
     do_set_realm_notifications_stream,
     do_set_realm_property,
@@ -144,11 +145,11 @@ from zerver.lib.event_schema import (
     check_draft_update,
     check_has_zoom_token,
     check_heartbeat,
-    check_hotspots,
     check_invites_changed,
     check_message,
     check_muted_topics,
     check_muted_users,
+    check_onboarding_steps,
     check_presence,
     check_reaction_add,
     check_reaction_remove,
@@ -216,7 +217,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
-from zerver.lib.timestamp import convert_to_UTC
+from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.models import (
@@ -286,6 +287,7 @@ class BaseAction(ZulipTestCase):
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = True,
+        user_list_incomplete: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -315,6 +317,7 @@ class BaseAction(ZulipTestCase):
                 user_settings_object=user_settings_object,
                 pronouns_field_type_supported=pronouns_field_type_supported,
                 linkifier_url_template=linkifier_url_template,
+                user_list_incomplete=user_list_incomplete,
             )
         )
 
@@ -330,6 +333,7 @@ class BaseAction(ZulipTestCase):
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
         # We want even those `send_event` calls which have been hooked to
@@ -361,6 +365,7 @@ class BaseAction(ZulipTestCase):
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
@@ -388,6 +393,7 @@ class BaseAction(ZulipTestCase):
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -1453,7 +1459,7 @@ class NormalActionsTest(BaseAction):
 
     def test_presence_events_multiple_clients(self) -> None:
         now = timezone_now()
-        initial_presence = now - datetime.timedelta(days=365)
+        initial_presence = now - timedelta(days=365)
         UserPresence.objects.create(
             user_profile=self.user_profile,
             realm=self.user_profile.realm,
@@ -1489,7 +1495,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_presence(
                 self.user_profile,
                 get_client("ZulipAndroid/1.0"),
-                timezone_now() + datetime.timedelta(seconds=301),
+                timezone_now() + timedelta(seconds=301),
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
         )
@@ -1561,6 +1567,15 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
 
+        events = self.verify_action(
+            lambda: self.register("alice@zulip.com", "alice"),
+            num_events=2,
+            user_list_incomplete=True,
+        )
+
+        check_user_group_add_members("events[0]", events[0])
+        check_user_group_add_members("events[1]", events[1])
+
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
         check_alert_words("events[0]", events[0])
@@ -1578,7 +1593,7 @@ class NormalActionsTest(BaseAction):
         # event status for a typical user requires settings the user's date_joined
         # further into the past. See test_change_presence_enabled for more details,
         # since it tests that codepath directly.
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.date_joined = timezone_now() - timedelta(days=15)
         self.user_profile.save()
 
         # Set all
@@ -1688,7 +1703,7 @@ class NormalActionsTest(BaseAction):
 
         # Set the date_joined for cordelia here like we did at
         # the start of this test.
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=15)
+        cordelia.date_joined = timezone_now() - timedelta(days=15)
         cordelia.save()
 
         away_val = False
@@ -2499,7 +2514,7 @@ class NormalActionsTest(BaseAction):
         # for backwards compatibility when dealing with a None value. Thus for this test to properly
         # check that the presence event emitted will have "idle" status, we need to simulate
         # the (more realistic) scenario where date_joined is further in the past and not super recent.
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.date_joined = timezone_now() - timedelta(days=15)
         self.user_profile.save()
 
         for val in [True, False]:
@@ -2627,6 +2642,10 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
+        members_group = UserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
 
         state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_SELF_HOSTED)
@@ -2636,10 +2655,11 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_realm_plan_type(
                 realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile
             ),
-            num_events=2,
+            num_events=3,
         )
         check_realm_update("events[0]", events[0], "enable_spectator_access")
-        check_realm_update("events[1]", events[1], "plan_type")
+        check_realm_update_dict("events[1]", events[1])
+        check_realm_update("events[2]", events[2], "plan_type")
 
         state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)
@@ -3028,14 +3048,14 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, state_change_expected=False)
         check_realm_deactivated("events[0]", events[0])
 
-    def test_do_mark_hotspot_as_read(self) -> None:
+    def test_do_mark_onboarding_step_as_read(self) -> None:
         self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
         self.user_profile.save(update_fields=["tutorial_status"])
 
         events = self.verify_action(
-            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_streams")
+            lambda: do_mark_onboarding_step_as_read(self.user_profile, "intro_streams")
         )
-        check_hotspots("events[0]", events[0])
+        check_onboarding_steps("events[0]", events[0])
 
     def test_rename_stream(self) -> None:
         for i, include_streams in enumerate([True, False]):
@@ -3660,6 +3680,58 @@ class RealmPropertyActionTest(BaseAction):
                 continue
             self.do_set_realm_user_default_setting_test(prop)
 
+    def test_do_set_push_notifications_enabled_end_timestamp(self) -> None:
+        realm = self.user_profile.realm
+
+        # Default value of 'push_notifications_enabled_end_timestamp' is None.
+        # Verify that no event is sent when the new value is the same as existing value.
+        new_timestamp = None
+        self.verify_action(
+            lambda: do_set_push_notifications_enabled_end_timestamp(
+                realm=realm,
+                value=new_timestamp,
+                acting_user=None,
+            ),
+            state_change_expected=False,
+            num_events=0,
+        )
+
+        old_datetime = timezone_now() - timedelta(days=3)
+        old_timestamp = datetime_to_timestamp(old_datetime)
+        now = timezone_now()
+        timestamp_now = datetime_to_timestamp(now)
+
+        realm.push_notifications_enabled_end_timestamp = old_datetime
+        realm.save(update_fields=["push_notifications_enabled_end_timestamp"])
+
+        event = self.verify_action(
+            lambda: do_set_push_notifications_enabled_end_timestamp(
+                realm=realm,
+                value=timestamp_now,
+                acting_user=None,
+            ),
+            state_change_expected=True,
+            num_events=1,
+        )[0]
+        self.assertEqual(event["type"], "realm")
+        self.assertEqual(event["op"], "update")
+        self.assertEqual(event["property"], "push_notifications_enabled_end_timestamp")
+        self.assertEqual(event["value"], timestamp_now)
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                acting_user=None,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_timestamp,
+                    RealmAuditLog.NEW_VALUE: timestamp_now,
+                    "property": "push_notifications_enabled_end_timestamp",
+                },
+            ).count(),
+            1,
+        )
+
 
 class UserDisplayActionTest(BaseAction):
     def do_change_user_settings_test(self, setting_name: str) -> None:
@@ -4171,6 +4243,18 @@ class SubscribeActionTest(BaseAction):
         check_realm_user_remove("events[1]", events[1])
         self.assertEqual(events[1]["person"]["user_id"], othello.id)
 
+        # Check the state change works correctly when user_list_complete
+        # is set to True.
+        self.subscribe(othello, "test_stream1")
+        unsubscribe_action = lambda: bulk_remove_subscriptions(
+            realm, [othello], [stream], acting_user=None
+        )
+        events = self.verify_action(unsubscribe_action, num_events=2, user_list_incomplete=True)
+        check_subscription_peer_remove("events[0]", events[0])
+        self.assertEqual(set(events[0]["user_ids"]), {othello.id})
+        check_realm_user_remove("events[1]", events[1])
+        self.assertEqual(events[1]["person"]["user_id"], othello.id)
+
     def test_user_access_events_on_changing_subscriptions_for_guests(self) -> None:
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
@@ -4191,6 +4275,19 @@ class SubscribeActionTest(BaseAction):
             realm, [polonius, self.example_user("iago")], [stream], acting_user=None
         )
         events = self.verify_action(unsubscribe_action, num_events=3)
+        check_subscription_remove("events[0]", events[0])
+        check_stream_delete("events[1]", events[1])
+        check_realm_user_remove("events[2]", events[2])
+        self.assertEqual(events[2]["person"]["user_id"], othello.id)
+
+        # Check the state change works correctly when user_list_complete
+        # is set to True.
+        stream = self.subscribe(self.example_user("othello"), "new_stream")
+        self.subscribe(polonius, "new_stream")
+        unsubscribe_action = lambda: bulk_remove_subscriptions(
+            realm, [polonius], [stream], acting_user=None
+        )
+        events = self.verify_action(unsubscribe_action, num_events=3, user_list_incomplete=True)
         check_subscription_remove("events[0]", events[0])
         check_stream_delete("events[1]", events[1])
         check_realm_user_remove("events[2]", events[2])

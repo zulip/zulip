@@ -1040,7 +1040,13 @@ export function save_message_row_edit($row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
-            hide_message_edit_spinner($row);
+            // Ordinarily, in a code path like this, we'd make
+            // a call to `hide_message_edit_spinner()`. But in
+            // this instance, we want to avoid a momentary flash
+            // of the Save button text before the edited message
+            // re-renders. Note that any subsequent editing will
+            // create a fresh Save button, without the spinner
+            // class attached.
         },
         error(xhr) {
             if (msg_list === message_lists.current) {

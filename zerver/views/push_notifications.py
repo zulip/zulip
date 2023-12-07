@@ -28,6 +28,7 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_string
 from zerver.models import PushDeviceToken, UserProfile
 
@@ -117,7 +118,12 @@ def send_test_push_notification_api(
 
 
 @zulip_login_required
-def self_hosting_auth_redirect(request: HttpRequest) -> HttpResponse:  # nocoverage
+@typed_endpoint
+def self_hosting_auth_redirect(
+    request: HttpRequest,
+    *,
+    next_page: Optional[str] = None,
+) -> HttpResponse:  # nocoverage
     if not settings.DEVELOPMENT or not uses_notification_bouncer():
         return render(request, "404.html", status=404)
 
@@ -142,7 +148,15 @@ def self_hosting_auth_redirect(request: HttpRequest) -> HttpResponse:  # nocover
     post_data = {
         "user": user_info.model_dump_json(),
         "realm": realm_info.model_dump_json(),
+        # The uri_scheme is necessary for the bouncer to know the correct URL
+        # to redirect the user to for re-authing in case the session expires.
+        # Otherwise, the bouncer would know only the realm.host but be missing
+        # the knowledge of whether to use http or https.
+        "uri_scheme": settings.EXTERNAL_URI_SCHEME,
     }
+    if next_page is not None:
+        post_data["next_page"] = next_page
+
     try:
         result = send_to_push_bouncer("POST", "server/billing", post_data)
     except MissingRemoteRealmError:

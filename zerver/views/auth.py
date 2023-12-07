@@ -1,9 +1,8 @@
 import logging
 import secrets
-import urllib
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, cast
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 import jwt
 import orjson
@@ -57,7 +56,7 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
-from zerver.lib.push_notifications import push_notifications_enabled
+from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -115,7 +114,7 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
         # Mark as safe to prevent Pysa from surfacing false positives for
         # open redirects. In this branch, we have already checked that the URL
         # points to the specified 'redirect_host', or is relative.
-        return urllib.parse.urljoin(redirect_host, mark_sanitized(url))
+        return urljoin(redirect_host, mark_sanitized(url))
     else:
         return redirect_host
 
@@ -478,7 +477,7 @@ def create_response_for_otp_flow(
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)
-    response["Location"] = append_url_query_string("zulip://login", urllib.parse.urlencode(params))
+    response["Location"] = append_url_query_string("zulip://login", urlencode(params))
 
     return response
 
@@ -628,7 +627,7 @@ def oauth_redirect_to_root(
 
     params = {**params, **extra_url_params}
 
-    return redirect(append_url_query_string(main_site_url, urllib.parse.urlencode(params)))
+    return redirect(append_url_query_string(main_site_url, urlencode(params)))
 
 
 def handle_desktop_flow(
@@ -1109,7 +1108,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         zulip_version=ZULIP_VERSION,
         zulip_merge_base=ZULIP_MERGE_BASE,
         zulip_feature_level=API_FEATURE_LEVEL,
-        push_notifications_enabled=push_notifications_enabled(),
+        push_notifications_enabled=push_notifications_configured(),
         is_incompatible=check_server_incompatibility(request),
     )
     context = zulip_default_context(request)

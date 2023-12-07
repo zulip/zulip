@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
@@ -22,5 +22,5 @@ in a while.
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
-        cutoff = timezone_now() - datetime.timedelta(days=DIGEST_CUTOFF)
+        cutoff = timezone_now() - timedelta(days=DIGEST_CUTOFF)
         enqueue_emails(cutoff)

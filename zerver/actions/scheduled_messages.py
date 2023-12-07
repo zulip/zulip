@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime, timedelta
 from typing import List, Optional, Sequence, Tuple
 
 from django.conf import settings
@@ -41,7 +41,7 @@ def check_schedule_message(
     message_to: List[int],
     topic_name: Optional[str],
     message_content: str,
-    deliver_at: datetime.datetime,
+    deliver_at: datetime,
     realm: Optional[Realm] = None,
     forwarder_user_profile: Optional[UserProfile] = None,
 ) -> int:
@@ -125,7 +125,7 @@ def edit_scheduled_message(
     message_to: Optional[str],
     topic_name: Optional[str],
     message_content: Optional[str],
-    deliver_at: Optional[datetime.datetime],
+    deliver_at: Optional[datetime],
     realm: Realm,
 ) -> None:
     with transaction.atomic():
@@ -269,7 +269,7 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
         raise UserDeactivatedError
 
     # Limit how late we're willing to send a scheduled message.
-    latest_send_time = scheduled_message.scheduled_timestamp + datetime.timedelta(
+    latest_send_time = scheduled_message.scheduled_timestamp + timedelta(
         minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES
     )
     if timezone_now() > latest_send_time:

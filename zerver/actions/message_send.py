@@ -1,7 +1,7 @@
-import datetime
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
     AbstractSet,
@@ -818,7 +818,7 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     if not user_ids:
         return []
 
-    recent = timezone_now() - datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
+    recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
     rows = UserPresence.objects.filter(
         user_profile_id__in=user_ids,
         last_active_time__gte=recent,
@@ -1174,9 +1174,9 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         # For huddle messages, we use a 10-second window because the
         # timestamps aren't guaranteed to actually match between two
         # copies of the same message.
-        time_window = datetime.timedelta(seconds=10)
+        time_window = timedelta(seconds=10)
     else:
-        time_window = datetime.timedelta(seconds=0)
+        time_window = timedelta(seconds=0)
 
     messages = Message.objects.filter(
         # Uses index: zerver_message_realm_recipient_subject
@@ -1370,7 +1370,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
     # direct messages on a misconfigured integration, re-using the
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
-    waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
+    waitperiod = timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
     if last_reminder and timezone_now() - last_reminder <= waitperiod:
         return
 

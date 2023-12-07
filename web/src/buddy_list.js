@@ -309,7 +309,7 @@ export class BuddyList extends BuddyListConf {
         padded_widget.update_padding({
             shown_rows: this.render_count,
             total_rows: this.all_user_ids.length,
-            content_sel: this.container_selector,
+            content_selector: this.container_selector,
             padding_selector: this.padding_selector,
         });
     }

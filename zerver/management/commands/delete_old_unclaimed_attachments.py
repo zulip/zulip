@@ -1,5 +1,5 @@
-import datetime
 from argparse import ArgumentParser
+from datetime import timedelta
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
@@ -70,7 +70,7 @@ class Command(BaseCommand):
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
     def clean_attachment_upload_backend(self, dry_run: bool = True) -> None:
-        cutoff = timezone_now() - datetime.timedelta(minutes=5)
+        cutoff = timezone_now() - timedelta(minutes=5)
         print(f"Removing extra files in storage black-end older than {cutoff.isoformat()}")
         to_delete = []
         for path_id, modified_at in all_message_attachments():

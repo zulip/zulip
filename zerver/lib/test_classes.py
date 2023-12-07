@@ -4,7 +4,6 @@ import re
 import shutil
 import subprocess
 import tempfile
-import urllib
 from contextlib import contextmanager
 from datetime import timedelta
 from typing import (
@@ -25,6 +24,7 @@ from typing import (
     cast,
 )
 from unittest import TestResult, mock, skipUnless
+from urllib.parse import parse_qs, quote, urlencode
 
 import lxml.html
 import orjson
@@ -278,7 +278,7 @@ Output:
         url_split = url.split("?")
         data = {}
         if len(url_split) == 2:
-            data = urllib.parse.parse_qs(url_split[1])
+            data = parse_qs(url_split[1])
         url = url_split[0]
         url = url.replace("/json/", "/").replace("/api/v1/", "/")
         return (url, data)
@@ -342,7 +342,7 @@ Output:
         """
         We need to urlencode, since Django's function won't do it for us.
         """
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -434,7 +434,7 @@ Output:
         headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -477,7 +477,7 @@ Output:
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -807,9 +807,7 @@ Output:
     def register(self, email: str, password: str, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
         response = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response["Location"], f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-        )
+        self.assertEqual(response["Location"], f"/accounts/send_confirm/?email={quote(email)}")
         response = self.submit_reg_form_for_user(email, password, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], f"http://{Realm.host_for_subdomain(subdomain)}/")
@@ -1709,7 +1707,7 @@ Output:
 
         def set_age(user_name: str, age: int) -> None:
             user = self.example_user(user_name)
-            user.date_joined = timezone_now() - timedelta(age)
+            user.date_joined = timezone_now() - timedelta(days=age)
             user.save()
 
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
@@ -1796,7 +1794,7 @@ Output:
             automanage_licenses=False,
             billing_cycle_anchor=timezone_now(),
             billing_schedule=billing_schedule,
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         ledger = LicenseLedger.objects.create(
             plan=plan,
@@ -1813,7 +1811,7 @@ Output:
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int
     ) -> Tuple[CustomerPlan, LicenseLedger]:
         return self.subscribe_realm_to_manual_license_management_plan(
-            realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
+            realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
 
     def create_user_notifications_data_object(
@@ -2385,14 +2383,14 @@ def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: st
 class BouncerTestCase(ZulipTestCase):
     @override
     def setUp(self) -> None:
+        # Set a deterministic uuid and a nice hostname for convenience.
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-        self.server = RemoteZulipServer(
-            uuid=self.server_uuid,
-            api_key="magic_secret_api_key",
-            hostname="demo.example.com",
-            last_updated=timezone_now(),
-        )
+        self.server = RemoteZulipServer.objects.all().latest("id")
+
+        self.server.uuid = self.server_uuid
+        self.server.hostname = "demo.example.com"
         self.server.save()
+
         super().setUp()
 
     @override
@@ -2408,7 +2406,7 @@ class BouncerTestCase(ZulipTestCase):
             kwargs = dict(content_type="application/json")
         else:
             assert isinstance(request.body, str) or request.body is None
-            params: Dict[str, List[str]] = urllib.parse.parse_qs(request.body)
+            params: Dict[str, List[str]] = parse_qs(request.body)
             # In Python 3, the values of the dict from `parse_qs` are
             # in a list, because there might be multiple values.
             # But since we are sending values with no same keys, hence

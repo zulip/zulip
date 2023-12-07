@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import List
 
 from django.utils.timezone import now as timezone_now
@@ -38,7 +38,7 @@ class MissedMessageTest(ZulipTestCase):
             self.assertEqual(sorted(user_ids), sorted(presence_idle_user_ids))
 
         def set_presence(user: UserProfile, client_name: str, ago: int) -> None:
-            when = timezone_now() - datetime.timedelta(seconds=ago)
+            when = timezone_now() - timedelta(seconds=ago)
             UserPresence.objects.update_or_create(
                 user_profile_id=user.id,
                 defaults=dict(

@@ -9,11 +9,11 @@
 <div id="upgrade-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Upgrade {{ customer_name }} to
+            <h1>
                 {% if free_trial_days %}
-                    Zulip Cloud Standard free trial
+                Start free trial of {{ plan }}
                 {% else %}
-                    {{ plan }}
+                Upgrade {{ customer_name }} to {{ plan }}
                 {% endif %}
             </h1>
         </div>
@@ -28,13 +28,10 @@
 
                     <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if free_trial_days %}
-                        <div id="free-trial-alert-message" class="alert alert-info">
-                            Upgrade now to start your {{ free_trial_days }} day free trial
-                            of Zulip Cloud Standard!
-                        </div>
                         <div class="not-editable-realm-field">
-                            You won't be charged during the free trial. You can also downgrade to
-                            Zulip Cloud Free, our forever free plan, at any time.
+                            Add a credit card to start your <b>{{ free_trial_days }}-day free trial</b> of
+                            {{ plan }}. Your card will not be charged if you
+                            cancel in the first {{ free_trial_days }} days.
                         </div>
                         {% endif %}
 
@@ -49,6 +46,9 @@
                         {% endif %}
                     </div>
 
+                    {% if free_trial_days %}
+                    <input type="hidden" name="schedule" value="monthly" />
+                    {% else %}
                     <div class="input-box upgrade-page-field no-validation">
                         <select name="schedule" id="payment-schedule-select">
                             <option value="monthly" id="autopay_monthly_price"></option>
@@ -56,9 +56,20 @@
                         </select>
                         <label for="payment-schedule-select">Payment schedule</label>
                     </div>
+                    {% endif %}
+
+                    {% if remote_server_legacy_plan_end_date %}
+                    <div class="input-box upgrade-page-field no-validation">
+                        <select name="remote_server_plan_start_date" id="remote-server-plan-start-date-select">
+                            <option value="billing_cycle_end_date">{{ remote_server_legacy_plan_end_date }}</option>
+                            <option value="today">Today</option>
+                        </select>
+                        <label for="remote-server-plan-start-date-select">Plan start date</label>
+                    </div>
+                    {% endif %}
 
                     {% if manual_license_management %}
-                    <div class="input-box upgrade-page-field">
+                    <div class="input-box upgrade-page-field" id="upgrade-manual-license-count-wrapper">
                         <label for="licenses" class="inline-block label-title">Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</label>
                         <input type="number" name="licenses" autocomplete="off" {% if not exempt_from_license_number_check %}min="{{ seat_count }}" value="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/>
                         <div id="upgrade-licenses-change-error" class="alert alert-danger upgrade-page-error"></div>
@@ -68,13 +79,32 @@
                     <input type="hidden" name="license_management" value="automatic" />
                     {% endif %}
 
+                    {% if remote_server_legacy_plan_end_date %}
+                        <div class="input-box upgrade-page-field no-validation" id="due-today-for-future-update-wrapper">
+                            <label for="due-today-for-future-update" class="inline-block label-title">
+                                Due today
+                            </label>
+                            <div id="due-today-for-future-update" class="not-editable-realm-field">
+                                <h1>$0</h1>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <div class="input-box upgrade-page-field no-validation">
-                        <label for="due-today" class="inline-block label-title">Due
-                            {% if free_trial_days %}
-                                after free trial
-                            {% else %}
-                                today
+                        <label for="due-today" class="inline-block label-title">
+                            {% if remote_server_legacy_plan_end_date %}
+                            <span id="due-today-remote-server-title">
+                                Due {{ remote_server_legacy_plan_end_date }}
+                            </span>
                             {% endif %}
+                            <span id="due-today-title">
+                                Due
+                                {% if free_trial_days %}
+                                on {{ free_trial_end_date }}
+                                {% else %}
+                                today
+                                {% endif %}
+                            </span>
                         </label>
                         <div id="due-today" class="not-editable-realm-field">
                             $<span class="due-today-unit-price"></span> x
@@ -91,42 +121,31 @@
                             <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
                             {% endif %}
                             <h1>$<span class="due-today-price"></span></h1>
+                            {% if free_trial_days %}
+                            <i>Your actual bill will depend on the number of
+                            active users in your organization.</i>
+                            {% endif %}
                         </div>
                     </div>
 
-                    {% if not manual_license_management %}
+                    {% if free_trial_days %}
+                    {% elif not manual_license_management %}
                     <div id="license-automatic-section" class="input-box upgrade-page-field license-management-section">
                         <p class="not-editable-realm-field">
-                            {% if free_trial_days %}
-                            After the Free Trial, you&rsquo;ll be charged
-                            <b>$<span class="due-today-price"></span></b> for <b>{{ seat_count }}</b>
-                            users (or more if you later add more users).<br />
-
-                            We'll automatically charge you for additional licenses as users
-                            are added, and remove licenses not in use at the end of each billing
-                            period.
-                            {% else %}
                             Your subscription will renew automatically. Your bill will vary based on the number
                             of active users in your organization. You can also
-                            <a href="/upgrade/?manual_license_management=true">purchase a fixed number of licenses</a> instead. See
+                            <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true">purchase a fixed number of licenses</a> instead. See
                             <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
-                            {% endif %}
                         </p>
                         <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
                     </div>
                     {% else %}
-                    <div id="license-manual-section" class="input-box upgrade-page-field">
+                    <div id="license-manual-section" class="input-box upgrade-page-field license-management-section">
                         <p class="not-editable-realm-field">
-                            {% if free_trial_days %}
-                            Enter the number of users you would like to pay for after the Free Trial.<br />
-                            You'll need to manually add licenses to add or invite
-                            additional users.
-                            {% else %}
                             Your subscription will renew automatically. You will be able to manage the number of licenses on
                             your organization's billing page. You can also
-                            <a href="/upgrade/">choose automatic license management</a> instead. See
+                            <a href="{{ page_params.billing_base_url }}/upgrade/">choose automatic license management</a> instead. See
                             <a href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
-                            {% endif %}
                         </p>
                     </div>
                     {% endif %}
@@ -159,11 +178,18 @@
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                         <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not payment_method %}disabled{% endif %}>
                             <span id="org-upgrade-button-text">
-                                {% if free_trial_days %}
-                                    Start {{ free_trial_days }} day free trial
-                                {% else %}
-                                    Purchase Zulip Cloud Standard
+                                {% if remote_server_legacy_plan_end_date %}
+                                    <span id="org-future-upgrade-button-text-remote-server">
+                                        Schedule upgrade to {{ plan }}
+                                    </span>
                                 {% endif %}
+                                <span id="org-today-upgrade-button-text">
+                                    {% if free_trial_days %}
+                                        Start {{ free_trial_days }}-day free trial
+                                    {% else %}
+                                        Purchase {{ plan }}
+                                    {% endif %}
+                                </span>
                             </span>
                             <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>

@@ -248,3 +248,11 @@ export function get_pm_recent_senders(user_ids_string) {
     pm_senders_info.participants.sort(compare_pm_user_ids_by_recency);
     return pm_senders_info;
 }
+
+export function get_topic_message_ids_for_sender(stream_id, topic, sender_id) {
+    const id_tracker = topic_senders?.get(stream_id)?.get(topic)?.get(sender_id);
+    if (id_tracker === undefined) {
+        return new Set();
+    }
+    return id_tracker.ids;
+}

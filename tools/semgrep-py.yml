@@ -68,6 +68,8 @@ rules:
         - zerver/migrations/0209_user_profile_no_empty_password.py
         - zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py
         - zerver/migrations/0387_reupload_realmemoji_again.py
+        - zerver/migrations/0443_userpresence_new_table_schema.py
+        - zerver/migrations/0493_rename_userhotspot_to_onboardingstep.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
   - id: html-format
@@ -266,3 +268,41 @@ rules:
     message: "Replace functools.partial with returns.curry.partial for type safety"
     languages: [python]
     severity: ERROR
+
+  - id: timedelta-positional-argument
+    patterns:
+      - pattern: timedelta(...)
+      - pattern-not: timedelta(0)
+      - pattern-not: timedelta(..., days=..., ...)
+      - pattern-not: timedelta(..., seconds=..., ...)
+      - pattern-not: timedelta(..., microseconds=..., ...)
+      - pattern-not: timedelta(..., milliseconds=..., ...)
+      - pattern-not: timedelta(..., minutes=..., ...)
+      - pattern-not: timedelta(..., hours=..., ...)
+      - pattern-not: timedelta(..., weeks=..., ...)
+    message: |
+      Specify timedelta with named arguments.
+    languages: [python]
+    severity: ERROR
+
+  - id: time-machine
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: patch("$FUNCTION", return_value=$TIME)
+          - pattern: mock.patch("$FUNCTION", return_value=$TIME)
+      - metavariable-regex:
+          metavariable: $FUNCTION
+          regex: .*timezone_now
+    fix: time_machine.travel($TIME, tick=False)
+    severity: ERROR
+    message: "Use the time_machine package, rather than mocking timezone_now"
+
+  - id: urlparse
+    languages: [python]
+    pattern-either:
+      - pattern: urllib.parse.urlparse
+      - pattern: urllib.parse.urlunparse
+      - pattern: urllib.parse.ParseResult
+    severity: ERROR
+    message: "Use urlsplit rather than urlparse"

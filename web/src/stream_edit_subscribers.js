@@ -33,6 +33,7 @@ function format_member_list_elem(person, user_can_remove_subscribers) {
         is_current_user: person.user_id === page_params.user_id,
         email: person.delivery_email,
         can_remove_subscribers: user_can_remove_subscribers,
+        for_user_group_members: false,
     });
 }
 

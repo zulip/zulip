@@ -1,16 +1,18 @@
 import logging
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import stripe
 from django.conf import settings
 
 from corporate.lib.stripe import (
     BillingError,
+    InvalidPlanUpgradeError,
     RealmBillingSession,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
     UpgradeWithExistingPlanError,
-    ensure_customer_does_not_have_active_plan,
 )
-from corporate.models import CustomerPlan, Event, PaymentIntent, Session
+from corporate.models import Customer, CustomerPlan, Event, PaymentIntent, Session
 from zerver.models import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -61,6 +63,20 @@ def error_handler(
     return wrapper
 
 
+def get_billing_session_for_stripe_webhook(
+    customer: Customer, user_id: Optional[str]
+) -> Union[RealmBillingSession, RemoteRealmBillingSession, RemoteServerBillingSession]:
+    if customer.remote_realm is not None:  # nocoverage
+        return RemoteRealmBillingSession(customer.remote_realm)
+    elif customer.remote_server is not None:  # nocoverage
+        return RemoteServerBillingSession(customer.remote_server)
+    else:
+        assert user_id is not None
+        assert customer.realm is not None
+        user = get_active_user_profile_by_id_in_realm(int(user_id), customer.realm)
+        return RealmBillingSession(user)
+
+
 @error_handler
 def handle_checkout_session_completed_event(
     stripe_session: stripe.checkout.Session, session: Session
@@ -69,13 +85,11 @@ def handle_checkout_session_completed_event(
     session.save()
 
     assert isinstance(stripe_session.setup_intent, str)
-    stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
-    assert session.customer.realm is not None
     assert stripe_session.metadata is not None
-    user_id = stripe_session.metadata.get("user_id")
-    assert user_id is not None
-    user = get_active_user_profile_by_id_in_realm(int(user_id), session.customer.realm)
-    billing_session = RealmBillingSession(user)
+    stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
+    billing_session = get_billing_session_for_stripe_webhook(
+        session.customer, stripe_session.metadata.get("user_id")
+    )
     payment_method = stripe_setup_intent.payment_method
     assert isinstance(payment_method, (str, type(None)))
 
@@ -93,10 +107,6 @@ def handle_payment_intent_succeeded_event(
     payment_intent.status = PaymentIntent.SUCCEEDED
     payment_intent.save()
     metadata: Dict[str, Any] = stripe_payment_intent.metadata
-    assert payment_intent.customer.realm is not None
-    user_id = metadata.get("user_id")
-    assert user_id is not None
-    user = get_active_user_profile_by_id_in_realm(user_id, payment_intent.customer.realm)
 
     description = ""
     charge: stripe.Charge
@@ -113,25 +123,30 @@ def handle_payment_intent_succeeded_event(
         description=description,
         discountable=False,
     )
+    billing_session = get_billing_session_for_stripe_webhook(
+        payment_intent.customer, metadata.get("user_id")
+    )
+    plan_tier = int(metadata["plan_tier"])
     try:
-        ensure_customer_does_not_have_active_plan(payment_intent.customer)
-    except UpgradeWithExistingPlanError as e:
+        billing_session.ensure_current_plan_is_upgradable(payment_intent.customer, plan_tier)
+    except (UpgradeWithExistingPlanError, InvalidPlanUpgradeError) as e:
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
             collection_method="charge_automatically",
             customer=stripe_payment_intent.customer,
             days_until_due=None,
-            statement_descriptor="Cloud Standard Credit",
+            statement_descriptor=CustomerPlan.name_from_tier(plan_tier).replace("Zulip ", "")
+            + " Credit",
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
         raise e
 
-    billing_session = RealmBillingSession(user)
     billing_session.process_initial_upgrade(
-        CustomerPlan.STANDARD,
+        plan_tier,
         int(metadata["licenses"]),
         metadata["license_management"] == "automatic",
         int(metadata["billing_schedule"]),
         True,
         False,
+        billing_session.get_remote_server_legacy_plan(payment_intent.customer),
     )

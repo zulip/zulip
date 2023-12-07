@@ -9,8 +9,10 @@ from decimal import Decimal
 from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypedDict, TypeVar, Union
+from urllib.parse import urlencode, urljoin
 
 import stripe
+from django import forms
 from django.conf import settings
 from django.core import signing
 from django.core.signing import Signer
@@ -28,6 +30,7 @@ from corporate.models import (
     LicenseLedger,
     PaymentIntent,
     Session,
+    ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
     get_customer_by_realm,
@@ -36,10 +39,22 @@ from corporate.models import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_realm_owners
+from zerver.lib.send_email import (
+    FromAddress,
+    send_email,
+    send_email_to_billing_admins_and_realm_owners,
+)
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
+from zerver.models import (
+    Realm,
+    RealmAuditLog,
+    UserProfile,
+    get_org_type_display_name,
+    get_realm,
+    get_system_bot,
+)
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
@@ -253,8 +268,8 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
 
 def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
     months_per_period = {
-        CustomerPlan.ANNUAL: 12,
-        CustomerPlan.MONTHLY: 1,
+        CustomerPlan.BILLING_SCHEDULE_ANNUAL: 12,
+        CustomerPlan.BILLING_SCHEDULE_MONTHLY: 1,
     }[plan.billing_schedule]
     periods = 1
     dt = plan.billing_cycle_anchor
@@ -269,8 +284,8 @@ def next_invoice_date(plan: CustomerPlan) -> Optional[datetime]:
         return None
     assert plan.next_invoice_date is not None  # for mypy
     months_per_period = {
-        CustomerPlan.ANNUAL: 12,
-        CustomerPlan.MONTHLY: 1,
+        CustomerPlan.BILLING_SCHEDULE_ANNUAL: 12,
+        CustomerPlan.BILLING_SCHEDULE_MONTHLY: 1,
     }[plan.billing_schedule]
     if plan.automanage_licenses:
         months_per_period = 1
@@ -362,6 +377,14 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     )  # nocoverage
 
 
+def build_support_url(support_view: str, query_text: str) -> str:
+    support_realm_url = get_realm(settings.STAFF_SUBDOMAIN).uri
+    support_url = urljoin(support_realm_url, reverse(support_view))
+    query = urlencode({"q": query_text})
+    support_url = append_url_query_string(support_url, query)
+    return support_url
+
+
 class BillingError(JsonableError):
     data_fields = ["error_description"]
     # error messages
@@ -393,6 +416,14 @@ class UpgradeWithExistingPlanError(BillingError):
         super().__init__(
             "subscribing with existing subscription",
             "The organization is already subscribed to a plan. Please reload the billing page.",
+        )
+
+
+class InvalidPlanUpgradeError(BillingError):  # nocoverage
+    def __init__(self, message: str) -> None:
+        super().__init__(
+            "invalid plan upgrade",
+            message,
         )
 
 
@@ -455,6 +486,16 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
     )
 
 
+def sponsorship_org_type_key_helper(d: Any) -> int:
+    return d[1]["display_order"]
+
+
+class PriceArgs(TypedDict, total=False):
+    amount: int
+    unit_amount: int
+    quantity: int
+
+
 @dataclass
 class StripeCustomerData:
     description: str
@@ -478,6 +519,8 @@ class UpgradeRequest:
     salt: str
     license_management: Optional[str]
     licenses: Optional[int]
+    tier: int
+    remote_server_plan_start_date: Optional[str]
 
 
 @dataclass
@@ -491,12 +534,30 @@ class UpdatePlanRequest:
     status: Optional[int]
     licenses: Optional[int]
     licenses_at_next_renewal: Optional[int]
+    schedule: Optional[int]
 
 
 @dataclass
 class EventStatusRequest:
     stripe_session_id: Optional[str]
     stripe_payment_intent_id: Optional[str]
+
+
+class SupportType(Enum):
+    approve_sponsorship = 1
+    update_sponsorship_status = 2
+    attach_discount = 3
+    update_billing_modality = 4
+    modify_plan = 5
+
+
+class SupportViewRequest(TypedDict, total=False):
+    support_type: SupportType
+    sponsorship_status: Optional[bool]
+    discount: Optional[Decimal]
+    billing_modality: Optional[str]
+    plan_modification: Optional[str]
+    new_plan_tier: Optional[int]
 
 
 class AuditLogEventType(Enum):
@@ -506,9 +567,16 @@ class AuditLogEventType(Enum):
     DISCOUNT_CHANGED = 4
     SPONSORSHIP_APPROVED = 5
     SPONSORSHIP_PENDING_STATUS_CHANGED = 6
-    BILLING_METHOD_CHANGED = 7
+    BILLING_MODALITY_CHANGED = 7
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 8
     CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 9
+    BILLING_ENTITY_PLAN_TYPE_CHANGED = 10
+
+
+class PlanTierChangeType(Enum):
+    INVALID = 1
+    UPGRADE = 2
+    DOWNGRADE = 3
 
 
 class BillingSessionAuditLogEventError(Exception):
@@ -522,6 +590,7 @@ class UpgradePageParams(TypedDict):
     demo_organization_scheduled_deletion_date: Optional[datetime]
     monthly_price: int
     seat_count: int
+    billing_base_url: str
 
 
 class UpgradePageSessionTypeSpecificContext(TypedDict):
@@ -532,6 +601,20 @@ class UpgradePageSessionTypeSpecificContext(TypedDict):
     is_self_hosting: bool
 
 
+class SponsorshipApplicantInfo(TypedDict):
+    name: str
+    role: str
+    email: str
+
+
+class SponsorshipRequestSessionSpecificContext(TypedDict):
+    # We don't store UserProfile for remote realms.
+    realm_user: Optional[UserProfile]
+    user_info: SponsorshipApplicantInfo
+    # TODO: Call this what we end up calling it for /support page.
+    realm_string_id: str
+
+
 class UpgradePageContext(TypedDict):
     customer_name: str
     default_invoice_days_until_due: int
@@ -539,25 +622,54 @@ class UpgradePageContext(TypedDict):
     email: str
     exempt_from_license_number_check: bool
     free_trial_days: Optional[int]
+    free_trial_end_date: Optional[str]
     is_demo_organization: bool
     manual_license_management: bool
     min_invoiced_licenses: int
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
+    remote_server_legacy_plan_end_date: Optional[str]
     salt: str
     seat_count: int
     signed_seat_count: str
 
 
+class SponsorshipRequestForm(forms.Form):
+    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False)
+    organization_type = forms.IntegerField()
+    description = forms.CharField(widget=forms.Textarea)
+    expected_total_users = forms.CharField(widget=forms.Textarea)
+    paid_users_count = forms.CharField(widget=forms.Textarea)
+    paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
+
+
 class BillingSession(ABC):
+    @property
+    @abstractmethod
+    def billing_entity_display_name(self) -> str:
+        pass
+
     @property
     @abstractmethod
     def billing_session_url(self) -> str:
         pass
 
+    @property
+    @abstractmethod
+    def billing_base_url(self) -> str:
+        pass
+
+    @abstractmethod
+    def support_url(self) -> str:
+        pass
+
     @abstractmethod
     def get_customer(self) -> Optional[Customer]:
+        pass
+
+    @abstractmethod
+    def get_email(self) -> str:
         pass
 
     @abstractmethod
@@ -588,11 +700,29 @@ class BillingSession(ABC):
     ) -> Dict[str, Any]:
         pass
 
-    @abstractmethod
     def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
+        self,
+        price_per_license: int,
+        licenses: int,
+        plan_tier: int,
+        email: str,
     ) -> StripePaymentIntentData:
-        pass
+        if hasattr(self, "support_session") and self.support_session:  # nocoverage
+            raise BillingError(
+                "invalid support session",
+                "Support requests do not set any stripe billing information.",
+            )
+
+        amount = price_per_license * licenses
+
+        plan_name = CustomerPlan.name_from_tier(plan_tier)
+        description = f"Upgrade to {plan_name}, ${price_per_license/100} x {licenses}"
+        return StripePaymentIntentData(
+            amount=amount,
+            description=description,
+            plan_name=plan_name,
+            email=email,
+        )
 
     @abstractmethod
     def update_or_create_customer(
@@ -609,7 +739,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def approve_sponsorship(self) -> None:
+    def approve_sponsorship(self) -> str:
         pass
 
     @abstractmethod
@@ -617,7 +747,13 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        pass
+
+    @abstractmethod
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
         pass
 
     @abstractmethod
@@ -627,7 +763,9 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
+    def get_type_of_plan_tier_change(
+        self, current_plan_tier: int, new_plan_tier: int
+    ) -> PlanTierChangeType:
         pass
 
     @abstractmethod
@@ -641,6 +779,57 @@ class BillingSession(ABC):
     @abstractmethod
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
         pass
+
+    @abstractmethod
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+        pass
+
+    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
+        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
+            return True
+        return False
+
+    def get_remote_server_legacy_plan(
+        self, customer: Optional[Customer], status: int = CustomerPlan.ACTIVE
+    ) -> Optional[CustomerPlan]:
+        # status = CustomerPlan.ACTIVE means that the legacy plan is not scheduled for an upgrade.
+        # status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END means that the legacy plan is scheduled for an upgrade.
+        if customer is None:
+            return None
+
+        return CustomerPlan.objects.filter(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            status=status,
+            next_invoice_date=None,
+        ).first()
+
+    def get_formatted_remote_server_legacy_plan_end_date(
+        self, customer: Optional[Customer], status: int = CustomerPlan.ACTIVE
+    ) -> Optional[str]:  # nocoverage
+        plan = self.get_remote_server_legacy_plan(customer, status)
+        if plan is None:
+            return None
+
+        assert plan.end_date is not None
+        return plan.end_date.strftime("%B %d, %Y")
+
+    def get_legacy_remote_server_new_plan_name(
+        self, customer: Customer
+    ) -> Optional[str]:  # nocoverage
+        legacy_plan = self.get_remote_server_legacy_plan(
+            customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
+        if legacy_plan is None:
+            return None
+
+        # This also asserts that such a plan should exist.
+        assert legacy_plan.end_date is not None
+        return CustomerPlan.objects.get(
+            customer=customer,
+            billing_cycle_anchor=legacy_plan.end_date,
+            status=CustomerPlan.NEVER_STARTED,
+        ).name
 
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
@@ -702,7 +891,9 @@ class BillingSession(ABC):
         # NOTE: This charges users immediately.
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
-        payment_intent_data = self.get_data_for_stripe_payment_intent(price_per_license, licenses)
+        payment_intent_data = self.get_data_for_stripe_payment_intent(
+            price_per_license, licenses, metadata["plan_tier"], self.get_email()
+        )
         # Ensure customers have a default payment method set.
         stripe_customer = stripe_get_customer(customer.stripe_customer_id)
         if not stripe_customer_has_credit_card_as_default_payment_method(stripe_customer):
@@ -737,12 +928,11 @@ class BillingSession(ABC):
         )
         return stripe_payment_intent.id
 
-    def create_stripe_update_card_for_realm_upgrade_session(
+    def create_card_update_session_for_upgrade(
         self,
-        metadata: Dict[str, Any],
-        session_type: int,
         manual_license_management: bool,
-    ) -> stripe.checkout.Session:
+    ) -> Dict[str, Any]:
+        metadata = self.get_metadata_for_stripe_update_card()
         customer = self.update_or_create_stripe_customer()
         cancel_url = f"{self.billing_session_url}/upgrade/"
         if manual_license_management:
@@ -759,17 +949,16 @@ class BillingSession(ABC):
         Session.objects.create(
             stripe_session_id=stripe_session.id,
             customer=customer,
-            type=session_type,
+            type=Session.CARD_UPDATE_FROM_UPGRADE_PAGE,
             is_manual_license_management_upgrade_session=manual_license_management,
         )
-        return stripe_session
+        return {
+            "stripe_session_url": stripe_session.url,
+            "stripe_session_id": stripe_session.id,
+        }
 
-    def create_stripe_checkout_session(
-        self,
-        metadata: Dict[str, Any],
-        session_type: int,
-    ) -> stripe.checkout.Session:
-        # Create checkout sessions for adding and updating exiting cards.
+    def create_card_update_session(self) -> Dict[str, Any]:
+        metadata = self.get_metadata_for_stripe_update_card()
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
         stripe_session = stripe.checkout.Session.create(
@@ -783,33 +972,39 @@ class BillingSession(ABC):
         Session.objects.create(
             stripe_session_id=stripe_session.id,
             customer=customer,
-            type=session_type,
+            type=Session.CARD_UPDATE_FROM_BILLING_PAGE,
         )
-        return stripe_session
+        return {
+            "stripe_session_url": stripe_session.url,
+            "stripe_session_id": stripe_session.id,
+        }
 
-    def attach_discount_to_customer(self, discount: Decimal) -> None:
+    def attach_discount_to_customer(self, new_discount: Decimal) -> str:
         customer = self.get_customer()
-        old_discount: Optional[Decimal] = None
+        old_discount = None
         if customer is not None:
             old_discount = customer.default_discount
-            customer.default_discount = discount
+            customer.default_discount = new_discount
             customer.save(update_fields=["default_discount"])
         else:
-            customer = self.update_or_create_customer(defaults={"default_discount": discount})
+            customer = self.update_or_create_customer(defaults={"default_discount": new_discount})
         plan = get_current_plan_by_customer(customer)
         if plan is not None:
             plan.price_per_license = get_price_per_license(
-                plan.tier, plan.billing_schedule, discount
+                plan.tier, plan.billing_schedule, new_discount
             )
-            plan.discount = discount
+            plan.discount = new_discount
             plan.save(update_fields=["price_per_license", "discount"])
         self.write_to_audit_log(
             event_type=AuditLogEventType.DISCOUNT_CHANGED,
             event_time=timezone_now(),
-            extra_data={"old_discount": old_discount, "new_discount": discount},
+            extra_data={"old_discount": old_discount, "new_discount": new_discount},
         )
+        if old_discount is None:
+            old_discount = Decimal(0)
+        return f"Discount for {self.billing_entity_display_name} changed to {new_discount}% from {old_discount}%."
 
-    def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> None:
+    def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
         if customer is None:
             customer = self.update_or_create_customer()
@@ -821,7 +1016,15 @@ class BillingSession(ABC):
             extra_data={"sponsorship_pending": sponsorship_pending},
         )
 
-    def update_billing_method_of_current_plan(self, charge_automatically: bool) -> None:
+        if sponsorship_pending:
+            success_message = f"{self.billing_entity_display_name} marked as pending sponsorship."
+        else:
+            success_message = (
+                f"{self.billing_entity_display_name} is no longer pending sponsorship."
+            )
+        return success_message
+
+    def update_billing_modality_of_current_plan(self, charge_automatically: bool) -> str:
         customer = self.get_customer()
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
@@ -829,10 +1032,15 @@ class BillingSession(ABC):
                 plan.charge_automatically = charge_automatically
                 plan.save(update_fields=["charge_automatically"])
                 self.write_to_audit_log(
-                    event_type=AuditLogEventType.BILLING_METHOD_CHANGED,
+                    event_type=AuditLogEventType.BILLING_MODALITY_CHANGED,
                     event_time=timezone_now(),
                     extra_data={"charge_automatically": charge_automatically},
                 )
+        if charge_automatically:
+            success_message = f"Billing collection method of {self.billing_entity_display_name} updated to charge automatically."
+        else:
+            success_message = f"Billing collection method of {self.billing_entity_display_name} updated to send invoice."
+        return success_message
 
     def setup_upgrade_payment_intent_and_charge(
         self,
@@ -856,6 +1064,7 @@ class BillingSession(ABC):
             "price_per_license": price_per_license,
             "seat_count": seat_count,
             "type": "upgrade",
+            "plan_tier": plan_tier,
         }
         updated_metadata = self.update_data_for_checkout_session_and_payment_intent(
             general_metadata
@@ -865,7 +1074,22 @@ class BillingSession(ABC):
         )
         return stripe_payment_intent_id
 
-    # Only used for cloud signups
+    def ensure_current_plan_is_upgradable(
+        self, customer: Customer, new_plan_tier: int
+    ) -> None:  # nocoverage
+        # Upgrade for customers with an existing plan is only supported for remote servers right now.
+        if not hasattr(self, "remote_server"):
+            ensure_customer_does_not_have_active_plan(customer)
+            return
+
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        type_of_plan_change = self.get_type_of_plan_tier_change(plan.tier, new_plan_tier)
+        if type_of_plan_change != PlanTierChangeType.UPGRADE:
+            raise InvalidPlanUpgradeError(
+                f"Cannot upgrade from {plan.name} to {CustomerPlan.name_from_tier(new_plan_tier)}"
+            )
+
     @catch_stripe_errors
     def process_initial_upgrade(
         self,
@@ -875,10 +1099,17 @@ class BillingSession(ABC):
         billing_schedule: int,
         charge_automatically: bool,
         free_trial: bool,
+        remote_server_legacy_plan: Optional[CustomerPlan] = None,
+        should_schedule_upgrade_for_legacy_remote_server: bool = False,
     ) -> None:
         customer = self.update_or_create_stripe_customer()
         assert customer.stripe_customer_id is not None  # for mypy
-        ensure_customer_does_not_have_active_plan(customer)
+        self.ensure_current_plan_is_upgradable(customer, plan_tier)
+        billing_cycle_anchor = None
+        if should_schedule_upgrade_for_legacy_remote_server:  # nocoverage
+            assert remote_server_legacy_plan is not None
+            billing_cycle_anchor = remote_server_legacy_plan.end_date
+
         (
             billing_cycle_anchor,
             next_invoice_date,
@@ -890,6 +1121,7 @@ class BillingSession(ABC):
             billing_schedule,
             customer.default_discount,
             free_trial,
+            billing_cycle_anchor,
         )
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
@@ -925,25 +1157,66 @@ class BillingSession(ABC):
                             _("Please add a credit card before starting your free trial."),
                         )
 
+            event_time = billing_cycle_anchor
+            if should_schedule_upgrade_for_legacy_remote_server:  # nocoverage
+                # In this code path, we are currently on a legacy plan
+                # and are scheduling an upgrade to a non-legacy plan
+                # that should occur when the legacy plan expires.
+                #
+                # We will create a new NEVER_STARTED plan for the
+                # customer, scheduled to start when the current one
+                # expires.
+                assert remote_server_legacy_plan is not None
+                if charge_automatically:
+                    # Ensure customers not paying via invoice have a default payment method set.
+                    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+                    if not stripe_customer_has_credit_card_as_default_payment_method(
+                        stripe_customer
+                    ):
+                        raise BillingError(
+                            "no payment method",
+                            _("Please add a credit card to schedule upgrade."),
+                        )
+
+                # Settings status > CustomerPLan.LIVE_STATUS_THRESHOLD makes sure we don't have
+                # to worry about this plan being used for any other purpose.
+                # NOTE: This is the 2nd plan for the customer.
+                plan_params["status"] = CustomerPlan.NEVER_STARTED
+                event_time = timezone_now().replace(microsecond=0)
+
+                # Schedule switching to the new plan at plan end date.
+                assert remote_server_legacy_plan.end_date == billing_cycle_anchor
+                remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+                remote_server_legacy_plan.save(update_fields=["status"])
+            elif remote_server_legacy_plan is not None:  # nocoverage
+                remote_server_legacy_plan.status = CustomerPlan.ENDED
+                remote_server_legacy_plan.save(update_fields=["status"])
+
             plan = CustomerPlan.objects.create(
                 customer=customer, next_invoice_date=next_invoice_date, **plan_params
             )
-            ledger_entry = LicenseLedger.objects.create(
-                plan=plan,
-                is_renewal=True,
-                event_time=billing_cycle_anchor,
-                licenses=billed_licenses,
-                licenses_at_next_renewal=billed_licenses,
-            )
-            plan.invoiced_through = ledger_entry
-            plan.save(update_fields=["invoiced_through"])
+
+            if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
+                # LicenseLedger entries are way for us to charge customer and track their license usage.
+                # So, we should only create these entries for live plans.
+                ledger_entry = LicenseLedger.objects.create(
+                    plan=plan,
+                    is_renewal=True,
+                    event_time=event_time,
+                    licenses=billed_licenses,
+                    licenses_at_next_renewal=billed_licenses,
+                )
+                plan.invoiced_through = ledger_entry
+                plan.save(update_fields=["invoiced_through"])
+
             self.write_to_audit_log(
                 event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
-                event_time=billing_cycle_anchor,
+                event_time=event_time,
                 extra_data=plan_params,
             )
 
-        if not free_trial:
+        if not (free_trial or should_schedule_upgrade_for_legacy_remote_server):
+            assert plan is not None
             stripe.InvoiceItem.create(
                 currency="usd",
                 customer=customer.stripe_customer_id,
@@ -973,12 +1246,14 @@ class BillingSession(ABC):
             )
             stripe.Invoice.finalize_invoice(stripe_invoice)
 
-        self.do_change_plan_type(tier=plan_tier)
+        if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
+            # Tier and usage limit change will happen when plan becomes live.
+            self.do_change_plan_type(tier=plan_tier)
 
     def do_upgrade(self, upgrade_request: UpgradeRequest) -> Dict[str, Any]:
         customer = self.get_customer()
         if customer is not None:
-            ensure_customer_does_not_have_active_plan(customer)
+            self.ensure_current_plan_is_upgradable(customer, upgrade_request.tier)
         billing_modality = upgrade_request.billing_modality
         schedule = upgrade_request.schedule
         license_management = upgrade_request.license_management
@@ -1006,25 +1281,37 @@ class BillingSession(ABC):
         automanage_licenses = license_management == "automatic"
         charge_automatically = billing_modality == "charge_automatically"
 
-        billing_schedule = {"annual": CustomerPlan.ANNUAL, "monthly": CustomerPlan.MONTHLY}[
-            schedule
-        ]
+        billing_schedule = {
+            "annual": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            "monthly": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+        }[schedule]
         data: Dict[str, Any] = {}
         free_trial = is_free_trial_offer_enabled()
+        remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
+        should_schedule_upgrade_for_legacy_remote_server = (
+            remote_server_legacy_plan is not None
+            and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
+        )
         # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
-        if free_trial or not charge_automatically:
+        if (
+            should_schedule_upgrade_for_legacy_remote_server
+            or free_trial
+            or not charge_automatically
+        ):
             self.process_initial_upgrade(
-                CustomerPlan.STANDARD,
+                upgrade_request.tier,
                 licenses,
                 automanage_licenses,
                 billing_schedule,
                 charge_automatically,
                 is_free_trial_offer_enabled(),
+                remote_server_legacy_plan,
+                should_schedule_upgrade_for_legacy_remote_server,
             )
             data["organization_upgrade_successful"] = True
         else:
             stripe_payment_intent_id = self.setup_upgrade_payment_intent_and_charge(
-                CustomerPlan.STANDARD,
+                upgrade_request.tier,
                 seat_count,
                 licenses,
                 license_management,
@@ -1034,6 +1321,96 @@ class BillingSession(ABC):
             data["stripe_payment_intent_id"] = stripe_payment_intent_id
         return data
 
+    def do_change_schedule_after_free_trial(self, plan: CustomerPlan, schedule: int) -> None:
+        # Change the billing frequency of the plan after the free trial ends.
+        assert schedule in (
+            CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+            CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+        )
+        last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+        assert last_ledger_entry is not None
+        licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+        assert licenses_at_next_renewal is not None
+        assert plan.next_invoice_date is not None
+        next_billing_cycle = plan.next_invoice_date
+
+        if plan.fixed_price is not None:  # nocoverage
+            raise BillingError("Customer is already on monthly fixed plan.")
+
+        plan.status = CustomerPlan.ENDED
+        plan.save(update_fields=["status"])
+
+        discount = plan.customer.default_discount or plan.discount
+        _, _, _, price_per_license = compute_plan_parameters(
+            tier=plan.tier,
+            automanage_licenses=plan.automanage_licenses,
+            billing_schedule=schedule,
+            discount=plan.discount,
+        )
+
+        new_plan = CustomerPlan.objects.create(
+            customer=plan.customer,
+            billing_schedule=schedule,
+            automanage_licenses=plan.automanage_licenses,
+            charge_automatically=plan.charge_automatically,
+            price_per_license=price_per_license,
+            discount=discount,
+            billing_cycle_anchor=plan.billing_cycle_anchor,
+            tier=plan.tier,
+            status=CustomerPlan.FREE_TRIAL,
+            next_invoice_date=next_billing_cycle,
+            invoiced_through=None,
+            invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
+        )
+
+        LicenseLedger.objects.create(
+            plan=new_plan,
+            is_renewal=True,
+            event_time=plan.billing_cycle_anchor,
+            licenses=licenses_at_next_renewal,
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+
+        if schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
+                event_time=timezone_now(),
+                extra_data={
+                    "monthly_plan_id": plan.id,
+                    "annual_plan_id": new_plan.id,
+                },
+            )
+        else:
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN,
+                event_time=timezone_now(),
+                extra_data={
+                    "annual_plan_id": plan.id,
+                    "monthly_plan_id": new_plan.id,
+                },
+            )
+
+    def get_next_billing_cycle(self, plan: CustomerPlan) -> datetime:
+        last_ledger_renewal = (
+            LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
+        )
+        assert last_ledger_renewal is not None
+        last_renewal = last_ledger_renewal.event_time
+
+        if plan.status in (
+            CustomerPlan.FREE_TRIAL,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ):
+            assert plan.next_invoice_date is not None
+            next_billing_cycle = plan.next_invoice_date
+        elif plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
+            assert plan.end_date is not None
+            next_billing_cycle = plan.end_date
+        else:
+            next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
+
+        return next_billing_cycle
+
     # event_time should roughly be timezone_now(). Not designed to handle
     # event_times in the past or future
     @transaction.atomic
@@ -1041,18 +1418,10 @@ class BillingSession(ABC):
         self, plan: CustomerPlan, event_time: datetime
     ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
         last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
-        last_ledger_renewal = (
-            LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
-        )
-        assert last_ledger_renewal is not None
-        last_renewal = last_ledger_renewal.event_time
+        next_billing_cycle = self.get_next_billing_cycle(plan)
+        event_in_next_billing_cycle = next_billing_cycle <= event_time
 
-        if plan.is_free_trial():
-            assert plan.next_invoice_date is not None
-            next_billing_cycle = plan.next_invoice_date
-        else:
-            next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
-        if next_billing_cycle <= event_time and last_ledger_entry is not None:
+        if event_in_next_billing_cycle and last_ledger_entry is not None:
             licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             assert licenses_at_next_renewal is not None
             if plan.status == CustomerPlan.ACTIVE:
@@ -1076,6 +1445,29 @@ class BillingSession(ABC):
                     licenses_at_next_renewal=licenses_at_next_renewal,
                 )
 
+            if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
+                # Only plan tier we do this for right now.
+                assert plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+                plan.status = CustomerPlan.ENDED
+                plan.save(update_fields=["status"])
+
+                assert plan.end_date is not None
+                new_plan = CustomerPlan.objects.get(
+                    customer=plan.customer,
+                    billing_cycle_anchor=plan.end_date,
+                    status=CustomerPlan.NEVER_STARTED,
+                )
+                new_plan.status = CustomerPlan.ACTIVE
+                new_plan.save(update_fields=["status"])
+                self.do_change_plan_type(tier=new_plan.tier)
+                return None, LicenseLedger.objects.create(
+                    plan=new_plan,
+                    is_renewal=True,
+                    event_time=next_billing_cycle,
+                    licenses=licenses_at_next_renewal,
+                    licenses_at_next_renewal=licenses_at_next_renewal,
+                )
+
             if plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
                 if plan.fixed_price is not None:  # nocoverage
                     raise NotImplementedError("Can't switch fixed priced monthly plan to annual.")
@@ -1087,13 +1479,13 @@ class BillingSession(ABC):
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
                     automanage_licenses=plan.automanage_licenses,
-                    billing_schedule=CustomerPlan.ANNUAL,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     discount=plan.discount,
                 )
 
                 new_plan = CustomerPlan.objects.create(
                     customer=plan.customer,
-                    billing_schedule=CustomerPlan.ANNUAL,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     automanage_licenses=plan.automanage_licenses,
                     charge_automatically=plan.charge_automatically,
                     price_per_license=price_per_license,
@@ -1103,7 +1495,7 @@ class BillingSession(ABC):
                     status=CustomerPlan.ACTIVE,
                     next_invoice_date=next_billing_cycle,
                     invoiced_through=None,
-                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                    invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
                 )
 
                 new_plan_ledger_entry = LicenseLedger.objects.create(
@@ -1135,13 +1527,13 @@ class BillingSession(ABC):
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
                     automanage_licenses=plan.automanage_licenses,
-                    billing_schedule=CustomerPlan.MONTHLY,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     discount=plan.discount,
                 )
 
                 new_plan = CustomerPlan.objects.create(
                     customer=plan.customer,
-                    billing_schedule=CustomerPlan.MONTHLY,
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     automanage_licenses=plan.automanage_licenses,
                     charge_automatically=plan.charge_automatically,
                     price_per_license=price_per_license,
@@ -1151,7 +1543,7 @@ class BillingSession(ABC):
                     status=CustomerPlan.ACTIVE,
                     next_invoice_date=next_billing_cycle,
                     invoiced_through=None,
-                    invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                    invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
                 )
 
                 new_plan_ledger_entry = LicenseLedger.objects.create(
@@ -1172,104 +1564,158 @@ class BillingSession(ABC):
                 )
                 return new_plan, new_plan_ledger_entry
 
+            if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL:
+                self.downgrade_now_without_creating_additional_invoices(plan)
+
             if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
                 self.process_downgrade(plan)
+
             return None, None
         return None, last_ledger_entry
 
+    def get_next_plan(self, plan: CustomerPlan) -> Optional[CustomerPlan]:  # nocoverage
+        if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+            assert plan.end_date is not None
+            return CustomerPlan.objects.filter(
+                customer=plan.customer,
+                billing_cycle_anchor=plan.end_date,
+                status=CustomerPlan.NEVER_STARTED,
+            ).first()
+        return None
+
+    def get_billing_context_from_plan(
+        self,
+        customer: Customer,
+        plan: CustomerPlan,
+        last_ledger_entry: LicenseLedger,
+        now: datetime,
+    ) -> Dict[str, Any]:
+        downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+        downgrade_at_end_of_free_trial = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
+        switch_to_annual_at_end_of_cycle = (
+            plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
+        )
+        switch_to_monthly_at_end_of_cycle = (
+            plan.status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE
+        )
+        licenses = last_ledger_entry.licenses
+        licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+        assert licenses_at_next_renewal is not None
+        seat_count = self.current_count_for_billed_licenses()
+
+        # Should do this in JavaScript, using the user's time zone
+        if plan.is_free_trial() or downgrade_at_end_of_free_trial:
+            assert plan.next_invoice_date is not None
+            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+        else:
+            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
+                dt=start_of_next_billing_cycle(plan, now)
+            )
+
+        billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+
+        if switch_to_annual_at_end_of_cycle:
+            annual_price_per_license = get_price_per_license(
+                plan.tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, customer.default_discount
+            )
+            renewal_cents = annual_price_per_license * licenses_at_next_renewal
+            price_per_license = format_money(annual_price_per_license / 12)
+        elif switch_to_monthly_at_end_of_cycle:
+            monthly_price_per_license = get_price_per_license(
+                plan.tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, customer.default_discount
+            )
+            renewal_cents = monthly_price_per_license * licenses_at_next_renewal
+            price_per_license = format_money(monthly_price_per_license)
+        else:
+            renewal_cents = renewal_amount(plan, now, last_ledger_entry)
+
+            if plan.price_per_license is None:
+                price_per_license = ""
+            elif billing_frequency == "Annual":
+                price_per_license = format_money(plan.price_per_license / 12)
+            else:
+                price_per_license = format_money(plan.price_per_license)
+
+        charge_automatically = plan.charge_automatically
+        assert customer.stripe_customer_id is not None  # for mypy
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        if charge_automatically:
+            payment_method = payment_method_string(stripe_customer)
+        else:
+            payment_method = "Billed by invoice"
+
+        fixed_price = (
+            cents_to_dollar_string(plan.fixed_price) if plan.fixed_price is not None else None
+        )
+        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+            customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        )
+        legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(customer)
+        context = {
+            "plan_name": plan.name,
+            "has_active_plan": True,
+            "free_trial": plan.is_free_trial(),
+            "downgrade_at_end_of_cycle": downgrade_at_end_of_cycle,
+            "downgrade_at_end_of_free_trial": downgrade_at_end_of_free_trial,
+            "automanage_licenses": plan.automanage_licenses,
+            "switch_to_annual_at_end_of_cycle": switch_to_annual_at_end_of_cycle,
+            "switch_to_monthly_at_end_of_cycle": switch_to_monthly_at_end_of_cycle,
+            "licenses": licenses,
+            "licenses_at_next_renewal": licenses_at_next_renewal,
+            "seat_count": seat_count,
+            "renewal_date": renewal_date,
+            "renewal_amount": cents_to_dollar_string(renewal_cents),
+            "payment_method": payment_method,
+            "charge_automatically": charge_automatically,
+            "stripe_email": stripe_customer.email,
+            "CustomerPlan": CustomerPlan,
+            "billing_frequency": billing_frequency,
+            "fixed_price": fixed_price,
+            "price_per_license": price_per_license,
+            "is_sponsorship_pending": customer.sponsorship_pending,
+            "discount_percent": format_discount_percentage(customer.default_discount),
+            "is_self_hosted_billing": not isinstance(self, RealmBillingSession),
+            "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
+            "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
+            "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
+        }
+        return context
+
     def get_billing_page_context(self) -> Dict[str, Any]:
+        now = timezone_now()
+
         customer = self.get_customer()
         assert customer is not None
+
         plan = get_current_plan_by_customer(customer)
-        context: Dict[str, Any] = {}
-        if plan is not None:
-            now = timezone_now()
-            new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
-            if last_ledger_entry is not None:
-                if new_plan is not None:  # nocoverage
-                    plan = new_plan
-                assert plan is not None  # for mypy
-                downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-                switch_to_annual_at_end_of_cycle = (
-                    plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
-                )
-                switch_to_monthly_at_end_of_cycle = (
-                    plan.status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE
-                )
-                licenses = last_ledger_entry.licenses
-                licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
-                assert licenses_at_next_renewal is not None
-                seat_count = self.current_count_for_billed_licenses()
+        assert plan is not None
 
-                # Should do this in JavaScript, using the user's time zone
-                if plan.is_free_trial():
-                    assert plan.next_invoice_date is not None
-                    renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
-                else:
-                    renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
-                        dt=start_of_next_billing_cycle(plan, now)
-                    )
+        new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
+        assert last_ledger_entry is not None
+        plan = new_plan if new_plan is not None else plan
 
-                billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+        context = self.get_billing_context_from_plan(customer, plan, last_ledger_entry, now)
 
-                if switch_to_annual_at_end_of_cycle:
-                    annual_price_per_license = get_price_per_license(
-                        plan.tier, CustomerPlan.ANNUAL, customer.default_discount
-                    )
-                    renewal_cents = annual_price_per_license * licenses_at_next_renewal
-                    price_per_license = format_money(annual_price_per_license / 12)
-                elif switch_to_monthly_at_end_of_cycle:
-                    monthly_price_per_license = get_price_per_license(
-                        plan.tier, CustomerPlan.MONTHLY, customer.default_discount
-                    )
-                    renewal_cents = monthly_price_per_license * licenses_at_next_renewal
-                    price_per_license = format_money(monthly_price_per_license)
-                else:
-                    renewal_cents = renewal_amount(plan, now, last_ledger_entry)
+        next_plan = self.get_next_plan(plan)
+        if next_plan is not None:  # nocoverage
+            next_plan_context = self.get_billing_context_from_plan(
+                customer, next_plan, last_ledger_entry, now
+            )
+            # Settings we want to display from the next plan instead of the current one.
+            # HACK: Our billing page is not designed to handle two plans, so while this is hacky,
+            # it's the easiest way to get the UI we want without making things too complicated for us.
+            keys = [
+                "renewal_amount",
+                "payment_method",
+                "charge_automatically",
+                "billing_frequency",
+                "fixed_price",
+                "price_per_license",
+                "discount_percent",
+            ]
 
-                    if plan.price_per_license is None:
-                        price_per_license = ""
-                    elif billing_frequency == "Annual":
-                        price_per_license = format_money(plan.price_per_license / 12)
-                    else:
-                        price_per_license = format_money(plan.price_per_license)
-
-                charge_automatically = plan.charge_automatically
-                assert customer.stripe_customer_id is not None  # for mypy
-                stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-                if charge_automatically:
-                    payment_method = payment_method_string(stripe_customer)
-                else:
-                    payment_method = "Billed by invoice"
-
-                fixed_price = (
-                    cents_to_dollar_string(plan.fixed_price)
-                    if plan.fixed_price is not None
-                    else None
-                )
-                context = {
-                    "plan_name": plan.name,
-                    "has_active_plan": True,
-                    "free_trial": plan.is_free_trial(),
-                    "downgrade_at_end_of_cycle": downgrade_at_end_of_cycle,
-                    "automanage_licenses": plan.automanage_licenses,
-                    "switch_to_annual_at_end_of_cycle": switch_to_annual_at_end_of_cycle,
-                    "switch_to_monthly_at_end_of_cycle": switch_to_monthly_at_end_of_cycle,
-                    "licenses": licenses,
-                    "licenses_at_next_renewal": licenses_at_next_renewal,
-                    "seat_count": seat_count,
-                    "renewal_date": renewal_date,
-                    "renewal_amount": cents_to_dollar_string(renewal_cents),
-                    "payment_method": payment_method,
-                    "charge_automatically": charge_automatically,
-                    "stripe_email": stripe_customer.email,
-                    "CustomerPlan": CustomerPlan,
-                    "billing_frequency": billing_frequency,
-                    "fixed_price": fixed_price,
-                    "price_per_license": price_per_license,
-                    "is_sponsorship_pending": customer.sponsorship_pending,
-                    "discount_percent": format_discount_percentage(customer.default_discount),
-                }
+            for key in keys:
+                context[key] = next_plan_context[key]
         return context
 
     def get_initial_upgrade_context(
@@ -1280,9 +1726,14 @@ class BillingSession(ABC):
         if self.is_sponsored_or_pending(customer):
             return f"{self.billing_session_url}/sponsorship", None
 
-        billing_page_url = reverse("billing_home")
-        if customer is not None and (get_current_plan_by_customer(customer) is not None):
-            return billing_page_url, None
+        remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
+            customer
+        )
+        # Show upgrade page for remote servers on legacy plan.
+        if customer is not None and remote_server_legacy_plan_end_date is None:
+            customer_plan = get_current_plan_by_customer(customer)
+            if customer_plan is not None:
+                return f"{self.billing_session_url}/billing", None
 
         percent_off = Decimal(0)
         if customer is not None and customer.default_discount is not None:
@@ -1305,26 +1756,47 @@ class BillingSession(ABC):
         seat_count = self.current_count_for_billed_licenses()
         signed_seat_count, salt = sign_string(str(seat_count))
         tier = initial_upgrade_request.tier
+
+        free_trial_days = None
+        free_trial_end_date = None
+        # Don't show free trial for remote servers on legacy plan.
+        if remote_server_legacy_plan_end_date is None:
+            free_trial_days = settings.FREE_TRIAL_DAYS
+            if free_trial_days is not None:
+                _, _, free_trial_end, _ = compute_plan_parameters(
+                    tier, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, None, True
+                )
+                free_trial_end_date = (
+                    f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
+                )
+
         context: UpgradePageContext = {
             "customer_name": customer_specific_context["customer_name"],
             "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
             "discount_percent": format_discount_percentage(percent_off),
             "email": customer_specific_context["email"],
             "exempt_from_license_number_check": exempt_from_license_number_check,
-            "free_trial_days": settings.FREE_TRIAL_DAYS,
+            "free_trial_days": free_trial_days,
+            "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
+            "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "page_params": {
-                "annual_price": get_price_per_license(tier, CustomerPlan.ANNUAL, percent_off),
+                "annual_price": get_price_per_license(
+                    tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, percent_off
+                ),
                 "demo_organization_scheduled_deletion_date": customer_specific_context[
                     "demo_organization_scheduled_deletion_date"
                 ],
-                "monthly_price": get_price_per_license(tier, CustomerPlan.MONTHLY, percent_off),
+                "monthly_price": get_price_per_license(
+                    tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, percent_off
+                ),
                 "seat_count": seat_count,
+                "billing_base_url": self.billing_base_url,
             },
             "payment_method": current_payment_method,
-            "plan": "Zulip Cloud Standard",
+            "plan": CustomerPlan.name_from_tier(tier),
             "salt": salt,
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
@@ -1341,6 +1813,19 @@ class BillingSession(ABC):
             plan = get_current_plan_by_customer(customer)
         assert plan is not None
         do_change_plan_status(plan, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+
+    def void_all_open_invoices(self) -> int:
+        customer = self.get_customer()
+        if customer is None:
+            return 0
+        invoices = get_all_invoices_for_customer(customer)
+        voided_invoices_count = 0
+        for invoice in invoices:
+            if invoice.status == "open":
+                assert invoice.id is not None
+                stripe.Invoice.void_invoice(invoice.id)
+                voided_invoices_count += 1
+        return voided_invoices_count
 
     # During realm deactivation we instantly downgrade the plan to Limited.
     # Extra users added in the final month are not charged. Also used
@@ -1385,25 +1870,40 @@ class BillingSession(ABC):
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+                assert not plan.is_free_trial()
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 self.downgrade_at_the_end_of_billing_cycle(plan=plan)
             elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
-                assert plan.billing_schedule == CustomerPlan.MONTHLY
+                assert plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 # Customer needs to switch to an active plan first to avoid unexpected behavior.
                 assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                # Switching billing frequency for free trial should happen instantly.
+                assert not plan.is_free_trial()
                 assert plan.fixed_price is None
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE:
-                assert plan.billing_schedule == CustomerPlan.ANNUAL
+                assert plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
                 # Customer needs to switch to an active plan first to avoid unexpected behavior.
                 assert plan.status != CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+                # Switching billing frequency for free trial should happen instantly.
+                assert not plan.is_free_trial()
                 assert plan.fixed_price is None
                 do_change_plan_status(plan, status)
             elif status == CustomerPlan.ENDED:
+                # Not used right now on billing page but kept in case we need it.
                 assert plan.is_free_trial()
                 self.downgrade_now_without_creating_additional_invoices(plan=plan)
+            elif status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL:
+                assert plan.is_free_trial()
+                do_change_plan_status(plan, status)
+            elif status == CustomerPlan.FREE_TRIAL:
+                if update_plan_request.schedule is not None:
+                    self.do_change_schedule_after_free_trial(plan, update_plan_request.schedule)
+                else:
+                    assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
+                    do_change_plan_status(plan, status)
             return
 
         licenses = update_plan_request.licenses
@@ -1430,7 +1930,7 @@ class BillingSession(ABC):
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
             )
-            update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
+            self.update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
             return
 
         licenses_at_next_renewal = update_plan_request.licenses_at_next_renewal
@@ -1453,7 +1953,7 @@ class BillingSession(ABC):
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
             )
-            update_license_ledger_for_manual_plan(
+            self.update_license_ledger_for_manual_plan(
                 plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
             )
             return
@@ -1485,7 +1985,7 @@ class BillingSession(ABC):
             billing_schedule=current_plan.billing_schedule,
             tier=new_plan_tier,
             billing_cycle_anchor=new_plan_billing_cycle_anchor,
-            invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+            invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
             next_invoice_date=new_plan_billing_cycle_anchor,
         )
 
@@ -1503,7 +2003,116 @@ class BillingSession(ABC):
             licenses_at_next_renewal=licenses_for_new_plan,
         )
 
-    def do_change_plan_to_new_tier(self, new_plan_tier: int) -> None:
+    def invoice_plan(self, plan: CustomerPlan, event_time: datetime) -> None:
+        if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_STARTED:
+            raise NotImplementedError(
+                "Plan with invoicing_status==STARTED needs manual resolution."
+            )
+        if not plan.customer.stripe_customer_id:
+            raise BillingError(
+                f"Customer has a paid plan without a Stripe customer ID: {plan.customer!s}"
+            )
+
+        # Updating a CustomerPlan with a status to switch the plan tier,
+        # is done via switch_plan_tier, so we do not need to make end of
+        # cycle updates for that case.
+        if plan.status is not CustomerPlan.SWITCH_PLAN_TIER_NOW:
+            self.make_end_of_cycle_updates_if_needed(plan, event_time)
+
+        if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
+            invoiced_through_id = -1
+            licenses_base = None
+        else:
+            assert plan.invoiced_through is not None
+            licenses_base = plan.invoiced_through.licenses
+            invoiced_through_id = plan.invoiced_through.id
+
+        invoice_item_created = False
+        for ledger_entry in LicenseLedger.objects.filter(
+            plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
+        ).order_by("id"):
+            price_args: PriceArgs = {}
+            if ledger_entry.is_renewal:
+                if plan.fixed_price is not None:
+                    price_args = {"amount": plan.fixed_price}
+                else:
+                    assert plan.price_per_license is not None  # needed for mypy
+                    price_args = {
+                        "unit_amount": plan.price_per_license,
+                        "quantity": ledger_entry.licenses,
+                    }
+                description = f"{plan.name} - renewal"
+            elif licenses_base is not None and ledger_entry.licenses != licenses_base:
+                assert plan.price_per_license
+                last_ledger_entry_renewal = (
+                    LicenseLedger.objects.filter(
+                        plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
+                    )
+                    .order_by("-id")
+                    .first()
+                )
+                assert last_ledger_entry_renewal is not None
+                last_renewal = last_ledger_entry_renewal.event_time
+                billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
+                plan_renewal_or_end_date = get_plan_renewal_or_end_date(
+                    plan, ledger_entry.event_time
+                )
+                proration_fraction = (plan_renewal_or_end_date - ledger_entry.event_time) / (
+                    billing_period_end - last_renewal
+                )
+                price_args = {
+                    "unit_amount": int(plan.price_per_license * proration_fraction + 0.5),
+                    "quantity": ledger_entry.licenses - licenses_base,
+                }
+                description = "Additional license ({} - {})".format(
+                    ledger_entry.event_time.strftime("%b %-d, %Y"),
+                    plan_renewal_or_end_date.strftime("%b %-d, %Y"),
+                )
+
+            if price_args:
+                plan.invoiced_through = ledger_entry
+                plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
+                plan.save(update_fields=["invoicing_status", "invoiced_through"])
+                stripe.InvoiceItem.create(
+                    currency="usd",
+                    customer=plan.customer.stripe_customer_id,
+                    description=description,
+                    discountable=False,
+                    period={
+                        "start": datetime_to_timestamp(ledger_entry.event_time),
+                        "end": datetime_to_timestamp(
+                            get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
+                        ),
+                    },
+                    idempotency_key=get_idempotency_key(ledger_entry),
+                    **price_args,
+                )
+                invoice_item_created = True
+            plan.invoiced_through = ledger_entry
+            plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
+            plan.save(update_fields=["invoicing_status", "invoiced_through"])
+            licenses_base = ledger_entry.licenses
+
+        if invoice_item_created:
+            if plan.charge_automatically:
+                collection_method = "charge_automatically"
+                days_until_due = None
+            else:
+                collection_method = "send_invoice"
+                days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+            stripe_invoice = stripe.Invoice.create(
+                auto_advance=True,
+                collection_method=collection_method,
+                customer=plan.customer.stripe_customer_id,
+                days_until_due=days_until_due,
+                statement_descriptor=plan.name,
+            )
+            stripe.Invoice.finalize_invoice(stripe_invoice)
+
+        plan.next_invoice_date = next_invoice_date(plan)
+        plan.save(update_fields=["next_invoice_date"])
+
+    def do_change_plan_to_new_tier(self, new_plan_tier: int) -> str:
         customer = self.get_customer()
         assert customer is not None
         current_plan = get_current_plan_by_customer(customer)
@@ -1514,31 +2123,41 @@ class BillingSession(ABC):
         if not current_plan.customer.stripe_customer_id:
             raise BillingError("Organization missing Stripe customer.")
 
-        if not self.is_valid_plan_tier_switch(current_plan.tier, new_plan_tier):
+        type_of_tier_change = self.get_type_of_plan_tier_change(current_plan.tier, new_plan_tier)
+
+        if type_of_tier_change == PlanTierChangeType.INVALID:
             raise BillingError("Invalid change of customer plan tier.")
 
-        plan_switch_time = timezone_now()
+        if type_of_tier_change == PlanTierChangeType.UPGRADE:
+            plan_switch_time = timezone_now()
+            current_plan.status = CustomerPlan.SWITCH_PLAN_TIER_NOW
+            current_plan.next_invoice_date = plan_switch_time
+            current_plan.save(update_fields=["status", "next_invoice_date"])
 
-        current_plan.status = CustomerPlan.SWITCH_PLAN_TIER_NOW
-        current_plan.next_invoice_date = plan_switch_time
-        current_plan.save(update_fields=["status", "next_invoice_date"])
+            self.do_change_plan_type(tier=new_plan_tier)
 
-        self.do_change_plan_type(tier=new_plan_tier)
+            amount_to_credit_for_early_termination = get_amount_to_credit_for_plan_tier_change(
+                current_plan, plan_switch_time
+            )
+            stripe.Customer.create_balance_transaction(
+                current_plan.customer.stripe_customer_id,
+                amount=-1 * amount_to_credit_for_early_termination,
+                currency="usd",
+                description="Credit from early termination of active plan",
+            )
+            self.switch_plan_tier(current_plan, new_plan_tier)
+            self.invoice_plan(current_plan, plan_switch_time)
+            new_plan = get_current_plan_by_customer(customer)
+            assert new_plan is not None  # for mypy
+            self.invoice_plan(new_plan, plan_switch_time)
+            return f"{self.billing_entity_display_name} upgraded to {new_plan.name}"
 
-        amount_to_credit_for_early_termination = get_amount_to_credit_for_plan_tier_change(
-            current_plan, plan_switch_time
-        )
-        stripe.Customer.create_balance_transaction(
-            current_plan.customer.stripe_customer_id,
-            amount=-1 * amount_to_credit_for_early_termination,
-            currency="usd",
-            description="Credit from early termination of active plan",
-        )
-        self.switch_plan_tier(current_plan, new_plan_tier)
-        invoice_plan(current_plan, plan_switch_time)
-        new_plan = get_current_plan_by_customer(customer)
-        assert new_plan is not None  # for mypy
-        invoice_plan(new_plan, plan_switch_time)
+        # TODO: Implement downgrade that is a change from and to a paid plan
+        # tier. This should keep the same billing cycle schedule and change
+        # the plan when it's next invoiced vs immediately. Note this will need
+        # new CustomerPlan.status value, e.g. SWITCH_PLAN_TIER_AT_PLAN_END.
+        assert type_of_tier_change == PlanTierChangeType.DOWNGRADE  # nocoverage
+        return ""  # nocoverage
 
     def get_event_status(self, event_status_request: EventStatusRequest) -> Dict[str, Any]:
         customer = self.get_customer()
@@ -1576,8 +2195,28 @@ class BillingSession(ABC):
         raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
 
     def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
-        context: Dict[str, Any] = {}
         customer = self.get_customer()
+        is_remotely_hosted = isinstance(
+            self, (RemoteRealmBillingSession, RemoteServerBillingSession)
+        )
+
+        # We only support sponsorships for these plans.
+        sponsored_plan_name = CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD)
+        if is_remotely_hosted:
+            sponsored_plan_name = CustomerPlan.name_from_tier(
+                CustomerPlan.TIER_SELF_HOSTED_COMMUNITY
+            )
+
+        plan_name = "Zulip Cloud Free"
+        if is_remotely_hosted:
+            plan_name = "Self-managed"
+
+        context: Dict[str, Any] = {
+            "billing_base_url": self.billing_base_url,
+            "is_remotely_hosted": is_remotely_hosted,
+            "sponsored_plan_name": sponsored_plan_name,
+            "plan_name": plan_name,
+        }
 
         if customer is not None and customer.sponsorship_pending:
             if self.on_paid_plan():
@@ -1587,21 +2226,174 @@ class BillingSession(ABC):
 
         if self.is_sponsored():
             context["is_sponsored"] = True
+            context["plan_name"] = sponsored_plan_name
 
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
                 context["plan_name"] = plan.name
                 context["free_trial"] = plan.is_free_trial()
-            elif self.is_sponsored():
-                # We don't create CustomerPlan objects for fully sponsored realms via support page.
-                context["plan_name"] = "Zulip Cloud Standard"
-            else:
-                # TODO: Don't hardcode this plan name.
-                context["plan_name"] = "Zulip Cloud Free"
 
         self.add_sponsorship_info_to_context(context)
         return context
+
+    def request_sponsorship(self, form: SponsorshipRequestForm) -> None:
+        if not form.is_valid():
+            message = " ".join(
+                error["message"]
+                for error_list in form.errors.get_json_data().values()
+                for error in error_list
+            )
+            raise BillingError("Form validation error", message=message)
+
+        request_context = self.get_sponsorship_request_session_specific_context()
+        with transaction.atomic():
+            # Ensures customer is created first before updating sponsorship status.
+            self.update_customer_sponsorship_status(True)
+            sponsorship_request = ZulipSponsorshipRequest(
+                customer=self.get_customer(),
+                requested_by=request_context["realm_user"],
+                org_website=form.cleaned_data["website"],
+                org_description=form.cleaned_data["description"],
+                org_type=form.cleaned_data["organization_type"],
+                expected_total_users=form.cleaned_data["expected_total_users"],
+                paid_users_count=form.cleaned_data["paid_users_count"],
+                paid_users_description=form.cleaned_data["paid_users_description"],
+            )
+            sponsorship_request.save()
+
+            org_type = form.cleaned_data["organization_type"]
+            self.save_org_type_from_request_sponsorship_session(org_type)
+
+            if request_context["realm_user"] is not None:
+                # TODO: Refactor to not create an import cycle.
+                from zerver.actions.users import do_change_is_billing_admin
+
+                do_change_is_billing_admin(request_context["realm_user"], True)
+
+            org_type_display_name = get_org_type_display_name(org_type)
+
+        user_info = request_context["user_info"]
+        support_url = self.support_url()
+        context = {
+            "requested_by": user_info["name"],
+            "user_role": user_info["role"],
+            "billing_entity": self.billing_entity_display_name,
+            "support_url": support_url,
+            "organization_type": org_type_display_name,
+            "website": sponsorship_request.org_website,
+            "description": sponsorship_request.org_description,
+            "expected_total_users": sponsorship_request.expected_total_users,
+            "paid_users_count": sponsorship_request.paid_users_count,
+            "paid_users_description": sponsorship_request.paid_users_description,
+        }
+        send_email(
+            "zerver/emails/sponsorship_request",
+            to_emails=[FromAddress.SUPPORT],
+            # Sent to the server's support team, so this email is not user-facing.
+            from_name="Zulip sponsorship request",
+            from_address=FromAddress.tokenized_no_reply_address(),
+            reply_to_email=user_info["email"],
+            context=context,
+        )
+
+    def process_support_view_request(self, support_request: SupportViewRequest) -> str:
+        support_type = support_request["support_type"]
+        success_message = ""
+
+        if support_type == SupportType.approve_sponsorship:
+            success_message = self.approve_sponsorship()
+        elif support_type == SupportType.update_sponsorship_status:
+            assert support_request["sponsorship_status"] is not None
+            sponsorship_status = support_request["sponsorship_status"]
+            success_message = self.update_customer_sponsorship_status(sponsorship_status)
+        elif support_type == SupportType.attach_discount:
+            assert support_request["discount"] is not None
+            new_discount = support_request["discount"]
+            success_message = self.attach_discount_to_customer(new_discount)
+        elif support_type == SupportType.update_billing_modality:
+            assert support_request["billing_modality"] is not None
+            assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
+            charge_automatically = support_request["billing_modality"] == "charge_automatically"
+            success_message = self.update_billing_modality_of_current_plan(charge_automatically)
+        elif support_type == SupportType.modify_plan:
+            assert support_request["plan_modification"] is not None
+            plan_modification = support_request["plan_modification"]
+            if plan_modification == "downgrade_at_billing_cycle_end":
+                self.downgrade_at_the_end_of_billing_cycle()
+                success_message = f"{self.billing_entity_display_name} marked for downgrade at the end of billing cycle"
+            elif plan_modification == "downgrade_now_without_additional_licenses":
+                self.downgrade_now_without_creating_additional_invoices()
+                success_message = f"{self.billing_entity_display_name} downgraded without creating additional invoices"
+            elif plan_modification == "downgrade_now_void_open_invoices":
+                self.downgrade_now_without_creating_additional_invoices()
+                voided_invoices_count = self.void_all_open_invoices()
+                success_message = f"{self.billing_entity_display_name} downgraded and voided {voided_invoices_count} open invoices"
+            else:
+                assert plan_modification == "upgrade_plan_tier"
+                assert support_request["new_plan_tier"] is not None
+                new_plan_tier = support_request["new_plan_tier"]
+                success_message = self.do_change_plan_to_new_tier(new_plan_tier)
+
+        return success_message
+
+    def update_license_ledger_for_manual_plan(
+        self,
+        plan: CustomerPlan,
+        event_time: datetime,
+        licenses: Optional[int] = None,
+        licenses_at_next_renewal: Optional[int] = None,
+    ) -> None:
+        if licenses is not None:
+            if not plan.customer.exempt_from_license_number_check:
+                assert self.current_count_for_billed_licenses() <= licenses
+            assert licenses > plan.licenses()
+            LicenseLedger.objects.create(
+                plan=plan,
+                event_time=event_time,
+                licenses=licenses,
+                licenses_at_next_renewal=licenses,
+            )
+        elif licenses_at_next_renewal is not None:
+            if not plan.customer.exempt_from_license_number_check:
+                assert self.current_count_for_billed_licenses() <= licenses_at_next_renewal
+            LicenseLedger.objects.create(
+                plan=plan,
+                event_time=event_time,
+                licenses=plan.licenses(),
+                licenses_at_next_renewal=licenses_at_next_renewal,
+            )
+        else:
+            raise AssertionError("Pass licenses or licenses_at_next_renewal")
+
+    def update_license_ledger_for_automanaged_plan(
+        self, plan: CustomerPlan, event_time: datetime
+    ) -> None:
+        new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, event_time)
+        if last_ledger_entry is None:
+            return
+        if new_plan is not None:
+            plan = new_plan
+        licenses_at_next_renewal = self.current_count_for_billed_licenses()
+        licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
+
+        LicenseLedger.objects.create(
+            plan=plan,
+            event_time=event_time,
+            licenses=licenses,
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+
+    def update_license_ledger_if_needed(self, event_time: datetime) -> None:
+        customer = self.get_customer()
+        if customer is None:
+            return
+        plan = get_current_plan_by_customer(customer)
+        if plan is None:
+            return
+        if not plan.automanage_licenses:
+            return
+        self.update_license_ledger_for_automanaged_plan(plan, event_time)
 
 
 class RealmBillingSession(BillingSession):
@@ -1634,12 +2426,31 @@ class RealmBillingSession(BillingSession):
 
     @override
     @property
+    def billing_entity_display_name(self) -> str:
+        return self.realm.string_id
+
+    @override
+    @property
     def billing_session_url(self) -> str:
         return self.realm.uri
 
     @override
+    @property
+    def billing_base_url(self) -> str:
+        return ""
+
+    @override
+    def support_url(self) -> str:
+        return build_support_url("support", self.realm.string_id)
+
+    @override
     def get_customer(self) -> Optional[Customer]:
         return get_customer_by_realm(self.realm)
+
+    @override
+    def get_email(self) -> str:
+        assert self.user is not None
+        return self.user.delivery_email
 
     @override
     def current_count_for_billed_licenses(self) -> int:
@@ -1659,8 +2470,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
-        elif event_type is AuditLogEventType.BILLING_METHOD_CHANGED:
-            return RealmAuditLog.REALM_BILLING_METHOD_CHANGED
+        elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
+            return RealmAuditLog.REALM_BILLING_MODALITY_CHANGED
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
             return RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
@@ -1701,7 +2512,7 @@ class RealmBillingSession(BillingSession):
         metadata["realm_str"] = self.realm.string_id
         realm_stripe_customer_data = StripeCustomerData(
             description=f"{self.realm.string_id} ({self.realm.name})",
-            email=self.user.delivery_email,
+            email=self.get_email(),
             metadata=metadata,
         )
         return realm_stripe_customer_data
@@ -1712,33 +2523,13 @@ class RealmBillingSession(BillingSession):
     ) -> Dict[str, Any]:
         assert self.user is not None
         updated_metadata = dict(
-            user_email=self.user.delivery_email,
+            user_email=self.get_email(),
             realm_id=self.realm.id,
             realm_str=self.realm.string_id,
             user_id=self.user.id,
             **metadata,
         )
         return updated_metadata
-
-    @override
-    def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
-    ) -> StripePaymentIntentData:
-        # Support requests do not set any stripe billing information.
-        assert self.support_session is False
-        assert self.user is not None
-        amount = price_per_license * licenses
-
-        # TODO: Don't hardcode plan name; it should be looked up for
-        # the tier.
-        description = f"Upgrade to Zulip Cloud Standard, ${price_per_license/100} x {licenses}"
-        plan_name = "Zulip Cloud Standard"
-        return StripePaymentIntentData(
-            amount=amount,
-            description=description,
-            plan_name=plan_name,
-            email=self.user.delivery_email,
-        )
 
     @override
     def update_or_create_customer(
@@ -1769,9 +2560,11 @@ class RealmBillingSession(BillingSession):
         # formats of CustomerPlan.tier and Realm.plan_type.
         if is_sponsored:
             plan_type = Realm.PLAN_TYPE_STANDARD_FREE
-        elif tier == CustomerPlan.STANDARD:
+        elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
             plan_type = Realm.PLAN_TYPE_STANDARD
-        elif tier == CustomerPlan.PLUS:  # nocoverage # Plus plan doesn't use this code path yet.
+        elif (
+            tier == CustomerPlan.TIER_CLOUD_PLUS
+        ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = Realm.PLAN_TYPE_PLUS
         else:
             raise AssertionError("Unexpected tier")
@@ -1787,7 +2580,7 @@ class RealmBillingSession(BillingSession):
         plan.save(update_fields=["status"])
 
     @override
-    def approve_sponsorship(self) -> None:
+    def approve_sponsorship(self) -> str:
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
@@ -1818,16 +2611,19 @@ class RealmBillingSession(BillingSession):
                     end_link="](/help/linking-to-zulip-website)",
                 )
                 internal_send_private_message(notification_bot, user, message)
+        return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
     def is_sponsored(self) -> bool:
         return self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE
 
     @override
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
-            return True
-        return False
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+        assert self.user is not None
+        return {
+            "type": "card_update",
+            "user_id": self.user.id,
+        }
 
     @override
     def get_upgrade_page_session_type_specific_context(
@@ -1836,19 +2632,32 @@ class RealmBillingSession(BillingSession):
         assert self.user is not None
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.realm.name,
-            email=self.user.delivery_email,
+            email=self.get_email(),
             is_demo_organization=self.realm.demo_organization_scheduled_deletion_date is not None,
             demo_organization_scheduled_deletion_date=self.realm.demo_organization_scheduled_deletion_date,
             is_self_hosting=False,
         )
 
     @override
-    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
-        if current_plan_tier == CustomerPlan.STANDARD:
-            return new_plan_tier == CustomerPlan.PLUS
+    def get_type_of_plan_tier_change(
+        self, current_plan_tier: int, new_plan_tier: int
+    ) -> PlanTierChangeType:
+        valid_plan_tiers = [CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.TIER_CLOUD_PLUS]
+        if (
+            current_plan_tier not in valid_plan_tiers
+            or new_plan_tier not in valid_plan_tiers
+            or current_plan_tier == new_plan_tier
+        ):
+            return PlanTierChangeType.INVALID
+        if (
+            current_plan_tier == CustomerPlan.TIER_CLOUD_STANDARD
+            and new_plan_tier == CustomerPlan.TIER_CLOUD_PLUS
+        ):
+            return PlanTierChangeType.UPGRADE
         else:  # nocoverage, not currently implemented
-            assert current_plan_tier == CustomerPlan.PLUS
-            return new_plan_tier == CustomerPlan.STANDARD
+            assert current_plan_tier == CustomerPlan.TIER_CLOUD_PLUS
+            assert new_plan_tier == CustomerPlan.TIER_CLOUD_STANDARD
+            return PlanTierChangeType.DOWNGRADE
 
     @override
     def has_billing_access(self) -> bool:
@@ -1861,9 +2670,6 @@ class RealmBillingSession(BillingSession):
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
-        def key_helper(d: Any) -> int:
-            return d[1]["display_order"]
-
         context.update(
             realm_org_type=self.realm.org_type,
             sorted_org_types=sorted(
@@ -1872,14 +2678,39 @@ class RealmBillingSession(BillingSession):
                     for (org_type_name, org_type) in Realm.ORG_TYPES.items()
                     if not org_type.get("hidden")
                 ),
-                key=key_helper,
+                key=sponsorship_org_type_key_helper,
             ),
         )
+        context["org_name"] = self.realm.name
+
+    @override
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        assert self.user is not None
+        return SponsorshipRequestSessionSpecificContext(
+            realm_user=self.user,
+            user_info=SponsorshipApplicantInfo(
+                name=self.user.full_name,
+                email=self.get_email(),
+                role=self.user.get_role_name(),
+            ),
+            realm_string_id=self.realm.string_id,
+        )
+
+    @override
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+        # TODO: Use the actions.py method for this.
+        if self.realm.org_type != org_type:
+            self.realm.org_type = org_type
+            self.realm.save(update_fields=["org_type"])
 
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
-        self, remote_realm: RemoteRealm, support_staff: Optional[UserProfile] = None
+        self,
+        remote_realm: RemoteRealm,
+        support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_realm = remote_realm
         if support_staff is not None:
@@ -1890,12 +2721,32 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     @property
+    def billing_entity_display_name(self) -> str:
+        return self.remote_realm.name
+
+    @override
+    @property
     def billing_session_url(self) -> str:
         return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/realm/{self.remote_realm.uuid}"
 
     @override
+    @property
+    def billing_base_url(self) -> str:
+        return f"/realm/{self.remote_realm.uuid}"
+
+    @override
+    def support_url(self) -> str:
+        return build_support_url("remote_servers_support", self.remote_realm.server.hostname)
+
+    @override
     def get_customer(self) -> Optional[Customer]:
         return get_customer_by_remote_realm(self.remote_realm)
+
+    @override
+    def get_email(self) -> str:
+        # BUG: This is an email for the whole server. We probably
+        # need a separable field here.
+        return self.remote_realm.server.contact_email
 
     @override
     def current_count_for_billed_licenses(self) -> int:
@@ -1916,8 +2767,10 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
-        elif event_type is AuditLogEventType.BILLING_METHOD_CHANGED:
-            return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_METHOD_CHANGED
+        elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
+            return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
+        elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
+            return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -1929,23 +2782,23 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         *,
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
-        # BUG: This doesn't have a way to pass realm_id !
+        # These audit logs don't use all the fields of `RemoteRealmAuditLog`:
+        #
+        # * remote_id is None because this is not synced from a remote table.
+        # * realm_id is None because we do not aim to store both remote_realm
+        #   and the legacy realm_id field.
         audit_log_event = self.get_audit_log_event(event_type)
+        log_data = {
+            "server": self.remote_realm.server,
+            "remote_realm": self.remote_realm,
+            "event_type": audit_log_event,
+            "event_time": event_time,
+        }
+
         if extra_data:
-            RemoteRealmAuditLog.objects.create(
-                server=self.remote_realm.server,
-                remote_realm=self.remote_realm,
-                event_type=audit_log_event,
-                event_time=event_time,
-                extra_data=extra_data,
-            )
-        else:
-            RemoteRealmAuditLog.objects.create(
-                server=self.remote_realm.server,
-                remote_realm=self.remote_realm,
-                event_type=audit_log_event,
-                event_time=event_time,
-            )
+            log_data["extra_data"] = extra_data
+
+        RemoteRealmAuditLog.objects.create(**log_data)
 
     @override
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
@@ -1956,9 +2809,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         metadata["remote_realm_host"] = str(self.remote_realm.host)
         realm_stripe_customer_data = StripeCustomerData(
             description=str(self.remote_realm),
-            # BUG: This is an email for the whole server. We probably
-            # need a separable field here.
-            email=self.remote_realm.server.contact_email,
+            email=self.get_email(),
             metadata=metadata,
         )
         return realm_stripe_customer_data
@@ -1972,25 +2823,6 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             **metadata,
         )
         return updated_metadata
-
-    @override
-    def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
-    ) -> StripePaymentIntentData:
-        # Support requests do not set any stripe billing information.
-        assert self.support_session is False
-        amount = price_per_license * licenses
-        # TODO: Don't hardcode plan names.
-        description = f"Upgrade to Zulip X Standard, ${price_per_license/100} x {licenses}"
-        plan_name = "Zulip X Standard"
-        return StripePaymentIntentData(
-            amount=amount,
-            description=description,
-            plan_name=plan_name,
-            # BUG: This is an email for the whole server. We probably
-            # need a separable field here.
-            email=self.remote_realm.server.contact_email,
-        )
 
     @override
     def update_or_create_customer(
@@ -2012,38 +2844,50 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
-        # TODO: Create actual plan types.
-
-        # This function needs to translate between the different
-        # formats of CustomerPlan.tier and Realm.plan_type.
         if is_sponsored:
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
-        elif tier == CustomerPlan.STANDARD:
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
-        elif tier == CustomerPlan.PLUS:  # nocoverage # Plus plan doesn't use this code path yet.
+        elif (
+            tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+        ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = RemoteRealm.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
 
-        # TODO: Audit logging.
+        # TODO: Audit logging and set usage limits.
 
         self.remote_realm.plan_type = plan_type
         self.remote_realm.save(update_fields=["plan_type"])
 
     @override
-    def approve_sponsorship(self) -> None:
-        # TBD
-        pass
+    def approve_sponsorship(self) -> str:
+        # Sponsorship approval is only a support admin action.
+        assert self.support_session
+
+        self.do_change_plan_type(tier=None, is_sponsored=True)
+        customer = self.get_customer()
+        if customer is not None and customer.sponsorship_pending:
+            customer.sponsorship_pending = False
+            customer.save(update_fields=["sponsorship_pending"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
+            )
+        # TODO: Add something (probably email) to let remote realm
+        # organization know that the sponsorship request was approved.
+        return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
     def is_sponsored(self) -> bool:
         return self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY
 
     @override
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
-            return True
-        return False
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+        return {
+            "type": "card_update",
+            # TODO: Add user identity metadata from the remote realm identity
+            # "user_id": user.id,
+        }
 
     @override
     def get_upgrade_page_session_type_specific_context(
@@ -2051,7 +2895,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     ) -> UpgradePageSessionTypeSpecificContext:
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.remote_realm.host,
-            email=self.remote_realm.server.contact_email,
+            email=self.get_email(),
             is_demo_organization=False,
             demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
@@ -2059,17 +2903,43 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def process_downgrade(self, plan: CustomerPlan) -> None:
-        self.remote_realm.plan_type = RemoteRealm.PLAN_TYPE_SELF_HOSTED
-        self.remote_realm.save(update_fields=["plan_type"])
+        with transaction.atomic():
+            old_plan_type = self.remote_realm.plan_type
+            new_plan_type = RemoteRealm.PLAN_TYPE_SELF_HOSTED
+            self.remote_realm.plan_type = new_plan_type
+            self.remote_realm.save(update_fields=["plan_type"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
+                event_time=timezone_now(),
+                extra_data={"old_value": old_plan_type, "new_value": new_plan_type},
+            )
 
-        # TODO: Write audit log entry
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
 
     @override
-    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
-        # TBD
-        return False
+    def get_type_of_plan_tier_change(
+        self, current_plan_tier: int, new_plan_tier: int
+    ) -> PlanTierChangeType:
+        valid_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            CustomerPlan.TIER_SELF_HOSTED_PLUS,
+        ]
+        if (
+            current_plan_tier not in valid_plan_tiers
+            or new_plan_tier not in valid_plan_tiers
+            or current_plan_tier == new_plan_tier
+        ):
+            return PlanTierChangeType.INVALID
+        if (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+        ):
+            return PlanTierChangeType.UPGRADE
+        else:
+            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            return PlanTierChangeType.DOWNGRADE
 
     @override
     def has_billing_access(self) -> bool:
@@ -2077,15 +2947,52 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         # session that isn't authorized for billing access.
         return True
 
+    PAID_PLANS = [
+        RemoteRealm.PLAN_TYPE_BUSINESS,
+        RemoteRealm.PLAN_TYPE_ENTERPRISE,
+    ]
+
     @override
     def on_paid_plan(self) -> bool:
-        # TBD
-        return False
+        return self.remote_realm.plan_type in self.PAID_PLANS
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
-        # TBD
-        pass
+        context.update(
+            realm_org_type=self.remote_realm.org_type,
+            sorted_org_types=sorted(
+                (
+                    [org_type_name, org_type]
+                    for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                    if not org_type.get("hidden")
+                ),
+                key=sponsorship_org_type_key_helper,
+            ),
+        )
+        context["org_name"] = self.remote_realm.host
+
+    @override
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        return SponsorshipRequestSessionSpecificContext(
+            realm_user=None,
+            user_info=SponsorshipApplicantInfo(
+                # TODO: Plumb through the session data on the acting user.
+                name="Remote realm administrator",
+                email=self.get_email(),
+                # TODO: Set user_role when determining which set of users can access the page.
+                role="Remote realm administrator",
+            ),
+            # TODO: Check if this works on support page.
+            realm_string_id=self.remote_realm.host,
+        )
+
+    @override
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+        if self.remote_realm.org_type != org_type:
+            self.remote_realm.org_type = org_type
+            self.remote_realm.save(update_fields=["org_type"])
 
 
 class RemoteServerBillingSession(BillingSession):  # nocoverage
@@ -2093,7 +3000,9 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     creating RemoteRealm objects."""
 
     def __init__(
-        self, remote_server: RemoteZulipServer, support_staff: Optional[UserProfile] = None
+        self,
+        remote_server: RemoteZulipServer,
+        support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_server = remote_server
         if support_staff is not None:
@@ -2104,12 +3013,30 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     @property
+    def billing_entity_display_name(self) -> str:
+        return self.remote_server.hostname
+
+    @override
+    @property
     def billing_session_url(self) -> str:
-        return "TBD"
+        return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/server/{self.remote_server.uuid}"
+
+    @override
+    @property
+    def billing_base_url(self) -> str:
+        return f"/server/{self.remote_server.uuid}"
+
+    @override
+    def support_url(self) -> str:
+        return build_support_url("remote_servers_support", self.remote_server.hostname)
 
     @override
     def get_customer(self) -> Optional[Customer]:
         return get_customer_by_remote_server(self.remote_server)
+
+    @override
+    def get_email(self) -> str:
+        return self.remote_server.contact_email
 
     @override
     def current_count_for_billed_licenses(self) -> int:
@@ -2130,8 +3057,10 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
-        elif event_type is AuditLogEventType.BILLING_METHOD_CHANGED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_METHOD_CHANGED
+        elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
+            return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
+        elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
+            return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -2144,19 +3073,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
+        log_data = {
+            "server": self.remote_server,
+            "event_type": audit_log_event,
+            "event_time": event_time,
+        }
+
         if extra_data:
-            RemoteZulipServerAuditLog.objects.create(
-                server=self.remote_server,
-                event_type=audit_log_event,
-                event_time=event_time,
-                extra_data=extra_data,
-            )
-        else:
-            RemoteZulipServerAuditLog.objects.create(
-                server=self.remote_server,
-                event_type=audit_log_event,
-                event_time=event_time,
-            )
+            log_data["extra_data"] = extra_data
+
+        RemoteZulipServerAuditLog.objects.create(**log_data)
 
     @override
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
@@ -2167,7 +3093,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         metadata["remote_server_str"] = str(self.remote_server)
         realm_stripe_customer_data = StripeCustomerData(
             description=str(self.remote_server),
-            email=self.remote_server.contact_email,
+            email=self.get_email(),
             metadata=metadata,
         )
         return realm_stripe_customer_data
@@ -2178,26 +3104,10 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     ) -> Dict[str, Any]:
         updated_metadata = dict(
             server=self.remote_server,
-            email=self.remote_server.contact_email,
+            email=self.get_email(),
             **metadata,
         )
         return updated_metadata
-
-    @override
-    def get_data_for_stripe_payment_intent(
-        self, price_per_license: int, licenses: int
-    ) -> StripePaymentIntentData:
-        # Support requests do not set any stripe billing information.
-        assert self.support_session is False
-        amount = price_per_license * licenses
-        description = f"Upgrade to Zulip X Standard, ${price_per_license/100} x {licenses}"
-        plan_name = "Zulip X Standard"
-        return StripePaymentIntentData(
-            amount=amount,
-            description=description,
-            plan_name=plan_name,
-            email=self.remote_server.contact_email,
-        )
 
     @override
     def update_or_create_customer(
@@ -2225,29 +3135,50 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # formats of CustomerPlan.tier and RealmZulipServer.plan_type.
         if is_sponsored:
             plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
-        elif tier == CustomerPlan.STANDARD:
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
-        elif tier == CustomerPlan.PLUS:  # nocoverage # Plus plan doesn't use this code path yet.
+        elif (
+            tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+        ):  # nocoverage # Plus plan doesn't use this code path yet.
             plan_type = RemoteZulipServer.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
 
-        # TODO: Audit logging.
+        # TODO: Audit logging and set usage limits.
 
         self.remote_server.plan_type = plan_type
         self.remote_server.save(update_fields=["plan_type"])
 
     @override
-    def approve_sponsorship(self) -> None:
-        # TBD
-        pass
+    def approve_sponsorship(self) -> str:
+        # Sponsorship approval is only a support admin action.
+        assert self.support_session
+
+        self.do_change_plan_type(tier=None, is_sponsored=True)
+        customer = self.get_customer()
+        if customer is not None and customer.sponsorship_pending:
+            customer.sponsorship_pending = False
+            customer.save(update_fields=["sponsorship_pending"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
+            )
+        # TODO: Add something (probably email) to let remote server
+        # organization know that the sponsorship request was approved.
+        return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
     def process_downgrade(self, plan: CustomerPlan) -> None:
-        self.remote_server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
-        self.remote_server.save(update_fields=["plan_type"])
+        with transaction.atomic():
+            old_plan_type = self.remote_server.plan_type
+            new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+            self.remote_server.plan_type = new_plan_type
+            self.remote_server.save(update_fields=["plan_type"])
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
+                event_time=timezone_now(),
+                extra_data={"old_value": old_plan_type, "new_value": new_plan_type},
+            )
 
-        # TODO: Write audit log entry
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
 
@@ -2256,9 +3187,12 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return self.remote_server.plan_type == self.remote_server.PLAN_TYPE_COMMUNITY
 
     @override
-    def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
-        # TBD
-        return False
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+        return {
+            "type": "card_update",
+            # TODO: Maybe add some user identity metadata from the remote server identity
+            # "user_id": user.id,
+        }
 
     @override
     def get_upgrade_page_session_type_specific_context(
@@ -2266,16 +3200,47 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     ) -> UpgradePageSessionTypeSpecificContext:
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.remote_server.hostname,
-            email=self.remote_server.contact_email,
+            email=self.get_email(),
             is_demo_organization=False,
             demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
         )
 
     @override
-    def is_valid_plan_tier_switch(self, current_plan_tier: int, new_plan_tier: int) -> bool:
-        # TBD
-        return False
+    def get_type_of_plan_tier_change(
+        self, current_plan_tier: int, new_plan_tier: int
+    ) -> PlanTierChangeType:
+        valid_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            CustomerPlan.TIER_SELF_HOSTED_PLUS,
+        ]
+        if (
+            current_plan_tier not in valid_plan_tiers
+            or new_plan_tier not in valid_plan_tiers
+            or current_plan_tier == new_plan_tier
+        ):
+            return PlanTierChangeType.INVALID
+
+        if current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY and new_plan_tier in (
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            CustomerPlan.TIER_SELF_HOSTED_PLUS,
+        ):
+            return PlanTierChangeType.UPGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+        ):
+            return PlanTierChangeType.UPGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ):
+            return PlanTierChangeType.DOWNGRADE
+        else:
+            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            return PlanTierChangeType.DOWNGRADE
 
     @override
     def has_billing_access(self) -> bool:
@@ -2283,15 +3248,105 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         # session that isn't authorized for billing access.
         return True
 
+    PAID_PLANS = [
+        RemoteZulipServer.PLAN_TYPE_BUSINESS,
+        RemoteZulipServer.PLAN_TYPE_ENTERPRISE,
+    ]
+
     @override
     def on_paid_plan(self) -> bool:
-        # TBD
-        return False
+        return self.remote_server.plan_type in self.PAID_PLANS
 
     @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
-        # TBD
-        pass
+        context.update(
+            realm_org_type=self.remote_server.org_type,
+            sorted_org_types=sorted(
+                (
+                    [org_type_name, org_type]
+                    for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                    if not org_type.get("hidden")
+                ),
+                key=sponsorship_org_type_key_helper,
+            ),
+        )
+        context["org_name"] = self.remote_server.hostname
+
+    @override
+    def get_sponsorship_request_session_specific_context(
+        self,
+    ) -> SponsorshipRequestSessionSpecificContext:
+        return SponsorshipRequestSessionSpecificContext(
+            realm_user=None,
+            user_info=SponsorshipApplicantInfo(
+                # TODO: Figure out a better story here. We don't
+                # actually have a name or other details on the person
+                # doing this flow, but could ask for it in the login
+                # form if desired.
+                name="Remote server administrator",
+                email=self.get_email(),
+                role="Remote server administrator",
+            ),
+            # TODO: Check if this works on support page.
+            realm_string_id=self.remote_server.hostname,
+        )
+
+    @override
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+        if self.remote_server.org_type != org_type:
+            self.remote_server.org_type = org_type
+            self.remote_server.save(update_fields=["org_type"])
+
+    def add_server_to_legacy_plan(
+        self,
+        renewal_date: datetime,
+        end_date: datetime,
+    ) -> None:
+        # Set stripe_customer_id to None to avoid customer being charged without a payment method.
+        customer = Customer.objects.create(
+            remote_server=self.remote_server, stripe_customer_id=None
+        )
+
+        # Servers on legacy plan which are scheduled to be upgraded have 2 plans.
+        # This plan will be used to track the current status of SWITCH_PLAN_TIER_AT_PLAN_END
+        # and will not charge the customer. The other plan will be used to track the new plan
+        # customer will move to the end of this plan.
+        legacy_plan_anchor = renewal_date
+        legacy_plan_params = {
+            "billing_cycle_anchor": legacy_plan_anchor,
+            "status": CustomerPlan.ACTIVE,
+            "tier": CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            # End when the new plan starts.
+            "end_date": end_date,
+            # The primary mechanism for preventing charges under this
+            # plan is setting a null `next_invoice_date`, but setting
+            # a 0 price is useful defense in depth here.
+            "next_invoice_date": None,
+            "price_per_license": 0,
+            "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            "automanage_licenses": True,
+        }
+        legacy_plan = CustomerPlan.objects.create(
+            customer=customer,
+            **legacy_plan_params,
+        )
+
+        # Create a ledger entry for the legacy plan for tracking purposes.
+        billed_licenses = self.current_count_for_billed_licenses()
+        ledger_entry = LicenseLedger.objects.create(
+            plan=legacy_plan,
+            is_renewal=True,
+            event_time=legacy_plan_anchor,
+            licenses=billed_licenses,
+            licenses_at_next_renewal=billed_licenses,
+        )
+        legacy_plan.invoiced_through = ledger_entry
+        legacy_plan.save(update_fields=["invoiced_through"])
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+            event_time=legacy_plan_anchor,
+            extra_data=legacy_plan_params,
+        )
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
@@ -2321,24 +3376,20 @@ def calculate_discounted_price_per_license(
 def get_price_per_license(
     tier: int, billing_schedule: int, discount: Optional[Decimal] = None
 ) -> int:
-    price_per_license: Optional[int] = None
+    price_map: Dict[int, Dict[str, int]] = {
+        CustomerPlan.TIER_CLOUD_STANDARD: {"Annual": 8000, "Monthly": 800},
+        CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 16000, "Monthly": 1600},
+        # Placeholder self-hosted plan for development.
+        CustomerPlan.TIER_SELF_HOSTED_BUSINESS: {"Annual": 8000, "Monthly": 800},
+    }
 
-    if tier == CustomerPlan.STANDARD:
-        if billing_schedule == CustomerPlan.ANNUAL:
-            price_per_license = 8000
-        elif billing_schedule == CustomerPlan.MONTHLY:
-            price_per_license = 800
+    try:
+        price_per_license = price_map[tier][CustomerPlan.BILLING_SCHEDULES[billing_schedule]]
+    except KeyError:
+        if tier not in price_map:
+            raise InvalidTierError(tier)
         else:  # nocoverage
             raise InvalidBillingScheduleError(billing_schedule)
-    elif tier == CustomerPlan.PLUS:
-        if billing_schedule == CustomerPlan.ANNUAL:
-            price_per_license = 16000
-        elif billing_schedule == CustomerPlan.MONTHLY:
-            price_per_license = 1600
-        else:  # nocoverage
-            raise InvalidBillingScheduleError(billing_schedule)
-    else:
-        raise InvalidTierError(tier)
 
     if discount is not None:
         price_per_license = calculate_discounted_price_per_license(price_per_license, discount)
@@ -2351,14 +3402,17 @@ def compute_plan_parameters(
     billing_schedule: int,
     discount: Optional[Decimal],
     free_trial: bool = False,
+    billing_cycle_anchor: Optional[datetime] = None,
 ) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
     # TODO talk about leap seconds?
-    billing_cycle_anchor = timezone_now().replace(microsecond=0)
-    if billing_schedule == CustomerPlan.ANNUAL:
+    if billing_cycle_anchor is None:
+        billing_cycle_anchor = timezone_now().replace(microsecond=0)
+
+    if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
         period_end = add_months(billing_cycle_anchor, 12)
-    elif billing_schedule == CustomerPlan.MONTHLY:
+    elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
         period_end = add_months(billing_cycle_anchor, 1)
     else:  # nocoverage
         raise InvalidBillingScheduleError(billing_schedule)
@@ -2423,65 +3477,6 @@ def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     )
 
 
-def update_license_ledger_for_manual_plan(
-    plan: CustomerPlan,
-    event_time: datetime,
-    licenses: Optional[int] = None,
-    licenses_at_next_renewal: Optional[int] = None,
-) -> None:
-    if licenses is not None:
-        assert plan.customer.realm is not None
-        if not plan.customer.exempt_from_license_number_check:
-            assert get_latest_seat_count(plan.customer.realm) <= licenses
-        assert licenses > plan.licenses()
-        LicenseLedger.objects.create(
-            plan=plan, event_time=event_time, licenses=licenses, licenses_at_next_renewal=licenses
-        )
-    elif licenses_at_next_renewal is not None:
-        assert plan.customer.realm is not None
-        if not plan.customer.exempt_from_license_number_check:
-            assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
-        LicenseLedger.objects.create(
-            plan=plan,
-            event_time=event_time,
-            licenses=plan.licenses(),
-            licenses_at_next_renewal=licenses_at_next_renewal,
-        )
-    else:
-        raise AssertionError("Pass licenses or licenses_at_next_renewal")
-
-
-def update_license_ledger_for_automanaged_plan(
-    realm: Realm, plan: CustomerPlan, event_time: datetime
-) -> None:
-    billing_session = RealmBillingSession(user=None, realm=realm)
-    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-        plan, event_time
-    )
-    if last_ledger_entry is None:
-        return
-    if new_plan is not None:
-        plan = new_plan
-    licenses_at_next_renewal = get_latest_seat_count(realm)
-    licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
-
-    LicenseLedger.objects.create(
-        plan=plan,
-        event_time=event_time,
-        licenses=licenses,
-        licenses_at_next_renewal=licenses_at_next_renewal,
-    )
-
-
-def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
-    plan = get_current_plan_by_realm(realm)
-    if plan is None:
-        return
-    if not plan.automanage_licenses:
-        return
-    update_license_ledger_for_automanaged_plan(realm, plan, event_time)
-
-
 def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> datetime:
     billing_period_end = start_of_next_billing_cycle(plan, event_time)
 
@@ -2490,136 +3485,19 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
     return billing_period_end
 
 
-class PriceArgs(TypedDict, total=False):
-    amount: int
-    unit_amount: int
-    quantity: int
-
-
-def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
-    if plan.invoicing_status == CustomerPlan.STARTED:
-        raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
-    if not plan.customer.stripe_customer_id:
-        assert plan.customer.realm is not None
-        raise BillingError(
-            f"Realm {plan.customer.realm.string_id} has a paid plan without a Stripe customer."
-        )
-
-    realm = plan.customer.realm
-    billing_session = RealmBillingSession(user=None, realm=realm)
-
-    # Updating a CustomerPlan with a status to switch the plan tier,
-    # is done via switch_plan_tier, so we do not need to make end of
-    # cycle updates for that case.
-    if plan.status is not CustomerPlan.SWITCH_PLAN_TIER_NOW:
-        billing_session.make_end_of_cycle_updates_if_needed(plan, event_time)
-
-    if plan.invoicing_status == CustomerPlan.INITIAL_INVOICE_TO_BE_SENT:
-        invoiced_through_id = -1
-        licenses_base = None
-    else:
-        assert plan.invoiced_through is not None
-        licenses_base = plan.invoiced_through.licenses
-        invoiced_through_id = plan.invoiced_through.id
-
-    invoice_item_created = False
-    for ledger_entry in LicenseLedger.objects.filter(
-        plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
-    ).order_by("id"):
-        price_args: PriceArgs = {}
-        if ledger_entry.is_renewal:
-            if plan.fixed_price is not None:
-                price_args = {"amount": plan.fixed_price}
-            else:
-                assert plan.price_per_license is not None  # needed for mypy
-                price_args = {
-                    "unit_amount": plan.price_per_license,
-                    "quantity": ledger_entry.licenses,
-                }
-            description = f"{plan.name} - renewal"
-        elif licenses_base is not None and ledger_entry.licenses != licenses_base:
-            assert plan.price_per_license
-            last_ledger_entry_renewal = (
-                LicenseLedger.objects.filter(
-                    plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
-                )
-                .order_by("-id")
-                .first()
-            )
-            assert last_ledger_entry_renewal is not None
-            last_renewal = last_ledger_entry_renewal.event_time
-            billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
-            plan_renewal_or_end_date = get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
-            proration_fraction = (plan_renewal_or_end_date - ledger_entry.event_time) / (
-                billing_period_end - last_renewal
-            )
-            price_args = {
-                "unit_amount": int(plan.price_per_license * proration_fraction + 0.5),
-                "quantity": ledger_entry.licenses - licenses_base,
-            }
-            description = "Additional license ({} - {})".format(
-                ledger_entry.event_time.strftime("%b %-d, %Y"),
-                plan_renewal_or_end_date.strftime("%b %-d, %Y"),
-            )
-
-        if price_args:
-            plan.invoiced_through = ledger_entry
-            plan.invoicing_status = CustomerPlan.STARTED
-            plan.save(update_fields=["invoicing_status", "invoiced_through"])
-            stripe.InvoiceItem.create(
-                currency="usd",
-                customer=plan.customer.stripe_customer_id,
-                description=description,
-                discountable=False,
-                period={
-                    "start": datetime_to_timestamp(ledger_entry.event_time),
-                    "end": datetime_to_timestamp(
-                        get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
-                    ),
-                },
-                idempotency_key=get_idempotency_key(ledger_entry),
-                **price_args,
-            )
-            invoice_item_created = True
-        plan.invoiced_through = ledger_entry
-        plan.invoicing_status = CustomerPlan.DONE
-        plan.save(update_fields=["invoicing_status", "invoiced_through"])
-        licenses_base = ledger_entry.licenses
-
-    if invoice_item_created:
-        if plan.charge_automatically:
-            collection_method = "charge_automatically"
-            days_until_due = None
-        else:
-            collection_method = "send_invoice"
-            days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-        stripe_invoice = stripe.Invoice.create(
-            auto_advance=True,
-            collection_method=collection_method,
-            customer=plan.customer.stripe_customer_id,
-            days_until_due=days_until_due,
-            statement_descriptor=plan.name,
-        )
-        stripe.Invoice.finalize_invoice(stripe_invoice)
-
-    plan.next_invoice_date = next_invoice_date(plan)
-    plan.save(update_fields=["next_invoice_date"])
-
-
 def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
     if event_time is None:  # nocoverage
         event_time = timezone_now()
+    # TODO: Add RemoteRealmBillingSession and RemoteServerBillingSession cases.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
-        invoice_plan(plan, event_time)
+        if plan.customer.realm is not None:
+            RealmBillingSession(realm=plan.customer.realm).invoice_plan(plan, event_time)
+        # TODO: Assert that we never invoice legacy plans.
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:
     plan = get_current_plan_by_realm(realm)
     return plan is not None and plan.is_free_trial()
-
-
-def is_sponsored_realm(realm: Realm) -> bool:
-    return realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE
 
 
 def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
@@ -2645,20 +3523,6 @@ def get_all_invoices_for_customer(customer: Customer) -> Generator[stripe.Invoic
         invoices = stripe.Invoice.list(
             customer=customer.stripe_customer_id, starting_after=last_invoice, limit=100
         )
-
-
-def void_all_open_invoices(realm: Realm) -> int:
-    customer = get_customer_by_realm(realm)
-    if customer is None:
-        return 0
-    invoices = get_all_invoices_for_customer(customer)
-    voided_invoices_count = 0
-    for invoice in invoices:
-        if invoice.status == "open":
-            assert invoice.id is not None
-            stripe.Invoice.void_invoice(invoice.id)
-            voided_invoices_count += 1
-    return voided_invoices_count
 
 
 def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
@@ -2691,7 +3555,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
             # We've now decided to downgrade this customer and void all invoices, and the below will execute this.
             billing_session = RealmBillingSession(user=None, realm=realm)
             billing_session.downgrade_now_without_creating_additional_invoices()
-            void_all_open_invoices(realm)
+            billing_session.void_all_open_invoices()
             context: Dict[str, Union[str, Realm]] = {
                 "upgrade_url": f"{realm.uri}{reverse('upgrade_page')}",
                 "realm": realm,
@@ -2706,4 +3570,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
             )
         else:
             if customer_has_last_n_invoices_open(customer, 1):
-                void_all_open_invoices(realm)
+                # If a small realm, without an active plan, has
+                # the last invoice open, void the open invoices.
+                billing_session = RealmBillingSession(user=None, realm=realm)
+                billing_session.void_all_open_invoices()

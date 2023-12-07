@@ -77,7 +77,7 @@
 * [Polls](/help/create-a-poll)
 * [Collaborative to-do lists](/help/collaborative-to-do-lists)
 * [Global times](/help/global-times)
-* [Video calls](/help/start-a-call)
+* [Start a call](/help/start-a-call)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)
@@ -182,6 +182,7 @@
 * [Roles and permissions](/help/roles-and-permissions)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
+* [Guest users](/help/guest-users)
 * [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Custom profile fields](/help/custom-profile-fields)

@@ -416,6 +416,11 @@ li.show-more-topics {
     }
 }
 
+#login-link-container .login_button {
+    display: flex;
+    align-items: center;
+}
+
 ul.filters {
     list-style-type: none;
     margin-left: 0;
@@ -1084,7 +1089,7 @@ li.topic-list-item {
 .dm-box {
     grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
     /* This padding maintains a 22px height on DM rows. */
-    padding: 2.25px 0;
+    padding: 2px 0;
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
@@ -1267,6 +1272,55 @@ li.topic-list-item {
                to make a generous clickable area. */
             padding: 0;
         }
+    }
+
+    &.hide_unread_counts {
+        .unread_count,
+        .unread_count.hide,
+        .masked_unread_count {
+            display: none;
+        }
+
+        /* When an empty unread count is hidden,
+           hide the masked unread count, too. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
+        .masked_unread_count {
+            display: block;
+            /* Hold space enough so single-digit
+               unreads don't shift on hover. */
+            margin: 0 3px;
+        }
+
+        &:hover {
+            .unread_count {
+                display: block;
+            }
+
+            .hide,
+            .masked_unread_count {
+                display: none;
+            }
+        }
+    }
+}
+
+/* Prepare an adjusted grid for the logged-out state,
+   one that reassigns the vdots space to markers and
+   controls. */
+.spectator-view #streams_header {
+    grid-template-columns: 0 0 minmax(0, 1fr) minmax(30px, max-content) 0 12px;
+
+    /* With markers and controls now sized the same
+       as the ordinary vdots area (but allowed to grow,
+       care of `minmax(30px, max-content)`, should
+       additional logged-out icons be added in the
+       future), let's center the icon in that area,
+       just like vdots would be. */
+    .heading-markers-and-controls {
+        justify-content: center;
     }
 }
 

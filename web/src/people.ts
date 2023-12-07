@@ -369,11 +369,14 @@ export function get_user_time(user_id: number): string | undefined {
     if (user_timezone) {
         try {
             return new Date().toLocaleTimeString(user_settings.default_language, {
-                ...timerender.get_format_options_for_type("time"),
+                ...timerender.get_format_options_for_type(
+                    "time",
+                    user_settings.twenty_four_hour_time,
+                ),
                 timeZone: user_timezone,
             });
         } catch (error) {
-            blueslip.error(`Error formatting time in ${user_timezone}`, undefined, error);
+            blueslip.warn(`Error formatting time in ${user_timezone}: ${String(error)}`);
         }
     }
     return undefined;

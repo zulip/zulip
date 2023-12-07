@@ -257,6 +257,15 @@ export function initialize() {
         },
     );
 
+    $("body").on(
+        "click",
+        `.${CSS.escape(compose_banner.CLASSNAMES.search_view)} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            narrow.to_compose_target();
+        },
+    );
+
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
         $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {

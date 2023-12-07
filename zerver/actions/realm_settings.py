@@ -16,6 +16,7 @@ from zerver.lib.message import parse_message_time_limit_setting, update_first_vi
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
@@ -31,6 +32,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserProfile,
     active_user_ids,
@@ -104,7 +106,51 @@ def do_set_realm_property(
         update_users_in_full_members_system_group(realm, acting_user=acting_user)
 
 
-@transaction.atomic(durable=True)
+def do_set_push_notifications_enabled_end_timestamp(
+    realm: Realm, value: Optional[int], *, acting_user: Optional[UserProfile]
+) -> None:
+    # Variant of do_set_realm_property with a bit of extra complexity
+    # for the fact that we store a datetime object in the database but
+    # use an integer format timestamp in the API.
+    name = "push_notifications_enabled_end_timestamp"
+    old_timestamp = None
+    old_datetime = getattr(realm, name)
+    if old_datetime is not None:
+        old_timestamp = datetime_to_timestamp(old_datetime)
+
+    if old_timestamp == value:
+        return
+
+    with transaction.atomic():
+        new_datetime = None
+        if value is not None:
+            new_datetime = timestamp_to_datetime(value)
+        setattr(realm, name, new_datetime)
+        realm.save(update_fields=[name])
+
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_timestamp,
+                RealmAuditLog.NEW_VALUE: value,
+                "property": name,
+            },
+        )
+
+    event = dict(
+        type="realm",
+        op="update",
+        property=name,
+        value=value,
+    )
+    send_event(realm, event, active_user_ids(realm.id))
+
+
+@transaction.atomic(savepoint=False)
 def do_change_realm_permission_group_setting(
     realm: Realm, setting_name: str, user_group: UserGroup, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -476,6 +522,21 @@ def do_change_realm_plan_type(
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         # We do not allow public access on limited plans.
         do_set_realm_property(realm, "enable_spectator_access", False, acting_user=acting_user)
+
+    if old_value in [Realm.PLAN_TYPE_PLUS, Realm.PLAN_TYPE_SELF_HOSTED] and plan_type not in [
+        Realm.PLAN_TYPE_PLUS,
+        Realm.PLAN_TYPE_SELF_HOSTED,
+    ]:
+        # If downgrading to a plan that no longer has access to change
+        # can_access_all_users_group, set it back to the default
+        # value.
+        everyone_system_group = UserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        if realm.can_access_all_users_group_id != everyone_system_group.id:
+            do_change_realm_permission_group_setting(
+                realm, "can_access_all_users_group", everyone_system_group, acting_user=acting_user
+            )
 
     realm.plan_type = plan_type
     realm.save(update_fields=["plan_type"])

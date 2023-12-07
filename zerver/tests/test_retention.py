@@ -172,7 +172,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         )
         self._change_messages_date_sent(
             msg_ids,
-            timezone_now() - timedelta(ZULIP_REALM_DAYS + 1),
+            timezone_now() - timedelta(days=ZULIP_REALM_DAYS + 1),
         )
 
         return msg_ids
@@ -240,7 +240,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         )
         self._change_messages_date_sent(
             expired_zulip_msg_ids,
-            timezone_now() - timedelta(ZULIP_REALM_DAYS + 1),
+            timezone_now() - timedelta(days=ZULIP_REALM_DAYS + 1),
         )
 
         expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids
@@ -273,7 +273,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         )
         self._change_messages_date_sent(
             zulip_msg_ids,
-            timezone_now() - timedelta(ZULIP_REALM_DAYS + 1),
+            timezone_now() - timedelta(days=ZULIP_REALM_DAYS + 1),
         )
 
         # Only MIT has a retention policy:
@@ -323,7 +323,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         msg_ids += [self._send_personal_message_to_cross_realm_bot() for i in range(1, 7)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
         # Make the message expired in the Zulip realm.:
-        self._change_messages_date_sent(msg_ids, timezone_now() - timedelta(ZULIP_REALM_DAYS + 1))
+        self._change_messages_date_sent(
+            msg_ids, timezone_now() - timedelta(days=ZULIP_REALM_DAYS + 1)
+        )
 
         archive_messages()
         self._verify_archive_data(msg_ids, usermsg_ids)
@@ -376,7 +378,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Make the message expired in the recipient's realm:
         self._change_messages_date_sent(
             [expired_crossrealm_msg_id],
-            timezone_now() - timedelta(ZULIP_REALM_DAYS + 1),
+            timezone_now() - timedelta(days=ZULIP_REALM_DAYS + 1),
         )
 
         expired_msg_ids = [*expired_mit_msg_ids, *expired_zulip_msg_ids, expired_crossrealm_msg_id]

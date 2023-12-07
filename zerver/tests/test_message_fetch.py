@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
 
@@ -308,6 +308,16 @@ class NarrowBuilderTest(ZulipTestCase):
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
+
+    def test_combined_stream_dm(self) -> None:
+        term1 = dict(operator="dm", operand=self.othello_email)
+        self._build_query(term1)
+
+        topic_term = dict(operator="topic", operand="bogus")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, topic_term)
+
+        stream_term = dict(operator="streams", operand="public")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, stream_term)
 
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
@@ -4451,7 +4461,7 @@ class MessageVisibilityTest(ZulipTestCase):
         realm.message_visibility_limit = None
         realm.save()
 
-        end_time = timezone_now() - datetime.timedelta(hours=lookback_hours - 5)
+        end_time = timezone_now() - timedelta(hours=lookback_hours - 5)
         stat = COUNT_STATS["messages_sent:is_bot:hour"]
 
         RealmCount.objects.create(realm=realm, property=stat.property, end_time=end_time, value=5)

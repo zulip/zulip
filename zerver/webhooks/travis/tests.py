@@ -1,4 +1,4 @@
-import urllib
+from urllib.parse import urlencode
 
 from typing_extensions import override
 
@@ -131,6 +131,6 @@ one or more new messages.
 
     @override
     def get_body(self, fixture_name: str) -> str:
-        return urllib.parse.urlencode(
+        return urlencode(
             {"payload": self.webhook_fixture_data("travis", fixture_name, file_type="json")}
         )

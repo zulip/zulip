@@ -6,6 +6,7 @@ import copy
 import logging
 import re
 from dataclasses import dataclass
+from email.headerregistry import Address
 from functools import lru_cache
 from typing import (
     TYPE_CHECKING,
@@ -33,27 +34,38 @@ from django.utils.translation import override as override_language
 from typing_extensions import TypeAlias, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
-from zerver.lib.avatar import absolute_avatar_url
+from zerver.actions.realm_settings import (
+    do_set_push_notifications_enabled_end_timestamp,
+    do_set_realm_property,
+)
+from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
+from zerver.lib.remote_server import (
+    send_json_to_push_bouncer,
+    send_realms_only_to_push_bouncer,
+    send_to_push_bouncer,
+)
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.users import check_can_access_user
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
     Message,
     NotificationTriggers,
     PushDeviceToken,
+    Realm,
     Recipient,
     Stream,
     UserGroup,
     UserMessage,
     UserProfile,
     get_display_recipient,
+    get_fake_email_domain,
     get_user_profile_by_id,
 )
 
@@ -146,7 +158,7 @@ class APNsContext:
     loop: asyncio.AbstractEventLoop
 
 
-def apns_enabled() -> bool:
+def has_apns_credentials() -> bool:
     return settings.APNS_TOKEN_KEY_FILE is not None or settings.APNS_CERT_FILE is not None
 
 
@@ -156,7 +168,7 @@ def get_apns_context() -> Optional[APNsContext]:
     # import time.
     import aioapns
 
-    if not apns_enabled():  # nocoverage
+    if not has_apns_credentials():  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
@@ -374,7 +386,7 @@ else:
     gcm_client = None
 
 
-def gcm_enabled() -> bool:  # nocoverage
+def has_gcm_credentials() -> bool:  # nocoverage
     return gcm_client is not None
 
 
@@ -565,6 +577,10 @@ def uses_notification_bouncer() -> bool:
     return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
 
 
+def sends_notifications_directly() -> bool:
+    return has_apns_credentials() and has_gcm_credentials() and not uses_notification_bouncer()
+
+
 def send_notifications_to_bouncer(
     user_profile: UserProfile,
     apns_payload: Dict[str, Any],
@@ -641,6 +657,7 @@ def add_push_device_token(
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
             "user_uuid": str(user_profile.uuid),
+            "realm_uuid": str(user_profile.realm.uuid),
             # user_id is sent so that the bouncer can delete any pre-existing registrations
             # for this user+device to avoid duplication upon adding the uuid registration.
             "user_id": str(user_profile.id),
@@ -710,7 +727,7 @@ def clear_push_device_tokens(user_profile_id: int) -> None:
 #
 
 
-def push_notifications_enabled() -> bool:
+def push_notifications_configured() -> bool:
     """True just if this server has configured a way to send push notifications."""
     if (
         uses_notification_bouncer()
@@ -722,12 +739,12 @@ def push_notifications_enabled() -> bool:
         # works -- e.g., that we have ever successfully sent to the bouncer --
         # but this is a good start.
         return True
-    if settings.DEVELOPMENT and (apns_enabled() or gcm_enabled()):  # nocoverage
+    if settings.DEVELOPMENT and (has_apns_credentials() or has_gcm_credentials()):  # nocoverage
         # Since much of the notifications logic is platform-specific, the mobile
         # developers often work on just one platform at a time, so we should
         # only require one to be configured.
         return True
-    elif apns_enabled() and gcm_enabled():  # nocoverage
+    elif has_apns_credentials() and has_gcm_credentials():  # nocoverage
         # We have the needed configuration to send through APNs and GCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
@@ -735,15 +752,70 @@ def push_notifications_enabled() -> bool:
 
 
 def initialize_push_notifications() -> None:
-    if not push_notifications_enabled():
-        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+    """Called during startup of the push notifications worker to check
+    whether we expect mobile push notifications to work on this server
+    and update state accordingly.
+    """
+
+    if sends_notifications_directly():
+        # This server sends push notifications directly. Make sure we
+        # are set to report to clients that push notifications are
+        # enabled.
+        for realm in Realm.objects.filter(push_notifications_enabled=False):
+            do_set_realm_property(realm, "push_notifications_enabled", True, acting_user=None)
+            do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
+        return
+
+    if not push_notifications_configured():
+        for realm in Realm.objects.filter(push_notifications_enabled=True):
+            do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+            do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:
             # Avoid unnecessary spam on development environment startup
-            return
+            return  # nocoverage
         logger.warning(
             "Mobile push notifications are not configured.\n  "
             "See https://zulip.readthedocs.io/en/latest/"
             "production/mobile-push-notifications.html"
         )
+        return
+
+    if uses_notification_bouncer():
+        # If we're using the notification bouncer, check if we can
+        # actually send push notifications.
+
+        try:
+            realms = send_realms_only_to_push_bouncer()
+        except Exception:
+            # An exception was thrown trying to ask the bouncer service whether we can send
+            # push notifications or not. There may be certain transient failures that we could
+            # ignore here, but the default explanation is that there is something wrong either
+            # with our credentials being corrupted or our ability to reach the bouncer service
+            # over the network, so we immediately move to reporting push notifications as likely not working,
+            # as whatever failed here is likely to also fail when trying to send a push notification.
+            for realm in Realm.objects.filter(push_notifications_enabled=True):
+                do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+                do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
+            logger.exception("Exception while sending realms only data to push bouncer")
+            return
+
+        for realm_uuid, data in realms.items():
+            realm = Realm.objects.get(uuid=realm_uuid)
+            do_set_realm_property(
+                realm, "push_notifications_enabled", data["can_push"], acting_user=None
+            )
+            do_set_push_notifications_enabled_end_timestamp(
+                realm, data["expected_end_timestamp"], acting_user=None
+            )
+        return
+
+    logger.warning(  # nocoverage
+        "Mobile push notifications are not fully configured.\n  "
+        "See https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html"
+    )
+    for realm in Realm.objects.filter(push_notifications_enabled=True):  # nocoverage
+        do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+        do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
 
 
 def get_mobile_push_content(rendered_content: str) -> str:
@@ -846,13 +918,24 @@ def get_message_payload(
     message: Message,
     mentioned_user_group_id: Optional[int] = None,
     mentioned_user_group_name: Optional[str] = None,
+    can_access_sender: bool = True,
 ) -> Dict[str, Any]:
     """Common fields for `message` payloads, for all platforms."""
     data = get_base_payload(user_profile)
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data["sender_id"] = message.sender.id
-    data["sender_email"] = message.sender.email
+    if not can_access_sender:
+        # A guest user can only receive a stream message from an
+        # inaccessible user as we allow unsubscribed users to send
+        # messages to streams. For direct messages, the guest gains
+        # access to the user if they where previously inaccessible.
+        data["sender_email"] = Address(
+            username=f"user{message.sender.id}", domain=get_fake_email_domain(message.realm.host)
+        ).addr_spec
+    else:
+        data["sender_email"] = message.sender.email
+
     data["time"] = datetime_to_timestamp(message.date_sent)
     if mentioned_user_group_id is not None:
         assert mentioned_user_group_name is not None
@@ -891,30 +974,40 @@ def get_apns_alert_title(message: Message) -> str:
 def get_apns_alert_subtitle(
     message: Message,
     trigger: str,
+    user_profile: UserProfile,
     mentioned_user_group_name: Optional[str] = None,
+    can_access_sender: bool = True,
 ) -> str:
     """
     On an iOS notification, this is the second bolded line.
     """
+    sender_name = message.sender.full_name
+    if not can_access_sender:
+        # A guest user can only receive a stream message from an
+        # inaccessible user as we allow unsubscribed users to send
+        # messages to streams. For direct messages, the guest gains
+        # access to the user if they where previously inaccessible.
+        sender_name = str(UserProfile.INACCESSIBLE_USER_NAME)
+
     if trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is not None:
             return _("{full_name} mentioned @{user_group_name}:").format(
-                full_name=message.sender.full_name, user_group_name=mentioned_user_group_name
+                full_name=sender_name, user_group_name=mentioned_user_group_name
             )
         else:
-            return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
+            return _("{full_name} mentioned you:").format(full_name=sender_name)
     elif trigger in (
         NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         NotificationTriggers.TOPIC_WILDCARD_MENTION,
         NotificationTriggers.STREAM_WILDCARD_MENTION,
     ):
-        return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
+        return _("{full_name} mentioned everyone:").format(full_name=sender_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
     # For group direct messages, or regular messages to a stream,
     # just use a colon to indicate this is the sender.
-    return message.sender.full_name + ":"
+    return sender_name + ":"
 
 
 def get_apns_badge_count(
@@ -951,10 +1044,11 @@ def get_message_payload_apns(
     trigger: str,
     mentioned_user_group_id: Optional[int] = None,
     mentioned_user_group_name: Optional[str] = None,
+    can_access_sender: bool = True,
 ) -> Dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
     zulip_data = get_message_payload(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
     zulip_data.update(
         message_ids=[message.id],
@@ -966,7 +1060,9 @@ def get_message_payload_apns(
         apns_data = {
             "alert": {
                 "title": get_apns_alert_title(message),
-                "subtitle": get_apns_alert_subtitle(message, trigger, mentioned_user_group_name),
+                "subtitle": get_apns_alert_subtitle(
+                    message, trigger, user_profile, mentioned_user_group_name, can_access_sender
+                ),
                 "body": content,
             },
             "sound": "default",
@@ -981,11 +1077,24 @@ def get_message_payload_gcm(
     message: Message,
     mentioned_user_group_id: Optional[int] = None,
     mentioned_user_group_name: Optional[str] = None,
+    can_access_sender: bool = True,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """A `message` payload + options, for Android via GCM/FCM."""
     data = get_message_payload(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
+
+    if not can_access_sender:
+        # A guest user can only receive a stream message from an
+        # inaccessible user as we allow unsubscribed users to send
+        # messages to streams. For direct messages, the guest gains
+        # access to the user if they where previously inaccessible.
+        sender_avatar_url = get_avatar_for_inaccessible_user()
+        sender_name = str(UserProfile.INACCESSIBLE_USER_NAME)
+    else:
+        sender_avatar_url = absolute_avatar_url(message.sender)
+        sender_name = message.sender.full_name
+
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
@@ -994,8 +1103,8 @@ def get_message_payload_gcm(
             zulip_message_id=message.id,  # message_id is reserved for CCS
             content=content,
             content_truncated=truncated,
-            sender_full_name=message.sender.full_name,
-            sender_avatar_url=absolute_avatar_url(message.sender),
+            sender_full_name=sender_name,
+            sender_avatar_url=sender_avatar_url,
         )
     gcm_options = {"priority": "high"}
     return data, gcm_options
@@ -1037,7 +1146,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     mobile app, when the message is read on the server, to remove the
     message from the notification.
     """
-    if not push_notifications_enabled():
+    if not push_notifications_configured():
         return
 
     user_profile = get_user_profile_by_id(user_profile_id)
@@ -1116,7 +1225,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     missed_message is the event received by the
     zerver.worker.queue_processors.PushNotificationWorker.consume function.
     """
-    if not push_notifications_enabled():
+    if not push_notifications_configured():
         return
     user_profile = get_user_profile_by_id(user_profile_id)
 
@@ -1211,11 +1320,30 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
     soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
 
+    if message.is_stream_message():
+        # This will almost always be True. The corner case where you
+        # can be receiving a message from a user you cannot access
+        # involves your being a guest user whose access is restricted
+        # by a can_access_all_users_group policy, and you can't access
+        # the sender because they are sending a message to a public
+        # stream that you are subscribed to but they are not.
+
+        can_access_sender = check_can_access_user(message.sender, user_profile)
+    else:
+        # For private messages, the recipient will gain access
+        # to the sender if they did not had access previously.
+        can_access_sender = True
+
     apns_payload = get_message_payload_apns(
-        user_profile, message, trigger, mentioned_user_group_id, mentioned_user_group_name
+        user_profile,
+        message,
+        trigger,
+        mentioned_user_group_id,
+        mentioned_user_group_name,
+        can_access_sender,
     )
     gcm_payload, gcm_options = get_message_payload_gcm(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 

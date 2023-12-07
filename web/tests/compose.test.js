@@ -50,6 +50,7 @@ const sent_messages = mock_esm("../src/sent_messages");
 const server_events = mock_esm("../src/server_events");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
+const onboarding_steps = mock_esm("../src/onboarding_steps");
 
 const compose_ui = zrequire("compose_ui");
 const compose_banner = zrequire("compose_banner");
@@ -147,12 +148,22 @@ test_ui("send_message_success", ({override, override_rewire}) => {
         reify_message_id_checked = true;
     });
 
+    override(
+        onboarding_steps,
+        "ONE_TIME_NOTICES_TO_DISPLAY",
+        new Set(["visibility_policy_banner"]),
+    );
+
     override(compose_notifications, "notify_automatic_new_visibility_policy", (message, data) => {
         assert.equal(message.type, "stream");
         assert.equal(message.stream_id, 1);
         assert.equal(message.topic, "test");
         assert.equal(data.id, 12);
         assert.equal(data.automatic_new_visibility_policy, 2);
+    });
+
+    override(onboarding_steps, "post_onboarding_step_as_read", (onboarding_step_name) => {
+        assert.equal(onboarding_step_name, "visibility_policy_banner");
     });
 
     let request = {

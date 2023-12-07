@@ -1040,6 +1040,22 @@ paths:
                                 Processing this event is important to being able to display
                                 basic details on other users given only their ID.
 
+                                If the current user is a guest whose access to a newly created user
+                                is limited by a `can_access_all_users_group` policy, and the event
+                                queue was registered with the `user_list_incomplete` client
+                                capability, then the event queue will not receive an event for such
+                                a new user. If a newly created user is inaccessible to the current
+                                user via such a policy, but the client lacks `user_list_incomplete`
+                                client capability, then this event will be delivered to the queue,
+                                with an "Unknown user" object with the usual format but placeholder
+                                data whose only variable content is the user ID.
+
+                                **Changes**: Before Zulip 8.0 (feature level 232), the
+                                `user_list_incomplete` client capability did not exist, and so all
+                                clients whose access to a new user was prevented by
+                                `can_access_all_users_group` policy would receive a fake "Unknown
+                                user" event for such a user.
+
                                 **Changes**: Starting with Zulip 8.0 (feature level 228),
                                 this event is also sent when a guest user gains access to
                                 a user.
@@ -2256,11 +2272,14 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when the set of onboarding "hotspots" to show for
+                                Event sent when the set of onboarding steps to show for
                                 the current user have changed (E.g. because the user dismissed one).
 
                                 Clients that feature a similar tutorial experience to the Zulip
                                 web app may want to handle these events.
+
+                                **Changes**: Before Zulip 8.0 (feature level 233), this was named
+                                as `Hotspots`. One-time notice wasn't available earlier.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2268,20 +2287,24 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - hotspots
-                                hotspots:
+                                        - onboarding_steps
+                                onboarding_steps:
                                   type: array
                                   description: |
                                     An array of dictionaries where each
-                                    dictionary contains details about a single hotspot.
+                                    dictionary contains details about a single onboarding step.
+
+                                    **Changes**: Before Zulip 8.0 (feature level 233), this array
+                                    was named as `hotspots`. One-time notice wasn't available earlier.
                                   items:
-                                    $ref: "#/components/schemas/Hotspot"
+                                    $ref: "#/components/schemas/OnboardingStep"
                               example:
                                 {
-                                  "type": "hotspots",
-                                  "hotspots":
+                                  "type": "onboarding_steps",
+                                  "onboarding_steps":
                                     [
                                       {
+                                        "type": "hotspot",
                                         "name": "intro_streams",
                                         "title": "Catch up on a stream",
                                         "description": "Messages sent to a stream are seen by everyone subscribed to that stream. Try clicking on one of the stream links below.",
@@ -4581,6 +4604,27 @@ paths:
                                         system group.
 
                                         **Changes**: New in Zulip 8.0 (feature level 225).
+                                    push_notifications_enabled:
+                                      type: boolean
+                                      description: |
+                                        Whether push notifications are enabled for this organization. Typically
+                                        `true` for Zulip Cloud and self-hosted realms that have a valid
+                                        registration for the [Mobile push notifications
+                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                                        and `false` for self-hosted servers that do not.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
+                                        Previously, this value was never updated via events.
+                                    push_notifications_enabled_end_timestamp:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        If the server expects the realm's push notifications access to end at a
+                                        definite time in the future, the time at which this is expected to happen.
+                                        Mobile clients should use this field to display warnings to users when the
+                                        indicated timestamp is near.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
                                   additionalProperties: false
                               example:
                                 {
@@ -11600,6 +11644,13 @@ paths:
               **Changes**: New in Zulip 7.0 (feature level 176). This capability
               is for backwards-compatibility.
 
+            - `user_list_incomplete`: Boolean for whether the client supports not having an
+              incomplete user database. If true, then the `realm_users` array in the `register`
+              response will not include data for inaccessible users and clients of guest users will
+              not receive `realm_user op:add` events for newly created users that are not accessible
+              to the current user. **Changes**: New in Zulip 8.0 (feature level 232). This
+              capability is for backwards-compatibility.
+
             [help-linkifiers]: /help/add-a-custom-linkifier
             [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
             [events-linkifiers]: /api/get-events#realm_linkifiers
@@ -11770,17 +11821,17 @@ paths:
                           array will be empty if `enable_drafts_synchronization` is set to `false`.
                         items:
                           $ref: "#/components/schemas/Draft"
-                      hotspots:
+                      onboarding_steps:
                         type: array
                         description: |
-                          Present if `hotspots` is present in `fetch_event_types`.
+                          Present if `onboarding_steps` is present in `fetch_event_types`.
 
                           An array of dictionaries, where each dictionary contains details about
-                          a single onboarding hotspot that should be shown to new users.
+                          a single onboarding step that should be shown to new users.
 
                           We expect that only official Zulip clients will interact with these data.
                         items:
-                          $ref: "#/components/schemas/Hotspot"
+                          $ref: "#/components/schemas/OnboardingStep"
                       max_message_id:
                         type: integer
                         deprecated: true
@@ -14425,8 +14476,26 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether push notifications are enabled for this organization. Typically
-                          `false` for self-hosted servers that have not configured the
-                          [Mobile push notifications service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html).
+                          `true` for Zulip Cloud and self-hosted realms that have a valid
+                          registration for the [Mobile push notifications
+                          service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                          and `false` for self-hosted servers that do not.
+
+                          **Changes**: Before Zulip 8.0 (feature level 231), this incorrectly was
+                          `true` for servers that were partly configured to use the Mobile Push
+                          Notifications Service but not properly registered.
+                      realm_push_notifications_enabled_end_timestamp:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          If the server expects the realm's push notifications access to end at a
+                          definite time in the future, the time at which this is expected to happen.
+                          Mobile clients should use this field to display warnings to users when the
+                          indicated timestamp is near.
+
+                          **Changes**: New in Zulip 8.0 (feature level 231).
                       realm_upload_quota_mib:
                         type: integer
                         nullable: true
@@ -15166,7 +15235,22 @@ paths:
                           the usual User dictionary, this does not contain the `is_active`
                           key, as all the users present in this array have active accounts.
 
+                          If the current user is a guest whose access to users is limited by a
+                          `can_access_all_users_group` policy, and the event queue was registered
+                          with the `user_list_incomplete` client capability, then users that the
+                          current user cannot access will not be included in this array. If the
+                          current user's access to a user is restricted but the client lacks this
+                          capability, then that inaccessible user will appear in the users array as
+                          an "Unknown user" object with the usual format but placeholder data whose
+                          only variable content is the user ID.
+
                           See also `cross_realm_bots` and `realm_non_active_users`.
+
+                          **Changes**: Before Zulip 8.0 (feature level 232), the
+                          `user_list_incomplete` client capability did not exist, and so all
+                          clients whose access to a new user was prevented by
+                          `can_access_all_users_group` policy would receive a fake "Unknown
+                          user" event for such users.
                         items:
                           $ref: "#/components/schemas/User"
                       realm_non_active_users:
@@ -15627,7 +15711,7 @@ paths:
                       push_notifications_enabled:
                         type: boolean
                         description: |
-                          Whether mobile/push notifications are enabled.
+                          Whether mobile/push notifications are configured.
                       is_incompatible:
                         type: boolean
                         description: |
@@ -18474,16 +18558,22 @@ components:
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             **Changes**: New in Zulip 6.0 (feature level 146).
-    Hotspot:
+    OnboardingStep:
       type: object
       additionalProperties: false
       description: |
-        Dictionary containing details of a single hotspot.
+        Dictionary containing details of a single onboarding step.
+
+        **Changes**: Before Zulip 8.0 (feature level 233), this was
+        named as `Hotspot`. One-time notice wasn't available earlier.
       properties:
-        delay:
-          type: number
+        type:
+          type: string
           description: |
-            The delay after which the user should be shown the hotspot.
+            The type of the onboarding step. Valid values are either
+            'hotspot' or 'one_time_notice'.
+
+            **Changes**: New in Zulip 8.0 (feature level 233).
         name:
           type: string
           description: |
@@ -18497,6 +18587,10 @@ components:
           description: |
             The description of the hotspot, as will be displayed to the
             user.
+        delay:
+          type: number
+          description: |
+            The delay after which the user should be shown the hotspot.
         has_trigger:
           type: boolean
           description: |

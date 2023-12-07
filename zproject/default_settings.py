@@ -485,6 +485,8 @@ WELCOME_EMAIL_SENDER: Optional[Dict[str, str]] = None
 
 # Whether to send periodic digests of activity.
 SEND_DIGEST_EMAILS = True
+# The variable part of email sender names to be used for outgoing emails.
+INSTALLATION_NAME = EXTERNAL_HOST
 
 # Used to change the Zulip logo in portico pages.
 CUSTOM_LOGO_URL: Optional[str] = None

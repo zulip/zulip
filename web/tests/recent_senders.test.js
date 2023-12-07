@@ -184,6 +184,11 @@ test("process_stream_message", () => {
         true,
     );
 
+    // Messages sent by sender1 in stream1 > topic1
+    assert.equal(rs.get_topic_message_ids_for_sender(stream1, topic1, sender1).size, 2);
+    // Messages sent by sender1 in stream1 > topic2
+    assert.equal(rs.get_topic_message_ids_for_sender(stream1, topic2, sender1).size, 0);
+
     // Same stream, but different topics
     const message6 = make_stream_message({
         stream_id: stream3,

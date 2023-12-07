@@ -101,8 +101,6 @@ else:
 
 
 # This is overridden in test_settings.py for the test suites
-TEST_SUITE = False
-# This is overridden in test_settings.py for the test suites
 PUPPETEER_TESTS = False
 # This is overridden in test_settings.py for the test suites
 RUNNING_OPENAPI_CURL_TEST = False

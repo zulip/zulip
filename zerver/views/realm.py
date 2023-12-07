@@ -105,6 +105,8 @@ def update_realm(
     authentication_methods: Optional[Dict[str, Any]] = REQ(
         json_validator=check_dict([]), default=None
     ),
+    # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
+    # are not offered here as it is maintained by the server, not via the API.
     notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
@@ -236,6 +238,8 @@ def update_realm(
     if can_access_all_users_group_id is not None:
         # Remove this when the feature is ready for production.
         assert settings.DEVELOPMENT
+
+        realm.can_enable_restricted_user_access_for_guests()
 
     data: Dict[str, Any] = {}
 

@@ -49,6 +49,7 @@ class ErrorCode(Enum):
     MISSING_REMOTE_REALM = auto()
     TOPIC_WILDCARD_MENTION_NOT_ALLOWED = auto()
     STREAM_WILDCARD_MENTION_NOT_ALLOWED = auto()
+    REMOTE_BILLING_UNAUTHENTICATED_USER = auto()
 
 
 class JsonableError(Exception):
@@ -443,6 +444,22 @@ class MissingAuthenticationError(JsonableError):
 
     # No msg_format is defined since this exception is caught and
     # converted into json_unauthorized in Zulip's middleware.
+
+
+class RemoteBillingAuthenticationError(JsonableError):
+    # We want this as a distinct class from MissingAuthenticationError,
+    # as we don't want the json_unauthorized conversion mechanism to apply
+    # to this.
+    code = ErrorCode.REMOTE_BILLING_UNAUTHENTICATED_USER
+    http_status_code = 401
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("User not authenticated")
 
 
 class InvalidSubdomainError(JsonableError):

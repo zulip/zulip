@@ -558,7 +558,7 @@
     }
 }
 
-#recent-view-filter_widget.disabled-for-spectators {
+.dropdown-widget-disabled-for-spectators #recent-view-filter_widget {
     cursor: not-allowed;
     opacity: 0.5;
 }

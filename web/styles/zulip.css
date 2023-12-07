@@ -52,19 +52,23 @@ body {
     */
     --header-height: 40px;
 
-    @media (width < $sm_min) {
+    /*
+    At 600px, the header starts taking up more than 5%
+    of the screen. We make it shorter to leave more space
+    to see the rest of the app. */
+    @media (height < $short_navbar_cutoff_height) {
         --header-height: 30px;
     }
 
     /*
     Height of the search box, which appears in the header.
-    On very small screens, the search box's height becomes
+    On very short screens, the search box's height becomes
     the height of its parent (i.e. the header height).
     */
     --search-box-height: 28px;
     --search-box-width: 150px;
 
-    @media (width < $sm_min) {
+    @media (height < $short_navbar_cutoff_height) {
         --search-box-height: var(--header-height);
     }
 
@@ -191,6 +195,7 @@ body {
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 80%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
@@ -276,6 +281,20 @@ body {
     --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
+
+    /* Markdown code colors */
+    --color-markdown-code-text: hsl(0deg 0% 0%);
+    --color-markdown-code-background: hsl(0deg 0% 0% / 6%);
+    --color-markdown-code-background-mentions: hsl(0deg 0% 0% / 7%);
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-border: transparent;
+    --color-markdown-pre-background: hsl(0deg 0% 0% / 4%);
+    --color-markdown-pre-background-mentions: hsl(0deg 0% 0% / 4%);
+    --color-markdown-pre-border-mentions: transparent;
+    --color-markdown-link: hsl(200deg 100% 40%);
+    --color-markdown-code-link: var(--color-markdown-link);
+    --color-markdown-link-hover: hsl(200deg 100% 25%);
+    --color-markdown-code-link-hover: var(--color-markdown-link-hover);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -376,6 +395,28 @@ body {
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
     --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 40% 50%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 100% 30% / 5%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 100% 30% / 8%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 40% 40% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        244deg 64% 47% / 10%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        244deg 64% 47% / 15%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        244deg 64% 47% / 18%
+    );
     --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
     --color-gear-menu-blue-text: hsl(217deg 100% 50%);
     --color-header-button-hover: hsl(0deg 0% 0% / 5%);
@@ -413,12 +454,9 @@ body {
     --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23333333'/%3E%3C/svg%3E%0A");
 
     /* Button colors on modals and message editing. */
-    /* Exit buttons are sometimes Cancel, but sometimes
-       other "Nah, forget it" actions. */
-    --color-exit-button-text: hsl(0deg 0% 0%);
-    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
-    --color-exit-button-background: hsl(0deg 0% 100%);
-    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+    /* Don't define light theme colors for modal here
+       since the modal is also used on billing pages and
+       this file is not imported on billing pages. */
 }
 
 %dark-theme {
@@ -440,6 +478,7 @@ body {
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 30%);
     --color-background-modal: hsl(212deg 28% 18%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
@@ -541,6 +580,20 @@ body {
         hsl(0deg 0% 11%)
     );
 
+    /* Markdown code colors */
+    /* Note that Markdown code-link colors are identical
+       to light theme, and so are not redeclared here. */
+    --color-markdown-code-text: hsl(0deg 0% 100% / 85%);
+    --color-markdown-code-background: hsl(0deg 0% 100% / 8%);
+    --color-markdown-code-background-mentions: var(
+        --color-markdown-code-background
+    );
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-border: transparent;
+    --color-markdown-pre-background: hsl(0deg 0% 100% / 4%);
+    --color-markdown-pre-background-mentions: hsl(0deg 0% 100% / 5%);
+    --color-markdown-pre-border-mentions: var(--color-markdown-pre-border);
+
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
@@ -629,6 +682,28 @@ body {
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
     --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 55% 72% / 100%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 10%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 13%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 64% 76% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        240deg 56% 70% / 12%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 17%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 12%
+    );
     --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
     --color-gear-menu-blue-text: hsl(217deg 100% 65%);
     --color-header-button-hover: hsl(0deg 0% 100% / 4%);
@@ -962,8 +1037,8 @@ p.n-margin {
 }
 
 .app {
-    width: 100%;
-    height: 100%;
+    min-width: 100%;
+    min-height: 100%;
     z-index: 99;
 }
 
@@ -996,6 +1071,17 @@ body.has-overlay-scrollbar {
     background-color: hsl(0deg 0% 0% / 70%);
 }
 
+/* Set flex display on login buttons only in the
+   spectator view. We want them to display none
+   otherwise. */
+.spectator-view .column-right .spectator_login_buttons {
+    display: flex;
+
+    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+        display: none;
+    }
+}
+
 .column-right {
     width: var(--right-sidebar-width);
     max-width: var(--right-sidebar-width);
@@ -1004,27 +1090,117 @@ body.has-overlay-scrollbar {
     top: 0;
 
     .spectator_login_buttons {
-        display: flex;
-        justify-content: space-evenly;
-        position: absolute;
-        top: 8px;
-        /* gear menu + help menu width (40px * 2) */
-        right: 80px;
-        /* width of right column - width of gear icon - right margin of column-right (250px - 40px - 40px -7px) */
-        width: 163px;
+        /* Allow the login buttons flexbox to
+           grow and shrink to fit the available
+           area. */
+        flex: 1 1 0;
+        /* Use a flexbox gap of 7px between the
+           buttons to reflect the outer 7px of space. */
+        gap: 7px;
+        /* Don't allow login buttons flexbox to
+           break out of the allotted right-column
+           space. */
+        overflow: hidden;
+        /* This should be removed once the navbar
+           has been rewritten entirely with modern
+           layout methods. For now, we pull this up
+           so that the buttons and search box are
+           the same height and their boxes sit on the
+           same invisible line. */
+        margin-top: -1px;
 
         & a {
             font-size: calc(16em / 14);
-            font-weight: 600;
-            color: hsl(0deg 0% 20%);
+            /* Vertically size the buttons to
+               match the search box. */
+            line-height: 28px;
+            font-weight: 450;
+            letter-spacing: 0.03ch;
+            /* Allow individual buttons to grow
+               and shrink inside their containers,
+               with padding to prevent text from
+               sitting against the edge of the button. */
+            flex: 1 1 0;
+            padding: 0 4px;
+            /* Center the text nodes within the
+               flex items. */
+            text-align: center;
+            /* Internationalization: disallow wrapping,
+               and display an ellipsis when there's not
+               space enough to accommodate the button
+               text. */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* Button curvature and transitions. */
+            border-radius: 4px;
+            transition: all 100ms ease-out;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 text-decoration: none;
-                color: hsl(0deg 0% 0%);
+            }
+
+            &:active {
+                transform: scale(0.98);
             }
 
             & i {
                 margin-right: 3px;
+            }
+        }
+
+        & .signup_button {
+            color: var(
+                --color-navbar-spectator-low-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-low-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-active
+                );
+            }
+        }
+
+        & .login_button {
+            color: var(
+                --color-navbar-spectator-medium-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-medium-attention-brand-button-background
+            );
+
+            &:hover {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-active
+                );
             }
         }
 
@@ -1041,22 +1217,23 @@ body.has-overlay-scrollbar {
         right: 0;
         height: var(--header-height);
         width: var(--header-height);
-        border-left: 1px solid hsl(0deg 0% 88%);
+
+        @media (width >= $xl_min) and (height >= 600px) {
+            display: none;
+        }
 
         .login_button {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100%;
-            opacity: 0.5;
 
             &:hover {
-                opacity: 1;
                 text-decoration: none;
             }
 
             & i {
-                color: hsl(0deg 0% 20%);
+                color: var(--color-navbar-icon);
                 font-size: 1.6em;
             }
         }
@@ -2274,6 +2451,17 @@ div.focused-message-list {
     }
 }
 
+.top-navbar-container {
+    /* Calculate right margin so that title and description
+       elements can truncate and not collide with or run underneath
+       with the search section. */
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 #message_view_header {
     color: var(--color-text-message-view-header);
     z-index: 2;
@@ -2299,8 +2487,6 @@ div.focused-message-list {
         text-overflow: ellipsis;
         color: inherit;
         text-decoration: none;
-        /* Don't yield any space needed for the stream name. */
-        flex-shrink: 0;
         /* Create a flex container for the icon and
            stream name. */
         display: flex;
@@ -2327,7 +2513,7 @@ div.focused-message-list {
             align-self: baseline;
         }
 
-        @media (width < $sm_min) {
+        @media (height < $short_navbar_cutoff_height) {
             padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
@@ -2351,6 +2537,8 @@ div.focused-message-list {
     }
 
     .message-header-navbar-title {
+        /* Allow long navbar titles (e.g., stream names) to collapse. */
+        flex: 0 1 auto;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -2367,7 +2555,6 @@ div.focused-message-list {
         font-size: 14px;
         color: inherit;
         font-weight: 400;
-        padding: 0 6px;
         padding-left: 10px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2384,11 +2571,6 @@ div.focused-message-list {
     .narrow_description {
         flex: 1 1 0;
         margin: 0;
-        /* Calculate right margin so that text can truncate
-           and not collide with the search section. */
-        margin-right: calc(
-            var(--search-box-width) + var(--navbar-content-righthand-offset)
-        );
     }
 }
 
@@ -2537,6 +2719,10 @@ nav {
             margin-top: 8px;
             height: 25px;
             max-width: 200px;
+
+            @media (height < $short_navbar_cutoff_height) {
+                height: 15px;
+            }
         }
     }
 
@@ -3124,23 +3310,25 @@ select.invite-as {
     }
 }
 
-@media (width < $xl_min) {
-    .app-main,
-    .header-main {
-        min-width: 750px;
-    }
-
+@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
     .spectator-view {
         #navbar-middle {
-            /* = 40px (width of button) * 3 (number of buttons) + 10px extra margin. */
-            margin-right: 130px;
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
         }
 
         #help-menu,
         #gear-menu {
             position: relative;
-            right: 40px;
+            right: var(--header-height);
         }
+    }
+}
+
+@media (width < $xl_min) {
+    .app-main,
+    .header-main {
+        min-width: 750px;
     }
 
     .column-right {
@@ -3183,8 +3371,8 @@ select.invite-as {
     }
 
     #navbar-middle {
-        /* = 40px (width of button) * 4 (number of buttons) + 10px extra margin. */
-        margin-right: 170px;
+        /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: calc(var(--header-height) * 4 + 10px);
     }
 }
 
@@ -3265,11 +3453,11 @@ select.invite-as {
     }
 }
 
-@media (width < $sm_min) {
+@media (height < $short_navbar_cutoff_height) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
-        /* For very small sizes, skip the relatively large top padding. */
+        /* For very short screen sizes, skip the relatively large top padding. */
         padding-top: 0;
     }
 
@@ -3282,23 +3470,6 @@ select.invite-as {
 
     .column-left.expanded .left-sidebar-navigation-area {
         margin-top: 10px;
-    }
-
-    .spectator-view {
-        #navbar-middle {
-            /* = 30px (width of button) * 3 (number of buttons) + 10px extra margin. */
-            margin-right: 100px;
-        }
-
-        #help-menu,
-        #gear-menu {
-            right: 30px;
-        }
-    }
-
-    #navbar-middle {
-        /* = 30px (width of button) * 4 (number of buttons) + 10px extra margin. */
-        margin-right: 130px;
     }
 
     .nav .dropdown-menu {
@@ -3317,10 +3488,6 @@ select.invite-as {
     .header {
         line-height: var(--header-height);
         height: var(--header-height);
-    }
-
-    #searchbox_form {
-        height: calc(var(--header-height) - 1px);
     }
 
     .spectator_narrow_login_button {
@@ -3545,10 +3712,21 @@ select.invite-as {
 
 .header-main .column-right {
     display: flex;
-    width: auto;
+    /* Make the top navbar right column its full width,
+       less 7px of space on the left and right. */
+    width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
-    margin-right: 7px;
+    /* Move the column to the right with absolute
+       positioning, rather than margin. */
+    right: 7px;
+
+    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
+    }
 
     & a:focus {
         filter: none;
@@ -3589,7 +3767,7 @@ select.invite-as {
         font-size: 18px;
     }
 
-    .zulip-icon-help,
+    .zulip-icon-help-bigger,
     .zulip-icon-triple-users {
         font-size: 20px;
     }

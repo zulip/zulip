@@ -96,7 +96,7 @@ class Command(BaseCommand):
             )
         logger.info("Finished updating analytics counts through %s", fill_to_time)
 
-        if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
+        if settings.PUSH_NOTIFICATION_BOUNCER_URL:
             # Skew 0-10 minutes based on a hash of settings.ZULIP_ORG_ID, so
             # that each server will report in at a somewhat consistent time.
             assert settings.ZULIP_ORG_ID

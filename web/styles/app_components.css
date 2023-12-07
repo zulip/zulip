@@ -613,7 +613,7 @@ div.overlay {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: hsl(0deg 0% 80%);
+    background-color: var(--color-masked-unread-marker);
     display: none;
 }
 
@@ -835,7 +835,8 @@ div.overlay {
 }
 
 #stream_settings .save-button-controls,
-#settings_page .save-button-controls {
+#settings_page .save-button-controls,
+#user_group_settings .save-button-controls {
     display: inline;
     margin-left: 15px;
 
@@ -1120,6 +1121,11 @@ div.overlay {
     .fa-chevron-down {
         position: relative;
         top: -1px;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
     }
 }
 

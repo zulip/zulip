@@ -601,7 +601,10 @@ test_people("utcToZonedTime", ({override}) => {
     assert.equal(people.get_user_time(me.user_id), "00:09");
 
     override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
-    blueslip.expect("error", "Error formatting time in Eriador/Rivendell");
+    blueslip.expect(
+        "warn",
+        "Error formatting time in Eriador/Rivendell: RangeError: Invalid time zone specified: Eriador/Rivendell",
+    );
     people.get_user_time(me.user_id);
 });
 

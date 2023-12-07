@@ -3,6 +3,7 @@ from typing import Iterable, Optional
 from unittest import mock
 
 import orjson
+import time_machine
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -1189,9 +1190,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         current_time = timezone_now()
-        with mock.patch(
-            "zerver.actions.user_groups.timezone_now", return_value=current_time + timedelta(days=3)
-        ):
+        with time_machine.travel((current_time + timedelta(days=3)), tick=False):
             promote_new_full_members()
 
         self.assertTrue(

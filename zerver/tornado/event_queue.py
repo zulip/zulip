@@ -98,6 +98,7 @@ class ClientDescriptor:
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = False,
+        user_list_incomplete: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -127,6 +128,7 @@ class ClientDescriptor:
         self.user_settings_object = user_settings_object
         self.pronouns_field_type_supported = pronouns_field_type_supported
         self.linkifier_url_template = linkifier_url_template
+        self.user_list_incomplete = user_list_incomplete
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -156,6 +158,7 @@ class ClientDescriptor:
             user_settings_object=self.user_settings_object,
             pronouns_field_type_supported=self.pronouns_field_type_supported,
             linkifier_url_template=self.linkifier_url_template,
+            user_list_incomplete=self.user_list_incomplete,
         )
 
     @override
@@ -191,6 +194,7 @@ class ClientDescriptor:
             d.get("user_settings_object", False),
             d.get("pronouns_field_type_supported", True),
             d.get("linkifier_url_template", False),
+            d.get("user_list_incomplete", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -1394,6 +1398,17 @@ def process_custom_profile_fields_event(event: Mapping[str, Any], users: Iterabl
                 client.add_event(event)
 
 
+def process_realm_user_add_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    user_add_event = dict(event)
+    event_for_inaccessible_user = user_add_event.pop("inaccessible_user", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(user_add_event):
+                if event_for_inaccessible_user and client.user_list_incomplete:
+                    continue
+                client.add_event(user_add_event)
+
+
 def maybe_enqueue_notifications_for_message_update(
     user_notifications_data: UserMessageNotificationsData,
     message_id: int,
@@ -1534,6 +1549,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_presence_event(event, cast(List[int], users))
     elif event["type"] == "custom_profile_fields":
         process_custom_profile_fields_event(event, cast(List[int], users))
+    elif event["type"] == "realm_user" and event["op"] == "add":
+        process_realm_user_add_event(event, cast(List[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

@@ -1,13 +1,13 @@
 # https://github.com/typeddjango/django-stubs/issues/1698
 # mypy: disable-error-code="explicit-override"
 
-import datetime
 import hashlib
 import secrets
 import time
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
+from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -295,6 +295,30 @@ def generate_realm_uuid_owner_secret() -> str:
     return f"zuliprealm_{token}"
 
 
+class OrgTypeEnum(Enum):
+    Unspecified = 0
+    Business = 10
+    OpenSource = 20
+    EducationNonProfit = 30
+    Education = 35
+    Research = 40
+    Event = 50
+    NonProfit = 60
+    Government = 70
+    PoliticalGroup = 80
+    Community = 90
+    Personal = 100
+    Other = 1000
+
+
+class OrgTypeDict(TypedDict):
+    name: str
+    id: int
+    hidden: bool
+    display_order: int
+    onboarding_zulip_guide_url: Optional[str]
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -319,6 +343,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # bouncer.
     uuid = models.UUIDField(default=uuid4, unique=True)
     uuid_owner_secret = models.TextField(default=generate_realm_uuid_owner_secret)
+    # Whether push notifications are working for this realm, and
+    # whether there is a specific date at which we expect that to
+    # cease to be the case.
+    push_notifications_enabled = models.BooleanField(default=False, db_index=True)
+    push_notifications_enabled_end_timestamp = models.DateTimeField(default=None, null=True)
 
     date_created = models.DateTimeField(default=timezone_now)
     demo_organization_scheduled_deletion_date = models.DateTimeField(default=None, null=True)
@@ -557,94 +586,94 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     first_visible_message_id = models.IntegerField(default=0)
 
     # Valid org types
-    ORG_TYPES: Dict[str, Dict[str, Any]] = {
+    ORG_TYPES: Dict[str, OrgTypeDict] = {
         "unspecified": {
             "name": "Unspecified",
-            "id": 0,
+            "id": OrgTypeEnum.Unspecified.value,
             "hidden": True,
             "display_order": 0,
             "onboarding_zulip_guide_url": None,
         },
         "business": {
             "name": "Business",
-            "id": 10,
+            "id": OrgTypeEnum.Business.value,
             "hidden": False,
             "display_order": 1,
             "onboarding_zulip_guide_url": "https://zulip.com/for/business/",
         },
         "opensource": {
             "name": "Open-source project",
-            "id": 20,
+            "id": OrgTypeEnum.OpenSource.value,
             "hidden": False,
             "display_order": 2,
             "onboarding_zulip_guide_url": "https://zulip.com/for/open-source/",
         },
         "education_nonprofit": {
             "name": "Education (non-profit)",
-            "id": 30,
+            "id": OrgTypeEnum.EducationNonProfit.value,
             "hidden": False,
             "display_order": 3,
             "onboarding_zulip_guide_url": "https://zulip.com/for/education/",
         },
         "education": {
             "name": "Education (for-profit)",
-            "id": 35,
+            "id": OrgTypeEnum.Education.value,
             "hidden": False,
             "display_order": 4,
             "onboarding_zulip_guide_url": "https://zulip.com/for/education/",
         },
         "research": {
             "name": "Research",
-            "id": 40,
+            "id": OrgTypeEnum.Research.value,
             "hidden": False,
             "display_order": 5,
             "onboarding_zulip_guide_url": "https://zulip.com/for/research/",
         },
         "event": {
             "name": "Event or conference",
-            "id": 50,
+            "id": OrgTypeEnum.Event.value,
             "hidden": False,
             "display_order": 6,
             "onboarding_zulip_guide_url": "https://zulip.com/for/events/",
         },
         "nonprofit": {
             "name": "Non-profit (registered)",
-            "id": 60,
+            "id": OrgTypeEnum.NonProfit.value,
             "hidden": False,
             "display_order": 7,
             "onboarding_zulip_guide_url": "https://zulip.com/for/communities/",
         },
         "government": {
             "name": "Government",
-            "id": 70,
+            "id": OrgTypeEnum.Government.value,
             "hidden": False,
             "display_order": 8,
             "onboarding_zulip_guide_url": None,
         },
         "political_group": {
             "name": "Political group",
-            "id": 80,
+            "id": OrgTypeEnum.PoliticalGroup.value,
             "hidden": False,
             "display_order": 9,
             "onboarding_zulip_guide_url": None,
         },
         "community": {
             "name": "Community",
-            "id": 90,
+            "id": OrgTypeEnum.Community.value,
             "hidden": False,
             "display_order": 10,
             "onboarding_zulip_guide_url": "https://zulip.com/for/communities/",
         },
         "personal": {
             "name": "Personal",
-            "id": 100,
+            "id": OrgTypeEnum.Personal.value,
             "hidden": False,
             "display_order": 100,
             "onboarding_zulip_guide_url": None,
         },
         "other": {
             "name": "Other",
-            "id": 1000,
+            "id": OrgTypeEnum.Other.value,
             "hidden": False,
             "display_order": 1000,
             "onboarding_zulip_guide_url": None,
@@ -659,6 +688,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Cloud Standard. Upgrade to access.")
+    UPGRADE_TEXT_PLUS = gettext_lazy("Available on Zulip Cloud Plus. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -807,6 +837,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         name=str,
         name_changes_disabled=bool,
         private_message_policy=int,
+        push_notifications_enabled=bool,
         send_welcome_emails=bool,
         user_group_edit_policy=int,
         video_chat_provider=int,
@@ -973,7 +1004,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         )
 
     def get_bot_domain(self) -> str:
-        return get_fake_email_domain(self)
+        return get_fake_email_domain(self.host)
 
     def get_notifications_stream(self) -> Optional["Stream"]:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
@@ -1019,6 +1050,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def ensure_not_on_limited_plan(self) -> None:
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             raise JsonableError(str(self.UPGRADE_TEXT_STANDARD))
+
+    def can_enable_restricted_user_access_for_guests(self) -> None:
+        if self.plan_type not in [Realm.PLAN_TYPE_PLUS, Realm.PLAN_TYPE_SELF_HOSTED]:
+            raise JsonableError(str(self.UPGRADE_TEXT_PLUS))
 
     @property
     def subdomain(self) -> str:
@@ -2054,7 +2089,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     avatar_hash = models.CharField(null=True, max_length=64)
 
     # TODO: TUTORIAL_STATUS was originally an optimization designed to
-    # allow us to skip querying the UserHotspot table when loading
+    # allow us to skip querying the OnboardingStep table when loading
     # /. This optimization is no longer effective, so it's possible we
     # should delete it.
     TUTORIAL_WAITING = "W"
@@ -2570,7 +2605,7 @@ def filter_to_valid_prereg_users(
 
     assert invite_expires_in_minutes is not None
     if not isinstance(invite_expires_in_minutes, UnspecifiedValue):
-        lowest_datetime = timezone_now() - datetime.timedelta(minutes=invite_expires_in_minutes)
+        lowest_datetime = timezone_now() - timedelta(minutes=invite_expires_in_minutes)
         return query.filter(invited_at__gte=lowest_datetime)
     else:
         return query.filter(
@@ -2852,9 +2887,7 @@ class UserTopic(models.Model):
     # The default value for last_updated is a few weeks before tracking
     # of when topics were muted was first introduced.  It's designed
     # to be obviously incorrect so that one can tell it's backfilled data.
-    last_updated = models.DateTimeField(
-        default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
-    )
+    last_updated = models.DateTimeField(default=datetime(2020, 1, 1, 0, 0, tzinfo=timezone.utc))
 
     class VisibilityPolicy(models.IntegerChoices):
         # A normal muted topic. No notifications and unreads hidden.
@@ -3951,7 +3984,7 @@ def get_old_unclaimed_attachments(
     or both - depending on whether some, all or none of the messages
     linking to it have been archived.
     """
-    delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
+    delta_weeks_ago = timezone_now() - timedelta(weeks=weeks_ago)
 
     # The Attachment vs ArchivedAttachment queries are asymmetric because only
     # Attachment has the scheduled_messages relation.
@@ -4351,7 +4384,7 @@ class UserActivity(models.Model):
 
 
 class UserActivityInterval(models.Model):
-    MIN_INTERVAL_LENGTH = datetime.timedelta(minutes=15)
+    MIN_INTERVAL_LENGTH = timedelta(minutes=15)
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     start = models.DateTimeField("start time", db_index=True)
@@ -4754,7 +4787,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_ICON_SOURCE_CHANGED = 208
     REALM_DISCOUNT_CHANGED = 209
     REALM_SPONSORSHIP_APPROVED = 210
-    REALM_BILLING_METHOD_CHANGED = 211
+    REALM_BILLING_MODALITY_CHANGED = 211
     REALM_REACTIVATION_EMAIL_SENT = 212
     REALM_SPONSORSHIP_PENDING_STATUS_CHANGED = 213
     REALM_SUBDOMAIN_CHANGED = 214
@@ -4820,7 +4853,7 @@ class AbstractRealmAuditLog(models.Model):
     REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
     REMOTE_SERVER_DISCOUNT_CHANGED = 10209
     REMOTE_SERVER_SPONSORSHIP_APPROVED = 10210
-    REMOTE_SERVER_BILLING_METHOD_CHANGED = 10211
+    REMOTE_SERVER_BILLING_MODALITY_CHANGED = 10211
     REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED = 10213
     REMOTE_SERVER_CREATED = 10215
 
@@ -4921,13 +4954,13 @@ class RealmAuditLog(AbstractRealmAuditLog):
         ]
 
 
-class UserHotspot(models.Model):
+class OnboardingStep(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    hotspot = models.CharField(max_length=30)
+    onboarding_step = models.CharField(max_length=30)
     timestamp = models.DateTimeField(default=timezone_now)
 
     class Meta:
-        unique_together = ("user", "hotspot")
+        unique_together = ("user", "onboarding_step")
 
 
 def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:
@@ -5172,11 +5205,11 @@ class InvalidFakeEmailDomainError(Exception):
     pass
 
 
-def get_fake_email_domain(realm: Realm) -> str:
+def get_fake_email_domain(realm_host: str) -> str:
     try:
         # Check that realm.host can be used to form valid email addresses.
-        validate_email(Address(username="bot", domain=realm.host).addr_spec)
-        return realm.host
+        validate_email(Address(username="bot", domain=realm_host).addr_spec)
+        return realm_host
     except ValidationError:
         pass
 

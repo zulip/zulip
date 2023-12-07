@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import List, Literal, Optional, Union
 
 import orjson
@@ -157,7 +157,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     if deadline_seconds is None:
         # None means no time limit to delete message
         return
-    if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+    if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
         # User cannot delete message after deadline time of realm
         raise JsonableError(_("The time limit for deleting this message has passed"))
     return

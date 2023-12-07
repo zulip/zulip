@@ -1366,6 +1366,25 @@ class MarkdownTest(ZulipTestCase):
             [{"url": "https://example.com/A%20Test/%25%25%ba/123", "text": "url-123"}],
         )
 
+        # Test spaces in the linkifier pattern
+        RealmFilter(
+            realm=realm,
+            pattern=r"community guidelines",
+            url_template="https://zulip.com/development-community/#community-norms",
+        ).save()
+        converted = markdown_convert("community guidelines", message_realm=realm, message=msg)
+        self.assertEqual(
+            converted.rendered_content,
+            '<p><a href="https://zulip.com/development-community/#community-norms">community guidelines</a></p>',
+        )
+        converted = markdown_convert(
+            "please observe community guidelines here", message_realm=realm, message=msg
+        )
+        self.assertEqual(
+            converted.rendered_content,
+            '<p>please observe <a href="https://zulip.com/development-community/#community-norms">community guidelines</a> here</p>',
+        )
+
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         self.check_add_linkifiers(

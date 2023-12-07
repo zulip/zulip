@@ -447,7 +447,7 @@ function update_dependent_subsettings(property_name) {
     }
 }
 
-export function discard_property_element_changes(elem, for_realm_default_settings, sub) {
+export function discard_property_element_changes(elem, for_realm_default_settings, sub, group) {
     const $elem = $(elem);
     const property_name = settings_components.extract_property_name(
         $elem,
@@ -457,6 +457,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         property_name,
         for_realm_default_settings,
         sub,
+        group,
     );
 
     switch (property_name) {
@@ -478,6 +479,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
+        case "can_mention_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -785,19 +787,24 @@ export function init_dropdown_widgets() {
     can_access_all_users_group_widget.setup();
 }
 
-export function populate_data_for_request(subsection, for_realm_default_settings, sub) {
+export function populate_data_for_request(subsection, for_realm_default_settings, sub, group) {
     let data = {};
     const properties_elements = settings_components.get_subsection_property_elements(subsection);
 
     for (const input_elem of properties_elements) {
         const $input_elem = $(input_elem);
         if (
-            settings_components.check_property_changed($input_elem, for_realm_default_settings, sub)
+            settings_components.check_property_changed(
+                $input_elem,
+                for_realm_default_settings,
+                sub,
+                group,
+            )
         ) {
             const input_value = settings_components.get_input_element_value($input_elem);
             if (input_value !== undefined) {
                 let property_name;
-                if (for_realm_default_settings || sub) {
+                if (for_realm_default_settings || sub || group) {
                     property_name = settings_components.extract_property_name(
                         $input_elem,
                         for_realm_default_settings,

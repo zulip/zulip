@@ -42,6 +42,7 @@ from zerver.models import (
     get_fake_email_domain,
     get_realm_user_dicts,
     get_user,
+    get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
 )
@@ -278,6 +279,23 @@ def access_user_by_id(
     """
     try:
         target = get_user_profile_by_id_in_realm(target_user_id, user_profile.realm)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("No such user"))
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
+
+
+def access_user_by_id_including_cross_realm(
+    user_profile: UserProfile,
+    target_user_id: int,
+    *,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> UserProfile:
+    """Variant of access_user_by_id allowing cross-realm bots to be accessed."""
+    try:
+        target = get_user_by_id_in_realm_including_cross_realm(target_user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 
@@ -778,7 +796,9 @@ def get_cross_realm_dicts() -> List[APIUserDict]:
 
 
 def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
-    fake_email = Address(username=f"user{user_id}", domain=get_fake_email_domain(realm)).addr_spec
+    fake_email = Address(
+        username=f"user{user_id}", domain=get_fake_email_domain(realm.host)
+    ).addr_spec
 
     # We just set date_joined field to UNIX epoch.
     user_date_joined = timestamp_to_datetime(0)
@@ -877,6 +897,7 @@ def get_users_for_api(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
+    user_list_incomplete: bool = False,
 ) -> Dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
@@ -919,11 +940,12 @@ def get_users_for_api(
             custom_profile_field_data=custom_profile_field_data,
         )
 
-    for inaccessible_user_row in inaccessible_user_dicts:
-        # We already have the required data for inaccessible users
-        # in row object, so we can just add it to result directly.
-        user_id = inaccessible_user_row["user_id"]
-        result[user_id] = inaccessible_user_row
+    if not user_list_incomplete:
+        for inaccessible_user_row in inaccessible_user_dicts:
+            # We already have the required data for inaccessible users
+            # in row object, so we can just add it to result directly.
+            user_id = inaccessible_user_row["user_id"]
+            result[user_id] = inaccessible_user_row
 
     return result
 

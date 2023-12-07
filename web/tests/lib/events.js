@@ -169,26 +169,6 @@ exports.fixtures = {
         value: true,
     },
 
-    hotspots: {
-        type: "hotspots",
-        hotspots: [
-            {
-                name: "topics",
-                title: "About topics",
-                description: "Topics are good.",
-                delay: 1.5,
-                has_trigger: false,
-            },
-            {
-                name: "compose",
-                title: "Compose box",
-                description: "This is where you compose messages.",
-                delay: 3.14159,
-                has_trigger: false,
-            },
-        ],
-    },
-
     invites_changed: {
         type: "invites_changed",
     },
@@ -203,6 +183,28 @@ exports.fixtures = {
             {
                 id: 23,
                 timestamp: fake_now,
+            },
+        ],
+    },
+
+    onboarding_steps: {
+        type: "onboarding_steps",
+        onboarding_steps: [
+            {
+                type: "hotspot",
+                name: "topics",
+                title: "About topics",
+                description: "Topics are good.",
+                delay: 1.5,
+                has_trigger: false,
+            },
+            {
+                type: "hotspot",
+                name: "compose",
+                title: "Compose box",
+                description: "This is where you compose messages.",
+                delay: 3.14159,
+                has_trigger: false,
             },
         ],
     },

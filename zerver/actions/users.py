@@ -51,7 +51,7 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed
+    from corporate.lib.stripe import RealmBillingSession
 
 
 def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
@@ -80,7 +80,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
         replacement_user = create_user(
             force_id=user_id,
             email=Address(
-                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm)
+                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm.host)
             ).addr_spec,
             password=None,
             realm=realm,
@@ -186,7 +186,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
         # is cleaner by using the same re-assignment approach for them together with Messages.
         random_token = secrets.token_hex(16)
         temp_replacement_user = create_user(
-            email=f"temp_deleteduser{random_token}@{get_fake_email_domain(realm)}",
+            email=f"temp_deleteduser{random_token}@{get_fake_email_domain(realm.host)}",
             password=None,
             realm=realm,
             full_name=f"Deleted User {user_id} (temp)",
@@ -206,7 +206,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
 
         replacement_user = create_user(
             force_id=user_id,
-            email=f"deleteduser{user_id}@{get_fake_email_domain(realm)}",
+            email=f"deleteduser{user_id}@{get_fake_email_domain(realm.host)}",
             password=None,
             realm=realm,
             full_name=f"Deleted User {user_id}",
@@ -364,7 +364,8 @@ def do_deactivate_user(
             increment=-1,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
         transaction.on_commit(lambda: delete_user_sessions(user_profile))
 
@@ -438,7 +439,20 @@ def send_stream_events_for_role_update(
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
+    # We want to both (a) take a lock on the UserProfile row, and (b)
+    # modify the passed-in UserProfile object, so that callers see the
+    # changes in the object they hold.  Unfortunately,
+    # `select_for_update` cannot be combined with `refresh_from_db`
+    # (https://code.djangoproject.com/ticket/28344).  Call
+    # `select_for_update` and throw away the result, so that we know
+    # we have the lock on the row, then re-fill the `user_profile`
+    # object with the values now that the lock exists.
+    UserProfile.objects.select_for_update().get(id=user_profile.id)
+    user_profile.refresh_from_db()
+
     old_value = user_profile.role
+    if old_value == value:
+        return
     old_system_group = get_system_user_group_for_user(user_profile)
 
     previously_accessible_streams = get_streams_for_user(

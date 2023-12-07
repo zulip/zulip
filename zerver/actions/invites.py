@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import timedelta
 from typing import Any, Collection, Dict, List, Optional, Sequence, Set, Tuple, Union
 
 from django.conf import settings
@@ -82,7 +82,7 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
     recent_invites = RealmCount.objects.filter(
         realm__in=realms,
         property="invites_sent::day",
-        end_time__gte=timezone_now() - datetime.timedelta(days=days),
+        end_time__gte=timezone_now() - timedelta(days=days),
     ).aggregate(Sum("value"))["value__sum"]
     if recent_invites is None:
         return 0
@@ -120,7 +120,7 @@ def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
     if realm.icon_source == Realm.ICON_FROM_GRAVATAR:
         warning_flags.append("no-realm-icon")
 
-    if realm.date_created >= timezone_now() - datetime.timedelta(hours=1):
+    if realm.date_created >= timezone_now() - timedelta(hours=1):
         warning_flags.append("realm-created-in-last-hour")
 
     current_user_count = len(UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True))
@@ -181,7 +181,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
         )
 
     default_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
-    newrealm_age = datetime.timedelta(days=settings.INVITES_NEW_REALM_DAYS)
+    newrealm_age = timedelta(days=settings.INVITES_NEW_REALM_DAYS)
     if realm.date_created <= timezone_now() - newrealm_age:
         # If this isn't a "newly-created" realm, we're done. The
         # remaining code applies an aggregate limit across all
@@ -235,7 +235,7 @@ def do_invite_users(
     realm = user_profile.realm
     if not realm.invite_required:
         # Inhibit joining an open realm to send spam invitations.
-        min_age = datetime.timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
+        min_age = timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
         if user_profile.date_joined > timezone_now() - min_age and not user_profile.is_realm_admin:
             raise InvitationError(
                 _(

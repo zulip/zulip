@@ -444,6 +444,7 @@ input[name="licenses"] {
     display: block;
 }
 
+#upgrade-page #upgrade-manual-license-count-wrapper,
 #billing-page .input-box-number {
     text-align: left;
 }
@@ -460,6 +461,7 @@ input[name="licenses"] {
     align-items: flex-end;
 }
 
+#upgrade-page #manual_license_count,
 #billing-page
     .white-box
     .input-box-number
@@ -536,6 +538,7 @@ input[name="licenses"] {
     width: 150px;
 }
 
+#billing-page-details #legacy-server-push-notification-notice,
 #billing-page-details .next-payment-info {
     width: 450px;
     padding-top: 0;
@@ -551,9 +554,7 @@ input[name="licenses"] {
     text-align: center;
 }
 
-#confirm-licenses-modal-decrease,
-#confirm-licenses-modal-increase,
-#confirm-cancel-subscription-modal {
+.micromodal {
     .modal__title {
         font-weight: 600;
     }
@@ -561,6 +562,10 @@ input[name="licenses"] {
     .modal__content {
         font-weight: 400;
     }
+}
+
+#upgrade-page-details #free-trial-top-banner {
+    margin-top: 10px;
 }
 
 #billing-page-details .billing-frequency-message.not-editable-realm-field,
@@ -651,4 +656,25 @@ input[name="licenses"] {
 .billing-page-discount {
     opacity: 0.8;
     font-weight: 400;
+}
+
+.server-login-button-loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
+}
+
+#server-login-error {
+    text-align: center;
+}
+
+#upgrade-page-details #due-today-for-future-update-wrapper {
+    display: none;
+}
+
+#remote-realm-confirm-login-form .text-error {
+    margin-bottom: 15px;
 }

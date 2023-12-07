@@ -195,6 +195,7 @@ export function get_gear_menu_content_context() {
         realm_url: new URL(page_params.realm_uri).hostname,
         is_owner: page_params.is_owner,
         is_admin: page_params.is_admin,
+        is_spectator: page_params.is_spectator,
         is_self_hosted: page_params.realm_plan_type === 1,
         is_development_environment: page_params.development_environment,
         is_plan_limited: page_params.realm_plan_type === 2,

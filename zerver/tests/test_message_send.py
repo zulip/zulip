@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import Any, Optional, Set
 from unittest import mock
@@ -411,7 +411,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login_user(admin_profile)
 
         do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10, acting_user=None)
-        admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
+        admin_profile.date_joined = timezone_now() - timedelta(days=9)
         admin_profile.save()
         self.assertTrue(admin_profile.is_provisional_member)
         self.assertTrue(admin_profile.is_realm_admin)
@@ -435,7 +435,7 @@ class MessagePOSTTest(ZulipTestCase):
         non_admin_profile = self.example_user("hamlet")
         self.login_user(non_admin_profile)
 
-        non_admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
+        non_admin_profile.date_joined = timezone_now() - timedelta(days=9)
         non_admin_profile.save()
         self.assertTrue(non_admin_profile.is_provisional_member)
         self.assertFalse(non_admin_profile.is_realm_admin)
@@ -454,7 +454,7 @@ class MessagePOSTTest(ZulipTestCase):
             non_admin_owned_bot, stream_name, "New members cannot send to this stream."
         )
 
-        non_admin_profile.date_joined = timezone_now() - datetime.timedelta(days=11)
+        non_admin_profile.date_joined = timezone_now() - timedelta(days=11)
         non_admin_profile.save()
         self.assertFalse(non_admin_profile.is_provisional_member)
 
@@ -479,7 +479,7 @@ class MessagePOSTTest(ZulipTestCase):
         )
 
         moderator_profile = self.example_user("shiva")
-        moderator_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
+        moderator_profile.date_joined = timezone_now() - timedelta(days=9)
         moderator_profile.save()
         self.assertTrue(moderator_profile.is_moderator)
         self.assertFalse(moderator_profile.is_provisional_member)
@@ -492,7 +492,7 @@ class MessagePOSTTest(ZulipTestCase):
             full_name="whatever3",
             user_profile=moderator_profile,
         )
-        moderator_owned_bot.date_joined = timezone_now() - datetime.timedelta(days=11)
+        moderator_owned_bot.date_joined = timezone_now() - timedelta(days=11)
         moderator_owned_bot.save()
         self._send_and_verify_message(moderator_owned_bot, stream_name)
 
@@ -1275,7 +1275,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.subscribe(user, "IRCland")
 
         # Simulate a mirrored message with a slightly old timestamp.
-        fake_date_sent = timezone_now() - datetime.timedelta(minutes=37)
+        fake_date_sent = timezone_now() - timedelta(minutes=37)
         fake_timestamp = datetime_to_timestamp(fake_date_sent)
 
         result = self.api_post(
@@ -1298,7 +1298,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
 
         # Now test again using forged=yes
-        fake_date_sent = timezone_now() - datetime.timedelta(minutes=22)
+        fake_date_sent = timezone_now() - timedelta(minutes=22)
         fake_timestamp = datetime_to_timestamp(fake_date_sent)
 
         result = self.api_post(
@@ -1854,7 +1854,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_topic_wildcard_mention_message("iago")
         self.send_and_verify_topic_wildcard_mention_message("shiva")
 
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
         self.send_and_verify_topic_wildcard_mention_message("cordelia")
 
@@ -1953,7 +1953,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("iago")
         self.send_and_verify_stream_wildcard_mention_message("shiva")
 
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
         self.send_and_verify_stream_wildcard_mention_message("cordelia")
 
@@ -2904,7 +2904,7 @@ class CheckMessageTest(ZulipTestCase):
         # after; this should send an error to the bot owner that the
         # stream doesn't exist
         assert sender.last_reminder is not None
-        sender.last_reminder = sender.last_reminder - datetime.timedelta(hours=1)
+        sender.last_reminder = sender.last_reminder - timedelta(hours=1)
         sender.save(update_fields=["last_reminder"])
         ret = check_message(sender, client, addressee, message_content)
 

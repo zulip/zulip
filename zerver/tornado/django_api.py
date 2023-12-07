@@ -1,7 +1,7 @@
 from collections import defaultdict
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import orjson
 import requests
@@ -50,7 +50,7 @@ class TornadoAdapter(HTTPAdapter):
                 request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies
             )
         except ConnectionError:
-            parsed_url = urlparse(request.url)
+            parsed_url = urlsplit(request.url)
             logfile = (
                 f"tornado-{parsed_url.port}.log"
                 if settings.TORNADO_PROCESSES > 1
@@ -88,6 +88,7 @@ def request_event_queue(
     user_settings_object: bool = False,
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
+    user_list_incomplete: bool = False,
 ) -> Optional[str]:
     if not settings.USING_TORNADO:
         return None
@@ -110,6 +111,7 @@ def request_event_queue(
         "user_settings_object": orjson.dumps(user_settings_object),
         "pronouns_field_type_supported": orjson.dumps(pronouns_field_type_supported),
         "linkifier_url_template": orjson.dumps(linkifier_url_template),
+        "user_list_incomplete": orjson.dumps(user_list_incomplete),
     }
 
     if event_types is not None:

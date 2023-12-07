@@ -20,6 +20,54 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 233**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Renamed the event type `hotspots` and the `hotspots` array field in it
+  to `onboarding_steps` as this event is sent to clients with remaining
+  onboarding steps data that includes hotspots and one-time notices to display.
+  Earlier, we had hotspots only. Added a `type` field to the objects in
+  the renamed `onboarding_steps` array to distinguish between the two type
+  of onboarding steps.
+
+* `POST /users/me/onboarding_steps`: Added a new endpoint that
+  deprecates the `/users/me/hotspots` endpoint. Added support for
+  displaying one-time notices in addition to existing hotspots.
+  This is now used as a common endpoint to mark both types of
+  onboarding steps, i.e., 'hotspot' and 'one_time_notice'.
+  There is no compatibility support for `/users/me/hotspots` as
+  no client other than web app has this feature currently.
+
+**Feature level 232**
+
+* [`POST /register`](/api/register-queue): Added a new
+  `user_list_incomplete` [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controlling whether `realm_users` contains "Unknown user"
+  placeholder objects for users that the current user cannot access
+  due to a `can_access_all_users_group` policy.
+
+* [`GET /events`](/api/get-events): The new `user_list_incomplete`
+  [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controls whether to send `realm_user` events with `op: "add"`
+  containing "Unknown user" placeholder objects to clients when a new
+  user is created that the client does not have access to due to a
+  `can_access_all_users_group` policy.
+
+**Feature level 231**
+
+* [`POST /register`](/api/register-queue):
+  `realm_push_notifications_enabled` now represents more accurately
+  whether push notifications are actually enabled via the mobile push
+  notifications service. Added
+  `realm_push_notifications_enabled_end_timestamp` field to realm
+  data.
+
+* [`GET /events`](/api/get-events): A `realm` update event is now sent
+  whenever `push_notifications_enabled` or
+  `push_notifications_enabled_end_timestamp` changes.
+
 **Feature level 230**
 
 * [`GET /events`](/api/get-events): Added `has_trigger` field in

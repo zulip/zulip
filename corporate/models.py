@@ -223,11 +223,11 @@ class CustomerPlan(models.Model):
     # billing_cycle_anchor.
     billing_cycle_anchor = models.DateTimeField()
 
-    ANNUAL = 1
-    MONTHLY = 2
+    BILLING_SCHEDULE_ANNUAL = 1
+    BILLING_SCHEDULE_MONTHLY = 2
     BILLING_SCHEDULES = {
-        ANNUAL: "Annual",
-        MONTHLY: "Monthly",
+        BILLING_SCHEDULE_ANNUAL: "Annual",
+        BILLING_SCHEDULE_MONTHLY: "Monthly",
     }
     billing_schedule = models.SmallIntegerField()
 
@@ -248,17 +248,26 @@ class CustomerPlan(models.Model):
     )
     end_date = models.DateTimeField(null=True)
 
-    DONE = 1
-    STARTED = 2
-    INITIAL_INVOICE_TO_BE_SENT = 3
+    INVOICING_STATUS_DONE = 1
+    INVOICING_STATUS_STARTED = 2
+    INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT = 3
     # This status field helps ensure any errors encountered during the
     # invoicing process do not leave our invoicing system in a broken
     # state.
-    invoicing_status = models.SmallIntegerField(default=DONE)
+    invoicing_status = models.SmallIntegerField(default=INVOICING_STATUS_DONE)
 
-    STANDARD = 1
-    PLUS = 2  # not available through self-serve signup
-    ENTERPRISE = 10
+    TIER_CLOUD_STANDARD = 1
+    TIER_CLOUD_PLUS = 2
+    # Reserved tier IDs for future use
+    TIER_CLOUD_COMMUNITY = 3
+    TIER_CLOUD_ENTERPRISE = 4
+
+    TIER_SELF_HOSTED_BASE = 100
+    TIER_SELF_HOSTED_LEGACY = 101
+    TIER_SELF_HOSTED_COMMUNITY = 102
+    TIER_SELF_HOSTED_BUSINESS = 103
+    TIER_SELF_HOSTED_PLUS = 104
+    TIER_SELF_HOSTED_ENTERPRISE = 105
     tier = models.SmallIntegerField()
 
     ACTIVE = 1
@@ -267,6 +276,8 @@ class CustomerPlan(models.Model):
     SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
     SWITCH_PLAN_TIER_NOW = 5
     SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6
+    DOWNGRADE_AT_END_OF_FREE_TRIAL = 7
+    SWITCH_PLAN_TIER_AT_PLAN_END = 8
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10
@@ -277,19 +288,32 @@ class CustomerPlan(models.Model):
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
 
+    @staticmethod
+    def name_from_tier(tier: int) -> str:
+        # NOTE: Check `statement_descriptor` values after updating this.
+        # Stripe has a 22 character limit on the statement descriptor length.
+        # https://stripe.com/docs/payments/account/statement-descriptors
+        return {
+            CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
+            CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
+            CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Self-managed",
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
+            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
+        }[tier]
+
     @property
     def name(self) -> str:
-        return {
-            CustomerPlan.STANDARD: "Zulip Cloud Standard",
-            CustomerPlan.PLUS: "Zulip Plus",
-            CustomerPlan.ENTERPRISE: "Zulip Enterprise",
-        }[self.tier]
+        return self.name_from_tier(self.tier)
 
     def get_plan_status_as_text(self) -> str:
         return {
             self.ACTIVE: "Active",
             self.DOWNGRADE_AT_END_OF_CYCLE: "Scheduled for downgrade at end of cycle",
             self.FREE_TRIAL: "Free trial",
+            self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled for switch to annual at end of cycle",
+            self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled for switch to monthly at end of cycle",
+            self.DOWNGRADE_AT_END_OF_FREE_TRIAL: "Scheduled for downgrade at end of free trial",
             self.ENDED: "Ended",
             self.NEVER_STARTED: "Never started",
         }[self.status]
@@ -300,7 +324,10 @@ class CustomerPlan(models.Model):
         return ledger_entry.licenses
 
     def licenses_at_next_renewal(self) -> Optional[int]:
-        if self.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+        if self.status in (
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ):
             return None
         ledger_entry = LicenseLedger.objects.filter(plan=self).order_by("id").last()
         assert ledger_entry is not None
@@ -359,7 +386,7 @@ class LicenseLedger(models.Model):
 
 class ZulipSponsorshipRequest(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)
-    requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE, null=True, blank=True)
 
     org_type = models.PositiveSmallIntegerField(
         default=Realm.ORG_TYPES["unspecified"]["id"],

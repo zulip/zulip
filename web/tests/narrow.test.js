@@ -21,6 +21,9 @@ const settings_config = zrequire("settings_config");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
 
+mock_esm("../src/compose_banner", {
+    clear_search_view_banner() {},
+});
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
     login_to_access() {},

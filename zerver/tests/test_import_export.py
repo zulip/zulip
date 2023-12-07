@@ -1,8 +1,9 @@
-import datetime
+import json
 import os
 import shutil
 import uuid
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
 
@@ -10,6 +11,7 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -64,6 +66,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    OnboardingStep,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -76,7 +79,6 @@ from zerver.models import (
     SystemGroups,
     UserGroup,
     UserGroupMembership,
-    UserHotspot,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -92,8 +94,8 @@ from zerver.models import (
 )
 
 
-def make_datetime(val: float) -> datetime.datetime:
-    return datetime.datetime.fromtimestamp(val, tz=datetime.timezone.utc)
+def make_datetime(val: float) -> datetime:
+    return datetime.fromtimestamp(val, tz=timezone.utc)
 
 
 def get_output_dir() -> str:
@@ -796,9 +798,9 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
         # data to test import of hotspots
-        UserHotspot.objects.create(
+        OnboardingStep.objects.create(
             user=sample_user,
-            hotspot="intro_streams",
+            onboarding_step="intro_streams",
         )
 
         # data to test import of muted topic
@@ -830,7 +832,7 @@ class RealmImportExportTest(ExportFile):
             message_to=[Stream.objects.get(name="Denmark", realm=original_realm).id],
             topic_name="test-import",
             message_content="test message",
-            deliver_at=timezone_now() + datetime.timedelta(days=365),
+            deliver_at=timezone_now() + timedelta(days=365),
             realm=original_realm,
         )
         original_scheduled_message = ScheduledMessage.objects.filter(realm=original_realm).last()
@@ -1185,8 +1187,8 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_user_hotspots(r: Realm) -> Set[str]:
             user_id = get_user_id(r, "King Hamlet")
-            hotspots = UserHotspot.objects.filter(user_id=user_id)
-            user_hotspots = {hotspot.hotspot for hotspot in hotspots}
+            hotspots = OnboardingStep.objects.filter(user_id=user_id)
+            user_hotspots = {hotspot.onboarding_step for hotspot in hotspots}
             return user_hotspots
 
         # test muted topics
@@ -1387,6 +1389,25 @@ class RealmImportExportTest(ExportFile):
         realm_user_default = RealmUserDefault.objects.get(realm=imported_realm)
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    def test_import_realm_notify_bouncer(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        self.export_realm(original_realm)
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"), patch(
+            "zerver.lib.remote_server.send_to_push_bouncer"
+        ) as m:
+            new_realm = do_import_realm(get_output_dir(), "test-zulip")
+
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        calls_args_for_assert = m.call_args_list[0][0]
+        self.assertEqual(calls_args_for_assert[0], "POST")
+        self.assertEqual(calls_args_for_assert[1], "server/analytics")
+        self.assertIn(
+            new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[0][0][2]["realms"])]
+        )
 
     def test_import_files_from_local(self) -> None:
         user = self.example_user("hamlet")
@@ -1918,12 +1939,12 @@ class SingleUserExportTest(ExportFile):
             (rec,) = records
             self.assertEqual(rec["value"], 42)
 
-        UserHotspot.objects.create(user=cordelia, hotspot="topics")
-        UserHotspot.objects.create(user=othello, hotspot="bogus")
+        OnboardingStep.objects.create(user=cordelia, onboarding_step="topics")
+        OnboardingStep.objects.create(user=othello, onboarding_step="bogus")
 
         @checker
-        def zerver_userhotspot(records: List[Record]) -> None:
-            self.assertEqual(records[-1]["hotspot"], "topics")
+        def zerver_onboardingstep(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["onboarding_step"], "topics")
 
         """
         The zerver_realmauditlog checker basically assumes that

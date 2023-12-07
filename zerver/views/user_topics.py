@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
@@ -24,7 +24,7 @@ def mute_topic(
     stream_id: Optional[int],
     stream_name: Optional[str],
     topic_name: str,
-    date_muted: datetime.datetime,
+    date_muted: datetime,
 ) -> None:
     if stream_name is not None:
         (stream, sub) = access_stream_by_name(user_profile, stream_name)

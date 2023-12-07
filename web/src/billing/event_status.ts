@@ -5,6 +5,8 @@ import * as loading from "../loading";
 
 import * as helpers from "./helpers";
 
+const billing_base_url = $("#data").attr("data-billing-base-url")!;
+
 const stripe_response_schema = z.object({
     session: z.object({
         type: z.string(),
@@ -36,31 +38,26 @@ function show_error_message(message: string): void {
     $("#webhook-error").text(message);
 }
 
-function show_html_error_message(rendered_message: string): void {
-    $("#webhook-loading").hide();
-    $("#webhook-error").show();
-    $("#webhook-error").html(rendered_message);
-}
-
 function handle_session_complete_event(session: StripeSession): void {
     let redirect_to = "";
     switch (session.type) {
         case "card_update_from_billing_page":
-            redirect_to = "/billing/";
+            redirect_to = billing_base_url + "/billing/";
             break;
         case "card_update_from_upgrade_page":
-            if (session.is_manual_license_management_upgrade_session) {
-                redirect_to = "/upgrade/?manual_license_management=true";
-            } else {
-                redirect_to = "/upgrade/";
-            }
+            redirect_to = helpers.get_upgrade_page_url(
+                session.is_manual_license_management_upgrade_session,
+                billing_base_url,
+            );
             break;
     }
     update_status_and_redirect(redirect_to);
 }
 
 async function stripe_checkout_session_status_check(stripe_session_id: string): Promise<boolean> {
-    const response: unknown = await $.get("/json/billing/event/status", {stripe_session_id});
+    const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
+        stripe_session_id,
+    });
     const response_data = stripe_response_schema.parse(response);
 
     if (response_data.session.status === "created") {
@@ -81,28 +78,12 @@ async function stripe_checkout_session_status_check(stripe_session_id: string): 
     return false;
 }
 
-export function initialize_retry_with_another_card_link_click_handler(): void {
-    $("#retry-with-another-card-link").on("click", (e) => {
-        e.preventDefault();
-        $("#webhook-error").hide();
-        helpers.create_ajax_request(
-            "/json/billing/session/start_retry_payment_intent_session",
-            "restartsession",
-            [],
-            "POST",
-            (response) => {
-                const response_data = helpers.stripe_session_url_schema.parse(response);
-
-                window.location.replace(response_data.stripe_session_url);
-            },
-        );
-    });
-}
-
 export async function stripe_payment_intent_status_check(
     stripe_payment_intent_id: string,
 ): Promise<boolean> {
-    const response: unknown = await $.get("/json/billing/event/status", {stripe_payment_intent_id});
+    const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
+        stripe_payment_intent_id,
+    });
 
     const response_schema = z.object({
         payment_intent: z.object({
@@ -127,29 +108,9 @@ export async function stripe_payment_intent_status_check(
     const response_data = response_schema.parse(response);
 
     switch (response_data.payment_intent.status) {
-        case "requires_payment_method":
-            if (response_data.payment_intent.event_handler!.status === "succeeded") {
-                show_html_error_message(
-                    response_data.payment_intent.last_payment_error!.message +
-                        "<br>" +
-                        'You can try adding <a id="retry-with-another-card-link"> another card or </a> or retry the upgrade.',
-                );
-                initialize_retry_with_another_card_link_click_handler();
-                return true;
-            }
-            if (response_data.payment_intent.event_handler!.status === "failed") {
-                show_error_message(response_data.payment_intent.event_handler!.error!.message);
-                return true;
-            }
-            return false;
         case "succeeded":
             if (response_data.payment_intent.event_handler!.status === "succeeded") {
-                update_status_and_redirect(
-                    "/billing/?success_message=" +
-                        encodeURIComponent(
-                            "Your organization has been upgraded to Zulip Cloud Standard.",
-                        ),
-                );
+                helpers.redirect_to_billing_with_successful_upgrade(billing_base_url);
                 return true;
             }
             if (response_data.payment_intent.event_handler!.status === "failed") {

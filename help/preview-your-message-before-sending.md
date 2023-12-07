@@ -6,7 +6,8 @@
 
 1. Write a message.
 
-1. Click the **eye** (<i class="fa fa-eye"></i>) icon at the bottom of the compose box.
+1. Click the **eye** (<i class="zulip-icon zulip-icon-preview"></i>) icon at
+   the bottom of the compose box.
 
 {end_tabs}
 

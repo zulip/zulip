@@ -324,7 +324,7 @@ test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
-test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
+test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     page_params.user_id = me.user_id;
 
     // First, check for large streams (>15 subscribers) where the wildcard mention
@@ -335,39 +335,39 @@ test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
         settings_config.wildcard_mention_policy_values.by_everyone.code;
     page_params.is_guest = true;
     page_params.is_admin = false;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.nobody.code;
     page_params.is_admin = true;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_members.code;
     page_params.is_guest = true;
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.is_guest = false;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_moderators_only.code;
     page_params.is_moderator = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.is_moderator = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_admins_only.code;
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // TODO: Add a by_admins_only case when we implement stream-level administrators.
 
     page_params.is_admin = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_full_members.code;
@@ -375,9 +375,9 @@ test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
     person.date_joined = new Date(Date.now());
     page_params.realm_waiting_period_threshold = 10;
 
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // Now, check for small streams (<=15 subscribers) where the wildcard mention
     // policy doesn't matter; everyone is allowed to use wildcard mentions.
@@ -386,7 +386,7 @@ test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
         settings_config.wildcard_mention_policy_values.by_admins_only.code;
     page_params.is_admin = false;
     page_params.is_guest = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
 test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
@@ -420,11 +420,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(data.subscriber_count, 16);
     });
 
-    override_rewire(
-        compose_validate,
-        "stream_wildcard_mention_allowed_in_large_stream",
-        () => true,
-    );
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -436,11 +432,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(data.stream_wildcard_mention, "all");
         wildcards_not_allowed_rendered = true;
     });
-    override_rewire(
-        compose_validate,
-        "stream_wildcard_mention_allowed_in_large_stream",
-        () => false,
-    );
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => false);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });
