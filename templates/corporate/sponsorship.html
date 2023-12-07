@@ -100,7 +100,7 @@
         <div class="white-box">
             <div id="sponsorship-error" class="alert alert-danger"></div>
             <div id="sponsorship-input-section">
-                <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}">
+                <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}" data-is-remotely-hosted="{{ is_remotely_hosted }}">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-name" class="inline-block label-title">Organization</label>
