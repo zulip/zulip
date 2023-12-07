@@ -62,6 +62,7 @@ from zerver.lib.push_notifications import (
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
+    PushNotificationBouncerServerError,
     build_analytics_data,
     get_realms_info_for_push_bouncer,
     send_analytics_to_push_bouncer,
@@ -906,7 +907,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as warn_log:
                 resp.add(responses.POST, URL, body=orjson.dumps({"msg": "error"}), status=500)
                 with self.assertRaisesRegex(
-                    PushNotificationBouncerRetryLaterError,
+                    PushNotificationBouncerServerError,
                     r"Received 500 from push notification bouncer$",
                 ):
                     self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
@@ -3492,7 +3493,7 @@ class TestSendToPushBouncer(ZulipTestCase):
     def test_500_error(self) -> None:
         self.add_mock_response(status=500)
         with self.assertLogs(level="WARNING") as m:
-            with self.assertRaises(PushNotificationBouncerRetryLaterError):
+            with self.assertRaises(PushNotificationBouncerServerError):
                 send_to_push_bouncer("POST", "register", {"data": "true"})
             self.assertEqual(m.output, ["WARNING:root:Received 500 from push notification bouncer"])
 

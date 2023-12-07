@@ -44,6 +44,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
+    PushNotificationBouncerServerError,
     send_json_to_push_bouncer,
     send_realms_only_to_push_bouncer,
     send_to_push_bouncer,
@@ -786,6 +787,12 @@ def initialize_push_notifications() -> None:
 
         try:
             realms = send_realms_only_to_push_bouncer()
+        except PushNotificationBouncerServerError:  # nocoverage
+            # 50x errors from the bouncer cannot be addressed by the
+            # administrator of this server, and may be localized to
+            # this endpoint; don't rashly mark push notifications as
+            # disabled when they are likely working perfectly fine.
+            pass
         except Exception:
             # An exception was thrown trying to ask the bouncer service whether we can send
             # push notifications or not. There may be certain transient failures that we could
