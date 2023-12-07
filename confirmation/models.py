@@ -117,13 +117,17 @@ def create_confirmation_link(
     *,
     validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
-    realm_creation: bool = False,
+    no_associated_realm_object: bool = False,
 ) -> str:
     # validity_in_minutes is an override for the default values which are
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
     key = generate_key()
-    if realm_creation:
+
+    # Some confirmation objects, like those for realm creation or those used
+    # for the self-hosted management flows, are not associated with a realm
+    # hosted by this Zulip server.
+    if no_associated_realm_object:
         realm = None
     else:
         assert not isinstance(obj, PreregistrationRealm)
