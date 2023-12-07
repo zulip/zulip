@@ -32,6 +32,10 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
     http_status_code = 502
 
 
+class PushNotificationBouncerServerError(PushNotificationBouncerRetryLaterError):
+    http_status_code = 502
+
+
 class RealmDataForAnalytics(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -114,7 +118,7 @@ def send_to_push_bouncer(
         # to the callers that the attempt failed and they can retry.
         error_msg = "Received 500 from push notification bouncer"
         logging.warning(error_msg)
-        raise PushNotificationBouncerRetryLaterError(error_msg)
+        raise PushNotificationBouncerServerError(error_msg)
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
         result_dict = orjson.loads(res.content)
