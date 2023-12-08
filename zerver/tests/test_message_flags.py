@@ -1911,6 +1911,79 @@ class MarkUnreadTest(ZulipTestCase):
                 dict(
                     type="stream",
                     mentioned=True,
+                    mentioned_me_directly=True,
+                    topic="test",
+                    unmuted_stream_msg=True,
+                    stream_id=stream.id,
+                ),
+            )
+
+        for message_id in messages_to_unread:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertFalse(um.flags.read)
+        for message_id in messages_still_read:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertTrue(um.flags.read)
+
+    def test_stream_messages_wildcard_mention(self) -> None:
+        sender = self.example_user("cordelia")
+        receiver = self.example_user("hamlet")
+        stream_name = "Denmark"
+        stream = self.subscribe(receiver, stream_name)
+        self.subscribe(sender, stream_name)
+        topic_name = "test"
+        message_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream_name,
+                topic_name=topic_name,
+                content="@here",
+            )
+            for i in range(4)
+        ]
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages/flags",
+            {"messages": orjson.dumps(message_ids).decode(), "op": "add", "flag": "read"},
+        )
+        self.assert_json_success(result)
+        for message_id in message_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertTrue(um.flags.read)
+        messages_to_unread = message_ids[2:]
+        messages_still_read = message_ids[:2]
+
+        params = {
+            "messages": orjson.dumps(messages_to_unread).decode(),
+            "op": "remove",
+            "flag": "read",
+        }
+
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(receiver, "/api/v1/messages/flags", params)
+
+        self.assert_json_success(result)
+        event = events[0]["event"]
+        self.assertEqual(event["messages"], messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
+        self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
+        for message_id in event["message_details"]:
+            self.assertEqual(
+                event["message_details"][message_id],
+                dict(
+                    type="stream",
+                    mentioned=True,
+                    wildcard_mentioned=True,
                     topic="test",
                     unmuted_stream_msg=True,
                     stream_id=stream.id,
@@ -2237,6 +2310,74 @@ class MarkUnreadTest(ZulipTestCase):
                     type="private",
                     user_ids=[sender.id],
                     mentioned=True,
+                ),
+            )
+
+        for message_id in messages_to_unread:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertFalse(um.flags.read)
+        for message_id in messages_still_read:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertTrue(um.flags.read)
+
+    def test_pm_messages_wildcard_mention(self) -> None:
+        sender = self.example_user("cordelia")
+        receiver = self.example_user("hamlet")
+        stream_name = "Denmark"
+        self.subscribe(receiver, stream_name)
+        message_ids = [
+            self.send_personal_message(sender, receiver, content="@here") for i in range(4)
+        ]
+        self.login("hamlet")
+        for message_id in message_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertFalse(um.flags.read)
+        result = self.client_post(
+            "/json/messages/flags",
+            {"messages": orjson.dumps(message_ids).decode(), "op": "add", "flag": "read"},
+        )
+        self.assert_json_success(result)
+        for message_id in message_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertTrue(um.flags.read)
+        messages_to_unread = message_ids[2:]
+        messages_still_read = message_ids[:2]
+
+        params = {
+            "messages": orjson.dumps(messages_to_unread).decode(),
+            "op": "remove",
+            "flag": "read",
+        }
+
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(receiver, "/api/v1/messages/flags", params)
+
+        self.assert_json_success(result)
+        event = events[0]["event"]
+        self.assertEqual(event["messages"], messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
+        self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
+        for message_id in event["message_details"]:
+            self.assertEqual(
+                event["message_details"][message_id],
+                dict(
+                    type="private",
+                    user_ids=[sender.id],
+                    mentioned=True,
+                    wildcard_mentioned=True,
                 ),
             )
 

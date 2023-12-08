@@ -3031,6 +3031,16 @@ paths:
                                           of the user.
 
                                           Present only if the message mentions the current user.
+                                      mentioned_me_directly:
+                                        type: boolean
+                                        description: |
+                                          A flag which indicates whether a message contains a direct
+                                          mention of the user.
+                                      wildcard_mentioned:
+                                        type: boolean
+                                        description: |
+                                          A flag which indicates whether a message contains a wildcard
+                                          mention that applies to the user.
                                       user_ids:
                                         type: array
                                         items:
