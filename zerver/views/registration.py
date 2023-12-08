@@ -914,6 +914,18 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
 
 @has_request_variables
 def signup_send_confirm(request: HttpRequest, email: str = REQ("email")) -> HttpResponse:
+    try:
+        # Because we interpolate the email directly into the template
+        # from the query parameter, do a simple validation that it
+        # looks a at least a bit like an email address.
+        validators.validate_email(email)
+    except ValidationError:
+        return TemplateResponse(
+            request,
+            "zerver/invalid_email.html",
+            context={"invalid_email": True},
+            status=400,
+        )
     return TemplateResponse(
         request,
         "zerver/accounts_send_confirm.html",
