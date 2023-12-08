@@ -272,7 +272,10 @@ def registration_helper(
             validators.validate_email(email)
         except ValidationError:
             return TemplateResponse(
-                request, "zerver/invalid_email.html", context={"invalid_email": True}
+                request,
+                "zerver/invalid_email.html",
+                context={"invalid_email": True},
+                status=400,
             )
 
     if realm_creation:
@@ -293,18 +296,21 @@ def registration_helper(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "closed_domain": True},
+                status=400,
             )
         except DisposableEmailError:
             return TemplateResponse(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "disposable_emails_not_allowed": True},
+                status=400,
             )
         except EmailContainsPlusError:
             return TemplateResponse(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "email_contains_plus": True},
+                status=400,
             )
 
         if realm.deactivated:
