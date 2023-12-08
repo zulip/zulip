@@ -104,6 +104,7 @@
                     </div>
                 </div>
                 {% else %}
+                {% if not (free_trial or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field no-validation input-box-number">
                     <label for="current-manual-license-count" class="inline-block label-title">
                         Number of licenses for current billing period
@@ -123,7 +124,8 @@
                     </div>
                     <div id="current-license-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
-                {% if not downgrade_at_end_of_cycle %}
+                {% endif %}
+                {% if not (downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field no-validation input-box-number">
                     <label for="next-manual-license-count" class="inline-block label-title">
                         Number of licenses for next billing period
