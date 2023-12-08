@@ -313,9 +313,15 @@ def get_user_group_mentions_data(
     return mentioned_user_groups_map
 
 
-def get_mentioned_user_group_name(
+@dataclass
+class MentionedUserGroup:
+    name: str
+    members_count: int
+
+
+def get_mentioned_user_group(
     messages: List[Dict[str, Any]], user_profile: UserProfile
-) -> Optional[str]:
+) -> Optional[MentionedUserGroup]:
     """Returns the user group name to display in the email notification
     if user group(s) are mentioned.
 
@@ -352,4 +358,10 @@ def get_mentioned_user_group_name(
             smallest_user_group_size = current_user_group_size
             smallest_user_group_name = current_user_group.name
 
-    return smallest_user_group_name
+    if smallest_user_group_name is None:
+        return None
+
+    return MentionedUserGroup(
+        name=smallest_user_group_name,
+        members_count=int(smallest_user_group_size),  # for mypy
+    )

@@ -1619,8 +1619,26 @@ class TestMessageNotificationEmails(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
+        zulip_realm = get_realm("zulip")
+
+        # user groups having less than 12 members are small user groups.
+        small_user_group = check_add_user_group(
+            zulip_realm, "small_user_group", [hamlet, othello, cordelia], acting_user=None
+        )
+
+        large_user_group_members: List[UserProfile] = []
+        for count in range(12):
+            member = do_create_user(
+                f"email {count}",
+                f"password {count}",
+                zulip_realm,
+                f"dummy name {count}",
+                acting_user=None,
+            )
+            large_user_group_members.append(member)
+        large_user_group_members = list(UserProfile.objects.filter(realm=zulip_realm, is_bot=False))
         large_user_group = check_add_user_group(
-            get_realm("zulip"), "large_user_group", [hamlet, othello, cordelia], acting_user=None
+            zulip_realm, "large_user_group", large_user_group_members, acting_user=None
         )
 
         def reset_hamlet_as_soft_deactivated_user() -> None:
@@ -1727,8 +1745,25 @@ class TestMessageNotificationEmails(ZulipTestCase):
         reset_hamlet_as_soft_deactivated_user()
         self.expect_to_stay_long_term_idle(hamlet, send_stream_wildcard_mention)
 
-        # Group mention should NOT soft reactivate the user
-        def send_group_mention() -> None:
+        # Small group mention (size < 12) should soft reactivate the user
+        def send_small_group_mention() -> None:
+            mention = "@*small_user_group*"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.MENTION,
+                        mentioned_user_group_id=small_user_group.id,
+                    ),
+                },
+            )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_small_group_mention)
+
+        # Large group mention (size >= 12) should NOT soft reactivate the user
+        def send_large_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1742,7 +1777,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             )
 
         reset_hamlet_as_soft_deactivated_user()
-        self.expect_to_stay_long_term_idle(hamlet, send_group_mention)
+        self.expect_to_stay_long_term_idle(hamlet, send_large_group_mention)
 
     def test_followed_topic_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")

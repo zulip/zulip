@@ -24,7 +24,7 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
-from zerver.lib.notification_data import get_mentioned_user_group_name
+from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
@@ -416,7 +416,13 @@ def do_send_missedmessage_events_reply_in_zulip(
         ),
     )
 
-    mentioned_user_group_name = get_mentioned_user_group_name(missed_messages, user_profile)
+    mentioned_user_group = get_mentioned_user_group(missed_messages, user_profile)
+    mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
+    if mentioned_user_group is not None:
+        mentioned_user_group_name = mentioned_user_group.name
+        mentioned_user_group_members_count = mentioned_user_group.members_count
+
     triggers = [message["trigger"] for message in missed_messages]
     unique_triggers = set(triggers)
 
@@ -563,7 +569,7 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     # Soft reactivate the long_term_idle user personally mentioned
     soft_reactivate_if_personal_notification(
-        user_profile, unique_triggers, mentioned_user_group_name
+        user_profile, unique_triggers, mentioned_user_group_members_count
     )
 
     with override_language(user_profile.default_language):
