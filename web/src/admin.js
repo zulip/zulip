@@ -45,6 +45,9 @@ const admin_settings_label = {
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
+    welcome_bot_custom_message_enabled: $t({
+        defaultMessage: "Allow custom welcome bot message",
+    }),
     realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks"}),
 
     // Organization permissions
@@ -155,6 +158,7 @@ export function build_page() {
         realm_enable_spectator_access: page_params.realm_enable_spectator_access,
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
+        welcome_bot_custom_message_enabled: page_params.welcome_bot_custom_message_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
         development: page_params.development_environment,
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,

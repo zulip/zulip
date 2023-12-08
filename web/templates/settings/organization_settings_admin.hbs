@@ -44,6 +44,13 @@
                   prefix="id_"
                   is_checked=realm_digest_emails_enabled
                   label=admin_settings_label.realm_digest_emails_enabled}}
+
+                {{> settings_checkbox
+                  setting_name="welcome_bot_custom_message_enabled"
+                  prefix="id_"
+                  is_checked=welcome_bot_custom_message_enabled
+                  label=admin_settings_label.welcome_bot_custom_message_enabled}}
+
                 {{/if}}
                 <div class="input-group">
                     <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
