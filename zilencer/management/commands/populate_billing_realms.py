@@ -461,6 +461,10 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
 
 
 def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
+    # Delete existing remote realm.
+    RemoteRealm.objects.filter(name=customer_profile.unique_id).delete()
+    flush_cache(None)
+
     local_realm = populate_realm(customer_profile)
     assert local_realm is not None
 
