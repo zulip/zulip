@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from pydantic import UUID4, BaseModel, ConfigDict, Field, Json, field_validator
 
 from analytics.models import InstallationCount, RealmCount
-from version import ZULIP_VERSION
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_json_publish
@@ -92,6 +92,7 @@ class AnalyticsRequest(BaseModel):
     realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None
     realms: Json[List[RealmDataForAnalytics]]
     version: Optional[Json[str]]
+    api_feature_level: Optional[Json[int]]
 
 
 class UserDataForRemoteBilling(BaseModel):
@@ -335,6 +336,7 @@ def send_analytics_to_push_bouncer() -> None:
         realmauditlog_rows=realmauditlog_data,
         realms=get_realms_info_for_push_bouncer(),
         version=ZULIP_VERSION,
+        api_feature_level=API_FEATURE_LEVEL,
     )
 
     try:
@@ -350,6 +352,7 @@ def send_realms_only_to_push_bouncer() -> Dict[str, RemoteRealmDictValue]:
         installation_counts=[],
         realms=get_realms_info_for_push_bouncer(),
         version=ZULIP_VERSION,
+        api_feature_level=API_FEATURE_LEVEL,
     )
 
     # We don't catch JsonableError here, because we want it to propagate further

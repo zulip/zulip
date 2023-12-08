@@ -48,6 +48,7 @@ class RemoteZulipServer(models.Model):
     contact_email = models.EmailField(blank=True, null=False)
     last_updated = models.DateTimeField("last updated", auto_now=True)
     last_version = models.CharField(max_length=VERSION_MAX_LENGTH, null=True)
+    last_api_feature_level = models.PositiveIntegerField(null=True)
 
     # Whether the server registration has been deactivated.
     deactivated = models.BooleanField(default=False)

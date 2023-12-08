@@ -24,7 +24,7 @@ from typing_extensions import override
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
 from corporate.models import CustomerPlan
-from version import ZULIP_VERSION
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.realm_settings import (
@@ -1358,11 +1358,12 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=realmauditlog_data,
             realms=[],
             version=None,
+            api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            request.model_dump(round_trip=True, exclude={"realms", "version"}),
+            request.model_dump(round_trip=True, exclude={"realms", "version", "api_feature_level"}),
             subdomain="",
         )
         self.assert_json_error(result, "Data is out of order.")
@@ -1396,6 +1397,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=[],
             realms=realms_data,
             version=None,
+            api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
@@ -1447,11 +1449,12 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=realmauditlog_data,
             realms=[],
             version=None,
+            api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            request.model_dump(round_trip=True, exclude={"version"}),
+            request.model_dump(round_trip=True, exclude={"version", "api_feature_level"}),
             subdomain="",
         )
         self.assert_json_error(result, "Invalid event type.")
@@ -1472,11 +1475,12 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realmauditlog_rows=realmauditlog_data,
             realms=[],
             version=None,
+            api_feature_level=None,
         )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            request.model_dump(round_trip=True, exclude={"version"}),
+            request.model_dump(round_trip=True, exclude={"version", "api_feature_level"}),
             subdomain="",
         )
         self.assert_json_success(result)
@@ -1876,6 +1880,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
             ).decode(),
             "version": orjson.dumps(ZULIP_VERSION).decode(),
+            "api_feature_level": orjson.dumps(API_FEATURE_LEVEL).decode(),
         }
         mock_send_to_push_bouncer.assert_called_with(
             "POST",
