@@ -1,0 +1,22 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_url }}/registration_confirmation.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+<p>
+    {{ _("You have initiated login to the Zulip server billing management system for the following server:") }}
+    <ul>
+        <li>{% trans %}Hostname: {{ remote_server_hostname }}{% endtrans %}</li>
+        <li>{% trans %}zulip_org_id: {{ remote_server_uuid }}{% endtrans %}</li>
+    </ul>
+</p>
+<p>
+    {{ _("Click the button below to complete the login process.") }}
+    <a class="button" href="{{ confirmation_url }}">{{ _("Confirm login") }}</a>
+</p>
+<p>
+    {{macros.contact_us_zulip_cloud(support_email)}}
+</p>
+{% endblock %}

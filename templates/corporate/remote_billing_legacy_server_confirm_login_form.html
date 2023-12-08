@@ -1,0 +1,36 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "upgrade" %}
+
+{% block title %}
+<title>{{ _("Login confirmation - email") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>Enter your email address</h1>
+
+            <p>Next, we will send a verification email to the address you provide.</p>
+        </div>
+        <div class="white-box">
+            <form id="server-confirm-login-form" method="post" action="{{ action_url }}">
+                {{ csrf_input }}
+                {% if next_page %}
+                <input type="hidden" name="next_page" value="{{ next_page }}" />
+                {% endif %}
+                <div class="input-box server-login-form-field">
+                    <label for="email" class="inline-block label-title">Email</label>
+                    <input id="email" name="email" class="email required" type="email" />
+                </div>
+                <div class="upgrade-button-container">
+                    <button type="submit" id="server-confirm-login-button" class="stripe-button-el invoice-button">
+                        <span class="server-login-button-text">Continue</span>
+                        <img class="loader server-login-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

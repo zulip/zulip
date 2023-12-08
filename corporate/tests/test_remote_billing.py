@@ -4,6 +4,7 @@ from unittest import mock
 
 import responses
 import time_machine
+from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -18,7 +19,7 @@ from zerver.lib.remote_server import send_realms_only_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserProfile
-from zilencer.models import RemoteRealm, RemoteRealmBillingUser
+from zilencer.models import RemoteRealm, RemoteRealmBillingUser, RemoteServerBillingUser
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -360,6 +361,110 @@ class LegacyServerLoginTest(BouncerTestCase):
         self.uuid = self.server.uuid
         self.secret = self.server.api_key
 
+    def execute_remote_billing_authentication_flow(
+        self,
+        email: str,
+        full_name: str,
+        next_page: Optional[str] = None,
+        expect_tos: bool = True,
+        confirm_tos: bool = True,
+        return_without_clicking_confirmation_link: bool = False,
+    ) -> "TestHttpResponse":
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            payload = {"server_org_id": self.uuid, "server_org_secret": self.secret}
+            if next_page is not None:
+                payload["next_page"] = next_page
+            result = self.client_post(
+                "/serverlogin/",
+                payload,
+                subdomain="selfhosting",
+            )
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Enter your email address"], result)
+        if next_page is not None:
+            self.assert_in_success_response(
+                [f'<input type="hidden" name="next_page" value="{next_page}" />'], result
+            )
+        self.assert_in_success_response([f'action="/serverlogin/{self.uuid!s}/confirm/"'], result)
+
+        # Verify the partially-authed data that should have been stored in the session. The flow
+        # isn't complete yet however, and this won't give the user access to authenticated endpoints,
+        # only allow them to proceed with confirmation.
+        identity_dict = LegacyServerIdentityDict(
+            remote_server_uuid=str(self.server.uuid),
+            authenticated_at=datetime_to_timestamp(now),
+            remote_billing_user_id=None,
+        )
+        self.assertEqual(
+            self.client.session["remote_billing_identities"][f"remote_server:{self.uuid!s}"],
+            identity_dict,
+        )
+
+        payload = {"email": email}
+        if next_page is not None:
+            payload["next_page"] = next_page
+        with time_machine.travel(now, tick=False):
+            result = self.client_post(
+                f"/serverlogin/{self.uuid!s}/confirm/",
+                payload,
+                subdomain="selfhosting",
+            )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            ["To complete the login process, check your email account", email], result
+        )
+
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email,
+            url_pattern=(
+                f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}" + r"(\S+)>"
+            ),
+            email_body_contains="Click the link below to complete the login process",
+        )
+        if return_without_clicking_confirmation_link:
+            return result
+
+        with time_machine.travel(now, tick=False):
+            result = self.client_get(confirmation_url, subdomain="selfhosting")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            [f"Log in to Zulip server billing for {self.server.hostname}", email], result
+        )
+        self.assert_in_success_response([f'action="{confirmation_url}"'], result)
+        if expect_tos:
+            self.assert_in_success_response(["I agree", "Terms of Service"], result)
+
+        payload = {"full_name": full_name}
+        if confirm_tos:
+            payload["tos_consent"] = "true"
+        with time_machine.travel(now, tick=False):
+            result = self.client_post(confirmation_url, payload, subdomain="selfhosting")
+        if result.status_code >= 400:
+            # Early return for the caller to assert about the error.
+            return result
+
+        # The user should now be fully authenticated.
+
+        # This should have been created in the process:
+        remote_billing_user = RemoteServerBillingUser.objects.get(
+            remote_server=self.server, email=email
+        )
+
+        # Verify the session looks as it should:
+        identity_dict = LegacyServerIdentityDict(
+            remote_server_uuid=str(self.server.uuid),
+            authenticated_at=datetime_to_timestamp(now),
+            remote_billing_user_id=remote_billing_user.id,
+        )
+        self.assertEqual(
+            self.client.session["remote_billing_identities"][f"remote_server:{self.uuid!s}"],
+            identity_dict,
+        )
+
+        return result
+
     def test_server_login_get(self) -> None:
         result = self.client_get("/serverlogin/", subdomain="selfhosting")
         self.assertEqual(result.status_code, 200)
@@ -400,26 +505,12 @@ class LegacyServerLoginTest(BouncerTestCase):
         self.assert_in_success_response(["Your server registration has been deactivated."], result)
 
     def test_server_login_success_with_no_plan(self) -> None:
-        now = timezone_now()
-        with time_machine.travel(now, tick=False):
-            result = self.client_post(
-                "/serverlogin/",
-                {"server_org_id": self.uuid, "server_org_secret": self.secret},
-                subdomain="selfhosting",
-            )
-
+        hamlet = self.example_user("hamlet")
+        result = self.execute_remote_billing_authentication_flow(
+            hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
+        )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"/server/{self.uuid}/plans/")
-
-        # Verify the authed data that should have been stored in the session.
-        identity_dict = LegacyServerIdentityDict(
-            remote_server_uuid=str(self.server.uuid),
-            authenticated_at=datetime_to_timestamp(now),
-        )
-        self.assertEqual(
-            self.client.session["remote_billing_identities"][f"remote_server:{self.uuid!s}"],
-            identity_dict,
-        )
 
         result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
         # The server has no plan, so the /billing page redirects to /upgrade
@@ -433,7 +524,24 @@ class LegacyServerLoginTest(BouncerTestCase):
             result = self.client_get(result["Location"], subdomain="selfhosting")
             self.assert_in_success_response([f"Upgrade {self.server.hostname}"], result)
 
+    def test_server_login_success_consent_is_not_re_asked(self) -> None:
+        hamlet = self.example_user("hamlet")
+        result = self.execute_remote_billing_authentication_flow(
+            hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/plans/")
+
+        # Now go through the flow again, but this time we should not be asked to re-confirm ToS.
+        result = self.execute_remote_billing_authentication_flow(
+            hamlet.delivery_email, hamlet.full_name, expect_tos=False, confirm_tos=False
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"/server/{self.uuid}/plans/")
+
     def test_server_login_success_with_next_page(self) -> None:
+        hamlet = self.example_user("hamlet")
+
         # First test an invalid next_page value.
         result = self.client_post(
             "/serverlogin/",
@@ -442,15 +550,10 @@ class LegacyServerLoginTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Invalid next_page", 400)
 
-        result = self.client_post(
-            "/serverlogin/",
-            {
-                "server_org_id": self.uuid,
-                "server_org_secret": self.secret,
-                "next_page": "sponsorship",
-            },
-            subdomain="selfhosting",
+        result = self.execute_remote_billing_authentication_flow(
+            hamlet.delivery_email, hamlet.full_name, next_page="sponsorship"
         )
+
         # We should be redirected to the page dictated by the next_page param.
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"/server/{self.uuid}/sponsorship/")
@@ -478,6 +581,7 @@ class LegacyServerLoginTest(BouncerTestCase):
         )
 
     def test_server_billing_unauthed(self) -> None:
+        hamlet = self.example_user("hamlet")
         now = timezone_now()
         # Try to open a page with no auth at all.
         result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
@@ -490,17 +594,30 @@ class LegacyServerLoginTest(BouncerTestCase):
             ['<input type="hidden" name="next_page" value="billing" />'], result
         )
 
+        # The full auth flow involves clicking a confirmation link, upon which the user is
+        # granted an authenticated session. However, in the first part of the process,
+        # an intermittent session state is created to transition between endpoints.
+        # The bottom line is that this session state should *not* grant the user actual
+        # access to the billing management endpoints.
+        # We verify that here by simulating the user *not* clicking the confirmation link,
+        # and then trying to access billing management with the intermittent session state.
+        with time_machine.travel(now, tick=False):
+            self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email,
+                hamlet.full_name,
+                next_page="upgrade",
+                return_without_clicking_confirmation_link=True,
+            )
+        result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 302)
+        # Redirects to the login form with appropriate next_page value.
+        self.assertEqual(result["Location"], "/serverlogin/?next_page=billing")
+
         # Now authenticate, going to the /upgrade page since we'll be able to access
         # it directly without annoying extra redirects.
         with time_machine.travel(now, tick=False):
-            result = self.client_post(
-                "/serverlogin/",
-                {
-                    "server_org_id": self.uuid,
-                    "server_org_secret": self.secret,
-                    "next_page": "upgrade",
-                },
-                subdomain="selfhosting",
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name, next_page="upgrade"
             )
 
         self.assertEqual(result.status_code, 302)
@@ -521,3 +638,12 @@ class LegacyServerLoginTest(BouncerTestCase):
             result = self.client_get(f"/server/{self.uuid}/upgrade/", subdomain="selfhosting")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/serverlogin/?next_page=upgrade")
+
+    def test_remote_billing_authentication_flow_tos_consent_failure(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        result = self.execute_remote_billing_authentication_flow(
+            hamlet.email, hamlet.full_name, expect_tos=True, confirm_tos=False
+        )
+
+        self.assert_json_error(result, "You must accept the Terms of Service to proceed.")

@@ -9,15 +9,23 @@
 <div id="remote-realm-confirm-login-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Log in to Zulip server billing for {{ remote_realm_host }}</h1>
+            <h1>Log in to Zulip server billing for {{ host }}</h1>
         </div>
         <div class="white-box">
             <p>Click <b>Continue</b> to log in to Zulip server
             billing with the account below.</p>
+            {% if not legacy_server_confirmation_flow %}
             Full name: {{ user_full_name }}<br />
+            {% endif %}
             Email: {{ user_email }}<br />
             <form id="remote-realm-confirm-login-form" method="post" action="{{ action_url }}">
                 {{ csrf_input }}
+                {% if legacy_server_confirmation_flow %}
+                <div class="input-box remote-realm-confirm-login-form-field">
+                    <label for="full_name" class="inline-block label-title">Full name</label>
+                    <input id="full_name" name="full_name" class="required" type="text"/>
+                </div>
+                {% endif %}
                 {% if tos_consent_needed %}
                 <div class="input-group terms-of-service">
                     <label for="id_terms" class="inline-block checkbox">

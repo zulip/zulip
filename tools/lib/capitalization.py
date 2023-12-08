@@ -148,6 +148,8 @@ IGNORED_PHRASES = [
     r"guest",
     # Used in pills for deactivated users.
     r"deactivated",
+    # This is a reference to a setting/secret and should be lowercase.
+    r"zulip_org_id",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

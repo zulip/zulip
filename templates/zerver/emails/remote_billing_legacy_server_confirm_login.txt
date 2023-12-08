@@ -1,0 +1,9 @@
+{{ _("You have initiated login to the Zulip server billing management system for the following server:") }}
+* {% trans %}Hostname: {{ remote_server_hostname }}{% endtrans %}
+
+* {% trans %}zulip_org_id: {{ remote_server_uuid }}{% endtrans %}
+
+{{ _("Click the link below to complete the login process;") }}
+    <{{ confirmation_url }}>
+
+{% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}

@@ -1,5 +1,6 @@
 import logging
 from typing import Any, Dict, Literal, Optional
+from urllib.parse import urlsplit, urlunsplit
 
 from django.conf import settings
 from django.core import signing
@@ -13,22 +14,38 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyError,
+    create_confirmation_link,
+    get_object_from_key,
+    render_confirmation_key_error,
+)
 from corporate.lib.decorator import self_hosting_management_endpoint
 from corporate.lib.remote_billing_util import (
     REMOTE_BILLING_SESSION_VALIDITY_SECONDS,
     LegacyServerIdentityDict,
     RemoteBillingIdentityDict,
+    RemoteBillingIdentityExpiredError,
     RemoteBillingUserDict,
     get_identity_dict_from_session,
+    get_remote_server_and_user_from_session,
 )
-from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
+from zerver.lib.exceptions import (
+    JsonableError,
+    MissingRemoteRealmError,
+    RemoteBillingAuthenticationError,
+)
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
+from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zilencer.models import (
+    PreregistrationRemoteServerBillingUser,
     RemoteRealm,
     RemoteRealmBillingUser,
+    RemoteServerBillingUser,
     RemoteZulipServer,
     get_remote_server_by_uuid,
 )
@@ -154,7 +171,7 @@ def remote_realm_billing_finalize_login(
         context = {
             "remote_server_uuid": remote_server_uuid,
             "remote_realm_uuid": remote_realm_uuid,
-            "remote_realm_host": remote_realm.host,
+            "host": remote_realm.host,
             "user_email": user_email,
             "user_full_name": user_full_name,
             "tos_consent_needed": tos_consent_needed,
@@ -332,14 +349,190 @@ def remote_billing_legacy_server_login(
     if remote_server.deactivated:
         context.update({"error_message": _("Your server registration has been deactivated.")})
         return render(request, "corporate/legacy_server_login.html", context)
+
     remote_server_uuid = str(remote_server.uuid)
 
+    # We will want to render a page with a form that POSTs user-filled data to
+    # the next endpoint in the flow. That endpoint needs to know the user is already
+    # authenticated as a billing admin for this remote server, so we need to store
+    # our usual IdentityDict structure in the session.
     request.session["remote_billing_identities"] = {}
     request.session["remote_billing_identities"][
         f"remote_server:{remote_server_uuid}"
     ] = LegacyServerIdentityDict(
         remote_server_uuid=remote_server_uuid,
         authenticated_at=datetime_to_timestamp(timezone_now()),
+        # The lack of remote_billing_user_id indicates the auth hasn't been completed.
+        # This means access to authenticated endpoints will be denied. Only proceeding
+        # to the next step in the flow is permitted with this.
+        remote_billing_user_id=None,
+    )
+
+    context = {
+        "remote_server_hostname": remote_server.hostname,
+        "next_page": next_page,
+        "action_url": reverse(
+            remote_billing_legacy_server_confirm_login, args=(str(remote_server.uuid),)
+        ),
+    }
+    return render(
+        request,
+        "corporate/remote_billing_legacy_server_confirm_login_form.html",
+        context=context,
+    )
+
+
+@self_hosting_management_endpoint
+@typed_endpoint
+def remote_billing_legacy_server_confirm_login(
+    request: HttpRequest,
+    *,
+    server_uuid: PathOnly[str],
+    email: str,
+    next_page: VALID_NEXT_PAGES_TYPE = None,
+) -> HttpResponse:
+    """
+    Takes the POST from the above form and sends confirmation email to the provided
+    email address in order to verify. Only the confirmation link will grant
+    a fully authenticated session.
+    """
+
+    try:
+        remote_server, remote_billing_user = get_remote_server_and_user_from_session(
+            request, server_uuid=server_uuid
+        )
+        if remote_billing_user is not None:
+            # This session is already fully authenticated, it doesn't make sense for
+            # the user to be here. Just raise an exception so it's immediately caught
+            # and the user is redirected to the beginning of the login flow where
+            # they can re-auth.
+            raise RemoteBillingAuthenticationError
+    except (RemoteBillingIdentityExpiredError, RemoteBillingAuthenticationError):
+        return HttpResponse(
+            reverse("remote_billing_legacy_server_login") + f"?next_page={next_page}"
+        )
+
+    obj = PreregistrationRemoteServerBillingUser.objects.create(
+        email=email,
+        remote_server=remote_server,
+        next_page=next_page,
+    )
+    url = create_confirmation_link(
+        obj,
+        Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN,
+        # Use the same expiration time as for the signed access token,
+        # since this is similarly transient in nature.
+        validity_in_minutes=int(REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS / 60),
+        no_associated_realm_object=True,
+    )
+
+    # create_confirmation_link will create the url on the root subdomain, so we need to
+    # do a hacky approach to change it into the self hosting management subdomain.
+    new_hostname = f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}"
+    split_url = urlsplit(url)
+    modified_url = split_url._replace(netloc=new_hostname)
+    final_url = urlunsplit(modified_url)
+
+    context = {
+        "remote_server_hostname": remote_server.hostname,
+        "remote_server_uuid": str(remote_server.uuid),
+        "confirmation_url": final_url,
+    }
+    send_email(
+        "zerver/emails/remote_billing_legacy_server_confirm_login",
+        to_emails=[email],
+        from_address=FromAddress.tokenized_no_reply_address(),
+        context=context,
+    )
+
+    return render(
+        request,
+        "corporate/remote_billing_legacy_server_confirm_login_sent.html",
+        context={"email": email},
+    )
+
+
+@self_hosting_management_endpoint
+@typed_endpoint
+def remote_billing_legacy_server_from_login_confirmation_link(
+    request: HttpRequest,
+    *,
+    confirmation_key: PathOnly[str],
+    full_name: Optional[str] = None,
+    tos_consent: Literal[None, "true"] = None,
+) -> HttpResponse:
+    """
+    The user comes here via the confirmation link they received via email.
+    """
+    if request.method not in ["GET", "POST"]:
+        return HttpResponseNotAllowed(["GET", "POST"])
+
+    try:
+        prereg_object = get_object_from_key(
+            confirmation_key,
+            [Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN],
+            # These links are reusable.
+            mark_object_used=False,
+        )
+    except ConfirmationKeyError as exception:
+        return render_confirmation_key_error(request, exception)
+    assert isinstance(prereg_object, PreregistrationRemoteServerBillingUser)
+    remote_server = prereg_object.remote_server
+    remote_server_uuid = str(remote_server.uuid)
+
+    # If this user (identified by email) already did this flow, meaning the have a RemoteServerBillingUser,
+    # then we don't re-do the ToS consent  again.
+    tos_consent_needed = not RemoteServerBillingUser.objects.filter(
+        remote_server=remote_server, email=prereg_object.email
+    ).exists()
+
+    if request.method == "GET":
+        context = {
+            "remote_server_uuid": remote_server_uuid,
+            "host": remote_server.hostname,
+            "user_email": prereg_object.email,
+            "tos_consent_needed": tos_consent_needed,
+            "action_url": reverse(
+                remote_billing_legacy_server_from_login_confirmation_link,
+                args=(confirmation_key,),
+            ),
+            "legacy_server_confirmation_flow": True,
+        }
+        return render(
+            request,
+            # TODO: We're re-using the template, so it should be renamed
+            # to a more general name.
+            "corporate/remote_realm_billing_finalize_login_confirmation.html",
+            context=context,
+        )
+
+    assert request.method == "POST"
+
+    if tos_consent_needed and not tos_consent:
+        # This shouldn't be possible without tampering with the form, so we
+        # don't need a pretty error.
+        raise JsonableError(_("You must accept the Terms of Service to proceed."))
+
+    next_page = prereg_object.next_page
+
+    remote_billing_user, created = RemoteServerBillingUser.objects.update_or_create(
+        defaults={"full_name": full_name},
+        email=prereg_object.email,
+        remote_server=remote_server,
+    )
+
+    # Refresh IdentityDict in the session. (Or create it
+    # if the user came here e.g. in a different browser than they
+    # started the login flow in.)
+    request.session["remote_billing_identities"] = {}
+    request.session["remote_billing_identities"][
+        f"remote_server:{remote_server_uuid}"
+    ] = LegacyServerIdentityDict(
+        remote_server_uuid=remote_server_uuid,
+        authenticated_at=datetime_to_timestamp(timezone_now()),
+        # Having a remote_billing_user_id indicates the auth has been completed.
+        # The user will now be granted access to authenticated endpoints.
+        remote_billing_user_id=remote_billing_user.id,
     )
 
     assert next_page in VALID_NEXT_PAGES
