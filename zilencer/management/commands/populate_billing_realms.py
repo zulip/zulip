@@ -271,10 +271,14 @@ def add_card_to_customer(customer: Customer) -> None:
 
 def create_plan_for_customer(customer: Customer, customer_profile: CustomerProfile) -> None:
     assert customer_profile.tier is not None
-    months = 12
-    if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-        months = 1
-    next_invoice_date = add_months(timezone_now(), months)
+    if customer_profile.status == CustomerPlan.FREE_TRIAL:
+        # 2 months free trial.
+        next_invoice_date = add_months(timezone_now(), 2)
+    else:
+        months = 12
+        if customer_profile.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+            months = 1
+        next_invoice_date = add_months(timezone_now(), months)
 
     customer_plan = CustomerPlan.objects.create(
         customer=customer,
