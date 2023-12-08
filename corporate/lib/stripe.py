@@ -628,7 +628,6 @@ class UpgradePageContext(TypedDict):
     free_trial_end_date: Optional[str]
     is_demo_organization: bool
     manual_license_management: bool
-    min_invoiced_licenses: int
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
@@ -1792,7 +1791,6 @@ class BillingSession(ABC):
             "is_demo_organization": customer_specific_context["is_demo_organization"],
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
-            "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "page_params": {
                 "annual_price": get_price_per_license(
                     tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, percent_off
