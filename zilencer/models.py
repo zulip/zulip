@@ -165,6 +165,32 @@ class RemoteRealmBillingUser(models.Model):
     tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
 
 
+class AbstractRemoteServerBillingUser(models.Model):
+    remote_server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+
+    email = models.EmailField()
+
+    class Meta:
+        abstract = True
+
+
+class RemoteServerBillingUser(AbstractRemoteServerBillingUser):
+    full_name = models.TextField(default="")
+
+    class Meta:
+        unique_together = [
+            ("remote_server", "email"),
+        ]
+
+
+class PreregistrationRemoteServerBillingUser(AbstractRemoteServerBillingUser):
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_USED
+    status = models.IntegerField(default=0)
+
+    next_page = models.TextField(null=True)
+
+
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
     """Audit data associated with a remote Zulip server (not specific to a
     realm).  Used primarily for tracking registration and billing

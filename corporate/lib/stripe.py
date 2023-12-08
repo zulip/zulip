@@ -61,6 +61,7 @@ from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
     RemoteRealmBillingUser,
+    RemoteServerBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
@@ -3132,9 +3133,11 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     def __init__(
         self,
         remote_server: RemoteZulipServer,
+        remote_billing_user: Optional[RemoteServerBillingUser] = None,
         support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_server = remote_server
+        self.remote_billing_user = remote_billing_user
         if support_staff is not None:
             assert support_staff.is_staff
             self.support_session = True

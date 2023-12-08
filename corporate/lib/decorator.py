@@ -11,7 +11,7 @@ from typing_extensions import Concatenate, ParamSpec
 from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityExpiredError,
     get_remote_realm_from_session,
-    get_remote_server_from_session,
+    get_remote_server_and_user_from_session,
 )
 from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 from zerver.lib.exceptions import RemoteBillingAuthenticationError
@@ -153,7 +153,14 @@ def authenticated_remote_server_management_endpoint(
             raise TypeError("server_uuid must be a string")  # nocoverage
 
         try:
-            remote_server = get_remote_server_from_session(request, server_uuid=server_uuid)
+            remote_server, remote_billing_user = get_remote_server_and_user_from_session(
+                request, server_uuid=server_uuid
+            )
+            if remote_billing_user is None:
+                # This should only be possible if the user hasn't finished the confirmation flow
+                # and doesn't have a fully authenticated session yet. They should not be attempting
+                # to access this endpoint yet.
+                raise RemoteBillingAuthenticationError
         except (RemoteBillingIdentityExpiredError, RemoteBillingAuthenticationError):
             # In this flow, we can only redirect to our local "legacy server flow login" page.
             # That means that we can do it universally whether the user has an expired
@@ -167,7 +174,10 @@ def authenticated_remote_server_management_endpoint(
 
             return HttpResponseRedirect(url)
 
-        billing_session = RemoteServerBillingSession(remote_server)
+        assert remote_billing_user is not None
+        billing_session = RemoteServerBillingSession(
+            remote_server, remote_billing_user=remote_billing_user
+        )
         return view_func(request, billing_session)
 
     return _wrapped_view_func
