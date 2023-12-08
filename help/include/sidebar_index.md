@@ -120,6 +120,7 @@
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
 * [Direct messages](/help/direct-messages)
+* [User groups](/help/user-groups)
 
 ## Streams & topics
 * [Streams and topics](/help/streams-and-topics)
@@ -188,7 +189,7 @@
 * [Custom profile fields](/help/custom-profile-fields)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language](/help/configure-organization-language)
-* [User groups](/help/user-groups)
+* [Manage user groups](/help/manage-user-groups)
 * [Change a user's role](/help/change-a-users-role)
 * [Change a user's name](/help/change-a-users-name)
 * [Manage a user's stream subscriptions](/help/manage-user-stream-subscriptions)
