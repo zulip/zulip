@@ -37,6 +37,52 @@ notifications while you are actively using one of the Zulip apps.
 
 ## Testing mobile notifications
 
+### For users on Zulip Cloud and Zulip Server 8.0+
+
+!!! tip ""
+
+    Follow [these instructions](/help/view-zulip-version) to check the Zulip
+    version for your organization.
+
+To verify that mobile notifications are working as desired, you can send
+yourself a test notification from the Zulip mobile app. If you belong to more
+than one Zulip organization, you can separately test notifications for each
+account.
+
+{start_tabs}
+
+{tab|mobile}
+
+1. [Download](https://zulip.com/apps/) and install the Zulip mobile app if you
+   have not done so already.
+
+1. [Log in](/help/logging-in) to the account you want to test.
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Settings**.
+
+1. Tap **Notifications**.
+
+1. Tap **Send a test notification**. If notifications are working, you will
+   receive a **Test notification**.
+
+!!! tip ""
+
+    If you see a banner indicating that notifications have not been set up,
+    try [logging out](/help/logging-out) of your account and [logging
+    in](/help/logging-in) again. This will help if notifications were set up
+    very recently on your Zulip server.
+
+{end_tabs}
+
+### For users on older Zulip servers
+
+!!! tip ""
+
+    Follow [these instructions](/help/view-zulip-version) to check the Zulip
+    version for your organization.
+
 Start by configuring your notifications settings to make it easy to trigger a
 notification.
 
@@ -66,8 +112,9 @@ Next, test Zulip push notifications on your mobile device.
 1. If your Zulip organization is self-hosted (not at `*.zulipchat.com`),
    [check](/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers)
    whether push notifications have been set up. If they were set up recently,
-   you will need to [log out](/help/logging-out) of your account and [log
-   in](/help/logging-in) again.
+   you will need to [log out](/help/logging-out) of your account.
+
+1. [Log in](/help/logging-in) to the account you want to test.
 
 1. Ask *another* user (not yourself) to [send you a direct
    message](/help/starting-a-new-direct-message). You should see a Zulip message
