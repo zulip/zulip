@@ -60,6 +60,7 @@ from zerver.lib.push_notifications import (
     send_notifications_to_bouncer,
 )
 from zerver.lib.remote_server import (
+    AnalyticsRequest,
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     PushNotificationBouncerServerError,
@@ -1351,14 +1352,17 @@ class AnalyticsBouncerTest(BouncerTestCase):
         (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
             RealmCount.objects.all(), InstallationCount.objects.all(), RealmAuditLog.objects.all()
         )
+        request = AnalyticsRequest.model_construct(
+            realm_counts=realm_count_data,
+            installation_counts=installation_count_data,
+            realmauditlog_rows=realmauditlog_data,
+            realms=[],
+            version=None,
+        )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            {
-                "realm_counts": orjson.dumps(realm_count_data).decode(),
-                "installation_counts": orjson.dumps(installation_count_data).decode(),
-                "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-            },
+            request.model_dump(round_trip=True, exclude={"realms", "version"}),
             subdomain="",
         )
         self.assert_json_error(result, "Data is out of order.")
@@ -1382,19 +1386,21 @@ class AnalyticsBouncerTest(BouncerTestCase):
         check_counts(11, 11, 3, 2, 8)
 
         # Test that only valid org_type values are accepted - integers defined in OrgTypeEnum.
-        realms_data = [dict(realm) for realm in get_realms_info_for_push_bouncer()]
+        realms_data = get_realms_info_for_push_bouncer()
         # Not a valid org_type value:
-        realms_data[0]["org_type"] = 11
+        realms_data[0].org_type = 11
 
+        request = AnalyticsRequest.model_construct(
+            realm_counts=[],
+            installation_counts=[],
+            realmauditlog_rows=[],
+            realms=realms_data,
+            version=None,
+        )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            {
-                "realm_counts": orjson.dumps([]).decode(),
-                "installation_counts": orjson.dumps([]).decode(),
-                "realmauditlog_rows": orjson.dumps([]).decode(),
-                "realms": orjson.dumps(realms_data).decode(),
-            },
+            request.model_dump(round_trip=True, exclude={"version", "api_feature_level"}),
             subdomain="",
         )
         self.assert_json_error(
@@ -1435,15 +1441,17 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
 
         # This first post should fail because of excessive audit log event types.
+        request = AnalyticsRequest.model_construct(
+            realm_counts=realm_count_data,
+            installation_counts=installation_count_data,
+            realmauditlog_rows=realmauditlog_data,
+            realms=[],
+            version=None,
+        )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            {
-                "realm_counts": orjson.dumps(realm_count_data).decode(),
-                "installation_counts": orjson.dumps(installation_count_data).decode(),
-                "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-                "realms": orjson.dumps([]).decode(),
-            },
+            request.model_dump(round_trip=True, exclude={"version"}),
             subdomain="",
         )
         self.assert_json_error(result, "Invalid event type.")
@@ -1458,15 +1466,17 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Send the data to the bouncer without any realms data. This should lead
         # to successful saving of the data, but with the remote_realm foreign key
         # set to NULL.
+        request = AnalyticsRequest.model_construct(
+            realm_counts=realm_count_data,
+            installation_counts=installation_count_data,
+            realmauditlog_rows=realmauditlog_data,
+            realms=[],
+            version=None,
+        )
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",
-            {
-                "realm_counts": orjson.dumps(realm_count_data).decode(),
-                "installation_counts": orjson.dumps(installation_count_data).decode(),
-                "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-                "realms": orjson.dumps([]).decode(),
-            },
+            request.model_dump(round_trip=True, exclude={"version"}),
             subdomain="",
         )
         self.assert_json_success(result)

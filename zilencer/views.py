@@ -34,7 +34,12 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
-from zerver.lib.remote_server import RealmDataForAnalytics
+from zerver.lib.remote_server import (
+    InstallationCountDataForAnalytics,
+    RealmAuditLogDataForAnalytics,
+    RealmCountDataForAnalytics,
+    RealmDataForAnalytics,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
@@ -657,32 +662,6 @@ def update_remote_realm_data_for_server(
         ["host", "realm_deactivated", "name", "authentication_methods", "org_type"],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
-
-
-class RealmAuditLogDataForAnalytics(BaseModel):
-    id: int
-    realm: int
-    event_time: float
-    backfilled: bool
-    extra_data: Optional[Union[str, Dict[str, Any]]]
-    event_type: int
-
-
-class RealmCountDataForAnalytics(BaseModel):
-    property: str
-    realm: int
-    id: int
-    end_time: float
-    subgroup: Optional[str]
-    value: int
-
-
-class InstallationCountDataForAnalytics(BaseModel):
-    property: str
-    id: int
-    end_time: float
-    subgroup: Optional[str]
-    value: int
 
 
 @typed_endpoint
