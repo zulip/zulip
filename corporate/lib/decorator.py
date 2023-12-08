@@ -22,19 +22,19 @@ from zilencer.models import RemoteRealm
 ParamT = ParamSpec("ParamT")
 
 
-def is_self_hosting_management_subdomain(request: HttpRequest) -> bool:  # nocoverage
+def is_self_hosting_management_subdomain(request: HttpRequest) -> bool:
     subdomain = get_subdomain(request)
     return settings.DEVELOPMENT and subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN
 
 
 def self_hosting_management_endpoint(
     view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
-) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:  # nocoverage
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
         request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
-        if not is_self_hosting_management_subdomain(request):
+        if not is_self_hosting_management_subdomain(request):  # nocoverage
             return render(request, "404.html", status=404)
         return view_func(request, *args, **kwargs)
 
@@ -43,7 +43,7 @@ def self_hosting_management_endpoint(
 
 def authenticated_remote_realm_management_endpoint(
     view_func: Callable[Concatenate[HttpRequest, RemoteRealmBillingSession, ParamT], HttpResponse]
-) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:  # nocoverage
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
         request: HttpRequest,
@@ -51,11 +51,11 @@ def authenticated_remote_realm_management_endpoint(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not is_self_hosting_management_subdomain(request):
+        if not is_self_hosting_management_subdomain(request):  # nocoverage
             return render(request, "404.html", status=404)
 
         realm_uuid = kwargs.get("realm_uuid")
-        if realm_uuid is not None and not isinstance(realm_uuid, str):
+        if realm_uuid is not None and not isinstance(realm_uuid, str):  # nocoverage
             raise TypeError("realm_uuid must be a string or None")
 
         try:
@@ -137,7 +137,7 @@ def get_next_page_param_from_request_path(request: HttpRequest) -> Optional[str]
 
 def authenticated_remote_server_management_endpoint(
     view_func: Callable[Concatenate[HttpRequest, RemoteServerBillingSession, ParamT], HttpResponse]
-) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:  # nocoverage
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
         request: HttpRequest,
@@ -145,12 +145,12 @@ def authenticated_remote_server_management_endpoint(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not is_self_hosting_management_subdomain(request):
+        if not is_self_hosting_management_subdomain(request):  # nocoverage
             return render(request, "404.html", status=404)
 
         server_uuid = kwargs.get("server_uuid")
         if not isinstance(server_uuid, str):
-            raise TypeError("server_uuid must be a string")
+            raise TypeError("server_uuid must be a string")  # nocoverage
 
         try:
             remote_server = get_remote_server_from_session(request, server_uuid=server_uuid)
