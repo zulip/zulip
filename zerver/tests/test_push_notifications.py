@@ -36,7 +36,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_realm_authentication_methods,
 )
-from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib import redis_utils
@@ -3563,18 +3563,31 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
 
+    @override_settings(MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2)
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_user_push_soft_reactivate_soft_deactivated_user(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        large_user_group = check_add_user_group(
-            get_realm("zulip"),
-            "large_user_group",
-            [self.user_profile, othello, cordelia],
+        zulip_realm = get_realm("zulip")
+
+        # user groups having upto 'MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION'
+        # members are small user groups.
+        small_user_group = check_add_user_group(
+            zulip_realm,
+            "small_user_group",
+            [self.user_profile, othello],
             acting_user=None,
         )
+
+        large_user_group = check_add_user_group(
+            zulip_realm, "large_user_group", [self.user_profile], acting_user=None
+        )
+        subgroup = check_add_user_group(
+            zulip_realm, "subgroup", [othello, cordelia], acting_user=None
+        )
+        add_subgroups_to_user_group(large_user_group, [subgroup], acting_user=None)
 
         # Personal mention in a stream message should soft reactivate the user
         def mention_in_stream() -> None:
@@ -3670,8 +3683,24 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.soft_deactivate_main_user()
         self.expect_to_stay_long_term_idle(self.user_profile, send_stream_wildcard_mention)
 
-        # Group mention should NOT soft reactivate the user
-        def send_group_mention() -> None:
+        # Small group mention should soft reactivate the user
+        def send_small_group_mention() -> None:
+            mention = "@*small_user_group*"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.MENTION,
+                    "mentioned_user_group_id": small_user_group.id,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, send_small_group_mention)
+
+        # Large group mention should NOT soft reactivate the user
+        def send_large_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -3684,7 +3713,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             )
 
         self.soft_deactivate_main_user()
-        self.expect_to_stay_long_term_idle(self.user_profile, send_group_mention)
+        self.expect_to_stay_long_term_idle(self.user_profile, send_large_group_mention)
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)

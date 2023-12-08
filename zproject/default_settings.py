@@ -621,6 +621,10 @@ TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 30000
 # load in large organizations.
 MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 
+# The maximum user-group size value upto which members should
+# be soft-reactivated in the case of user group mention.
+MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION = 11
+
 # Limiting guest access to other users via the
 # can_access_all_users_group setting makes presence queries much more
 # expensive. This can be a significant performance problem for
