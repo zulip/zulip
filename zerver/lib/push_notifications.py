@@ -1356,13 +1356,17 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     # message or not.
     mentioned_user_group_id = None
     mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
     mentioned_user_group = get_mentioned_user_group([missed_message], user_profile)
     if mentioned_user_group is not None:
         mentioned_user_group_id = mentioned_user_group.id
         mentioned_user_group_name = mentioned_user_group.name
+        mentioned_user_group_members_count = mentioned_user_group.members_count
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
-    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
+    soft_reactivate_if_personal_notification(
+        user_profile, {trigger}, mentioned_user_group_members_count
+    )
 
     if message.is_stream_message():
         # This will almost always be True. The corner case where you
