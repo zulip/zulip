@@ -1331,7 +1331,7 @@ class StripeTest(StripeTestCase):
             for substring in [
                 "Zulip Cloud Standard <i>(free trial)</i>",
                 str(self.seat_count),
-                "Number of licenses for current billing period",
+                "Number of licenses for next billing period",
                 f"{self.seat_count} in use",
                 "Your next invoice is due on",
                 "March 2, 2012",

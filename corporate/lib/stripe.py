@@ -1919,6 +1919,10 @@ class BillingSession(ABC):
 
         licenses = update_plan_request.licenses
         if licenses is not None:
+            if plan.is_free_trial():  # nocoverage
+                raise JsonableError(
+                    _("Cannot update licenses in the current billing period for free trial plan.")
+                )
             if plan.automanage_licenses:
                 raise JsonableError(
                     _(
@@ -1950,6 +1954,15 @@ class BillingSession(ABC):
                 raise JsonableError(
                     _(
                         "Unable to update licenses manually. Your plan is on automatic license management."
+                    )
+                )
+            if plan.status in (
+                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+                CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+            ):  # nocoverage
+                raise JsonableError(
+                    _(
+                        "Cannot change the licenses for next billing cycle for a plan that is being downgraded."
                     )
                 )
             if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
