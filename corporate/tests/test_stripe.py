@@ -1865,7 +1865,9 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
             [
-                'This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.'
+                "This organization has requested sponsorship for a",
+                '<a href="/plans/">Zulip Cloud Standard</a>',
+                'plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.',
             ],
             response,
         )
