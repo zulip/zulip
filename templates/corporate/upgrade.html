@@ -16,10 +16,13 @@
         <div class="pitch">
             <h1>
                 {% if free_trial_days %}
-                Start free trial of {{ plan }}
+                Start free trial of
                 {% else %}
-                Upgrade {{ customer_name }} to {{ plan }}
+                Upgrade {{ customer_name }} to
                 {% endif %}
+                <a href="{{ page_params.billing_base_url }}/plans/">
+                    {{ plan }}
+                </a>
             </h1>
         </div>
         <div class="white-box">

@@ -50,9 +50,9 @@
                     </div>
                 </div>
                 {% if is_server_on_legacy_plan %}
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field no-validation" id="legacy-server-push-notification-notice-wrapper">
                     <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
-                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}</i>
+                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}.</i>
                     </div>
                 </div>
                 {% endif %}
@@ -200,7 +200,7 @@
                                 {% endif %})
                                 {% if discount_percent %}
                                 <br />
-                                <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
+                                <i class="billing-page-discount">Includes {{ discount_percent }}% discount.</i>
                                 {% endif %}
                             {% endif %}
                             {% endif %}
