@@ -11,5 +11,6 @@ users at once, [notifying](/help/dm-mention-alert-notifications) them about a me
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [User groups](/help/user-groups)
+* [Manage user groups](/help/manage-user-groups)
 * [Invite users to join](/help/invite-users-to-join)
 * [Getting started with Zulip](/help/getting-started-with-zulip)
