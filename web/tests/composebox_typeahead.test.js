@@ -193,7 +193,7 @@ const emoji_list = [...emojis_by_name.values()].map((emoji_dict) => ({
 const me_slash = {
     name: "me",
     aliases: "",
-    text: "translated: /me is excited (Display action text)",
+    text: "translated: /me (Display action text)",
     placeholder: "translated: is …",
 };
 
@@ -1570,11 +1570,11 @@ test("content_highlighter", ({override_rewire}) => {
     fake_this = {completing: "slash"};
     let th_render_slash_command_called = false;
     const me_slash = {
-        text: "/me is excited (Display action text)",
+        text: "/me (Display action text)",
     };
     override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {
-            primary: "/me is excited (Display action text)",
+            primary: "/me (Display action text)",
         });
         th_render_slash_command_called = true;
     });
