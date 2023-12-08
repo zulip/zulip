@@ -326,7 +326,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # some basic expected content.
         result = self.client_get(result["Location"], subdomain="selfhosting")
         self.assert_in_success_response(
-            ["Request Zulip Cloud sponsorship", "Description of your organization"], result
+            ["Request Zulip", "sponsorship", "Description of your organization"], result
         )
 
     @responses.activate
@@ -451,7 +451,7 @@ class LegacyServerLoginTest(BouncerTestCase):
 
         result = self.client_get(result["Location"], subdomain="selfhosting")
         # TODO Update the string when we have a complete sponsorship page for legacy servers.
-        self.assert_in_success_response(["Request Zulip Cloud sponsorship"], result)
+        self.assert_in_success_response(["Request Zulip", "sponsorship"], result)
 
     def test_server_login_next_page_in_form_persists(self) -> None:
         result = self.client_get("/serverlogin/?next_page=billing", subdomain="selfhosting")

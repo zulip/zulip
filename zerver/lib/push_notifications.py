@@ -44,6 +44,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
+    PushNotificationBouncerServerError,
     send_json_to_push_bouncer,
     send_realms_only_to_push_bouncer,
     send_to_push_bouncer,
@@ -786,6 +787,12 @@ def initialize_push_notifications() -> None:
 
         try:
             realms = send_realms_only_to_push_bouncer()
+        except PushNotificationBouncerServerError:  # nocoverage
+            # 50x errors from the bouncer cannot be addressed by the
+            # administrator of this server, and may be localized to
+            # this endpoint; don't rashly mark push notifications as
+            # disabled when they are likely working perfectly fine.
+            pass
         except Exception:
             # An exception was thrown trying to ask the bouncer service whether we can send
             # push notifications or not. There may be certain transient failures that we could
@@ -908,6 +915,7 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     data["server"] = settings.EXTERNAL_HOST
     data["realm_id"] = user_profile.realm.id
     data["realm_uri"] = user_profile.realm.uri
+    data["realm_name"] = user_profile.realm.name
     data["user_id"] = user_profile.id
 
     return data
@@ -1398,7 +1406,7 @@ def send_test_push_notification_directly_to_devices(
     remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     payload = copy.deepcopy(base_payload)
-    payload["event"] = "test-by-device-token"
+    payload["event"] = "test"
 
     apple_devices = [device for device in devices if device.kind == PushDeviceToken.APNS]
     android_devices = [device for device in devices if device.kind == PushDeviceToken.GCM]
@@ -1408,10 +1416,13 @@ def send_test_push_notification_directly_to_devices(
     android_payload = copy.deepcopy(payload)
 
     realm_uri = base_payload["realm_uri"]
+    realm_name = base_payload["realm_name"]
     apns_data = {
         "alert": {
             "title": _("Test notification"),
-            "body": _("This is a test notification from {realm_uri}.").format(realm_uri=realm_uri),
+            "body": _("This is a test notification from {realm_name} ({realm_uri}).").format(
+                realm_name=realm_name, realm_uri=realm_uri
+            ),
         },
         "sound": "default",
         "custom": {"zulip": apple_payload},

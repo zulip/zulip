@@ -386,15 +386,26 @@ ul {
         padding: 5px 0;
     }
 
-    .manage-group a {
-        text-align: center;
-    }
-
     .group-info {
-        text-align: center;
+        padding-left: 11px;
+        padding-right: 11px;
 
         .group-name {
             font-weight: bold;
+        }
+    }
+
+    .manage-group {
+        a {
+            display: flex;
+            align-items: center;
+            padding-left: 11px;
+
+            .zulip-icon {
+                position: relative;
+                top: -1px;
+                margin-right: 5px;
+            }
         }
     }
 
@@ -858,9 +869,13 @@ ul {
 }
 
 .user-group-popover-root {
-    & ul.nav {
+    .group-info-popover ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
+
+        &.member-list {
+            padding-left: 6px;
+        }
     }
 
     & .tippy-box {

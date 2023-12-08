@@ -1,5 +1,8 @@
-<div id="plans-and-pricing" class="pricing-model">
+<div id="plans-and-pricing" class="pricing-model {% if is_self_hosted_realm %}is-self-hosted-realm{% endif %}">
     <div class="padded-content">
+        {% if is_self_hosted_realm %}
+        <h1>Choose a plan</h1>
+        {% else %}
         <h1>Zulip plans and pricing</h1>
         <div class="h1-subheader">
             You can <a href="https://zulip.com/help/zulip-cloud-or-self-hosting">move
@@ -9,6 +12,7 @@
             <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html">import
             </a> tools.
         </div>
+        {% endif %}
         <div class="pricing-container">
             <div id="cloud" class="cloud-plan-title pricing-tab">
                 <h2>Zulip Cloud</h2>
@@ -36,6 +40,7 @@
                                 {% if is_cloud_realm and on_free_tier %}
                                 <div class="pricing-details"></div>
                                 <a href='/upgrade/' class="button current-plan-button" type="button">
+                                    <i class="icon current-plan-icon"></i>
                                     Current plan
                                 </a>
                                 {% elif not is_cloud_realm or is_new_customer %}

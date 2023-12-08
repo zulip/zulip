@@ -13,6 +13,9 @@ const blueslip = require("./lib/zblueslip");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
 const message_user_ids = mock_esm("../src/message_user_ids");
+const settings_data = mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -135,6 +138,15 @@ const moderator = {
     is_billing_admin: false,
     is_moderator: true,
     is_bot: false,
+    role: 300,
+};
+
+const bot_with_inaccesible_owner = {
+    email: "inaccessible-owner-bot@example.com",
+    user_id: 37,
+    full_name: "Inaccessible owner bot",
+    is_bot: true,
+    bot_owner_id: 38,
     role: 300,
 };
 
@@ -264,7 +276,7 @@ function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
 
-test_people("basics", () => {
+test_people("basics", ({override}) => {
     const persons = get_all_persons();
 
     assert.deepEqual(people.get_realm_users(), [me]);
@@ -336,6 +348,12 @@ test_people("basics", () => {
     assert.equal(people.get_bot_owner_user(welcome_bot), undefined);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.get_by_email(welcome_bot.email).full_name, "Welcome Bot");
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    assert.equal(
+        people.get_bot_owner_user(bot_with_inaccesible_owner).full_name,
+        "translated: Unknown user",
+    );
 
     // get_realm_users() will include our active bot,
     // but will exclude isaac (who is deactivated)
@@ -476,7 +494,7 @@ test_people("get_full_names_for_poll_option", () => {
     assert.equal(names, "Me Myself, Isaac Newton");
 });
 
-test_people("get_display_full_names", () => {
+test_people("get_display_full_names", ({override}) => {
     people.initialize_current_user(me.user_id);
     people.add_active_user(steven);
     people.add_active_user(bob);
@@ -484,7 +502,7 @@ test_people("get_display_full_names", () => {
     people.add_active_user(guest);
     page_params.realm_enable_guest_user_indicator = true;
 
-    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
+    let user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
 
     // This doesn't do anything special for the current user. The caller has
@@ -527,6 +545,12 @@ test_people("get_display_full_names", () => {
         "translated: Muted user",
         "translated: Muted user (guest)",
     ]);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    const inaccessible_user_id = 99;
+    user_ids = [me.user_id, steven.user_id, inaccessible_user_id];
+    names = people.get_display_full_names(user_ids, true);
+    assert.deepEqual(names, ["Me Myself", "Steven", "translated: Unknown user"]);
 });
 
 test_people("my_custom_profile_data", () => {
@@ -788,7 +812,7 @@ test_people("emails_to_full_names_string", () => {
             "unknown-email@example.com",
             maria.email,
         ]),
-        `${charles.full_name}, unknown-email@example.com, ${maria.full_name}`,
+        `${charles.full_name}, translated: Unknown user, ${maria.full_name}`,
     );
 });
 
@@ -1362,6 +1386,41 @@ test_people("should_show_guest_user_indicator", () => {
     page_params.realm_enable_guest_user_indicator = true;
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
+});
+
+test_people("get_user_by_id_assert_valid", ({override}) => {
+    people.add_active_user(charles);
+    const inaccessible_user_id = 99;
+    page_params.realm_bot_domain = "zulipdev.com";
+    override(settings_data, "user_can_access_all_other_users", () => false);
+
+    let user = people.get_user_by_id_assert_valid(inaccessible_user_id);
+    assert.equal(user.full_name, "translated: Unknown user");
+    assert.equal(user.user_id, inaccessible_user_id);
+    assert.ok(user.is_inaccessible_user);
+    assert.equal(user.email, "user99@zulipdev.com");
+
+    user = people.get_user_by_id_assert_valid(charles.user_id);
+    assert.equal(user.full_name, charles.full_name);
+    assert.ok(!user.is_inaccessible_user);
+    assert.equal(user.email, charles.email);
+
+    override(settings_data, "user_can_access_all_other_users", () => true);
+
+    assert.throws(
+        () => {
+            people.get_user_by_id_assert_valid(199);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 199",
+        },
+    );
+
+    user = people.get_user_by_id_assert_valid(charles.user_id);
+    assert.equal(user.full_name, charles.full_name);
+    assert.ok(!user.is_inaccessible_user);
+    assert.equal(user.email, charles.email);
 });
 
 // reset to native Date()

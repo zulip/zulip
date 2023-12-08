@@ -86,12 +86,6 @@
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="user-groups-admin">
-                        <i class="icon fa fa-group" aria-hidden="true"></i>
-                        <div class="text">{{t "User groups" }}</div>
-                    </li>
-                    {{/unless}}
-                    {{#unless is_guest}}
                     <li tabindex="0" data-section="user-list-admin">
                         <i class="icon fa fa-user" aria-hidden="true"></i>
                         <div class="text">{{t "Users" }}</div>

@@ -1901,7 +1901,7 @@ class RealmUserDefault(UserBaseSettings):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
-class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2

@@ -187,9 +187,8 @@ export function handle_member_edit_event(group_id, user_ids) {
     const group = user_groups.get_user_group_from_id(group_id);
 
     // update members list if currently rendered.
-    const members = [...group.members];
     if (is_editing_group(group_id)) {
-        user_group_edit_members.update_member_list_widget(group_id, members);
+        user_group_edit_members.update_member_list_widget(group);
         if (user_ids.includes(people.my_current_user_id())) {
             update_group_membership_button(group_id);
         }
@@ -620,13 +619,20 @@ export function switch_group_tab(tab_name) {
 export function add_or_remove_from_group(group, group_row) {
     const user_id = people.my_current_user_id();
     function success_callback() {
-        hide_membership_toggle_spinner(group_row);
+        if (group_row.length) {
+            hide_membership_toggle_spinner(group_row);
+        }
     }
 
     function error_callback() {
-        hide_membership_toggle_spinner(group_row);
+        if (group_row.length) {
+            hide_membership_toggle_spinner(group_row);
+        }
     }
-    display_membership_toggle_spinner(group_row);
+
+    if (group_row.length) {
+        display_membership_toggle_spinner(group_row);
+    }
     if (user_groups.is_direct_member_of(user_id, group.id)) {
         user_group_edit_members.edit_user_group_membership({
             group,

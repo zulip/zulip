@@ -563,6 +563,15 @@ exports.fixtures = {
         },
     },
 
+    realm_user__remove: {
+        type: "realm_user",
+        op: "remove",
+        person: {
+            user_id: test_user.user_id,
+            full_name: "Unknown user",
+        },
+    },
+
     realm_user__update: {
         type: "realm_user",
         op: "update",

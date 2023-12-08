@@ -11,7 +11,9 @@
 
 {% block content %}
 
+{% if not is_self_hosted_realm %}
 {% include 'zerver/landing_nav.html' %}
+{% endif %}
 
 <div class="portico-pricing plans {% if is_self_hosted_realm %} showing-self-hosted {% else %} showing-cloud {% endif %}">
     <div class="main">
@@ -168,5 +170,7 @@
     </div>
 </div>
 
+{% if not is_self_hosted_realm %}
 {% include 'zerver/footer.html' %}
+{% endif %}
 {% endblock %}

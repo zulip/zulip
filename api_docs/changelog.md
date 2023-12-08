@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 234**
+
+* Mobile push notifications now include a `realm_name` field.
+* [`POST /mobile_push/test_notification`](/api/test-notify) now sends
+  a test notification with `test` rather than `test-by-device-token`
+  in the `event` field.
+
 **Feature level 233**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):

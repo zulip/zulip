@@ -354,13 +354,15 @@ input[name="licenses"] {
     background-color: hsl(240deg 96% 68%);
 }
 
+#server-login-page .white-box,
 #upgrade-page .white-box,
 #billing-page .white-box,
 .sponsorship-page .white-box {
     margin: 30px;
 }
 
-#upgrade-page #billing-page-details,
+#server-login-page #server-login-page-details,
+#upgrade-page #upgrade-page-details,
 #billing-page #billing-page-details,
 .sponsorship-page #sponsorship-form {
     margin: 0;
@@ -376,6 +378,7 @@ input[name="licenses"] {
 }
 
 @media (width < 600px) {
+    #server-login-page,
     #billing-page,
     .sponsorship-page {
         transform: scale(0.8);
@@ -401,6 +404,7 @@ input[name="licenses"] {
         margin: -150px -100px;
     }
 
+    #server-login-page,
     .sponsorship-status-page {
         transform: scale(0.6);
         margin: -50px -150px -100px;
@@ -449,6 +453,7 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#server-login-page .pitch,
 .sponsorship-page .pitch,
 .sponsorship-status-page .pitch,
 #upgrade-page .pitch,
@@ -518,6 +523,7 @@ input[name="licenses"] {
     background-color: hsl(0deg 70% 40%);
 }
 
+#server-login-button,
 #org-upgrade-button {
     margin: 0;
     width: 100%;
@@ -538,6 +544,12 @@ input[name="licenses"] {
     width: 150px;
 }
 
+#server-login-page-details #server-login-form-title .not-editable-realm-field {
+    font-weight: 500;
+    padding-top: 0;
+}
+
+#server-login-page-details #server-login-form-title,
 #billing-page-details #legacy-server-push-notification-notice,
 #billing-page-details .next-payment-info {
     width: 450px;
@@ -574,10 +586,6 @@ input[name="licenses"] {
     padding-top: 0;
 }
 
-#upgrade-page-details {
-    margin: 0;
-}
-
 #free-trial-alert-message,
 #free-trial-top-banner {
     text-align: left;
@@ -585,6 +593,7 @@ input[name="licenses"] {
 
 #billing-sponsorship-pending-message-top,
 #sponsorship-status-success-message-top,
+#upgrade-success-message-top,
 #billing-success-message-top {
     display: block;
     text-align: center;
@@ -640,6 +649,7 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#server-login-error,
 #autopay-error {
     font-weight: 400;
     margin-left: 0;
@@ -677,4 +687,9 @@ input[name="licenses"] {
 
 #remote-realm-confirm-login-form .text-error {
     margin-bottom: 15px;
+}
+
+#server-login-page-button-container {
+    width: 450px;
+    margin: 30px auto 0;
 }

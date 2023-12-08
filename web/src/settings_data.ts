@@ -246,6 +246,17 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
     return bot_type.name;
 }
 
+export function user_can_access_all_other_users(): boolean {
+    if (!page_params.user_id) {
+        return true;
+    }
+
+    return user_groups.is_user_in_group(
+        page_params.realm_can_access_all_users_group,
+        page_params.user_id,
+    );
+}
+
 /* istanbul ignore next */
 export function get_request_data_for_stream_privacy(selected_val: string): {
     is_private: boolean;

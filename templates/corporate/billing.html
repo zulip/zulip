@@ -113,7 +113,7 @@
                     </label>
                     <div class="number-input-with-label">
                         <form id="current-license-change-form">
-                            <input min="{{ licenses }}" type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" required/>
+                            <input type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
                         <button id="current-manual-license-count-update-button" class="license-count-update-button hide">
@@ -252,7 +252,7 @@
                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL }}" />
                     {% elif downgrade_at_end_of_free_trial %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.FREE_TRIAL }}" />
-                    {% elif downgrade_at_end_of_cycle %}
+                    {% elif downgrade_at_end_of_cycle or is_server_on_legacy_plan %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
                     {% else %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
@@ -381,6 +381,29 @@
                     period ({{ renewal_date }}). You will lose access to unlimited search history and
                     <a href="{{ billing_base_url }}/plans/">other features</a>
                     of your current plan. Are you sure you want to continue?
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Downgrade') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="confirm-cancel-legacy-server-upgrade-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Downgrade?
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Lose benefits?
                 </p>
             </main>
             <footer class="modal__footer">

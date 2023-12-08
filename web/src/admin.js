@@ -77,7 +77,6 @@ function insert_tip_box() {
     $(".organization-box")
         .find(".settings-section")
         .not("#emoji-settings")
-        .not("#user-groups-admin")
         .not("#organization-auth-settings")
         .not("#admin-bot-list")
         .not("#admin-invites-list")
@@ -116,7 +115,6 @@ export function build_page() {
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
         realm_authentication_methods: page_params.realm_authentication_methods,
-        realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
@@ -174,7 +172,6 @@ export function build_page() {
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         realm_invite_required: page_params.realm_invite_required,
-        can_edit_user_groups: settings_data.user_can_edit_user_groups(),
         policy_values: settings_config.common_policy_values,
         realm_delete_own_message_policy: page_params.realm_delete_own_message_policy,
         DELETE_OWN_MESSAGE_POLICY_ADMINS_ONLY:

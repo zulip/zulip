@@ -1,7 +1,24 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "sponsorship" %}
 
-{% set PAGE_TITLE = "Request Zulip Cloud sponsorship" %}
+{% block title %}
+<title>
+    {% if is_sponsored or is_sponsorship_pending %}
+        Zulip
+        {% if is_remotely_hosted %}
+        {% else %}
+        Cloud
+        {% endif %}
+        billing for {{ org_name }}
+    {% else %}
+        Request Zulip
+        {% if is_remotely_hosted %}
+        {% else %}
+        Cloud
+        {% endif %} sponsorship
+    {% endif %}
+</title>
+{% endblock %}
 
 {% block portico_content %}
 

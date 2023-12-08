@@ -9503,7 +9503,13 @@ paths:
         This endpoint allows a user to trigger a test push notification to their
         selected mobile device, or all their mobile devices.
 
-        **Changes**: New in Zulip 8.0 (feature level 217).
+        **Changes**: Starting with Zulip 8.0 (feature level 234), test
+        notifications sent via this endpoint use `test` rather than
+        `test-by-device-token` in the `event` field. (All mobile push
+        notifications also now include a `realm_name` field as well as
+        of this feature level).
+
+        New in Zulip 8.0 (feature level 217).
       parameters:
         - name: token
           in: query

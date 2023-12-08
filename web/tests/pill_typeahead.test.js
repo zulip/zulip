@@ -124,6 +124,11 @@ run_test("set_up", ({mock_template}) => {
         get_text_from_item: noop,
     });
 
+    let update_func_called = false;
+    function update_func() {
+        update_func_called = true;
+    }
+
     let opts = {};
     $fake_input.typeahead = (config) => {
         assert.equal(config.items, 5);
@@ -297,6 +302,8 @@ run_test("set_up", ({mock_template}) => {
                 assert.equal(number_of_pills(), 2);
                 config.updater.call(fake_group_this, testers);
                 assert.equal(number_of_pills(), 3);
+
+                assert.ok(update_func_called);
             }
         })();
 
@@ -324,7 +331,7 @@ run_test("set_up", ({mock_template}) => {
         {user_group: true, stream: true},
         {user_group: true, user: true},
         {user: true, stream: true},
-        {user_group: true, stream: true, user: true},
+        {user_group: true, stream: true, user: true, update_func},
     ];
 
     for (const config of all_possible_opts) {

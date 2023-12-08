@@ -24,6 +24,7 @@ const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
 const resize = mock_esm("../src/resize");
+const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
 const watchdog = mock_esm("../src/watchdog");
@@ -641,6 +642,22 @@ test("update_presence_info", ({override}) => {
 
     const expected = {status: "active", last_active: 500};
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
+
+    // Test invalid and inaccessible user IDs.
+    const invalid_user_id = 99;
+    activity_ui.update_presence_info(invalid_user_id, info, server_time);
+    assert.equal(presence.presence_info.get(invalid_user_id), undefined);
+
+    const inaccessible_user_id = 10;
+    settings_data.user_can_access_all_other_users = () => false;
+    const inaccessible_user = people.make_user(
+        inaccessible_user_id,
+        "user10@zulipdev.com",
+        "Unknown user",
+    );
+    people._add_user(inaccessible_user);
+    activity_ui.update_presence_info(inaccessible_user_id, info, server_time);
+    assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
 test("initialize", ({override, mock_template}) => {

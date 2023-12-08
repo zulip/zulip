@@ -58,6 +58,7 @@ from zerver.models import (
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
+    RemoteRealmBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
 )
@@ -527,6 +528,7 @@ class UpgradeRequest:
 class InitialUpgradeRequest:
     manual_license_management: bool
     tier: int
+    success_message: str = ""
 
 
 @dataclass
@@ -633,6 +635,7 @@ class UpgradePageContext(TypedDict):
     salt: str
     seat_count: int
     signed_seat_count: str
+    success_message: str
 
 
 class SponsorshipRequestForm(forms.Form):
@@ -1800,6 +1803,7 @@ class BillingSession(ABC):
             "salt": salt,
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
+            "success_message": initial_upgrade_request.success_message,
         }
 
         return None, context
@@ -1868,7 +1872,14 @@ class BillingSession(ABC):
         if status is not None:
             if status == CustomerPlan.ACTIVE:
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
-                do_change_plan_status(plan, status)
+                with transaction.atomic():  # nocoverage
+                    # Switch to a different plan was cancelled. We end the next plan
+                    # and set the current one as active.
+                    if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+                        next_plan = self.get_next_plan(plan)
+                        assert next_plan is not None
+                        do_change_plan_status(next_plan, CustomerPlan.ENDED)
+                    do_change_plan_status(plan, status)
             elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
                 assert not plan.is_free_trial()
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
@@ -2873,9 +2884,28 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             self.write_to_audit_log(
                 event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
             )
-        # TODO: Add something (probably email) to let remote realm
-        # organization know that the sponsorship request was approved.
-        return f"Sponsorship approved for {self.billing_entity_display_name}"
+        emailed_string = ""
+        billing_emails = list(
+            RemoteRealmBillingUser.objects.filter(remote_realm_id=self.remote_realm.id).values_list(
+                "email", flat=True
+            )
+        )
+        if len(billing_emails) > 0:
+            send_email(
+                "zerver/emails/sponsorship_approved_community_plan",
+                to_emails=billing_emails,
+                from_address="sales@zulip.com",
+                context={
+                    "billing_entity": self.billing_entity_display_name,
+                    "plans_link": "https://zulip.com/plans/#self-hosted",
+                    "link_to_zulip": "https://zulip.com/help/linking-to-zulip-website",
+                },
+            )
+            emailed_string = "Emailed existing billing users."
+        else:
+            emailed_string = "No billing users exist to email."
+
+        return f"Sponsorship approved for {self.billing_entity_display_name}; " + emailed_string
 
     @override
     def is_sponsored(self) -> bool:
@@ -3162,8 +3192,17 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             self.write_to_audit_log(
                 event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
             )
-        # TODO: Add something (probably email) to let remote server
-        # organization know that the sponsorship request was approved.
+        # TODO: Use the emails in RemoteZulipServerBillingUser for this email.
+        send_email(
+            "zerver/emails/sponsorship_approved_community_plan",
+            to_emails=[self.remote_server.contact_email],
+            from_address="sales@zulip.com",
+            context={
+                "billing_entity": self.billing_entity_display_name,
+                "plans_link": "https://zulip.com/plans/#self-hosted",
+                "link_to_zulip": "https://zulip.com/help/linking-to-zulip-website",
+            },
+        )
         return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override

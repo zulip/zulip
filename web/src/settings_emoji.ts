@@ -114,7 +114,7 @@ export function populate_emoji(): void {
     for (const emoji of active_emoji_data) {
         // Add people.js data for the user here.
         if (emoji.author_id !== null) {
-            emoji.author = people.maybe_get_user_by_id(emoji.author_id);
+            emoji.author = people.get_user_by_id_assert_valid(emoji.author_id);
         } else {
             emoji.author = null;
         }

@@ -63,7 +63,6 @@ const settings_realm_user_settings_defaults = mock_esm(
 );
 const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
-const settings_user_groups_legacy = mock_esm("../src/settings_user_groups_legacy");
 const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
@@ -171,7 +170,6 @@ run_test("attachments", ({override}) => {
 
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
-    override(settings_user_groups_legacy, "reload", noop);
     {
         const stub = make_stub();
         const user_group_settings_ui_stub = make_stub();
@@ -738,6 +736,11 @@ run_test("realm_user", ({override}) => {
     assert.equal(update_bot_stub.num_calls, 1);
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");
     assert_same(args.update_user_id, event.person.user_id);
+
+    event = event_fixtures.realm_user__remove;
+    dispatch(event);
+    const removed_person = people.get_by_user_id(event.person.user_id);
+    assert.equal(removed_person.full_name, "translated: Unknown user");
 });
 
 run_test("restart", ({override}) => {
@@ -1165,7 +1168,7 @@ run_test("realm_export", ({override}) => {
     assert.equal(args.exports, event.exports);
 });
 
-run_test("server_event_dispatch_op_errors", ({override}) => {
+run_test("server_event_dispatch_op_errors", () => {
     blueslip.expect("error", "Unexpected event type subscription/other");
     server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
     blueslip.expect("error", "Unexpected event type reaction/other");
@@ -1190,7 +1193,6 @@ run_test("server_event_dispatch_op_errors", ({override}) => {
         sender: {user_id: 5},
         op: "other",
     });
-    override(settings_user_groups_legacy, "reload", noop);
     blueslip.expect("error", "Unexpected event type user_group/other");
     server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
 });

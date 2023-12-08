@@ -20,8 +20,8 @@ from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
 
 
 class PushBouncerSession(OutgoingSession):
-    def __init__(self) -> None:
-        super().__init__(role="push_bouncer", timeout=30)
+    def __init__(self, timeout: int = 15) -> None:
+        super().__init__(role="push_bouncer", timeout=timeout)
 
 
 class PushNotificationBouncerError(Exception):
@@ -29,6 +29,10 @@ class PushNotificationBouncerError(Exception):
 
 
 class PushNotificationBouncerRetryLaterError(JsonableError):
+    http_status_code = 502
+
+
+class PushNotificationBouncerServerError(PushNotificationBouncerRetryLaterError):
     http_status_code = 502
 
 
@@ -94,9 +98,23 @@ def send_to_push_bouncer(
     headers = {"User-agent": f"ZulipServer/{ZULIP_VERSION}"}
     headers.update(extra_headers)
 
+    if endpoint == "server/analytics":
+        # Uploading audit log and/or analytics data can require the
+        # bouncer to do a significant chunk of work in a few
+        # situations; since this occurs in background jobs, set a long
+        # timeout.
+        session = PushBouncerSession(timeout=90)
+    else:
+        session = PushBouncerSession()
+
     try:
-        res = PushBouncerSession().request(
-            method, url, data=post_data, auth=api_auth, verify=True, headers=headers
+        res = session.request(
+            method,
+            url,
+            data=post_data,
+            auth=api_auth,
+            verify=True,
+            headers=headers,
         )
     except (
         requests.exceptions.Timeout,
@@ -114,7 +132,7 @@ def send_to_push_bouncer(
         # to the callers that the attempt failed and they can retry.
         error_msg = "Received 500 from push notification bouncer"
         logging.warning(error_msg)
-        raise PushNotificationBouncerRetryLaterError(error_msg)
+        raise PushNotificationBouncerServerError(error_msg)
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
         result_dict = orjson.loads(res.content)

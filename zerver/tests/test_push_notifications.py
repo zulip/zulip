@@ -62,6 +62,7 @@ from zerver.lib.push_notifications import (
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
+    PushNotificationBouncerServerError,
     build_analytics_data,
     get_realms_info_for_push_bouncer,
     send_analytics_to_push_bouncer,
@@ -196,9 +197,10 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         expected_android_payload = {
             "server": "testserver",
             "realm_id": user.realm_id,
+            "realm_name": "Zulip Dev",
             "realm_uri": "http://zulip.testserver",
             "user_id": user.id,
-            "event": "test-by-device-token",
+            "event": "test",
             "time": datetime_to_timestamp(time_now),
         }
         expected_gcm_options = {"priority": "high"}
@@ -219,16 +221,17 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         expected_apple_payload = {
             "alert": {
                 "title": "Test notification",
-                "body": "This is a test notification from http://zulip.testserver.",
+                "body": "This is a test notification from Zulip Dev (http://zulip.testserver).",
             },
             "sound": "default",
             "custom": {
                 "zulip": {
                     "server": "testserver",
                     "realm_id": user.realm_id,
+                    "realm_name": "Zulip Dev",
                     "realm_uri": "http://zulip.testserver",
                     "user_id": user.id,
-                    "event": "test-by-device-token",
+                    "event": "test",
                 }
             },
         }
@@ -301,9 +304,10 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         expected_payload = {
             "server": "testserver",
             "realm_id": user.realm_id,
+            "realm_name": "Zulip Dev",
             "realm_uri": "http://zulip.testserver",
             "user_id": user.id,
-            "event": "test-by-device-token",
+            "event": "test",
             "time": datetime_to_timestamp(time_now),
         }
         expected_gcm_options = {"priority": "high"}
@@ -906,7 +910,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as warn_log:
                 resp.add(responses.POST, URL, body=orjson.dumps({"msg": "error"}), status=500)
                 with self.assertRaisesRegex(
-                    PushNotificationBouncerRetryLaterError,
+                    PushNotificationBouncerServerError,
                     r"Received 500 from push notification bouncer$",
                 ):
                     self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
@@ -2389,6 +2393,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                         "zulip": {
                             "server": "testserver",
                             "realm_id": self.sender.realm.id,
+                            "realm_name": self.sender.realm.name,
                             "realm_uri": "http://zulip.testserver",
                             "user_id": self.user_profile.id,
                             "event": "remove",
@@ -2399,6 +2404,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {
                     "server": "testserver",
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": "http://zulip.testserver",
                     "user_id": self.user_profile.id,
                     "event": "remove",
@@ -2452,6 +2458,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {
                     "server": "testserver",
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": "http://zulip.testserver",
                     "user_id": self.user_profile.id,
                     "event": "remove",
@@ -2469,6 +2476,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                         "zulip": {
                             "server": "testserver",
                             "realm_id": self.sender.realm.id,
+                            "realm_name": self.sender.realm.name,
                             "realm_uri": "http://zulip.testserver",
                             "user_id": self.user_profile.id,
                             "event": "remove",
@@ -2948,6 +2956,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_id": self.sender.id,
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
                     "time": datetime_to_timestamp(message.date_sent),
@@ -2991,6 +3000,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_id": self.sender.id,
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
                     "time": datetime_to_timestamp(message.date_sent),
@@ -3023,6 +3033,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": self.sender.id,
                     "time": datetime_to_timestamp(message.date_sent),
@@ -3061,6 +3072,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
                     "time": datetime_to_timestamp(message.date_sent),
@@ -3098,6 +3110,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
                     "mentioned_user_group_id": user_group.id,
@@ -3136,6 +3149,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
                     "time": datetime_to_timestamp(message.date_sent),
@@ -3197,6 +3211,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_id": self.sender.id,
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
                     "time": datetime_to_timestamp(message.date_sent),
@@ -3246,6 +3261,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": hamlet.realm.id,
+                    "realm_name": hamlet.realm.name,
                     "realm_uri": hamlet.realm.uri,
                     "user_id": polonius.id,
                     "time": datetime_to_timestamp(message.date_sent),
@@ -3284,6 +3300,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": truncate_content,
             "server": settings.EXTERNAL_HOST,
             "realm_id": hamlet.realm.id,
+            "realm_name": hamlet.realm.name,
             "realm_uri": hamlet.realm.uri,
             "sender_id": hamlet.id,
             "sender_email": hamlet.email,
@@ -3342,6 +3359,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,
                 "realm_id": hamlet.realm.id,
+                "realm_name": hamlet.realm.name,
                 "realm_uri": hamlet.realm.uri,
                 "sender_id": hamlet.id,
                 "sender_email": hamlet.email,
@@ -3374,6 +3392,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,
                 "realm_id": hamlet.realm.id,
+                "realm_name": hamlet.realm.name,
                 "realm_uri": hamlet.realm.uri,
                 "sender_id": hamlet.id,
                 "sender_email": hamlet.email,
@@ -3423,6 +3442,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,
                 "realm_id": hamlet.realm.id,
+                "realm_name": hamlet.realm.name,
                 "realm_uri": hamlet.realm.uri,
                 "sender_id": hamlet.id,
                 "sender_email": f"user{hamlet.id}@zulip.testserver",
@@ -3492,7 +3512,7 @@ class TestSendToPushBouncer(ZulipTestCase):
     def test_500_error(self) -> None:
         self.add_mock_response(status=500)
         with self.assertLogs(level="WARNING") as m:
-            with self.assertRaises(PushNotificationBouncerRetryLaterError):
+            with self.assertRaises(PushNotificationBouncerServerError):
                 send_to_push_bouncer("POST", "register", {"data": "true"})
             self.assertEqual(m.output, ["WARNING:root:Received 500 from push notification bouncer"])
 

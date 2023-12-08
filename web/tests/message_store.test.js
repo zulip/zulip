@@ -222,16 +222,23 @@ test("errors", ({disallow_rewire}) => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id", 2);
-    blueslip.expect("error", "Unknown user id", 2); // From person.js
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id", 1);
+    blueslip.expect("error", "Unknown user id", 1); // From person.js
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
     const emails = message_store.get_pm_emails(message);
     assert.equal(emails, "?");
 
-    const names = message_store.get_pm_full_names(message);
-    assert.equal(names, "?");
+    assert.throws(
+        () => {
+            message_store.get_pm_full_names(message);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 92714",
+        },
+    );
 
     message = {
         type: "stream",

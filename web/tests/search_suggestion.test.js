@@ -864,6 +864,18 @@ test("people_suggestions", ({override, mock_template}) => {
     people.add_active_user(bob);
     people.add_active_user(alice);
 
+    // Add an inaccessible user to verify that it is not included in
+    // suggestions.
+    const inaccessible_user = {
+        user_id: 299,
+        // All inaccessible users are named as "Unknown user", but we name
+        // it differently here so that the name matches the search query.
+        full_name: "Test unknown user",
+        email: "user299@zulipdev.com",
+        is_inaccessible_user: true,
+    };
+    people._add_user(inaccessible_user);
+
     let suggestions = get_suggestions(query);
 
     let expected = [
@@ -876,6 +888,28 @@ test("people_suggestions", ({override, mock_template}) => {
         "dm-including:ted@zulip.com",
     ];
 
+    assert.deepEqual(suggestions.strings, expected);
+
+    const accessible_user = {
+        user_id: 299,
+        full_name: "Test unknown user",
+        email: "user299@zulipdev.com",
+    };
+    people.add_active_user(accessible_user);
+    suggestions = get_suggestions(query);
+
+    expected = [
+        "te",
+        "sender:bob@zulip.com",
+        "sender:ted@zulip.com",
+        "sender:user299@zulipdev.com",
+        "dm:bob@zulip.com",
+        "dm:ted@zulip.com",
+        "dm:user299@zulipdev.com",
+        "dm-including:bob@zulip.com",
+        "dm-including:ted@zulip.com",
+        "dm-including:user299@zulipdev.com",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     function is_person(q) {
