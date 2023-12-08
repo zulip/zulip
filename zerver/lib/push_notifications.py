@@ -792,7 +792,7 @@ def initialize_push_notifications() -> None:
             # administrator of this server, and may be localized to
             # this endpoint; don't rashly mark push notifications as
             # disabled when they are likely working perfectly fine.
-            pass
+            return
         except Exception:
             # An exception was thrown trying to ask the bouncer service whether we can send
             # push notifications or not. There may be certain transient failures that we could
