@@ -28,9 +28,13 @@
     <div class="center-block new-style">
         <div class="alert alert-success sponsorship-page-success" id="sponsorship-status-success-message-top">
             {% if is_sponsored %}
-            Zulip is sponsoring a free <a href="{{ billing_base_url }}/plans/">{{ sponsored_plan_name }}</a> plan for this organization. 🎉
+            Zulip is sponsoring a free <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan for this organization. 🎉
             {% else %}
-            This organization has requested sponsorship for a <a href="{{ billing_base_url }}/plans/">{{ sponsored_plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            This organization has requested sponsorship for a
+            {% if sponsorship_plan_name == "Business" %}
+            discounted
+            {% endif %}
+            <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
             {% endif %}
         </div>
         <div class="pitch">
@@ -107,6 +111,21 @@
                         <label for="organization_type" class="inline-block label-title">Organization type</label>
                     </div>
                     <p id="sponsorship-discount-details"></p>
+                    {% if is_remotely_hosted %}
+                    <div class="input-box sponsorship-form-field">
+                        <div class="inline-block relative">
+                            <select name="requested_plan" id="organization-requested-plan" class="sponsorship-form-select">
+                                <option value="Community" selected>
+                                    Community
+                                </option>
+                                <option value="Business">
+                                    Business (discounted)
+                                </option>
+                            </select>
+                        </div>
+                        <label for="organization-requested-plan" class="inline-block label-title">Requested plan</label>
+                    </div>
+                    {% endif %}
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-website" class="inline-block
                           label-title">Organization website (if any)</label>

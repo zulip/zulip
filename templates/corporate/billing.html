@@ -11,7 +11,11 @@
         {% if admin_access and has_active_plan %}
         {% if is_sponsorship_pending %}
         <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
-            This organization has requested sponsorship for a <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            This organization has requested sponsorship for a
+            {% if sponsorship_plan_name == "Business" %}
+            discounted
+            {% endif %}
+            <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
         </div>
         {% endif %}
         {% if success_message %}

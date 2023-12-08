@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, Optional, Union
 
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -384,6 +385,13 @@ class LicenseLedger(models.Model):
     licenses_at_next_renewal = models.IntegerField(null=True)
 
 
+class SponsoredPlanTypes(Enum):
+    # unspecified used for cloud sponsorship requests
+    UNSPECIFIED = ""
+    COMMUNITY = "Community"
+    BUSINESS = "Business"
+
+
 class ZulipSponsorshipRequest(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)
     requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE, null=True, blank=True)
@@ -400,3 +408,9 @@ class ZulipSponsorshipRequest(models.Model):
     expected_total_users = models.TextField(default="")
     paid_users_count = models.TextField(default="")
     paid_users_description = models.TextField(default="")
+
+    requested_plan = models.CharField(
+        max_length=50,
+        choices=[(plan.value, plan.name) for plan in SponsoredPlanTypes],
+        default=SponsoredPlanTypes.UNSPECIFIED.value,
+    )

@@ -30,6 +30,7 @@ from corporate.models import (
     LicenseLedger,
     PaymentIntent,
     Session,
+    SponsoredPlanTypes,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
@@ -645,6 +646,9 @@ class SponsorshipRequestForm(forms.Form):
     expected_total_users = forms.CharField(widget=forms.Textarea)
     paid_users_count = forms.CharField(widget=forms.Textarea)
     paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
+    requested_plan = forms.ChoiceField(
+        choices=[(plan.value, plan.name) for plan in SponsoredPlanTypes], required=False
+    )
 
 
 class BillingSession(ABC):
@@ -1654,6 +1658,7 @@ class BillingSession(ABC):
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
         legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(customer)
+        is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         context = {
             "plan_name": plan.name,
             "has_active_plan": True,
@@ -1676,8 +1681,11 @@ class BillingSession(ABC):
             "fixed_price": fixed_price,
             "price_per_license": price_per_license,
             "is_sponsorship_pending": customer.sponsorship_pending,
+            "sponsorship_plan_name": self.get_sponsorship_plan_name(
+                customer, is_self_hosted_billing
+            ),
             "discount_percent": format_discount_percentage(customer.default_discount),
-            "is_self_hosted_billing": not isinstance(self, RealmBillingSession),
+            "is_self_hosted_billing": is_self_hosted_billing,
             "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
@@ -2218,11 +2226,22 @@ class BillingSession(ABC):
 
         raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
 
-    def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
-        customer = self.get_customer()
-        is_remotely_hosted = isinstance(
-            self, (RemoteRealmBillingSession, RemoteServerBillingSession)
-        )
+    def get_sponsorship_plan_name(
+        self, customer: Optional[Customer], is_remotely_hosted: bool
+    ) -> str:
+        if customer is not None and customer.sponsorship_pending:
+            # For sponsorship pending requests, we also show the type of sponsorship requested.
+            # In other cases, we just show the plan user is currently on.
+            sponsorship_request = (
+                ZulipSponsorshipRequest.objects.filter(customer=customer).order_by("-id").first()
+            )
+            # It's possible that we marked `customer.sponsorship_pending` via support page
+            # without user submitting a sponsorship request.
+            if sponsorship_request is not None and sponsorship_request.requested_plan not in (
+                None,
+                SponsoredPlanTypes.UNSPECIFIED.value,
+            ):  # nocoverage
+                return sponsorship_request.requested_plan
 
         # We only support sponsorships for these plans.
         sponsored_plan_name = CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD)
@@ -2231,6 +2250,14 @@ class BillingSession(ABC):
                 CustomerPlan.TIER_SELF_HOSTED_COMMUNITY
             )
 
+        return sponsored_plan_name
+
+    def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
+        customer = self.get_customer()
+        is_remotely_hosted = isinstance(
+            self, (RemoteRealmBillingSession, RemoteServerBillingSession)
+        )
+
         plan_name = "Zulip Cloud Free"
         if is_remotely_hosted:
             plan_name = "Self-managed"
@@ -2238,7 +2265,7 @@ class BillingSession(ABC):
         context: Dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
             "is_remotely_hosted": is_remotely_hosted,
-            "sponsored_plan_name": sponsored_plan_name,
+            "sponsorship_plan_name": self.get_sponsorship_plan_name(customer, is_remotely_hosted),
             "plan_name": plan_name,
         }
 
@@ -2250,7 +2277,6 @@ class BillingSession(ABC):
 
         if self.is_sponsored():
             context["is_sponsored"] = True
-            context["plan_name"] = sponsored_plan_name
 
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
@@ -2283,6 +2309,7 @@ class BillingSession(ABC):
                 expected_total_users=form.cleaned_data["expected_total_users"],
                 paid_users_count=form.cleaned_data["paid_users_count"],
                 paid_users_description=form.cleaned_data["paid_users_description"],
+                requested_plan=form.cleaned_data["requested_plan"],
             )
             sponsorship_request.save()
 
@@ -2310,6 +2337,7 @@ class BillingSession(ABC):
             "expected_total_users": sponsorship_request.expected_total_users,
             "paid_users_count": sponsorship_request.paid_users_count,
             "paid_users_description": sponsorship_request.paid_users_description,
+            "requested_plan": sponsorship_request.requested_plan,
         }
         send_email(
             "zerver/emails/sponsorship_request",
