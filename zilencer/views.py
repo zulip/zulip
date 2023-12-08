@@ -753,6 +753,7 @@ def remote_server_post_analytics(
         # updated last_audit_log_update even if there are no new rows,
         # to help identify server whose ability to connect to this
         # endpoint is broken by a networking problem.
+        remote_realms_set = set()
         remote_realm_audit_logs = []
         for row in realmauditlog_rows:
             extra_data = {}
@@ -764,6 +765,7 @@ def remote_server_post_analytics(
             elif row.extra_data is not None:
                 assert isinstance(row.extra_data, dict)
                 extra_data = row.extra_data
+            remote_realms_set.add(realm_id_to_remote_realm.get(row.realm))
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
                     remote_realm=realm_id_to_remote_realm.get(row.realm),
@@ -777,6 +779,15 @@ def remote_server_post_analytics(
                 )
             )
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
+
+        # Update LicenseLedger using logs in RemoteRealmAuditlog.
+        for remote_realm in remote_realms_set:
+            if remote_realm:
+                billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+                billing_session.sync_license_ledger_if_needed()
+
+        # Do this last, so we can assume LicenseLedger is always
+        # up-to-date through last_audit_log_update.
         RemoteZulipServer.objects.filter(uuid=server.uuid).update(
             last_audit_log_update=timezone_now()
         )
