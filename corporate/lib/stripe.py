@@ -1813,7 +1813,7 @@ class BillingSession(ABC):
         free_trial_end_date = None
         # Don't show free trial for remote servers on legacy plan.
         if remote_server_legacy_plan_end_date is None:
-            free_trial_days = settings.FREE_TRIAL_DAYS
+            free_trial_days = get_free_trial_days()
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
                     tier, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, None, True
@@ -3621,10 +3621,14 @@ def compute_plan_parameters(
         next_invoice_date = add_months(billing_cycle_anchor, 1)
     if free_trial:
         period_end = billing_cycle_anchor + timedelta(
-            days=assert_is_not_none(settings.FREE_TRIAL_DAYS)
+            days=assert_is_not_none(get_free_trial_days())
         )
         next_invoice_date = period_end
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
+
+
+def get_free_trial_days() -> Optional[int]:
+    return settings.FREE_TRIAL_DAYS
 
 
 def is_free_trial_offer_enabled() -> bool:
