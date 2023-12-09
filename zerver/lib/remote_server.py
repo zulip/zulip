@@ -11,6 +11,10 @@ from pydantic import UUID4, BaseModel, ConfigDict, Field, Json, field_validator
 
 from analytics.models import InstallationCount, RealmCount
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from zerver.actions.realm_settings import (
+    do_set_push_notifications_enabled_end_timestamp,
+    do_set_realm_property,
+)
 from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
@@ -18,7 +22,6 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.types import RemoteRealmDictValue
 from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
 
 
@@ -309,7 +312,7 @@ def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[Rea
     return realm_info_list
 
 
-def send_analytics_to_push_bouncer() -> None:
+def send_analytics_to_push_bouncer(consider_usage_statistics: bool = True) -> None:
     logger = logging.getLogger("zulip.analytics")
     # first, check what's latest
     try:
@@ -324,7 +327,10 @@ def send_analytics_to_push_bouncer() -> None:
     last_acked_installation_count_id = result["last_installation_count_id"]
     last_acked_realmauditlog_id = result["last_realmauditlog_id"]
 
-    if settings.SUBMIT_USAGE_STATISTICS:
+    if settings.SUBMIT_USAGE_STATISTICS and consider_usage_statistics:
+        # Only upload usage statistics, which is relatively expensive,
+        # if called from the analytics cron job and the server has
+        # uploading such statistics enabled.
         installation_count_query = InstallationCount.objects.filter(
             id__gt=last_acked_installation_count_id
         )
@@ -351,32 +357,48 @@ def send_analytics_to_push_bouncer() -> None:
         api_feature_level=API_FEATURE_LEVEL,
     )
 
+    # Send the actual request, and process the response.
     try:
-        send_to_push_bouncer("POST", "server/analytics", request.model_dump(round_trip=True))
-    except JsonableError as e:
-        logger.warning(e.msg)
-    logger.info("Reported %d records", record_count)
+        response = send_to_push_bouncer(
+            "POST", "server/analytics", request.model_dump(round_trip=True)
+        )
+    except PushNotificationBouncerServerError:  # nocoverage
+        # 50x errors from the bouncer cannot be addressed by the
+        # administrator of this server, and may be localized to
+        # this endpoint; don't rashly mark push notifications as
+        # disabled when they are likely working perfectly fine.
+        return
+    except Exception as e:
+        if isinstance(e, JsonableError):
+            # Log exceptions with server error messages to the analytics log.
+            logger.warning(e.msg)
 
+        # An exception was thrown trying to ask the bouncer service whether we can send
+        # push notifications or not. There may be certain transient failures that we could
+        # ignore here, but the default explanation is that there is something wrong either
+        # with our credentials being corrupted or our ability to reach the bouncer service
+        # over the network, so we immediately move to reporting push notifications as likely not working,
+        # as whatever failed here is likely to also fail when trying to send a push notification.
+        for realm in Realm.objects.filter(push_notifications_enabled=True):
+            do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+            do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
+        if not isinstance(e, JsonableError):
+            # Log this generic error only if we haven't already logged specific error above.
+            logger.exception("Exception asking push bouncer if notifications will work.")
+        return
 
-def send_realms_only_to_push_bouncer() -> Dict[str, RemoteRealmDictValue]:
-    request = AnalyticsRequest.model_construct(
-        realm_counts=[],
-        installation_counts=[],
-        realms=get_realms_info_for_push_bouncer(),
-        version=ZULIP_VERSION,
-        api_feature_level=API_FEATURE_LEVEL,
-    )
-
-    # We don't catch JsonableError here, because we want it to propagate further
-    # to either explicitly, loudly fail or be error-handled by the caller.
-    response = send_to_push_bouncer(
-        "POST",
-        "server/analytics",
-        request.model_dump(round_trip=True, exclude={"realmauditlog_rows"}),
-    )
     assert isinstance(response["realms"], dict)  # for mypy
+    realms = response["realms"]
+    for realm_uuid, data in realms.items():
+        realm = Realm.objects.get(uuid=realm_uuid)
+        do_set_realm_property(
+            realm, "push_notifications_enabled", data["can_push"], acting_user=None
+        )
+        do_set_push_notifications_enabled_end_timestamp(
+            realm, data["expected_end_timestamp"], acting_user=None
+        )
 
-    return response["realms"]
+    logger.info("Reported %d records", record_count)
 
 
 def enqueue_register_realm_with_push_bouncer_if_needed(realm: Realm) -> None:
