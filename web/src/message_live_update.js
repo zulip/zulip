@@ -66,23 +66,23 @@ export function update_starred_view(message_id, new_value) {
 }
 
 export function update_stream_name(stream_id, new_name) {
-    message_store.update_property("stream_name", new_name, {stream_id});
+    message_store.update_stream_name("stream_name", new_name, {stream_id});
     rerender_messages_view();
 }
 
 export function update_user_full_name(user_id, full_name) {
-    message_store.update_property("sender_full_name", full_name, {user_id});
+    message_store.update_sender_full_name("sender_full_name", full_name, {user_id});
     rerender_messages_view_for_user(user_id);
 }
 
 export function update_avatar(user_id, avatar_url) {
     let url = avatar_url;
     url = people.format_small_avatar_url(url);
-    message_store.update_property("small_avatar_url", url, {user_id});
+    message_store.update_small_avatar_url("small_avatar_url", url, {user_id});
     rerender_messages_view_for_user(user_id);
 }
 
 export function update_user_status_emoji(user_id, status_emoji_info) {
-    message_store.update_property("status_emoji_info", status_emoji_info, {user_id});
+    message_store.update_status_emoji_info("status_emoji_info", status_emoji_info, {user_id});
     rerender_messages_view_for_user(user_id);
 }
