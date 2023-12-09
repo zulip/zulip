@@ -1399,14 +1399,28 @@ class RealmImportExportTest(ExportFile):
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"), patch(
             "zerver.lib.remote_server.send_to_push_bouncer"
         ) as m:
+            get_response = {
+                "last_realm_count_id": 0,
+                "last_installation_count_id": 0,
+                "last_realmauditlog_id": 0,
+            }
+
+            def mock_send_to_push_bouncer_response(  # type: ignore[return]
+                method: str, *args: Any
+            ) -> Optional[Dict[str, int]]:
+                if method == "GET":
+                    return get_response
+
+            m.side_effect = mock_send_to_push_bouncer_response
+
             new_realm = do_import_realm(get_output_dir(), "test-zulip")
 
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
-        calls_args_for_assert = m.call_args_list[0][0]
+        calls_args_for_assert = m.call_args_list[1][0]
         self.assertEqual(calls_args_for_assert[0], "POST")
         self.assertEqual(calls_args_for_assert[1], "server/analytics")
         self.assertIn(
-            new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[0][0][2]["realms"])]
+            new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[1][0][2]["realms"])]
         )
 
     def test_import_files_from_local(self) -> None:

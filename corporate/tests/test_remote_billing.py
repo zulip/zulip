@@ -15,7 +15,7 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityDict,
     RemoteBillingUserDict,
 )
-from zerver.lib.remote_server import send_realms_only_to_push_bouncer
+from zerver.lib.remote_server import send_analytics_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserProfile
@@ -163,7 +163,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(desdemona)
 
@@ -193,14 +193,14 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # and successfully completing the flow - transparently to the user.
         self.assertFalse(RemoteRealm.objects.filter(uuid=realm.uuid).exists())
 
-        # send_realms_only_to_push_bouncer will be called within the endpoint's
+        # send_analytics_to_push_bouncer will be called within the endpoint's
         # error handling to register realms with the bouncer. We mock.patch it
         # to be able to assert that it was called - but also use side_effect
         # to maintain the original behavior of the function, instead of
         # replacing it with a Mock.
         with mock.patch(
-            "zerver.views.push_notifications.send_realms_only_to_push_bouncer",
-            side_effect=send_realms_only_to_push_bouncer,
+            "zerver.views.push_notifications.send_analytics_to_push_bouncer",
+            side_effect=send_analytics_to_push_bouncer,
         ) as m:
             result = self.execute_remote_billing_authentication_flow(desdemona)
 
@@ -219,7 +219,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         desdemona = self.example_user("desdemona")
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(
             desdemona,
@@ -235,7 +235,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         desdemona = self.example_user("desdemona")
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         with self.settings(TERMS_OF_SERVICE_VERSION="1.0"):
             result = self.execute_remote_billing_authentication_flow(
@@ -280,7 +280,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         with time_machine.travel(now, tick=False):
             result = self.execute_remote_billing_authentication_flow(desdemona)
@@ -336,7 +336,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         # Straight-up access without authing at all:
         result = self.client_get(f"/realm/{realm.uuid!s}/plans/", subdomain="selfhosting")
@@ -388,7 +388,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(desdemona, "sponsorship")
 
@@ -408,7 +408,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(desdemona, "upgrade")
 
