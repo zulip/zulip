@@ -106,4 +106,4 @@ class Command(BaseCommand):
             logger.info("Sleeping %d seconds before reporting...", delay)
             time.sleep(delay)
 
-            send_analytics_to_push_bouncer()
+            send_analytics_to_push_bouncer(consider_usage_statistics=True)

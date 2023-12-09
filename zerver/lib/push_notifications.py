@@ -44,9 +44,8 @@ from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
-    PushNotificationBouncerServerError,
+    send_analytics_to_push_bouncer,
     send_json_to_push_bouncer,
-    send_realms_only_to_push_bouncer,
     send_to_push_bouncer,
 )
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
@@ -783,37 +782,9 @@ def initialize_push_notifications() -> None:
 
     if uses_notification_bouncer():
         # If we're using the notification bouncer, check if we can
-        # actually send push notifications.
-
-        try:
-            realms = send_realms_only_to_push_bouncer()
-        except PushNotificationBouncerServerError:  # nocoverage
-            # 50x errors from the bouncer cannot be addressed by the
-            # administrator of this server, and may be localized to
-            # this endpoint; don't rashly mark push notifications as
-            # disabled when they are likely working perfectly fine.
-            return
-        except Exception:
-            # An exception was thrown trying to ask the bouncer service whether we can send
-            # push notifications or not. There may be certain transient failures that we could
-            # ignore here, but the default explanation is that there is something wrong either
-            # with our credentials being corrupted or our ability to reach the bouncer service
-            # over the network, so we immediately move to reporting push notifications as likely not working,
-            # as whatever failed here is likely to also fail when trying to send a push notification.
-            for realm in Realm.objects.filter(push_notifications_enabled=True):
-                do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
-                do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
-            logger.exception("Exception while sending realms only data to push bouncer")
-            return
-
-        for realm_uuid, data in realms.items():
-            realm = Realm.objects.get(uuid=realm_uuid)
-            do_set_realm_property(
-                realm, "push_notifications_enabled", data["can_push"], acting_user=None
-            )
-            do_set_push_notifications_enabled_end_timestamp(
-                realm, data["expected_end_timestamp"], acting_user=None
-            )
+        # actually send push notifications, and update our
+        # understanding of that state for each realm accordingly.
+        send_analytics_to_push_bouncer(consider_usage_statistics=False)
         return
 
     logger.warning(  # nocoverage
