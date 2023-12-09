@@ -1002,6 +1002,15 @@ class BillingSession(ABC):
             "stripe_session_id": stripe_session.id,
         }
 
+    def apply_discount_to_plan(
+        self,
+        plan: CustomerPlan,
+        discount: Decimal,
+    ) -> None:
+        plan.discount = discount
+        plan.price_per_license = get_price_per_license(plan.tier, plan.billing_schedule, discount)
+        plan.save(update_fields=["discount", "price_per_license"])
+
     def attach_discount_to_customer(self, new_discount: Decimal) -> str:
         customer = self.get_customer()
         old_discount = None
@@ -1013,11 +1022,14 @@ class BillingSession(ABC):
             customer = self.update_or_create_customer(defaults={"default_discount": new_discount})
         plan = get_current_plan_by_customer(customer)
         if plan is not None:
-            plan.price_per_license = get_price_per_license(
-                plan.tier, plan.billing_schedule, new_discount
-            )
-            plan.discount = new_discount
-            plan.save(update_fields=["price_per_license", "discount"])
+            self.apply_discount_to_plan(plan, new_discount)
+
+            # If the customer has a next plan, apply discount to that plan as well.
+            # Make this a check on CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END status
+            # if we support this for other plans.
+            next_plan = self.get_legacy_remote_server_next_plan(customer)
+            if next_plan is not None:  # nocoverage
+                self.apply_discount_to_plan(next_plan, new_discount)
 
         self.write_to_audit_log(
             event_type=AuditLogEventType.DISCOUNT_CHANGED,
