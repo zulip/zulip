@@ -17,6 +17,7 @@ from zerver.lib.avatar import avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
@@ -356,6 +357,7 @@ def do_deactivate_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
         do_increment_logging_stat(
             user_profile.realm,
             COUNT_STATS["active_users_log:is_bot:day"],
@@ -475,6 +477,7 @@ def do_change_user_role(
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         },
     )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )

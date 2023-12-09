@@ -365,6 +365,10 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
         },
     )
 
+    from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+    maybe_enqueue_audit_log_upload(realm)
+
     ScheduledEmail.objects.filter(realm=realm).delete()
 
     # Don't deactivate the users, as that would lose a lot of state if
@@ -405,6 +409,10 @@ def do_reactivate_realm(realm: Realm) -> None:
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
             },
         )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
 
 
 def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
