@@ -1,7 +1,7 @@
 import _ from "lodash";
 
+import type {Message} from "./message_store";
 import * as people from "./people";
-import type {Message} from "./types";
 
 const huddle_timestamps = new Map<string, number>();
 
