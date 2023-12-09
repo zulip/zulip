@@ -592,10 +592,13 @@ export function sync_realm_settings(property) {
               if(page_params.welcome_bot_custom_message_enabled) {
                 // Checkbox should be checked
                 $('#welcome_bot_custom_message_enabled').prop('checked', true);
-      
+                // Textbox will appear right under Checkbox
+                $('#welcome-bot-custom-message').show();
               } else {
                 // Make sure checkbox is unchecked  
                 $('#welcome_bot_custom_message_enabled').prop('checked', false);
+                //Textbox will disappear from under checkbox
+                $('#welcome-bot-custom-message').hide();
               }
       
             } 
