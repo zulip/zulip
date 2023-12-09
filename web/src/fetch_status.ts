@@ -1,5 +1,5 @@
 import * as message_feed_loading from "./message_feed_loading";
-import type {RawMessage} from "./types";
+import type {RawMessage} from "./message_store";
 
 function max_id_for_messages(messages: RawMessage[]): number {
     let max_id = 0;
