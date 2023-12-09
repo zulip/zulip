@@ -99,44 +99,46 @@ def help_handle_match(key: str) -> str:
 
 stream_info = {
     "all": ["All streams", "/#streams/all"],
-    "subscribed": ["Subscribed streams", "/#streams/subscribed"],
 }
 
-stream_instructions_no_link = """
+stream_all_instructions = """
 1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
    the upper right corner of the web or desktop app.
 
-1. Click <i class="zulip-icon zulip-icon-hash"></i> **Stream settings**.
+1. Select <i class="zulip-icon zulip-icon-hash"></i> **Stream settings**.
+
+1. Click {item} in the upper left.
 """
 
 
 def stream_handle_match(key: str) -> str:
     if relative_help_links:
-        return f"1. Go to [{stream_info[key][0]}]({stream_info[key][1]})."
-    if key == "all":
-        return stream_instructions_no_link + "\n\n1. Click **All streams** in the upper left."
-    return stream_instructions_no_link
+        item = f"[{stream_info[key][0]}]({stream_info[key][1]})"
+    else:
+        item = f"**{stream_info[key][0]}**"
+    return stream_all_instructions.format(item=item)
 
 
 group_info = {
     "all": ["All groups", "/#groups/all"],
-    "subscribed": ["Your groups", "/#groups/your"],
 }
 
-group_instructions_no_link = """
+group_all_instructions = """
 1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
    the upper right corner of the web or desktop app.
 
-1. Click <i class="zulip-icon zulip-icon-user-cog"></i> **Group settings**.
+1. Select <i class="zulip-icon zulip-icon-user-cog"></i> **Group settings**.
+
+1. Click {item} in the upper left.
 """
 
 
 def group_handle_match(key: str) -> str:
     if relative_help_links:
-        return f"1. Go to [{group_info[key][0]}]({group_info[key][1]})."
-    if key == "all":
-        return group_instructions_no_link + "\n\n1. Click **All groups** in the upper left."
-    return group_instructions_no_link
+        item = f"[{group_info[key][0]}]({group_info[key][1]})"
+    else:
+        item = f"**{group_info[key][0]}**"
+    return group_all_instructions.format(item=item)
 
 
 draft_instructions = """

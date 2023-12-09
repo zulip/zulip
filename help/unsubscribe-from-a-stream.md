@@ -28,7 +28,7 @@ You can always unsubscribe from any stream in Zulip.
 
 {tab|desktop-web}
 
-{relative|stream|subscribed}
+{relative|gear|stream-settings}
 
 1. Click the **checkmark**
    (<img src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
