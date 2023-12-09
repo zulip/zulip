@@ -829,9 +829,9 @@ class BillingSession(ABC):
         assert plan.end_date is not None
         return plan.end_date.strftime("%B %d, %Y")
 
-    def get_legacy_remote_server_next_plan_name(
+    def get_legacy_remote_server_next_plan(
         self, customer: Customer
-    ) -> Optional[str]:  # nocoverage
+    ) -> Optional[CustomerPlan]:  # nocoverage
         legacy_plan = self.get_remote_server_legacy_plan(
             customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
@@ -844,7 +844,15 @@ class BillingSession(ABC):
             customer=customer,
             billing_cycle_anchor=legacy_plan.end_date,
             status=CustomerPlan.NEVER_STARTED,
-        ).name
+        )
+
+    def get_legacy_remote_server_next_plan_name(
+        self, customer: Customer
+    ) -> Optional[str]:  # nocoverage
+        next_plan = self.get_legacy_remote_server_next_plan(customer)
+        if next_plan is None:
+            return None
+        return next_plan.name
 
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
@@ -1010,6 +1018,7 @@ class BillingSession(ABC):
             )
             plan.discount = new_discount
             plan.save(update_fields=["price_per_license", "discount"])
+
         self.write_to_audit_log(
             event_type=AuditLogEventType.DISCOUNT_CHANGED,
             event_time=timezone_now(),
