@@ -829,7 +829,7 @@ class BillingSession(ABC):
         assert plan.end_date is not None
         return plan.end_date.strftime("%B %d, %Y")
 
-    def get_legacy_remote_server_new_plan_name(
+    def get_legacy_remote_server_next_plan_name(
         self, customer: Customer
     ) -> Optional[str]:  # nocoverage
         legacy_plan = self.get_remote_server_legacy_plan(
@@ -1671,7 +1671,7 @@ class BillingSession(ABC):
         remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
-        legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(customer)
+        legacy_remote_server_next_plan_name = self.get_legacy_remote_server_next_plan_name(customer)
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         context = {
             "plan_name": plan.name,
@@ -1702,7 +1702,7 @@ class BillingSession(ABC):
             "is_self_hosted_billing": is_self_hosted_billing,
             "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
-            "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
+            "legacy_remote_server_next_plan_name": legacy_remote_server_next_plan_name,
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
         }
         return context
