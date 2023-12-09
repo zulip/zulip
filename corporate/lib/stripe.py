@@ -30,6 +30,7 @@ from corporate.models import (
     LicenseLedger,
     PaymentIntent,
     Session,
+    SponsoredPlanTypes,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
@@ -55,12 +56,17 @@ from zerver.models import (
     get_realm,
     get_system_bot,
 )
+from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
     RemoteRealmBillingUser,
+    RemoteServerBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
+    get_remote_realm_guest_and_non_guest_count,
+    get_remote_server_guest_and_non_guest_count,
+    has_stale_audit_log,
 )
 from zproject.config import get_secret
 
@@ -627,7 +633,6 @@ class UpgradePageContext(TypedDict):
     free_trial_end_date: Optional[str]
     is_demo_organization: bool
     manual_license_management: bool
-    min_invoiced_licenses: int
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
@@ -645,6 +650,9 @@ class SponsorshipRequestForm(forms.Form):
     expected_total_users = forms.CharField(widget=forms.Textarea)
     paid_users_count = forms.CharField(widget=forms.Textarea)
     paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
+    requested_plan = forms.ChoiceField(
+        choices=[(plan.value, plan.name) for plan in SponsoredPlanTypes], required=False
+    )
 
 
 class BillingSession(ABC):
@@ -676,7 +684,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def current_count_for_billed_licenses(self) -> int:
+    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
         pass
 
     @abstractmethod
@@ -1654,6 +1662,7 @@ class BillingSession(ABC):
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
         legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(customer)
+        is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         context = {
             "plan_name": plan.name,
             "has_active_plan": True,
@@ -1676,8 +1685,11 @@ class BillingSession(ABC):
             "fixed_price": fixed_price,
             "price_per_license": price_per_license,
             "is_sponsorship_pending": customer.sponsorship_pending,
+            "sponsorship_plan_name": self.get_sponsorship_plan_name(
+                customer, is_self_hosted_billing
+            ),
             "discount_percent": format_discount_percentage(customer.default_discount),
-            "is_self_hosted_billing": not isinstance(self, RealmBillingSession),
+            "is_self_hosted_billing": is_self_hosted_billing,
             "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
@@ -1784,7 +1796,6 @@ class BillingSession(ABC):
             "is_demo_organization": customer_specific_context["is_demo_organization"],
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
-            "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
             "page_params": {
                 "annual_price": get_price_per_license(
                     tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, percent_off
@@ -1919,6 +1930,10 @@ class BillingSession(ABC):
 
         licenses = update_plan_request.licenses
         if licenses is not None:
+            if plan.is_free_trial():  # nocoverage
+                raise JsonableError(
+                    _("Cannot update licenses in the current billing period for free trial plan.")
+                )
             if plan.automanage_licenses:
                 raise JsonableError(
                     _(
@@ -1950,6 +1965,15 @@ class BillingSession(ABC):
                 raise JsonableError(
                     _(
                         "Unable to update licenses manually. Your plan is on automatic license management."
+                    )
+                )
+            if plan.status in (
+                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+                CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+            ):  # nocoverage
+                raise JsonableError(
+                    _(
+                        "Cannot change the licenses for next billing cycle for a plan that is being downgraded."
                     )
                 )
             if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
@@ -2205,11 +2229,22 @@ class BillingSession(ABC):
 
         raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
 
-    def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
-        customer = self.get_customer()
-        is_remotely_hosted = isinstance(
-            self, (RemoteRealmBillingSession, RemoteServerBillingSession)
-        )
+    def get_sponsorship_plan_name(
+        self, customer: Optional[Customer], is_remotely_hosted: bool
+    ) -> str:
+        if customer is not None and customer.sponsorship_pending:
+            # For sponsorship pending requests, we also show the type of sponsorship requested.
+            # In other cases, we just show the plan user is currently on.
+            sponsorship_request = (
+                ZulipSponsorshipRequest.objects.filter(customer=customer).order_by("-id").first()
+            )
+            # It's possible that we marked `customer.sponsorship_pending` via support page
+            # without user submitting a sponsorship request.
+            if sponsorship_request is not None and sponsorship_request.requested_plan not in (
+                None,
+                SponsoredPlanTypes.UNSPECIFIED.value,
+            ):  # nocoverage
+                return sponsorship_request.requested_plan
 
         # We only support sponsorships for these plans.
         sponsored_plan_name = CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD)
@@ -2218,6 +2253,14 @@ class BillingSession(ABC):
                 CustomerPlan.TIER_SELF_HOSTED_COMMUNITY
             )
 
+        return sponsored_plan_name
+
+    def get_sponsorship_request_context(self) -> Optional[Dict[str, Any]]:
+        customer = self.get_customer()
+        is_remotely_hosted = isinstance(
+            self, (RemoteRealmBillingSession, RemoteServerBillingSession)
+        )
+
         plan_name = "Zulip Cloud Free"
         if is_remotely_hosted:
             plan_name = "Self-managed"
@@ -2225,7 +2268,7 @@ class BillingSession(ABC):
         context: Dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
             "is_remotely_hosted": is_remotely_hosted,
-            "sponsored_plan_name": sponsored_plan_name,
+            "sponsorship_plan_name": self.get_sponsorship_plan_name(customer, is_remotely_hosted),
             "plan_name": plan_name,
         }
 
@@ -2237,7 +2280,6 @@ class BillingSession(ABC):
 
         if self.is_sponsored():
             context["is_sponsored"] = True
-            context["plan_name"] = sponsored_plan_name
 
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
@@ -2270,6 +2312,7 @@ class BillingSession(ABC):
                 expected_total_users=form.cleaned_data["expected_total_users"],
                 paid_users_count=form.cleaned_data["paid_users_count"],
                 paid_users_description=form.cleaned_data["paid_users_description"],
+                requested_plan=form.cleaned_data["requested_plan"],
             )
             sponsorship_request.save()
 
@@ -2297,6 +2340,7 @@ class BillingSession(ABC):
             "expected_total_users": sponsorship_request.expected_total_users,
             "paid_users_count": sponsorship_request.paid_users_count,
             "paid_users_description": sponsorship_request.paid_users_description,
+            "requested_plan": sponsorship_request.requested_plan,
         }
         send_email(
             "zerver/emails/sponsorship_request",
@@ -2379,13 +2423,13 @@ class BillingSession(ABC):
 
     def update_license_ledger_for_automanaged_plan(
         self, plan: CustomerPlan, event_time: datetime
-    ) -> None:
+    ) -> Optional[CustomerPlan]:
         new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, event_time)
         if last_ledger_entry is None:
-            return
+            return None
         if new_plan is not None:
             plan = new_plan
-        licenses_at_next_renewal = self.current_count_for_billed_licenses()
+        licenses_at_next_renewal = self.current_count_for_billed_licenses(event_time)
         licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
 
         LicenseLedger.objects.create(
@@ -2395,16 +2439,10 @@ class BillingSession(ABC):
             licenses_at_next_renewal=licenses_at_next_renewal,
         )
 
-    def update_license_ledger_if_needed(self, event_time: datetime) -> None:
-        customer = self.get_customer()
-        if customer is None:
-            return
-        plan = get_current_plan_by_customer(customer)
-        if plan is None:
-            return
-        if not plan.automanage_licenses:
-            return
-        self.update_license_ledger_for_automanaged_plan(plan, event_time)
+        # Returning plan is particularly helpful for 'sync_license_ledger_if_needed'.
+        # If a new plan is created during the end of cycle update, then that function
+        # needs the updated plan for a correct LicenseLedger update.
+        return plan
 
 
 class RealmBillingSession(BillingSession):
@@ -2464,7 +2502,7 @@ class RealmBillingSession(BillingSession):
         return self.user.delivery_email
 
     @override
-    def current_count_for_billed_licenses(self) -> int:
+    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
         return get_latest_seat_count(self.realm)
 
     @override
@@ -2716,6 +2754,17 @@ class RealmBillingSession(BillingSession):
             self.realm.org_type = org_type
             self.realm.save(update_fields=["org_type"])
 
+    def update_license_ledger_if_needed(self, event_time: datetime) -> None:
+        customer = self.get_customer()
+        if customer is None:
+            return
+        plan = get_current_plan_by_customer(customer)
+        if plan is None:
+            return
+        if not plan.automanage_licenses:
+            return
+        self.update_license_ledger_for_automanaged_plan(plan, event_time)
+
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
@@ -2760,9 +2809,13 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         return self.remote_realm.server.contact_email
 
     @override
-    def current_count_for_billed_licenses(self) -> int:
-        # TODO: Do the proper calculation here.
-        return 10
+    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
+        if has_stale_audit_log(self.remote_realm.server):
+            raise MissingDataError
+        remote_realm_counts = get_remote_realm_guest_and_non_guest_count(
+            self.remote_realm, event_time
+        )
+        return remote_realm_counts.non_guest_user_count + remote_realm_counts.guest_user_count
 
     @override
     def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
@@ -2782,6 +2835,10 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
+            return RemoteRealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
+            return RemoteRealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         else:
             raise BillingSessionAuditLogEventError(event_type)
 
@@ -3024,6 +3081,50 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             self.remote_realm.org_type = org_type
             self.remote_realm.save(update_fields=["org_type"])
 
+    def sync_license_ledger_if_needed(self) -> None:
+        # Updates the license ledger based on RemoteRealmAuditLog
+        # entries.
+        #
+        # Supports backfilling entries from weeks if the past if
+        # needed when we receive audit logs, making any end-of-cycle
+        # updates that happen to be scheduled inside the interval that
+        # we are processing.
+        #
+        # But this support is fragile, in that it does not handle the
+        # possibility that some other code path changed or ended the
+        # customer's current plan at some point after
+        # last_ledger.event_time but before the event times for the
+        # audit logs we will be processing.
+        customer = self.get_customer()
+        if customer is None:
+            return
+        plan = get_current_plan_by_customer(customer)
+        if plan is None:
+            return
+        if not plan.automanage_licenses:
+            return
+
+        # It's an invariant that any current plan have at least an
+        # initial ledger entry.
+        last_ledger = LicenseLedger.objects.filter(plan=plan).order_by("id").last()
+        assert last_ledger is not None
+
+        # New audit logs since last_ledger for the plan was created.
+        new_audit_logs = (
+            RemoteRealmAuditLog.objects.filter(
+                remote_realm=self.remote_realm,
+                event_time__gt=last_ledger.event_time,
+                event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
+            )
+            .exclude(extra_data={})
+            .order_by("event_time")
+        )
+
+        for audit_log in new_audit_logs:
+            plan = self.update_license_ledger_for_automanaged_plan(plan, audit_log.event_time)
+            if plan is None:
+                return
+
 
 class RemoteServerBillingSession(BillingSession):  # nocoverage
     """Billing session for pre-8.0 servers that do not yet support
@@ -3032,9 +3133,11 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     def __init__(
         self,
         remote_server: RemoteZulipServer,
+        remote_billing_user: Optional[RemoteServerBillingUser] = None,
         support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_server = remote_server
+        self.remote_billing_user = remote_billing_user
         if support_staff is not None:
             assert support_staff.is_staff
             self.support_session = True
@@ -3069,9 +3172,13 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return self.remote_server.contact_email
 
     @override
-    def current_count_for_billed_licenses(self) -> int:
-        # TODO: Do the proper calculation here.
-        return 10
+    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
+        if has_stale_audit_log(self.remote_server):
+            raise MissingDataError
+        remote_server_counts = get_remote_server_guest_and_non_guest_count(
+            self.remote_server.id, event_time
+        )
+        return remote_server_counts.non_guest_user_count + remote_server_counts.guest_user_count
 
     @override
     def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
@@ -3091,6 +3198,10 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
+            return RemoteZulipServerAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
+            return RemoteZulipServerAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
         else:
             raise BillingSessionAuditLogEventError(event_type)
 

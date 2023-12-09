@@ -523,7 +523,11 @@ def remote_server_notify_push(
 
 
 def validate_incoming_table_data(
-    server: RemoteZulipServer, model: Any, rows: List[Dict[str, Any]], is_count_stat: bool = False
+    server: RemoteZulipServer,
+    model: Any,
+    rows: List[Dict[str, Any]],
+    *,
+    is_count_stat: bool,
 ) -> None:
     last_id = get_last_id_from_server(server, model)
     for row in rows:
@@ -532,6 +536,10 @@ def validate_incoming_table_data(
             or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
         ):
             raise JsonableError(_("Invalid property {property}").format(property=row["property"]))
+
+        if not is_count_stat and row["event_type"] not in RemoteRealmAuditLog.SYNCED_BILLING_EVENTS:
+            raise JsonableError(_("Invalid event type."))
+
         if row.get("id") is None:
             # This shouldn't be possible, as submitting data like this should be
             # prevented by our param validators.
@@ -702,15 +710,24 @@ def remote_server_post_analytics(
         remote_server_version_updated = True
 
     validate_incoming_table_data(
-        server, RemoteRealmCount, [dict(count) for count in realm_counts], True
+        server,
+        RemoteRealmCount,
+        [dict(count) for count in realm_counts],
+        is_count_stat=True,
     )
     validate_incoming_table_data(
-        server, RemoteInstallationCount, [dict(count) for count in installation_counts], True
+        server,
+        RemoteInstallationCount,
+        [dict(count) for count in installation_counts],
+        is_count_stat=True,
     )
 
     if realmauditlog_rows is not None:
         validate_incoming_table_data(
-            server, RemoteRealmAuditLog, [dict(row) for row in realmauditlog_rows]
+            server,
+            RemoteRealmAuditLog,
+            [dict(row) for row in realmauditlog_rows],
+            is_count_stat=False,
         )
 
     if realms is not None:
@@ -749,6 +766,11 @@ def remote_server_post_analytics(
     batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 
     if realmauditlog_rows is not None:
+        # Important: Do not return early if we receive 0 rows; we must
+        # updated last_audit_log_update even if there are no new rows,
+        # to help identify server whose ability to connect to this
+        # endpoint is broken by a networking problem.
+        remote_realms_set = set()
         remote_realm_audit_logs = []
         for row in realmauditlog_rows:
             extra_data = {}
@@ -760,6 +782,7 @@ def remote_server_post_analytics(
             elif row.extra_data is not None:
                 assert isinstance(row.extra_data, dict)
                 extra_data = row.extra_data
+            remote_realms_set.add(realm_id_to_remote_realm.get(row.realm))
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
                     remote_realm=realm_id_to_remote_realm.get(row.realm),
@@ -773,6 +796,18 @@ def remote_server_post_analytics(
                 )
             )
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
+
+        # Update LicenseLedger using logs in RemoteRealmAuditlog.
+        for remote_realm in remote_realms_set:
+            if remote_realm:
+                billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+                billing_session.sync_license_ledger_if_needed()
+
+        # Do this last, so we can assume LicenseLedger is always
+        # up-to-date through last_audit_log_update.
+        RemoteZulipServer.objects.filter(uuid=server.uuid).update(
+            last_audit_log_update=timezone_now()
+        )
 
     remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
     remote_realms = RemoteRealm.objects.filter(server=server)

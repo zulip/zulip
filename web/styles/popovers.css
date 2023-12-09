@@ -1101,6 +1101,7 @@ ul {
     .visibility_policy_option {
         padding: 2px 13px;
         border-radius: 4px;
+        cursor: pointer;
 
         .icon_and_text {
             display: flex;

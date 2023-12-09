@@ -4,7 +4,7 @@ __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import secrets
 from base64 import b32encode
 from datetime import timedelta
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union, cast
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -29,6 +29,9 @@ from zerver.models import (
     RealmReactivationStatus,
     UserProfile,
 )
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import PreregistrationRemoteServerBillingUser
 
 
 class ConfirmationKeyError(Exception):
@@ -56,7 +59,7 @@ def generate_key() -> str:
     return b32encode(secrets.token_bytes(15)).decode().lower()
 
 
-ConfirmationObjT: TypeAlias = Union[
+NoZilencerConfirmationObjT: TypeAlias = Union[
     MultiuseInvite,
     PreregistrationRealm,
     PreregistrationUser,
@@ -64,6 +67,11 @@ ConfirmationObjT: TypeAlias = Union[
     UserProfile,
     RealmReactivationStatus,
 ]
+ZilencerConfirmationObjT: TypeAlias = Union[
+    NoZilencerConfirmationObjT, "PreregistrationRemoteServerBillingUser"
+]
+
+ConfirmationObjT = Union[NoZilencerConfirmationObjT, ZilencerConfirmationObjT]
 
 
 def get_object_from_key(
@@ -117,15 +125,20 @@ def create_confirmation_link(
     *,
     validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
-    realm_creation: bool = False,
+    no_associated_realm_object: bool = False,
 ) -> str:
     # validity_in_minutes is an override for the default values which are
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
     key = generate_key()
-    if realm_creation:
+
+    # Some confirmation objects, like those for realm creation or those used
+    # for the self-hosted management flows, are not associated with a realm
+    # hosted by this Zulip server.
+    if no_associated_realm_object:
         realm = None
     else:
+        obj = cast(NoZilencerConfirmationObjT, obj)
         assert not isinstance(obj, PreregistrationRealm)
         realm = obj.realm
 
@@ -183,6 +196,7 @@ class Confirmation(models.Model):
     MULTIUSE_INVITE = 6
     REALM_CREATION = 7
     REALM_REACTIVATION = 8
+    REMOTE_SERVER_BILLING_LEGACY_LOGIN = 9
     type = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -219,6 +233,10 @@ _properties = {
     Confirmation.REALM_CREATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation"),
 }
+if settings.ZILENCER_ENABLED:
+    _properties[Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN] = ConfirmationType(
+        "remote_billing_legacy_server_from_login_confirmation_link"
+    )
 
 
 def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> str:

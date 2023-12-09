@@ -95,8 +95,8 @@ and privacy in mind:
   avoid any message content being stored or logged by the service,
   even in error cases.
 - The Push Notification Service only stores the necessary metadata for
-  delivering the notifications to the appropriate devices, and nothing
-  else:
+  delivering the notifications to the appropriate devices and
+  otherwise operating the service:
   - The APNS/FCM tokens needed to securely send mobile push
     notifications to iOS and Android devices, one per device
     registered to be notified by your Zulip server.
@@ -104,8 +104,10 @@ and privacy in mind:
     a given notification to the appropriate set of mobile devices.
     These user ID numbers are opaque to the Push Notification
     Service and Kandra Labs.
-  - [Basic organization metadata](#uploading-basic-metadata) and
-    [optional usage statistics](#uploading-usage-statistics)
+  - [Basic organization metadata](#uploading-basic-metadata),
+    [optional usage statistics](#uploading-usage-statistics), and
+    aggregate statistics about how many push notifications are sent by
+    each customer.
 - The Push Notification Service receives (but does not store) the
   contents of individual mobile push notifications:
 

@@ -1,0 +1,29 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "upgrade" %}
+
+{% block title %}
+<title>{{ _("Confirm your email address") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation account-email-confirm-container new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Confirm your email address") }}</h1>
+            </div>
+
+            <div class="white-box">
+                <p>{% trans %}To complete the login process, check your email account (<span class="user_email semi-bold">{{ email }}</span>) for a confirmation email from Zulip.{% endtrans %}</p>
+
+                {% include 'zerver/dev_env_email_access_details.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+{% endblock %}

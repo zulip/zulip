@@ -1,5 +1,5 @@
 import logging
-from typing import Literal, Optional, TypedDict, Union, cast
+from typing import Literal, Optional, Tuple, TypedDict, Union, cast
 
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError, RemoteBillingAuthenticationError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteServerBillingUser, RemoteZulipServer
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -39,6 +39,7 @@ class LegacyServerIdentityDict(TypedDict):
     # to add more information as appropriate.
     remote_server_uuid: str
 
+    remote_billing_user_id: Optional[int]
     authenticated_at: int
 
 
@@ -128,12 +129,13 @@ def get_remote_realm_from_session(
     return remote_realm
 
 
-def get_remote_server_from_session(
+def get_remote_server_and_user_from_session(
     request: HttpRequest,
     server_uuid: str,
-) -> RemoteZulipServer:
-    identity_dict: Optional[LegacyServerIdentityDict] = get_identity_dict_from_session(
-        request, realm_uuid=None, server_uuid=server_uuid
+) -> Tuple[RemoteZulipServer, Optional[RemoteServerBillingUser]]:
+    identity_dict = cast(
+        Optional[LegacyServerIdentityDict],
+        get_identity_dict_from_session(request, realm_uuid=None, server_uuid=server_uuid),
     )
 
     if identity_dict is None:
@@ -148,4 +150,15 @@ def get_remote_server_from_session(
     if remote_server.deactivated:
         raise JsonableError(_("Registration is deactivated"))
 
-    return remote_server
+    remote_billing_user_id = identity_dict.get("remote_billing_user_id")
+    if remote_billing_user_id is None:
+        return remote_server, None
+
+    try:
+        remote_billing_user = RemoteServerBillingUser.objects.get(
+            id=remote_billing_user_id, remote_server=remote_server
+        )
+    except RemoteServerBillingUser.DoesNotExist:
+        remote_billing_user = None
+
+    return remote_server, remote_billing_user

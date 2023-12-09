@@ -32,6 +32,8 @@ from corporate.views.portico import (
     team_view,
 )
 from corporate.views.remote_billing_page import (
+    remote_billing_legacy_server_confirm_login,
+    remote_billing_legacy_server_from_login_confirmation_link,
     remote_billing_legacy_server_login,
     remote_realm_billing_finalize_login,
 )
@@ -221,6 +223,16 @@ urlpatterns += [
         "serverlogin/",
         remote_billing_legacy_server_login,
         name="remote_billing_legacy_server_login",
+    ),
+    path(
+        "serverlogin/<server_uuid>/confirm/",
+        remote_billing_legacy_server_confirm_login,
+        name="remote_billing_legacy_server_confirm_login",
+    ),
+    path(
+        "serverlogin/do_confirm/<confirmation_key>",
+        remote_billing_legacy_server_from_login_confirmation_link,
+        name="remote_billing_legacy_server_from_login_confirmation_link",
     ),
     path(
         "realm/<realm_uuid>/billing/event_status/",

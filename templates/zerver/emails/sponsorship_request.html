@@ -34,4 +34,9 @@
 
 <b>Requested by</b>: {{ requested_by }} ({{ user_role }})
 
+{% if requested_plan %}
+<br /><br />
+<b>Requested plan</b>: {{ requested_plan }}
+{% endif %}
+
 {% endblock %}

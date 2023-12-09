@@ -592,6 +592,11 @@ base_template_engine_settings: Dict[str, Any] = {
     },
 }
 
+if CORPORATE_ENABLED:
+    base_template_engine_settings["OPTIONS"]["context_processors"].append(
+        "zerver.context_processors.zulip_default_corporate_context"
+    )
+
 default_template_engine_settings = deepcopy(base_template_engine_settings)
 default_template_engine_settings.update(
     NAME="Jinja2",

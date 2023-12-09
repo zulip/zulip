@@ -1434,6 +1434,27 @@ class AnalyticsBouncerTest(BouncerTestCase):
             RealmCount.objects.all(), InstallationCount.objects.all(), RealmAuditLog.objects.all()
         )
 
+        # This first post should fail because of excessive audit log event types.
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/server/analytics",
+            {
+                "realm_counts": orjson.dumps(realm_count_data).decode(),
+                "installation_counts": orjson.dumps(installation_count_data).decode(),
+                "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
+                "realms": orjson.dumps([]).decode(),
+            },
+            subdomain="",
+        )
+        self.assert_json_error(result, "Invalid event type.")
+
+        # Start again only using synced billing events.
+        realm_count_data, installation_count_data, realmauditlog_data = build_analytics_data(
+            RealmCount.objects.all(),
+            InstallationCount.objects.all(),
+            RealmAuditLog.objects.filter(event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS),
+        )
+
         # Send the data to the bouncer without any realms data. This should lead
         # to successful saving of the data, but with the remote_realm foreign key
         # set to NULL.

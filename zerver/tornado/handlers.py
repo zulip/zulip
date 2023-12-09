@@ -1,6 +1,6 @@
 import logging
 from contextlib import suppress
-from typing import Any, Dict, List, Optional
+from typing import Any, Collection, Dict, List, Optional
 from urllib.parse import unquote
 
 import tornado.web
@@ -83,6 +83,8 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
 class AsyncDjangoHandler(tornado.web.RequestHandler):
     handler_id: int
 
+    SUPPORTED_METHODS: Collection[str] = {"GET", "POST", "DELETE"}  # type: ignore[assignment]  # https://github.com/tornadoweb/tornado/pull/3354
+
     @override
     def initialize(self, django_handler: base.BaseHandler) -> None:
         self.django_handler = django_handler
@@ -95,6 +97,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         self.handler_id = allocate_handler_id(self)
 
         self._request: Optional[HttpRequest] = None
+
+    @override
+    def on_finish(self) -> None:
+        clear_handler_by_id(self.handler_id)
 
     @override
     def __repr__(self) -> str:
@@ -182,10 +188,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
                 # For normal/synchronous requests that don't end up
                 # long-polling, we just need to write the HTTP
                 # response that Django prepared for us via Tornado.
-
-                # Mark this handler ID as finished for Zulip's own tracking.
-                clear_handler_by_id(self.handler_id)
-
                 assert isinstance(response, HttpResponse)
                 await self.write_django_response_as_tornado_response(response)
         finally:
@@ -194,10 +196,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
             # resetting the urlconf and any cache/database
             # connections.
             await sync_to_async(response.close, thread_sensitive=True)()
-
-    @override
-    async def head(self, *args: Any, **kwargs: Any) -> None:
-        await self.get(*args, **kwargs)
 
     @override
     async def post(self, *args: Any, **kwargs: Any) -> None:

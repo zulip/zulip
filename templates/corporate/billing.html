@@ -11,7 +11,11 @@
         {% if admin_access and has_active_plan %}
         {% if is_sponsorship_pending %}
         <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
-            This organization has requested sponsorship for a <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            This organization has requested sponsorship for a
+            {% if sponsorship_plan_name == "Business" %}
+            discounted
+            {% endif %}
+            <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
         </div>
         {% endif %}
         {% if success_message %}
@@ -46,9 +50,9 @@
                     </div>
                 </div>
                 {% if is_server_on_legacy_plan %}
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field no-validation" id="legacy-server-push-notification-notice-wrapper">
                     <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
-                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}</i>
+                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}.</i>
                     </div>
                 </div>
                 {% endif %}
@@ -104,6 +108,7 @@
                     </div>
                 </div>
                 {% else %}
+                {% if not (free_trial or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field no-validation input-box-number">
                     <label for="current-manual-license-count" class="inline-block label-title">
                         Number of licenses for current billing period
@@ -123,7 +128,8 @@
                     </div>
                     <div id="current-license-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
-                {% if not downgrade_at_end_of_cycle %}
+                {% endif %}
+                {% if not (downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial) %}
                 <div class="input-box billing-page-field no-validation input-box-number">
                     <label for="next-manual-license-count" class="inline-block label-title">
                         Number of licenses for next billing period
@@ -194,7 +200,7 @@
                                 {% endif %})
                                 {% if discount_percent %}
                                 <br />
-                                <i class="billing-page-discount">(includes {{ discount_percent }}% discount)</i>
+                                <i class="billing-page-discount">Includes {{ discount_percent }}% discount.</i>
                                 {% endif %}
                             {% endif %}
                             {% endif %}

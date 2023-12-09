@@ -693,3 +693,7 @@ input[name="licenses"] {
     width: 450px;
     margin: 30px auto 0;
 }
+
+#billing-page-details #legacy-server-push-notification-notice-wrapper {
+    margin-top: 10px;
+}

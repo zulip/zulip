@@ -49,6 +49,7 @@ from corporate.lib.stripe import (
     InvalidBillingScheduleError,
     InvalidTierError,
     RealmBillingSession,
+    RemoteRealmBillingSession,
     RemoteServerBillingSession,
     StripeCardError,
     SupportType,
@@ -104,7 +105,13 @@ from zerver.models import (
     get_realm,
     get_system_bot,
 )
-from zilencer.models import RemoteZulipServer, RemoteZulipServerAuditLog
+from zilencer.lib.remote_counts import MissingDataError
+from zilencer.models import (
+    RemoteRealm,
+    RemoteRealmAuditLog,
+    RemoteZulipServer,
+    RemoteZulipServerAuditLog,
+)
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -1331,7 +1338,7 @@ class StripeTest(StripeTestCase):
             for substring in [
                 "Zulip Cloud Standard <i>(free trial)</i>",
                 str(self.seat_count),
-                "Number of licenses for current billing period",
+                "Number of licenses for next billing period",
                 f"{self.seat_count} in use",
                 "Your next invoice is due on",
                 "March 2, 2012",
@@ -1865,7 +1872,9 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/sponsorship/")
         self.assert_in_success_response(
             [
-                'This organization has requested sponsorship for a <a href="/plans/">Zulip Cloud Standard</a> plan. <a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.'
+                "This organization has requested sponsorship for a",
+                '<a href="/plans/">Zulip Cloud Standard</a>',
+                'plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.',
             ],
             response,
         )
@@ -5085,6 +5094,80 @@ class TestRealmBillingSession(StripeTestCase):
 
         customer = Customer.objects.create(realm=user.realm, stripe_customer_id="cus_12345")
         self.assertEqual(billing_session.get_customer(), customer)
+
+
+class TestRemoteRealmBillingSession(StripeTestCase):
+    def test_current_count_for_billed_licenses(self) -> None:
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        realm_uuid = str(uuid.uuid4())
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=realm_uuid,
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+        )
+        billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+
+        # remote server never uploaded statistics. 'last_audit_log_update' is None.
+        with self.assertRaises(MissingDataError):
+            billing_session.current_count_for_billed_licenses()
+
+        # Available statistics is stale.
+        remote_server.last_audit_log_update = timezone_now() - timedelta(days=5)
+        remote_server.save()
+        with self.assertRaises(MissingDataError):
+            billing_session.current_count_for_billed_licenses()
+
+        # Available statistics is not stale.
+        event_time = timezone_now() - timedelta(days=1)
+        data_list = [
+            {
+                "server": remote_server,
+                "remote_realm": remote_realm,
+                "event_type": RemoteRealmAuditLog.USER_CREATED,
+                "event_time": event_time,
+                "extra_data": {
+                    RemoteRealmAuditLog.ROLE_COUNT: {
+                        RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
+                            UserProfile.ROLE_REALM_ADMINISTRATOR: 10,
+                            UserProfile.ROLE_REALM_OWNER: 10,
+                            UserProfile.ROLE_MODERATOR: 10,
+                            UserProfile.ROLE_MEMBER: 10,
+                            UserProfile.ROLE_GUEST: 10,
+                        }
+                    }
+                },
+            },
+            {
+                "server": remote_server,
+                "remote_realm": remote_realm,
+                "event_type": RemoteRealmAuditLog.USER_ROLE_CHANGED,
+                "event_time": event_time,
+                "extra_data": {
+                    RemoteRealmAuditLog.ROLE_COUNT: {
+                        RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
+                            UserProfile.ROLE_REALM_ADMINISTRATOR: 20,
+                            UserProfile.ROLE_REALM_OWNER: 10,
+                            UserProfile.ROLE_MODERATOR: 0,
+                            UserProfile.ROLE_MEMBER: 30,
+                            UserProfile.ROLE_GUEST: 10,
+                        }
+                    }
+                },
+            },
+        ]
+        RemoteRealmAuditLog.objects.bulk_create([RemoteRealmAuditLog(**data) for data in data_list])
+        remote_server.last_audit_log_update = timezone_now() - timedelta(days=1)
+        remote_server.save()
+
+        self.assertEqual(billing_session.current_count_for_billed_licenses(), 70)
 
 
 class TestRemoteServerBillingSession(StripeTestCase):

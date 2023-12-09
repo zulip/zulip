@@ -48,12 +48,7 @@ from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.handlers import (
-    clear_handler_by_id,
-    finish_handler,
-    get_handler_by_id,
-    handler_stats_string,
-)
+from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -209,21 +204,21 @@ class ClientDescriptor:
         self.finish_current_handler()
 
     def finish_current_handler(self) -> bool:
-        if self.current_handler_id is not None:
-            try:
-                finish_handler(
-                    self.current_handler_id,
-                    self.event_queue.id,
-                    self.event_queue.contents(),
-                )
-            except Exception:
-                logging.exception(
-                    "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
-                )
-            finally:
-                self.disconnect_handler()
-            return True
-        return False
+        if self.current_handler_id is None:
+            return False
+        try:
+            finish_handler(
+                self.current_handler_id,
+                self.event_queue.id,
+                self.event_queue.contents(),
+            )
+        except Exception:
+            logging.exception(
+                "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
+            )
+        finally:
+            self.disconnect_handler()
+        return True
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
         if self.event_types is not None:
@@ -283,7 +278,6 @@ class ClientDescriptor:
     def disconnect_handler(self, client_closed: bool = False) -> None:
         if self.current_handler_id:
             clear_descriptor_by_handler_id(self.current_handler_id)
-            clear_handler_by_id(self.current_handler_id)
             if client_closed:
                 logging.info(
                     "Client disconnected for queue %s (%s via %s)",

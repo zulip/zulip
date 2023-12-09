@@ -753,7 +753,7 @@ def prepare_realm_activation_url(
         email, realm_name, string_id, org_type, default_language
     )
     activation_url = create_confirmation_link(
-        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+        prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
     )
 
     if settings.DEVELOPMENT:
