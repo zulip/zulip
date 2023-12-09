@@ -3628,11 +3628,11 @@ def compute_plan_parameters(
 
 
 def get_free_trial_days() -> Optional[int]:
-    return settings.FREE_TRIAL_DAYS
+    return settings.CLOUD_FREE_TRIAL_DAYS
 
 
 def is_free_trial_offer_enabled() -> bool:
-    return settings.FREE_TRIAL_DAYS not in (None, 0)
+    return settings.CLOUD_FREE_TRIAL_DAYS not in (None, 0)
 
 
 def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:

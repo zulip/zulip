@@ -1754,7 +1754,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assert_length(messages, message_count)
             self.assertIn(text, messages[0].content)
 
-    @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)
+    @override_settings(OPEN_REALM_CREATION=True, CLOUD_FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:
         password = "test"
         string_id = "custom-test"
