@@ -3555,6 +3555,8 @@ def get_price_per_license(
         CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 16000, "Monthly": 1600},
         # Placeholder self-hosted plan for development.
         CustomerPlan.TIER_SELF_HOSTED_BUSINESS: {"Annual": 8000, "Monthly": 800},
+        # To help with processing discount request on support page.
+        CustomerPlan.TIER_SELF_HOSTED_LEGACY: {"Annual": 0, "Monthly": 0},
     }
 
     try:
