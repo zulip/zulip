@@ -1,8 +1,8 @@
 import assert from "minimalistic-assert";
 
+import type {Message} from "./message_store";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
-import type {Message} from "./types";
 import type {Recipient} from "./util";
 import * as util from "./util";
 

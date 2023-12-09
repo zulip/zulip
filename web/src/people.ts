@@ -6,6 +6,7 @@ import * as typeahead from "../shared/src/typeahead";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
+import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
@@ -13,7 +14,6 @@ import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as timerender from "./timerender";
-import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./types";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 

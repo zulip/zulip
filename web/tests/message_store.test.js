@@ -338,13 +338,13 @@ test("update_property", () => {
 
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, bob.full_name);
-    message_store.update_property("sender_full_name", "Bobby", {user_id: bob.user_id});
+    message_store.update_sender_full_name(bob.user_id, "Bobby");
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, "Bobby");
 
     assert.equal(message1.small_avatar_url, "alice_url");
     assert.equal(message2.small_avatar_url, "bob_url");
-    message_store.update_property("small_avatar_url", "bobby_url", {user_id: bob.user_id});
+    message_store.update_small_avatar_url(bob.user_id, "bobby_url");
     assert.equal(message1.small_avatar_url, "alice_url");
     assert.equal(message2.small_avatar_url, "bobby_url");
 
@@ -352,7 +352,7 @@ test("update_property", () => {
     assert.equal(message1.display_recipient, devel.name);
     assert.equal(message2.stream_id, denmark.stream_id);
     assert.equal(message2.display_recipient, denmark.name);
-    message_store.update_property("stream_name", "Prod", {stream_id: devel.stream_id});
+    message_store.update_stream_name(devel.stream_id, "Prod");
     assert.equal(message1.stream_id, devel.stream_id);
     assert.equal(message1.display_recipient, "Prod");
     assert.equal(message2.stream_id, denmark.stream_id);
