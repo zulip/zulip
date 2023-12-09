@@ -410,6 +410,8 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
         hostname=f"{unique_id}.example.com",
         contact_email=f"{unique_id}@example.com",
         plan_type=plan_type,
+        # TODO: Save property audit log data for server.
+        last_audit_log_update=timezone_now(),
     )
 
     billing_session = RemoteServerBillingSession(remote_server)
@@ -483,6 +485,9 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
 
     remote_realm = RemoteRealm.objects.get(uuid=local_realm.uuid)
     billing_session = RemoteRealmBillingSession(remote_realm)
+    # TODO: Save property audit log  data for server.
+    remote_realm.server.last_audit_log_update = timezone_now()
+    remote_realm.server.save(update_fields=["last_audit_log_update"])
     customer = billing_session.update_or_create_stripe_customer()
     assert customer.stripe_customer_id is not None
     add_card_to_customer(customer)
