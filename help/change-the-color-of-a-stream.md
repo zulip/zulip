@@ -23,7 +23,7 @@ stream. Changing a stream's color does not change it for anyone else.
 
 {start_tabs}
 
-{relative|stream|subscribed}
+{relative|gear|stream-settings}
 
 1. Select a stream.
 

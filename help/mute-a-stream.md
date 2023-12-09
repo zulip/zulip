@@ -49,7 +49,7 @@
 
 {tab|desktop-web}
 
-{relative|stream|subscribed}
+{relative|gear|stream-settings}
 
 1. Select a stream.
 

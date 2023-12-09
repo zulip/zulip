@@ -424,13 +424,19 @@ class HelpTest(ZulipTestCase):
 
     def test_help_relative_links_for_stream(self) -> None:
         result = self.client_get("/help/message-a-stream-by-email")
-        self.assertIn('<a href="/#streams/subscribed">Subscribed streams</a>', str(result.content))
+        self.assertIn(
+            '<a href="/#streams/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Stream settings</a>',
+            str(result.content),
+        )
         self.assertEqual(result.status_code, 200)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/help/message-a-stream-by-email", subdomain="")
         self.assertEqual(result.status_code, 200)
-        self.assertIn("<strong>Stream settings</strong>", str(result.content))
+        self.assertIn(
+            '<strong><i class="zulip-icon zulip-icon-hash"></i> Stream settings</strong>',
+            str(result.content),
+        )
         self.assertNotIn("/#streams", str(result.content))
 
 

@@ -1,6 +1,6 @@
 {start_tabs}
 
-{relative|group|all}
+{relative|gear|group-settings}
 
 1. Click **Create user group** on the right, or click the **plus**
    (<i class="fa fa-plus"></i>) icon in the upper right.
