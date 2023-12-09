@@ -172,7 +172,7 @@ def remote_server_billing_page(
         customer is None
         or get_current_plan_by_customer(customer) is None
         or (
-            billing_session.get_legacy_remote_server_new_plan_name(customer) is None
+            billing_session.get_legacy_remote_server_next_plan_name(customer) is None
             and billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
         )
     ):
