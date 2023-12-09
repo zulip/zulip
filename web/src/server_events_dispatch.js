@@ -230,7 +230,7 @@ export function dispatch_normal_event(event) {
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
-                private_message_policy: noop,
+                private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
