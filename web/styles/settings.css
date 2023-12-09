@@ -764,6 +764,10 @@ input[type="checkbox"] {
     }
 }
 
+#custom-welcome-bot-textbox-container {
+    display: none;
+}
+
 .grey-box .wrapper {
     margin: 10px 0;
 }
