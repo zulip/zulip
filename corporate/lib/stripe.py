@@ -184,8 +184,9 @@ def validate_licenses(
     licenses: Optional[int],
     seat_count: int,
     exempt_from_license_number_check: bool,
+    min_licenses_for_plan: int,
 ) -> None:
-    min_licenses = seat_count
+    min_licenses = max(seat_count, min_licenses_for_plan)
     max_licenses = None
     if not charge_automatically:
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
@@ -214,6 +215,7 @@ def check_upgrade_parameters(
     licenses: Optional[int],
     seat_count: int,
     exempt_from_license_number_check: bool,
+    min_licenses_for_plan: int,
 ) -> None:
     if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
         raise BillingError("unknown billing_modality", "")
@@ -226,6 +228,7 @@ def check_upgrade_parameters(
         licenses,
         seat_count,
         exempt_from_license_number_check,
+        min_licenses_for_plan,
     )
 
 
@@ -633,6 +636,7 @@ class UpgradePageContext(TypedDict):
     free_trial_end_date: Optional[str]
     is_demo_organization: bool
     manual_license_management: bool
+    using_min_licenses_for_plan: bool
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
@@ -1287,6 +1291,7 @@ class BillingSession(ABC):
             licenses,
             seat_count,
             exempt_from_license_number_check,
+            self.min_licenses_for_plan(upgrade_request.tier),
         )
         assert licenses is not None and license_management is not None
         automanage_licenses = license_management == "automatic"
@@ -1612,7 +1617,12 @@ class BillingSession(ABC):
         licenses = last_ledger_entry.licenses
         licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
         assert licenses_at_next_renewal is not None
+        min_licenses_for_plan = self.min_licenses_for_plan(plan.tier)
         seat_count = self.current_count_for_billed_licenses()
+        using_min_licenses_for_plan = (
+            min_licenses_for_plan == licenses_at_next_renewal
+            and licenses_at_next_renewal > seat_count
+        )
 
         # Should do this in JavaScript, using the user's time zone
         if plan.is_free_trial() or downgrade_at_end_of_free_trial:
@@ -1693,6 +1703,7 @@ class BillingSession(ABC):
             "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
+            "using_min_licenses_for_plan": using_min_licenses_for_plan,
         }
         return context
 
@@ -1727,6 +1738,7 @@ class BillingSession(ABC):
                 "fixed_price",
                 "price_per_license",
                 "discount_percent",
+                "using_min_licenses_for_plan",
             ]
 
             for key in keys:
@@ -1767,10 +1779,14 @@ class BillingSession(ABC):
             # Show "Update card" button if user has already added a card.
             current_payment_method = None if "ending in" not in payment_method else payment_method
 
-        customer_specific_context = self.get_upgrade_page_session_type_specific_context()
-        seat_count = self.current_count_for_billed_licenses()
-        signed_seat_count, salt = sign_string(str(seat_count))
         tier = initial_upgrade_request.tier
+        customer_specific_context = self.get_upgrade_page_session_type_specific_context()
+        min_licenses_for_plan = self.min_licenses_for_plan(tier)
+        seat_count = self.current_count_for_billed_licenses()
+        using_min_licenses_for_plan = min_licenses_for_plan > seat_count
+        if using_min_licenses_for_plan:
+            seat_count = min_licenses_for_plan
+        signed_seat_count, salt = sign_string(str(seat_count))
 
         free_trial_days = None
         free_trial_end_date = None
@@ -1809,6 +1825,7 @@ class BillingSession(ABC):
                 "seat_count": seat_count,
                 "billing_base_url": self.billing_base_url,
             },
+            "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "payment_method": current_payment_method,
             "plan": CustomerPlan.name_from_tier(tier),
             "salt": salt,
@@ -1818,6 +1835,11 @@ class BillingSession(ABC):
         }
 
         return None, context
+
+    def min_licenses_for_plan(self, tier: int) -> int:
+        if tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
+            return 10
+        return 1
 
     def downgrade_at_the_end_of_billing_cycle(self, plan: Optional[CustomerPlan] = None) -> None:
         if plan is None:  # nocoverage
@@ -1955,6 +1977,7 @@ class BillingSession(ABC):
                 licenses,
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
+                self.min_licenses_for_plan(plan.tier),
             )
             self.update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
             return
@@ -1987,6 +2010,7 @@ class BillingSession(ABC):
                 licenses_at_next_renewal,
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
+                self.min_licenses_for_plan(plan.tier),
             )
             self.update_license_ledger_for_manual_plan(
                 plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
