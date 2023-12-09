@@ -523,7 +523,11 @@ def remote_server_notify_push(
 
 
 def validate_incoming_table_data(
-    server: RemoteZulipServer, model: Any, rows: List[Dict[str, Any]], is_count_stat: bool = False
+    server: RemoteZulipServer,
+    model: Any,
+    rows: List[Dict[str, Any]],
+    *,
+    is_count_stat: bool,
 ) -> None:
     last_id = get_last_id_from_server(server, model)
     for row in rows:
@@ -532,6 +536,10 @@ def validate_incoming_table_data(
             or row["property"] in BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES
         ):
             raise JsonableError(_("Invalid property {property}").format(property=row["property"]))
+
+        if not is_count_stat and row["event_type"] not in RemoteRealmAuditLog.SYNCED_BILLING_EVENTS:
+            raise JsonableError(_("Invalid event type."))
+
         if row.get("id") is None:
             # This shouldn't be possible, as submitting data like this should be
             # prevented by our param validators.
@@ -702,15 +710,24 @@ def remote_server_post_analytics(
         remote_server_version_updated = True
 
     validate_incoming_table_data(
-        server, RemoteRealmCount, [dict(count) for count in realm_counts], True
+        server,
+        RemoteRealmCount,
+        [dict(count) for count in realm_counts],
+        is_count_stat=True,
     )
     validate_incoming_table_data(
-        server, RemoteInstallationCount, [dict(count) for count in installation_counts], True
+        server,
+        RemoteInstallationCount,
+        [dict(count) for count in installation_counts],
+        is_count_stat=True,
     )
 
     if realmauditlog_rows is not None:
         validate_incoming_table_data(
-            server, RemoteRealmAuditLog, [dict(row) for row in realmauditlog_rows]
+            server,
+            RemoteRealmAuditLog,
+            [dict(row) for row in realmauditlog_rows],
+            is_count_stat=False,
         )
 
     if realms is not None:
