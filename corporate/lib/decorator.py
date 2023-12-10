@@ -10,7 +10,7 @@ from typing_extensions import Concatenate, ParamSpec
 
 from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityExpiredError,
-    get_remote_realm_from_session,
+    get_remote_realm_and_user_from_session,
     get_remote_server_and_user_from_session,
 )
 from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
@@ -59,7 +59,9 @@ def authenticated_remote_realm_management_endpoint(
             raise TypeError("realm_uuid must be a string or None")
 
         try:
-            remote_realm = get_remote_realm_from_session(request, realm_uuid)
+            remote_realm, remote_billing_user = get_remote_realm_and_user_from_session(
+                request, realm_uuid
+            )
         except RemoteBillingIdentityExpiredError as e:
             # The user had an authenticated session with an identity_dict,
             # but it expired.
@@ -78,7 +80,7 @@ def authenticated_remote_realm_management_endpoint(
             server_uuid = e.server_uuid
             uri_scheme = e.uri_scheme
             if realm_uuid is None:
-                # This doesn't make sense - if get_remote_realm_from_session
+                # This doesn't make sense - if get_remote_realm_and_user_from_session
                 # found an expired identity dict, it should have had a realm_uuid.
                 raise AssertionError
 
@@ -104,7 +106,9 @@ def authenticated_remote_realm_management_endpoint(
 
             return HttpResponseRedirect(url)
 
-        billing_session = RemoteRealmBillingSession(remote_realm)
+        billing_session = RemoteRealmBillingSession(
+            remote_realm, remote_billing_user=remote_billing_user
+        )
         return view_func(request, billing_session)
 
     return _wrapped_view_func
