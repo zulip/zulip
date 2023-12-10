@@ -713,13 +713,13 @@ def handle_update_custom_welcome_message_event(
 ) -> None:
     # Extract relevant data from the event
     checkbox_state = event.get("checkbox_state", False)
-    message_text = event.get("message_text", "")
+    textbox_text = event.get("textbox_text", "")
 
     # Update the server state based on the custom welcome message setting
     update_custom_welcome_message(
         user_profile.realm,
         checkbox_state=checkbox_state,
-        message_text=message_text,
+        textbox_text=textbox_text,
         acting_user=user_profile,
     )
 
