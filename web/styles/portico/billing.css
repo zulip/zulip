@@ -668,7 +668,7 @@ input[name="licenses"] {
     font-weight: 400;
 }
 
-.server-login-button-loader {
+.remote-billing-button-loader {
     display: none;
     vertical-align: top;
     position: relative;
