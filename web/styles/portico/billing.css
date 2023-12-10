@@ -685,7 +685,7 @@ input[name="licenses"] {
     display: none;
 }
 
-#remote-realm-confirm-login-form .text-error {
+#remote-billing-confirm-login-form .text-error {
     margin-bottom: 15px;
 }
 

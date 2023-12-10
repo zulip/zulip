@@ -105,7 +105,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # Final confirmation page - just confirm your details, possibly
         # agreeing to ToS if needed and an authenticated session will be granted:
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Log in to Zulip server billing"], result)
+        self.assert_in_success_response(["Log in to Zulip plan management"], result)
         self.assert_in_success_response([user.realm.host], result)
 
         params = {}
@@ -510,7 +510,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             result = self.client_get(confirmation_url, subdomain="selfhosting")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(
-            [f"Log in to Zulip server billing for {self.server.hostname}", email], result
+            [f"Log in to Zulip plan management for {self.server.hostname}", email], result
         )
         self.assert_in_success_response([f'action="{confirmation_url}"'], result)
         if expect_tos:
