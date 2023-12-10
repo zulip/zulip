@@ -233,7 +233,9 @@
     }
 
     .topic-name {
-        text-align: center;
+        align-items: baseline;
+        display: flex;
+        gap: 3px;
         margin-top: 5px;
         margin-bottom: 5px;
         white-space: normal;
