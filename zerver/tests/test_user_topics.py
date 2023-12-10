@@ -763,6 +763,45 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         )
         self.assertEqual(user_ids, {hamlet.id})
 
+    def test_automatically_follow_topic_on_mention(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        stream = get_stream("Verona", hamlet.realm)
+        topic_name = "teST topic"
+
+        do_change_user_setting(
+            hamlet,
+            "automatically_follow_topics_where_mentioned",
+            True,
+            acting_user=None,
+        )
+
+        content = "silently mentioning... @_**" + hamlet.full_name + "**"
+        self.send_stream_message(aaron, stream.name, content, topic_name)
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, set())
+
+        content = "quoting... \n```quote\n@**" + hamlet.full_name + "**\n```"
+        self.send_stream_message(aaron, stream.name, content, topic_name)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, set())
+
+        content = "mentioning... @**" + hamlet.full_name + "**"
+        self.send_stream_message(aaron, stream.name, content, topic_name)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, {hamlet.id})
+
     def test_automatically_follow_topic_on_participation_send_message(self) -> None:
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
