@@ -21,7 +21,7 @@
                 {% endif %}
                 <div class="input-box server-login-form-field">
                     <label for="email" class="inline-block label-title">Email</label>
-                    <input id="email" name="email" class="email required" type="email" />
+                    <input id="email" name="email" class="email required" type="email" {% if email %}value="{{ email }}"{% endif %} />
                 </div>
                 <div class="upgrade-button-container">
                     <button type="submit" id="server-confirm-login-button" class="stripe-button-el invoice-button">

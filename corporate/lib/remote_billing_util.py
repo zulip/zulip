@@ -28,6 +28,7 @@ class RemoteBillingIdentityDict(TypedDict):
     remote_server_uuid: str
     remote_realm_uuid: str
 
+    remote_billing_user_id: Optional[int]
     authenticated_at: int
     uri_scheme: Literal["http://", "https://"]
 
@@ -133,9 +134,8 @@ def get_remote_server_and_user_from_session(
     request: HttpRequest,
     server_uuid: str,
 ) -> Tuple[RemoteZulipServer, Optional[RemoteServerBillingUser]]:
-    identity_dict = cast(
-        Optional[LegacyServerIdentityDict],
-        get_identity_dict_from_session(request, realm_uuid=None, server_uuid=server_uuid),
+    identity_dict: Optional[LegacyServerIdentityDict] = get_identity_dict_from_session(
+        request, realm_uuid=None, server_uuid=server_uuid
     )
 
     if identity_dict is None:

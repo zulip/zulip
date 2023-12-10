@@ -31,7 +31,10 @@ from zerver.models import (
 )
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import PreregistrationRemoteServerBillingUser
+    from zilencer.models import (
+        PreregistrationRemoteRealmBillingUser,
+        PreregistrationRemoteServerBillingUser,
+    )
 
 
 class ConfirmationKeyError(Exception):
@@ -68,7 +71,9 @@ NoZilencerConfirmationObjT: TypeAlias = Union[
     RealmReactivationStatus,
 ]
 ZilencerConfirmationObjT: TypeAlias = Union[
-    NoZilencerConfirmationObjT, "PreregistrationRemoteServerBillingUser"
+    NoZilencerConfirmationObjT,
+    "PreregistrationRemoteServerBillingUser",
+    "PreregistrationRemoteRealmBillingUser",
 ]
 
 ConfirmationObjT = Union[NoZilencerConfirmationObjT, ZilencerConfirmationObjT]
@@ -197,6 +202,7 @@ class Confirmation(models.Model):
     REALM_CREATION = 7
     REALM_REACTIVATION = 8
     REMOTE_SERVER_BILLING_LEGACY_LOGIN = 9
+    REMOTE_REALM_BILLING_LEGACY_LOGIN = 10
     type = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -236,6 +242,9 @@ _properties = {
 if settings.ZILENCER_ENABLED:
     _properties[Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN] = ConfirmationType(
         "remote_billing_legacy_server_from_login_confirmation_link"
+    )
+    _properties[Confirmation.REMOTE_REALM_BILLING_LEGACY_LOGIN] = ConfirmationType(
+        "remote_realm_billing_from_login_confirmation_link"
     )
 
 

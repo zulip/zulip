@@ -1,0 +1,1 @@
+{% trans %}Confirm login to Zulip plan management{% endtrans %}
