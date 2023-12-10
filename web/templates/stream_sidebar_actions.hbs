@@ -1,14 +1,14 @@
 {{! Contents of the "stream actions" popup }}
 <ul class="nav nav-list streams_popover" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
     <li class="stream-menu-item">
-        <p class="topic-name">
+        <div class="stream-name">
             <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
                 {{> stream_privacy
                   invite_only=stream.invite_only
                   is_web_public=stream.is_web_public }}
             </span>
-            <b>{{stream.name}}</b>
-        </p>
+            {{stream.name}}
+        </div>
     </li>
 
     <hr />
