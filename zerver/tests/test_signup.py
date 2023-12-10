@@ -355,10 +355,10 @@ class PasswordResetTest(ZulipTestCase):
 
         [message] = outbox
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
-        # The email might be sent in different languages for i18n testing
         self.assertRegex(
             self.email_display_from(message),
-            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            # The email might be sent in different languages for i18n testing
+            rf"^testserver .* <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
