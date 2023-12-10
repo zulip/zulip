@@ -512,9 +512,9 @@ class LegacyServerLoginTest(BouncerTestCase):
         confirmation_url = self.get_confirmation_url_from_outbox(
             email,
             url_pattern=(
-                f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}" + r"(\S+)>"
+                f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}" + r"(\S+)"
             ),
-            email_body_contains="Click the link below to complete the login process",
+            email_body_contains="This link will expire in 2 hours",
         )
         if return_without_clicking_confirmation_link:
             return result

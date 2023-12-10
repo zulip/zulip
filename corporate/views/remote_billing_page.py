@@ -528,8 +528,9 @@ def remote_billing_legacy_server_confirm_login(
 
     context = {
         "remote_server_hostname": remote_server.hostname,
-        "remote_server_uuid": str(remote_server.uuid),
         "confirmation_url": url,
+        "billing_help_link": "https://zulip.com/help/self-hosted-billing",
+        "billing_contact_email": "sales@zulip.com",
     }
     send_email(
         "zerver/emails/remote_billing_legacy_server_confirm_login",
