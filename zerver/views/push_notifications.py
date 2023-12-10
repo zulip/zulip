@@ -11,6 +11,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
     OrganizationOwnerRequiredError,
+    RemoteRealmServerMismatchError,
 )
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
@@ -163,6 +164,8 @@ def self_hosting_auth_redirect(
         # Upload realm info and re-try. It should work now.
         send_realms_only_to_push_bouncer()
         result = send_to_push_bouncer("POST", "server/billing", post_data)
+    except RemoteRealmServerMismatchError:
+        return render(request, "zilencer/remote_realm_server_mismatch_error.html", status=403)
 
     if result["result"] != "success":
         raise JsonableError(_("Error returned by the bouncer: {result}").format(result=result))
