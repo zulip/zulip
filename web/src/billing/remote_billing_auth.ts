@@ -1,7 +1,9 @@
 import $ from "jquery";
 
 export function initialize(): void {
-    $("#server-login-form, #remote-billing-confirm-email-form").validate({
+    $(
+        "#server-login-form, #remote-billing-confirm-email-form, #remote-billing-confirm-login-form",
+    ).validate({
         errorClass: "text-error",
         wrapper: "div",
         submitHandler(form) {
@@ -9,6 +11,10 @@ export function initialize(): void {
             $("#server-login-button .server-login-button-text").hide();
             $("#remote-billing-confirm-email-form").find(".loader").css("display", "inline-block");
             $("#remote-billing-confirm-email-button .server-login-button-text").hide();
+            $("#remote-billing-confirm-login-form").find(".loader").css("display", "inline-block");
+            $(
+                "#remote-billing-confirm-login-button .remote-billing-confirm-login-button-text",
+            ).hide();
 
             form.submit();
         },
@@ -17,11 +23,13 @@ export function initialize(): void {
             // by the server.
             $("#server-login-form .alert.alert-error").remove();
             $("#remote-billing-confirm-email-form .alert.alert-error").remove();
+            $("#remote-billing-confirm-login-form .alert.alert-error").remove();
         },
         showErrors(error_map) {
             if (error_map.password) {
                 $("#server-login-form .alert.alert-error").remove();
                 $("#remote-billing-confirm-email-form .alert.alert-error").remove();
+                $("#remote-billing-confirm-login-form .alert.alert-error").remove();
             }
             this.defaultShowErrors!();
         },
