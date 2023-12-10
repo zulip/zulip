@@ -1,7 +1,8 @@
 import {FoldDict} from "./fold_dict";
+import type {Message} from "./message_store";
 import * as muted_users from "./muted_users";
 import * as people from "./people";
-import type {Message} from "./types";
+
 
 type PMConversation = {
     user_ids_string: string;

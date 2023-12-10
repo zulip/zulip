@@ -119,7 +119,12 @@ js_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude": {"web/src/types.ts", "web/src/util.ts", "web/tests/"},
+            "exclude": {
+                "web/src/types.ts",
+                "web/src/util.ts",
+                "web/src/message_store.ts",
+                "web/tests/",
+            },
             "exclude_pattern": "emails",
             "description": "avoid subject in JS code",
             "good_lines": ["topic_name"],

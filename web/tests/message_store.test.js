@@ -145,6 +145,7 @@ test("process_new_message", () => {
         display_recipient: "Zoolippy",
         topic: "cool thing",
         subject: "the_subject",
+        flags: [],
         id: 2068,
     };
 
@@ -314,6 +315,7 @@ test("update_property", () => {
         small_avatar_url: "alice_url",
         stream_id: devel.stream_id,
         display_recipient: devel.name,
+        flags: [],
         id: 100,
     };
     const message2 = {
@@ -323,6 +325,7 @@ test("update_property", () => {
         small_avatar_url: "bob_url",
         stream_id: denmark.stream_id,
         display_recipient: denmark.name,
+        flags: [],
         id: 101,
     };
     for (const message of [message1, message2]) {
