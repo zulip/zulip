@@ -295,12 +295,10 @@
                   is_checked=realm_enable_guest_user_indicator
                   label=admin_settings_label.realm_enable_guest_user_indicator}}
 
-                {{#if development}}
                 {{> ../dropdown_widget_with_label
                   widget_name="realm_can_access_all_users_group"
                   label=(t 'Who can view all other users in the organization')
                   value_type="number"}}
-                {{/if}}
             </div>
         </div>
 
