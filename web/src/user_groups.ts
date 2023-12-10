@@ -69,8 +69,8 @@ export function get_user_group_from_id(group_id: number): UserGroup {
 export function update(event: UserGroupUpdateEvent): void {
     const group = get_user_group_from_id(event.group_id);
     if (event.data.name !== undefined) {
-        group.name = event.data.name;
         user_group_name_dict.delete(group.name);
+        group.name = event.data.name;
         user_group_name_dict.set(group.name, group);
     }
     if (event.data.description !== undefined) {
