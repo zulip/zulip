@@ -816,8 +816,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
         # is processing the token registration request, it will find a RemoteRealm matching
         # the realm_uuid in the request, but that RemoteRealm will be registered to a
         # different server than the one making the request (self.server).
-        # This will make it log a warning and register the token, but of course without
-        # assigning the token registration to that RemoteRealm.
+        # This will make it log a warning, raise an exception when trying to get
+        # remote realm via get_remote_realm_helper and thus, not register the token.
         second_server = RemoteZulipServer.objects.create(
             uuid=uuid.uuid4(),
             api_key="magic_secret_api_key2",
@@ -835,7 +835,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.client_post(
                 endpoint, {"token": token, "appid": "org.zulip.Zulip"}, subdomain="zulip"
             )
-            self.assert_json_success(result)
+            self.assert_json_error_contains(
+                result,
+                "Your organization is registered to a different Zulip server. Please contact Zulip support",
+            )
         self.assertEqual(
             warn_log.output,
             [
@@ -844,10 +847,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             ],
         )
 
-        remote_token = RemotePushDeviceToken.objects.get(token=token)
-        self.assertEqual(remote_token.server, self.server)
-        self.assertEqual(remote_token.user_uuid, user.uuid)
-        self.assertEqual(remote_token.remote_realm, None)
+        self.assert_length(RemotePushDeviceToken.objects.filter(token=token), 0)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate

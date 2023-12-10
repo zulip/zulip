@@ -11,7 +11,11 @@ from pydantic import UUID4, BaseModel, ConfigDict, Field, Json, field_validator
 
 from analytics.models import InstallationCount, RealmCount
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
-from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
+from zerver.lib.exceptions import (
+    JsonableError,
+    MissingRemoteRealmError,
+    RemoteRealmServerMismatchError,
+)
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.types import RemoteRealmDictValue
@@ -195,6 +199,14 @@ def send_to_push_bouncer(
             # The callers requesting this endpoint want the exception to propagate
             # so they can catch it.
             raise MissingRemoteRealmError
+        elif (
+            endpoint == "server/billing"
+            and "code" in result_dict
+            and result_dict["code"] == "REMOTE_REALM_SERVER_MISMATCH_ERROR"
+        ):  # nocoverage
+            # The callers requesting this endpoint want the exception to propagate
+            # so they can catch it.
+            raise RemoteRealmServerMismatchError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)

@@ -34,6 +34,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
     RemoteBillingAuthenticationError,
+    RemoteRealmServerMismatchError,
 )
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
@@ -72,13 +73,21 @@ def remote_realm_billing_entry(
 ) -> HttpResponse:
     if not settings.DEVELOPMENT:
         return render(request, "404.html", status=404)
-
     try:
         remote_realm = RemoteRealm.objects.get(uuid=realm.uuid, server=remote_server)
     except RemoteRealm.DoesNotExist:
-        # This error will prod the remote server to submit its realm info, which
-        # should lead to the creation of this missing RemoteRealm registration.
-        raise MissingRemoteRealmError
+        if RemoteRealm.objects.filter(uuid=realm.uuid).exists():  # nocoverage
+            billing_logger.warning(
+                "%s: Realm %s exists, but not registered to server %s",
+                request.path,
+                realm.uuid,
+                remote_server.id,
+            )
+            raise RemoteRealmServerMismatchError
+        else:
+            # This error will prod the remote server to submit its realm info, which
+            # should lead to the creation of this missing RemoteRealm registration.
+            raise MissingRemoteRealmError
 
     identity_dict = RemoteBillingIdentityDict(
         user=RemoteBillingUserDict(
