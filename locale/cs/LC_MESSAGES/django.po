@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-16 01:25+0000\n"
+"POT-Creation-Date: 2023-12-09 01:45+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: fri, 2017-2023\n"
 "Language-Team: Czech (http://app.transifex.com/zulip/zulip/language/cs/)\n"
@@ -52,12 +52,12 @@ msgstr "Seskupit přímé zprávy"
 #: analytics/views/stats.py:343
 #, python-brace-format
 msgid "Missing stream for chart: {chart_name}"
-msgstr ""
+msgstr "Chybějící datový tok pro graf:: {chart_name}"
 
 #: analytics/views/stats.py:351
 #, python-brace-format
 msgid "Unknown chart name: {chart_name}"
-msgstr ""
+msgstr "Neznámý název grafu: {chart_name}"
 
 #: analytics/views/stats.py:361
 #, python-brace-format
@@ -68,8 +68,9 @@ msgstr "Čas začátku je později než čas konce. Začátek: {start}, konec: {
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Žádná analytická data nejsou k dispozici. Spojte se, prosím, se správcem serveru."
 
-#: analytics/views/support.py:197 zerver/views/streams.py:290
-#: zerver/views/streams.py:294 zerver/views/streams.py:302
+#: analytics/views/support.py:182 analytics/views/support.py:419
+#: zerver/views/streams.py:291 zerver/views/streams.py:295
+#: zerver/views/streams.py:303
 msgid "Invalid parameters"
 msgstr "Neplatné parametry"
 
@@ -129,34 +130,134 @@ msgid ""
 "{num_invites} users."
 msgstr "Vaše organizace nemá dostatečný počet volných Zulip licencí pro pozvání {num_invites} nových uživatelů."
 
-#: corporate/lib/stripe.py:146
+#: corporate/lib/remote_billing_util.py:126
+#: corporate/lib/remote_billing_util.py:149
+msgid "Registration is deactivated"
+msgstr ""
+
+#: corporate/lib/remote_billing_util.py:146
+#: corporate/views/remote_billing_page.py:237
+msgid "Invalid remote server."
+msgstr ""
+
+#: corporate/lib/stripe.py:197
 #, python-brace-format
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
-msgstr ""
+msgstr "Musíte zakoupit licence pro všechny činné uživatele ve vaší organizaci (minimum {min_licenses})."
 
-#: corporate/lib/stripe.py:152
+#: corporate/lib/stripe.py:203
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
-msgstr ""
+msgstr "Účty s více než {max_licenses} licencemi nelze zpracovat z této stránky. Pro dokončení povýšení se, prosím, spojte s {email}."
 
-#: corporate/lib/stripe.py:286
+#: corporate/lib/stripe.py:365
+msgid "No payment method on file."
+msgstr "Žádná platební metoda v záznamu."
+
+#: corporate/lib/stripe.py:373
+#, python-brace-format
+msgid "{brand} ending in {last4}"
+msgstr "{brand} končí za {last4}"
+
+#: corporate/lib/stripe.py:381
+#, python-brace-format
+msgid "Unknown payment method. Please contact {email}."
+msgstr "Neznámá platební metoda. Spojte se, prosím, s {email}."
+
+#: corporate/lib/stripe.py:397
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "Nastala chyba. Spojte se, prosím, s {email}."
 
-#: corporate/lib/stripe.py:287
+#: corporate/lib/stripe.py:398
 msgid "Something went wrong. Please reload the page."
 msgstr "Něco se nepodařilo. Načtěte prosím stránku znovu."
 
-#: corporate/lib/stripe.py:362
+#: corporate/lib/stripe.py:481
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "Něco se nepodařilo. Počkejte prosím několik sekund a zkuste to znovu."
 
-#: corporate/lib/stripe.py:1158
+#: corporate/lib/stripe.py:1167
+msgid "Please add a credit card before starting your free trial."
+msgstr ""
+
+#: corporate/lib/stripe.py:1188
+msgid "Please add a credit card to schedule upgrade."
+msgstr ""
+
+#: corporate/lib/stripe.py:1874
+msgid ""
+"Unable to update the plan. The plan has been expired and replaced with a new"
+" plan."
+msgstr "Aktualizace platebního plánu se nezdařila. Plán již vypršel a byl nahrazen novým."
+
+#: corporate/lib/stripe.py:1879
+msgid "Unable to update the plan. The plan has ended."
+msgstr "Aktualizace platebního plánu se nezdařila. Plán již byl ukončen."
+
+#: corporate/lib/stripe.py:1934
+msgid ""
+"Cannot update licenses in the current billing period for free trial plan."
+msgstr ""
+
+#: corporate/lib/stripe.py:1939 corporate/lib/stripe.py:1966
+msgid ""
+"Unable to update licenses manually. Your plan is on automatic license "
+"management."
+msgstr "Ruční aktualizace licencí se nezdařila. Váš platební plán má nastavenu automatickou správu licencí."
+
+#: corporate/lib/stripe.py:1945
+#, python-brace-format
+msgid ""
+"Your plan is already on {licenses} licenses in the current billing period."
+msgstr "Váš aktuální platební plán již využívá {licenses} licencí v aktuálním zúčtovacím období."
+
+#: corporate/lib/stripe.py:1950
+msgid "You cannot decrease the licenses in the current billing period."
+msgstr "Nelze snížit počet licencí v aktuálním zúčtovacím období."
+
+#: corporate/lib/stripe.py:1975
+msgid ""
+"Cannot change the licenses for next billing cycle for a plan that is being "
+"downgraded."
+msgstr ""
+
+#: corporate/lib/stripe.py:1981
+#, python-brace-format
+msgid ""
+"Your plan is already scheduled to renew with {licenses_at_next_renewal} "
+"licenses."
+msgstr "Váš platební plán je již nastaven aby v dalším zúčtovacím období obnovil {licenses_at_next_renewal} licencí."
+
+#: corporate/lib/stripe.py:1995
+msgid "Nothing to change."
+msgstr "Není co měnit."
+
+#: corporate/lib/stripe.py:2200
+msgid "No customer for this organization!"
+msgstr "Pro tuto organizaci neexistuje žádný zákazník!"
+
+#: corporate/lib/stripe.py:2209
+msgid "Session not found"
+msgstr "Relace nebyla nalezena"
+
+#: corporate/lib/stripe.py:2215 zerver/decorator.py:197
+msgid "Must be a billing administrator or an organization owner"
+msgstr "Musí být správcem plateb nebo vlastníkem organizace"
+
+#: corporate/lib/stripe.py:2226
+msgid "Payment intent not found"
+msgstr "Záměr platby nenalezen"
+
+#: corporate/lib/stripe.py:2229
+msgid "Pass stripe_session_id or stripe_payment_intent_id"
+msgstr "Vložte stripe_session_id nebo stripe_payment_intent_id"
+
+#: corporate/lib/stripe.py:2650
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
@@ -164,92 +265,33 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr "Žádost vaší organizace o sponzorovaný hosting byla schválena! Byli jste bezplatně převedeni na {plan_name}. {emoji}\n\nPokud byste mohli {begin_link} uvést společnost Zulip jako sponzora na svých webových stránkách{end_link}, budeme vám velmi vděčni!"
 
-#: corporate/views/billing_page.py:57
-msgid "No payment method on file."
+#: corporate/views/remote_billing_page.py:110
+msgid "Billing access token expired."
 msgstr ""
 
-#: corporate/views/billing_page.py:65
-#, python-brace-format
-msgid "{brand} ending in {last4}"
-msgstr "{brand} končí za {last4}"
+#: corporate/views/remote_billing_page.py:112
+msgid "Invalid billing access token."
+msgstr ""
 
-#: corporate/views/billing_page.py:73
-#, python-brace-format
-msgid "Unknown payment method. Please contact {email}."
-msgstr "Neznámá platební metoda. Spojte se, prosím, s {email}."
+#: corporate/views/remote_billing_page.py:176
+msgid "You must accept the Terms of Service to proceed."
+msgstr ""
 
-#: corporate/views/billing_page.py:269
-msgid ""
-"Unable to update the plan. The plan has been expired and replaced with a new"
-" plan."
-msgstr "Aktualizace platebního plánu se nezdařila. Plán již vypršel a byl nahrazen novým."
+#: corporate/views/remote_billing_page.py:218 zerver/lib/exceptions.py:462
+msgid "User not authenticated"
+msgstr ""
 
-#: corporate/views/billing_page.py:273
-msgid "Unable to update the plan. The plan has ended."
-msgstr "Aktualizace platebního plánu se nezdařila. Plán již byl ukončen."
+#: corporate/views/remote_billing_page.py:324
+msgid "Did not find a server registration for this server_org_id."
+msgstr ""
 
-#: corporate/views/billing_page.py:296 corporate/views/billing_page.py:322
-msgid ""
-"Unable to update licenses manually. Your plan is on automatic license "
-"management."
-msgstr "Ruční aktualizace licencí se nezdařila. Váš platební plán má nastavenu automatickou správu licencí."
+#: corporate/views/remote_billing_page.py:329
+msgid "Invalid server_org_secret."
+msgstr ""
 
-#: corporate/views/billing_page.py:302
-#, python-brace-format
-msgid ""
-"Your plan is already on {licenses} licenses in the current billing period."
-msgstr "Váš aktuální platební plán již využívá {licenses} licencí v aktuálním zúčtovacím období."
-
-#: corporate/views/billing_page.py:307
-msgid "You cannot decrease the licenses in the current billing period."
-msgstr "Nelze snížit počet licencí v aktuálním zúčtovacím období."
-
-#: corporate/views/billing_page.py:328
-#, python-brace-format
-msgid ""
-"Your plan is already scheduled to renew with {licenses_at_next_renewal} "
-"licenses."
-msgstr "Váš platební plán je již nastaven aby v dalším zúčtovacím období obnovil {licenses_at_next_renewal} licencí."
-
-#: corporate/views/billing_page.py:342
-msgid "Nothing to change."
-msgstr "Není co měnit."
-
-#: corporate/views/event_status.py:28
-msgid "No customer for this organization!"
-msgstr "Pro tuto organizaci neexistuje žádný zákazník!"
-
-#: corporate/views/event_status.py:34
-msgid "Session not found"
-msgstr "Relace nebyla nalezena"
-
-#: corporate/views/event_status.py:37 zerver/decorator.py:197
-msgid "Must be a billing administrator or an organization owner"
-msgstr "Musí být správcem plateb nebo vlastníkem organizace"
-
-#: corporate/views/event_status.py:47
-msgid "Payment intent not found"
-msgstr "Záměr platby nenalezen"
-
-#: corporate/views/event_status.py:49
-msgid "Pass stripe_session_id or stripe_payment_intent_id"
-msgstr "Vložte stripe_session_id nebo stripe_payment_intent_id"
-
-#: corporate/views/session.py:47
-msgid "Please create a customer first."
-msgstr "Nejprve prosím vytvořte zákazníka."
-
-#: corporate/views/session.py:54
-msgid "Invalid payment intent id."
-msgstr "Neplatné id záměru platby."
-
-#: corporate/views/session.py:59
-msgid "Payment already succeeded."
-msgstr "Platba již úspěšně proběhla."
-
-#: corporate/views/session.py:64
-msgid "Payment processing."
-msgstr "Platba se zpracovává."
+#: corporate/views/remote_billing_page.py:333
+msgid "Your server registration has been deactivated."
+msgstr ""
 
 #: templates/404.html:4
 msgid "Error"
@@ -519,35 +561,37 @@ msgid ""
 msgstr "Ujistěte se, že jste odkaz správně zkopírovali do svého prohlížeče. Pokud se s touto stránkou stále setkáváte, je to pravděpodobně naše chyba. Omlouváme se."
 
 #: templates/corporate/billing.html:5
+#: templates/corporate/remote_billing.html:5
 msgid "Billing"
 msgstr "Fakturace"
 
-#: templates/corporate/billing.html:218 templates/corporate/billing.html:241
-#: templates/corporate/billing.html:270 templates/corporate/billing.html:299
+#: templates/corporate/billing.html:298 templates/corporate/billing.html:324
+#: templates/corporate/billing.html:353 templates/corporate/billing.html:382
+#: templates/corporate/billing.html:408
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 msgid "Close modal"
 msgstr "Zavřít okno"
 
-#: templates/corporate/billing.html:226 templates/corporate/billing.html:255
-#: templates/corporate/billing.html:284
+#: templates/corporate/billing.html:309 templates/corporate/billing.html:338
+#: templates/corporate/billing.html:367
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: templates/corporate/billing.html:228 templates/corporate/billing.html:257
-#: templates/corporate/billing.html:286
+#: templates/corporate/billing.html:311 templates/corporate/billing.html:395
+#: templates/corporate/billing.html:418
+msgid "Downgrade"
+msgstr "Ponížit"
+
+#: templates/corporate/billing.html:340 templates/corporate/billing.html:369
 #: templates/zerver/change_email_address_visibility_modal.html:28
 msgid "Confirm"
 msgstr "Potvrdit"
 
-#: templates/corporate/billing.html:310
+#: templates/corporate/billing.html:393 templates/corporate/billing.html:416
 msgid "Never mind"
-msgstr ""
-
-#: templates/corporate/billing.html:312
-msgid "Downgrade"
-msgstr ""
+msgstr "Nevadí."
 
 #: templates/corporate/communities.html:28
 msgid "Open communities directory"
@@ -607,9 +651,9 @@ msgid "Create organization"
 msgstr "Vytvořit organizaci"
 
 #: templates/corporate/for/business.html:36
-#: templates/corporate/for/use-cases.html:26
-msgid "View pricing"
-msgstr "Zobrazit ceny"
+#: templates/corporate/self-hosting.html:27 templates/zerver/footer.html:11
+msgid "Plans & pricing"
+msgstr "Ceník a plány"
 
 #: templates/corporate/for/business.html:39
 #: templates/corporate/for/communities.html:40
@@ -640,9 +684,22 @@ msgstr "Požádejte o sponzorství"
 msgid "Education pricing"
 msgstr "Ceny za vzdělávání"
 
-#: templates/corporate/self-hosting.html:27
-msgid "Features & pricing"
-msgstr "Vlastnosti a ceny"
+#: templates/corporate/for/use-cases.html:26
+msgid "View pricing"
+msgstr "Zobrazit ceny"
+
+#: templates/corporate/remote_realm_billing_finalize_login_confirmation.html:5
+msgid "Billing login confirmation"
+msgstr ""
+
+#: templates/corporate/remote_realm_billing_finalize_login_confirmation.html:26
+#: templates/zerver/accounts_accept_terms.html:54
+#: templates/zerver/register.html:213
+#, python-format
+msgid ""
+"I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
+msgstr "Souhlasím s <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">podmínkami užití</a>."
 
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
@@ -704,7 +761,7 @@ msgstr "Vyzkoušejte Zulip hned teď"
 msgid "Upgrade"
 msgstr "Povýšit"
 
-#: templates/corporate/upgrade.html:138
+#: templates/corporate/upgrade.html:186
 msgid "Convert demo organization before upgrading."
 msgstr "Před povýšením převeďte ukázkovou organizaci."
 
@@ -741,14 +798,6 @@ msgstr "Vítejte v Zulipu"
 msgid "Email"
 msgstr "E-mail"
 
-#: templates/zerver/accounts_accept_terms.html:54
-#: templates/zerver/register.html:213
-#, python-format
-msgid ""
-"I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
-"target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Souhlasím s <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">podmínkami užití</a>."
-
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
 msgstr "Pokračovat"
@@ -780,7 +829,7 @@ msgstr "Přihlásit se pomocí %(identity_provider)s"
 
 #: templates/zerver/accounts_home.html:92
 msgid "Already have an account?"
-msgstr ""
+msgstr "Již máte účet."
 
 #: templates/zerver/accounts_home.html:92 templates/zerver/footer.html:17
 #: templates/zerver/log_into_subdomain_token_invalid.html:13
@@ -801,7 +850,7 @@ msgid ""
 "To complete your registration, check your email account (<span "
 "class=\"user_email semi-bold\">%(email)s</span>) for a confirmation email "
 "from Zulip."
-msgstr ""
+msgstr "Chcete-li dokončit registraci, zkontrolujte svůj e-mailový účet (<span class=\"user_email semi-bold\">%(email)s</span>) pro potvrzovací e-mail od Zulipu."
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid ""
@@ -819,23 +868,23 @@ msgstr ""
 msgid "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgstr ""
 
-#: templates/zerver/app/index.html:174
+#: templates/zerver/app/index.html:176
 msgid "Unable to connect to Zulip."
 msgstr "Nelze se připojit k Zulipu."
 
-#: templates/zerver/app/index.html:175
+#: templates/zerver/app/index.html:177
 msgid "Updates may be delayed."
 msgstr "Aktualizace mohou být zpožděny."
 
-#: templates/zerver/app/index.html:176
+#: templates/zerver/app/index.html:178
 msgid "Retrying soon…"
 msgstr "Brzy to zkusíme znovu..."
 
-#: templates/zerver/app/index.html:177
+#: templates/zerver/app/index.html:179
 msgid "Try now."
 msgstr "Zkuste to nyní."
 
-#: templates/zerver/app/index.html:257 templates/zerver/app/index.html:259
+#: templates/zerver/app/index.html:259 templates/zerver/app/index.html:261
 msgid "Messages"
 msgstr "Zprávy"
 
@@ -1121,6 +1170,8 @@ msgstr ""
 
 #: templates/zerver/emails/account_registered.html:34
 #: templates/zerver/emails/account_registered.txt:16
+#: templates/zerver/emails/confirm_registration.html:12
+#: templates/zerver/emails/confirm_registration.txt:3
 #, python-format
 msgid "Organization URL: %(organization_url)s"
 msgstr "Adresa organizace: %(organization_url)s"
@@ -1224,7 +1275,7 @@ msgid "Questions? Contact us at %(support_email)s — we'd love to help!"
 msgstr ""
 
 #: templates/zerver/emails/account_registered.txt:38
-#: templates/zerver/emails/confirm_registration.txt:17
+#: templates/zerver/emails/confirm_registration.txt:21
 #: templates/zerver/emails/invitation.txt:11
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:15
 #: templates/zerver/emails/onboarding_zulip_guide.txt:23
@@ -1297,24 +1348,32 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.txt:2
-msgid "You have requested a new Zulip organization. Awesome!"
-msgstr "Zažádali jste o novou organizaci na Zulipu! Výborně!"
+msgid "You have requested a new Zulip organization:"
+msgstr ""
 
-#: templates/zerver/emails/confirm_registration.html:12
-#: templates/zerver/emails/confirm_registration.txt:4
+#: templates/zerver/emails/confirm_registration.html:13
+#: templates/zerver/emails/confirm_registration.txt:5
+#, python-format
+msgid "Organization type: %(organization_type)s"
+msgstr ""
+
+#: templates/zerver/emails/confirm_registration.html:16
+#: templates/zerver/emails/confirm_registration.txt:7
 msgid "You recently signed up for Zulip. Awesome!"
 msgstr "Nedávno jste se přihlásil/a k Zulipu. Skvělé!"
 
-#: templates/zerver/emails/confirm_registration.html:17
+#: templates/zerver/emails/confirm_registration.html:21
+#: templates/zerver/emails/confirm_registration.txt:12
 msgid ""
 "Click the button below to create the organization and register your account."
-msgstr "Klepněte na tlačítko níže pro vytvoření organizace a registraci vašeho účtu."
+" You'll be able to update the information above if you like."
+msgstr ""
 
-#: templates/zerver/emails/confirm_registration.html:19
+#: templates/zerver/emails/confirm_registration.html:23
 msgid "Click the button below to complete registration."
 msgstr "Klepněte na tlačítko níže pro dokončení registrace."
 
-#: templates/zerver/emails/confirm_registration.html:21
+#: templates/zerver/emails/confirm_registration.html:25
 #: templates/zerver/emails/invitation.html:16
 #: templates/zerver/emails/invitation_reminder.html:14
 msgid "Complete registration"
@@ -1328,16 +1387,11 @@ msgstr "Vytvořte svou organizaci Zulip"
 msgid "Activate your Zulip account"
 msgstr "Zapněte váš Zulip účet"
 
-#: templates/zerver/emails/confirm_registration.txt:8
-msgid ""
-"Click the link below to create the organization and register your account."
-msgstr "Klepněte na odkaz níže pro vytvoření organizace a registraci vašeho účtu."
-
-#: templates/zerver/emails/confirm_registration.txt:10
+#: templates/zerver/emails/confirm_registration.txt:14
 msgid "Click the link below to complete registration."
 msgstr "Klepněte na odkaz níže pro dokončení registrace."
 
-#: templates/zerver/emails/confirm_registration.txt:15
+#: templates/zerver/emails/confirm_registration.txt:19
 #: templates/zerver/emails/invitation.txt:9
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:13
 #: templates/zerver/emails/onboarding_zulip_guide.txt:21
@@ -1590,7 +1644,7 @@ msgstr "Toto jste dostal, protože @%(mentioned_user_group_name)s byl zmíněn."
 msgid ""
 "You are receiving this because all topic participants were mentioned in "
 "#%(stream_name)s > %(topic_name)s."
-msgstr ""
+msgstr "Tuto informaci dostáváte, protože všichni účastníci tématu byli zmíněni v. #%(stream_name)s > %(topic_name)s."
 
 #: templates/zerver/emails/missed_message.html:35
 #: templates/zerver/emails/missed_message.txt:31
@@ -1991,7 +2045,7 @@ msgstr "Průvodce Zulipem pro společenství"
 msgid ""
 "Here are some tips for keeping your Zulip conversations organized with "
 "topics."
-msgstr ""
+msgstr "Zde je několik rad, jak udržovat konverzace na Zulipu uspořádané pomocí témat."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:13
 msgid ""
@@ -2004,7 +2058,7 @@ msgstr ""
 msgid ""
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
-msgstr ""
+msgstr "Pomocí témat můžete číst Zulip po jedné konverzaci. Každou zprávu uvidíte v souvislosti bez ohledu na to, kolik různých diskusí právě probíhá."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:16
 msgid "Streams and topics in the Zulip app"
@@ -2017,7 +2071,7 @@ msgid ""
 "This way, the new conversation thread won't interrupt ongoing discussions. "
 "For a good topic name, think about finishing the sentence: “Hey, can we chat"
 " about…?”"
-msgstr ""
+msgstr "Chcete-li zahájit novou konverzaci, stačí vybrat kanál a založit nové téma. Tímto způsobem nové vlákno konverzace nepřeruší probíhající diskuse. Pro dobrý název tématu se zamyslete nad dokončením věty: “Ahoj, můžeme si popovídat o...?”."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:22
 msgid "Examples of short topics"
@@ -2041,7 +2095,7 @@ msgstr "Jít na Zulip"
 
 #: templates/zerver/emails/onboarding_zulip_topics.subject.txt:1
 msgid "Keep your conversations organized with topics"
-msgstr ""
+msgstr "Udržujte konverzace uspořádané pomocí témat"
 
 #: templates/zerver/emails/onboarding_zulip_topics.txt:3
 msgid ""
@@ -2183,6 +2237,37 @@ msgstr "Znovu zapnout vaši organizaci v Zulipu"
 msgid "Click the link below to reactivate your organization."
 msgstr "Klepněte na odkaz níže pro opětovné zapnutí vaší organizace."
 
+#: templates/zerver/emails/sponsorship_approved_community_plan.html:9
+#, python-format
+msgid ""
+"Your request for Zulip sponsorship has been approved! Your organization has "
+"been upgraded to the <a href=\"%(plans_link)s\">Zulip Community plan</a>."
+msgstr ""
+
+#: templates/zerver/emails/sponsorship_approved_community_plan.html:12
+#, python-format
+msgid ""
+"If you could <a href=\"%(link_to_zulip)s\">list Zulip as a sponsor on your "
+"website</a>, we would really appreciate it!"
+msgstr ""
+
+#: templates/zerver/emails/sponsorship_approved_community_plan.subject.txt:1
+#, python-format
+msgid "Community plan sponsorship approved for %(billing_entity)s!"
+msgstr ""
+
+#: templates/zerver/emails/sponsorship_approved_community_plan.txt:1
+msgid ""
+"Your request for Zulip sponsorship has been approved! Your organization has "
+"been upgraded to the Zulip Community plan."
+msgstr ""
+
+#: templates/zerver/emails/sponsorship_approved_community_plan.txt:4
+msgid ""
+"If you could list Zulip as a sponsor on your website, we would really "
+"appreciate it!."
+msgstr ""
+
 #: templates/zerver/find_account.html:4
 msgid "Find your accounts"
 msgstr "Najděte své účty"
@@ -2230,10 +2315,6 @@ msgstr "Proč Zulip"
 #: templates/zerver/footer.html:10
 msgid "Features"
 msgstr "Funkce"
-
-#: templates/zerver/footer.html:11
-msgid "Plans & pricing"
-msgstr "Ceník a plány"
 
 #: templates/zerver/footer.html:12
 msgid "Self-hosting"
@@ -2299,7 +2380,7 @@ msgstr "Zdroje"
 msgid "Getting started"
 msgstr "Začínáme"
 
-#: templates/zerver/footer.html:41 templates/zerver/footer.html:109
+#: templates/zerver/footer.html:41 templates/zerver/footer.html:114
 msgid "Help center"
 msgstr "Centrum nápovědy"
 
@@ -2307,59 +2388,63 @@ msgstr "Centrum nápovědy"
 msgid "Community chat"
 msgstr "Komunitní chat"
 
-#: templates/zerver/footer.html:46
+#: templates/zerver/footer.html:44
+msgid "Zulip Cloud status"
+msgstr ""
+
+#: templates/zerver/footer.html:47
 msgid "Organization set up"
 msgstr "Zřízení organizace"
 
-#: templates/zerver/footer.html:51
+#: templates/zerver/footer.html:52
 msgid "Installing a Zulip server"
 msgstr "Instalace serveru Zulip"
 
-#: templates/zerver/footer.html:56
+#: templates/zerver/footer.html:57
 msgid "Upgrading a Zulip server"
 msgstr "Povýšení serveru Zulip"
 
-#: templates/zerver/footer.html:63
+#: templates/zerver/footer.html:64
 msgid "Contributing"
 msgstr "Příspívání"
 
-#: templates/zerver/footer.html:68
+#: templates/zerver/footer.html:69
 msgid "Contributing guide"
 msgstr "Průvodce pro přispěvatele"
 
-#: templates/zerver/footer.html:71
+#: templates/zerver/footer.html:72
 msgid "Development community"
 msgstr "Vývojářská komunita"
 
-#: templates/zerver/footer.html:74
+#: templates/zerver/footer.html:75
 msgid "Translation"
 msgstr "Překlad"
 
-#: templates/zerver/footer.html:78
+#: templates/zerver/footer.html:79
 msgid "GitHub"
 msgstr "GitHub"
 
-#: templates/zerver/footer.html:83
+#: templates/zerver/footer.html:84
 msgid "About us"
 msgstr "O nás"
 
-#: templates/zerver/footer.html:87
+#: templates/zerver/footer.html:88
 msgid "Team"
 msgstr "Tým"
 
-#: templates/zerver/footer.html:89
+#: templates/zerver/footer.html:90
 msgid "History"
 msgstr "Historie"
 
-#: templates/zerver/footer.html:91
+#: templates/zerver/footer.html:92
 msgid "Values"
 msgstr "Hodnoty"
 
-#: templates/zerver/footer.html:92
+#: templates/zerver/footer.html:93
 msgid "Jobs"
 msgstr "Pracovní místa"
 
-#: templates/zerver/footer.html:93
+#: templates/zerver/footer.html:94
 msgid "Blog"
 msgstr "Blog"
 
@@ -2367,19 +2452,31 @@ msgstr "Blog"
 msgid "Support Zulip"
 msgstr "Podpořte Zulip"
 
-#: templates/zerver/footer.html:105
+#: templates/zerver/footer.html:98
+msgid "X (Twitter)"
+msgstr ""
+
+#: templates/zerver/footer.html:99
+msgid "Mastodon"
+msgstr ""
+
+#: templates/zerver/footer.html:100
+msgid "LinkedIn"
+msgstr ""
+
+#: templates/zerver/footer.html:110
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
 msgstr "Poháněno <a href=\"https://zulip.com\">Zulipem</a>"
 
-#: templates/zerver/footer.html:111
+#: templates/zerver/footer.html:116
 msgid "Terms of Service"
 msgstr "Podmínky užití služby"
 
-#: templates/zerver/footer.html:112
+#: templates/zerver/footer.html:117
 msgid "Privacy policy"
 msgstr "Zásady ochrany osobních údajů"
 
-#: templates/zerver/footer.html:114
+#: templates/zerver/footer.html:119
 msgid "Website attributions"
 msgstr "Přisuzování internetových stránek"
 
@@ -2947,30 +3044,30 @@ msgid ""
 "                        "
 msgstr "\n                        Také můžete použít <a href=\"%(apps_page_link)s\">program pro plochu Zulip</a>.\n                        "
 
-#: zerver/actions/create_user.py:95
+#: zerver/actions/create_user.py:97
 msgid "signups"
 msgstr "přihlášení"
 
-#: zerver/actions/create_user.py:108
+#: zerver/actions/create_user.py:110
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} se právě přihlásil k Zulipu. (celkem: {user_count})"
 
-#: zerver/actions/create_user.py:258
+#: zerver/actions/create_user.py:260
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} přijal vaše pozvání, aby se připojil k Zulipu!"
 
-#: zerver/actions/create_user.py:599
+#: zerver/actions/create_user.py:640
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
 
-#: zerver/actions/custom_profile_fields.py:126
+#: zerver/actions/custom_profile_fields.py:127
 msgid "Invalid order mapping."
 msgstr "Chybný \"mapping\" pořadí."
 
-#: zerver/actions/custom_profile_fields.py:205 zerver/lib/users.py:365
+#: zerver/actions/custom_profile_fields.py:206 zerver/lib/users.py:390
 #: zerver/views/custom_profile_fields.py:195
 #: zerver/views/custom_profile_fields.py:216
 #, python-brace-format
@@ -3053,100 +3150,96 @@ msgid ""
 "invitation. We did send invitations to everyone else!"
 msgstr "Některé z těchto adres již Zulip používají, takže jsme jim pozvánku znovu neposílali. Odeslali jsme ji ale všem ostatním!"
 
-#: zerver/actions/message_edit.py:93 zerver/views/scheduled_messages.py:60
+#: zerver/actions/message_edit.py:100 zerver/views/scheduled_messages.py:60
 msgid "Nothing to change"
 msgstr "Nic k upravení"
 
-#: zerver/actions/message_edit.py:97
+#: zerver/actions/message_edit.py:104
 msgid "Direct messages cannot be moved to streams."
 msgstr ""
 
-#: zerver/actions/message_edit.py:99
+#: zerver/actions/message_edit.py:106
 msgid "Direct messages cannot have topics."
 msgstr ""
 
-#: zerver/actions/message_edit.py:102
+#: zerver/actions/message_edit.py:109
 msgid "Invalid propagate_mode without topic edit"
 msgstr "Neplatný propagate_mode bez úpravy tématu"
 
-#: zerver/actions/message_edit.py:108
+#: zerver/actions/message_edit.py:115
 msgid "Cannot change message content while changing stream"
 msgstr "Nelze měnit obsah zprávy během změny kanálu"
 
-#: zerver/actions/message_edit.py:112
+#: zerver/actions/message_edit.py:119
 msgid "Widgets cannot be edited."
 msgstr "Grafické součásti nelze upravovat."
 
-#: zerver/actions/message_edit.py:163
+#: zerver/actions/message_edit.py:170
 #, python-brace-format
 msgid "{user} has marked this topic as resolved."
 msgstr "{user} označil toto téma jako vyřešené."
 
-#: zerver/actions/message_edit.py:165
+#: zerver/actions/message_edit.py:172
 #, python-brace-format
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} označil toto téma jako nevyřešené."
 
-#: zerver/actions/message_edit.py:998
+#: zerver/actions/message_edit.py:1005
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Toto téma sem bylo přesunuto {user} do {new_location}."
 
-#: zerver/actions/message_edit.py:1002
+#: zerver/actions/message_edit.py:1009
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "Zpráva byla {user} přesunuta z tohoto tématu do {new_location}."
 
-#: zerver/actions/message_edit.py:1006
+#: zerver/actions/message_edit.py:1013
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
 msgstr "{changed_messages_count} zpráv bylo {user} přesunuto z tohoto tématu do {new_location}."
 
-#: zerver/actions/message_edit.py:1061
+#: zerver/actions/message_edit.py:1068
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Toto téma sem bylo přesunuto {user} z {old_location}."
 
-#: zerver/actions/message_edit.py:1066
+#: zerver/actions/message_edit.py:1073
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1070
+#: zerver/actions/message_edit.py:1077
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
 msgstr "{changed_messages_count} zpráv sem bylo {user} přesunuto z {old_location}."
 
-#: zerver/actions/message_edit.py:1200
+#: zerver/actions/message_edit.py:1206
 msgid "Your organization has turned off message editing"
 msgstr "Vaše organizace vypnula upravy zpráv"
 
-#: zerver/actions/message_edit.py:1218 zerver/actions/message_edit.py:1221
+#: zerver/actions/message_edit.py:1224 zerver/actions/message_edit.py:1227
 msgid "You don't have permission to edit this message"
 msgstr "Nemáte oprávnění k upravení této zprávy"
 
-#: zerver/actions/message_edit.py:1232
+#: zerver/actions/message_edit.py:1238
 msgid "The time limit for editing this message has passed"
 msgstr "Časová lhůta pro upravení této zprávy vypršela"
 
-#: zerver/actions/message_edit.py:1247
+#: zerver/actions/message_edit.py:1253
 msgid "The time limit for editing this message's topic has passed."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1281 zerver/actions/message_send.py:1622
-msgid "You do not have permission to use wildcard mentions in this stream."
-msgstr "Nemáte oprávnění používat v tomto kanálu zmínky se zástupnými znaky."
-
-#: zerver/actions/message_edit.py:1294
+#: zerver/actions/message_edit.py:1307
 msgid "You don't have permission to move this message"
 msgstr "Nemáte oprávnění k přesunutí této zprávy"
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1322
 msgid "The time limit for editing this message's stream has passed"
 msgstr ""
 
@@ -3165,66 +3258,70 @@ msgstr ""
 msgid "Invalid message flag operation: '{operation}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:337 zerver/lib/message.py:805
-#: zerver/lib/message.py:811
+#: zerver/actions/message_flags.py:337 zerver/lib/message.py:806
+#: zerver/lib/message.py:812
 msgid "Invalid message(s)"
 msgstr "Neplatná zpráva/y"
 
-#: zerver/actions/message_send.py:161
+#: zerver/actions/message_send.py:172
 msgid "Unable to render message"
 msgstr "Nelze zpracovat zprávu"
 
-#: zerver/actions/message_send.py:1192
+#: zerver/actions/message_send.py:1214
 msgid "Expected exactly one stream"
 msgstr "Očekáván přesně jeden kanál"
 
-#: zerver/actions/message_send.py:1203
+#: zerver/actions/message_send.py:1225
 msgid "Invalid data type for stream"
 msgstr "Neplatný datový typ pro kanál"
 
-#: zerver/actions/message_send.py:1219 zerver/actions/message_send.py:1229
+#: zerver/actions/message_send.py:1241 zerver/actions/message_send.py:1251
 #: zerver/lib/recipient_parsing.py:25
 msgid "Invalid data type for recipients"
 msgstr "Neplatný datový typ pro příjemce"
 
-#: zerver/actions/message_send.py:1237 zerver/actions/message_send.py:1245
+#: zerver/actions/message_send.py:1259 zerver/actions/message_send.py:1267
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Seznamy příjemců mohou obsahovat adresy nebo uživatelská ID, ale ne obojí."
 
-#: zerver/actions/message_send.py:1390
+#: zerver/actions/message_send.py:1412
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "Robot {bot_identity} se pokusil poslat zprávu kanálu s ID {stream_id}, ale žádný takový kanál neexistuje."
 
-#: zerver/actions/message_send.py:1401
+#: zerver/actions/message_send.py:1423
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "Robot {bot_identity} se pokusil poslat zprávu kanálu {stream_name}, ale tento kanál neexistuje. Klepněte [zde]({new_stream_link}) pro jeho vytvoření."
 
-#: zerver/actions/message_send.py:1413
+#: zerver/actions/message_send.py:1435
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "Robot {bot_identity} se pokusil poslat zprávu kanálu {stream_name}. ento kanál existuje. Nemá však žádné odběratele."
 
-#: zerver/actions/message_send.py:1460
+#: zerver/actions/message_send.py:1482
 msgid "Direct messages are disabled in this organization."
 msgstr ""
 
-#: zerver/actions/message_send.py:1537
+#: zerver/actions/message_send.py:1497
+msgid "You do not have permission to access some of the recipients."
+msgstr ""
+
+#: zerver/actions/message_send.py:1628
 msgid "Topics are required in this organization"
 msgstr "Témata jsou v této organizaci povinná"
 
-#: zerver/actions/message_send.py:1593
+#: zerver/actions/message_send.py:1690
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "\"Widgety\": programátor API odeslal neplatný JSON"
 
-#: zerver/actions/message_send.py:1599
+#: zerver/actions/message_send.py:1696
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Součástky: {error_msg}"
@@ -3266,32 +3363,32 @@ msgstr ""
 msgid "[View scheduled messages](#scheduled)"
 msgstr ""
 
-#: zerver/actions/streams.py:75
+#: zerver/actions/streams.py:119
 msgid "Stream is already deactivated"
 msgstr ""
 
-#: zerver/actions/streams.py:194
+#: zerver/actions/streams.py:243
 msgid "Stream is not currently deactivated"
 msgstr ""
 
-#: zerver/actions/streams.py:197
+#: zerver/actions/streams.py:246
 #, python-brace-format
 msgid "Stream named {stream_name} already exists"
 msgstr ""
 
-#: zerver/actions/streams.py:268
+#: zerver/actions/streams.py:317
 #, python-brace-format
 msgid "Stream {stream_name} un-archived."
 msgstr ""
 
-#: zerver/actions/streams.py:986
+#: zerver/actions/streams.py:1180
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
 msgstr "{user} změnil [přístupová oprávnění](/help/stream-permissions) k tomuto kanálu z **{old_policy}** na **{new_policy}**."
 
-#: zerver/actions/streams.py:1168
+#: zerver/actions/streams.py:1355
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions](/help/stream-sending-policy) for this stream:\n"
@@ -3300,38 +3397,38 @@ msgid ""
 "* **New permissions**: {new_policy}.\n"
 msgstr "{user} změnil [odesílací oprávnění](/help/stream-sending-policy) pro tento kanál:\n\n* **Stará oprávnění**: {old_policy}.\n* **Nová oprávnění**: {new_policy}.\n"
 
-#: zerver/actions/streams.py:1296
+#: zerver/actions/streams.py:1471
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr "{user_name} přejmenoval/a kanál {old_stream_name} na {new_stream_name}."
 
-#: zerver/actions/streams.py:1315 zerver/actions/streams.py:1317
-#: zerver/views/streams.py:797
+#: zerver/actions/streams.py:1487 zerver/actions/streams.py:1489
+#: zerver/views/streams.py:798
 msgid "No description."
 msgstr "Žádný popis."
 
-#: zerver/actions/streams.py:1320
+#: zerver/actions/streams.py:1492
 #, python-brace-format
 msgid "{user} changed the description for this stream."
 msgstr "{user} změnil popis tohoto kanálu."
 
-#: zerver/actions/streams.py:1322
+#: zerver/actions/streams.py:1494
 msgid "Old description"
 msgstr "Starý popis."
 
-#: zerver/actions/streams.py:1326
+#: zerver/actions/streams.py:1498
 msgid "New description"
 msgstr "Nový popis"
 
-#: zerver/actions/streams.py:1392 zerver/actions/streams.py:1397
+#: zerver/actions/streams.py:1564 zerver/actions/streams.py:1569
 msgid "Forever"
 msgstr "Navždy"
 
-#: zerver/actions/streams.py:1398
+#: zerver/actions/streams.py:1570
 msgid "Messages in this stream will now be retained forever."
 msgstr "Zprávy v tomto kanálu nyní budou uchovány navždy."
 
-#: zerver/actions/streams.py:1404
+#: zerver/actions/streams.py:1576
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
@@ -3374,10 +3471,11 @@ msgstr "Musí být správce serveru"
 #: zerver/decorator.py:669 zerver/lib/streams.py:717 zerver/lib/streams.py:743
 #: zerver/lib/streams.py:745 zerver/lib/streams.py:747
 #: zerver/lib/streams.py:766 zerver/lib/user_groups.py:97
-#: zerver/lib/user_groups.py:161 zerver/lib/users.py:226
-#: zerver/lib/users.py:255 zerver/views/invite.py:65
-#: zerver/views/invite.py:207 zerver/views/realm_emoji.py:33
-#: zerver/views/streams.py:321 zerver/views/streams.py:628
+#: zerver/lib/user_groups.py:161 zerver/lib/users.py:230
+#: zerver/lib/users.py:259 zerver/lib/users.py:263 zerver/views/invite.py:65
+#: zerver/views/invite.py:207 zerver/views/presence.py:55
+#: zerver/views/realm_emoji.py:33 zerver/views/streams.py:322
+#: zerver/views/streams.py:629
 msgid "Insufficient permission"
 msgstr "Nedostatečná oprávnění"
 
@@ -3538,6 +3636,11 @@ msgstr "Při mazání přílohy se vyskytla chyba. Zkuste to, prosím, znovu."
 msgid "Message must have recipients!"
 msgstr "Zpráva musí mít příjemce!"
 
+#: zerver/lib/digest.py:412
+#, python-brace-format
+msgid "{service_name} digest"
+msgstr ""
+
 #: zerver/lib/domains.py:10
 msgid "Domain can't be empty."
 msgstr "Doména nemůže být prázdná."
@@ -3566,33 +3669,34 @@ msgstr "Subdomény nemohou začínat nebo končit na '-'."
 msgid "Domain can only have letters, numbers, '.' and '-'s."
 msgstr "Doména může obsahovat jen malá písmena, čísla, '.' a  '-'."
 
-#: zerver/lib/drafts.py:51
+#: zerver/lib/drafts.py:52
 msgid "Timestamp must not be negative."
 msgstr "Časové razítko nesmí být záporné."
 
-#: zerver/lib/drafts.py:60
+#: zerver/lib/drafts.py:61
 msgid "Topic must not contain null bytes"
 msgstr "Téma nesmí obsahovat nulové bajty"
 
-#: zerver/lib/drafts.py:62
+#: zerver/lib/drafts.py:63
 msgid "Must specify exactly 1 stream ID for stream messages"
 msgstr "U zpráv v kanálu je třeba zadat přesně 1 ID kanálu"
 
-#: zerver/lib/drafts.py:92
+#: zerver/lib/drafts.py:93
 msgid "User has disabled synchronizing drafts."
 msgstr "Uživatel vypnul synchronizaci konceptů."
 
-#: zerver/lib/drafts.py:135 zerver/lib/drafts.py:152
+#: zerver/lib/drafts.py:136 zerver/lib/drafts.py:153
 msgid "Draft does not exist"
 msgstr "Návrh neexistuje"
 
-#: zerver/lib/email_notifications.py:139 zerver/lib/email_notifications.py:161
+#: zerver/lib/email_notifications.py:140 zerver/lib/email_notifications.py:162
 msgid "Open Zulip to see the spoiler content"
 msgstr "Otevřít Zulip a nechat si vyzradit obsah"
 
-#: zerver/lib/email_notifications.py:574
-msgid "Zulip notifications"
-msgstr "Oznámení Zulipu"
+#: zerver/lib/email_notifications.py:577
+#, python-brace-format
+msgid "{service_name} notifications"
+msgstr ""
 
 #: zerver/lib/email_validation.py:100
 msgid "Invalid address."
@@ -3602,7 +3706,7 @@ msgstr "Neplatná adresa."
 msgid "Outside your domain."
 msgstr "Mimo vaši doménu."
 
-#: zerver/lib/email_validation.py:109 zerver/views/users.py:709
+#: zerver/lib/email_validation.py:109 zerver/views/users.py:718
 msgid "Email addresses containing + are not allowed."
 msgstr "E-mailové adresy obsahující + nejsou povoleny."
 
@@ -3670,119 +3774,119 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "Chybí název obrázečku"
 
-#: zerver/lib/events.py:1542
+#: zerver/lib/events.py:1624
 msgid "Could not allocate event queue"
 msgstr "Nepodařilo se přidělit event queue"
 
-#: zerver/lib/exceptions.py:144
+#: zerver/lib/exceptions.py:148
 msgid "Not logged in: API authentication or user session required"
 msgstr "Nepřihlášen: API autentikace nebo uživatelská session je vyžadována"
 
-#: zerver/lib/exceptions.py:171
+#: zerver/lib/exceptions.py:175
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
 msgstr "Kanál '{stream}' neexistuje"
 
-#: zerver/lib/exceptions.py:184
+#: zerver/lib/exceptions.py:188
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
 msgstr "Kanál s ID '{stream_id}' neexistuje"
 
-#: zerver/lib/exceptions.py:193
+#: zerver/lib/exceptions.py:197
 msgid "organization owner"
 msgstr "Vlastník organizace"
 
-#: zerver/lib/exceptions.py:193
+#: zerver/lib/exceptions.py:197
 msgid "user"
 msgstr "uživatel"
 
-#: zerver/lib/exceptions.py:198
+#: zerver/lib/exceptions.py:202
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr "Nelze vypnout jedinou {entity}."
 
-#: zerver/lib/exceptions.py:211
+#: zerver/lib/exceptions.py:215
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
 msgstr "Neplatný markdownový include: {include_statement}"
 
-#: zerver/lib/exceptions.py:224
+#: zerver/lib/exceptions.py:228
 msgid "API usage exceeded rate limit"
 msgstr "Používání API překročilo rychlostní omezení"
 
-#: zerver/lib/exceptions.py:250 zerver/lib/request.py:445
+#: zerver/lib/exceptions.py:254 zerver/lib/request.py:445
 #: zerver/lib/typed_endpoint.py:361 zerver/lib/validator.py:779
 msgid "Malformed JSON"
 msgstr "Nevalidní JSON"
 
-#: zerver/lib/exceptions.py:262
+#: zerver/lib/exceptions.py:266
 msgid "Must be an organization member"
 msgstr "Musí být členem organizace"
 
-#: zerver/lib/exceptions.py:274 zerver/views/invite.py:42
+#: zerver/lib/exceptions.py:278 zerver/views/invite.py:42
 msgid "Must be an organization administrator"
 msgstr "Musí být správcem organizace"
 
-#: zerver/lib/exceptions.py:286
+#: zerver/lib/exceptions.py:290
 msgid "Must be an organization owner"
 msgstr "Musí být vlastníkem organizace"
 
-#: zerver/lib/exceptions.py:300
+#: zerver/lib/exceptions.py:304
 msgid "Your username or password is incorrect"
 msgstr "Vaše uživatelské jméno nebo heslo není správné"
 
-#: zerver/lib/exceptions.py:309
+#: zerver/lib/exceptions.py:313
 msgid "Account is deactivated"
 msgstr "Účet je vypnut"
 
-#: zerver/lib/exceptions.py:318
+#: zerver/lib/exceptions.py:322
 msgid "This organization has been deactivated"
 msgstr "Tato organizace byla vypnuta"
 
-#: zerver/lib/exceptions.py:328
+#: zerver/lib/exceptions.py:332
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr "Registrace oznámení po telefonu pro váš server byla vypnuta"
 
-#: zerver/lib/exceptions.py:338
+#: zerver/lib/exceptions.py:342
 msgid "Password authentication is disabled in this organization"
 msgstr "Přihlašování pomocí hesla je v této organizaci vypnuto"
 
-#: zerver/lib/exceptions.py:347
+#: zerver/lib/exceptions.py:351
 msgid "Your password has been disabled and needs to be reset"
 msgstr "Vaše heslo bylo vypnuto a je třeba je zadat znovu"
 
-#: zerver/lib/exceptions.py:364
+#: zerver/lib/exceptions.py:368
 msgid "Invalid API key"
 msgstr "Neplatný API klíč"
 
-#: zerver/lib/exceptions.py:371
+#: zerver/lib/exceptions.py:375
 msgid "Malformed API key"
 msgstr "Špatný API klíč"
 
-#: zerver/lib/exceptions.py:411
+#: zerver/lib/exceptions.py:415
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook; ignoring"
 msgstr ""
 
-#: zerver/lib/exceptions.py:431
+#: zerver/lib/exceptions.py:435
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
 msgstr "Požadavek nelze zpracovat: Vytvořil {webhook_name} tuto událost?"
 
-#: zerver/lib/exceptions.py:455 zerver/views/auth.py:744
-#: zerver/views/auth.py:1079 zerver/views/auth.py:1143
+#: zerver/lib/exceptions.py:475 zerver/views/auth.py:743
+#: zerver/views/auth.py:1078 zerver/views/auth.py:1142
 msgid "Invalid subdomain"
 msgstr "Neplatná subdoména"
 
-#: zerver/lib/exceptions.py:496
+#: zerver/lib/exceptions.py:516
 msgid "Access denied"
 msgstr "Přístup odepřen"
 
-#: zerver/lib/exceptions.py:536
+#: zerver/lib/exceptions.py:556
 #, python-brace-format
 msgid ""
 "You only have permission to move the "
@@ -3790,13 +3894,27 @@ msgid ""
 "messages in this topic."
 msgstr ""
 
-#: zerver/lib/exceptions.py:549
+#: zerver/lib/exceptions.py:569
 msgid "Reaction already exists."
 msgstr "Reakce již existuje."
 
-#: zerver/lib/exceptions.py:561
+#: zerver/lib/exceptions.py:581
 msgid "Reaction doesn't exist."
 msgstr "Odpověď neexistuje."
+
+#: zerver/lib/exceptions.py:605
+msgid "Organization not registered"
+msgstr ""
+
+#: zerver/lib/exceptions.py:617
+msgid ""
+"You do not have permission to use stream wildcard mentions in this stream."
+msgstr ""
+
+#: zerver/lib/exceptions.py:629
+msgid ""
+"You do not have permission to use topic wildcard mentions in this topic."
+msgstr ""
 
 #: zerver/lib/external_accounts.py:36
 msgid "Twitter username"
@@ -3814,39 +3932,39 @@ msgstr "Vlastní vnější účet musí vymezit vzor adresy, URL"
 msgid "Invalid external account type"
 msgstr "Neplatný vnější typ účtu"
 
-#: zerver/lib/hotspots.py:13
+#: zerver/lib/hotspots.py:34
 msgid "Catch up on a stream"
 msgstr "Začít s kanály"
 
-#: zerver/lib/hotspots.py:15
+#: zerver/lib/hotspots.py:36
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
 msgstr "Zprávy zaslané do kanálu jsou viditelné pro všechny jeho odběratele. Zkuste klepnout na některý z odkazů na kanály níže."
 
-#: zerver/lib/hotspots.py:20
+#: zerver/lib/hotspots.py:42
 msgid "Topics"
 msgstr "Témata"
 
-#: zerver/lib/hotspots.py:22
+#: zerver/lib/hotspots.py:44
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
 msgstr "Každá zpráva má téma. Témata udržují konverzaci přehlednou a usnadňují zapojení do konverzací, které začaly když jste zrovna nebyli připojeni k internetu."
 
-#: zerver/lib/hotspots.py:28
+#: zerver/lib/hotspots.py:54
 msgid "Settings"
 msgstr "Nastavení"
 
-#: zerver/lib/hotspots.py:30
+#: zerver/lib/hotspots.py:55
 msgid "Go to Settings to configure your notifications and preferences."
 msgstr ""
 
-#: zerver/lib/hotspots.py:34
+#: zerver/lib/hotspots.py:59
 msgid "Compose"
 msgstr "Sepsat"
 
-#: zerver/lib/hotspots.py:36
+#: zerver/lib/hotspots.py:61
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
@@ -3908,15 +4026,15 @@ msgstr "Produktivita"
 msgid "Version control"
 msgstr "Verzování"
 
-#: zerver/lib/message.py:230
+#: zerver/lib/message.py:231
 msgid "Message must not be empty"
 msgstr "Zpráva nesmí být prázdná"
 
-#: zerver/lib/message.py:232
+#: zerver/lib/message.py:233
 msgid "Message must not contain null bytes"
 msgstr "Zpráva nesmí obsahovat nulové bajty"
 
-#: zerver/lib/message.py:1705
+#: zerver/lib/message.py:1723
 #, python-brace-format
 msgid ""
 "You are not allowed to mention user group '{user_group_name}'. You must be a"
@@ -3933,11 +4051,11 @@ msgstr ""
 msgid "Invalid narrow operator: {desc}"
 msgstr "Neplatný zužující operátor: {desc}"
 
-#: zerver/lib/narrow.py:1080
+#: zerver/lib/narrow.py:1105
 msgid "Missing 'anchor' argument."
 msgstr "Chybí argument 'anchor'"
 
-#: zerver/lib/narrow.py:1100
+#: zerver/lib/narrow.py:1125
 msgid "Invalid anchor"
 msgstr "Neplatná kotva"
 
@@ -4132,55 +4250,55 @@ msgstr "Neplatný JSON v odpovědi"
 msgid "Invalid response format"
 msgstr "Neplatný formát odpovědi"
 
-#: zerver/lib/push_notifications.py:404
+#: zerver/lib/push_notifications.py:432
 msgid "Invalid GCM option to bouncer: priority {priority!r}"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:414
+#: zerver/lib/push_notifications.py:442
 #, python-brace-format
 msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:657 zilencer/views.py:220
+#: zerver/lib/push_notifications.py:690 zilencer/views.py:223
 msgid "Token does not exist"
 msgstr "Elektronický klíč neexistuje"
 
-#: zerver/lib/push_notifications.py:795
+#: zerver/lib/push_notifications.py:889
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr "Tato organizace zakázala zahrnutí obsahu zpráv do oznámení po telefonu"
 
-#: zerver/lib/push_notifications.py:885
+#: zerver/lib/push_notifications.py:1002
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} označil/a @{user_group_name}:"
 
-#: zerver/lib/push_notifications.py:889
+#: zerver/lib/push_notifications.py:1006
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} vás zmínil:"
 
-#: zerver/lib/push_notifications.py:896
+#: zerver/lib/push_notifications.py:1013
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} zmínil všechny:"
 
-#: zerver/lib/push_notifications.py:1269
+#: zerver/lib/push_notifications.py:1422
 msgid "Test notification"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1270
+#: zerver/lib/push_notifications.py:1423
 #, python-brace-format
-msgid "This is a test notification from {realm_uri}."
+msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1319
+#: zerver/lib/push_notifications.py:1474
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1331
+#: zerver/lib/push_notifications.py:1486
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -4194,7 +4312,7 @@ msgstr ""
 
 #: zerver/lib/recipient_users.py:29 zerver/lib/streams.py:281
 #: zerver/lib/streams.py:289 zerver/lib/streams.py:896
-#: zerver/tornado/views.py:164 zerver/views/events_register.py:96
+#: zerver/tornado/views.py:167 zerver/views/events_register.py:97
 #: zerver/views/message_send.py:176 zerver/views/message_send.py:197
 msgid "User not authorized for this query"
 msgstr "Uživatel není oprávněn položit tento dotaz"
@@ -4208,7 +4326,7 @@ msgstr "'{email}' už Zulip nepoužívá."
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
 
-#: zerver/lib/remote_server.py:93
+#: zerver/lib/remote_server.py:143
 #, python-brace-format
 msgid "Push notifications bouncer error: {error}"
 msgstr ""
@@ -4228,7 +4346,7 @@ msgstr "Chybí argument '{var_name}'"
 msgid "Bad value for '{var_name}': {bad_value}"
 msgstr "Špatná hodnota pro '{var_name}': {bad_value}"
 
-#: zerver/lib/request.py:398 zerver/lib/typed_endpoint.py:490
+#: zerver/lib/request.py:398 zerver/lib/typed_endpoint.py:493
 #: zerver/webhooks/ifttt/view.py:37 zerver/webhooks/slack_incoming/view.py:44
 msgid "Malformed payload"
 msgstr "Poškozené užitečné zatížení"
@@ -4243,8 +4361,9 @@ msgid "Scheduled message does not exist"
 msgstr ""
 
 #: zerver/lib/send_email.py:73
-msgid "Zulip Account Security"
-msgstr "Bezpečnost účtu Zulip"
+#, python-brace-format
+msgid "{service_name} account security"
+msgstr ""
 
 #: zerver/lib/streams.py:241
 msgid "Only organization administrators can send to this stream."
@@ -4278,7 +4397,7 @@ msgstr "Zvolte, prosím, jedno z: 'stream' nebo 'stream_id'."
 
 #: zerver/lib/streams.py:330 zerver/lib/streams.py:349
 #: zerver/lib/streams.py:432 zerver/lib/streams.py:500
-#: zerver/views/streams.py:390 zerver/views/user_topics.py:101
+#: zerver/views/streams.py:391 zerver/views/user_topics.py:101
 msgid "Invalid stream ID"
 msgstr "Neplatné ID kanálu"
 
@@ -4292,7 +4411,7 @@ msgstr ""
 msgid "Invalid stream name '{stream_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:749 zerver/views/streams.py:306
+#: zerver/lib/streams.py:749 zerver/views/streams.py:307
 msgid "A default stream cannot be private."
 msgstr ""
 
@@ -4301,7 +4420,7 @@ msgstr ""
 msgid "Stream(s) ({stream_names}) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:762 zerver/views/streams.py:319
+#: zerver/lib/streams.py:762 zerver/views/streams.py:320
 msgid "Web-public streams are not enabled."
 msgstr "Internetové veřejné kanály nejsou povoleny."
 
@@ -4333,11 +4452,11 @@ msgstr "Téma nemůže být prázdné!"
 msgid "Invalid character in topic, at position {position}!"
 msgstr ""
 
-#: zerver/lib/subscription_info.py:302
+#: zerver/lib/subscription_info.py:324
 msgid "Subscriber data is not available for this stream"
 msgstr "Údaje o odběrech nejsou pro tento kanál dostupné"
 
-#: zerver/lib/subscription_info.py:309
+#: zerver/lib/subscription_info.py:331
 msgid "Unable to retrieve subscribers for private stream"
 msgstr "Nepodařilo se získat odběratele soukromého kanálu"
 
@@ -4424,7 +4543,12 @@ msgstr "{var_name} není řetězec"
 msgid "{var_name} cannot be blank"
 msgstr ""
 
-#: zerver/lib/upload/__init__.py:31
+#: zerver/lib/typed_endpoint.py:369
+#, python-brace-format
+msgid "Invalid {var_name}: {msg}"
+msgstr ""
+
+#: zerver/lib/upload/__init__.py:30
 msgid "Upload would exceed your organization's upload quota."
 msgstr "Nahrání souboru by překročilo kvótu, kterou má vaše organizace nastavenou."
 
@@ -4499,73 +4623,73 @@ msgstr ""
 msgid "User group name cannot start with '{prefix}'."
 msgstr ""
 
-#: zerver/lib/users.py:50
+#: zerver/lib/users.py:54
 msgid "Name too long!"
 msgstr "Název je příliš dlouhý!"
 
-#: zerver/lib/users.py:52
+#: zerver/lib/users.py:56
 msgid "Name too short!"
 msgstr "Název je příliš krátký!"
 
-#: zerver/lib/users.py:55
+#: zerver/lib/users.py:59
 msgid "Invalid characters in name!"
 msgstr "Neplatné znaky v názvu!"
 
-#: zerver/lib/users.py:61
+#: zerver/lib/users.py:65
 msgid "Invalid format!"
 msgstr "Neplatný formát!"
 
-#: zerver/lib/users.py:77
+#: zerver/lib/users.py:81
 msgid "Name is already in use!"
 msgstr "Tento název je již používán!"
 
-#: zerver/lib/users.py:83 zerver/views/users.py:495 zerver/views/users.py:508
-#: zerver/views/users.py:692
+#: zerver/lib/users.py:87 zerver/views/users.py:504 zerver/views/users.py:517
+#: zerver/views/users.py:701
 msgid "Bad name or username"
 msgstr "Špatný název nebo uživatelské jméno"
 
-#: zerver/lib/users.py:101
+#: zerver/lib/users.py:105
 #, python-brace-format
 msgid "Invalid integration '{integration_name}'."
 msgstr ""
 
-#: zerver/lib/users.py:107
+#: zerver/lib/users.py:111
 #, python-brace-format
 msgid "Missing configuration parameters: {keys}"
 msgstr ""
 
-#: zerver/lib/users.py:117
+#: zerver/lib/users.py:121
 #, python-brace-format
 msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
-#: zerver/lib/users.py:135
+#: zerver/lib/users.py:139
 msgid "Invalid configuration data!"
 msgstr "Neplatné nastavení!"
 
-#: zerver/lib/users.py:169
+#: zerver/lib/users.py:173
 msgid "Invalid bot type"
 msgstr "Neplatný typ robota"
 
-#: zerver/lib/users.py:174
+#: zerver/lib/users.py:178
 msgid "Invalid interface type"
 msgstr "Neplatný typ rozhraní"
 
-#: zerver/lib/users.py:213 zerver/models.py:4930
+#: zerver/lib/users.py:217 zerver/models.py:4974
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
 
-#: zerver/lib/users.py:222 zerver/lib/users.py:224
+#: zerver/lib/users.py:226 zerver/lib/users.py:228
 msgid "No such bot"
 msgstr "Žádný takový robot"
 
-#: zerver/lib/users.py:248 zerver/lib/users.py:275 zerver/lib/users.py:291
-#: zerver/views/presence.py:46
+#: zerver/lib/users.py:252 zerver/lib/users.py:283 zerver/lib/users.py:300
+#: zerver/lib/users.py:316 zerver/views/presence.py:47
 msgid "No such user"
 msgstr "Žádný takový uživatel"
 
-#: zerver/lib/users.py:250
+#: zerver/lib/users.py:254
 msgid "User is deactivated"
 msgstr "Uživatel je vypnut"
 
@@ -4682,213 +4806,217 @@ msgstr ""
 msgid "CSRF error: {reason}"
 msgstr "Chyba CSRF: {reason}"
 
-#: zerver/middleware.py:617
+#: zerver/middleware.py:620
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr ""
 
-#: zerver/models.py:527
+#: zerver/models.py:556
 msgid "stream events"
 msgstr "Události kanálu"
 
-#: zerver/models.py:658
+#: zerver/models.py:687
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Dostupné v serveru Zulip Standard. Pro přístup povyšte."
 
-#: zerver/models.py:728
+#: zerver/models.py:688
+msgid "Available on Zulip Cloud Plus. Upgrade to access."
+msgstr ""
+
+#: zerver/models.py:758
 msgid "GIPHY integration disabled"
 msgstr ""
 
-#: zerver/models.py:733
+#: zerver/models.py:763
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr ""
 
-#: zerver/models.py:737
+#: zerver/models.py:767
 msgid "Allow GIFs rated G (General audience)"
 msgstr ""
 
-#: zerver/models.py:741
+#: zerver/models.py:771
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr ""
 
-#: zerver/models.py:745
+#: zerver/models.py:775
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr ""
 
-#: zerver/models.py:749
+#: zerver/models.py:779
 msgid "Allow GIFs rated R (Restricted)"
 msgstr ""
 
-#: zerver/models.py:1195
+#: zerver/models.py:1230
 msgid "Invalid characters in emoji name"
 msgstr "Neplatné znaky v názvu obrázečku"
 
-#: zerver/models.py:1308 zerver/models.py:1311
+#: zerver/models.py:1343 zerver/models.py:1346
 #, python-brace-format
 msgid "Bad regular expression: {regex}"
 msgstr ""
 
-#: zerver/models.py:1313
+#: zerver/models.py:1348
 msgid "Unknown regular expression error"
 msgstr "Neznámá chyba regulárního výrazu"
 
-#: zerver/models.py:1321
+#: zerver/models.py:1356
 msgid "Invalid URL template."
 msgstr ""
 
-#: zerver/models.py:1370
+#: zerver/models.py:1405
 #, python-format
 msgid "Group %(name)r in URL template is not present in linkifier pattern."
 msgstr ""
 
-#: zerver/models.py:1382
+#: zerver/models.py:1417
 #, python-format
 msgid "Group %(name)r in linkifier pattern is not present in URL template."
 msgstr ""
 
-#: zerver/models.py:1436 zerver/views/realm_playgrounds.py:24
+#: zerver/models.py:1471 zerver/views/realm_playgrounds.py:24
 msgid "Invalid characters in pygments language"
 msgstr "Neplatné znaky v jazyce segmentů"
 
-#: zerver/models.py:1468
+#: zerver/models.py:1503
 msgid "Missing the required variable \"code\" in the URL template"
 msgstr ""
 
-#: zerver/models.py:1473
+#: zerver/models.py:1508
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr ""
 
-#: zerver/models.py:1757
+#: zerver/models.py:1794
 msgid "Admins, moderators, members and guests"
 msgstr "Správci, moderátoři, členové a hosté"
 
-#: zerver/models.py:1758
+#: zerver/models.py:1795
 msgid "Admins, moderators and members"
 msgstr "Správci, moderátoři a členové"
 
-#: zerver/models.py:1759
+#: zerver/models.py:1796
 msgid "Admins and moderators"
 msgstr "Správci a moderátoři"
 
-#: zerver/models.py:1760
+#: zerver/models.py:1797
 msgid "Admins only"
 msgstr "Pouze správci"
 
-#: zerver/models.py:1761
+#: zerver/models.py:1798
 msgid "Nobody"
 msgstr "Nikdo"
 
-#: zerver/models.py:1922
+#: zerver/models.py:1959
 msgid "Unknown user"
 msgstr ""
 
-#: zerver/models.py:2074
+#: zerver/models.py:2115
 msgid "Organization owner"
 msgstr "Vlastník organizace"
 
-#: zerver/models.py:2075
+#: zerver/models.py:2116
 msgid "Organization administrator"
 msgstr "Správce organizace"
 
-#: zerver/models.py:2076
+#: zerver/models.py:2117
 msgid "Moderator"
 msgstr "Moderátor"
 
-#: zerver/models.py:2077
+#: zerver/models.py:2118
 msgid "Member"
 msgstr "Člen"
 
-#: zerver/models.py:2078
+#: zerver/models.py:2119
 msgid "Guest"
 msgstr "Host"
 
-#: zerver/models.py:2666
+#: zerver/models.py:2707
 msgid "Web-public"
 msgstr "Internetový veřejný"
 
-#: zerver/models.py:2672
+#: zerver/models.py:2713
 msgid "Public"
 msgstr "Veřejné"
 
-#: zerver/models.py:2678
+#: zerver/models.py:2719
 msgid "Private, shared history"
 msgstr "Soukromá, sdílená historie"
 
-#: zerver/models.py:2684
+#: zerver/models.py:2725
 msgid "Private, protected history"
 msgstr "Soukromá, chráněná historie"
 
-#: zerver/models.py:2692
+#: zerver/models.py:2733
 msgid "Public, protected history"
 msgstr "Veřejná, chráněná historie"
 
-#: zerver/models.py:2712
+#: zerver/models.py:2753
 msgid "All stream members can post"
 msgstr "Všichni členové kanálu mohou přidávat zprávy"
 
-#: zerver/models.py:2713
+#: zerver/models.py:2754
 msgid "Only organization administrators can post"
 msgstr "Pouze správci organizace mohou přidávat zprávy"
 
-#: zerver/models.py:2715
+#: zerver/models.py:2756
 msgid "Only organization administrators and moderators can post"
 msgstr "Zprávy mohou přidávat pouze správci a moderátoři organizace."
 
-#: zerver/models.py:2718
+#: zerver/models.py:2759
 msgid "Only organization full members can post"
 msgstr "Pouze členové organizace mohou přidávat zprávy."
 
-#: zerver/models.py:3407
+#: zerver/models.py:3446
 msgid "Unicode emoji"
 msgstr "Unicode obrázeček"
 
-#: zerver/models.py:3408
+#: zerver/models.py:3447
 msgid "Custom emoji"
 msgstr "Vlastní obrázeček"
 
-#: zerver/models.py:3409
+#: zerver/models.py:3448
 msgid "Zulip extra emoji"
 msgstr "Další obrázeček Zulipu"
 
-#: zerver/models.py:4934
+#: zerver/models.py:4978
 #, python-brace-format
 msgid "User with ID {user_id} is deactivated"
 msgstr ""
 
-#: zerver/models.py:4938
+#: zerver/models.py:4982
 #, python-brace-format
 msgid "User with ID {user_id} is a bot"
 msgstr ""
 
-#: zerver/models.py:4978
+#: zerver/models.py:5022
 msgid "List of options"
 msgstr "Seznam možností"
 
-#: zerver/models.py:4981
+#: zerver/models.py:5025
 msgid "Person picker"
 msgstr "Výběr osoby"
 
-#: zerver/models.py:4993
+#: zerver/models.py:5037
 msgid "Short text"
 msgstr "Krátký text"
 
-#: zerver/models.py:4994
+#: zerver/models.py:5038
 msgid "Long text"
 msgstr "Dlouhý text"
 
-#: zerver/models.py:4995
+#: zerver/models.py:5039
 msgid "Date picker"
 msgstr "Výběr data"
 
-#: zerver/models.py:4996
+#: zerver/models.py:5040
 msgid "Link"
 msgstr "Odkaz"
 
-#: zerver/models.py:4999
+#: zerver/models.py:5043
 msgid "External account"
 msgstr "Vnější účet"
 
-#: zerver/models.py:5004
+#: zerver/models.py:5048
 msgid "Pronouns"
 msgstr "Zájmena"
 
@@ -4904,20 +5032,20 @@ msgstr "neznámý operační systém"
 msgid "An unknown browser"
 msgstr "Neznámý prohlížeč"
 
-#: zerver/tornado/event_queue.py:680
+#: zerver/tornado/event_queue.py:678
 msgid "Missing 'queue_id' argument"
 msgstr "Chybí argument 'queue_id'"
 
-#: zerver/tornado/event_queue.py:683
+#: zerver/tornado/event_queue.py:681
 msgid "Missing 'last_event_id' argument"
 msgstr "Chybí argument 'last_event_id'"
 
-#: zerver/tornado/event_queue.py:690
+#: zerver/tornado/event_queue.py:688
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr "Událost novější než {event_id} již byla ořezána!"
 
-#: zerver/tornado/event_queue.py:700
+#: zerver/tornado/event_queue.py:698
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr "Událost {event_id} nebyla v této řadě"
@@ -4927,27 +5055,27 @@ msgstr "Událost {event_id} nebyla v této řadě"
 msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
-#: zerver/views/auth.py:553
+#: zerver/views/auth.py:552
 msgid "JWT authentication is not enabled for this organization"
 msgstr ""
 
-#: zerver/views/auth.py:556
+#: zerver/views/auth.py:555
 msgid "No JSON web token passed in request"
 msgstr "V požadavku chybí JSON \"web token\""
 
-#: zerver/views/auth.py:562
+#: zerver/views/auth.py:561
 msgid "Bad JSON web token"
 msgstr "Chybný JSON \"web token\""
 
-#: zerver/views/auth.py:566
+#: zerver/views/auth.py:565
 msgid "No email specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:1085
+#: zerver/views/auth.py:1084
 msgid "Subdomain required"
 msgstr "Subdoména je povinná"
 
-#: zerver/views/auth.py:1147
+#: zerver/views/auth.py:1146
 msgid "Password is incorrect."
 msgstr "Heslo je nesprávné."
 
@@ -4993,7 +5121,7 @@ msgstr "Koncový bod není v produkci dostupný."
 msgid "DevAuthBackend not enabled."
 msgstr "Vývojářská autentizační podpůrná vrstva není zapnuta."
 
-#: zerver/views/events_register.py:109 zerver/views/events_register.py:113
+#: zerver/views/events_register.py:110 zerver/views/events_register.py:114
 #, python-brace-format
 msgid "Invalid '{key}' parameter for anonymous request"
 msgstr ""
@@ -5026,9 +5154,9 @@ msgstr ""
 msgid "Cannot query memcached"
 msgstr ""
 
-#: zerver/views/hotspots.py:19
+#: zerver/views/hotspots.py:20
 #, python-brace-format
-msgid "Unknown hotspot: {hotspot}"
+msgid "Unknown onboarding_step: {onboarding_step}"
 msgstr ""
 
 #: zerver/views/invite.py:77
@@ -5109,48 +5237,53 @@ msgstr "Zrcadlení Zephyru není v této organizaci povoleno."
 msgid "Cannot mute self"
 msgstr "Nelze ztlumit sebe"
 
-#: zerver/views/muted_users.py:26
+#: zerver/views/muted_users.py:34
 msgid "User already muted"
 msgstr "Uživatel již ztlumen"
 
-#: zerver/views/muted_users.py:40
+#: zerver/views/muted_users.py:48
 msgid "User is not muted"
 msgstr "Uživatel není ztlumen"
 
-#: zerver/views/presence.py:49
+#: zerver/views/presence.py:50
 msgid "Presence is not supported for bot users."
 msgstr "Zobrazení přítomnosti není podporováno pro robotické uživatele."
 
-#: zerver/views/presence.py:54
+#: zerver/views/presence.py:60
 #, python-brace-format
 msgid "No presence data for {user_id_or_email}"
 msgstr "Žádné údaje o přítomnosti pro {user_id_or_email}"
 
-#: zerver/views/presence.py:90
+#: zerver/views/presence.py:96
 msgid "Client did not pass any new values."
 msgstr "Klient neposlal žádné nové hodnoty."
 
-#: zerver/views/presence.py:113
+#: zerver/views/presence.py:119
 msgid ""
 "Client must pass emoji_name if they pass either emoji_code or reaction_type."
 msgstr "Klient musí předat emoji_name, pokud předají buď emoji_code , nebo reaction_type."
 
-#: zerver/views/presence.py:152
+#: zerver/views/presence.py:158
 #, python-brace-format
 msgid "Invalid status: {status}"
 msgstr ""
 
-#: zerver/views/push_notifications.py:27
+#: zerver/views/push_notifications.py:41
 msgid "Invalid app ID"
 msgstr ""
 
-#: zerver/views/push_notifications.py:33
+#: zerver/views/push_notifications.py:47
 msgid "Empty or invalid length token"
 msgstr "Prázdný, nebo nesprávně dlouhý elektronický klíč"
 
-#: zerver/views/push_notifications.py:39
+#: zerver/views/push_notifications.py:53
 msgid "Invalid APNS token"
 msgstr "Neplatný elektronický klíč APNS"
+
+#: zerver/views/push_notifications.py:168
+#, python-brace-format
+msgid "Error returned by the bouncer: {result}"
+msgstr ""
 
 #: zerver/views/reactions.py:49
 msgid ""
@@ -5162,26 +5295,26 @@ msgstr "Alespoň jedno z následujících musí být uvedeno: emoji_name, emoji_
 msgid "Read receipts are disabled in this organization."
 msgstr ""
 
-#: zerver/views/realm.py:187
+#: zerver/views/realm.py:190
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr ""
 
-#: zerver/views/realm.py:192
+#: zerver/views/realm.py:195
 msgid "At least one authentication method must be enabled."
 msgstr "Alespoň jedna metoda autentizace musí být povolena."
 
-#: zerver/views/realm.py:197
+#: zerver/views/realm.py:200
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr ""
 
-#: zerver/views/realm.py:205
+#: zerver/views/realm.py:208
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr ""
 
-#: zerver/views/realm.py:415
+#: zerver/views/realm.py:424
 msgid "Must be a demo organization."
 msgstr "Musí to být ukázková organizace."
 
@@ -5209,8 +5342,8 @@ msgid "Only administrators can override default emoji."
 msgstr ""
 
 #: zerver/views/realm_emoji.py:48 zerver/views/realm_icon.py:27
-#: zerver/views/realm_logo.py:33 zerver/views/upload.py:278
-#: zerver/views/user_settings.py:401
+#: zerver/views/realm_logo.py:33 zerver/views/upload.py:319
+#: zerver/views/user_settings.py:416
 #, python-brace-format
 msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
 msgstr ""
@@ -5272,71 +5405,71 @@ msgstr ""
 msgid "Invalid DSN"
 msgstr ""
 
-#: zerver/views/streams.py:140
+#: zerver/views/streams.py:141
 msgid "Private streams cannot be made default."
 msgstr "Soukromé kanály nelze nastavit jako výchozí."
 
-#: zerver/views/streams.py:172
+#: zerver/views/streams.py:173
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr "Je třeba nastavit \"new_description\" nebo \"new_group_name\"."
 
-#: zerver/views/streams.py:202
+#: zerver/views/streams.py:203
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr "Neplatná hodnota pro \"op\". Nastavte buď \"add\" nebo \"remove\"."
 
-#: zerver/views/streams.py:361
+#: zerver/views/streams.py:362
 msgid "Stream already has that name!"
 msgstr "Kanál už se takto jmenuje!"
 
-#: zerver/views/streams.py:440 zerver/views/user_groups.py:169
+#: zerver/views/streams.py:441 zerver/views/user_groups.py:169
 #: zerver/views/user_groups.py:366
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Nic k provedení. Zadejte aspoň jedno z \"add\" nebo \"delete\"."
 
-#: zerver/views/streams.py:524
+#: zerver/views/streams.py:525
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
 msgstr "{user_full_name} vás přidal/a do kanálu {stream_name}."
 
-#: zerver/views/streams.py:530
+#: zerver/views/streams.py:531
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
 msgstr "{user_full_name} vás přidal/a do následujících kanálů:"
 
-#: zerver/views/streams.py:646
+#: zerver/views/streams.py:647
 #, python-brace-format
 msgid "Unable to access stream ({stream_name})."
 msgstr "Nelze přistupovat ke kanálu ({stream_name})."
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:660
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr "Další uživatele, kteří jsou zrcadleni pomocí Zephyru, můžete zvát pouze do soukromých kanálů."
 
-#: zerver/views/streams.py:771
+#: zerver/views/streams.py:772
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
 msgstr "{user_name} vytvořil následující kanály: {stream_str}."
 
-#: zerver/views/streams.py:773
+#: zerver/views/streams.py:774
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
 msgstr "{user_name} vytvořil nový kanál {stream_str}."
 
-#: zerver/views/streams.py:774
+#: zerver/views/streams.py:775
 msgid "new streams"
 msgstr "Nové kanály"
 
-#: zerver/views/streams.py:806
+#: zerver/views/streams.py:807
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
 msgstr "**{policy}** kanál vytvořen {user_name}. **Popis:**"
 
-#: zerver/views/streams.py:1069
+#: zerver/views/streams.py:1070
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1075
+#: zerver/views/streams.py:1076
 #, python-brace-format
 msgid "Not subscribed to stream id {stream_id}"
 msgstr ""
@@ -5345,7 +5478,7 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "Neplatný JSON pro podzprávu"
 
-#: zerver/views/thumbnail.py:43 zerver/views/upload.py:185
+#: zerver/views/thumbnail.py:43 zerver/views/upload.py:222
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Nejste oprávněn zobrazit tento soubor.</p>"
 
@@ -5369,24 +5502,24 @@ msgstr "Prázdný 'do' seznamu"
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 
-#: zerver/views/upload.py:183
+#: zerver/views/upload.py:212
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:223
+#: zerver/views/upload.py:264
 msgid "Invalid token"
 msgstr "Neplatný elektronický klíč"
 
-#: zerver/views/upload.py:225
+#: zerver/views/upload.py:266
 msgid "Invalid filename"
 msgstr "Neplatný název souboru"
 
-#: zerver/views/upload.py:268
+#: zerver/views/upload.py:309
 msgid "You must specify a file to upload"
 msgstr "Musíte zvolit soubor k nahrání"
 
-#: zerver/views/upload.py:270 zerver/views/users.py:425
-#: zerver/views/users.py:527
+#: zerver/views/upload.py:311 zerver/views/users.py:434
+#: zerver/views/users.py:536
 msgid "You may only upload one file at a time"
 msgstr "Najednou můžete nahrát pouze jeden soubor"
 
@@ -5431,46 +5564,46 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr ""
 
-#: zerver/views/user_settings.py:63
+#: zerver/views/user_settings.py:64
 msgid "Avatar changes are disabled in this organization."
 msgstr "Změny avatarů jsou v této organizaci zakázány."
 
-#: zerver/views/user_settings.py:87 zerver/views/user_settings.py:342
+#: zerver/views/user_settings.py:73
 msgid "Email address changes are disabled in this organization."
 msgstr "Změny e-mailu jsou v této organizaci zakázány."
 
-#: zerver/views/user_settings.py:142
+#: zerver/views/user_settings.py:174
 msgid "Invalid default_language"
 msgstr "Neplatný default_language"
 
-#: zerver/views/user_settings.py:150
+#: zerver/views/user_settings.py:182
 #, python-brace-format
 msgid "Invalid notification sound '{notification_sound}'"
 msgstr ""
 
-#: zerver/views/user_settings.py:161
+#: zerver/views/user_settings.py:193
 #, python-brace-format
 msgid "Invalid email batching period: {seconds} seconds"
 msgstr ""
 
-#: zerver/views/user_settings.py:297
+#: zerver/views/user_settings.py:329
 msgid "Your Zulip password is managed in LDAP"
 msgstr "Vaše heslo pro Zulip je spravováno v LDAPu"
 
-#: zerver/views/user_settings.py:307
+#: zerver/views/user_settings.py:339
 msgid "Wrong password!"
 msgstr "Chybné heslo!"
 
-#: zerver/views/user_settings.py:312
+#: zerver/views/user_settings.py:344
 #, python-brace-format
 msgid "You're making too many attempts! Try again in {seconds} seconds."
 msgstr ""
 
-#: zerver/views/user_settings.py:318
+#: zerver/views/user_settings.py:350
 msgid "New password is too weak!"
 msgstr "Nové heslo je příliš slabé!"
 
-#: zerver/views/user_settings.py:391
+#: zerver/views/user_settings.py:406
 msgid "You must upload exactly one avatar."
 msgstr "Musíte nahrát právě jeden obrázek avatara."
 
@@ -5478,59 +5611,59 @@ msgstr "Musíte nahrát právě jeden obrázek avatara."
 msgid "Topic is not muted"
 msgstr "Téma není ztlumeno"
 
-#: zerver/views/users.py:122
+#: zerver/views/users.py:123
 msgid "Cannot deactivate the only organization owner"
 msgstr "Nelze vypnout jediného vlastníka organizace"
 
-#: zerver/views/users.py:240
+#: zerver/views/users.py:241
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
 msgstr "Nelze odstranit vlastnická oprávnění jediného vlastníka organizace."
 
-#: zerver/views/users.py:380
+#: zerver/views/users.py:389
 msgid "Failed to change owner, no such user"
 msgstr "Nepodařilo se změnit vlastníka, žádný takový uživatel neexistuje"
 
-#: zerver/views/users.py:382
+#: zerver/views/users.py:391
 msgid "Failed to change owner, user is deactivated"
 msgstr "Nepodařilo se změnit vlastníka, uživatel je vypnut"
 
-#: zerver/views/users.py:384
+#: zerver/views/users.py:393
 msgid "Failed to change owner, bots can't own other bots"
 msgstr "Nepodařilo se změnit vlastníka, roboti nemohou vlastnit jiné roboty"
 
-#: zerver/views/users.py:490
+#: zerver/views/users.py:499
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
 msgstr "Roboty nelze vytvářet, dokud FAKE_EMAIL_DOMAIN není správně nastaveno\nSpojte se, prosím, se správcem serveru."
 
-#: zerver/views/users.py:500
+#: zerver/views/users.py:509
 msgid "Embedded bots are not enabled."
 msgstr "Přidaní roboti nejsou povoleni."
 
-#: zerver/views/users.py:502
+#: zerver/views/users.py:511
 msgid "Invalid embedded bot name."
 msgstr "Neplatný název přidaného robota."
 
-#: zerver/views/users.py:511
+#: zerver/views/users.py:520
 msgid "Username already in use"
 msgstr "Uživatelské jméno se již používá"
 
-#: zerver/views/users.py:687
+#: zerver/views/users.py:696
 msgid "User not authorized to create users"
 msgstr ""
 
-#: zerver/views/users.py:702
+#: zerver/views/users.py:711
 #, python-brace-format
 msgid "Email '{email}' not allowed in this organization"
 msgstr "Adresa elektronické pošty '{email}' není v této organizaci povolena"
 
-#: zerver/views/users.py:707
+#: zerver/views/users.py:716
 msgid "Disposable email addresses are not allowed in this organization"
 msgstr "Jednorázové e-maily nejsou v této organizaci povoleny"
 
-#: zerver/views/users.py:713
+#: zerver/views/users.py:722
 #, python-brace-format
 msgid "Email '{email}' already in use"
 msgstr ""
@@ -5652,62 +5785,58 @@ msgstr "Zpráva ze Slacku"
 msgid "Unknown WordPress webhook action: {hook}"
 msgstr ""
 
-#: zerver/worker/queue_processors.py:1140
+#: zerver/worker/queue_processors.py:1143
 #, python-brace-format
 msgid ""
 "Your data export is complete. [View and download "
 "exports]({export_settings_link})."
 msgstr ""
 
-#: zilencer/auth.py:86
+#: zilencer/auth.py:90
 msgid "Invalid subdomain for push notifications bouncer"
 msgstr "Neplatná subdoména pro \"bouncer push\" oznámení"
 
-#: zilencer/auth.py:101
+#: zilencer/auth.py:105
 msgid "Must validate with valid Zulip server API key"
 msgstr "Musí se prokázat platným Zulip server API klíčem"
 
 #. error
-#: zilencer/views.py:76 zilencer/views.py:78
+#: zilencer/views.py:67 zilencer/views.py:69
 msgid "Invalid UUID"
 msgstr "Neplatné UUID"
 
 #. error
-#: zilencer/views.py:83
+#: zilencer/views.py:74
 msgid "Invalid token type"
 msgstr "Neplatný typ elektronického klíče"
 
-#: zilencer/views.py:120
+#: zilencer/views.py:111
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:172
+#: zilencer/views.py:164
 msgid "Missing ios_app_id"
 msgstr ""
 
-#: zilencer/views.py:175
+#: zilencer/views.py:167
 msgid "Missing user_id or user_uuid"
 msgstr "Chybí uživatelské_id nebo user_uuid"
 
-#: zilencer/views.py:500
+#: zilencer/views.py:534
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:506
+#: zilencer/views.py:540
 msgid "Data is out of order."
 msgstr "Data nemají správné pořadí."
 
-#: zilencer/views.py:529
-msgid "Invalid data."
-msgstr "Neplatná data."
-
-#: zilencer/views.py:558
+#: zilencer/views.py:601
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:718
+#: zilencer/views.py:764
 msgid "Malformed audit log data"
 msgstr ""
 
@@ -5715,14 +5844,14 @@ msgstr ""
 msgid "You need to reset your password."
 msgstr "Musíte si znovu nastavit heslo."
 
-#: zproject/backends.py:2288
+#: zproject/backends.py:2289
 msgid "Missing id_token parameter"
 msgstr "Chybějící parametr id_token"
 
-#: zproject/backends.py:3001
+#: zproject/backends.py:3002
 msgid "Invalid OTP"
 msgstr "Neplatný OTP"
 
-#: zproject/backends.py:3004
+#: zproject/backends.py:3005
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Dohromady nelze použít jak mobile_flow_otp tak desktop_flow_otp."
