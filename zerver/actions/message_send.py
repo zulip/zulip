@@ -30,7 +30,10 @@ from django.utils.translation import override as override_language
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.uploads import do_claim_attachments
-from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.actions.user_topics import (
+    bulk_do_set_user_topic_visibility_policy,
+    do_set_user_topic_visibility_policy,
+)
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
@@ -987,6 +990,47 @@ def do_send_messages(
                         visibility_policy=new_visibility_policy,
                     )
                     send_request.automatic_new_visibility_policy = new_visibility_policy
+
+            # Set the visibility_policy of the users mentioned in the message
+            # to "FOLLOWED" if "automatically_follow_topics_where_mentioned" is "True".
+            human_user_personal_mentions = send_request.rendering_result.mentions_user_ids & (
+                send_request.active_user_ids - send_request.all_bot_user_ids
+            )
+            expect_follow_user_profiles: Set[UserProfile] = set()
+
+            if len(human_user_personal_mentions) > 0:
+                expect_follow_user_profiles = set(
+                    UserProfile.objects.filter(
+                        realm_id=realm_id,
+                        id__in=human_user_personal_mentions,
+                        automatically_follow_topics_where_mentioned=True,
+                    )
+                )
+            if len(expect_follow_user_profiles) > 0:
+                user_topics_query_set = UserTopic.objects.filter(
+                    user_profile__in=expect_follow_user_profiles,
+                    stream_id=send_request.stream.id,
+                    topic_name__iexact=send_request.message.topic_name(),
+                    visibility_policy__in=[
+                        # Explicitly muted takes precedence over this setting.
+                        UserTopic.VisibilityPolicy.MUTED,
+                        # Already followed
+                        UserTopic.VisibilityPolicy.FOLLOWED,
+                    ],
+                )
+                skip_follow_users = {
+                    user_topic.user_profile for user_topic in user_topics_query_set
+                }
+
+                to_follow_users = list(expect_follow_user_profiles - skip_follow_users)
+
+                if to_follow_users:
+                    bulk_do_set_user_topic_visibility_policy(
+                        user_profiles=to_follow_users,
+                        stream=send_request.stream,
+                        topic=send_request.message.topic_name(),
+                        visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+                    )
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.

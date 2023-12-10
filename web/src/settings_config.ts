@@ -586,6 +586,9 @@ export const notification_settings_labels = {
     automatically_unmute_topics_in_muted_streams_policy: $t({
         defaultMessage: "Automatically unmute topics in muted streams",
     }),
+    automatically_follow_topics_where_mentioned: $t({
+        defaultMessage: "Automatically follow topics where I'm mentioned",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -756,6 +759,7 @@ const other_notification_settings = [
     "notification_sound",
     "automatically_follow_topics_policy",
     "automatically_unmute_topics_in_muted_streams_policy",
+    "automatically_follow_topics_where_mentioned",
 ];
 
 export const all_notification_settings = [

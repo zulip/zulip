@@ -571,6 +571,9 @@ def update_realm_user_settings_defaults(
         json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
     ),
+    automatically_follow_topics_where_mentioned: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_drafts_synchronization: Optional[bool] = REQ(json_validator=check_bool, default=None),

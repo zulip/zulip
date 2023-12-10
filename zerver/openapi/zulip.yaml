@@ -10673,6 +10673,16 @@ paths:
               - 3
               - 4
           example: 1
+        - name: automatically_follow_topics_where_mentioned
+          in: query
+          description: |
+            Whether the server will automatically mark the user as following
+            topics where the user is mentioned.
+
+            **Changes**: New in Zulip 8.0 (feature level 235).
+          schema:
+            type: boolean
+          example: true
         - name: presence_enabled
           in: query
           description: |
@@ -12936,6 +12946,13 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_follow_topics_where_mentioned:
+                            type: boolean
+                            description: |
+                              Whether the server will automatically mark the user as following
+                              topics where the user is mentioned.
+
+                              **Changes**: New in Zulip 8.0 (feature level 235).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -15151,6 +15168,13 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_follow_topics_where_mentioned:
+                            type: boolean
+                            description: |
+                              Whether the server will automatically mark the user as following
+                              topics where the user is mentioned.
+
+                              **Changes**: New in Zulip 8.0 (feature level 235).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -16492,6 +16516,16 @@ paths:
               - 3
               - 4
           example: 1
+        - name: automatically_follow_topics_where_mentioned
+          in: query
+          description: |
+            Whether the server will automatically mark the user as following
+            topics where the user is mentioned.
+
+            **Changes**: New in Zulip 8.0 (feature level 235).
+          schema:
+            type: boolean
+          example: true
         - name: presence_enabled
           in: query
           description: |

@@ -1768,6 +1768,7 @@ class UserBaseSettings(models.Model):
     automatically_unmute_topics_in_muted_streams_policy = models.PositiveSmallIntegerField(
         default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
     )
+    automatically_follow_topics_where_mentioned = models.BooleanField(default=True)
 
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
@@ -1866,6 +1867,7 @@ class UserBaseSettings(models.Model):
         enable_followed_topic_wildcard_mentions_notify=bool,
         automatically_follow_topics_policy=int,
         automatically_unmute_topics_in_muted_streams_policy=int,
+        automatically_follow_topics_where_mentioned=bool,
     )
 
     notification_setting_types = {

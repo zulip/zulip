@@ -107,6 +107,8 @@ run_test("tr_tag", ({mock_template}) => {
             automatically_follow_topics_policy: "Automatically follow topics",
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted streams",
+            automatically_follow_topics_where_mentioned:
+                "Automatically follow topics where I'm mentioned",
         },
         show_push_notifications_tooltip: false,
         user_role_text: "Member",

@@ -476,6 +476,36 @@ class NormalActionsTest(BaseAction):
                 partial(self.send_stream_message, self.example_user("cordelia"), "Verona", content),
             )
 
+    def test_automatically_follow_topic_where_mentioned(self) -> None:
+        user = self.example_user("hamlet")
+
+        do_change_user_setting(
+            user_profile=user,
+            setting_name="automatically_follow_topics_where_mentioned",
+            setting_value=True,
+            acting_user=None,
+        )
+
+        def get_num_events() -> int:  # nocoverage
+            try:
+                user_topic = UserTopic.objects.get(
+                    user_profile=user,
+                    stream_id=get_stream("Verona", user.realm).id,
+                    topic_name__iexact="test",
+                )
+                if user_topic.visibility_policy != UserTopic.VisibilityPolicy.FOLLOWED:
+                    return 3
+            except UserTopic.DoesNotExist:
+                return 3
+            return 1
+
+        for i in range(3):
+            content = "mentioning... @**" + user.full_name + "** hello " + str(i)
+            self.verify_action(
+                partial(self.send_stream_message, self.example_user("cordelia"), "Verona", content),
+                num_events=get_num_events(),
+            )
+
     def test_topic_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**topic** hello " + str(i)
