@@ -26,7 +26,7 @@ from analytics.lib.counts import (
 from corporate.lib.stripe import RemoteRealmBillingSession, do_deactivate_remote_server
 from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RemoteRealmServerMismatchError
 from zerver.lib.push_notifications import (
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
@@ -375,7 +375,7 @@ def get_remote_realm_helper(
             realm_uuid,
             server.id,
         )
-        return None
+        raise RemoteRealmServerMismatchError
 
     return remote_realm
 
