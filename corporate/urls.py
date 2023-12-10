@@ -35,7 +35,9 @@ from corporate.views.remote_billing_page import (
     remote_billing_legacy_server_confirm_login,
     remote_billing_legacy_server_from_login_confirmation_link,
     remote_billing_legacy_server_login,
+    remote_realm_billing_confirm_email,
     remote_realm_billing_finalize_login,
+    remote_realm_billing_from_login_confirmation_link,
 )
 from corporate.views.session import (
     start_card_update_stripe_session,
@@ -186,6 +188,15 @@ urlpatterns = list(i18n_urlpatterns)
 
 urlpatterns += [
     path("remote-billing-login/<signed_billing_access_token>", remote_realm_billing_finalize_login),
+    path(
+        "remote-billing-login/<signed_billing_access_token>/confirm/",
+        remote_realm_billing_confirm_email,
+    ),
+    path(
+        "remote-billing-login/do_confirm/<confirmation_key>",
+        remote_realm_billing_from_login_confirmation_link,
+        name="remote_realm_billing_from_login_confirmation_link",
+    ),
     # Remote server billing endpoints.
     path("realm/<realm_uuid>/plans/", remote_realm_plans_page, name="remote_realm_plans_page"),
     path(
