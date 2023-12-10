@@ -607,6 +607,66 @@ def check_can_access_user(
     return False
 
 
+def get_inaccessible_user_ids(
+    target_user_ids: List[int], acting_user: Optional[UserProfile]
+) -> Set[int]:
+    if check_user_can_access_all_users(acting_user):
+        return set()
+
+    assert acting_user is not None
+
+    # All users can access all the bots, so we just exclude them.
+    target_human_user_ids = UserProfile.objects.filter(
+        id__in=target_user_ids, is_bot=False
+    ).values_list("id", flat=True)
+
+    if not target_human_user_ids:
+        return set()
+
+    subscribed_recipient_ids = Subscription.objects.filter(
+        user_profile=acting_user,
+        active=True,
+        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+    ).values_list("recipient_id", flat=True)
+
+    common_subscription_user_ids = (
+        Subscription.objects.filter(
+            recipient_id__in=subscribed_recipient_ids,
+            user_profile_id__in=target_human_user_ids,
+            active=True,
+            is_user_active=True,
+        )
+        .distinct("user_profile_id")
+        .values_list("user_profile_id", flat=True)
+    )
+
+    possible_inaccessible_user_ids = set(target_human_user_ids) - set(common_subscription_user_ids)
+    if not possible_inaccessible_user_ids:
+        return set()
+
+    target_user_recipient_ids = UserProfile.objects.filter(
+        id__in=possible_inaccessible_user_ids
+    ).values_list("recipient_id", flat=True)
+
+    direct_message_query = Message.objects.filter(
+        recipient__type=Recipient.PERSONAL, realm=acting_user.realm
+    )
+    direct_messages_users = direct_message_query.filter(
+        Q(sender_id__in=possible_inaccessible_user_ids, recipient_id=acting_user.recipient_id)
+        | Q(recipient_id__in=target_user_recipient_ids, sender_id=acting_user.id)
+    ).values_list("sender_id", "recipient__type_id")
+
+    user_ids_involved_in_dms = set()
+    for sender_id, recipient_user_id in direct_messages_users:
+        if sender_id == acting_user.id:
+            user_ids_involved_in_dms.add(recipient_user_id)
+        else:
+            user_ids_involved_in_dms.add(sender_id)
+
+    inaccessible_user_ids = possible_inaccessible_user_ids - user_ids_involved_in_dms
+    return inaccessible_user_ids
+
+
 def get_user_ids_who_can_access_user(target_user: UserProfile) -> List[int]:
     # We assume that caller only needs active users here, since
     # this function is used to get users to send events and to
