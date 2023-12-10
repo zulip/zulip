@@ -53,6 +53,7 @@ from zerver.lib.users import (
     access_user_by_id_including_cross_realm,
     get_accounts_for_email,
     get_cross_realm_dicts,
+    get_inaccessible_user_ids,
     user_ids_to_users,
 )
 from zerver.lib.utils import assert_is_not_none
@@ -2672,6 +2673,36 @@ class GetProfileTest(ZulipTestCase):
         for user in inaccessible_users:
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
+
+    def test_get_inaccessible_user_ids(self) -> None:
+        polonius = self.example_user("polonius")
+        bot = self.example_user("default_bot")
+        othello = self.example_user("othello")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        prospero = self.example_user("prospero")
+
+        inaccessible_user_ids = get_inaccessible_user_ids(
+            [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
+        )
+        self.assert_length(inaccessible_user_ids, 0)
+
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id], polonius)
+        self.assert_length(inaccessible_user_ids, 0)
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id], polonius)
+        self.assert_length(inaccessible_user_ids, 0)
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
+        self.assertEqual(inaccessible_user_ids, {othello.id})
+
+        inaccessible_user_ids = get_inaccessible_user_ids(
+            [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
+        )
+        self.assertEqual(inaccessible_user_ids, {othello.id})
 
 
 class DeleteUserTest(ZulipTestCase):
