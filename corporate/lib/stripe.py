@@ -2821,9 +2821,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
         self,
         remote_realm: RemoteRealm,
+        remote_billing_user: Optional[RemoteRealmBillingUser] = None,
         support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_realm = remote_realm
+        self.remote_billing_user = remote_billing_user
         if support_staff is not None:
             assert support_staff.is_staff
             self.support_session = True
