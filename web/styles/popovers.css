@@ -226,6 +226,12 @@
 }
 
 .streams_popover {
+    width: min-content;
+
+    .stream-menu-item {
+        white-space: nowrap;
+    }
+
     .topic-name {
         text-align: center;
         margin-top: 5px;
