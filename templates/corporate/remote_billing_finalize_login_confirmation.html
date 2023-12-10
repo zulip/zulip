@@ -2,22 +2,21 @@
 {% set entrypoint = "upgrade" %}
 
 {% block title %}
-<title>{{ _("Billing login confirmation") }} | Zulip</title>
+<title>{{ _("Zulip plan management login confirmation") }} | Zulip</title>
 {% endblock %}
 
 {% block portico_content %}
-<div id="remote-realm-confirm-login-page" class="register-account flex full-page">
+<div id="remote-billing-confirm-login-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Log in to Zulip server billing for {{ host }}</h1>
+            <h1>Log in to Zulip plan management for {{ host }}</h1>
         </div>
         <div class="white-box">
-            <p>Click <b>Continue</b> to log in to Zulip server
-            billing with the account below.</p>
+            <p>Click <b>Continue</b> to log in to the Zulip plan management system with the account below.</p>
             Email: {{ user_email }}<br />
-            <form id="remote-realm-confirm-login-form" method="post" action="{{ action_url }}">
+            <form id="remote-billing-confirm-login-form" method="post" action="{{ action_url }}">
                 {{ csrf_input }}
-                <div class="input-box remote-realm-confirm-login-form-field">
+                <div class="input-box remote-billing-confirm-login-form-field">
                     <label for="full_name" class="inline-block label-title">Full name</label>
                     <input id="full_name" name="full_name" class="required" type="text" {% if user_full_name %}value="{{ user_full_name }}"{% endif %} />
                 </div>
@@ -31,9 +30,9 @@
                 </div>
                 {% endif %}
                 <div class="upgrade-button-container">
-                    <button type="submit" id="remote-realm-confirm-login-button" class="stripe-button-el invoice-button">
-                        <span class="remote-realm-confirm-login-button-text">Continue</span>
-                        <img class="loader remote-realm-confirm-login-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                    <button type="submit" id="remote-billing-confirm-login-button" class="stripe-button-el invoice-button">
+                        <span class="remote-billing-confirm-login-button-text">Continue</span>
+                        <img class="loader remote-billing-confirm-login-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
                     </button>
                 </div>
             </form>

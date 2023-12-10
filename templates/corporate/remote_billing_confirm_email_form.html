@@ -14,7 +14,7 @@
             <p>Next, we will send a verification email to the address you provide.</p>
         </div>
         <div class="white-box">
-            <form id="server-confirm-login-form" method="post" action="{{ action_url }}">
+            <form id="remote-billing-confirm-email-form" method="post" action="{{ action_url }}">
                 {{ csrf_input }}
                 {% if next_page %}
                 <input type="hidden" name="next_page" value="{{ next_page }}" />
@@ -24,7 +24,7 @@
                     <input id="email" name="email" class="email required" type="email" {% if email %}value="{{ email }}"{% endif %} />
                 </div>
                 <div class="upgrade-button-container">
-                    <button type="submit" id="server-confirm-login-button" class="stripe-button-el invoice-button">
+                    <button type="submit" id="remote-billing-confirm-email-button" class="stripe-button-el invoice-button">
                         <span class="server-login-button-text">Continue</span>
                         <img class="loader server-login-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
                     </button>
