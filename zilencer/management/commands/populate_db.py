@@ -860,6 +860,9 @@ class Command(BaseCommand):
             #
             # We have separate tests to verify events generated, database query counts,
             # and other important details related to the above-mentioned settings.
+            #
+            # We set the value of 'automatically_follow_topics_where_mentioned' to 'False' so that it
+            # does not increase the number of events and db queries while running tests.
             for user in user_profiles:
                 do_change_user_setting(
                     user,
@@ -871,6 +874,12 @@ class Command(BaseCommand):
                     user,
                     "automatically_unmute_topics_in_muted_streams_policy",
                     UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                    acting_user=None,
+                )
+                do_change_user_setting(
+                    user,
+                    "automatically_follow_topics_where_mentioned",
+                    False,
                     acting_user=None,
                 )
 

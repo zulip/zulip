@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 235**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added a new user setting,`automatically_follow_topics_where_mentioned`
+  that allows user to automatically follow topics where the user is mentioned.
+
 **Feature level 234**
 
 * Mobile push notifications now include a `realm_name` field.

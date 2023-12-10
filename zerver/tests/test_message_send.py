@@ -1560,6 +1560,7 @@ class StreamMessagesTest(ZulipTestCase):
             self.subscribe(user_profile, "Denmark")
 
         sender = self.example_user("hamlet")
+        user = self.example_user("othello")
         sending_client = make_client(name="test suite")
         stream_name = "Denmark"
         topic_name = "foo"
@@ -1641,6 +1642,54 @@ class StreamMessagesTest(ZulipTestCase):
                 stream_name=stream_name,
                 topic="topic 2",
                 body=content,
+            )
+
+        realm = get_realm("zulip")
+        subscribers = self.users_subscribed_to_stream(stream_name, realm)
+
+        for user in subscribers:
+            do_change_user_setting(
+                user_profile=user,
+                setting_name="automatically_follow_topics_where_mentioned",
+                setting_value=True,
+                acting_user=None,
+            )
+        # There will be an increase in the query count of 5 while sending
+        # a message with a mention to a topic if visibility policy for the
+        # mentioned user is other than FOLLOWED.
+        # 1 to get the user_id of the mentioned user + 1 to check if the topic
+        # is already followed + 3 queries to follow the topic.
+        flush_per_request_caches()
+        with self.assert_database_query_count(22):
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic="topic 2",
+                body="@**" + user.full_name + "**",
+            )
+        # If the topic is already FOLLOWED, there will be an increase in the query
+        # count of 2.
+        # 1 to get the user_id of the mentioned user + 1 to check if the topic is
+        # already followed.
+        flush_per_request_caches()
+        with self.assert_database_query_count(19):
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic="topic 2",
+                body="@**" + user.full_name + "**",
+            )
+
+        flush_per_request_caches()
+        with self.assert_database_query_count(16):
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic="topic 2",
+                body="@**all**",
             )
 
     def test_stream_message_dict(self) -> None:
