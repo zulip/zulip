@@ -4,6 +4,20 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
+// Mocking requestAnimationFrame for the testing environment
+const mockRequestAnimationFrame = (callback: FrameRequestCallback) => {
+    setTimeout(callback, 0);
+  };
+  
+  beforeAll(() => {
+    // Check if requestAnimationFrame is not defined (in a non-browser environment)
+    if (!('requestAnimationFrame' in window)) {
+      // Assign the mock function to requestAnimationFrame
+      // This will make requestAnimationFrame available in your tests
+      window.requestAnimationFrame = mockRequestAnimationFrame;
+    }
+  });
+
 async function check_compose_form_empty(page: Page): Promise<void> {
     await common.check_compose_state(page, {
         stream_name: "",
@@ -11,6 +25,7 @@ async function check_compose_form_empty(page: Page): Promise<void> {
         content: "",
     });
 }
+
 
 async function close_compose_box(page: Page): Promise<void> {
     const recipient_dropdown_visible = (await page.$(".dropdown-list-container")) !== null;
