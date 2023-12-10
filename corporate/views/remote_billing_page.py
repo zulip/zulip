@@ -203,7 +203,7 @@ def remote_realm_billing_finalize_login(
             }
             return render(
                 request,
-                "corporate/remote_realm_billing_finalize_login_confirmation.html",
+                "corporate/remote_billing_finalize_login_confirmation.html",
                 context=context,
             )
         else:
@@ -218,9 +218,7 @@ def remote_realm_billing_finalize_login(
             }
             return render(
                 request,
-                # TODO: We're re-using a template originally made for the legacy server
-                # flow. We should rename it and its HTML contents to a more general name.
-                "corporate/remote_billing_legacy_server_confirm_login_form.html",
+                "corporate/remote_billing_confirm_email_form.html",
                 context=context,
             )
 
@@ -562,7 +560,7 @@ def remote_billing_legacy_server_login(
     }
     return render(
         request,
-        "corporate/remote_billing_legacy_server_confirm_login_form.html",
+        "corporate/remote_billing_confirm_email_form.html",
         context=context,
     )
 
@@ -677,9 +675,7 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         }
         return render(
             request,
-            # TODO: We're re-using the template, so it should be renamed
-            # to a more general name.
-            "corporate/remote_realm_billing_finalize_login_confirmation.html",
+            "corporate/remote_billing_finalize_login_confirmation.html",
             context=context,
         )
 
