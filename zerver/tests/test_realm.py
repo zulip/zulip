@@ -1085,12 +1085,7 @@ class RealmTest(ZulipTestCase):
         dummy_send_realms_only_response = {
             "result": "success",
             "msg": "",
-            "realms": {
-                "dummy-uuid": {
-                    "can_push": True,
-                    "expected_end_timestamp": None,
-                },
-            },
+            "realms": {},
         }
         with mock.patch(
             "zerver.lib.remote_server.send_to_push_bouncer",
