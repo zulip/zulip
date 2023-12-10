@@ -1813,10 +1813,16 @@ class BillingSession(ABC):
         free_trial_end_date = None
         # Don't show free trial for remote servers on legacy plan.
         if remote_server_legacy_plan_end_date is None:
-            free_trial_days = get_free_trial_days()
+            is_self_hosted_billing = not isinstance(self, RealmBillingSession)
+            free_trial_days = get_free_trial_days(is_self_hosted_billing)
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
-                    tier, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, None, True
+                    tier,
+                    False,
+                    CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    None,
+                    True,
+                    is_self_hosted_billing=is_self_hosted_billing,
                 )
                 free_trial_end_date = (
                     f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
@@ -3600,6 +3606,7 @@ def compute_plan_parameters(
     discount: Optional[Decimal],
     free_trial: bool = False,
     billing_cycle_anchor: Optional[datetime] = None,
+    is_self_hosted_billing: bool = False,
 ) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
@@ -3621,13 +3628,16 @@ def compute_plan_parameters(
         next_invoice_date = add_months(billing_cycle_anchor, 1)
     if free_trial:
         period_end = billing_cycle_anchor + timedelta(
-            days=assert_is_not_none(get_free_trial_days())
+            days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing))
         )
         next_invoice_date = period_end
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
 
-def get_free_trial_days() -> Optional[int]:
+def get_free_trial_days(is_self_hosted_billing: bool = False) -> Optional[int]:
+    if is_self_hosted_billing:
+        return settings.SELF_HOSTING_FREE_TRIAL_DAYS
+
     return settings.CLOUD_FREE_TRIAL_DAYS
 
 

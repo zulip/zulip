@@ -547,6 +547,7 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 30
 BILLING_ENABLED = False
 
 CLOUD_FREE_TRIAL_DAYS: Optional[int] = int(get_secret("cloud_free_trial_days", "0"))
+SELF_HOSTING_FREE_TRIAL_DAYS: Optional[int] = int(get_secret("self_hosting_free_trial_days", "0"))
 
 # Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
 # making announcements.
