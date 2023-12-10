@@ -1,1 +1,1 @@
-{% trans %}Confirm login to Zulip server billing management{% endtrans %}
+{% trans %}Log in to Zulip plan management{% endtrans %}
