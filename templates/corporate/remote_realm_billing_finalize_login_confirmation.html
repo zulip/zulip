@@ -14,18 +14,13 @@
         <div class="white-box">
             <p>Click <b>Continue</b> to log in to Zulip server
             billing with the account below.</p>
-            {% if not legacy_server_confirmation_flow %}
-            Full name: {{ user_full_name }}<br />
-            {% endif %}
             Email: {{ user_email }}<br />
             <form id="remote-realm-confirm-login-form" method="post" action="{{ action_url }}">
                 {{ csrf_input }}
-                {% if legacy_server_confirmation_flow %}
                 <div class="input-box remote-realm-confirm-login-form-field">
                     <label for="full_name" class="inline-block label-title">Full name</label>
-                    <input id="full_name" name="full_name" class="required" type="text"/>
+                    <input id="full_name" name="full_name" class="required" type="text" {% if user_full_name %}value="{{ user_full_name }}"{% endif %} />
                 </div>
-                {% endif %}
                 {% if tos_consent_needed %}
                 <div class="input-group terms-of-service">
                     <label for="id_terms" class="inline-block checkbox">
