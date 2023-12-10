@@ -1685,6 +1685,8 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
+            mentions_me_directly=set(),
+            wildcard_mentions=set(),
             muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
@@ -1707,6 +1709,8 @@ class MarkUnreadTest(ZulipTestCase):
             stream_dict={},
             huddle_dict={},
             mentions=set(),
+            mentions_me_directly=set(),
+            wildcard_mentions=set(),
             muted_stream_ids=set(),
             unmuted_stream_msgs=set(),
             old_unreads_missing=False,
@@ -1943,7 +1947,7 @@ class MarkUnreadTest(ZulipTestCase):
                 sender=sender,
                 stream_name=stream_name,
                 topic_name=topic_name,
-                content="@here",
+                content="@**all**",
             )
             for i in range(4)
         ]
@@ -2309,6 +2313,7 @@ class MarkUnreadTest(ZulipTestCase):
                 dict(
                     type="private",
                     user_ids=[sender.id],
+                    mentioned_me_directly=True,
                     mentioned=True,
                 ),
             )
@@ -2332,7 +2337,7 @@ class MarkUnreadTest(ZulipTestCase):
         stream_name = "Denmark"
         self.subscribe(receiver, stream_name)
         message_ids = [
-            self.send_personal_message(sender, receiver, content="@here") for i in range(4)
+            self.send_personal_message(sender, receiver, content="@**all**") for i in range(4)
         ]
         self.login("hamlet")
         for message_id in message_ids:
