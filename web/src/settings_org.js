@@ -574,7 +574,21 @@ export function deactivate_organization(e) {
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
     });
 }
-
+  
+$('#save-welcome-message').click(function() {
+    var message = $('#custom-welcome-bot-message').val();
+  
+    channel.patch({
+      url: '/settings/set_welcome_bot_message',
+      data: {
+        welcome_bot_custom_message: message
+      },
+      success() {
+        // Saved
+      }
+    });
+  });
+  
 export function sync_realm_settings(property) {
     if (!meta.loaded) {
         return;
@@ -588,7 +602,6 @@ export function sync_realm_settings(property) {
         case 'welcome_bot_custom_message_enabled':
             if($('#welcome_bot_custom_message_enabled').length) {
               // Checkbox exists in DOM
-      
               if(page_params.welcome_bot_custom_message_enabled) {
                 // Checkbox should be checked
                 $('#welcome_bot_custom_message_enabled').prop('checked', true);
