@@ -78,7 +78,9 @@ def do_set_realm_property(
         "allow_message_editing",
         "edit_topic_policy",
         "message_content_edit_limit_seconds",
+        "welcome_bot_custom_message",
     ]
+
     if name in message_edit_settings or name == "add_custom_welcome_message_for_new_users":
         event = dict(
             type="realm",
@@ -593,7 +595,7 @@ def do_change_realm_plan_type(
 
 
 def update_custom_welcome_message(
-    realm: Realm, checkbox_state: bool, message_text: str, acting_user: Optional[UserProfile]
+    realm: Realm, checkbox_state: bool, textbox_text: str, acting_user: Optional[UserProfile]
 ) -> None:
     
     """
@@ -604,7 +606,10 @@ def update_custom_welcome_message(
     :param message_text: The custom welcome message text.
     :param acting_user: The user initiating the update.
     """
-    
+    if checkbox_state:
+    # Save the textbox text as custom message 
+        do_set_realm_property(realm, "welcome_bot_custom_message", textbox_text, acting_user=acting_user)
+
     # Update the new field in the Realm model
     realm.add_custom_welcome_message_for_new_users = checkbox_state
     realm.save(update_fields=['add_custom_welcome_message_for_new_users'])
@@ -612,8 +617,13 @@ def update_custom_welcome_message(
     # Send an event announcing the change
     event_data = {
         "enabled": checkbox_state,
-        "message_text": message_text if checkbox_state else None,
+        "message_text": textbox_text if checkbox_state else None,
     }
+
+    if checkbox_state:
+        # Send textbox text in event if checkbox enabled
+        event_data["message_text"] = textbox_text
+    
     event = dict(
         type="realm",
         op="update_dict",
@@ -621,8 +631,6 @@ def update_custom_welcome_message(
         data=event_data,
     )
     send_event(realm, event, active_user_ids(realm.id))
-
-
 
 def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     obj = RealmReactivationStatus.objects.create(realm=realm)
