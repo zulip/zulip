@@ -59,7 +59,9 @@ export function update_narrow_to_recipient_visibility() {
             !composing_to_current_topic_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+      requestAnimationFrame(() => {
+                $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            });
             return;
         }
     } else if (message_type === "private") {
@@ -69,11 +71,15 @@ export function update_narrow_to_recipient_visibility() {
             !composing_to_current_private_message_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            requestAnimationFrame(() => {
+                $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            });
             return;
         }
     }
-    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
+   requestAnimationFrame(() => {
+        $(".narrow_to_compose_recipients").toggleClass("invisible", true);
+    });
 }
 
 function update_fade() {
