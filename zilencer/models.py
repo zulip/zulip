@@ -121,6 +121,8 @@ class RemoteRealm(models.Model):
 
     name = models.TextField(default="")
 
+    is_system_bot_realm = models.BooleanField(default=False)
+
     authentication_methods = models.JSONField(default=dict)
 
     org_type = models.PositiveSmallIntegerField(

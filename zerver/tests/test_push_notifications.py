@@ -1143,6 +1143,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     "registration_deactivated",
                     "realm_deactivated",
                     "plan_type",
+                    "is_system_bot_realm",
                 )
             ),
             [
@@ -1158,6 +1159,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     "registration_deactivated": False,
                     "realm_deactivated": False,
                     "plan_type": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                    "is_system_bot_realm": realm.string_id == "zulipinternal",
                 }
                 for realm in Realm.objects.order_by("id")
             ],
@@ -1217,6 +1219,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             RemoteRealmAuditLog.objects.filter(
                 event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED
             )
+            .exclude(realm_id=get_realm("zulipinternal").id)
             .order_by("id")
             .values("event_type", "remote_id", "realm_id", "extra_data")
         )
