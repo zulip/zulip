@@ -93,6 +93,7 @@ from zerver.models import (
     get_stream,
 )
 from zilencer.models import RemoteZulipServerAuditLog
+from zilencer.views import DevicesToCleanUpDict
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -612,7 +613,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
             )
         data = self.assert_json_success(result)
         self.assertEqual(
-            {"result": "success", "msg": "", "total_android_devices": 2, "total_apple_devices": 1},
+            {
+                "result": "success",
+                "msg": "",
+                "total_android_devices": 2,
+                "total_apple_devices": 1,
+                "deleted_devices": {"android_devices": [], "apple_devices": []},
+            },
             data,
         )
         self.assertEqual(
@@ -2146,9 +2153,38 @@ class HandlePushNotificationTest(PushNotificationTest):
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
             ]
+
+            # Reset the local registrations for the user to make them compatible
+            # with the RemotePushDeviceToken entries.
+            PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).delete()
+            [
+                PushDeviceToken.objects.create(
+                    kind=PushDeviceToken.APNS,
+                    token=device.token,
+                    user=self.user_profile,
+                    ios_app_id=device.ios_app_id,
+                )
+                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
+            ]
+            PushDeviceToken.objects.filter(kind=PushDeviceToken.GCM).delete()
+            [
+                PushDeviceToken.objects.create(
+                    kind=PushDeviceToken.GCM,
+                    token=device.token,
+                    user=self.user_profile,
+                    ios_app_id=device.ios_app_id,
+                )
+                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
+            ]
+
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
             send_notification.return_value.is_successful = False
             send_notification.return_value.description = "Unregistered"
+
+            # Ensure the setup is as expected:
+            self.assertNotEqual(
+                PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0
+            )
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
                 views_logger.output,
@@ -2167,9 +2203,16 @@ class HandlePushNotificationTest(PushNotificationTest):
                     f"APNs: Removing invalid/expired token {token} (Unregistered)",
                     pn_logger.output,
                 )
+            self.assertIn(
+                "INFO:zerver.lib.push_notifications:Deleting push tokens based on response from bouncer: "
+                f"Android: [], Apple: {sorted([token for _, _ , token in apns_devices])}",
+                pn_logger.output,
+            )
             self.assertEqual(
                 RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0
             )
+            # Local registrations have also been deleted:
+            self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
@@ -2316,7 +2359,10 @@ class HandlePushNotificationTest(PushNotificationTest):
             )
 
     def test_send_notifications_to_bouncer(self) -> None:
-        user_profile = self.example_user("hamlet")
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
+
+        user_profile = self.user_profile
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,
@@ -2347,6 +2393,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"apns": True},
                 {"gcm": True},
                 {},
+                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)),
+                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)),
             )
             self.assertEqual(
                 mock_logging_info.output,
@@ -2414,7 +2462,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
     def test_send_remove_notifications_to_bouncer(self) -> None:
-        user_profile = self.example_user("hamlet")
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
+
+        user_profile = self.user_profile
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,
@@ -2457,6 +2508,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "zulip_message_id": message.id,
                 },
                 {"priority": "normal"},
+                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)),
+                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)),
             )
             user_message = UserMessage.objects.get(user_profile=self.user_profile, message=message)
             self.assertEqual(user_message.flags.active_mobile_push_notification, False)
@@ -3507,14 +3560,35 @@ class TestGetGCMPayload(PushNotificationTest):
         )
 
 
-class TestSendNotificationsToBouncer(ZulipTestCase):
+class TestSendNotificationsToBouncer(PushNotificationTest):
     @mock.patch("zerver.lib.remote_server.send_to_push_bouncer")
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
         user = self.example_user("hamlet")
 
-        mock_send.return_value = {"total_android_devices": 1, "total_apple_devices": 3}
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
+
+        android_devices = PushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
+        apple_devices = PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
+
+        self.assertNotEqual(android_devices.count(), 0)
+        self.assertNotEqual(apple_devices.count(), 0)
+
+        mock_send.return_value = {
+            "total_android_devices": 1,
+            "total_apple_devices": 3,
+            # This response tests the logic of the server taking
+            # deleted_devices from the bouncer and deleting the
+            # corresponding PushDeviceTokens - because the bouncer is
+            # communicating that those devices have been deleted due
+            # to failures from Apple/Google and have no further user.
+            "deleted_devices": DevicesToCleanUpDict(
+                android_devices=[device.token for device in android_devices],
+                apple_devices=[device.token for device in apple_devices],
+            ),
+        }
         total_android_devices, total_apple_devices = send_notifications_to_bouncer(
-            user, {"apns": True}, {"gcm": True}, {}
+            user, {"apns": True}, {"gcm": True}, {}, list(android_devices), list(apple_devices)
         )
         post_data = {
             "user_uuid": user.uuid,
@@ -3523,6 +3597,8 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
             "apns_payload": {"apns": True},
             "gcm_payload": {"gcm": True},
             "gcm_options": {},
+            "android_devices": [device.token for device in android_devices],
+            "apple_devices": [device.token for device in apple_devices],
         }
         mock_send.assert_called_with(
             "POST",
@@ -3542,6 +3618,9 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
                 value=total_android_devices + total_apple_devices,
             ),
         )
+
+        self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
+        self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.GCM).count(), 0)
 
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")

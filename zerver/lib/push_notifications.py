@@ -586,6 +586,8 @@ def send_notifications_to_bouncer(
     apns_payload: Dict[str, Any],
     gcm_payload: Dict[str, Any],
     gcm_options: Dict[str, Any],
+    android_devices: Sequence[DeviceToken],
+    apple_devices: Sequence[DeviceToken],
 ) -> Tuple[int, int]:
     post_data = {
         "user_uuid": str(user_profile.uuid),
@@ -596,11 +598,31 @@ def send_notifications_to_bouncer(
         "apns_payload": apns_payload,
         "gcm_payload": gcm_payload,
         "gcm_options": gcm_options,
+        "android_devices": [device.token for device in android_devices],
+        "apple_devices": [device.token for device in apple_devices],
     }
     # Calls zilencer.views.remote_server_notify_push
     response_data = send_json_to_push_bouncer("POST", "push/notify", post_data)
     assert isinstance(response_data["total_android_devices"], int)
     assert isinstance(response_data["total_apple_devices"], int)
+
+    assert isinstance(response_data["deleted_devices"], dict)
+    assert isinstance(response_data["deleted_devices"]["android_devices"], list)
+    assert isinstance(response_data["deleted_devices"]["apple_devices"], list)
+    android_deleted_devices = response_data["deleted_devices"]["android_devices"]
+    apple_deleted_devices = response_data["deleted_devices"]["apple_devices"]
+    if android_deleted_devices or apple_deleted_devices:
+        logger.info(
+            "Deleting push tokens based on response from bouncer: Android: %s, Apple: %s",
+            sorted(android_deleted_devices),
+            sorted(apple_deleted_devices),
+        )
+        PushDeviceToken.objects.filter(
+            kind=PushDeviceToken.GCM, token__in=android_deleted_devices
+        ).delete()
+        PushDeviceToken.objects.filter(
+            kind=PushDeviceToken.APNS, token__in=apple_deleted_devices
+        ).delete()
 
     total_android_devices, total_apple_devices = (
         response_data["total_android_devices"],
@@ -1162,16 +1184,18 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
+    android_devices = list(
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
+    )
+    apple_devices = list(
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
+    )
     if uses_notification_bouncer():
-        send_notifications_to_bouncer(user_profile, apns_payload, gcm_payload, gcm_options)
+        send_notifications_to_bouncer(
+            user_profile, apns_payload, gcm_payload, gcm_options, android_devices, apple_devices
+        )
     else:
         user_identity = UserPushIdentityCompat(user_id=user_profile_id)
-        android_devices = list(
-            PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
-        )
-        apple_devices = list(
-            PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
-        )
 
         android_successfully_sent_count = send_android_push_notification(
             user_identity, android_devices, gcm_payload, gcm_options
@@ -1326,9 +1350,16 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
+    android_devices = list(
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
+    )
+
+    apple_devices = list(
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
+    )
     if uses_notification_bouncer():
         total_android_devices, total_apple_devices = send_notifications_to_bouncer(
-            user_profile, apns_payload, gcm_payload, gcm_options
+            user_profile, apns_payload, gcm_payload, gcm_options, android_devices, apple_devices
         )
         logger.info(
             "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
@@ -1337,14 +1368,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             total_apple_devices,
         )
         return
-
-    android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
-    )
-
-    apple_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
-    )
 
     logger.info(
         "Sending mobile push notifications for local user %s: %s via FCM devices, %s via APNs devices",

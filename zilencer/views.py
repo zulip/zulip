@@ -1,7 +1,7 @@
 import logging
 from collections import Counter
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Type, TypedDict, TypeVar, Union
 from uuid import UUID
 
 import orjson
@@ -523,12 +523,61 @@ def remote_server_notify_push(
             increment=android_successfully_delivered + apple_successfully_delivered,
         )
 
+    deleted_devices = get_deleted_devices(
+        user_identity,
+        server,
+        android_devices=payload.get("android_devices", []),
+        apple_devices=payload.get("apple_devices", []),
+    )
+
     return json_success(
         request,
         data={
             "total_android_devices": len(android_devices),
             "total_apple_devices": len(apple_devices),
+            "deleted_devices": deleted_devices,
         },
+    )
+
+
+class DevicesToCleanUpDict(TypedDict):
+    android_devices: List[str]
+    apple_devices: List[str]
+
+
+def get_deleted_devices(
+    user_identity: UserPushIdentityCompat,
+    server: RemoteZulipServer,
+    android_devices: List[str],
+    apple_devices: List[str],
+) -> DevicesToCleanUpDict:
+    """The remote server sends us a list of (tokens of) devices that it
+    believes it has registered. However some of them may have been
+    deleted by us due to errors received in the low level code
+    responsible for directly sending push notifications.
+
+    Query the database for the RemotePushDeviceTokens from these lists
+    that we do indeed have and return a list of the ones that we don't
+    have and thus presumably have already deleted - the remote server
+    will want to delete them too.
+    """
+
+    android_devices_we_have = RemotePushDeviceToken.objects.filter(
+        user_identity.filter_q(),
+        token__in=android_devices,
+        kind=RemotePushDeviceToken.GCM,
+        server=server,
+    ).values_list("token", flat=True)
+    apple_devices_we_have = RemotePushDeviceToken.objects.filter(
+        user_identity.filter_q(),
+        token__in=apple_devices,
+        kind=RemotePushDeviceToken.APNS,
+        server=server,
+    ).values_list("token", flat=True)
+
+    return DevicesToCleanUpDict(
+        android_devices=list(set(android_devices) - set(android_devices_we_have)),
+        apple_devices=list(set(apple_devices) - set(apple_devices_we_have)),
     )
 
 
