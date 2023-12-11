@@ -336,6 +336,7 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+@transaction.atomic
 def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
@@ -379,7 +380,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     # deactivated). So the purpose of sending this is to flush all
     # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_reactivate_realm(realm: Realm) -> None:
