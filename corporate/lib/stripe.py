@@ -3500,7 +3500,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             self.remote_server.org_type = org_type
             self.remote_server.save(update_fields=["org_type"])
 
-    def add_server_to_legacy_plan(
+    def migrate_customer_to_legacy_plan(
         self,
         renewal_date: datetime,
         end_date: datetime,
