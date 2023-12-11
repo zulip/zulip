@@ -149,6 +149,9 @@ def remote_realm_plans_page(
         if context.customer_plan is None:
             context.on_free_tier = not context.is_sponsored
         else:
+            if context.customer_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+                # Free trial is disabled for legacy customers.
+                context.free_trial_days = None
             context.on_free_tier = context.customer_plan.tier in (
                 CustomerPlan.TIER_SELF_HOSTED_LEGACY,
                 CustomerPlan.TIER_SELF_HOSTED_BASE,
@@ -198,6 +201,9 @@ def remote_server_plans_page(
         if context.customer_plan is None:
             context.on_free_tier = not context.is_sponsored
         else:
+            if context.customer_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+                # Free trial is disabled for legacy customers.
+                context.free_trial_days = None
             context.on_free_tier = context.customer_plan.tier in (
                 CustomerPlan.TIER_SELF_HOSTED_LEGACY,
                 CustomerPlan.TIER_SELF_HOSTED_BASE,
