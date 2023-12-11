@@ -63,10 +63,10 @@
                 {% endwith %}
             {% endif %}
 
-            {% if plan_data[remote_server.id].current_plan %}
+            {% if remote_servers_plan_data[remote_server.id].current_plan %}
             <div class="remote-server-information">
                 {% with %}
-                    {% set plan_data = plan_data[remote_server.id] %}
+                    {% set plan_data = remote_servers_plan_data[remote_server.id] %}
                     {% include 'analytics/current_plan_details.html' %}
                 {% endwith %}
             </div>
@@ -76,8 +76,8 @@
                 {{ csrf_input }}
                 <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
                 <select name="billing_modality" class="billing-modality-select" required>
-                    <option value="charge_automatically" {% if plan_data[remote_server.id].current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
-                    <option value="send_invoice" {% if not plan_data[remote_server.id].current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
+                    <option value="charge_automatically" {% if remote_servers_plan_data[remote_server.id].current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
+                    <option value="send_invoice" {% if not remote_servers_plan_data[remote_server.id].current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
                 </select>
                 <button type="submit" class="btn btn-default support-submit-button">Update</button>
             </form>
@@ -99,7 +99,11 @@
             {% for remote_realm in remote_realms[remote_server.id] %}
             <hr />
             <div>
-                {% include "analytics/remote_realm_details.html" %}
+                {% with %}
+                    {% set plan_data = remote_realms_plan_data %}
+                    {% set get_discount = get_discount %}
+                    {% include "analytics/remote_realm_details.html" %}
+                {% endwith %}
             </div>
             {% endfor %}
         </div>

@@ -4,4 +4,18 @@
     <b>Remote server hostname:</b> {{ remote_realm.host }}<br />
     <b>Date created</b>: {{ remote_realm.realm_date_created.strftime('%d %B %Y') }}<br />
     <b>Org type</b>: {{ get_org_type_display_name(remote_realm.org_type) }}<br />
+    {% if remote_realm.plan_type == SPONSORED_PLAN_TYPE %}
+        <h4>On 100% sponsored Zulip Community plan.</h4>
+    {% endif %}
 </div>
+
+{% if remote_realm.plan_type != SPONSORED_PLAN_TYPE %}
+{% with %}
+    {% set customer = plan_data[remote_realm.id].customer %}
+    {% set remote_id = remote_realm.id %}
+    {% set remote_type = "remote_realm_id" %}
+    {% set has_fixed_price = plan_data[remote_server.id].has_fixed_price %}
+    {% set get_discount = get_discount %}
+    {% include 'analytics/sponsorship_forms_support.html' %}
+{% endwith %}
+{% endif %}
