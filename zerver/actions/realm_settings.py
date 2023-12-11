@@ -56,6 +56,9 @@ def do_set_realm_property(
     ), f"Cannot update {name}: {value} is not an instance of {property_type}"
 
     old_value = getattr(realm, name)
+    if old_value == value:
+        return
+
     setattr(realm, name, value)
     realm.save(update_fields=[name])
 
