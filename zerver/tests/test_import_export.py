@@ -1413,7 +1413,8 @@ class RealmImportExportTest(ExportFile):
 
             m.side_effect = mock_send_to_push_bouncer_response
 
-            new_realm = do_import_realm(get_output_dir(), "test-zulip")
+            with self.captureOnCommitCallbacks(execute=True):
+                new_realm = do_import_realm(get_output_dir(), "test-zulip")
 
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
         calls_args_for_assert = m.call_args_list[1][0]

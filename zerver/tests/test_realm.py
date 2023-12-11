@@ -1103,7 +1103,8 @@ class RealmTest(ZulipTestCase):
 
             m.side_effect = mock_send_to_push_bouncer_response
 
-            realm = do_create_realm("realm_string_id", "realm name")
+            with self.captureOnCommitCallbacks(execute=True):
+                realm = do_create_realm("realm_string_id", "realm name")
 
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(m.call_count, 2)
