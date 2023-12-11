@@ -1138,6 +1138,7 @@ class BillingSession(ABC):
         remote_server_legacy_plan: Optional[CustomerPlan] = None,
         should_schedule_upgrade_for_legacy_remote_server: bool = False,
     ) -> None:
+        is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         customer = self.update_or_create_stripe_customer()
         assert customer.stripe_customer_id is not None  # for mypy
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
@@ -1158,6 +1159,7 @@ class BillingSession(ABC):
             customer.default_discount,
             free_trial,
             billing_cycle_anchor,
+            is_self_hosted_billing,
         )
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
@@ -1323,7 +1325,8 @@ class BillingSession(ABC):
             "monthly": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
         }[schedule]
         data: Dict[str, Any] = {}
-        free_trial = is_free_trial_offer_enabled()
+        is_self_hosted_billing = not isinstance(self, RealmBillingSession)
+        free_trial = is_free_trial_offer_enabled(is_self_hosted_billing)
         remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
         should_schedule_upgrade_for_legacy_remote_server = (
             remote_server_legacy_plan is not None
@@ -1341,7 +1344,7 @@ class BillingSession(ABC):
                 automanage_licenses,
                 billing_schedule,
                 charge_automatically,
-                is_free_trial_offer_enabled(),
+                free_trial,
                 remote_server_legacy_plan,
                 should_schedule_upgrade_for_legacy_remote_server,
             )
@@ -3641,8 +3644,8 @@ def get_free_trial_days(is_self_hosted_billing: bool = False) -> Optional[int]:
     return settings.CLOUD_FREE_TRIAL_DAYS
 
 
-def is_free_trial_offer_enabled() -> bool:
-    return settings.CLOUD_FREE_TRIAL_DAYS not in (None, 0)
+def is_free_trial_offer_enabled(is_self_hosted_billing: bool) -> bool:
+    return get_free_trial_days(is_self_hosted_billing) not in (None, 0)
 
 
 def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
