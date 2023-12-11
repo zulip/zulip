@@ -35,6 +35,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import upload_backend
 from zerver.lib.upload.base import BadImageError, sanitize_name
 from zerver.lib.upload.s3 import get_bucket
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
@@ -1418,6 +1419,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Activate the realm
     realm.deactivated = data["zerver_realm"][0]["deactivated"]
     realm.save()
+
+    # This helps to have an accurate user count data for the billing
+    # system if someone tries to signup just after doing import.
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_IMPORTED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+        },
+    )
 
     # Ask the push notifications service if this realm can send
     # notifications, if we're using it. Needs to happen after the

@@ -4802,6 +4802,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_EMOJI_ADDED = 226
     REALM_EMOJI_REMOVED = 227
     REALM_LINKIFIERS_REORDERED = 228
+    REALM_IMPORTED = 229
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
@@ -4873,6 +4874,7 @@ class AbstractRealmAuditLog(models.Model):
         USER_ROLE_CHANGED,
         REALM_DEACTIVATED,
         REALM_REACTIVATED,
+        REALM_IMPORTED,
     ]
 
     class Meta:

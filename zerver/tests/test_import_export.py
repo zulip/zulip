@@ -1137,7 +1137,11 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_realm_audit_log_event_type(r: Realm) -> Set[int]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
-                event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED, RealmAuditLog.STREAM_CREATED]
+                event_type__in=[
+                    RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                    RealmAuditLog.STREAM_CREATED,
+                    RealmAuditLog.REALM_IMPORTED,
+                ]
             )
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
