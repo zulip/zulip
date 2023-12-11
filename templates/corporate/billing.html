@@ -188,13 +188,31 @@
                     <div class="next-payment-info not-editable-realm-field">
                         {% if renewal_amount %}
                             {% if downgrade_at_end_of_cycle %}
+                            {% if is_self_hosted_billing %}
+                            Your organization will be downgraded to <strong>Self-managed</strong> at the end of the
+                            current billing period ({{ renewal_date }}). You will lose access to the
+                            <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
+                            of your current plan. For organizations with more than 10 users, this
+                            includes losing access to the
+                            <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
+                            {% else %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the current billing
                             period (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
                             <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
+                            {% endif %}
                             {% elif downgrade_at_end_of_free_trial %}
+                            {% if is_self_hosted_billing %}
+                            Your organization will be downgraded to <strong>Self-managed</strong> at the end of the free trial
+                            ({{ renewal_date }}). You will lose access to the
+                            <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
+                            of your current plan. For organizations with more than 10 users, this
+                            includes losing access to the
+                            <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
+                            {% else %}
                             Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of the free trial
                             (<strong>{{ renewal_date }}</strong>). You will lose access to unlimited search history and
                             <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
+                            {% endif %}
                             {% else %}
                             {% if charge_automatically %}
                             {% if is_server_on_legacy_plan %}
@@ -262,7 +280,7 @@
                         </div>
                     {% else %}
                         <div class="cancel-current-plan plan-toggle-action input-box billing-page-field no-validation" id="cancel-subscription">
-                            <button class="cancel-current-plan-button plan-toggle-action-button">
+                            <button class="plan-toggle-action-button {% if is_self_hosted_billing %}cancel-current-self-hosted-plan-button{% else %}cancel-current-cloud-plan-button{% endif %}">
                                 <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
@@ -309,20 +327,34 @@
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
                 <h1 class="modal__title dialog_heading">
-                    Downgrade {{ org_name }} to Zulip Cloud Free?
+                    Downgrade {{ org_name }} to
+                    {% if is_self_hosted_billing %}
+                    Self-managed?
+                    {% else %}
+                    Zulip Cloud Free?
+                    {% endif %}
                 </h1>
                 <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
                 <p>
+                    {% if is_self_hosted_billing %}
+                    Your organization will be downgraded to <strong>Self-managed</strong> at the
+                    end of your free trial ({{ renewal_date }}). You will lose access to the
+                    <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
+                    of your current plan. For organizations with more than 10 users, this
+                    includes losing access to the
+                    <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
+                    {% else %}
                     Your organization will be downgraded to <strong>Zulip Cloud Free</strong> at the end of your free trial
                     ({{ renewal_date }}). You will lose access to unlimited search history and
                     <a href="{{ billing_base_url }}/plans/">other features</a>
                     of your current plan. Are you sure you want to continue?
+                    {% endif %}
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
                 <button class="modal__btn dialog_submit_button">
                     <span>{{ _('Downgrade') }}</span>
                 </button>
@@ -388,7 +420,7 @@
         </div>
     </div>
 </div>
-<div id="confirm-cancel-subscription-modal" class="micromodal" aria-hidden="true">
+<div id="confirm-cancel-cloud-subscription-modal" class="micromodal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
@@ -403,6 +435,34 @@
                     period ({{ renewal_date }}). You will lose access to unlimited search history and
                     <a href="{{ billing_base_url }}/plans/">other features</a>
                     of your current plan. Are you sure you want to continue?
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Downgrade') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="confirm-cancel-self-hosted-subscription-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Downgrade {{ org_name }} to Self-hosted?
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Your organization will be downgraded to <strong>Self-managed</strong> at the end of the
+                    current billing period ({{ renewal_date }}). You will lose access to the
+                    <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
+                    of your current plan. For organizations with more than 10 users, this
+                    includes losing access to the
+                    <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
                 </p>
             </main>
             <footer class="modal__footer">
