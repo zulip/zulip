@@ -6,7 +6,13 @@
 
 {% block content %}
 <p>
-    {% trans %}Click the button below to log in to Zulip plan management for <b>{{ remote_realm_host }}</b>. This link will expire in 2 hours.{% endtrans %}
+    {% trans %}
+    Click the button below to log in to Zulip plan management for <b>{{ remote_realm_host }}</b>.
+    {% endtrans %}
+
+    {% trans %}
+    This link will expire in {{ validity_in_hours }} hours.
+    {% endtrans %}
 </p>
 <p>
     <a class="button" href="{{ confirmation_url }}">{{ _("Log in") }}</a>
