@@ -5,14 +5,17 @@ from urllib.parse import urljoin
 import orjson
 import requests
 from django.conf import settings
-from django.forms.models import model_to_dict
+from django.db.models import QuerySet
 from django.utils.translation import gettext as _
-from pydantic import UUID4, BaseModel, ConfigDict, Field, field_validator
+from pydantic import UUID4, BaseModel, ConfigDict, Field, Json, field_validator
 
 from analytics.models import InstallationCount, RealmCount
-from version import ZULIP_VERSION
-from zerver.lib.exceptions import JsonableError, MissingRemoteRealmError
-from zerver.lib.export import floatify_datetime_fields
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from zerver.lib.exceptions import (
+    JsonableError,
+    MissingRemoteRealmError,
+    RemoteRealmServerMismatchError,
+)
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.types import RemoteRealmDictValue
@@ -34,6 +37,32 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
 
 class PushNotificationBouncerServerError(PushNotificationBouncerRetryLaterError):
     http_status_code = 502
+
+
+class RealmCountDataForAnalytics(BaseModel):
+    property: str
+    realm: int
+    id: int
+    end_time: float
+    subgroup: Optional[str]
+    value: int
+
+
+class InstallationCountDataForAnalytics(BaseModel):
+    property: str
+    id: int
+    end_time: float
+    subgroup: Optional[str]
+    value: int
+
+
+class RealmAuditLogDataForAnalytics(BaseModel):
+    id: int
+    realm: int
+    event_time: float
+    backfilled: bool
+    extra_data: Optional[Union[str, Dict[str, Any]]]
+    event_type: int
 
 
 class RealmDataForAnalytics(BaseModel):
@@ -59,6 +88,15 @@ class RealmDataForAnalytics(BaseModel):
             raise ValueError("Not a valid org_type value")
 
         return value
+
+
+class AnalyticsRequest(BaseModel):
+    realm_counts: Json[List[RealmCountDataForAnalytics]]
+    installation_counts: Json[List[InstallationCountDataForAnalytics]]
+    realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None
+    realms: Json[List[RealmDataForAnalytics]]
+    version: Optional[Json[str]]
+    api_feature_level: Optional[Json[int]]
 
 
 class UserDataForRemoteBilling(BaseModel):
@@ -161,6 +199,14 @@ def send_to_push_bouncer(
             # The callers requesting this endpoint want the exception to propagate
             # so they can catch it.
             raise MissingRemoteRealmError
+        elif (
+            endpoint == "server/billing"
+            and "code" in result_dict
+            and result_dict["code"] == "REMOTE_REALM_SERVER_MISMATCH_ERROR"
+        ):  # nocoverage
+            # The callers requesting this endpoint want the exception to propagate
+            # so they can catch it.
+            raise RemoteRealmServerMismatchError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)
@@ -189,45 +235,54 @@ def send_json_to_push_bouncer(
     )
 
 
-REALMAUDITLOG_PUSHED_FIELDS = [
-    "id",
-    "realm",
-    "event_time",
-    "backfilled",
-    # Note that we don't need to add extra_data_json here because
-    # the view remote_server_post_analytics populates extra_data_json
-    # from the provided extra_data.
-    "extra_data",
-    "event_type",
-]
-
-
 def build_analytics_data(
-    realm_count_query: Any, installation_count_query: Any, realmauditlog_query: Any
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    realm_count_query: QuerySet[RealmCount],
+    installation_count_query: QuerySet[InstallationCount],
+    realmauditlog_query: QuerySet[RealmAuditLog],
+) -> Tuple[
+    List[RealmCountDataForAnalytics],
+    List[InstallationCountDataForAnalytics],
+    List[RealmAuditLogDataForAnalytics],
+]:
     # We limit the batch size on the client side to avoid OOM kills timeouts, etc.
     MAX_CLIENT_BATCH_SIZE = 10000
-    data = {}
-    data["analytics_realmcount"] = [
-        model_to_dict(row) for row in realm_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
+    realm_count_data = [
+        RealmCountDataForAnalytics(
+            property=row.property,
+            realm=row.realm.id,
+            id=row.id,
+            end_time=row.end_time.timestamp(),
+            subgroup=row.subgroup,
+            value=row.value,
+        )
+        for row in realm_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
-    data["analytics_installationcount"] = [
-        model_to_dict(row)
+    installation_count_data = [
+        InstallationCountDataForAnalytics(
+            property=row.property,
+            id=row.id,
+            end_time=row.end_time.timestamp(),
+            subgroup=row.subgroup,
+            value=row.value,
+        )
         for row in installation_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
-    data["zerver_realmauditlog"] = [
-        model_to_dict(row, fields=REALMAUDITLOG_PUSHED_FIELDS)
+    zerver_realmauditlog = [
+        RealmAuditLogDataForAnalytics(
+            id=row.id,
+            realm=row.realm.id,
+            event_time=row.event_time.timestamp(),
+            backfilled=row.backfilled,
+            # Note that we don't need to add extra_data_json here because
+            # the view remote_server_post_analytics populates extra_data_json
+            # from the provided extra_data.
+            extra_data=row.extra_data,
+            event_type=row.event_type,
+        )
         for row in realmauditlog_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
 
-    floatify_datetime_fields(data, "analytics_realmcount")
-    floatify_datetime_fields(data, "analytics_installationcount")
-    floatify_datetime_fields(data, "zerver_realmauditlog")
-    return (
-        data["analytics_realmcount"],
-        data["analytics_installationcount"],
-        data["zerver_realmauditlog"],
-    )
+    return realm_count_data, installation_count_data, zerver_realmauditlog
 
 
 def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[RealmDataForAnalytics]:
@@ -287,36 +342,38 @@ def send_analytics_to_push_bouncer() -> None:
     )
 
     record_count = len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data)
-    request = {
-        "realm_counts": orjson.dumps(realm_count_data).decode(),
-        "installation_counts": orjson.dumps(installation_count_data).decode(),
-        "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
-        "realms": orjson.dumps(
-            [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
-        ).decode(),
-        "version": orjson.dumps(ZULIP_VERSION).decode(),
-    }
+    request = AnalyticsRequest.model_construct(
+        realm_counts=realm_count_data,
+        installation_counts=installation_count_data,
+        realmauditlog_rows=realmauditlog_data,
+        realms=get_realms_info_for_push_bouncer(),
+        version=ZULIP_VERSION,
+        api_feature_level=API_FEATURE_LEVEL,
+    )
 
     try:
-        send_to_push_bouncer("POST", "server/analytics", request)
+        send_to_push_bouncer("POST", "server/analytics", request.model_dump(round_trip=True))
     except JsonableError as e:
         logger.warning(e.msg)
     logger.info("Reported %d records", record_count)
 
 
 def send_realms_only_to_push_bouncer() -> Dict[str, RemoteRealmDictValue]:
-    request = {
-        "realm_counts": "[]",
-        "installation_counts": "[]",
-        "realms": orjson.dumps(
-            [dict(realm_data) for realm_data in get_realms_info_for_push_bouncer()]
-        ).decode(),
-        "version": orjson.dumps(ZULIP_VERSION).decode(),
-    }
+    request = AnalyticsRequest.model_construct(
+        realm_counts=[],
+        installation_counts=[],
+        realms=get_realms_info_for_push_bouncer(),
+        version=ZULIP_VERSION,
+        api_feature_level=API_FEATURE_LEVEL,
+    )
 
     # We don't catch JsonableError here, because we want it to propagate further
     # to either explicitly, loudly fail or be error-handled by the caller.
-    response = send_to_push_bouncer("POST", "server/analytics", request)
+    response = send_to_push_bouncer(
+        "POST",
+        "server/analytics",
+        request.model_dump(round_trip=True, exclude={"realmauditlog_rows"}),
+    )
     assert isinstance(response["realms"], dict)  # for mypy
 
     return response["realms"]

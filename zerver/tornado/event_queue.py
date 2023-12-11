@@ -1044,6 +1044,8 @@ def process_message_event(
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
+    user_ids_without_access_to_sender = event_template.get("user_ids_without_access_to_sender", [])
+    realm_host = event_template.get("realm_host", "")
 
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
@@ -1062,11 +1064,15 @@ def process_message_event(
     sending_client: str = wide_dict["client"]
 
     @lru_cache(maxsize=None)
-    def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
+    def get_client_payload(
+        apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
+    ) -> Dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            can_access_sender=can_access_sender,
+            realm_host=realm_host,
         )
 
     # Extra user-specific data to include
@@ -1142,7 +1148,10 @@ def process_message_event(
             # message data unnecessarily
             continue
 
-        message_dict = get_client_payload(client.apply_markdown, client.client_gravatar)
+        can_access_sender = client.user_profile_id not in user_ids_without_access_to_sender
+        message_dict = get_client_payload(
+            client.apply_markdown, client.client_gravatar, can_access_sender
+        )
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):

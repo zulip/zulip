@@ -55,7 +55,7 @@ class EditMessageTestCase(ZulipTestCase):
 
     def check_message(self, msg_id: int, topic_name: str, content: str) -> None:
         # Make sure we saved the message correctly to the DB.
-        msg = Message.objects.get(id=msg_id)
+        msg = Message.objects.select_related("realm").get(id=msg_id)
         self.assertEqual(msg.topic_name(), topic_name)
         self.assertEqual(msg.content, content)
 
@@ -75,6 +75,8 @@ class EditMessageTestCase(ZulipTestCase):
                 apply_markdown=False,
                 client_gravatar=False,
                 allow_edit_history=True,
+                user_profile=None,
+                realm=msg.realm,
             )
 
         self.assert_length(queries, 1)

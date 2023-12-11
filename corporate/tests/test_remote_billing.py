@@ -33,6 +33,10 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         next_page: Optional[str] = None,
         expect_tos: bool = True,
         confirm_tos: bool = True,
+        first_time_login: bool = True,
+        # This only matters if first_time_login is True, since otherwise
+        # there's no confirmation link to be clicked:
+        return_without_clicking_confirmation_link: bool = False,
     ) -> "TestHttpResponse":
         now = timezone_now()
 
@@ -45,14 +49,63 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertIn("http://selfhosting.testserver/remote-billing-login/", result["Location"])
 
-        # We've received a redirect to an URL that will grant us an authenticated
-        # session for remote billing.
         signed_auth_url = result["Location"]
+        signed_access_token = signed_auth_url.split("/")[-1]
         with time_machine.travel(now, tick=False):
             result = self.client_get(signed_auth_url, subdomain="selfhosting")
-        # When successful, we see a confirmation page.
+
+        if first_time_login:
+            self.assertFalse(RemoteRealmBillingUser.objects.filter(user_uuid=user.uuid).exists())
+            # When logging in for the first time some extra steps are needed
+            # to confirm and verify the email address.
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_success_response(["Enter your email address"], result)
+            self.assert_in_success_response([user.realm.host], result)
+            self.assert_in_success_response(
+                [f'action="/remote-billing-login/{signed_access_token}/confirm/"'], result
+            )
+
+            with time_machine.travel(now, tick=False):
+                result = self.client_post(
+                    f"/remote-billing-login/{signed_access_token}/confirm/",
+                    {"email": user.delivery_email},
+                    subdomain="selfhosting",
+                )
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_success_response(
+                ["To complete the login process, check your email account", user.delivery_email],
+                result,
+            )
+            confirmation_url = self.get_confirmation_url_from_outbox(
+                user.delivery_email,
+                url_pattern=(
+                    f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}"
+                    r"(\S+)>"
+                ),
+                email_body_contains="Click the link below to complete the login process",
+            )
+            if return_without_clicking_confirmation_link:
+                return result
+
+            with time_machine.travel(now, tick=False):
+                result = self.client_get(confirmation_url, subdomain="selfhosting")
+
+            remote_billing_user = RemoteRealmBillingUser.objects.latest("id")
+            self.assertEqual(remote_billing_user.user_uuid, user.uuid)
+            self.assertEqual(remote_billing_user.email, user.delivery_email)
+
+            # Now we should be redirected again to the /remote-billing-login/ endpoint
+            # with a new signed_access_token. Now that the email has been confirmed,
+            # and we have a RemoteRealmBillingUser entry, we'll be in the same position
+            # as the case where first_time_login=False.
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result["Location"].startswith("/remote-billing-login/"))
+            result = self.client_get(result["Location"], subdomain="selfhosting")
+
+        # Final confirmation page - just confirm your details, possibly
+        # agreeing to ToS if needed and an authenticated session will be granted:
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Log in to Zulip server billing"], result)
+        self.assert_in_success_response(["Log in to Zulip plan management"], result)
         self.assert_in_success_response([user.realm.host], result)
 
         params = {}
@@ -67,6 +120,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             return result
 
         # Verify the authed data that should have been stored in the session.
+        remote_billing_user = RemoteRealmBillingUser.objects.get(user_uuid=user.uuid)
         identity_dict = RemoteBillingIdentityDict(
             user=RemoteBillingUserDict(
                 user_email=user.delivery_email,
@@ -75,6 +129,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             ),
             remote_server_uuid=str(self.server.uuid),
             remote_realm_uuid=str(user.realm.uuid),
+            remote_billing_user_id=remote_billing_user.id,
             authenticated_at=datetime_to_timestamp(now),
             uri_scheme="http://",
             next_page=next_page,
@@ -189,6 +244,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 desdemona,
                 expect_tos=True,
                 confirm_tos=False,
+                first_time_login=False,
             )
             self.assert_json_error(result, "You must accept the Terms of Service to proceed.")
 
@@ -196,6 +252,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 desdemona,
                 expect_tos=True,
                 confirm_tos=True,
+                first_time_login=False,
             )
         remote_billing_user.refresh_from_db()
         self.assertEqual(remote_billing_user.user_uuid, desdemona.uuid)
@@ -252,6 +309,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 # ToS has already been confirmed earlier.
                 expect_tos=False,
                 confirm_tos=False,
+                first_time_login=False,
             )
             self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
             result = self.client_get(result["Location"], subdomain="selfhosting")
@@ -353,6 +411,28 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 ["Upgrade", "Purchase Zulip", "Your subscription will renew automatically."], result
             )
 
+    @responses.activate
+    def test_remote_billing_authentication_flow_cant_access_billing_without_finishing_confirmation(
+        self,
+    ) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+
+        self.add_mock_response()
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona,
+            expect_tos=True,
+            confirm_tos=False,
+            first_time_login=True,
+            return_without_clicking_confirmation_link=True,
+        )
+        result = self.client_get(f"/realm/{realm.uuid!s}/billing/", subdomain="selfhosting")
+        # Access is not allowed. The user doesn't have an IdentityDict in the session, so
+        # we can't do a nice redirect back to their original server.
+        self.assertEqual(result.status_code, 401)
+
 
 class LegacyServerLoginTest(BouncerTestCase):
     @override
@@ -430,7 +510,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             result = self.client_get(confirmation_url, subdomain="selfhosting")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(
-            [f"Log in to Zulip server billing for {self.server.hostname}", email], result
+            [f"Log in to Zulip plan management for {self.server.hostname}", email], result
         )
         self.assert_in_success_response([f'action="{confirmation_url}"'], result)
         if expect_tos:

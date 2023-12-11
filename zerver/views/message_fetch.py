@@ -219,6 +219,8 @@ def get_messages_backend(
         apply_markdown=apply_markdown,
         client_gravatar=client_gravatar,
         allow_edit_history=realm.allow_edit_history,
+        user_profile=user_profile,
+        realm=realm,
     )
 
     ret = dict(

@@ -546,7 +546,8 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 30
 # are available to all realms.
 BILLING_ENABLED = False
 
-FREE_TRIAL_DAYS: Optional[int] = int(get_secret("free_trial_days", "0"))
+CLOUD_FREE_TRIAL_DAYS: Optional[int] = int(get_secret("cloud_free_trial_days", "0"))
+SELF_HOSTING_FREE_TRIAL_DAYS: Optional[int] = int(get_secret("self_hosting_free_trial_days", "0"))
 
 # Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
 # making announcements.
@@ -592,15 +593,15 @@ MAX_DRAFTS_IN_REGISTER_RESPONSE = 1000
 # How long before a client should assume that another client sending
 # typing notifications has gone away and expire the active typing
 # indicator.
-TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS = 15000
+TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS = 45000
 
 # How long after a user has stopped interacting with the compose UI
 # that a client should send a stop notification to the server.
-TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 5000
+TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 12000
 
 # How often a client should send start notifications to the server to
 # indicate that the user is still interacting with the compose UI.
-TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
+TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 30000
 
 # The maximum number of subscribers for a stream to have typing
 # notifications enabled. Default is set to avoid excessive Tornado

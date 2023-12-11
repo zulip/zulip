@@ -137,14 +137,6 @@
                     </a>
                 </li>
                 {{/if}}
-                {{#if (and is_development_environment show_remote_billing) }}
-                {{! This is only shown in development environment until the UI is ready.}}
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a href="/self-hosted-billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
-                    </a>
-                </li>
-                {{/if}}
                 {{#if promote_sponsoring_zulip}}
                 <li class="link-item navbar-dropdown-menu-inner-list-item">
                     <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
@@ -152,7 +144,16 @@
                     </a>
                 </li>
                 {{/if}}
+                {{#if (and is_development_environment show_remote_billing) }}
+                {{! This is only shown in development environment until the UI is ready.}}
+                <li class="link-item navbar-dropdown-menu-inner-list-item">
+                    <a href="/self-hosted-billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
+                        <i class="navbar-dropdown-icon fa fa-rocket" aria-hidden="true"></i> {{t 'Plan management' }}
+                    </a>
+                </li>
+                {{/if}}
                 {{#if show_plans}}
+                {{!-- This will be hidden for self hosted realms since they will have corporate disabled. --}}
                 <li class="link-item navbar-dropdown-menu-inner-list-item">
                     <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
                         <i class="navbar-dropdown-icon fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}

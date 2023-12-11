@@ -1386,30 +1386,6 @@ class RealmAPITest(ZulipTestCase):
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
 
-    def test_update_can_access_all_users_group_setting(self) -> None:
-        realm = get_realm("zulip")
-        self.login("iago")
-        members_group = UserGroup.objects.get(realm=realm, name=SystemGroups.MEMBERS)
-
-        with self.settings(DEVELOPMENT=False):
-            with self.assertRaises(AssertionError), self.assertLogs(
-                "django.request", "ERROR"
-            ) as error_log:
-                self.client_patch("/json/realm", {"can_access_all_users_group": members_group.id})
-
-        self.assertTrue(
-            "ERROR:django.request:Internal Server Error: /json/realm" in error_log.output[0]
-        )
-        self.assertTrue("AssertionError" in error_log.output[0])
-
-        with self.settings(DEVELOPMENT=True):
-            result = self.client_patch(
-                "/json/realm", {"can_access_all_users_group": members_group.id}
-            )
-            self.assert_json_success(result)
-            realm = get_realm("zulip")
-            self.assertEqual(realm.can_access_all_users_group_id, members_group.id)
-
     # Not in Realm.property_types because org_type has
     # a unique RealmAuditLog event_type.
     def test_update_realm_org_type(self) -> None:

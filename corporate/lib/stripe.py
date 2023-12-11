@@ -184,8 +184,9 @@ def validate_licenses(
     licenses: Optional[int],
     seat_count: int,
     exempt_from_license_number_check: bool,
+    min_licenses_for_plan: int,
 ) -> None:
-    min_licenses = seat_count
+    min_licenses = max(seat_count, min_licenses_for_plan)
     max_licenses = None
     if not charge_automatically:
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
@@ -214,6 +215,7 @@ def check_upgrade_parameters(
     licenses: Optional[int],
     seat_count: int,
     exempt_from_license_number_check: bool,
+    min_licenses_for_plan: int,
 ) -> None:
     if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
         raise BillingError("unknown billing_modality", "")
@@ -226,6 +228,7 @@ def check_upgrade_parameters(
         licenses,
         seat_count,
         exempt_from_license_number_check,
+        min_licenses_for_plan,
     )
 
 
@@ -633,6 +636,7 @@ class UpgradePageContext(TypedDict):
     free_trial_end_date: Optional[str]
     is_demo_organization: bool
     manual_license_management: bool
+    using_min_licenses_for_plan: bool
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
@@ -825,9 +829,9 @@ class BillingSession(ABC):
         assert plan.end_date is not None
         return plan.end_date.strftime("%B %d, %Y")
 
-    def get_legacy_remote_server_new_plan_name(
+    def get_legacy_remote_server_next_plan(
         self, customer: Customer
-    ) -> Optional[str]:  # nocoverage
+    ) -> Optional[CustomerPlan]:  # nocoverage
         legacy_plan = self.get_remote_server_legacy_plan(
             customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
@@ -840,7 +844,15 @@ class BillingSession(ABC):
             customer=customer,
             billing_cycle_anchor=legacy_plan.end_date,
             status=CustomerPlan.NEVER_STARTED,
-        ).name
+        )
+
+    def get_legacy_remote_server_next_plan_name(
+        self, customer: Customer
+    ) -> Optional[str]:  # nocoverage
+        next_plan = self.get_legacy_remote_server_next_plan(customer)
+        if next_plan is None:
+            return None
+        return next_plan.name
 
     @catch_stripe_errors
     def create_stripe_customer(self) -> Customer:
@@ -990,6 +1002,15 @@ class BillingSession(ABC):
             "stripe_session_id": stripe_session.id,
         }
 
+    def apply_discount_to_plan(
+        self,
+        plan: CustomerPlan,
+        discount: Decimal,
+    ) -> None:
+        plan.discount = discount
+        plan.price_per_license = get_price_per_license(plan.tier, plan.billing_schedule, discount)
+        plan.save(update_fields=["discount", "price_per_license"])
+
     def attach_discount_to_customer(self, new_discount: Decimal) -> str:
         customer = self.get_customer()
         old_discount = None
@@ -1001,11 +1022,15 @@ class BillingSession(ABC):
             customer = self.update_or_create_customer(defaults={"default_discount": new_discount})
         plan = get_current_plan_by_customer(customer)
         if plan is not None:
-            plan.price_per_license = get_price_per_license(
-                plan.tier, plan.billing_schedule, new_discount
-            )
-            plan.discount = new_discount
-            plan.save(update_fields=["price_per_license", "discount"])
+            self.apply_discount_to_plan(plan, new_discount)
+
+            # If the customer has a next plan, apply discount to that plan as well.
+            # Make this a check on CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END status
+            # if we support this for other plans.
+            next_plan = self.get_legacy_remote_server_next_plan(customer)
+            if next_plan is not None:  # nocoverage
+                self.apply_discount_to_plan(next_plan, new_discount)
+
         self.write_to_audit_log(
             event_type=AuditLogEventType.DISCOUNT_CHANGED,
             event_time=timezone_now(),
@@ -1287,6 +1312,7 @@ class BillingSession(ABC):
             licenses,
             seat_count,
             exempt_from_license_number_check,
+            self.min_licenses_for_plan(upgrade_request.tier),
         )
         assert licenses is not None and license_management is not None
         automanage_licenses = license_management == "automatic"
@@ -1612,7 +1638,12 @@ class BillingSession(ABC):
         licenses = last_ledger_entry.licenses
         licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
         assert licenses_at_next_renewal is not None
+        min_licenses_for_plan = self.min_licenses_for_plan(plan.tier)
         seat_count = self.current_count_for_billed_licenses()
+        using_min_licenses_for_plan = (
+            min_licenses_for_plan == licenses_at_next_renewal
+            and licenses_at_next_renewal > seat_count
+        )
 
         # Should do this in JavaScript, using the user's time zone
         if plan.is_free_trial() or downgrade_at_end_of_free_trial:
@@ -1661,7 +1692,7 @@ class BillingSession(ABC):
         remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
-        legacy_remote_server_new_plan_name = self.get_legacy_remote_server_new_plan_name(customer)
+        legacy_remote_server_next_plan_name = self.get_legacy_remote_server_next_plan_name(customer)
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         context = {
             "plan_name": plan.name,
@@ -1692,7 +1723,8 @@ class BillingSession(ABC):
             "is_self_hosted_billing": is_self_hosted_billing,
             "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
-            "legacy_remote_server_new_plan_name": legacy_remote_server_new_plan_name,
+            "legacy_remote_server_next_plan_name": legacy_remote_server_next_plan_name,
+            "using_min_licenses_for_plan": using_min_licenses_for_plan,
         }
         return context
 
@@ -1727,6 +1759,7 @@ class BillingSession(ABC):
                 "fixed_price",
                 "price_per_license",
                 "discount_percent",
+                "using_min_licenses_for_plan",
             ]
 
             for key in keys:
@@ -1767,19 +1800,29 @@ class BillingSession(ABC):
             # Show "Update card" button if user has already added a card.
             current_payment_method = None if "ending in" not in payment_method else payment_method
 
-        customer_specific_context = self.get_upgrade_page_session_type_specific_context()
-        seat_count = self.current_count_for_billed_licenses()
-        signed_seat_count, salt = sign_string(str(seat_count))
         tier = initial_upgrade_request.tier
+        customer_specific_context = self.get_upgrade_page_session_type_specific_context()
+        min_licenses_for_plan = self.min_licenses_for_plan(tier)
+        seat_count = self.current_count_for_billed_licenses()
+        using_min_licenses_for_plan = min_licenses_for_plan > seat_count
+        if using_min_licenses_for_plan:
+            seat_count = min_licenses_for_plan
+        signed_seat_count, salt = sign_string(str(seat_count))
 
         free_trial_days = None
         free_trial_end_date = None
         # Don't show free trial for remote servers on legacy plan.
         if remote_server_legacy_plan_end_date is None:
-            free_trial_days = settings.FREE_TRIAL_DAYS
+            is_self_hosted_billing = not isinstance(self, RealmBillingSession)
+            free_trial_days = get_free_trial_days(is_self_hosted_billing)
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
-                    tier, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, None, True
+                    tier,
+                    False,
+                    CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    None,
+                    True,
+                    is_self_hosted_billing=is_self_hosted_billing,
                 )
                 free_trial_end_date = (
                     f"{free_trial_end:%B} {free_trial_end.day}, {free_trial_end.year}"
@@ -1809,6 +1852,7 @@ class BillingSession(ABC):
                 "seat_count": seat_count,
                 "billing_base_url": self.billing_base_url,
             },
+            "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "payment_method": current_payment_method,
             "plan": CustomerPlan.name_from_tier(tier),
             "salt": salt,
@@ -1818,6 +1862,11 @@ class BillingSession(ABC):
         }
 
         return None, context
+
+    def min_licenses_for_plan(self, tier: int) -> int:
+        if tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
+            return 10
+        return 1
 
     def downgrade_at_the_end_of_billing_cycle(self, plan: Optional[CustomerPlan] = None) -> None:
         if plan is None:  # nocoverage
@@ -1955,6 +2004,7 @@ class BillingSession(ABC):
                 licenses,
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
+                self.min_licenses_for_plan(plan.tier),
             )
             self.update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
             return
@@ -1987,6 +2037,7 @@ class BillingSession(ABC):
                 licenses_at_next_renewal,
                 self.current_count_for_billed_licenses(),
                 plan.customer.exempt_from_license_number_check,
+                self.min_licenses_for_plan(plan.tier),
             )
             self.update_license_ledger_for_manual_plan(
                 plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
@@ -2770,9 +2821,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
         self,
         remote_realm: RemoteRealm,
+        remote_billing_user: Optional[RemoteRealmBillingUser] = None,
         support_staff: Optional[UserProfile] = None,
     ) -> None:
         self.remote_realm = remote_realm
+        self.remote_billing_user = remote_billing_user
         if support_staff is not None:
             assert support_staff.is_staff
             self.support_session = True
@@ -3531,6 +3584,8 @@ def get_price_per_license(
         CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 16000, "Monthly": 1600},
         # Placeholder self-hosted plan for development.
         CustomerPlan.TIER_SELF_HOSTED_BUSINESS: {"Annual": 8000, "Monthly": 800},
+        # To help with processing discount request on support page.
+        CustomerPlan.TIER_SELF_HOSTED_LEGACY: {"Annual": 0, "Monthly": 0},
     }
 
     try:
@@ -3553,6 +3608,7 @@ def compute_plan_parameters(
     discount: Optional[Decimal],
     free_trial: bool = False,
     billing_cycle_anchor: Optional[datetime] = None,
+    is_self_hosted_billing: bool = False,
 ) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
@@ -3574,14 +3630,21 @@ def compute_plan_parameters(
         next_invoice_date = add_months(billing_cycle_anchor, 1)
     if free_trial:
         period_end = billing_cycle_anchor + timedelta(
-            days=assert_is_not_none(settings.FREE_TRIAL_DAYS)
+            days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing))
         )
         next_invoice_date = period_end
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
 
+def get_free_trial_days(is_self_hosted_billing: bool = False) -> Optional[int]:
+    if is_self_hosted_billing:
+        return settings.SELF_HOSTING_FREE_TRIAL_DAYS
+
+    return settings.CLOUD_FREE_TRIAL_DAYS
+
+
 def is_free_trial_offer_enabled() -> bool:
-    return settings.FREE_TRIAL_DAYS not in (None, 0)
+    return settings.CLOUD_FREE_TRIAL_DAYS not in (None, 0)
 
 
 def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:

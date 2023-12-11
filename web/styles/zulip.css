@@ -2269,9 +2269,8 @@ div.focused-message-list {
     vertical-align: top;
     position: relative;
     height: 28px;
-    margin-top: -10px;
-    top: 6px;
-    width: 30px;
+    margin-top: -6px;
+    width: 28px;
 }
 
 .edit-controls {

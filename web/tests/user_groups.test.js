@@ -79,7 +79,7 @@ run_test("user_groups", () => {
     });
 
     assert.equal(user_groups.get_user_group_from_name(all.name), undefined);
-    assert.equal(user_groups.get_user_group_from_name(admins.name).id, 1);
+    assert.equal(user_groups.get_user_group_from_name("new admins").id, 1);
 
     user_groups.add(all);
     const user_groups_array = user_groups.get_realm_user_groups();

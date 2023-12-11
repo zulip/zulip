@@ -7,7 +7,12 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError, RemoteBillingAuthenticationError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zilencer.models import RemoteRealm, RemoteServerBillingUser, RemoteZulipServer
+from zilencer.models import (
+    RemoteRealm,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
+    RemoteZulipServer,
+)
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -28,6 +33,7 @@ class RemoteBillingIdentityDict(TypedDict):
     remote_server_uuid: str
     remote_realm_uuid: str
 
+    remote_billing_user_id: Optional[int]
     authenticated_at: int
     uri_scheme: Literal["http://", "https://"]
 
@@ -93,10 +99,10 @@ def get_identity_dict_from_session(
     return result
 
 
-def get_remote_realm_from_session(
+def get_remote_realm_and_user_from_session(
     request: HttpRequest,
     realm_uuid: Optional[str],
-) -> RemoteRealm:
+) -> Tuple[RemoteRealm, RemoteRealmBillingUser]:
     # Cannot use isinstance with TypeDicts, to make mypy know
     # which of the TypedDicts in the Union this is - so just cast it.
     identity_dict = cast(
@@ -126,16 +132,28 @@ def get_remote_realm_from_session(
     ):
         raise JsonableError(_("Registration is deactivated"))
 
-    return remote_realm
+    remote_billing_user_id = identity_dict["remote_billing_user_id"]
+    # We only put IdentityDicts with remote_billing_user_id in the session in this flow,
+    # because the RemoteRealmBillingUser already exists when this is inserted into the session
+    # at the end of authentication.
+    assert remote_billing_user_id is not None
+
+    try:
+        remote_billing_user = RemoteRealmBillingUser.objects.get(
+            id=remote_billing_user_id, remote_realm=remote_realm
+        )
+    except RemoteRealmBillingUser.DoesNotExist:
+        raise AssertionError
+
+    return remote_realm, remote_billing_user
 
 
 def get_remote_server_and_user_from_session(
     request: HttpRequest,
     server_uuid: str,
 ) -> Tuple[RemoteZulipServer, Optional[RemoteServerBillingUser]]:
-    identity_dict = cast(
-        Optional[LegacyServerIdentityDict],
-        get_identity_dict_from_session(request, realm_uuid=None, server_uuid=server_uuid),
+    identity_dict: Optional[LegacyServerIdentityDict] = get_identity_dict_from_session(
+        request, realm_uuid=None, server_uuid=server_uuid
     )
 
     if identity_dict is None:

@@ -355,10 +355,10 @@ class PasswordResetTest(ZulipTestCase):
 
         [message] = outbox
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
-        # The email might be sent in different languages for i18n testing
         self.assertRegex(
             self.email_display_from(message),
-            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            # The email might be sent in different languages for i18n testing
+            rf"^testserver .* <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
@@ -1754,7 +1754,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assert_length(messages, message_count)
             self.assertIn(text, messages[0].content)
 
-    @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)
+    @override_settings(OPEN_REALM_CREATION=True, CLOUD_FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:
         password = "test"
         string_id = "custom-test"
