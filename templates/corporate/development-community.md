@@ -89,20 +89,22 @@ topic name, and [moderators](/help/roles-and-permissions) can [move a
 topic to a different stream](/help/move-content-to-another-stream).
 
 ## Streams for everyone
+
 - [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) is
-  for posting feedback on Zulip, including feature requests, things
-  you’d like to see polished, or anything else!
-- [#issues](https://chat.zulip.org/#narrow/stream/9-issues),
-  [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile),
-  [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop),
+  for posting feedback on Zulip, including feature requests, suggestions for
+  improvements to the UI or existing features, or anything else! We also
+  appreciate hearing about how Zulip is used in your organization.
+- [#integrations](https://chat.zulip.org/#narrow/stream/127-integrations)
+  is for bug reports or questions about integrations.
+- [#issues](https://chat.zulip.org/#narrow/stream/9-issues) is for reporting
+  bugs (or possible bugs) in the Zulip web app or server implementation.
+- [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile),
+  [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop), and
   [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal)
-  and
-  [#integrations](https://chat.zulip.org/#narrow/stream/127-integrations)
-  are the best places to post bug reports or questions about how to do
-  something. Note that
-  [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) should
-  only be used for issues specific to the desktop app, which shares
-  most of its UI and implementation with the web app.
+  are the best places to post bug reports or questions about Zulip's apps. Note
+  that [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) should only
+  be used for issues specific to the desktop app, which shares most of its UI
+  and implementation with the web app.
 - Everyone is welcome to introduce themselves in [#new
   members](https://chat.zulip.org/#narrow/stream/95-new-members). Posting
   here with your name as the topic is a great option if you’re
@@ -113,9 +115,10 @@ topic to a different stream](/help/move-content-to-another-stream).
 
 ## Streams for Zulip users and administrators
 
-- [#user community](https://chat.zulip.org/#narrow/stream/138-user-community)
-  is for Zulip users to discuss their experiences using and adopting
-  Zulip.
+- [#user questions](https://chat.zulip.org/#narrow/stream/138-user-questions) is
+  for questions about how to configure your Zulip organization, and accomplish
+  your goals with Zulip. You can also refer to the [Zulip help center](/help)
+  for detailed documentation.
 - [#production help](https://chat.zulip.org/#narrow/stream/31-production-help) is
   for all questions related to [self-hosting
   Zulip](/self-hosting/).
