@@ -1143,6 +1143,10 @@ class BillingSession(ABC):
         assert customer.stripe_customer_id is not None  # for mypy
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
         billing_cycle_anchor = None
+
+        if remote_server_legacy_plan is not None:  # nocoverage
+            # Legacy servers don't get an additional free trial.
+            free_trial = False
         if should_schedule_upgrade_for_legacy_remote_server:  # nocoverage
             assert remote_server_legacy_plan is not None
             billing_cycle_anchor = remote_server_legacy_plan.end_date
