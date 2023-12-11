@@ -175,7 +175,8 @@
         grid-template-rows: auto;
     }
 
-    .pricing-tab {
+    .pricing-tab,
+    .inactive-pricing-tab {
         cursor: pointer;
         background: var(--color-background-box);
         padding: 12px 12px 0;
@@ -235,6 +236,10 @@
             mask-repeat: no-repeat;
             mask-image: var(--icon-right-outward-tab-curve);
         }
+    }
+
+    .inactive-pricing-tab {
+        cursor: default;
     }
 
     .pricing-pane {
