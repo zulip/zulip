@@ -19,3 +19,12 @@
     {% include 'analytics/sponsorship_forms_support.html' %}
 {% endwith %}
 {% endif %}
+
+{% if plan_data[remote_realm.id].current_plan %}
+<div class="remote-realm-information">
+    {% with %}
+        {% set plan_data = plan_data[remote_realm.id] %}
+        {% include 'analytics/current_plan_details.html' %}
+    {% endwith %}
+</div>
+{% endif %}
