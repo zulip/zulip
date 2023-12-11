@@ -88,6 +88,7 @@ aiohttp==3.9.1 \
     --hash=sha256:f800164276eec54e0af5c99feb9494c295118fc10a11b997bbb1348ba1a52065 \
     --hash=sha256:ffcd828e37dc219a72c9012ec44ad2e7e3066bec6ff3aaa19e7d435dbf4032ca
     # via
+    #   -r requirements/dev.in
     #   aiohttp-retry
     #   twilio
 aiohttp-retry==2.8.3 \
