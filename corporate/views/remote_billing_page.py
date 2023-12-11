@@ -249,7 +249,8 @@ def remote_realm_billing_finalize_login(
     if full_name is not None:
         remote_user.full_name = full_name
     remote_user.tos_version = settings.TERMS_OF_SERVICE_VERSION
-    remote_user.save(update_fields=["full_name", "tos_version"])
+    remote_user.last_login = timezone_now()
+    remote_user.save(update_fields=["full_name", "tos_version", "last_login"])
 
     identity_dict["remote_billing_user_id"] = remote_user.id
     request.session["remote_billing_identities"] = {}
@@ -370,6 +371,8 @@ def remote_realm_billing_from_login_confirmation_link(
         remote_realm=remote_realm,
         user_uuid=prereg_object.user_uuid,
     )
+    prereg_object.created_user = remote_billing_user
+    prereg_object.save(update_fields=["created_user"])
 
     identity_dict = RemoteBillingIdentityDict(
         user=RemoteBillingUserDict(
@@ -608,6 +611,12 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         email=prereg_object.email,
         remote_server=remote_server,
     )
+    if created:
+        prereg_object.created_user = remote_billing_user
+        prereg_object.save(update_fields=["created_user"])
+
+    remote_billing_user.last_login = timezone_now()
+    remote_billing_user.save(update_fields=["last_login"])
 
     # Refresh IdentityDict in the session. (Or create it
     # if the user came here e.g. in a different browser than they
