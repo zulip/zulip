@@ -603,6 +603,7 @@ def update_remote_realm_data_for_server(
             org_type=realm.org_type,
             name=realm.name,
             authentication_methods=realm.authentication_methods,
+            is_system_bot_realm=realm.is_system_bot_realm,
         )
         for realm in server_realms_info
         if realm.uuid not in already_registered_uuids
@@ -629,6 +630,7 @@ def update_remote_realm_data_for_server(
             ("name", "name"),
             ("authentication_methods", "authentication_methods"),
             ("realm_deactivated", "deactivated"),
+            ("is_system_bot_realm", "is_system_bot_realm"),
         ]:
             old_value = getattr(remote_realm, remote_realm_attr)
             new_value = getattr(realm, realm_dict_key)
@@ -659,7 +661,14 @@ def update_remote_realm_data_for_server(
 
     RemoteRealm.objects.bulk_update(
         remote_realms_to_update,
-        ["host", "realm_deactivated", "name", "authentication_methods", "org_type"],
+        [
+            "host",
+            "realm_deactivated",
+            "name",
+            "authentication_methods",
+            "org_type",
+            "is_system_bot_realm",
+        ],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
