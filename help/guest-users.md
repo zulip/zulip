@@ -52,13 +52,28 @@ following cases:
 
 - The user belongs to a [direct message](/help/direct-messages) thread with the
   guest.
-- The user is subscribed to the same [stream](/help/streams-and-topics) as the
-  guest.
+- The user is subscribed to one or more [streams](/help/streams-and-topics) with
+  the guest.
 
-All other users will be displayed as **Unknown users** in the Zulip app. For
-example, messages and reactions from a former subscriber of a stream will be
-shown as from an **Unknown user**. Unknown users are not shown in the guest's
-right sidebar, and cannot be accessed by guests via the [API](/api).
+When a guest cannot see information about a user, the guest's experience will be
+that:
+
+- The user does not appear in the right sidebar.
+- The user does not appear in typeahead suggestions, e.g., in the compose box
+  and search.
+- Otherwise, such a user will be displayed as an **Unknown user** in the Zulip
+  app. For example, messages and reactions from a former subscriber of a stream
+  will be shown as from an **Unknown user**.
+- An **Unknown user**'s [user card](/help/user-cards) will not display
+  information about that user. However, the guest can still search from all
+  messages send by a particular **Unknown user** from that user's card.
+
+In practice, guests should rarely encounter content from an **Unknown user**,
+unless users in your organization frequently change their stream subscriptions
+or are [deactivated](/help/deactivate-or-reactivate-a-user).
+
+The only information guests can access about unknown users via the [API](/api)
+is which user IDs exist.
 
 {start_tabs}
 
