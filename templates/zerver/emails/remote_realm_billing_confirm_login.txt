@@ -1,4 +1,4 @@
-{% trans %}Click the link below to log in to Zulip plan management for {{ remote_realm_host }}. This link will expire in 2 hours.{% endtrans %}
+{% trans %}Click the link below to log in to Zulip plan management for {{remote_realm_host}}.{% endtrans %} {% trans %}This link will expire in {{ validity_in_hours }} hours.{% endtrans %}
 
 
 {{ _("Log in") }}: {{ confirmation_url }}
