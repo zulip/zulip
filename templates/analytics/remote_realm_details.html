@@ -27,4 +27,11 @@
         {% include 'analytics/current_plan_details.html' %}
     {% endwith %}
 </div>
+
+{% with %}
+    {% set current_plan = plan_data[remote_server.id].current_plan %}
+    {% set remote_id = remote_realm.id %}
+    {% set remote_type = "remote_realm_id" %}
+    {% include 'analytics/current_plan_forms_support.html' %}
+{% endwith %}
 {% endif %}
