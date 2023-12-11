@@ -214,11 +214,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
     def on_connection_close(self) -> None:
         # Register a Tornado handler that runs when client-side
         # connections are closed to notify the events system.
-        #
-        # Note that in the development environment, the development
-        # proxy does not correctly close connections to Tornado when
-        # its clients (e.g. `curl`) close their connections.  This
-        # code path is thus _unreachable except in production_.
 
         # If the client goes away, garbage collect the handler (with
         # attached request information).
