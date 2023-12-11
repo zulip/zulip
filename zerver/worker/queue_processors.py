@@ -1170,12 +1170,10 @@ class DeferredWorker(QueueProcessingWorker):
             )
             user_profile = get_user_profile_by_id(event["user_profile_id"])
             reactivate_user_if_soft_deactivated(user_profile)
-        elif event["type"] == "register_realm_with_push_bouncer":
+        elif event["type"] == "push_bouncer_update_for_realm":
             # In the future we may use the realm_id to send only that single realm's info.
             realm_id = event["realm_id"]
-            logger.info(
-                "Running send_analytics_to_push_bouncer, requested due to realm %s", realm_id
-            )
+            logger.info("Updating push bouncer with metadata on behalf of realm %s", realm_id)
             send_analytics_to_push_bouncer(consider_usage_statistics=False)
 
         end = time.time()

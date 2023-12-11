@@ -402,11 +402,14 @@ def send_analytics_to_push_bouncer(consider_usage_statistics: bool = True) -> No
 
 
 def maybe_enqueue_audit_log_upload(realm: Realm) -> None:
+    # Update the push notifications service, either with the fact that
+    # the realm now exists or updates to its audit log of users.
+    #
+    # Done via a queue worker so that networking failures cannot have
+    # any impact on the success operation of the local server's
+    # ability to do operations that trigger these updates.
     from zerver.lib.push_notifications import uses_notification_bouncer
 
     if uses_notification_bouncer():
-        # Let the bouncer know about the new realm.
-        # We do this in a queue worker to avoid messing with the realm
-        # creation process due to network issues or latency.
-        event = {"type": "register_realm_with_push_bouncer", "realm_id": realm.id}
+        event = {"type": "push_bouncer_update_for_realm", "realm_id": realm.id}
         queue_event_on_commit("deferred_work", event)
