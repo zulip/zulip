@@ -43,16 +43,10 @@ function get_notification_content(message) {
         content = "New direct message from " + message.sender_full_name;
     }
 
-    if (content.length > 150) {
-        let i;
-        // Truncate content at a word boundary
-        for (i = 150; i > 0; i -= 1) {
-            if (content[i] === " ") {
-                break;
-            }
-        }
-        content = content.slice(0, i);
-        content += " [...]";
+    const characterLimit = 150;
+
+    if (content.length > characterLimit) {
+        content = content.slice(0, characterLimit - 3) + "...";
     }
 
     return content;
