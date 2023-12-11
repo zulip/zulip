@@ -641,6 +641,21 @@ def send_notifications_to_bouncer(
         increment=total_android_devices + total_apple_devices,
     )
 
+    remote_realm_dict = response_data.get("realm")
+    if remote_realm_dict is not None:
+        # The server may have updated our understanding of whether
+        # push notifications will work.
+        assert isinstance(remote_realm_dict, dict)
+        do_set_realm_property(
+            user_profile.realm,
+            "push_notifications_enabled",
+            remote_realm_dict["can_push"],
+            acting_user=None,
+        )
+        do_set_push_notifications_enabled_end_timestamp(
+            user_profile.realm, remote_realm_dict["expected_end_timestamp"], acting_user=None
+        )
+
     return total_android_devices, total_apple_devices
 
 

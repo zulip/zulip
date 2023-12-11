@@ -46,6 +46,7 @@ from zerver.lib.send_email import (
     send_email_to_billing_admins_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.types import RemoteRealmDictValue
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -3243,6 +3244,28 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             plan = self.update_license_ledger_for_automanaged_plan(plan, audit_log.event_time)
             if plan is None:
                 return
+
+    def get_push_service_validity_dict(self) -> RemoteRealmDictValue:
+        customer = self.get_customer()
+        if customer is None:
+            return {"can_push": True, "expected_end_timestamp": None}
+
+        current_plan = get_current_plan_by_customer(customer)
+        if current_plan is None:
+            return {"can_push": True, "expected_end_timestamp": None}
+
+        expected_end_timestamp = None
+        if current_plan.status in [
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ]:
+            expected_end_timestamp = datetime_to_timestamp(
+                self.get_next_billing_cycle(current_plan)
+            )
+        return {
+            "can_push": True,
+            "expected_end_timestamp": expected_end_timestamp,
+        }
 
 
 class RemoteServerBillingSession(BillingSession):  # nocoverage
