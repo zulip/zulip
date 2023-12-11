@@ -1,0 +1,34 @@
+<form method="POST" class="remote-form">
+    <b>Sponsorship pending</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <select name="sponsorship_pending">
+        <option value="true" {% if customer and customer.sponsorship_pending %}selected{% endif %}>Yes</option>
+        <option value="false" {% if not customer or not customer.sponsorship_pending %}selected{% endif %}>No</option>
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+
+{% if customer and customer.sponsorship_pending %}
+<form method="POST" class="">
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="hidden" name="approve_sponsorship" value="true" />
+    <button class="btn btn-default sea-green small approve-sponsorship-button">
+        Approve full sponsorship
+    </button>
+</form>
+{% endif %}
+
+<form method="POST" class="remote-form">
+    <b>Discount</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    {% if has_fixed_price %}
+    <input type="number" name="discount" value="{{ get_discount(customer) }}" disabled />
+    <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
+    {% else %}
+    <input type="number" name="discount" value="{{ get_discount(customer) }}" required />
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+    {% endif %}
+</form>
