@@ -28,7 +28,6 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityDict,
     RemoteBillingIdentityExpiredError,
     RemoteBillingUserDict,
-    get_identity_dict_from_session,
     get_remote_server_and_user_from_session,
 )
 from zerver.lib.exceptions import (
@@ -405,99 +404,6 @@ def create_remote_billing_confirmation_link(
     final_url = urlunsplit(modified_url)
 
     return final_url
-
-
-def render_tmp_remote_billing_page(
-    request: HttpRequest, realm_uuid: Optional[str], server_uuid: Optional[str]
-) -> HttpResponse:
-    identity_dict = get_identity_dict_from_session(
-        request, realm_uuid=realm_uuid, server_uuid=server_uuid
-    )
-
-    if identity_dict is None:
-        raise JsonableError(_("User not authenticated"))
-
-    # This key should be set in both RemoteRealm and legacy server
-    # login flows.
-    remote_server_uuid = identity_dict["remote_server_uuid"]
-
-    remote_realm_uuid = identity_dict.get("remote_realm_uuid")
-
-    user_dict = identity_dict.get("user", {})
-    # Mypy recognizes user_dict as "object" otherwise.
-    # If not empty, this is actually a RemoteBillingUserDict.
-    assert isinstance(user_dict, dict)
-
-    user_email = user_dict.get("user_email")
-    user_full_name = user_dict.get("user_full_name")
-
-    try:
-        remote_server = RemoteZulipServer.objects.get(uuid=remote_server_uuid)
-    except RemoteZulipServer.DoesNotExist:
-        raise JsonableError(_("Invalid remote server."))
-
-    remote_realm = None
-    if remote_realm_uuid:
-        try:
-            # Checking for the (uuid, server) is sufficient to be secure here, since the server
-            # is authenticated. the uuid_owner_secret is not needed here, it'll be used for
-            # for validating transfers of a realm to a different RemoteZulipServer (in the
-            # export-import process).
-            assert isinstance(remote_realm_uuid, str)
-            remote_realm = RemoteRealm.objects.get(uuid=remote_realm_uuid, server=remote_server)
-        except RemoteRealm.DoesNotExist:
-            raise AssertionError(
-                "The remote realm is missing despite being in the RemoteBillingIdentityDict"
-            )
-
-    remote_server_and_realm_info = {
-        "remote_server_uuid": remote_server_uuid,
-        "remote_server_hostname": remote_server.hostname,
-        "remote_server_contact_email": remote_server.contact_email,
-        "remote_server_plan_type": remote_server.plan_type,
-    }
-
-    if remote_realm is not None:
-        remote_server_and_realm_info.update(
-            {
-                "remote_realm_uuid": remote_realm_uuid,
-                "remote_realm_host": remote_realm.host,
-            }
-        )
-
-    return render(
-        request,
-        "corporate/remote_billing.html",
-        context={
-            "user_email": user_email,
-            "user_full_name": user_full_name,
-            "remote_server_and_realm_info": remote_server_and_realm_info,
-        },
-    )
-
-
-def remote_billing_plans_common(
-    request: HttpRequest, realm_uuid: Optional[str], server_uuid: Optional[str]
-) -> HttpResponse:
-    """
-    Once implemented, this function, shared between remote_realm_plans_page
-    and remote_server_plans_page, will return a Plans page, adjusted depending
-    on whether the /realm/... or /server/... endpoint is being used
-    """
-
-    return render_tmp_remote_billing_page(request, realm_uuid=realm_uuid, server_uuid=server_uuid)
-
-
-def remote_billing_page_common(
-    request: HttpRequest, realm_uuid: Optional[str], server_uuid: Optional[str]
-) -> HttpResponse:
-    """
-    Once implemented, this function, shared between remote_realm_billing_page
-    and remote_server_billing_page, will return a Billing page, adjusted depending
-    on whether the /realm/... or /server/... endpoint is being used
-    """
-
-    return render_tmp_remote_billing_page(request, realm_uuid=realm_uuid, server_uuid=server_uuid)
 
 
 @self_hosting_management_endpoint
