@@ -47,12 +47,12 @@
                 <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
                 <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
                 <b>Has remote realm(s)</b>: {{ remote_realms[remote_server.id] != [] }}
-                {% if remote_server.plan_type == 100 %}
+                {% if remote_server.plan_type == SPONSORED_PLAN_TYPE %}
                     <h4>On 100% sponsored Zulip Community plan.</h4>
                 {% endif %}
             </div>
 
-            {% if remote_server.plan_type != 100 %}
+            {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
             <form method="POST" class="remote-server-form">
                 <b>Sponsorship pending</b>:<br />
                 {{ csrf_input }}
@@ -76,12 +76,12 @@
             </form>
             {% endif %}
 
-            {% if remote_server.plan_type != 100 %}
+            {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
             <form method="POST" class="remote-server-form">
                 <b>Discount</b>:<br />
                 {{ csrf_input }}
                 <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
-                {% if plan_data[remote_server.id].current_plan and plan_data[remote_server.id].current_plan.fixed_price %}
+                {% if plan_data[remote_server.id].has_fixed_price %}
                 <input type="number" name="discount" value="{{ get_discount(plan_data[remote_server.id].customer) }}" disabled />
                 <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
                 {% else %}
