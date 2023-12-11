@@ -479,19 +479,24 @@
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
                 <h1 class="modal__title dialog_heading">
-                    Downgrade?
+                    Cancel scheduled upgrade of {{ org_name }}?
                 </h1>
                 <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
                 <p>
-                    Lose benefits?
+                    Your organization will be not be upgraded to <strong>Zulip Business</strong>
+                    on {{ remote_server_legacy_plan_end_date }}. If your organization has more than
+                    10 users at that time, you will lose access to the
+                    <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
+                    You will also not receive the <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">other benefits</a>
+                    of the Zulip Business plan. Are you sure you want to continue?
                 </p>
             </main>
             <footer class="modal__footer">
                 <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
                 <button class="modal__btn dialog_submit_button">
-                    <span>{{ _('Downgrade') }}</span>
+                    <span>{{ _('Cancel upgrade') }}</span>
                 </button>
             </footer>
         </div>
