@@ -3506,9 +3506,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         end_date: datetime,
     ) -> None:
         # Set stripe_customer_id to None to avoid customer being charged without a payment method.
-        customer = Customer.objects.create(
-            remote_server=self.remote_server, stripe_customer_id=None
-        )
+        customer = self.update_or_create_customer(stripe_customer_id=None, defaults={"stripe_customer_id": None})
 
         # Servers on legacy plan which are scheduled to be upgraded have 2 plans.
         # This plan will be used to track the current status of SWITCH_PLAN_TIER_AT_PLAN_END
