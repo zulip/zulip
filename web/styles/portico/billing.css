@@ -668,7 +668,7 @@ input[name="licenses"] {
     font-weight: 400;
 }
 
-.server-login-button-loader {
+.remote-billing-button-loader {
     display: none;
     vertical-align: top;
     position: relative;
@@ -685,7 +685,7 @@ input[name="licenses"] {
     display: none;
 }
 
-#remote-realm-confirm-login-form .text-error {
+#remote-billing-confirm-login-form .text-error {
     margin-bottom: 15px;
 }
 

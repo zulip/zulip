@@ -13,7 +13,11 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
+from corporate.lib.stripe import (
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+    get_free_trial_days,
+)
 from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics
@@ -86,7 +90,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     context = PlansPageContext(
         is_cloud_realm=True,
         sponsorship_url=reverse("sponsorship_request"),
-        free_trial_days=settings.FREE_TRIAL_DAYS,
+        free_trial_days=get_free_trial_days(False),
         is_sponsored=realm is not None and realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE,
     )
     if is_subdomain_root_or_alias(request):
@@ -133,7 +137,7 @@ def remote_realm_plans_page(
         sponsorship_url=reverse(
             "remote_realm_sponsorship_page", args=(billing_session.remote_realm.uuid,)
         ),
-        free_trial_days=settings.FREE_TRIAL_DAYS,
+        free_trial_days=get_free_trial_days(True),
         billing_base_url=billing_session.billing_base_url,
         is_sponsored=billing_session.is_sponsored(),
     )
@@ -168,7 +172,7 @@ def remote_server_plans_page(
         sponsorship_url=reverse(
             "remote_server_sponsorship_page", args=(billing_session.remote_server.uuid,)
         ),
-        free_trial_days=settings.FREE_TRIAL_DAYS,
+        free_trial_days=get_free_trial_days(True),
         billing_base_url=billing_session.billing_base_url,
         is_sponsored=billing_session.is_sponsored(),
     )

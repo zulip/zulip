@@ -1033,7 +1033,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        with self.settings(FREE_TRIAL_DAYS=60):
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             response = self.client_get("/upgrade/")
             free_trial_end_date = self.now + timedelta(days=60)
 
@@ -1253,7 +1253,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         free_trial_end_date = self.now + timedelta(days=60)
-        with self.settings(FREE_TRIAL_DAYS=60):
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             response = self.client_get("/upgrade/")
 
             self.assert_in_success_response(
@@ -1992,7 +1992,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response["Location"], "http://zulip.testserver/billing")
 
-            with self.settings(FREE_TRIAL_DAYS=30):
+            with self.settings(CLOUD_FREE_TRIAL_DAYS=30):
                 response = self.client_get("/upgrade/")
                 self.assertEqual(response.status_code, 302)
                 self.assertEqual(response["Location"], "http://zulip.testserver/billing")
@@ -2889,7 +2889,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         free_trial_end_date = self.now + timedelta(days=60)
-        with self.settings(FREE_TRIAL_DAYS=60):
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
                 self.add_card_and_upgrade(user, schedule="monthly")
                 plan = CustomerPlan.objects.get()
@@ -2944,7 +2944,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         free_trial_end_date = self.now + timedelta(days=60)
-        with self.settings(FREE_TRIAL_DAYS=60):
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
                 self.add_card_and_upgrade(user, schedule="annual")
                 plan = CustomerPlan.objects.get()
@@ -2996,7 +2996,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
 
         free_trial_end_date = self.now + timedelta(days=60)
-        with self.settings(FREE_TRIAL_DAYS=60):
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
                 self.local_upgrade(
                     self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, True
@@ -3048,7 +3048,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         free_trial_end_date = self.now + timedelta(days=60)
-        with self.settings(FREE_TRIAL_DAYS=60):
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
                 self.local_upgrade(
                     self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, True
@@ -3159,7 +3159,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         free_trial_end_date = self.now + timedelta(days=60)
-        with self.settings(FREE_TRIAL_DAYS=60):
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
             with time_machine.travel(self.now, tick=False):
                 self.local_upgrade(
                     self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, False, True

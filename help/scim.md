@@ -19,10 +19,7 @@ Zulip's SCIM integration has the following limitations:
   this integration with SCIM providers that do not yet have detailed
   self-service documentation on this page.
 
-!!! warn ""
-    Zulip Cloud customers who wish to use SCIM integration must upgrade to
-    the Zulip Cloud Plus plan. Contact
-    [support@zulip.com](mailto:support@zulip.com) for plan benefits and pricing.
+{!cloud-plus-only.md!}
 
 ## Configure SCIM
 

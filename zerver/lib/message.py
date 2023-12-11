@@ -2,6 +2,7 @@ import copy
 import zlib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from email.headerregistry import Address
 from typing import (
     Any,
     Collection,
@@ -28,7 +29,7 @@ from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
-from zerver.lib.avatar import get_avatar_field
+from zerver.lib.avatar import get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import (
     cache_set_many,
     cache_with_key,
@@ -60,6 +61,7 @@ from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRec
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
+from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -74,6 +76,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_display_recipient_by_id,
+    get_fake_email_domain,
     get_usermessage_by_message_id,
     query_for_ids,
 )
@@ -245,6 +248,8 @@ def messages_for_ids(
     apply_markdown: bool,
     client_gravatar: bool,
     allow_edit_history: bool,
+    user_profile: Optional[UserProfile],
+    realm: Realm,
 ) -> List[Dict[str, Any]]:
     cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row["id"]
@@ -260,6 +265,9 @@ def messages_for_ids(
     )
 
     message_list: List[Dict[str, Any]] = []
+
+    sender_ids = [message_dicts[message_id]["sender_id"] for message_id in message_ids]
+    inaccessible_sender_ids = get_inaccessible_user_ids(sender_ids, user_profile)
 
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
@@ -278,9 +286,10 @@ def messages_for_ids(
         # in realms with allow_edit_history disabled.
         if "edit_history" in msg_dict and not allow_edit_history:
             del msg_dict["edit_history"]
+        msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)
 
-    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar)
+    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar, realm)
 
     return message_list
 
@@ -389,7 +398,10 @@ class MessageDict:
 
     @staticmethod
     def post_process_dicts(
-        objs: List[Dict[str, Any]], apply_markdown: bool, client_gravatar: bool
+        objs: List[Dict[str, Any]],
+        apply_markdown: bool,
+        client_gravatar: bool,
+        realm: Realm,
     ) -> None:
         """
         NOTE: This function mutates the objects in
@@ -403,7 +415,15 @@ class MessageDict:
         MessageDict.bulk_hydrate_recipient_info(objs)
 
         for obj in objs:
-            MessageDict.finalize_payload(obj, apply_markdown, client_gravatar, skip_copy=True)
+            can_access_sender = obj.get("can_access_sender", True)
+            MessageDict.finalize_payload(
+                obj,
+                apply_markdown,
+                client_gravatar,
+                skip_copy=True,
+                can_access_sender=can_access_sender,
+                realm_host=realm.host,
+            )
 
     @staticmethod
     def finalize_payload(
@@ -412,6 +432,8 @@ class MessageDict:
         client_gravatar: bool,
         keep_rendered_content: bool = False,
         skip_copy: bool = False,
+        can_access_sender: bool = True,
+        realm_host: str = "",
     ) -> Dict[str, Any]:
         """
         By default, we make a shallow copy of the incoming dict to avoid
@@ -428,7 +450,20 @@ class MessageDict:
             # here if the current user's role has access to the target user's email address.
             client_gravatar = False
 
-        MessageDict.set_sender_avatar(obj, client_gravatar)
+        if not can_access_sender:
+            # Enforce inability to access details of inaccessible
+            # users. We should be able to remove the realm_host and
+            # can_access_user plumbing to this function if/when we
+            # shift the Zulip API to not send these denormalized
+            # fields about message senders favor of just sending the
+            # sender's user ID.
+            obj["sender_full_name"] = str(UserProfile.INACCESSIBLE_USER_NAME)
+            sender_id = obj["sender_id"]
+            obj["sender_email"] = Address(
+                username=f"user{sender_id}", domain=get_fake_email_domain(realm_host)
+            ).addr_spec
+
+        MessageDict.set_sender_avatar(obj, client_gravatar, can_access_sender)
         if apply_markdown:
             obj["content_type"] = "text/html"
             obj["content"] = obj["rendered_content"]
@@ -446,6 +481,8 @@ class MessageDict:
         del obj["recipient_type_id"]
         del obj["sender_is_mirror_dummy"]
         del obj["sender_email_address_visibility"]
+        if "can_access_sender" in obj:
+            del obj["can_access_sender"]
         return obj
 
     @staticmethod
@@ -734,7 +771,13 @@ class MessageDict:
             MessageDict.hydrate_recipient_info(obj, display_recipients[obj["recipient_id"]])
 
     @staticmethod
-    def set_sender_avatar(obj: Dict[str, Any], client_gravatar: bool) -> None:
+    def set_sender_avatar(
+        obj: Dict[str, Any], client_gravatar: bool, can_access_sender: bool = True
+    ) -> None:
+        if not can_access_sender:
+            obj["avatar_url"] = get_avatar_for_inaccessible_user()
+            return
+
         sender_id = obj["sender_id"]
         sender_realm_id = obj["sender_realm_id"]
         sender_delivery_email = obj["sender_delivery_email"]

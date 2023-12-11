@@ -48,6 +48,7 @@ class RemoteZulipServer(models.Model):
     contact_email = models.EmailField(blank=True, null=False)
     last_updated = models.DateTimeField("last updated", auto_now=True)
     last_version = models.CharField(max_length=VERSION_MAX_LENGTH, null=True)
+    last_api_feature_level = models.PositiveIntegerField(null=True)
 
     # Whether the server registration has been deactivated.
     deactivated = models.BooleanField(default=False)
@@ -153,16 +154,39 @@ class RemoteRealm(models.Model):
         return f"{self.host} {str(self.uuid)[0:12]}"
 
 
-class RemoteRealmBillingUser(models.Model):
+class AbstractRemoteRealmBillingUser(models.Model):
     remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE)
 
     # The .uuid of the UserProfile on the remote server
     user_uuid = models.UUIDField()
-    full_name = models.TextField(default="")
     email = models.EmailField()
+
+    class Meta:
+        abstract = True
+
+
+class RemoteRealmBillingUser(AbstractRemoteRealmBillingUser):
+    full_name = models.TextField(default="")
 
     TOS_VERSION_BEFORE_FIRST_LOGIN = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
+
+    class Meta:
+        unique_together = [
+            ("remote_realm", "user_uuid"),
+        ]
+
+
+class PreregistrationRemoteRealmBillingUser(AbstractRemoteRealmBillingUser):
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_USED
+    status = models.IntegerField(default=0)
+
+    # These are for carrying certain information that's originally
+    # in an IdentityDict across the confirmation link flow. These
+    # values will be restored in the final, fully authenticated IdentityDict.
+    next_page = models.TextField(null=True)
+    uri_scheme = models.TextField()
 
 
 class AbstractRemoteServerBillingUser(models.Model):

@@ -50,6 +50,7 @@ class ErrorCode(Enum):
     TOPIC_WILDCARD_MENTION_NOT_ALLOWED = auto()
     STREAM_WILDCARD_MENTION_NOT_ALLOWED = auto()
     REMOTE_BILLING_UNAUTHENTICATED_USER = auto()
+    REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
 
 
 class JsonableError(Exception):
@@ -590,6 +591,21 @@ class ApiParamValidationError(JsonableError):
 class ServerNotReadyError(JsonableError):
     code = ErrorCode.SERVER_NOT_READY
     http_status_code = 500
+
+
+class RemoteRealmServerMismatchError(JsonableError):  # nocoverage
+    code = ErrorCode.REMOTE_REALM_SERVER_MISMATCH_ERROR
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "Your organization is registered to a different Zulip server. Please contact Zulip support for assistance in resolving this issue."
+        )
 
 
 class MissingRemoteRealmError(JsonableError):  # nocoverage

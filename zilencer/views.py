@@ -26,7 +26,7 @@ from analytics.lib.counts import (
 from corporate.lib.stripe import RemoteRealmBillingSession, do_deactivate_remote_server
 from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RemoteRealmServerMismatchError
 from zerver.lib.push_notifications import (
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
@@ -34,7 +34,12 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
-from zerver.lib.remote_server import RealmDataForAnalytics
+from zerver.lib.remote_server import (
+    InstallationCountDataForAnalytics,
+    RealmAuditLogDataForAnalytics,
+    RealmCountDataForAnalytics,
+    RealmDataForAnalytics,
+)
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
@@ -370,7 +375,7 @@ def get_remote_realm_helper(
             realm_uuid,
             server.id,
         )
-        return None
+        raise RemoteRealmServerMismatchError
 
     return remote_realm
 
@@ -659,32 +664,6 @@ def update_remote_realm_data_for_server(
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
-class RealmAuditLogDataForAnalytics(BaseModel):
-    id: int
-    realm: int
-    event_time: float
-    backfilled: bool
-    extra_data: Optional[Union[str, Dict[str, Any]]]
-    event_type: int
-
-
-class RealmCountDataForAnalytics(BaseModel):
-    property: str
-    realm: int
-    id: int
-    end_time: float
-    subgroup: Optional[str]
-    value: int
-
-
-class InstallationCountDataForAnalytics(BaseModel):
-    property: str
-    id: int
-    end_time: float
-    subgroup: Optional[str]
-    value: int
-
-
 @typed_endpoint
 @transaction.atomic
 def remote_server_post_analytics(
@@ -696,6 +675,7 @@ def remote_server_post_analytics(
     realmauditlog_rows: Optional[Json[List[RealmAuditLogDataForAnalytics]]] = None,
     realms: Optional[Json[List[RealmDataForAnalytics]]] = None,
     version: Optional[Json[str]] = None,
+    api_feature_level: Optional[Json[int]] = None,
 ) -> HttpResponse:
     # Lock the server, preventing this from racing with other
     # duplicate submissions of the data
@@ -704,9 +684,10 @@ def remote_server_post_analytics(
     remote_server_version_updated = False
     if version is not None:
         version = version[0 : RemoteZulipServer.VERSION_MAX_LENGTH]
-    if version != server.last_version:
+    if version != server.last_version or api_feature_level != server.last_api_feature_level:
         server.last_version = version
-        server.save(update_fields=["last_version"])
+        server.last_api_feature_level = api_feature_level
+        server.save(update_fields=["last_version", "last_api_feature_level"])
         remote_server_version_updated = True
 
     validate_incoming_table_data(

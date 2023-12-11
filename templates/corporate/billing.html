@@ -180,7 +180,7 @@
                             {% else %}
                             {% if charge_automatically %}
                             {% if is_server_on_legacy_plan %}
-                            Your plan will automatically upgrade to {{ legacy_remote_server_new_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+                            Your plan will automatically upgrade to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
                             {% else %}
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
@@ -193,11 +193,14 @@
                                 (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
                                 {% if switch_to_annual_at_end_of_cycle %}
                                     12 months
-                                {% elif switch_to_monthly_at_end_of_cycle %}
+                                {%- elif switch_to_monthly_at_end_of_cycle %}
                                     1 month
-                                {% else %}
+                                {%- else %}
                                     {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
-                                {% endif %})
+                                {%- endif -%})
+                                {% if using_min_licenses_for_plan %}
+                                    (<i>minimum purchase</i>)
+                                {% endif %}
                                 {% if discount_percent %}
                                 <br />
                                 <i class="billing-page-discount">Includes {{ discount_percent }}% discount.</i>

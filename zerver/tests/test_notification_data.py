@@ -384,7 +384,7 @@ class TestNotificationData(ZulipTestCase):
         result = get_user_group_mentions_data(
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[],
-            mention_data=MentionData(mention_backend, "no group mentioned"),
+            mention_data=MentionData(mention_backend, "no group mentioned", message_sender=None),
         )
         self.assertDictEqual(result, {})
 
@@ -392,7 +392,9 @@ class TestNotificationData(ZulipTestCase):
         result = get_user_group_mentions_data(
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[hamlet_and_cordelia.id],
-            mention_data=MentionData(mention_backend, "hey @*hamlet_and_cordelia*!"),
+            mention_data=MentionData(
+                mention_backend, "hey @*hamlet_and_cordelia*!", message_sender=None
+            ),
         )
         self.assertDictEqual(
             result,
@@ -408,7 +410,9 @@ class TestNotificationData(ZulipTestCase):
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[hamlet_and_cordelia.id, hamlet_only.id],
             mention_data=MentionData(
-                mention_backend, "hey @*hamlet_and_cordelia* and @*hamlet_only*"
+                mention_backend,
+                "hey @*hamlet_and_cordelia* and @*hamlet_only*",
+                message_sender=None,
             ),
         )
         self.assertDictEqual(
@@ -425,7 +429,9 @@ class TestNotificationData(ZulipTestCase):
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[hamlet_only.id, hamlet_and_cordelia.id],
             mention_data=MentionData(
-                mention_backend, "hey @*hamlet_only* and @*hamlet_and_cordelia*"
+                mention_backend,
+                "hey @*hamlet_only* and @*hamlet_and_cordelia*",
+                message_sender=None,
             ),
         )
         self.assertDictEqual(
@@ -441,7 +447,9 @@ class TestNotificationData(ZulipTestCase):
         result = get_user_group_mentions_data(
             mentioned_user_ids={hamlet.id},
             mentioned_user_group_ids=[hamlet_and_cordelia.id],
-            mention_data=MentionData(mention_backend, "hey @*hamlet_and_cordelia*!"),
+            mention_data=MentionData(
+                mention_backend, "hey @*hamlet_and_cordelia*!", message_sender=None
+            ),
         )
         self.assertDictEqual(
             result,
