@@ -49,13 +49,13 @@ class Command(BaseCommand):
         end_date = datetime.strptime(end_date_str, TIMESTAMP_FORMAT).replace(tzinfo=timezone.utc)
 
         server = RemoteZulipServer.objects.get(id=server_id)
-        self.add_server_to_legacy_plan(server, renewal_date, end_date)
+        self.migrate_customer_to_legacy_plan(server, renewal_date, end_date)
 
-    def add_server_to_legacy_plan(
+    def migrate_customer_to_legacy_plan(
         self,
         server: RemoteZulipServer,
         renewal_date: datetime,
         end_date: datetime,
     ) -> None:
         billing_schedule = RemoteServerBillingSession(server)
-        billing_schedule.add_server_to_legacy_plan(renewal_date, end_date)
+        billing_schedule.migrate_customer_to_legacy_plan(renewal_date, end_date)

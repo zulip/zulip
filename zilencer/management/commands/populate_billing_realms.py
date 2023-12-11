@@ -424,7 +424,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
         end_date = datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
             tzinfo=timezone.utc
         )
-        billing_session.add_server_to_legacy_plan(renewal_date, end_date)
+        billing_session.migrate_customer_to_legacy_plan(renewal_date, end_date)
         # Scheduled server to upgrade to business plan.
         if customer_profile.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
             # This attaches stripe_customer_id to customer.
