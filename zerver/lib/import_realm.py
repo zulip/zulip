@@ -28,7 +28,7 @@ from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
 from zerver.lib.push_notifications import sends_notifications_directly
-from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -1422,7 +1422,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Ask the push notifications service if this realm can send
     # notifications, if we're using it. Needs to happen after the
     # Realm object is reactivated.
-    enqueue_register_realm_with_push_bouncer_if_needed(realm)
+    maybe_enqueue_audit_log_upload(realm)
 
     return realm
 
