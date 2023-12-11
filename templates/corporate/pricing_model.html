@@ -14,12 +14,21 @@
         </div>
         {% endif %}
         <div class="pricing-container">
+            {% if is_self_hosted_realm %}
+            <div class="cloud-plan-title inactive-pricing-tab">
+                <h2>Zulip Cloud</h2>
+                <p>
+                    <a href="https://zulip.com/plans/">View Zulip Cloud plans and pricing</a>.
+                </p>
+            </div>
+            {% else %}
             <div id="cloud" class="cloud-plan-title pricing-tab">
                 <h2>Zulip Cloud</h2>
                 <p>
                     Simple managed solution.<br />Always up to date.
                 </p>
             </div>
+            {% endif %}
 
             <div class="pricing-pane-scroll-container cloud-scroll">
                 <div class="cloud-plan-pricing pricing-pane">
