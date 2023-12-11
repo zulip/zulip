@@ -1890,7 +1890,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.add_mock_response()
 
         with mock.patch(
-            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=None
+            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer", return_value=None
         ) as m:
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             m.assert_called()
@@ -1901,7 +1901,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         dummy_customer = mock.MagicMock()
         with mock.patch(
-            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+            return_value=dummy_customer,
         ):
             with mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
@@ -1917,14 +1918,15 @@ class AnalyticsBouncerTest(BouncerTestCase):
         dummy_customer_plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         dummy_date = datetime(year=2023, month=12, day=3, tzinfo=timezone.utc)
         with mock.patch(
-            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+            return_value=dummy_customer,
         ):
             with mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer",
                 return_value=dummy_customer_plan,
             ):
                 with mock.patch(
-                    "zilencer.views.RemoteRealmBillingSession.get_next_billing_cycle",
+                    "corporate.lib.stripe.RemoteRealmBillingSession.get_next_billing_cycle",
                     return_value=dummy_date,
                 ) as m, self.assertLogs("zulip.analytics", level="INFO") as info_log:
                     send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -1935,6 +1937,31 @@ class AnalyticsBouncerTest(BouncerTestCase):
                         self.assertEqual(
                             realm.push_notifications_enabled_end_timestamp,
                             dummy_date,
+                        )
+                    self.assertIn(
+                        "INFO:zulip.analytics:Reported 0 records",
+                        info_log.output[0],
+                    )
+
+        dummy_customer_plan = mock.MagicMock()
+        dummy_customer_plan.status = CustomerPlan.ACTIVE
+        with mock.patch(
+            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+            return_value=dummy_customer,
+        ):
+            with mock.patch(
+                "corporate.lib.stripe.get_current_plan_by_customer",
+                return_value=dummy_customer_plan,
+            ):
+                with self.assertLogs("zulip.analytics", level="INFO") as info_log:
+                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                    m.assert_called()
+                    realms = Realm.objects.all()
+                    for realm in realms:
+                        self.assertEqual(realm.push_notifications_enabled, True)
+                        self.assertEqual(
+                            realm.push_notifications_enabled_end_timestamp,
+                            None,
                         )
                     self.assertIn(
                         "INFO:zulip.analytics:Reported 0 records",
