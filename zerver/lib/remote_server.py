@@ -21,7 +21,7 @@ from zerver.lib.exceptions import (
     RemoteRealmServerMismatchError,
 )
 from zerver.lib.outgoing_http import OutgoingSession
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
 
 
@@ -411,4 +411,4 @@ def enqueue_register_realm_with_push_bouncer_if_needed(realm: Realm) -> None:
         # We do this in a queue worker to avoid messing with the realm
         # creation process due to network issues or latency.
         event = {"type": "register_realm_with_push_bouncer", "realm_id": realm.id}
-        queue_json_publish("deferred_work", event)
+        queue_event_on_commit("deferred_work", event)
