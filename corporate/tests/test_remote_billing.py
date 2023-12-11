@@ -19,7 +19,13 @@ from zerver.lib.remote_server import send_realms_only_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserProfile
-from zilencer.models import RemoteRealm, RemoteRealmBillingUser, RemoteServerBillingUser
+from zilencer.models import (
+    PreregistrationRemoteRealmBillingUser,
+    PreregistrationRemoteServerBillingUser,
+    RemoteRealm,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
+)
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -94,6 +100,10 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             self.assertEqual(remote_billing_user.user_uuid, user.uuid)
             self.assertEqual(remote_billing_user.email, user.delivery_email)
 
+            prereg_user = PreregistrationRemoteRealmBillingUser.objects.latest("id")
+            self.assertEqual(prereg_user.created_user, remote_billing_user)
+            self.assertEqual(remote_billing_user.date_joined, now)
+
             # Now we should be redirected again to the /remote-billing-login/ endpoint
             # with a new signed_access_token. Now that the email has been confirmed,
             # and we have a RemoteRealmBillingUser entry, we'll be in the same position
@@ -114,7 +124,8 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         if confirm_tos:
             params = {"tos_consent": "true"}
 
-        result = self.client_post(signed_auth_url, params, subdomain="selfhosting")
+        with time_machine.travel(now, tick=False):
+            result = self.client_post(signed_auth_url, params, subdomain="selfhosting")
         if result.status_code >= 400:
             # Failures should be returned early so the caller can assert about them.
             return result
@@ -138,6 +149,8 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             self.client.session["remote_billing_identities"][f"remote_realm:{user.realm.uuid!s}"],
             identity_dict,
         )
+
+        self.assertEqual(remote_billing_user.last_login, now)
 
         # It's up to the caller to verify further details, such as the exact redirect URL,
         # depending on the set up and intent of the test.
@@ -543,6 +556,8 @@ class LegacyServerLoginTest(BouncerTestCase):
             identity_dict,
         )
 
+        self.assertEqual(remote_billing_user.last_login, now)
+
         return result
 
     def test_server_login_get(self) -> None:
@@ -586,9 +601,11 @@ class LegacyServerLoginTest(BouncerTestCase):
 
     def test_server_login_success_with_no_plan(self) -> None:
         hamlet = self.example_user("hamlet")
-        result = self.execute_remote_billing_authentication_flow(
-            hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
-        )
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
+            )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"/server/{self.uuid}/plans/")
 
@@ -603,6 +620,15 @@ class LegacyServerLoginTest(BouncerTestCase):
         with mock.patch("corporate.lib.stripe.has_stale_audit_log", return_value=False):
             result = self.client_get(result["Location"], subdomain="selfhosting")
             self.assert_in_success_response([f"Upgrade {self.server.hostname}"], result)
+
+        # Verify the RemoteServerBillingUser and PreRegistrationRemoteServerBillingUser
+        # objects created in the process.
+        remote_billing_user = RemoteServerBillingUser.objects.latest("id")
+        self.assertEqual(remote_billing_user.email, hamlet.delivery_email)
+
+        prereg_user = PreregistrationRemoteServerBillingUser.objects.latest("id")
+        self.assertEqual(prereg_user.created_user, remote_billing_user)
+        self.assertEqual(remote_billing_user.date_joined, now)
 
     def test_server_login_success_consent_is_not_re_asked(self) -> None:
         hamlet = self.example_user("hamlet")
