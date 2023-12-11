@@ -486,6 +486,7 @@ def remote_servers_support(
     context["get_discount"] = get_customer_discount_for_support_view
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
+    context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
 
     return render(
         request,
