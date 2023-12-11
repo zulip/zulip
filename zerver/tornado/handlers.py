@@ -93,13 +93,17 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         self._auto_finish = False
 
         # Handler IDs are allocated here, and the handler ID map must
-        # be cleared when the handler finishes its response
+        # be cleared when the handler finishes its response.  See
+        # on_finish and on_connection_close.
         self.handler_id = allocate_handler_id(self)
 
         self._request: Optional[HttpRequest] = None
 
     @override
     def on_finish(self) -> None:
+        # Note that this only runs on _successful_ requests.  If the
+        # client closes the connection, see on_connection_close,
+        # below.
         clear_handler_by_id(self.handler_id)
 
     @override
@@ -214,6 +218,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # proxy does not correctly close connections to Tornado when
         # its clients (e.g. `curl`) close their connections.  This
         # code path is thus _unreachable except in production_.
+
+        # If the client goes away, garbage collect the handler (with
+        # attached request information).
+        clear_handler_by_id(self.handler_id)
         client_descriptor = get_descriptor_by_handler_id(self.handler_id)
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)
