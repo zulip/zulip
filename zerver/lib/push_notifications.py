@@ -44,8 +44,8 @@ from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
-    send_analytics_to_push_bouncer,
     send_json_to_push_bouncer,
+    send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
@@ -784,7 +784,7 @@ def initialize_push_notifications() -> None:
         # If we're using the notification bouncer, check if we can
         # actually send push notifications, and update our
         # understanding of that state for each realm accordingly.
-        send_analytics_to_push_bouncer(consider_usage_statistics=False)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
         return
 
     logger.warning(  # nocoverage

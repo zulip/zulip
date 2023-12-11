@@ -4856,7 +4856,7 @@ class AbstractRealmAuditLog(models.Model):
 
     # This value is for RemoteRealmAuditLog entries tracking changes to the
     # RemoteRealm model resulting from modified realm information sent to us
-    # via send_analytics_to_push_bouncer.
+    # via send_server_data_to_push_bouncer.
     REMOTE_REALM_VALUE_UPDATED = 20001
 
     event_type = models.PositiveSmallIntegerField()

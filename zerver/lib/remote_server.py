@@ -312,7 +312,7 @@ def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[Rea
     return realm_info_list
 
 
-def send_analytics_to_push_bouncer(consider_usage_statistics: bool = True) -> None:
+def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> None:
     logger = logging.getLogger("zulip.analytics")
     # first, check what's latest
     try:
