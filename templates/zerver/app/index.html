@@ -221,6 +221,18 @@
 
 <div class="app">
     <div class="app-main">
+        <div class="upload-overlay-container">
+            <div class="upload-overlay-svg-container">
+                <svg class="upload-overlay-border" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 100% 100%">
+                    <rect width="99%" height="99%" x="2" y="2" stroke="#fff" stroke-dasharray="8 16" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".9" stroke-width="3" rx="12">
+                    </rect>
+                </svg>
+            </div>
+            <div class="upload-overlay-content">
+                <img src="{{ static('images/drag-drop/drag-drop.svg') }}" />
+                <span>{% trans %}Drop files anywhere to attach them to a message.{% endtrans %}</span>
+            </div>
+        </div>
         <div class="column-left" id="left-sidebar-container">
         </div>
         <div class="column-middle">
@@ -266,7 +278,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="compose" {% if embedded %}data-embedded{% endif %}>
+                <div id="compose" class="compose-default-state" {% if embedded %}data-embedded{% endif %}>
                     <div id="compose-container"></div>
                 </div>
             </div>
