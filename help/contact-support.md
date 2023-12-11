@@ -17,13 +17,25 @@ feedback.
 
 ## Support requests
 
-For support requests regarding your Zulip Cloud organization or self-hosted
-server, you can request interactive chat support in the [Zulip development
-community][development-community], or [email Zulip
-support](mailto:support@zulip.com). Response time: Usually within 1-3 business days, or
-  within one business day for paid customers.
+* For support requests regarding your Zulip Cloud organization, you can request
+  interactive chat support in the [Zulip development
+  community](#zulip-community), or [email Zulip
+  support](mailto:support@zulip.com).
+     * Response time: Usually within 1-3 business days, or within one business
+       day for paid customers.
 
-Phone support is available only for **Zulip Enterprise** customers.
+* For support requests regarding your **self-hosted server**:
+
+    * **Business** and **Enterprise** plan customers can request interactive
+      chat support in the [Zulip development community](#zulip-community),
+      or [email Zulip support](mailto:support@zulip.com). Phone support is
+      available for Enterprise customers upon request.
+
+        * Response time: Usually within one business day.
+
+    * **Self-managed** and **Community** plan customers can ask for help in the
+      [Zulip development community](#zulip-community). You will usually get a
+      friendly reply within 1-3 business days.
 
 ## Sales, billing, and partnerships
 
