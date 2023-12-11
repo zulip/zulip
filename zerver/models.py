@@ -4858,6 +4858,7 @@ class AbstractRealmAuditLog(models.Model):
     # RemoteRealm model resulting from modified realm information sent to us
     # via send_analytics_to_push_bouncer.
     REMOTE_REALM_VALUE_UPDATED = 20001
+    REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM = 20002
 
     event_type = models.PositiveSmallIntegerField()
 
