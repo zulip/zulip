@@ -47,7 +47,7 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.types import RemoteRealmDictValue
 from zerver.lib.validator import check_capped_string, check_int, check_string_fixed_length
@@ -514,6 +514,8 @@ def remote_server_notify_push(
         timezone_now(),
         increment=android_successfully_delivered + apple_successfully_delivered,
     )
+
+    remote_realm_dict: Optional[RemoteRealmDictValue] = None
     if remote_realm is not None:
         do_increment_logging_stat(
             remote_realm,
@@ -522,6 +524,8 @@ def remote_server_notify_push(
             timezone_now(),
             increment=android_successfully_delivered + apple_successfully_delivered,
         )
+        billing_session = RemoteRealmBillingSession(remote_realm)
+        remote_realm_dict = billing_session.get_push_service_validity_dict()
 
     deleted_devices = get_deleted_devices(
         user_identity,
@@ -536,6 +540,7 @@ def remote_server_notify_push(
             "total_android_devices": len(android_devices),
             "total_apple_devices": len(apple_devices),
             "deleted_devices": deleted_devices,
+            "realm": remote_realm_dict,
         },
     )
 
@@ -968,29 +973,7 @@ def remote_server_post_analytics(
     for remote_realm in remote_realms:
         uuid = str(remote_realm.uuid)
         billing_session = RemoteRealmBillingSession(remote_realm)
-
-        customer = billing_session.get_customer()
-        if customer is None:
-            remote_realm_dict[uuid] = {"can_push": True, "expected_end_timestamp": None}
-            continue
-
-        current_plan = get_current_plan_by_customer(customer)
-        if current_plan is None:
-            remote_realm_dict[uuid] = {"can_push": True, "expected_end_timestamp": None}
-            continue
-
-        expected_end_timestamp = None
-        if current_plan.status in [
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-        ]:
-            expected_end_timestamp = datetime_to_timestamp(
-                billing_session.get_next_billing_cycle(current_plan)
-            )
-        remote_realm_dict[uuid] = {
-            "can_push": True,
-            "expected_end_timestamp": expected_end_timestamp,
-        }
+        remote_realm_dict[uuid] = billing_session.get_push_service_validity_dict()
 
     return json_success(request, data={"realms": remote_realm_dict})
 

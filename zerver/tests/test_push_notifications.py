@@ -591,6 +591,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         payload = {
             "user_id": hamlet.id,
             "user_uuid": str(hamlet.uuid),
+            "realm_uuid": str(hamlet.realm.uuid),
             "gcm_payload": {"event": "remove", "zulip_message_ids": many_ids},
             "apns_payload": {
                 "badge": 0,
@@ -619,6 +620,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 "total_android_devices": 2,
                 "total_apple_devices": 1,
                 "deleted_devices": {"android_devices": [], "apple_devices": []},
+                "realm": {"can_push": True, "expected_end_timestamp": None},
             },
             data,
         )
@@ -1813,7 +1815,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         with mock.patch(
             "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
         ):
-            with mock.patch("zilencer.views.get_current_plan_by_customer", return_value=None) as m:
+            with mock.patch(
+                "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
+            ) as m:
                 send_server_data_to_push_bouncer(consider_usage_statistics=False)
                 m.assert_called()
                 realms = Realm.objects.all()
@@ -1828,7 +1832,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
             "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
         ):
             with mock.patch(
-                "zilencer.views.get_current_plan_by_customer", return_value=dummy_customer_plan
+                "corporate.lib.stripe.get_current_plan_by_customer",
+                return_value=dummy_customer_plan,
             ):
                 with mock.patch(
                     "zilencer.views.RemoteRealmBillingSession.get_next_billing_cycle",
@@ -3614,6 +3619,7 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
                 android_devices=[device.token for device in android_devices],
                 apple_devices=[device.token for device in apple_devices],
             ),
+            "realm": {"can_push": True, "expected_end_timestamp": None},
         }
         total_android_devices, total_apple_devices = send_notifications_to_bouncer(
             user, {"apns": True}, {"gcm": True}, {}, list(android_devices), list(apple_devices)
@@ -3649,6 +3655,23 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
 
         self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
         self.assertEqual(PushDeviceToken.objects.filter(kind=PushDeviceToken.GCM).count(), 0)
+
+        # Now simulating getting "can_push" as False from the bouncer and verify
+        # that we update the realm value.
+        mock_send.return_value = {
+            "total_android_devices": 1,
+            "total_apple_devices": 3,
+            "realm": {"can_push": False, "expected_end_timestamp": None},
+            "deleted_devices": DevicesToCleanUpDict(
+                android_devices=[],
+                apple_devices=[],
+            ),
+        }
+        total_android_devices, total_apple_devices = send_notifications_to_bouncer(
+            user, {"apns": True}, {"gcm": True}, {}, list(android_devices), list(apple_devices)
+        )
+        user.realm.refresh_from_db()
+        self.assertEqual(user.realm.push_notifications_enabled, False)
 
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
