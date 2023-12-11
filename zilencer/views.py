@@ -28,6 +28,7 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     do_deactivate_remote_server,
+    get_push_status_for_remote_request,
 )
 from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
@@ -532,8 +533,11 @@ def remote_server_notify_push(
             timezone_now(),
             increment=android_successfully_delivered + apple_successfully_delivered,
         )
-        billing_session = RemoteRealmBillingSession(remote_realm)
-        remote_realm_dict = billing_session.get_push_service_validity_dict()
+        push_status = get_push_status_for_remote_request(server, remote_realm)
+        remote_realm_dict = {
+            "can_push": push_status.can_push,
+            "expected_end_timestamp": push_status.expected_end_timestamp,
+        }
 
     deleted_devices = get_deleted_devices(
         user_identity,
@@ -1045,8 +1049,11 @@ def remote_server_post_analytics(
     remote_realms = RemoteRealm.objects.filter(server=server, realm_locally_deleted=False)
     for remote_realm in remote_realms:
         uuid = str(remote_realm.uuid)
-        billing_session = RemoteRealmBillingSession(remote_realm)
-        remote_realm_dict[uuid] = billing_session.get_push_service_validity_dict()
+        status = get_push_status_for_remote_request(server, remote_realm)
+        remote_realm_dict[uuid] = {
+            "can_push": status.can_push,
+            "expected_end_timestamp": status.expected_end_timestamp,
+        }
 
     return json_success(request, data={"realms": remote_realm_dict})
 

@@ -48,7 +48,6 @@ from zerver.lib.send_email import (
     send_email_to_billing_admins_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.types import RemoteRealmDictValue
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -3409,28 +3408,6 @@ class RemoteRealmBillingSession(BillingSession):
                 return  # nocoverage
             current_plan = end_of_cycle_plan
 
-    def get_push_service_validity_dict(self) -> RemoteRealmDictValue:
-        customer = self.get_customer()
-        if customer is None:
-            return {"can_push": True, "expected_end_timestamp": None}
-
-        current_plan = get_current_plan_by_customer(customer)
-        if current_plan is None:
-            return {"can_push": True, "expected_end_timestamp": None}
-
-        expected_end_timestamp = None
-        if current_plan.status in [
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-        ]:
-            expected_end_timestamp = datetime_to_timestamp(
-                self.get_next_billing_cycle(current_plan)
-            )
-        return {
-            "can_push": True,
-            "expected_end_timestamp": expected_end_timestamp,
-        }
-
 
 class RemoteServerBillingSession(BillingSession):
     """Billing session for pre-8.0 servers that do not yet support
@@ -4083,3 +4060,62 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
                 # the last invoice open, void the open invoices.
                 billing_session = RealmBillingSession(user=None, realm=realm)
                 billing_session.void_all_open_invoices()
+
+
+@dataclass
+class PushNotificationsEnabledStatus:
+    can_push: bool
+    expected_end_timestamp: Optional[int]
+
+    # Not sent to clients, just for debugging
+    message: str
+
+
+def get_push_status_for_remote_request(
+    remote_server: RemoteZulipServer, remote_realm: Optional[RemoteRealm]
+) -> PushNotificationsEnabledStatus:
+    # First, get the operative Customer object for this
+    # installation. If there's a `RemoteRealm` customer, that
+    # takes precedence.
+    customer = None
+
+    if remote_realm is not None:
+        billing_session: BillingSession = RemoteRealmBillingSession(remote_realm)
+        customer = billing_session.get_customer()
+
+    if customer is None:
+        billing_session = RemoteServerBillingSession(remote_server)
+        customer = billing_session.get_customer()
+
+    if customer is not None:
+        current_plan = get_current_plan_by_customer(customer)
+    else:
+        current_plan = None
+
+    if current_plan is not None:
+        if current_plan.status in [
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ]:
+            # Plans scheduled to end
+            expected_end_timestamp = datetime_to_timestamp(
+                billing_session.get_next_billing_cycle(current_plan)
+            )
+            return PushNotificationsEnabledStatus(
+                can_push=True,
+                expected_end_timestamp=expected_end_timestamp,
+                message="Scheduled end",
+            )
+
+        # Current plan, no expected end.
+        return PushNotificationsEnabledStatus(
+            can_push=True,
+            expected_end_timestamp=None,
+            message="Active plan",
+        )
+
+    return PushNotificationsEnabledStatus(
+        can_push=True,
+        expected_end_timestamp=None,
+        message="No plan",
+    )
