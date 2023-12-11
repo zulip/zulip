@@ -80,9 +80,9 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 user.delivery_email,
                 url_pattern=(
                     f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}"
-                    r"(\S+)>"
+                    r"(\S+)"
                 ),
-                email_body_contains="Click the link below to complete the login process",
+                email_body_contains="This link will expire in 2 hours",
             )
             if return_without_clicking_confirmation_link:
                 return result
