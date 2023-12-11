@@ -143,7 +143,7 @@ function reset_subscribe_widget() {
         $("#user-profile-modal .add-subscription-button-wrapper"),
         $t({defaultMessage: "Select a stream to subscribe"}),
     );
-    $("#user_profile_subscribe_widget .dropdown_widget_value").text(
+    $("#user_profile_subscribe_widget .dropdown-widget-value").text(
         $t({defaultMessage: "Select a stream"}),
     );
     //  There are two cases when the subscribe widget is reset: when the user_profile

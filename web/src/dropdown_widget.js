@@ -55,7 +55,7 @@ export class DropdownWidget {
         this.widget_id = `#${CSS.escape(widget_name)}_widget`;
         // A widget wrapper may not exist based on the UI requirement.
         this.widget_wrapper_id = `${this.widget_id}_wrapper`;
-        this.widget_value_selector = `${this.widget_id} .dropdown_widget_value`;
+        this.widget_value_selector = `${this.widget_id} .dropdown-widget-value`;
         this.get_options = get_options;
         this.item_click_callback = item_click_callback;
         this.focus_target_on_hidden = focus_target_on_hidden;

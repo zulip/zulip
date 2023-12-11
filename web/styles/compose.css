@@ -1160,7 +1160,7 @@ textarea.new_message_textarea,
         margin: 0;
     }
 
-    .dropdown_widget_value {
+    .dropdown-widget-value {
         flex-grow: 1;
         overflow: hidden;
         text-overflow: ellipsis;
