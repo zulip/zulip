@@ -75,6 +75,7 @@ class RealmDataForAnalytics(BaseModel):
     org_type: int = 0
     date_created: float
     deactivated: bool
+    is_system_bot_realm: bool = False
 
     authentication_methods: Dict[str, bool] = Field(default_factory=dict)
 
@@ -302,6 +303,7 @@ def get_realms_info_for_push_bouncer(realm_id: Optional[int] = None) -> List[Rea
             org_type=realm.org_type,
             name=realm.name,
             authentication_methods=realm.authentication_methods_dict(),
+            is_system_bot_realm=realm.string_id == settings.SYSTEM_BOT_REALM,
         )
         for realm in realms
     ]
