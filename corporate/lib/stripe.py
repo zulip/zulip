@@ -1113,8 +1113,8 @@ class BillingSession(ABC):
     def ensure_current_plan_is_upgradable(
         self, customer: Customer, new_plan_tier: int
     ) -> None:  # nocoverage
-        # Upgrade for customers with an existing plan is only supported for remote servers right now.
-        if not hasattr(self, "remote_server"):
+        # Upgrade for customers with an existing plan is only supported for remote realm / server right now.
+        if isinstance(self, RealmBillingSession):
             ensure_customer_does_not_have_active_plan(customer)
             return
 
@@ -3032,6 +3032,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             raise AssertionError("Unexpected tier")
 
         # TODO: Audit logging and set usage limits.
+        # TODO: Set the usage limit in handle_customer_migration_from_server_to_realms.
 
         self.remote_realm.plan_type = plan_type
         self.remote_realm.save(update_fields=["plan_type"])
@@ -3117,6 +3118,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         self, current_plan_tier: int, new_plan_tier: int
     ) -> PlanTierChangeType:
         valid_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
             CustomerPlan.TIER_SELF_HOSTED_PLUS,
         ]
@@ -3129,6 +3131,11 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         if (
             current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
             and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+        ):
+            return PlanTierChangeType.UPGRADE
+        elif current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY and new_plan_tier in (
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            CustomerPlan.TIER_SELF_HOSTED_PLUS,
         ):
             return PlanTierChangeType.UPGRADE
         else:

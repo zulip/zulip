@@ -117,11 +117,15 @@ def remote_realm_billing_page(
         # If the realm is on a paid plan, show the sponsorship pending message
         context["sponsorship_pending"] = True
 
-    if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED:
+    if (
+        customer is None
+        or get_current_plan_by_customer(customer) is None
+        or (
+            billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+            and billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED
+        )
+    ):
         return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
-
-    if customer is None or get_current_plan_by_customer(customer) is None:
-        return HttpResponseRedirect(reverse("remote_realm_upgrade_page", args=(realm_uuid,)))
 
     main_context = billing_session.get_billing_page_context()
     if main_context:
