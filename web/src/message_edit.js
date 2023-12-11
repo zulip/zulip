@@ -288,8 +288,9 @@ export function hide_message_edit_spinner($row) {
 }
 
 export function show_message_edit_spinner($row) {
-    const using_dark_theme = settings_data.using_dark_theme();
-    loading.show_button_spinner($row.find(".loader"), using_dark_theme);
+    // Always show the white spinner like we
+    // do for send button in compose box.
+    loading.show_button_spinner($row.find(".loader"), true);
     $row.find(".message_edit_save span").hide();
     $row.find(".message_edit_save").addClass("disable-btn");
     $row.find(".message_edit_cancel").addClass("disable-btn");
