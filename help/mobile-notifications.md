@@ -69,10 +69,10 @@ account.
 
 !!! tip ""
 
-    If you see a banner indicating that notifications have not been set up,
-    try [logging out](/help/logging-out) of your account and [logging
-    in](/help/logging-in) again. This will help if notifications were set up
-    very recently on your Zulip server.
+    If you see a banner indicating that notifications have not been enabled
+    for your Zulip server, try [logging out](/help/logging-out) of your account
+    and [logging in](/help/logging-in) again. This will help if notifications
+    were enabled very recently.
 
 {end_tabs}
 
