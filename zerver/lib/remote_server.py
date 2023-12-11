@@ -403,7 +403,7 @@ def send_analytics_to_push_bouncer(consider_usage_statistics: bool = True) -> No
     logger.info("Reported %d records", record_count)
 
 
-def enqueue_register_realm_with_push_bouncer_if_needed(realm: Realm) -> None:
+def maybe_enqueue_audit_log_upload(realm: Realm) -> None:
     from zerver.lib.push_notifications import uses_notification_bouncer
 
     if uses_notification_bouncer():
