@@ -3502,16 +3502,20 @@ class RealmPropertyActionTest(BaseAction):
         if vals is None:
             raise AssertionError(f"No test created for {name}")
         now = timezone_now()
+        original_val = getattr(self.user_profile.realm, name)
+
         do_set_realm_property(self.user_profile.realm, name, vals[0], acting_user=self.user_profile)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                realm=self.user_profile.realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-                event_time__gte=now,
-                acting_user=self.user_profile,
-            ).count(),
-            1,
-        )
+
+        if vals[0] != original_val:
+            self.assertEqual(
+                RealmAuditLog.objects.filter(
+                    realm=self.user_profile.realm,
+                    event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                    event_time__gte=now,
+                    acting_user=self.user_profile,
+                ).count(),
+                1,
+            )
         for count, val in enumerate(vals[1:]):
             now = timezone_now()
             state_change_expected = True
