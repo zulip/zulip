@@ -113,12 +113,13 @@ This section assumes you have a
 if setting one up is a problem for you, ask in chat.zulip.org and we
 can usually just deploy the latest translations there.
 
-- First, download the updated resource files from Transifex using the
-  `tools/i18n/sync-translations` command (it will require some [initial
-  setup](internationalization.md#transifex-cli-setup)). This
-  command will download the resource files from Transifex and replace
-  your local resource files with them, and then compile them. You can
-  now test your translation work in the Zulip UI.
+- First, download the updated resource files from Transifex using the 
+command `tools/i18n/sync-translations`. The terminal will ask you to insert 
+your API token if this is the first time you are testing your translations. 
+Here's the documentation for the [initial setup](internationalization.md#transifex-cli-setup)). 
+This command will download the Transifex resource files, replace your local resource files 
+with them and compile them. You can now test your translation work in the Zulip user interface
+
 
 There are a few ways to see your translations in the Zulip UI:
 
