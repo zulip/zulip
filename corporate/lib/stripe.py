@@ -1233,6 +1233,17 @@ class BillingSession(ABC):
 
                 # Schedule switching to the new plan at plan end date.
                 assert remote_server_legacy_plan.end_date == billing_cycle_anchor
+                last_ledger_entry = (
+                    LicenseLedger.objects.filter(plan=remote_server_legacy_plan)
+                    .order_by("-id")
+                    .first()
+                )
+                # Update license_at_next_renewal as per new plan.
+                assert last_ledger_entry is not None
+                last_ledger_entry.licenses_at_next_renewal = (
+                    self.get_billable_licenses_for_customer(customer, plan_tier, licenses)
+                )
+                last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
                 remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
                 remote_server_legacy_plan.save(update_fields=["status"])
             elif remote_server_legacy_plan is not None:  # nocoverage
@@ -2518,8 +2529,22 @@ class BillingSession(ABC):
         if new_plan is not None:
             plan = new_plan
 
-        licenses_at_next_renewal = self.get_billable_licenses_for_customer(plan.customer, plan.tier)
-        licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
+        if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
+            next_plan = self.get_next_plan(plan)
+            assert next_plan is not None
+            licenses_at_next_renewal = self.get_billable_licenses_for_customer(
+                plan.customer, next_plan.tier
+            )
+            # Current licenses stay as per the limits of current plan.
+            current_plan_licenses_at_next_renewal = self.get_billable_licenses_for_customer(
+                plan.customer, plan.tier
+            )
+            licenses = max(current_plan_licenses_at_next_renewal, last_ledger_entry.licenses)
+        else:
+            licenses_at_next_renewal = self.get_billable_licenses_for_customer(
+                plan.customer, plan.tier
+            )
+            licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
 
         LicenseLedger.objects.create(
             plan=plan,
