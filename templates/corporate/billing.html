@@ -20,7 +20,11 @@
         {% endif %}
         {% if success_message %}
         <div class="alert alert-success billing-page-success" id="billing-success-message-top">
+            {% if legacy_remote_server_next_plan_name and "PLAN_NAME" in success_message %}
+            Your organization will be upgraded to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+            {% else %}
             {{ success_message.replace("PLAN_NAME", plan_name) }}
+            {% endif %}
         </div>
         {% endif %}
         <div class="pitch">
