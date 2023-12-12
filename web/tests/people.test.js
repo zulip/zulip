@@ -141,7 +141,7 @@ const moderator = {
     role: 300,
 };
 
-const bot_with_inaccesible_owner = {
+const bot_with_inaccessible_owner = {
     email: "inaccessible-owner-bot@example.com",
     user_id: 37,
     full_name: "Inaccessible owner bot",
@@ -351,7 +351,7 @@ test_people("basics", ({override}) => {
 
     override(settings_data, "user_can_access_all_other_users", () => false);
     assert.equal(
-        people.get_bot_owner_user(bot_with_inaccesible_owner).full_name,
+        people.get_bot_owner_user(bot_with_inaccessible_owner).full_name,
         "translated: Unknown user",
     );
 
