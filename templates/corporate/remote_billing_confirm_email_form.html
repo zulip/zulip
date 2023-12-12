@@ -2,14 +2,22 @@
 {% set entrypoint = "upgrade" %}
 
 {% block title %}
+{% if remote_server_hostname %}
 <title>Enter log in email | Zulip</title>
+{% else %}
+<title>Enter email | Zulip</title>
+{% endif %}
 {% endblock %}
 
 {% block portico_content %}
 <div class="register-account flex full-page" id="remote-billing-confirm-email">
     <div class="center-block new-style">
         <div class="pitch">
+            {% if remote_server_hostname %}
             <h1>Enter log in email</h1>
+            {% else %}
+            <h1>Enter email</h1>
+            {% endif %}
         </div>
         <div class="white-box">
             <form id="remote-billing-confirm-email-form" method="post" action="{{ action_url }}">
@@ -22,7 +30,7 @@
                         {% if remote_server_hostname %}
                             Enter the email address of the person who is logging in to manage plans and billing for this server (yourself or someone else). They will receive an email from Zulip with a log in link.
                         {% else %}
-                            Enter the email address where you want to receive an email from Zulip with a log in link.
+                            Enter the email address you want to use for Zulip plan management. You will receive a one-time confirmation email.
                         {% endif %}
                     </div>
                 </div>
