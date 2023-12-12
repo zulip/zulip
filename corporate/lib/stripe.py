@@ -2819,8 +2819,7 @@ class RealmBillingSession(BillingSession):
                     "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
                     "we would really appreciate it!"
                 ).format(
-                    # TODO: Don't hardcode plan names.
-                    plan_name="Zulip Cloud Standard",
+                    plan_name=CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD),
                     emoji=":tada:",
                     begin_link="[",
                     end_link="](/help/linking-to-zulip-website)",
@@ -2972,9 +2971,8 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def get_email(self) -> str:
-        # BUG: This is an email for the whole server. We probably
-        # need a separable field here.
-        return self.remote_realm.server.contact_email
+        assert self.remote_billing_user is not None
+        return self.remote_billing_user.email
 
     @override
     def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
@@ -3091,11 +3089,17 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         else:
             raise AssertionError("Unexpected tier")
 
-        # TODO: Audit logging and set usage limits.
+        # TODO: Set usage limits.
         # TODO: Set the usage limit in handle_customer_migration_from_server_to_realms.
 
+        old_plan_type = self.remote_realm.plan_type
         self.remote_realm.plan_type = plan_type
         self.remote_realm.save(update_fields=["plan_type"])
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
+            event_time=timezone_now(),
+            extra_data={"old_value": old_plan_type, "new_value": plan_type},
+        )
 
     @override
     def approve_sponsorship(self) -> str:
@@ -3139,11 +3143,8 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
-        return {
-            "type": "card_update",
-            # TODO: Add user identity metadata from the remote realm identity
-            # "user_id": user.id,
-        }
+        assert self.remote_billing_user is not None
+        return {"type": "card_update", "remote_realm_user_id": str(self.remote_billing_user.id)}
 
     @override
     def get_upgrade_page_session_type_specific_context(
@@ -3237,13 +3238,13 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def get_sponsorship_request_session_specific_context(
         self,
     ) -> SponsorshipRequestSessionSpecificContext:
+        assert self.remote_billing_user is not None
         return SponsorshipRequestSessionSpecificContext(
             realm_user=None,
             user_info=SponsorshipApplicantInfo(
-                # TODO: Plumb through the session data on the acting user.
-                name="Remote realm administrator",
+                name=self.remote_billing_user.full_name,
                 email=self.get_email(),
-                # TODO: Set user_role when determining which set of users can access the page.
+                # We don't have role data for the user.
                 role="Remote realm administrator",
             ),
             # TODO: Check if this works on support page.
@@ -3366,7 +3367,8 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def get_email(self) -> str:
-        return self.remote_server.contact_email
+        assert self.remote_billing_user is not None
+        return self.remote_billing_user.email
 
     @override
     def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
@@ -3482,10 +3484,16 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         else:
             raise AssertionError("Unexpected tier")
 
-        # TODO: Audit logging and set usage limits.
+        # TODO: Set usage limits.
 
+        old_plan_type = self.remote_server.plan_type
         self.remote_server.plan_type = plan_type
         self.remote_server.save(update_fields=["plan_type"])
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
+            event_time=timezone_now(),
+            extra_data={"old_value": old_plan_type, "new_value": plan_type},
+        )
 
     @override
     def approve_sponsorship(self) -> str:
@@ -3500,10 +3508,14 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             self.write_to_audit_log(
                 event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
             )
-        # TODO: Use the emails in RemoteZulipServerBillingUser for this email.
+        billing_emails = list(
+            RemoteServerBillingUser.objects.filter(remote_server=self.remote_server).values_list(
+                "email", flat=True
+            )
+        )
         send_email(
             "zerver/emails/sponsorship_approved_community_plan",
-            to_emails=[self.remote_server.contact_email],
+            to_emails=billing_emails,
             from_address="sales@zulip.com",
             context={
                 "billing_entity": self.billing_entity_display_name,
@@ -3535,11 +3547,8 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
-        return {
-            "type": "card_update",
-            # TODO: Maybe add some user identity metadata from the remote server identity
-            # "user_id": user.id,
-        }
+        assert self.remote_billing_user is not None
+        return {"type": "card_update", "remote_server_user_id": str(self.remote_billing_user.id)}
 
     @override
     def get_upgrade_page_session_type_specific_context(
@@ -3623,15 +3632,13 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     def get_sponsorship_request_session_specific_context(
         self,
     ) -> SponsorshipRequestSessionSpecificContext:
+        assert self.remote_billing_user is not None
         return SponsorshipRequestSessionSpecificContext(
             realm_user=None,
             user_info=SponsorshipApplicantInfo(
-                # TODO: Figure out a better story here. We don't
-                # actually have a name or other details on the person
-                # doing this flow, but could ask for it in the login
-                # form if desired.
-                name="Remote server administrator",
+                name=self.remote_billing_user.full_name,
                 email=self.get_email(),
+                # We don't have role data for the user.
                 role="Remote server administrator",
             ),
             # TODO: Check if this works on support page.
