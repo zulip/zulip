@@ -73,7 +73,15 @@ unless users in your organization frequently change their stream subscriptions
 or are [deactivated](/help/deactivate-or-reactivate-a-user).
 
 The only information guests can access about unknown users via the [API](/api)
-is which user IDs exist.
+is which user IDs exist, and
+[availability](/help/status-and-availability) updates for each user ID.
+
+!!! tip ""
+
+    Self-hosted organizations can disable API access to availability updates
+    by [configuring](https://zulip.readthedocs.io/en/stable/production/settings.html)
+    `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = True`. For performance reasons,
+    this is recommended only for organizations with up to ~100 users.
 
 {start_tabs}
 
