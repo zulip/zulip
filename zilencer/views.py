@@ -33,6 +33,7 @@ from corporate.lib.stripe import (
 from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
 from zerver.lib.exceptions import (
+    ErrorCode,
     JsonableError,
     RemoteRealmServerMismatchError,
     RemoteServerDeactivatedError,
@@ -394,6 +395,13 @@ def get_remote_realm_helper(
     return remote_realm
 
 
+class OldZulipServerError(JsonableError):
+    code = ErrorCode.INVALID_ZULIP_SERVER
+
+    def __init__(self, msg: str) -> None:
+        self._msg: str = msg
+
+
 @has_request_variables
 def remote_server_notify_push(
     request: HttpRequest,
@@ -415,6 +423,13 @@ def remote_server_notify_push(
             user_uuid, str
         ), "Servers new enough to send realm_uuid, should also have user_uuid"
         remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+
+    push_status = get_push_status_for_remote_request(server, remote_realm)
+    if not push_status.can_push:
+        if server.last_api_feature_level is None:
+            raise OldZulipServerError(_("Your plan doesn't allow sending push notifications."))
+        else:
+            raise JsonableError(_("Your plan doesn't allow sending push notifications."))
 
     android_devices = list(
         RemotePushDeviceToken.objects.filter(
@@ -533,7 +548,6 @@ def remote_server_notify_push(
             timezone_now(),
             increment=android_successfully_delivered + apple_successfully_delivered,
         )
-        push_status = get_push_status_for_remote_request(server, remote_realm)
         remote_realm_dict = {
             "can_push": push_status.can_push,
             "expected_end_timestamp": push_status.expected_end_timestamp,
