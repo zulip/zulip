@@ -589,6 +589,11 @@ def send_notifications_to_bouncer(
     android_devices: Sequence[DeviceToken],
     apple_devices: Sequence[DeviceToken],
 ) -> Tuple[int, int]:
+    if not android_devices and not apple_devices:
+        # Avoid making a useless API request to the bouncer if there
+        # are no mobile devices registered for this user.
+        return 0, 0
+
     post_data = {
         "user_uuid": str(user_profile.uuid),
         # user_uuid is the intended future format, but we also need to send user_id
