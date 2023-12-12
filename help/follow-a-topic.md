@@ -4,7 +4,8 @@ Zulip lets you follow topics you are interested in. You can follow or unfollow
 any topic. You can also configure Zulip to automatically follow topics you start
 or participate in. Participating in a topic means sending a message,
 [reacting](/help/emoji-reactions) with an emoji, or participating in a
-[poll](/help/create-a-poll).
+[poll](/help/create-a-poll). You can also automatically follow topics where you
+are [mentioned](/help/mention-a-user-or-group).
 
 It's easy to prioritize catching up on followed topics. You can:
 
