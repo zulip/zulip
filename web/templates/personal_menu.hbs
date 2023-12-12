@@ -16,6 +16,7 @@
         </header>
         <section class="dropdown-menu-list-section personal-menu-actions" data-user-id="{{user_id}}">
             <ul class="navbar-dropdown-menu-outer-list">
+                {{#if user_time}}
                 <li class="navbar-dropdown-menu-outer-list-item">
                     <ul class="navbar-dropdown-menu-inner-list">
                         <li class="text-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
@@ -24,6 +25,7 @@
                         </li>
                     </ul>
                 </li>
+                {{/if}}
                 <li class="navbar-dropdown-menu-outer-list-item">
                     <ul class="navbar-dropdown-menu-inner-list">
                         {{#if status_content_available}}
