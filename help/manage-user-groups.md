@@ -1,24 +1,15 @@
 # Manage user groups
 
+{!user-groups-intro.md!}
+
 ## Create a user group
 
+!!! tip ""
+
+    You can modify the group's name, description, and other settings after it
+    has been created.
+
 {!how-to-create-a-user-group.md!}
-
-## User group options
-
-There are several parameters you can set while creating a user group. All of
-which you can change later.
-
-* **User group name**: The user group name can be in any language, and can
-  include spaces and other punctuation.
-
-* **User group description**: Lets users know what the group is used for.
-
-* **Who can mention this group?**: Configures who is allowed to
-  [mention this group](/help/mention-a-user-or-group).
-
-* **Choose members**: You can copy the membership from an existing stream or
-  user group, add all users, or enter users one by one.
 
 ## Change a user group's name or description
 
