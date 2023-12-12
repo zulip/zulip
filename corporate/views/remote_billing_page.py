@@ -548,7 +548,7 @@ def remote_billing_legacy_server_confirm_login(
     return render(
         request,
         "corporate/remote_billing_email_confirmation_sent.html",
-        context={"email": email},
+        context={"email": email, "remote_server_hostname": remote_server.hostname},
     )
 
 
