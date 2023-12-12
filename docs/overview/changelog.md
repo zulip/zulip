@@ -5,9 +5,9 @@ This page contains the release history for the Zulip server. See also the
 
 ## Zulip Server 8.x series
 
-### Zulip Server 8.0-beta1
+### Zulip Server 8.0-beta2
 
-_Released 2023-11-16_
+_Released 2023-12-12_
 
 #### Highlights
 
