@@ -1175,13 +1175,12 @@ class BillingSession(ABC):
         # TODO: The correctness of this relies on user creation, deactivation, etc being
         # in a transaction.atomic() with the relevant RealmAuditLog entries
         with transaction.atomic():
-            if customer.exempt_from_license_number_check:
-                billed_licenses = licenses
-            else:
-                # billed_licenses can be greater than licenses if users are added between the start of
-                # this function (process_initial_upgrade) and now
-                current_licenses_count = self.current_count_for_billed_licenses()
-                billed_licenses = max(current_licenses_count, licenses)
+            # billed_licenses can be greater than licenses if users are added between the start of
+            # this function (process_initial_upgrade) and now
+            current_licenses_count = self.get_billable_licenses_for_customer(
+                customer, plan_tier, licenses
+            )
+            billed_licenses = max(current_licenses_count, licenses)
             plan_params = {
                 "automanage_licenses": automanage_licenses,
                 "charge_automatically": charge_automatically,
@@ -2482,8 +2481,12 @@ class BillingSession(ABC):
                 licenses_at_next_renewal=licenses,
             )
         elif licenses_at_next_renewal is not None:
-            if not plan.customer.exempt_from_license_number_check:
-                assert self.current_count_for_billed_licenses() <= licenses_at_next_renewal
+            assert (
+                self.get_billable_licenses_for_customer(
+                    plan.customer, plan.tier, licenses_at_next_renewal
+                )
+                <= licenses_at_next_renewal
+            )
             LicenseLedger.objects.create(
                 plan=plan,
                 event_time=event_time,
@@ -2493,6 +2496,20 @@ class BillingSession(ABC):
         else:
             raise AssertionError("Pass licenses or licenses_at_next_renewal")
 
+    def get_billable_licenses_for_customer(
+        self, customer: Customer, tier: int, licenses: Optional[int] = None
+    ) -> int:
+        if licenses is not None and customer.exempt_from_license_number_check:
+            return licenses
+
+        current_licenses_count = self.current_count_for_billed_licenses()
+        min_licenses_for_plan = self.min_licenses_for_plan(tier)
+        if customer.exempt_from_license_number_check:  # nocoverage
+            billed_licenses = current_licenses_count
+        else:
+            billed_licenses = max(current_licenses_count, min_licenses_for_plan)
+        return billed_licenses
+
     def update_license_ledger_for_automanaged_plan(
         self, plan: CustomerPlan, event_time: datetime
     ) -> Optional[CustomerPlan]:
@@ -2501,7 +2518,8 @@ class BillingSession(ABC):
             return None
         if new_plan is not None:
             plan = new_plan
-        licenses_at_next_renewal = self.current_count_for_billed_licenses(event_time)
+
+        licenses_at_next_renewal = self.get_billable_licenses_for_customer(plan.customer, plan.tier)
         licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
 
         LicenseLedger.objects.create(
@@ -2551,8 +2569,8 @@ class BillingSession(ABC):
             **legacy_plan_params,
         )
 
+        billed_licenses = self.get_billable_licenses_for_customer(customer, legacy_plan.tier)
         # Create a ledger entry for the legacy plan for tracking purposes.
-        billed_licenses = self.current_count_for_billed_licenses()
         ledger_entry = LicenseLedger.objects.create(
             plan=legacy_plan,
             is_renewal=True,
