@@ -1776,6 +1776,7 @@ class BillingSession(ABC):
             # it's the easiest way to get the UI we want without making things too complicated for us.
             keys = [
                 "renewal_amount",
+                "payment_method",
                 "charge_automatically",
                 "billing_frequency",
                 "fixed_price",
