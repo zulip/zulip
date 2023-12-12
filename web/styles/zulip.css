@@ -104,6 +104,9 @@ body {
     --right-sidebar-width: 250px;
     --left-sidebar-header-icon-width: 15px;
 
+    /* Tippy popover related values */
+    --popover-menu-min-width: 230px;
+
     /*
     Message box elements and values.
     */
@@ -281,6 +284,7 @@ body {
     --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
+    --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -570,6 +574,7 @@ body {
     --color-text-item: hsl(0deg 0% 50%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
+    --color-text-sidebar-popover-menu: hsl(236deg 33% 90%);
     /* 75% opacity of --color-text-default against --color-background.
        We use color-mix here to avoid defining a separate, compounding
        `opacity` property, and also to preserve a record of the

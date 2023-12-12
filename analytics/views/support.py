@@ -53,6 +53,7 @@ if settings.ZILENCER_ENABLED:
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
         RealmBillingSession,
+        RemoteRealmBillingSession,
         RemoteServerBillingSession,
         SupportType,
         SupportViewRequest,
@@ -391,6 +392,7 @@ def remote_servers_support(
     request: HttpRequest,
     query: Optional[str] = REQ("q", default=None),
     remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    remote_realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
@@ -410,16 +412,22 @@ def remote_servers_support(
     acting_user = request.user
     assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
-        # We check that request.POST only has two keys in it: The
-        # remote_server_id and a field to change.
+        # We check that request.POST only has two keys in it:
+        # either the remote_server_id or a remote_realm_id,
+        # and a field to change.
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
         if len(keys) != 2:
             raise JsonableError(_("Invalid parameters"))
 
-        assert remote_server_id is not None
-        remote_server = RemoteZulipServer.objects.get(id=remote_server_id)
+        if remote_realm_id is not None:
+            remote_realm_support_request = True
+            remote_realm = RemoteRealm.objects.get(id=remote_realm_id)
+        else:
+            assert remote_server_id is not None
+            remote_realm_support_request = False
+            remote_server = RemoteZulipServer.objects.get(id=remote_server_id)
 
         support_view_request = None
 
@@ -446,10 +454,14 @@ def remote_servers_support(
                 plan_modification=modify_plan,
             )
         if support_view_request is not None:
-            billing_session = RemoteServerBillingSession(
-                support_staff=acting_user, remote_server=remote_server
-            )
-            success_message = billing_session.process_support_view_request(support_view_request)
+            if remote_realm_support_request:
+                success_message = RemoteRealmBillingSession(
+                    support_staff=acting_user, remote_realm=remote_realm
+                ).process_support_view_request(support_view_request)
+            else:
+                success_message = RemoteServerBillingSession(
+                    support_staff=acting_user, remote_server=remote_server
+                ).process_support_view_request(support_view_request)
             context["success_message"] = success_message
 
     email_to_search = None
@@ -464,14 +476,23 @@ def remote_servers_support(
         email_to_search=email_to_search, hostname_to_search=hostname_to_search
     )
     remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
-    plan_data: Dict[int, PlanData] = {}
+    server_plan_data: Dict[int, PlanData] = {}
+    realm_plan_data: Dict[int, PlanData] = {}
     remote_realms: Dict[int, List[RemoteRealm]] = {}
     for remote_server in remote_servers:
+        # Get remote realms attached to remote server
         remote_realms_for_server = list(remote_server.remoterealm_set.all())
         remote_realms[remote_server.id] = remote_realms_for_server
-        billing_session = RemoteServerBillingSession(remote_server=remote_server)
-        remote_server_plan_data = get_current_plan_data_for_support_view(billing_session)
-        plan_data[remote_server.id] = remote_server_plan_data
+        # Get plan data for remote realms
+        for remote_realm in remote_realms[remote_server.id]:
+            realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+            remote_realm_plan_data = get_current_plan_data_for_support_view(realm_billing_session)
+            realm_plan_data[remote_realm.id] = remote_realm_plan_data
+        # Get plan data for remote server
+        server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
+        remote_server_plan_data = get_current_plan_data_for_support_view(server_billing_session)
+        server_plan_data[remote_server.id] = remote_server_plan_data
+        # Get max monthly messages
         try:
             remote_server_to_max_monthly_messages[remote_server.id] = compute_max_monthly_messages(
                 remote_server
@@ -480,12 +501,14 @@ def remote_servers_support(
             remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
 
     context["remote_servers"] = remote_servers
-    context["remote_realms"] = remote_realms
+    context["remote_servers_plan_data"] = server_plan_data
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
-    context["plan_data"] = plan_data
+    context["remote_realms"] = remote_realms
+    context["remote_realms_plan_data"] = realm_plan_data
     context["get_discount"] = get_customer_discount_for_support_view
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
+    context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
 
     return render(
         request,

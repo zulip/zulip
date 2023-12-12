@@ -15,11 +15,17 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityDict,
     RemoteBillingUserDict,
 )
-from zerver.lib.remote_server import send_realms_only_to_push_bouncer
+from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserProfile
-from zilencer.models import RemoteRealm, RemoteRealmBillingUser, RemoteServerBillingUser
+from zilencer.models import (
+    PreregistrationRemoteRealmBillingUser,
+    PreregistrationRemoteServerBillingUser,
+    RemoteRealm,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
+)
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -80,9 +86,9 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 user.delivery_email,
                 url_pattern=(
                     f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}"
-                    r"(\S+)>"
+                    r"(\S+)"
                 ),
-                email_body_contains="Click the link below to complete the login process",
+                email_body_contains="This link will expire in 24 hours",
             )
             if return_without_clicking_confirmation_link:
                 return result
@@ -93,6 +99,10 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             remote_billing_user = RemoteRealmBillingUser.objects.latest("id")
             self.assertEqual(remote_billing_user.user_uuid, user.uuid)
             self.assertEqual(remote_billing_user.email, user.delivery_email)
+
+            prereg_user = PreregistrationRemoteRealmBillingUser.objects.latest("id")
+            self.assertEqual(prereg_user.created_user, remote_billing_user)
+            self.assertEqual(remote_billing_user.date_joined, now)
 
             # Now we should be redirected again to the /remote-billing-login/ endpoint
             # with a new signed_access_token. Now that the email has been confirmed,
@@ -114,7 +124,8 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         if confirm_tos:
             params = {"tos_consent": "true"}
 
-        result = self.client_post(signed_auth_url, params, subdomain="selfhosting")
+        with time_machine.travel(now, tick=False):
+            result = self.client_post(signed_auth_url, params, subdomain="selfhosting")
         if result.status_code >= 400:
             # Failures should be returned early so the caller can assert about them.
             return result
@@ -139,6 +150,8 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             identity_dict,
         )
 
+        self.assertEqual(remote_billing_user.last_login, now)
+
         # It's up to the caller to verify further details, such as the exact redirect URL,
         # depending on the set up and intent of the test.
         return result
@@ -150,7 +163,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(desdemona)
 
@@ -180,14 +193,14 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # and successfully completing the flow - transparently to the user.
         self.assertFalse(RemoteRealm.objects.filter(uuid=realm.uuid).exists())
 
-        # send_realms_only_to_push_bouncer will be called within the endpoint's
+        # send_server_data_to_push_bouncer will be called within the endpoint's
         # error handling to register realms with the bouncer. We mock.patch it
         # to be able to assert that it was called - but also use side_effect
         # to maintain the original behavior of the function, instead of
         # replacing it with a Mock.
         with mock.patch(
-            "zerver.views.push_notifications.send_realms_only_to_push_bouncer",
-            side_effect=send_realms_only_to_push_bouncer,
+            "zerver.views.push_notifications.send_server_data_to_push_bouncer",
+            side_effect=send_server_data_to_push_bouncer,
         ) as m:
             result = self.execute_remote_billing_authentication_flow(desdemona)
 
@@ -206,7 +219,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         desdemona = self.example_user("desdemona")
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(
             desdemona,
@@ -222,7 +235,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         desdemona = self.example_user("desdemona")
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         with self.settings(TERMS_OF_SERVICE_VERSION="1.0"):
             result = self.execute_remote_billing_authentication_flow(
@@ -267,7 +280,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         with time_machine.travel(now, tick=False):
             result = self.execute_remote_billing_authentication_flow(desdemona)
@@ -323,7 +336,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         # Straight-up access without authing at all:
         result = self.client_get(f"/realm/{realm.uuid!s}/plans/", subdomain="selfhosting")
@@ -375,7 +388,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(desdemona, "sponsorship")
 
@@ -395,7 +408,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         realm = desdemona.realm
 
         self.add_mock_response()
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(desdemona, "upgrade")
 
@@ -499,9 +512,9 @@ class LegacyServerLoginTest(BouncerTestCase):
         confirmation_url = self.get_confirmation_url_from_outbox(
             email,
             url_pattern=(
-                f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}" + r"(\S+)>"
+                f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}" + r"(\S+)"
             ),
-            email_body_contains="Click the link below to complete the login process",
+            email_body_contains="This link will expire in 24 hours",
         )
         if return_without_clicking_confirmation_link:
             return result
@@ -542,6 +555,8 @@ class LegacyServerLoginTest(BouncerTestCase):
             self.client.session["remote_billing_identities"][f"remote_server:{self.uuid!s}"],
             identity_dict,
         )
+
+        self.assertEqual(remote_billing_user.last_login, now)
 
         return result
 
@@ -586,9 +601,11 @@ class LegacyServerLoginTest(BouncerTestCase):
 
     def test_server_login_success_with_no_plan(self) -> None:
         hamlet = self.example_user("hamlet")
-        result = self.execute_remote_billing_authentication_flow(
-            hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
-        )
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
+            )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"/server/{self.uuid}/plans/")
 
@@ -603,6 +620,15 @@ class LegacyServerLoginTest(BouncerTestCase):
         with mock.patch("corporate.lib.stripe.has_stale_audit_log", return_value=False):
             result = self.client_get(result["Location"], subdomain="selfhosting")
             self.assert_in_success_response([f"Upgrade {self.server.hostname}"], result)
+
+        # Verify the RemoteServerBillingUser and PreRegistrationRemoteServerBillingUser
+        # objects created in the process.
+        remote_billing_user = RemoteServerBillingUser.objects.latest("id")
+        self.assertEqual(remote_billing_user.email, hamlet.delivery_email)
+
+        prereg_user = PreregistrationRemoteServerBillingUser.objects.latest("id")
+        self.assertEqual(prereg_user.created_user, remote_billing_user)
+        self.assertEqual(remote_billing_user.date_joined, now)
 
     def test_server_login_success_consent_is_not_re_asked(self) -> None:
         hamlet = self.example_user("hamlet")

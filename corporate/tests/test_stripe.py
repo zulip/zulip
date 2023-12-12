@@ -599,7 +599,7 @@ class StripeTestCase(ZulipTestCase):
             # Return early if the upgrade request failed.
             return upgrade_json_response
 
-        if invoice or not talk_to_stripe or is_free_trial_offer_enabled():
+        if invoice or not talk_to_stripe or is_free_trial_offer_enabled(False):
             # Upgrade already happened for free trial or invoice realms.
             return upgrade_json_response
 

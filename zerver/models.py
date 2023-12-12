@@ -4805,6 +4805,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_EMOJI_ADDED = 226
     REALM_EMOJI_REMOVED = 227
     REALM_LINKIFIERS_REORDERED = 228
+    REALM_IMPORTED = 229
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
@@ -4859,8 +4860,9 @@ class AbstractRealmAuditLog(models.Model):
 
     # This value is for RemoteRealmAuditLog entries tracking changes to the
     # RemoteRealm model resulting from modified realm information sent to us
-    # via send_analytics_to_push_bouncer.
+    # via send_server_data_to_push_bouncer.
     REMOTE_REALM_VALUE_UPDATED = 20001
+    REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM = 20002
 
     event_type = models.PositiveSmallIntegerField()
 
@@ -4875,6 +4877,7 @@ class AbstractRealmAuditLog(models.Model):
         USER_ROLE_CHANGED,
         REALM_DEACTIVATED,
         REALM_REACTIVATED,
+        REALM_IMPORTED,
     ]
 
     class Meta:

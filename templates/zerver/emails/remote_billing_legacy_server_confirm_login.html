@@ -6,17 +6,21 @@
 
 {% block content %}
 <p>
-    {{ _("You have initiated login to the Zulip server billing management system for the following server:") }}
-    <ul>
-        <li>{% trans %}Hostname: {{ remote_server_hostname }}{% endtrans %}</li>
-        <li>{% trans %}zulip_org_id: {{ remote_server_uuid }}{% endtrans %}</li>
-    </ul>
+    {% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Zulip plan for <b>{{ remote_server_hostname }}</b>.{% endtrans %}
 </p>
 <p>
-    {{ _("Click the button below to complete the login process.") }}
-    <a class="button" href="{{ confirmation_url }}">{{ _("Confirm login") }}</a>
+    {% trans %}
+    Click the button below to log in.
+    {% endtrans %}
+
+    {% trans %}
+    This link will expire in {{ validity_in_hours }} hours.
+    {% endtrans %}
 </p>
 <p>
-    {{macros.contact_us_zulip_cloud(support_email)}}
+    <a class="button" href="{{ confirmation_url }}">{{ _("Log in") }}</a>
+</p>
+<p>
+    {% trans billing_contact_email=macros.email_tag(billing_contact_email) %}Questions? <a href="{{ billing_help_link }}">Learn more</a> or contact {{ billing_contact_email }}.{% endtrans %}
 </p>
 {% endblock %}
