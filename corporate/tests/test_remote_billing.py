@@ -465,7 +465,7 @@ class LegacyServerLoginTest(BouncerTestCase):
     ) -> "TestHttpResponse":
         now = timezone_now()
         with time_machine.travel(now, tick=False):
-            payload = {"server_org_id": self.uuid, "server_org_secret": self.secret}
+            payload = {"zulip_org_id": self.uuid, "zulip_org_key": self.secret}
             if next_page is not None:
                 payload["next_page"] = next_page
             result = self.client_post(
@@ -568,10 +568,10 @@ class LegacyServerLoginTest(BouncerTestCase):
             ["Authenticate server for Zulip billing management"], result
         )
 
-    def test_server_login_invalid_server_org_id(self) -> None:
+    def test_server_login_invalid_zulip_org_id(self) -> None:
         result = self.client_post(
             "/serverlogin/",
-            {"server_org_id": "invalid", "server_org_secret": "secret"},
+            {"zulip_org_id": "invalid", "zulip_org_key": "secret"},
             subdomain="selfhosting",
         )
         self.assertEqual(result.status_code, 200)
@@ -580,10 +580,10 @@ class LegacyServerLoginTest(BouncerTestCase):
             result,
         )
 
-    def test_server_login_invalid_server_org_secret(self) -> None:
+    def test_server_login_invalid_zulip_org_key(self) -> None:
         result = self.client_post(
             "/serverlogin/",
-            {"server_org_id": self.uuid, "server_org_secret": "invalid"},
+            {"zulip_org_id": self.uuid, "zulip_org_key": "invalid"},
             subdomain="selfhosting",
         )
         self.assertEqual(result.status_code, 200)
@@ -595,7 +595,7 @@ class LegacyServerLoginTest(BouncerTestCase):
 
         result = self.client_post(
             "/serverlogin/",
-            {"server_org_id": self.uuid, "server_org_secret": self.secret},
+            {"zulip_org_id": self.uuid, "zulip_org_key": self.secret},
             subdomain="selfhosting",
         )
         self.assertEqual(result.status_code, 200)
@@ -653,7 +653,7 @@ class LegacyServerLoginTest(BouncerTestCase):
         # First test an invalid next_page value.
         result = self.client_post(
             "/serverlogin/",
-            {"server_org_id": self.uuid, "server_org_secret": self.secret, "next_page": "invalid"},
+            {"zulip_org_id": self.uuid, "zulip_org_key": self.secret, "next_page": "invalid"},
             subdomain="selfhosting",
         )
         self.assert_json_error(result, "Invalid next_page", 400)
@@ -678,7 +678,7 @@ class LegacyServerLoginTest(BouncerTestCase):
 
         result = self.client_post(
             "/serverlogin/",
-            {"server_org_id": self.uuid, "server_org_secret": "invalid", "next_page": "billing"},
+            {"zulip_org_id": self.uuid, "zulip_org_key": "invalid", "next_page": "billing"},
             subdomain="selfhosting",
         )
         self.assertEqual(result.status_code, 200)

@@ -426,12 +426,12 @@ def create_remote_billing_confirmation_link(
 def remote_billing_legacy_server_login(
     request: HttpRequest,
     *,
-    server_org_id: Optional[str] = None,
-    server_org_secret: Optional[str] = None,
+    zulip_org_id: Optional[str] = None,
+    zulip_org_key: Optional[str] = None,
     next_page: VALID_NEXT_PAGES_TYPE = None,
 ) -> HttpResponse:
     context: Dict[str, Any] = {"next_page": next_page}
-    if server_org_id is None or server_org_secret is None:
+    if zulip_org_id is None or zulip_org_key is None:
         context.update({"error_message": False})
         return render(request, "corporate/legacy_server_login.html", context)
 
@@ -439,7 +439,7 @@ def remote_billing_legacy_server_login(
         return HttpResponseNotAllowed(["POST"])
 
     try:
-        remote_server = get_remote_server_by_uuid(server_org_id)
+        remote_server = get_remote_server_by_uuid(zulip_org_id)
     except RemoteZulipServer.DoesNotExist:
         context.update(
             {
@@ -450,7 +450,7 @@ def remote_billing_legacy_server_login(
         )
         return render(request, "corporate/legacy_server_login.html", context)
 
-    if not constant_time_compare(server_org_secret, remote_server.api_key):
+    if not constant_time_compare(zulip_org_key, remote_server.api_key):
         context.update({"error_message": _("Invalid zulip_org_key for this zulip_org_id.")})
         return render(request, "corporate/legacy_server_login.html", context)
 
