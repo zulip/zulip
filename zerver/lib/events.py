@@ -705,6 +705,16 @@ def fetch_initial_state_data(
 
     return state
 
+def do_update_user_welcome_bot(
+    user_profile: UserProfile,
+    custom_message_enabled: bool,
+    custom_message_text: str,
+) -> None:
+    # Update the user's welcome bot settings in the database
+    user_profile.custom_welcome_message_enabled = custom_message_enabled
+    user_profile.custom_welcome_message_text = custom_message_text
+    user_profile.save(update_fields=["custom_welcome_message_enabled", "custom_welcome_message_text"])
+
 
 def handle_update_custom_welcome_message_event(
     user_profile: UserProfile,
@@ -714,6 +724,9 @@ def handle_update_custom_welcome_message_event(
     # Extract relevant data from the event
     checkbox_state = event.get("checkbox_state", False)
     message_text = event.get("message_text", "")
+    custom_message_enabled = event.get("custom_message_enabled", False)
+    custom_message_text = event.get("custom_message_text", "")
+
 
     # Update the server state based on the custom welcome message setting
     update_custom_welcome_message(
@@ -722,6 +735,15 @@ def handle_update_custom_welcome_message_event(
         message_text=message_text,
         acting_user=user_profile,
     )
+
+    do_update_user_welcome_bot(user_profile, custom_message_enabled, custom_message_text)
+
+    # Update the client state
+    state["custom_welcome_message_enabled"] = checkbox_state
+    state["custom_welcome_message_text"] = message_text
+    state["user_welcome_bot_enabled"] = custom_message_enabled
+    state["user_welcome_bot_text"] = custom_message_text
+
 
 def apply_events(
     user_profile: UserProfile,

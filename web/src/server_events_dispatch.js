@@ -86,6 +86,16 @@ import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics_ui from "./user_topics_ui";
 
+
+export function update_custom_welcome_message(data) {
+    const customMessageEnabled = data.custom_message_enabled;
+    const customMessageText = data.custom_message_text;
+
+    // Update the frontend UI based on the new settings
+    $('#custom-welcome-message-checkbox').prop('checked', customMessageEnabled);
+    $('#custom-welcome-message-text').val(customMessageText);
+}
+
 export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
