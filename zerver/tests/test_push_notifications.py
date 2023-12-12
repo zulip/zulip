@@ -2393,8 +2393,16 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"apns": True},
                 {"gcm": True},
                 {},
-                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)),
-                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)),
+                list(
+                    PushDeviceToken.objects.filter(
+                        user=user_profile, kind=PushDeviceToken.GCM
+                    ).order_by("id")
+                ),
+                list(
+                    PushDeviceToken.objects.filter(
+                        user=user_profile, kind=PushDeviceToken.APNS
+                    ).order_by("id")
+                ),
             )
             self.assertEqual(
                 mock_logging_info.output,
@@ -2508,8 +2516,16 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "zulip_message_id": message.id,
                 },
                 {"priority": "normal"},
-                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)),
-                list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)),
+                list(
+                    PushDeviceToken.objects.filter(
+                        user=user_profile, kind=PushDeviceToken.GCM
+                    ).order_by("id")
+                ),
+                list(
+                    PushDeviceToken.objects.filter(
+                        user=user_profile, kind=PushDeviceToken.APNS
+                    ).order_by("id")
+                ),
             )
             user_message = UserMessage.objects.get(user_profile=self.user_profile, message=message)
             self.assertEqual(user_message.flags.active_mobile_push_notification, False)
