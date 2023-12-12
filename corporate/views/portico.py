@@ -80,6 +80,7 @@ class PlansPageContext:
     customer_plan: Optional[CustomerPlan] = None
     is_legacy_server_with_scheduled_upgrade: bool = False
     legacy_server_new_plan: Optional[CustomerPlan] = None
+    requested_sponsorship_plan: Optional[str] = None
 
     billing_base_url: str = ""
 
@@ -140,6 +141,7 @@ def remote_realm_plans_page(
         free_trial_days=get_free_trial_days(True),
         billing_base_url=billing_session.billing_base_url,
         is_sponsored=billing_session.is_sponsored(),
+        requested_sponsorship_plan=billing_session.get_sponsorship_plan_name(customer, True),
     )
 
     context.on_free_tier = customer is None and not context.is_sponsored
@@ -192,6 +194,7 @@ def remote_server_plans_page(
         free_trial_days=get_free_trial_days(True),
         billing_base_url=billing_session.billing_base_url,
         is_sponsored=billing_session.is_sponsored(),
+        requested_sponsorship_plan=billing_session.get_sponsorship_plan_name(customer, True),
     )
 
     context.on_free_tier = customer is None and not context.is_sponsored
