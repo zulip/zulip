@@ -8,6 +8,7 @@ from corporate.views.billing_page import (
     billing_page,
     remote_realm_billing_page,
     remote_server_billing_page,
+    remote_server_deactivate_page,
     update_plan,
     update_plan_for_remote_realm,
     update_plan_for_remote_server,
@@ -229,6 +230,11 @@ urlpatterns += [
         "server/<server_uuid>/sponsorship/",
         remote_server_sponsorship_page,
         name="remote_server_sponsorship_page",
+    ),
+    path(
+        "server/<server_uuid>/deactivate/",
+        remote_server_deactivate_page,
+        name="remote_server_deactivate_page",
     ),
     path(
         "serverlogin/",

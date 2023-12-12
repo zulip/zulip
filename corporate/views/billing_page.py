@@ -1,9 +1,10 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
@@ -14,9 +15,11 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     UpdatePlanRequest,
+    do_deactivate_remote_server,
 )
 from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.decorator import process_as_post, require_billing_access, zulip_login_required
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
@@ -274,3 +277,35 @@ def update_plan_for_remote_server(
     )
     billing_session.do_update_plan(update_plan_request)
     return json_success(request)
+
+
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def remote_server_deactivate_page(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    *,
+    confirmed: Literal[None, "true"] = None,
+) -> HttpResponse:
+    if request.method not in ["GET", "POST"]:  # nocoverage
+        return HttpResponseNotAllowed(["GET", "POST"])
+
+    remote_server = billing_session.remote_server
+    if request.method == "GET":
+        context = {
+            "server_hostname": remote_server.hostname,
+            "action_url": reverse(remote_server_deactivate_page, args=[str(remote_server.uuid)]),
+        }
+        return render(request, "corporate/remote_billing_server_deactivate.html", context=context)
+
+    assert request.method == "POST"
+    if confirmed is None:  # nocoverage
+        # Should be impossible if the user is using the UI.
+        raise JsonableError(_("Parameter 'confirmed' is required"))
+
+    do_deactivate_remote_server(remote_server)
+    return render(
+        request,
+        "corporate/remote_billing_server_deactivated_success.html",
+        context={"server_hostname": remote_server.hostname},
+    )

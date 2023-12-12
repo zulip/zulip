@@ -15,6 +15,7 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityDict,
     RemoteBillingUserDict,
 )
+from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -755,3 +756,37 @@ class LegacyServerLoginTest(BouncerTestCase):
         )
 
         self.assert_json_error(result, "You must accept the Terms of Service to proceed.")
+
+
+class TestGenerateDeactivationLink(BouncerTestCase):
+    def test_generate_deactivation_link(self) -> None:
+        server = self.server
+        confirmation_url = generate_confirmation_link_for_server_deactivation(
+            server, validity_in_minutes=60
+        )
+
+        result = self.client_get(confirmation_url, subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["Log in to Zulip plan management", server.contact_email], result
+        )
+        payload = {"full_name": "test", "tos_consent": "true"}
+        result = self.client_post(confirmation_url, payload, subdomain="selfhosting")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"/server/{server.uuid!s}/deactivate/")
+
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(
+            [
+                "You are about to deactivate this server's",
+                server.hostname,
+                f'action="/server/{server.uuid!s}/deactivate/"',
+            ],
+            result,
+        )
+        result = self.client_post(
+            f"/server/{server.uuid!s}/deactivate/", {"confirmed": "true"}, subdomain="selfhosting"
+        )
+        self.assert_in_success_response([f"Registration deactivated for {server.hostname}"], result)
+
+        server.refresh_from_db()
+        self.assertEqual(server.deactivated, True)

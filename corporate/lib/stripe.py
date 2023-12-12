@@ -3828,6 +3828,9 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
 
 @transaction.atomic
 def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
+    # TODO: This should also ensure that the server doesn't have an active plan,
+    # and deactivate it otherwise. (Like do_deactivate_realm does.)
+
     if remote_server.deactivated:
         billing_logger.warning(
             "Cannot deactivate remote server with ID %d, server has already been deactivated.",

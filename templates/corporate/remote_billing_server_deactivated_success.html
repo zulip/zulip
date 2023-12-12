@@ -1,0 +1,27 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "upgrade" %}
+
+{% block title %}
+<title>Server registration deactivated | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation account-email-confirm-container new-style">
+        <div class="pitch">
+            <h1>
+                Registration deactivated for {{ server_hostname }}
+            </h1>
+        </div>
+        <div class="inline-block">
+            <div class="white-box">
+                <p>Your server's registration has been deactivated.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+{% endblock %}
