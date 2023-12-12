@@ -802,6 +802,23 @@ class BillingSession(ABC):
     def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
         pass
 
+    @abstractmethod
+    def sync_license_ledger_if_needed(self) -> None:
+        # Updates the license ledger based on RemoteRealmAuditLog
+        # entries.
+        #
+        # Supports backfilling entries from weeks if the past if
+        # needed when we receive audit logs, making any end-of-cycle
+        # updates that happen to be scheduled inside the interval that
+        # we are processing.
+        #
+        # But this support is fragile, in that it does not handle the
+        # possibility that some other code path changed or ended the
+        # customer's current plan at some point after
+        # last_ledger.event_time but before the event times for the
+        # audit logs we will be processing.
+        pass
+
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
         if (customer is not None and customer.sponsorship_pending) or self.is_sponsored():
             return True
@@ -2949,6 +2966,16 @@ class RealmBillingSession(BillingSession):
             return
         self.update_license_ledger_for_automanaged_plan(plan, event_time)
 
+    @override
+    def sync_license_ledger_if_needed(self) -> None:  # nocoverage
+        # TODO: For zulip cloud, currently we use 'update_license_ledger_if_needed'
+        # to update the ledger. For consistency, we plan to use RealmAuditlog
+        # to update the ledger as we currently do for self-hosted system using
+        # RemoteRealmAuditlog. This will also help the cloud billing system to
+        # recover from a multi-day outage of the invoicing process without doing
+        # anything weird.
+        pass
+
 
 class RemoteRealmBillingSession(BillingSession):  # nocoverage
     def __init__(
@@ -3276,20 +3303,8 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             self.remote_realm.org_type = org_type
             self.remote_realm.save(update_fields=["org_type"])
 
+    @override
     def sync_license_ledger_if_needed(self) -> None:
-        # Updates the license ledger based on RemoteRealmAuditLog
-        # entries.
-        #
-        # Supports backfilling entries from weeks if the past if
-        # needed when we receive audit logs, making any end-of-cycle
-        # updates that happen to be scheduled inside the interval that
-        # we are processing.
-        #
-        # But this support is fragile, in that it does not handle the
-        # possibility that some other code path changed or ended the
-        # customer's current plan at some point after
-        # last_ledger.event_time but before the event times for the
-        # audit logs we will be processing.
         last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
         if last_ledger is None:
             return
@@ -3663,6 +3678,10 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         if self.remote_server.org_type != org_type:
             self.remote_server.org_type = org_type
             self.remote_server.save(update_fields=["org_type"])
+
+    @override
+    def sync_license_ledger_if_needed(self) -> None:
+        pass
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
