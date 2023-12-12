@@ -925,48 +925,54 @@ def remote_server_post_analytics(
     batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 
     if realmauditlog_rows is not None:
-        # Important: Do not return early if we receive 0 rows; we must
-        # updated last_audit_log_update even if there are no new rows,
-        # to help identify server whose ability to connect to this
-        # endpoint is broken by a networking problem.
-        remote_realms_set = set()
-        remote_realm_audit_logs = []
-        for row in realmauditlog_rows:
-            extra_data = {}
-            if isinstance(row.extra_data, str):
-                try:
-                    extra_data = orjson.loads(row.extra_data)
-                except orjson.JSONDecodeError:
-                    raise JsonableError(_("Malformed audit log data"))
-            elif row.extra_data is not None:
-                assert isinstance(row.extra_data, dict)
-                extra_data = row.extra_data
-            remote_realms_set.add(realm_id_to_remote_realm.get(row.realm))
-            remote_realm_audit_logs.append(
-                RemoteRealmAuditLog(
-                    remote_realm=realm_id_to_remote_realm.get(row.realm),
-                    realm_id=row.realm,
-                    remote_id=row.id,
-                    server=server,
-                    event_time=datetime.fromtimestamp(row.event_time, tz=timezone.utc),
-                    backfilled=row.backfilled,
-                    extra_data=extra_data,
-                    event_type=row.event_type,
+        # Creating audit logs, syncing license ledger, and updating
+        # 'last_audit_log_update' needs to be an atomic operation.
+        # This helps to rely on 'last_audit_log_update' to assume
+        # RemoteRealmAuditLog and LicenseLedger are up-to-date.
+        with transaction.atomic():
+            # Important: Do not return early if we receive 0 rows; we must
+            # updated last_audit_log_update even if there are no new rows,
+            # to help identify server whose ability to connect to this
+            # endpoint is broken by a networking problem.
+            remote_realms_set = set()
+            remote_realm_audit_logs = []
+            for row in realmauditlog_rows:
+                extra_data = {}
+                if isinstance(row.extra_data, str):
+                    try:
+                        extra_data = orjson.loads(row.extra_data)
+                    except orjson.JSONDecodeError:
+                        raise JsonableError(_("Malformed audit log data"))
+                elif row.extra_data is not None:
+                    assert isinstance(row.extra_data, dict)
+                    extra_data = row.extra_data
+                remote_realms_set.add(realm_id_to_remote_realm.get(row.realm))
+                remote_realm_audit_logs.append(
+                    RemoteRealmAuditLog(
+                        remote_realm=realm_id_to_remote_realm.get(row.realm),
+                        realm_id=row.realm,
+                        remote_id=row.id,
+                        server=server,
+                        event_time=datetime.fromtimestamp(row.event_time, tz=timezone.utc),
+                        backfilled=row.backfilled,
+                        extra_data=extra_data,
+                        event_type=row.event_type,
+                    )
                 )
+            batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
+
+            # We need to update 'last_audit_log_update' before calling the
+            # 'sync_license_ledger_if_needed' method to avoid 'MissingDataError'
+            # due to 'has_stale_audit_log' being True.
+            RemoteZulipServer.objects.filter(uuid=server.uuid).update(
+                last_audit_log_update=timezone_now()
             )
-        batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
 
-        # Update LicenseLedger using logs in RemoteRealmAuditlog.
-        for remote_realm in remote_realms_set:
-            if remote_realm:
-                billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-                billing_session.sync_license_ledger_if_needed()
-
-        # Do this last, so we can assume LicenseLedger is always
-        # up-to-date through last_audit_log_update.
-        RemoteZulipServer.objects.filter(uuid=server.uuid).update(
-            last_audit_log_update=timezone_now()
-        )
+            # Update LicenseLedger using logs in RemoteRealmAuditlog.
+            for remote_realm in remote_realms_set:
+                if remote_realm:
+                    billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+                    billing_session.sync_license_ledger_if_needed()
 
     remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
     remote_realms = RemoteRealm.objects.filter(server=server)
