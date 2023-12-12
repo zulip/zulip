@@ -686,7 +686,10 @@ input[name="licenses"] {
 }
 
 #server-login-error {
-    text-align: center;
+    text-align: left;
+    margin: 0 auto;
+    max-width: 400px;
+    padding: 10px 25px;
 }
 
 #upgrade-page-details #due-today-for-future-update-wrapper {

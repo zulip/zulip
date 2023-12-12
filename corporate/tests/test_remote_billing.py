@@ -576,7 +576,8 @@ class LegacyServerLoginTest(BouncerTestCase):
         )
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(
-            ["Did not find a server registration for this server_org_id."], result
+            ["This zulip_org_id is not registered with Zulip&#39;s billing management system."],
+            result,
         )
 
     def test_server_login_invalid_server_org_secret(self) -> None:
@@ -586,7 +587,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             subdomain="selfhosting",
         )
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Invalid server_org_secret."], result)
+        self.assert_in_success_response(["Invalid zulip_org_key for this zulip_org_id."], result)
 
     def test_server_login_deactivated_server(self) -> None:
         self.server.deactivated = True
@@ -681,7 +682,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             subdomain="selfhosting",
         )
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Invalid server_org_secret."], result)
+        self.assert_in_success_response(["Invalid zulip_org_key for this zulip_org_id."], result)
         # The next_page param should be preserved in the form.
         self.assert_in_success_response(
             ['<input type="hidden" name="next_page" value="billing" />'], result
