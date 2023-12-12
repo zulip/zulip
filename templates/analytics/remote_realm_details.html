@@ -14,7 +14,7 @@
     {% set customer = plan_data[remote_realm.id].customer %}
     {% set remote_id = remote_realm.id %}
     {% set remote_type = "remote_realm_id" %}
-    {% set has_fixed_price = plan_data[remote_server.id].has_fixed_price %}
+    {% set has_fixed_price = plan_data[remote_realm.id].has_fixed_price %}
     {% set get_discount = get_discount %}
     {% include 'analytics/sponsorship_forms_support.html' %}
 {% endwith %}
@@ -29,7 +29,7 @@
 </div>
 
 {% with %}
-    {% set current_plan = plan_data[remote_server.id].current_plan %}
+    {% set current_plan = plan_data[remote_realm.id].current_plan %}
     {% set remote_id = remote_realm.id %}
     {% set remote_type = "remote_realm_id" %}
     {% include 'analytics/current_plan_forms_support.html' %}
