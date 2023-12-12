@@ -1,9 +1,6 @@
-{{ _("You have initiated login to the Zulip plan management system for the following organization:") }}
-* {% trans %}Organization host: {{ remote_realm_host }}{% endtrans %}
+{% trans %}Click the link below to log in to Zulip plan management for {{remote_realm_host}}.{% endtrans %} {% trans %}This link will expire in {{ validity_in_hours }} hours.{% endtrans %}
 
-* {% trans %}Server host: {{ remote_server_hostname }}{% endtrans %}
 
-{{ _("Click the link below to complete the login process;") }}
-    <{{ confirmation_url }}>
+{{ _("Log in") }}: {{ confirmation_url }}
 
-{% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
+{% trans %}Questions? Learn more at {{ billing_help_link }} or contact {{ billing_contact_email }}.{% endtrans %}

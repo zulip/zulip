@@ -4,7 +4,6 @@ from typing import Any, Dict, Literal, Optional, Tuple, Union
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
@@ -15,7 +14,7 @@ from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email_to_admins
-from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
@@ -43,10 +42,6 @@ from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
-
-
-def active_humans_in_realm(realm: Realm) -> QuerySet[UserProfile]:
-    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 
 @transaction.atomic(savepoint=False)
@@ -345,6 +340,7 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+@transaction.atomic
 def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
@@ -373,12 +369,17 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
         },
     )
 
+    from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+    maybe_enqueue_audit_log_upload(realm)
+
     ScheduledEmail.objects.filter(realm=realm).delete()
-    for user in active_humans_in_realm(realm):
-        # Don't deactivate the users, but do delete their sessions so they get
-        # bumped to the login screen, where they'll get a realm deactivation
-        # notice when they try to log in.
-        delete_user_sessions(user)
+
+    # Don't deactivate the users, as that would lose a lot of state if
+    # the realm needs to be reactivated, but do delete their sessions
+    # so they get bumped to the login screen, where they'll get a
+    # realm deactivation notice when they try to log in.
+    delete_realm_user_sessions(realm)
 
     # This event will only ever be received by clients with an active
     # longpoll connection, because by this point clients will be
@@ -387,7 +388,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     # deactivated). So the purpose of sending this is to flush all
     # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -412,6 +413,10 @@ def do_reactivate_realm(realm: Realm) -> None:
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
             },
         )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
 
 
 def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:

@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
 import orjson
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
@@ -23,7 +24,11 @@ from analytics.lib.counts import (
     REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
-from corporate.lib.stripe import RemoteRealmBillingSession, do_deactivate_remote_server
+from corporate.lib.stripe import (
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+    do_deactivate_remote_server,
+)
 from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError, RemoteRealmServerMismatchError
@@ -603,6 +608,7 @@ def update_remote_realm_data_for_server(
             org_type=realm.org_type,
             name=realm.name,
             authentication_methods=realm.authentication_methods,
+            is_system_bot_realm=realm.is_system_bot_realm,
         )
         for realm in server_realms_info
         if realm.uuid not in already_registered_uuids
@@ -629,6 +635,7 @@ def update_remote_realm_data_for_server(
             ("name", "name"),
             ("authentication_methods", "authentication_methods"),
             ("realm_deactivated", "deactivated"),
+            ("is_system_bot_realm", "is_system_bot_realm"),
         ]:
             old_value = getattr(remote_realm, remote_realm_attr)
             new_value = getattr(realm, realm_dict_key)
@@ -659,8 +666,110 @@ def update_remote_realm_data_for_server(
 
     RemoteRealm.objects.bulk_update(
         remote_realms_to_update,
-        ["host", "realm_deactivated", "name", "authentication_methods", "org_type"],
+        [
+            "host",
+            "realm_deactivated",
+            "name",
+            "authentication_methods",
+            "org_type",
+            "is_system_bot_realm",
+        ],
     )
+    RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
+
+
+def get_human_user_realm_uuids(realms: List[RealmDataForAnalytics]) -> List[UUID]:  # nocoverage
+    billable_realm_uuids = []
+    for realm in realms:
+        # TODO: Remove the `zulipinternal` string_id check once no server is on 8.0-beta.
+        if (
+            realm.is_system_bot_realm
+            or realm.host.startswith("zulipinternal.")
+            or (settings.DEVELOPMENT and realm.host.startswith("analytics."))
+        ):
+            continue
+        billable_realm_uuids.append(realm.uuid)
+
+    return billable_realm_uuids
+
+
+@transaction.atomic
+def handle_customer_migration_from_server_to_realms(
+    server: RemoteZulipServer, realms: List[RealmDataForAnalytics]
+) -> None:  # nocoverage
+    server_billing_session = RemoteServerBillingSession(server)
+    server_customer = server_billing_session.get_customer()
+    if server_customer is None:
+        return
+    server_plan = get_current_plan_by_customer(server_customer)
+    realm_uuids = get_human_user_realm_uuids(realms)
+    if not realm_uuids:
+        return
+
+    event_time = timezone_now()
+    remote_realm_audit_logs = []
+    if (
+        server_plan is not None
+        and server_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        and server_plan.status == CustomerPlan.ACTIVE
+    ):
+        assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+        assert server_plan.end_date is not None
+        remote_realms = RemoteRealm.objects.filter(
+            uuid__in=realm_uuids, server=server, plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED
+        )
+
+        # Verify that all the realms are on self hosted plan.
+        assert remote_realms.count() == len(realm_uuids)
+
+        # End existing plan for server.
+        server_plan.status = CustomerPlan.ENDED
+        server_plan.save(update_fields=["status"])
+
+        # Create new legacy plan for each remote realm.
+        for remote_realm in remote_realms:
+            RemoteRealmBillingSession(remote_realm).migrate_customer_to_legacy_plan(
+                server_plan.billing_cycle_anchor, server_plan.end_date
+            )
+            remote_realm_audit_logs.append(
+                RemoteRealmAuditLog(
+                    server=server,
+                    remote_realm=remote_realm,
+                    event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
+                    event_time=event_time,
+                    # No extra_data since there was no real change in any RemoteRealm attribute.
+                )
+            )
+
+    # We only do this migration if there is only one realm besides the system bot realm.
+    elif len(realm_uuids) == 1:
+        remote_realm = RemoteRealm.objects.get(
+            uuid=realm_uuids[0], plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED
+        )
+        # Migrate customer from server to remote realm if there is only one realm.
+        server_customer.remote_realm = remote_realm
+        server_customer.remote_server = None
+        server_customer.save(update_fields=["remote_realm", "remote_server"])
+        # TODO: Set usage limits for remote realm and server.
+        # Might be better to call do_change_plan_type here.
+        remote_realm.plan_type = server.plan_type
+        remote_realm.save(update_fields=["plan_type"])
+        server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+        server.save(update_fields=["plan_type"])
+        remote_realm_audit_logs.append(
+            RemoteRealmAuditLog(
+                server=server,
+                remote_realm=remote_realm,
+                event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
+                event_time=event_time,
+                extra_data={
+                    "attr_name": "plan_type",
+                    "old_value": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                    "new_value": remote_realm.plan_type,
+                },
+            )
+        )
+
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
@@ -715,6 +824,21 @@ def remote_server_post_analytics(
         update_remote_realm_data_for_server(server, realms)
         if remote_server_version_updated:
             fix_remote_realm_foreign_keys(server, realms)
+
+        try:
+            handle_customer_migration_from_server_to_realms(server, realms)
+        except Exception:  # nocoverage
+            logger.exception(
+                "%s: Failed to migrate customer from server (id: %s) to realms",
+                request.path,
+                server.id,
+                stack_info=True,
+            )
+            raise JsonableError(
+                _(
+                    "Failed to migrate customer from server to realms. Please contact support for assistance."
+                )
+            )
 
     realm_id_to_remote_realm = build_realm_id_to_remote_realm_dict(server, realms)
 

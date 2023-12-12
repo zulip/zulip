@@ -21,6 +21,7 @@ from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
@@ -495,6 +496,7 @@ def do_create_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
 
         if realm_creation:
             # If this user just created a realm, make sure they are
@@ -619,6 +621,7 @@ def do_activate_mirror_dummy_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
         do_increment_logging_stat(
             user_profile.realm,
             COUNT_STATS["active_users_log:is_bot:day"],
@@ -652,6 +655,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         },
     )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
 
     bot_owner_changed = False
     if (
