@@ -88,6 +88,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserMessage,
+    UserProfile,
     UserTopic,
     get_client,
     get_realm,
@@ -604,7 +605,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "zilencer.views.send_android_push_notification", return_value=2
         ) as android_push, mock.patch(
             "zilencer.views.send_apple_push_notification", return_value=1
-        ) as apple_push, self.assertLogs(
+        ) as apple_push, mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
+        ), self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
             result = self.uuid_post(
@@ -659,6 +663,177 @@ class PushBouncerNotificationTest(BouncerTestCase):
             remote=server,
         )
 
+    def test_send_notification_endpoint_on_self_managed_plan(self) -> None:
+        hamlet = self.example_user("hamlet")
+        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64("aaaaaa"),
+            user_id=hamlet.id,
+            server=remote_server,
+        )
+
+        current_time = now()
+        message = Message(
+            sender=hamlet,
+            recipient=self.example_user("othello").recipient,
+            realm_id=hamlet.realm_id,
+            content="This is test content",
+            rendered_content="This is test content",
+            date_sent=current_time,
+            sending_client=get_client("test"),
+        )
+        message.save()
+
+        # Test old zulip server case.
+        self.assertIsNone(remote_server.last_api_feature_level)
+        old_apns_payload = {
+            "alert": {
+                "title": "King Hamlet",
+                "subtitle": "",
+                "body": message.content,
+            },
+            "badge": 0,
+            "sound": "default",
+            "custom": {
+                "zulip": {
+                    "message_ids": [message.id],
+                    "recipient_type": "private",
+                    "sender_email": hamlet.email,
+                    "sender_id": hamlet.id,
+                    "server": settings.EXTERNAL_HOST,
+                    "realm_id": hamlet.realm.id,
+                    "realm_uri": hamlet.realm.uri,
+                    "user_id": self.example_user("othello").id,
+                }
+            },
+        }
+        old_gcm_payload = {
+            "user_id": self.example_user("othello").id,
+            "event": "message",
+            "alert": "New private message from King Hamlet",
+            "zulip_message_id": message.id,
+            "time": datetime_to_timestamp(message.date_sent),
+            "content": message.content,
+            "content_truncated": False,
+            "server": settings.EXTERNAL_HOST,
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
+            "sender_full_name": "King Hamlet",
+            "sender_avatar_url": absolute_avatar_url(message.sender),
+            "recipient_type": "private",
+        }
+        payload = {
+            "user_id": hamlet.id,
+            "gcm_payload": old_gcm_payload,
+            "apns_payload": old_apns_payload,
+            "gcm_options": {"priority": "high"},
+        }
+
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/push/notify",
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(orjson.loads(result.content)["code"], "INVALID_ZULIP_SERVER")
+
+        remote_server.last_api_feature_level = 235
+        remote_server.save()
+
+        gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        apns_payload = get_message_payload_apns(
+            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+        )
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "gcm_payload": gcm_payload,
+            "apns_payload": apns_payload,
+            "gcm_options": gcm_options,
+        }
+
+        # Test the case when there is no data about users.
+        self.assertIsNone(remote_server.last_audit_log_update)
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/push/notify",
+            payload,
+            content_type="application/json",
+        )
+        self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
+        self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
+
+        human_counts = {
+            str(UserProfile.ROLE_REALM_ADMINISTRATOR): 1,
+            str(UserProfile.ROLE_REALM_OWNER): 1,
+            str(UserProfile.ROLE_MODERATOR): 0,
+            str(UserProfile.ROLE_MEMBER): 7,
+            str(UserProfile.ROLE_GUEST): 2,
+        }
+        RemoteRealmAuditLog.objects.create(
+            server=remote_server,
+            event_type=RealmAuditLog.USER_CREATED,
+            event_time=current_time - timedelta(minutes=10),
+            extra_data={RealmAuditLog.ROLE_COUNT: {RealmAuditLog.ROLE_COUNT_HUMANS: human_counts}},
+        )
+        remote_server.last_audit_log_update = current_time - timedelta(minutes=10)
+        remote_server.save()
+
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/push/notify",
+            payload,
+            content_type="application/json",
+        )
+        self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
+        self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
+
+        human_counts = {
+            str(UserProfile.ROLE_REALM_ADMINISTRATOR): 1,
+            str(UserProfile.ROLE_REALM_OWNER): 1,
+            str(UserProfile.ROLE_MODERATOR): 0,
+            str(UserProfile.ROLE_MEMBER): 6,
+            str(UserProfile.ROLE_GUEST): 2,
+        }
+
+        RemoteRealmAuditLog.objects.create(
+            server=remote_server,
+            event_type=RealmAuditLog.USER_DEACTIVATED,
+            event_time=current_time - timedelta(minutes=8),
+            extra_data={RealmAuditLog.ROLE_COUNT: {RealmAuditLog.ROLE_COUNT_HUMANS: human_counts}},
+        )
+        remote_server.last_audit_log_update = current_time - timedelta(minutes=8)
+        remote_server.save()
+
+        with self.assertLogs("zilencer.views", level="INFO") as logger:
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        data = self.assert_json_success(result)
+        self.assertEqual(
+            {
+                "result": "success",
+                "msg": "",
+                "realm": None,
+                "total_android_devices": 1,
+                "total_apple_devices": 0,
+                "deleted_devices": {"android_devices": [], "apple_devices": []},
+            },
+            data,
+        )
+        self.assertIn(
+            "INFO:zilencer.views:"
+            f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
+            "1 via FCM devices, 0 via APNs devices",
+            logger.output,
+        )
+
     def test_subsecond_timestamp_format(self) -> None:
         hamlet = self.example_user("hamlet")
         RemotePushDeviceToken.objects.create(
@@ -704,8 +879,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         with time_machine.travel(time_received, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch(
-            "zilencer.views.send_apple_push_notification", return_value=1
+        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
         ), self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
@@ -1631,7 +1807,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_CREATED,
             event_time=end_time,
-            extra_data={"data": "foo"},
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+            },
         )
         send_server_data_to_push_bouncer()
 
@@ -1824,7 +2002,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 modified_user=user,
                 event_type=RealmAuditLog.USER_REACTIVATED,
                 event_time=self.TIME_ZERO,
-                extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: 0}).decode(),
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.ROLE_COUNT: {
+                            RealmAuditLog.ROLE_COUNT_HUMANS: {},
+                        }
+                    }
+                ).decode(),
             )
 
             # We use this to patch send_to_push_bouncer so that extra_data in the
@@ -1863,14 +2047,32 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # Pre-migration extra_data
         verify_request_with_overridden_extra_data(
-            request_extra_data=orjson.dumps({"fake_data": 42}).decode(),
-            expected_extra_data={"fake_data": 42},
+            request_extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: {
+                        RealmAuditLog.ROLE_COUNT_HUMANS: {},
+                    }
+                }
+            ).decode(),
+            expected_extra_data={
+                RealmAuditLog.ROLE_COUNT: {
+                    RealmAuditLog.ROLE_COUNT_HUMANS: {},
+                }
+            },
         )
         verify_request_with_overridden_extra_data(request_extra_data=None, expected_extra_data={})
         # Post-migration extra_data
         verify_request_with_overridden_extra_data(
-            request_extra_data={"fake_data": 42},
-            expected_extra_data={"fake_data": 42},
+            request_extra_data={
+                RealmAuditLog.ROLE_COUNT: {
+                    RealmAuditLog.ROLE_COUNT_HUMANS: {},
+                }
+            },
+            expected_extra_data={
+                RealmAuditLog.ROLE_COUNT: {
+                    RealmAuditLog.ROLE_COUNT_HUMANS: {},
+                }
+            },
         )
         verify_request_with_overridden_extra_data(
             request_extra_data={},
@@ -1892,12 +2094,30 @@ class AnalyticsBouncerTest(BouncerTestCase):
         with mock.patch(
             "corporate.lib.stripe.RemoteRealmBillingSession.get_customer", return_value=None
         ) as m:
-            send_server_data_to_push_bouncer(consider_usage_statistics=False)
-            m.assert_called()
-            realms = Realm.objects.all()
-            for realm in realms:
-                self.assertEqual(realm.push_notifications_enabled, True)
-                self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+            with mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                m.assert_called()
+                realms = Realm.objects.all()
+                for realm in realms:
+                    self.assertEqual(realm.push_notifications_enabled, True)
+                    self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+
+        with mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=None
+        ) as m:
+            with mock.patch(
+                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                return_value=11,
+            ):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                m.assert_called()
+                realms = Realm.objects.all()
+                for realm in realms:
+                    self.assertEqual(realm.push_notifications_enabled, False)
+                    self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
         dummy_customer = mock.MagicMock()
         with mock.patch(
@@ -1913,6 +2133,24 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 for realm in realms:
                     self.assertEqual(realm.push_notifications_enabled, True)
                     self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+
+        dummy_customer = mock.MagicMock()
+        with mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+        ):
+            with mock.patch(
+                "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
+            ) as m:
+                with mock.patch(
+                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                    return_value=11,
+                ):
+                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                    m.assert_called()
+                    realms = Realm.objects.all()
+                    for realm in realms:
+                        self.assertEqual(realm.push_notifications_enabled, False)
+                        self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
         dummy_customer_plan = mock.MagicMock()
         dummy_customer_plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
@@ -2229,7 +2467,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         }
         with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
+        ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
+        ), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as pn_logger, self.assertLogs(
             "zilencer.views", level="INFO"
@@ -2316,7 +2557,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         }
         with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
+        ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
+        ), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as pn_logger, self.assertLogs(
             "zilencer.views", level="INFO"
