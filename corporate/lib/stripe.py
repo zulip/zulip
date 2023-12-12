@@ -646,6 +646,8 @@ class UpgradePageContext(TypedDict):
     seat_count: int
     signed_seat_count: str
     success_message: str
+    is_sponsorship_pending: bool
+    sponsorship_plan_name: str
 
 
 class SponsorshipRequestForm(forms.Form):
@@ -1824,8 +1826,8 @@ class BillingSession(ABC):
         free_trial_days = None
         free_trial_end_date = None
         # Don't show free trial for remote servers on legacy plan.
+        is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if remote_server_legacy_plan_end_date is None:
-            is_self_hosted_billing = not isinstance(self, RealmBillingSession)
             free_trial_days = get_free_trial_days(is_self_hosted_billing)
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
@@ -1871,6 +1873,10 @@ class BillingSession(ABC):
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
             "success_message": initial_upgrade_request.success_message,
+            "is_sponsorship_pending": customer is not None and customer.sponsorship_pending,
+            "sponsorship_plan_name": self.get_sponsorship_plan_name(
+                customer, is_self_hosted_billing
+            ),
         }
 
         return None, context
