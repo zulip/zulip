@@ -7,16 +7,14 @@
 
 {% block portico_content %}
 <div class="app portico-page">
-    <div class="app-main portico-page-container center-block flex full-page account-creation account-email-confirm-container new-style">
+    <div class="app-main portico-page-container flex full-page account-deactivation account-email-confirm-container new-style">
         <div class="pitch">
             <h1>
-                Registration deactivated for {{ server_hostname }}
+                Registration deactivated for<br />{{ server_hostname }}
             </h1>
         </div>
-        <div class="inline-block">
-            <div class="white-box">
-                <p>Your server's registration has been deactivated.</p>
-            </div>
+        <div class="white-box">
+            <p>Your server's registration has been deactivated.</p>
         </div>
     </div>
 </div>

@@ -786,7 +786,9 @@ class TestGenerateDeactivationLink(BouncerTestCase):
         result = self.client_post(
             f"/server/{server.uuid!s}/deactivate/", {"confirmed": "true"}, subdomain="selfhosting"
         )
-        self.assert_in_success_response([f"Registration deactivated for {server.hostname}"], result)
+        self.assert_in_success_response(
+            [f"Registration deactivated for<br />{server.hostname}"], result
+        )
 
         server.refresh_from_db()
         self.assertEqual(server.deactivated, True)
