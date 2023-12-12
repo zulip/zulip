@@ -968,11 +968,15 @@ def remote_server_post_analytics(
                 last_audit_log_update=timezone_now()
             )
 
-            # Update LicenseLedger using logs in RemoteRealmAuditlog.
+            # Update LicenseLedger for remote_realm customers using logs in RemoteRealmAuditlog.
             for remote_realm in remote_realms_set:
                 if remote_realm:
                     billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
                     billing_session.sync_license_ledger_if_needed()
+
+            # Update LicenseLedger for remote_server customer using logs in RemoteRealmAuditlog.
+            remote_server_billing_session = RemoteServerBillingSession(remote_server=server)
+            remote_server_billing_session.sync_license_ledger_if_needed()
 
     remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
     remote_realms = RemoteRealm.objects.filter(server=server)

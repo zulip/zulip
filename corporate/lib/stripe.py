@@ -3681,7 +3681,29 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     def sync_license_ledger_if_needed(self) -> None:
-        pass
+        last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
+        if last_ledger is None:
+            return
+
+        # New audit logs since last_ledger for the plan was created.
+        new_audit_logs = (
+            RemoteRealmAuditLog.objects.filter(
+                server=self.remote_server,
+                event_time__gt=last_ledger.event_time,
+                event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
+            )
+            .exclude(extra_data={})
+            .order_by("event_time")
+        )
+
+        current_plan = last_ledger.plan
+        for audit_log in new_audit_logs:
+            end_of_cycle_plan = self.update_license_ledger_for_automanaged_plan(
+                current_plan, audit_log.event_time
+            )
+            if end_of_cycle_plan is None:
+                return
+            current_plan = end_of_cycle_plan
 
 
 def stripe_customer_has_credit_card_as_default_payment_method(
