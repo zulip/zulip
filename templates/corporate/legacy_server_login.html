@@ -27,17 +27,19 @@
                             </div>
                         </div>
                         <div class="input-box server-login-form-field">
-                            <label for="username" class="inline-block label-title">
+                            <label for="server-org-id" class="inline-block label-title">
                                 server_org_id
                                 <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html" target="_blank">
                                     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                                 </a>
                             </label>
-                            <input id="username" name="server_org_id" class="required" type="text"/>
+                            <input id="server-org-id" name="server_org_id" class="required" type="text"/>
+                            <div class="alert alert-danger server-login-form-field-error server_org_id-error"></div>
                         </div>
                         <div class="input-box server-login-form-field">
                             <label for="password" class="inline-block label-title">server_org_key</label>
                             <input id="password" name="server_org_secret" class="required" type="password"/>
+                            <div class="alert alert-danger server-login-form-field-error server_org_secret-error"></div>
                         </div>
                         <div id="server-login-page-button-container">
                             <button type="submit" id="server-login-button" class="stripe-button-el invoice-button">
@@ -53,3 +55,4 @@
 </div>
 
 {% endblock %}
+
