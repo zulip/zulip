@@ -2610,6 +2610,25 @@ class BillingSession(ABC):
             extra_data=legacy_plan_params,
         )
 
+    def get_last_ledger_for_automanaged_plan_if_exists(
+        self,
+    ) -> Optional[LicenseLedger]:  # nocoverage
+        customer = self.get_customer()
+        if customer is None:
+            return None
+        plan = get_current_plan_by_customer(customer)
+        if plan is None:
+            return None
+        if not plan.automanage_licenses:
+            return None
+
+        # It's an invariant that any current plan have at least an
+        # initial ledger entry.
+        last_ledger = LicenseLedger.objects.filter(plan=plan).order_by("id").last()
+        assert last_ledger is not None
+
+        return last_ledger
+
 
 class RealmBillingSession(BillingSession):
     def __init__(
@@ -3271,19 +3290,9 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         # customer's current plan at some point after
         # last_ledger.event_time but before the event times for the
         # audit logs we will be processing.
-        customer = self.get_customer()
-        if customer is None:
+        last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
+        if last_ledger is None:
             return
-        plan = get_current_plan_by_customer(customer)
-        if plan is None:
-            return
-        if not plan.automanage_licenses:
-            return
-
-        # It's an invariant that any current plan have at least an
-        # initial ledger entry.
-        last_ledger = LicenseLedger.objects.filter(plan=plan).order_by("id").last()
-        assert last_ledger is not None
 
         # New audit logs since last_ledger for the plan was created.
         new_audit_logs = (
@@ -3296,10 +3305,14 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             .order_by("event_time")
         )
 
+        current_plan = last_ledger.plan
         for audit_log in new_audit_logs:
-            plan = self.update_license_ledger_for_automanaged_plan(plan, audit_log.event_time)
-            if plan is None:
+            end_of_cycle_plan = self.update_license_ledger_for_automanaged_plan(
+                current_plan, audit_log.event_time
+            )
+            if end_of_cycle_plan is None:
                 return
+            current_plan = end_of_cycle_plan
 
     def get_push_service_validity_dict(self) -> RemoteRealmDictValue:
         customer = self.get_customer()
