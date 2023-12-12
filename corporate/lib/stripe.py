@@ -310,28 +310,6 @@ def next_invoice_date(plan: CustomerPlan) -> Optional[datetime]:
     return dt
 
 
-def renewal_amount(
-    plan: CustomerPlan, event_time: datetime, last_ledger_entry: Optional[LicenseLedger] = None
-) -> int:  # nocoverage: TODO
-    if plan.fixed_price is not None:
-        return plan.fixed_price
-    new_plan = None
-    if last_ledger_entry is None:
-        realm = plan.customer.realm
-        billing_session = RealmBillingSession(user=None, realm=realm)
-        new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-            plan, event_time
-        )
-    if last_ledger_entry is None:
-        return 0
-    if last_ledger_entry.licenses_at_next_renewal is None:
-        return 0
-    if new_plan is not None:
-        plan = new_plan
-    assert plan.price_per_license is not None  # for mypy
-    return plan.price_per_license * last_ledger_entry.licenses_at_next_renewal
-
-
 def get_amount_to_credit_for_plan_tier_change(
     current_plan: CustomerPlan, plan_change_date: datetime
 ) -> int:
@@ -1683,6 +1661,26 @@ class BillingSession(ABC):
             ).first()
         return None
 
+    def get_customer_plan_renewal_amount(
+        self,
+        plan: CustomerPlan,
+        event_time: datetime,
+        last_ledger_entry: Optional[LicenseLedger] = None,
+    ) -> int:
+        if plan.fixed_price is not None:
+            return plan.fixed_price
+        new_plan = None
+        if last_ledger_entry is None:
+            new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, event_time)
+        if last_ledger_entry is None:
+            return 0  # nocoverage
+        if last_ledger_entry.licenses_at_next_renewal is None:
+            return 0  # nocoverage
+        if new_plan is not None:
+            plan = new_plan  # nocoverage
+        assert plan.price_per_license is not None  # for mypy
+        return plan.price_per_license * last_ledger_entry.licenses_at_next_renewal
+
     def get_billing_context_from_plan(
         self,
         customer: Customer,
@@ -1732,7 +1730,7 @@ class BillingSession(ABC):
             renewal_cents = monthly_price_per_license * licenses_at_next_renewal
             price_per_license = format_money(monthly_price_per_license)
         else:
-            renewal_cents = renewal_amount(plan, now, last_ledger_entry)
+            renewal_cents = self.get_customer_plan_renewal_amount(plan, now, last_ledger_entry)
 
             if plan.price_per_license is None:
                 price_per_license = ""
