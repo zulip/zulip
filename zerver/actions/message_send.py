@@ -150,6 +150,18 @@ def create_mirror_user_if_needed(
         except IntegrityError:
             return get_user_by_delivery_email(email, realm)
 
+def check_send_message_backend(request: SendMessageRequest) -> None:
+    # Perform additional checks or validations here based on your requirements.
+    # For example, you might want to check if the user has the necessary permissions.
+
+    # Call the main check_send_message function to handle the basic checks.
+    check_send_message(
+        request.user_profile,
+        request.type,
+        [request.recipient_id],
+        request.subject,
+        request.content,
+    )
 
 def render_incoming_message(
     message: Message,

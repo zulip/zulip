@@ -43,7 +43,19 @@ from zerver.lib.validator import (
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.views.user_settings import check_settings_values
+from zerver.lib.events import do_update_user_welcome_bot
 
+
+# Assuming you have a `realm_settings.py` file
+from zerver.models import UserProfile, Realm
+
+def update_custom_welcome_message(realm: Realm, checkbox_state: bool, message_text: str, acting_user: UserProfile) -> None:
+    # Update the realm setting for custom welcome message
+    update_realm(realm, 'add_custom_welcome_message_for_new_users', checkbox_state, acting_user)
+
+    if checkbox_state:
+        # If the checkbox is checked, update the welcome bot's message text
+        do_update_user_welcome_bot(acting_user, message_text)
 
 def parse_jitsi_server_url(
     value: str, special_values_map: Mapping[str, Optional[str]]

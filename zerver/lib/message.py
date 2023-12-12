@@ -80,7 +80,7 @@ from zerver.models import (
     get_usermessage_by_message_id,
     query_for_ids,
 )
-
+from zerver.actions.message_send import check_send_message_backend
 
 class MessageDetailsDict(TypedDict, total=False):
     type: str
@@ -352,6 +352,22 @@ def save_message_rendered_content(message: Message, content: str) -> str:
     message.save_rendered_content()
     return rendered_content
 
+def check_send_message(
+    user_profile: UserProfile,
+    message_type: str,
+    message_recipient_user_ids: List[int],
+    subject: str,
+    content: str,
+) -> None:
+    request = SendMessageRequest(
+        user_profile=user_profile,
+        type=message_type,
+        recipient_id=message_recipient_user_ids[0],
+        subject=subject,
+        content=content,
+    )
+
+    check_send_message_backend(request)
 
 class MessageDict:
     """MessageDict is the core class responsible for marshalling Message

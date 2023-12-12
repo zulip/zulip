@@ -2,6 +2,8 @@ import logging
 from email.headerregistry import Address
 from typing import Any, Dict, Literal, Optional, Tuple, Union
 
+from zerver.lib.message import check_send_message
+
 from django.conf import settings
 from django.db import transaction
 from django.db.models import QuerySet
@@ -39,6 +41,8 @@ from zerver.models import (
     get_realm,
 )
 from zerver.tornado.django_api import send_event, send_event_on_commit
+from zerver.lib.send_email import send_custom_email
+from zerver.models import UserProfile, get_realm
 
 
 if settings.BILLING_ENABLED:
@@ -623,6 +627,20 @@ def update_custom_welcome_message(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def send_custom_welcome_message(
+    user_id: int,
+    message_text: str,
+    acting_user: Optional[UserProfile] = None,
+) -> None:
+    # Get the user to send the welcome message to
+    target_user = UserProfile.objects.get(id=user_id)
+
+    # Check if acting_user has the permission to send messages on behalf of the welcome bot
+    if acting_user is not None:
+        check_send_message(acting_user, acting_user.realm, 'private')
+
+    # Send the custom welcome message
+    send_custom_email(target_user, acting_user, message_text)
 
 def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     obj = RealmReactivationStatus.objects.create(realm=realm)

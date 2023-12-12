@@ -1,6 +1,7 @@
 import os
 from typing import List, Union
 
+from zerver.views.realm import update_custom_welcome_message
 from django.conf import settings
 from django.conf.urls import include
 from django.conf.urls.i18n import i18n_patterns
@@ -634,6 +635,9 @@ urls += [
     path("json/", include(v1_api_and_json_patterns)),
 ]
 
+urlpatterns = [
+    path("json/realm/update_custom_welcome_message", update_custom_welcome_message),
+]
 # user_uploads -> zerver.views.upload.serve_file_backend
 #
 # This URL is an exception to the URL naming schemes for endpoints. It
