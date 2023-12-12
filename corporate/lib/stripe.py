@@ -1779,7 +1779,11 @@ class BillingSession(ABC):
     ) -> Tuple[Optional[str], Optional[UpgradePageContext]]:
         customer = self.get_customer()
 
-        if self.is_sponsored_or_pending(customer):
+        # Allow users to upgrade to business regardless of current sponsorship status.
+        if (
+            self.is_sponsored_or_pending(customer)
+            and initial_upgrade_request.tier != CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+        ):
             return f"{self.billing_session_url}/sponsorship", None
 
         remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
