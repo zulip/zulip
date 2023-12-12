@@ -947,6 +947,36 @@ export function register_save_discard_widget_handlers(
     });
 }
 
+export async function sendCustomWelcomeMessage(user_id, message_text) {
+    const params = {
+        user_id,
+        message_text,
+    };
+    await channel.post({
+        url: "/json/realm/update_custom_welcome_message",
+        data: params,
+        success() {
+            // Handle success, e.g., show a success message
+        },
+        error(xhr) {
+            // Handle error, e.g., show an error message
+            ui_report.error(
+                $t({defaultMessage: "Failed to send custom welcome message"}),
+                xhr,
+            );
+        },
+    });
+}
+
+$("#organization-settings")
+    .find("button#id_submit_welcome_messages_button")
+    .on("click", async () => {
+        const user_id = getCurrentUserId(); // Get the user ID
+        const message_text = $("#id_welcome_bot_custom_message").val();
+        await sendCustomWelcomeMessage(user_id, message_text);
+    });
+
+
 export function build_page() {
     meta.loaded = true;
 
@@ -985,6 +1015,7 @@ export function build_page() {
     const $customWelcomeMessageLabel = $('<label for="custom-welcome-message-checkbox">Allow custom welcome bot message</label>');
 
     const $customMessageTextInput = $('<input type="text" id="custom-welcome-message-text" placeholder="Custom Welcome Message">');
+
 
     // Attach the input to the checkbox change event
     $customWelcomeMessageCheckbox.change(function () {
