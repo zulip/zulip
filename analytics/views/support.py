@@ -481,7 +481,9 @@ def remote_servers_support(
     remote_realms: Dict[int, List[RemoteRealm]] = {}
     for remote_server in remote_servers:
         # Get remote realms attached to remote server
-        remote_realms_for_server = list(remote_server.remoterealm_set.all())
+        remote_realms_for_server = list(
+            remote_server.remoterealm_set.exclude(is_system_bot_realm=True)
+        )
         remote_realms[remote_server.id] = remote_realms_for_server
         # Get plan data for remote realms
         for remote_realm in remote_realms[remote_server.id]:
