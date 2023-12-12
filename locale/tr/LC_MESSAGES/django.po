@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-09 01:45+0000\n"
+"POT-Creation-Date: 2023-12-12 17:56+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: xe1st, 2023\n"
 "Language-Team: Turkish (http://app.transifex.com/zulip/zulip/language/tr/)\n"
@@ -72,7 +72,7 @@ msgstr "Başlangıç zamanı bitiş zamanında sonra. Başlangıç: {start}, Bit
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Çözümleme verisi bulunmamaktadır. Lütfen sunucu yöneticinizle temasa geçiniz."
 
-#: analytics/views/support.py:182 analytics/views/support.py:419
+#: analytics/views/support.py:183 analytics/views/support.py:422
 #: zerver/views/streams.py:291 zerver/views/streams.py:295
 #: zerver/views/streams.py:303
 msgid "Invalid parameters"
@@ -134,134 +134,133 @@ msgid ""
 "{num_invites} users."
 msgstr "Organizasyonunun  {num_invites} kişi davet etmesi için gereken yeterli sayıda Zulip lisansı yoktur."
 
-#: corporate/lib/remote_billing_util.py:126
-#: corporate/lib/remote_billing_util.py:149
+#: corporate/lib/remote_billing_util.py:133
+#: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
 msgstr ""
 
-#: corporate/lib/remote_billing_util.py:146
-#: corporate/views/remote_billing_page.py:237
+#: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
 msgstr ""
 
-#: corporate/lib/stripe.py:197
+#: corporate/lib/stripe.py:200
 #, python-brace-format
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
 
-#: corporate/lib/stripe.py:203
+#: corporate/lib/stripe.py:206
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
 msgstr ""
 
-#: corporate/lib/stripe.py:365
+#: corporate/lib/stripe.py:370
 msgid "No payment method on file."
 msgstr ""
 
-#: corporate/lib/stripe.py:373
+#: corporate/lib/stripe.py:378
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr "{brand} {last4} içinde sonra eriyor"
 
-#: corporate/lib/stripe.py:381
+#: corporate/lib/stripe.py:386
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr "Bilinmeyen ödeme yöntemi. Lütfen {email} ile iletişime geçiniz"
 
-#: corporate/lib/stripe.py:397
+#: corporate/lib/stripe.py:402
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "Bazı şeyler yanlış gitti. Lütfen {email} ile iletişime geçiniz"
 
-#: corporate/lib/stripe.py:398
+#: corporate/lib/stripe.py:403
 msgid "Something went wrong. Please reload the page."
 msgstr "Birşeyler yanlış gitti. Lütfen sayfayı yeniden yükleyiniz."
 
-#: corporate/lib/stripe.py:481
+#: corporate/lib/stripe.py:486
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "Birşeyler yanlış gitti. Lütfen birkaç saniye sonra bekleyin ve yeniden deneyiniz."
 
-#: corporate/lib/stripe.py:1167
+#: corporate/lib/stripe.py:1204
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
 
-#: corporate/lib/stripe.py:1188
+#: corporate/lib/stripe.py:1225
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:1874
+#: corporate/lib/stripe.py:1954
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
 msgstr "Plan yükseltilemedi. Plan tarihi geçmiş ve yeni bir plan ile değişmiştir."
 
-#: corporate/lib/stripe.py:1879
+#: corporate/lib/stripe.py:1959
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Plan yükseltilemedi. Plan bitmiştir."
 
-#: corporate/lib/stripe.py:1934
+#: corporate/lib/stripe.py:2014
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:1939 corporate/lib/stripe.py:1966
+#: corporate/lib/stripe.py:2019 corporate/lib/stripe.py:2047
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr "Lisanslar manuel olarak yükseltilemedi. Planınız otomatik lisans yönetimindedir."
 
-#: corporate/lib/stripe.py:1945
+#: corporate/lib/stripe.py:2025
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr "Mevcut fatura döneminde planınız zaten {licenses} lisanslarında bulunuyor."
 
-#: corporate/lib/stripe.py:1950
+#: corporate/lib/stripe.py:2030
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "Mevcut fatura döneminde lisansları azaltamazsınız."
 
-#: corporate/lib/stripe.py:1975
+#: corporate/lib/stripe.py:2056
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:1981
+#: corporate/lib/stripe.py:2062
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr "Planınızın {licenses_at_next_renewal} lisanslarıyla yenilenmesi zaten planlandı."
 
-#: corporate/lib/stripe.py:1995
+#: corporate/lib/stripe.py:2077
 msgid "Nothing to change."
 msgstr "Değişecek bir şey yok."
 
-#: corporate/lib/stripe.py:2200
+#: corporate/lib/stripe.py:2282
 msgid "No customer for this organization!"
 msgstr "Bu organizasyon için müşteri yok!"
 
-#: corporate/lib/stripe.py:2209
+#: corporate/lib/stripe.py:2291
 msgid "Session not found"
 msgstr "Oturum bulunamadı"
 
-#: corporate/lib/stripe.py:2215 zerver/decorator.py:197
+#: corporate/lib/stripe.py:2297 zerver/decorator.py:197
 msgid "Must be a billing administrator or an organization owner"
 msgstr "Ödeme yöneticisi veya organizasyon sahibi olmak zorunda"
 
-#: corporate/lib/stripe.py:2226
+#: corporate/lib/stripe.py:2308
 msgid "Payment intent not found"
 msgstr "Ödeme amacı bulunamadı"
 
-#: corporate/lib/stripe.py:2229
+#: corporate/lib/stripe.py:2311
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:2650
+#: corporate/lib/stripe.py:2817
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
@@ -269,35 +268,38 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:110
+#: corporate/views/remote_billing_page.py:125
 msgid "Billing access token expired."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:112
+#: corporate/views/remote_billing_page.py:127
 msgid "Invalid billing access token."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:176
+#: corporate/views/remote_billing_page.py:242
+msgid "User account doesn't exist yet."
+msgstr ""
+
+#: corporate/views/remote_billing_page.py:247
+#: corporate/views/remote_billing_page.py:612
 msgid "You must accept the Terms of Service to proceed."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:218 zerver/lib/exceptions.py:462
-msgid "User not authenticated"
+#: corporate/views/remote_billing_page.py:447
+msgid ""
+"This zulip_org_id is not registered with Zulip's billing management system."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:324
-msgid "Did not find a server registration for this server_org_id."
+#: corporate/views/remote_billing_page.py:454
+msgid "Invalid zulip_org_key for this zulip_org_id."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:329
-msgid "Invalid server_org_secret."
-msgstr ""
-
-#: corporate/views/remote_billing_page.py:333
+#: corporate/views/remote_billing_page.py:458
 msgid "Your server registration has been deactivated."
 msgstr ""
 
 #: templates/404.html:4
+#: templates/zilencer/remote_realm_server_mismatch_error.html:4
 msgid "Error"
 msgstr "Hata"
 
@@ -565,35 +567,34 @@ msgid ""
 msgstr "Bağlantıyı tarayıcınıza doğru şekilde kopyaladığınızdan emin olun. Eğer hala bu sayfayla karşılaşıyorsanız, muhtemelen bizim hatamızdır. Üzgünüz."
 
 #: templates/corporate/billing.html:5
-#: templates/corporate/remote_billing.html:5
 msgid "Billing"
 msgstr "Faturalandırma"
 
-#: templates/corporate/billing.html:298 templates/corporate/billing.html:324
-#: templates/corporate/billing.html:353 templates/corporate/billing.html:382
-#: templates/corporate/billing.html:408
+#: templates/corporate/billing.html:301 templates/corporate/billing.html:327
+#: templates/corporate/billing.html:356 templates/corporate/billing.html:385
+#: templates/corporate/billing.html:411
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 msgid "Close modal"
 msgstr "Modali Kapat"
 
-#: templates/corporate/billing.html:309 templates/corporate/billing.html:338
-#: templates/corporate/billing.html:367
+#: templates/corporate/billing.html:312 templates/corporate/billing.html:341
+#: templates/corporate/billing.html:370
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr "İptal"
 
-#: templates/corporate/billing.html:311 templates/corporate/billing.html:395
-#: templates/corporate/billing.html:418
+#: templates/corporate/billing.html:314 templates/corporate/billing.html:398
+#: templates/corporate/billing.html:421
 msgid "Downgrade"
 msgstr ""
 
-#: templates/corporate/billing.html:340 templates/corporate/billing.html:369
+#: templates/corporate/billing.html:343 templates/corporate/billing.html:372
 #: templates/zerver/change_email_address_visibility_modal.html:28
 msgid "Confirm"
 msgstr "Onayla"
 
-#: templates/corporate/billing.html:393 templates/corporate/billing.html:416
+#: templates/corporate/billing.html:396 templates/corporate/billing.html:419
 msgid "Never mind"
 msgstr ""
 
@@ -692,19 +693,6 @@ msgstr "Eğitim fiyatlandırması"
 msgid "View pricing"
 msgstr "Fiyatlandırmayı görüntüle"
 
-#: templates/corporate/remote_realm_billing_finalize_login_confirmation.html:5
-msgid "Billing login confirmation"
-msgstr ""
-
-#: templates/corporate/remote_realm_billing_finalize_login_confirmation.html:26
-#: templates/zerver/accounts_accept_terms.html:54
-#: templates/zerver/register.html:213
-#, python-format
-msgid ""
-"I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
-"target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "<a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Kullanım Şartları</a>'nı kabul ediyorum."
-
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
 msgstr "İş için Zulip"
@@ -765,7 +753,7 @@ msgstr "Şimdi Zulip'i deneyin"
 msgid "Upgrade"
 msgstr ""
 
-#: templates/corporate/upgrade.html:186
+#: templates/corporate/upgrade.html:199
 msgid "Convert demo organization before upgrading."
 msgstr ""
 
@@ -802,6 +790,14 @@ msgstr "Zulip'e hoşgeldiniz"
 msgid "Email"
 msgstr "E-posta"
 
+#: templates/zerver/accounts_accept_terms.html:54
+#: templates/zerver/register.html:213
+#, python-format
+msgid ""
+"I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
+msgstr "<a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Kullanım Şartları</a>'nı kabul ediyorum."
+
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
 msgstr "Devam et"
@@ -835,7 +831,12 @@ msgstr "%(identity_provider)s ile kayıt oluştur"
 msgid "Already have an account?"
 msgstr "Zaten bir hesabınız var mı?"
 
-#: templates/zerver/accounts_home.html:92 templates/zerver/footer.html:17
+#: templates/zerver/accounts_home.html:92
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:21
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:6
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:18
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:4
+#: templates/zerver/footer.html:17
 #: templates/zerver/log_into_subdomain_token_invalid.html:13
 #: templates/zerver/login.html:5 templates/zerver/login.html:128
 #: templates/zerver/portico-header.html:33
@@ -2241,6 +2242,82 @@ msgstr "Zulip organizasyonunu yeniden aktive et"
 msgid "Click the link below to reactivate your organization."
 msgstr "Aşağıdaki linke tıklayarak organizasyonu yeniden aktif duruma getir."
 
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:9
+#, python-format
+msgid ""
+"Either you, or someone on your behalf, has requested a log in link to manage"
+" the Zulip plan for <b>%(remote_server_hostname)s</b>."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:12
+msgid ""
+"\n"
+"    Click the button below to log in.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:16
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:13
+#, python-format
+msgid ""
+"\n"
+"    This link will expire in %(validity_in_hours)s hours.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:24
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:21
+#, python-format
+msgid ""
+"Questions? <a href=\"%(billing_help_link)s\">Learn more</a> or contact "
+"%(billing_contact_email)s."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.subject.txt:1
+#: templates/zerver/emails/remote_realm_billing_confirm_login.subject.txt:1
+msgid "Log in to Zulip plan management"
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:1
+#, python-format
+msgid ""
+"Either you, or someone on your behalf, has requested a log in link to manage"
+" the Zulip plan for %(remote_server_hostname)s."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
+msgid "Click the link below to log in."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:1
+#, python-format
+msgid "This link will expire in %(validity_in_hours)s hours."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:8
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:6
+#, python-format
+msgid ""
+"Questions? Learn more at %(billing_help_link)s or contact "
+"%(billing_contact_email)s."
+msgstr ""
+
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:9
+#, python-format
+msgid ""
+"\n"
+"    Click the button below to log in to Zulip plan management for <b>%(remote_realm_host)s</b>.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:1
+#, python-format
+msgid ""
+"Click the link below to log in to Zulip plan management for "
+"%(remote_realm_host)s."
+msgstr ""
+
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:9
 #, python-format
 msgid ""
@@ -2304,7 +2381,7 @@ msgid "Email address"
 msgstr "E-posta adresi"
 
 #: templates/zerver/find_account.html:53
-#: templates/zerver/portico-header.html:49
+#: templates/zerver/portico-header.html:48
 msgid "Find accounts"
 msgstr "Hesapları bul"
 
@@ -2336,7 +2413,7 @@ msgstr "Entegrasyonlar"
 msgid "Desktop & mobile apps"
 msgstr "Masa üstü & mobil uygulamalar"
 
-#: templates/zerver/footer.html:16 templates/zerver/portico-header.html:50
+#: templates/zerver/footer.html:16 templates/zerver/portico-header.html:49
 msgid "New organization"
 msgstr "Yeni organizasyon"
 
@@ -3048,21 +3125,37 @@ msgid ""
 "                        "
 msgstr "\n<a href=\"%(apps_page_link)s\">Zulip masaüstü uygulamasını da</a> kullanabilirsiniz."
 
-#: zerver/actions/create_user.py:97
+#: templates/zilencer/remote_realm_server_mismatch_error.html:16
+msgid "Unexpected Zulip server registration"
+msgstr ""
+
+#: templates/zilencer/remote_realm_server_mismatch_error.html:18
+#, python-format
+msgid ""
+"\n"
+"                        Your Zulip organization is registered as associated with a\n"
+"                        different Zulip server installation.\n"
+"\n"
+"                        Please <a href=\"mailto:%(support_email)s\">contact Zulip support</a>\n"
+"                        for assistance in resolving this issue.\n"
+"                        "
+msgstr ""
+
+#: zerver/actions/create_user.py:98
 msgid "signups"
 msgstr "kaydolmalar"
 
-#: zerver/actions/create_user.py:110
+#: zerver/actions/create_user.py:111
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} Zulip'e giriş yaptı. (toplam: {user_count})"
 
-#: zerver/actions/create_user.py:260
+#: zerver/actions/create_user.py:261
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} Zulip'e katılma davetinizi kabul etti!"
 
-#: zerver/actions/create_user.py:640
+#: zerver/actions/create_user.py:643
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
@@ -3239,11 +3332,11 @@ msgstr "İleti düzenleme için belirlenen zaman limiti geçmiştir."
 msgid "The time limit for editing this message's topic has passed."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1307
+#: zerver/actions/message_edit.py:1308
 msgid "You don't have permission to move this message"
 msgstr "Bu iletiyi taşımak için yetkiniz yok"
 
-#: zerver/actions/message_edit.py:1322
+#: zerver/actions/message_edit.py:1323
 msgid "The time limit for editing this message's stream has passed"
 msgstr ""
 
@@ -3262,70 +3355,70 @@ msgstr ""
 msgid "Invalid message flag operation: '{operation}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:337 zerver/lib/message.py:806
-#: zerver/lib/message.py:812
+#: zerver/actions/message_flags.py:337 zerver/lib/message.py:849
+#: zerver/lib/message.py:855
 msgid "Invalid message(s)"
 msgstr "Geçersiz ileti(ler)"
 
-#: zerver/actions/message_send.py:172
+#: zerver/actions/message_send.py:177
 msgid "Unable to render message"
 msgstr "İleti gönderime hazırlanamadı"
 
-#: zerver/actions/message_send.py:1214
+#: zerver/actions/message_send.py:1285
 msgid "Expected exactly one stream"
 msgstr "Sadece bir kanal bekleniyor"
 
-#: zerver/actions/message_send.py:1225
+#: zerver/actions/message_send.py:1296
 msgid "Invalid data type for stream"
 msgstr "Kanal için geçersiz veri tipi"
 
-#: zerver/actions/message_send.py:1241 zerver/actions/message_send.py:1251
+#: zerver/actions/message_send.py:1312 zerver/actions/message_send.py:1322
 #: zerver/lib/recipient_parsing.py:25
 msgid "Invalid data type for recipients"
 msgstr "Alıcılar için geçersiz veri tipi"
 
-#: zerver/actions/message_send.py:1259 zerver/actions/message_send.py:1267
+#: zerver/actions/message_send.py:1330 zerver/actions/message_send.py:1338
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Alıcılar listesi e-posta veya kullanıcı ID içerebilir ama ikisi birden olamaz."
 
-#: zerver/actions/message_send.py:1412
+#: zerver/actions/message_send.py:1483
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "{bot_identity} adlı botunuz stream ID {stream_id} nolu kanala ileti göndermeye çalıştı, fakat bu numara ile bir kanal bulunmamakta."
 
-#: zerver/actions/message_send.py:1423
+#: zerver/actions/message_send.py:1494
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "{bot_identity} adlı botunuz {stream_name} adlı kanala ileti göndermeye çalıştı, fakat böyle bir kanal bulunmamakta. Oluşturmak için [buraya]({new_stream_link}) tıklayınız."
 
-#: zerver/actions/message_send.py:1435
+#: zerver/actions/message_send.py:1506
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "Your bot {bot_identity} adlı botunuz {stream_name} adlı kanala ileti göndermeye çalıştı. Bu kanal mevcut fakat hiç abonesi bulunmamakta."
 
-#: zerver/actions/message_send.py:1482
+#: zerver/actions/message_send.py:1553
 msgid "Direct messages are disabled in this organization."
 msgstr ""
 
-#: zerver/actions/message_send.py:1497
+#: zerver/actions/message_send.py:1568
 msgid "You do not have permission to access some of the recipients."
 msgstr ""
 
-#: zerver/actions/message_send.py:1628
+#: zerver/actions/message_send.py:1699
 msgid "Topics are required in this organization"
 msgstr ""
 
-#: zerver/actions/message_send.py:1690
+#: zerver/actions/message_send.py:1761
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Eklentiler: API programıcısı yanlış JSON içeriği gönderdi"
 
-#: zerver/actions/message_send.py:1696
+#: zerver/actions/message_send.py:1767
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Widgetlar: {error_msg}"
@@ -3782,115 +3875,119 @@ msgstr "Emoji adı eksik"
 msgid "Could not allocate event queue"
 msgstr "Olay sırası atanamadı"
 
-#: zerver/lib/exceptions.py:148
+#: zerver/lib/exceptions.py:149
 msgid "Not logged in: API authentication or user session required"
 msgstr "Oturum açık değil: API kimlik doğrulaması veya kullanıcı oturumu gerekli"
 
-#: zerver/lib/exceptions.py:175
+#: zerver/lib/exceptions.py:176
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
 msgstr "'{stream}' kanalı  mevcut değil"
 
-#: zerver/lib/exceptions.py:188
+#: zerver/lib/exceptions.py:189
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
 msgstr "'{stream_id}' kimlik numaralı kanal bulunmamaktadır"
 
-#: zerver/lib/exceptions.py:197
+#: zerver/lib/exceptions.py:198
 msgid "organization owner"
 msgstr "organizasyon sahibi"
 
-#: zerver/lib/exceptions.py:197
+#: zerver/lib/exceptions.py:198
 msgid "user"
 msgstr "kullanıcı"
 
-#: zerver/lib/exceptions.py:202
+#: zerver/lib/exceptions.py:203
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr "Tek {entity} devre dışı bırakılamaz"
 
-#: zerver/lib/exceptions.py:215
+#: zerver/lib/exceptions.py:216
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
 msgstr "Geçersiz Markdown içerme durumu: {include_statement}"
 
-#: zerver/lib/exceptions.py:228
+#: zerver/lib/exceptions.py:229
 msgid "API usage exceeded rate limit"
 msgstr "API kullanım sınırı aşıldı"
 
-#: zerver/lib/exceptions.py:254 zerver/lib/request.py:445
+#: zerver/lib/exceptions.py:255 zerver/lib/request.py:445
 #: zerver/lib/typed_endpoint.py:361 zerver/lib/validator.py:779
 msgid "Malformed JSON"
 msgstr "Hatalı biçimlendirilmiş JSON"
 
-#: zerver/lib/exceptions.py:266
+#: zerver/lib/exceptions.py:267
 msgid "Must be an organization member"
 msgstr "Organizasyon üyesi olmak zorunda"
 
-#: zerver/lib/exceptions.py:278 zerver/views/invite.py:42
+#: zerver/lib/exceptions.py:279 zerver/views/invite.py:42
 msgid "Must be an organization administrator"
 msgstr "Organizasyon yöneticisi olmalı"
 
-#: zerver/lib/exceptions.py:290
+#: zerver/lib/exceptions.py:291
 msgid "Must be an organization owner"
 msgstr "Organizasyon sahibi olmalı"
 
-#: zerver/lib/exceptions.py:304
+#: zerver/lib/exceptions.py:305
 msgid "Your username or password is incorrect"
 msgstr "Kullanıcı adınız veya parolanız hatalı"
 
-#: zerver/lib/exceptions.py:313
+#: zerver/lib/exceptions.py:314
 msgid "Account is deactivated"
 msgstr "Hesap devre dışı bırakıldı"
 
-#: zerver/lib/exceptions.py:322
+#: zerver/lib/exceptions.py:323
 msgid "This organization has been deactivated"
 msgstr "Bu organizasyon devre dışıdır"
 
-#: zerver/lib/exceptions.py:332
+#: zerver/lib/exceptions.py:333
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:342
+#: zerver/lib/exceptions.py:343
 msgid "Password authentication is disabled in this organization"
 msgstr "Bu organizasyonda parola doğrulaması devre dışı bırakıldı"
 
-#: zerver/lib/exceptions.py:351
+#: zerver/lib/exceptions.py:352
 msgid "Your password has been disabled and needs to be reset"
 msgstr "Parolanız devre dışı bırakıldı ve sıfırlanması gerekiyor"
 
-#: zerver/lib/exceptions.py:368
+#: zerver/lib/exceptions.py:369
 msgid "Invalid API key"
 msgstr "Geçersiz API anahtarı"
 
-#: zerver/lib/exceptions.py:375
+#: zerver/lib/exceptions.py:376
 msgid "Malformed API key"
 msgstr "Hatalı API anahtarı"
 
-#: zerver/lib/exceptions.py:415
+#: zerver/lib/exceptions.py:416
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook; ignoring"
 msgstr ""
 
-#: zerver/lib/exceptions.py:435
+#: zerver/lib/exceptions.py:436
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
 msgstr ""
 
-#: zerver/lib/exceptions.py:475 zerver/views/auth.py:743
+#: zerver/lib/exceptions.py:463
+msgid "User not authenticated"
+msgstr ""
+
+#: zerver/lib/exceptions.py:476 zerver/views/auth.py:743
 #: zerver/views/auth.py:1078 zerver/views/auth.py:1142
 msgid "Invalid subdomain"
 msgstr "Geçersiz alt alan adı"
 
-#: zerver/lib/exceptions.py:516
+#: zerver/lib/exceptions.py:517
 msgid "Access denied"
 msgstr "Erişim engellendi"
 
-#: zerver/lib/exceptions.py:556
+#: zerver/lib/exceptions.py:557
 #, python-brace-format
 msgid ""
 "You only have permission to move the "
@@ -3898,24 +3995,30 @@ msgid ""
 "messages in this topic."
 msgstr ""
 
-#: zerver/lib/exceptions.py:569
+#: zerver/lib/exceptions.py:570
 msgid "Reaction already exists."
 msgstr "Tepki halihazırda mevcut."
 
-#: zerver/lib/exceptions.py:581
+#: zerver/lib/exceptions.py:582
 msgid "Reaction doesn't exist."
 msgstr "Tepki mevcut değil."
 
-#: zerver/lib/exceptions.py:605
+#: zerver/lib/exceptions.py:607
+msgid ""
+"Your organization is registered to a different Zulip server. Please contact "
+"Zulip support for assistance in resolving this issue."
+msgstr ""
+
+#: zerver/lib/exceptions.py:621
 msgid "Organization not registered"
 msgstr ""
 
-#: zerver/lib/exceptions.py:617
+#: zerver/lib/exceptions.py:633
 msgid ""
 "You do not have permission to use stream wildcard mentions in this stream."
 msgstr ""
 
-#: zerver/lib/exceptions.py:629
+#: zerver/lib/exceptions.py:645
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr ""
@@ -4030,15 +4133,15 @@ msgstr "Üretkenlik"
 msgid "Version control"
 msgstr "Versiyon kontrölü"
 
-#: zerver/lib/message.py:231
+#: zerver/lib/message.py:234
 msgid "Message must not be empty"
 msgstr "İleti boş olmamalıdır"
 
-#: zerver/lib/message.py:233
+#: zerver/lib/message.py:236
 msgid "Message must not contain null bytes"
 msgstr "İleti boş bayt içermemelidir"
 
-#: zerver/lib/message.py:1723
+#: zerver/lib/message.py:1766
 #, python-brace-format
 msgid ""
 "You are not allowed to mention user group '{user_group_name}'. You must be a"
@@ -4254,55 +4357,55 @@ msgstr "Geçersiz JSON cevabı"
 msgid "Invalid response format"
 msgstr "Geçersiz cevap formatı"
 
-#: zerver/lib/push_notifications.py:432
+#: zerver/lib/push_notifications.py:431
 msgid "Invalid GCM option to bouncer: priority {priority!r}"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:442
+#: zerver/lib/push_notifications.py:441
 #, python-brace-format
 msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:690 zilencer/views.py:223
+#: zerver/lib/push_notifications.py:731 zilencer/views.py:233
 msgid "Token does not exist"
 msgstr "Jeton (token) bulunamadı"
 
-#: zerver/lib/push_notifications.py:889
+#: zerver/lib/push_notifications.py:902
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr "Bu organizasyon, mobil push bildirimlerine ileti içeriği eklemeyi devre dışı bıraktı"
 
-#: zerver/lib/push_notifications.py:1002
+#: zerver/lib/push_notifications.py:1015
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name}, @{user_group_name}'dan bahsetti:"
 
-#: zerver/lib/push_notifications.py:1006
+#: zerver/lib/push_notifications.py:1019
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} senden bahsetti:"
 
-#: zerver/lib/push_notifications.py:1013
+#: zerver/lib/push_notifications.py:1026
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} herkese bahsetti:"
 
-#: zerver/lib/push_notifications.py:1422
+#: zerver/lib/push_notifications.py:1436
 msgid "Test notification"
 msgstr "Test bildirimi"
 
-#: zerver/lib/push_notifications.py:1423
+#: zerver/lib/push_notifications.py:1437
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1474
+#: zerver/lib/push_notifications.py:1488
 msgid "Device not recognized"
 msgstr "Cihaz tanımlanamadı"
 
-#: zerver/lib/push_notifications.py:1486
+#: zerver/lib/push_notifications.py:1500
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -4330,7 +4433,7 @@ msgstr "'{email}' Zulip'i artık kullanmıyor."
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
 
-#: zerver/lib/remote_server.py:143
+#: zerver/lib/remote_server.py:185
 #, python-brace-format
 msgid "Push notifications bouncer error: {error}"
 msgstr ""
@@ -4679,7 +4782,7 @@ msgstr "Geçersiz bot türü"
 msgid "Invalid interface type"
 msgstr "Geçersiz arayüz türü"
 
-#: zerver/lib/users.py:217 zerver/models.py:4974
+#: zerver/lib/users.py:217 zerver/models.py:4979
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
@@ -4890,137 +4993,137 @@ msgstr ""
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr ""
 
-#: zerver/models.py:1794
+#: zerver/models.py:1795
 msgid "Admins, moderators, members and guests"
 msgstr "Yöneticiler, moderatörler, üyeler ve misafirler"
 
-#: zerver/models.py:1795
+#: zerver/models.py:1796
 msgid "Admins, moderators and members"
 msgstr "Yöneticiler, moderatörler ve üyeler."
 
-#: zerver/models.py:1796
+#: zerver/models.py:1797
 msgid "Admins and moderators"
 msgstr "Yöneticiler ve moderatörler"
 
-#: zerver/models.py:1797
+#: zerver/models.py:1798
 msgid "Admins only"
 msgstr "Sadece yöneticiler"
 
-#: zerver/models.py:1798
+#: zerver/models.py:1799
 msgid "Nobody"
 msgstr "Hiç kimse"
 
-#: zerver/models.py:1959
+#: zerver/models.py:1961
 msgid "Unknown user"
 msgstr ""
 
-#: zerver/models.py:2115
+#: zerver/models.py:2117
 msgid "Organization owner"
 msgstr "Organizasyon sahibi"
 
-#: zerver/models.py:2116
+#: zerver/models.py:2118
 msgid "Organization administrator"
 msgstr "Organizasyon ymeticisi"
 
-#: zerver/models.py:2117
+#: zerver/models.py:2119
 msgid "Moderator"
 msgstr "Moderatör"
 
-#: zerver/models.py:2118
+#: zerver/models.py:2120
 msgid "Member"
 msgstr "Üye"
 
-#: zerver/models.py:2119
+#: zerver/models.py:2121
 msgid "Guest"
 msgstr "Misafir"
 
-#: zerver/models.py:2707
+#: zerver/models.py:2709
 msgid "Web-public"
 msgstr "Web-public"
 
-#: zerver/models.py:2713
+#: zerver/models.py:2715
 msgid "Public"
 msgstr "Genel"
 
-#: zerver/models.py:2719
+#: zerver/models.py:2721
 msgid "Private, shared history"
 msgstr "Özel, paylaşılan geçmiş"
 
-#: zerver/models.py:2725
+#: zerver/models.py:2727
 msgid "Private, protected history"
 msgstr "Özel, korumalı geçmiş"
 
-#: zerver/models.py:2733
+#: zerver/models.py:2735
 msgid "Public, protected history"
 msgstr ""
 
-#: zerver/models.py:2753
+#: zerver/models.py:2755
 msgid "All stream members can post"
 msgstr "Tüm kalan üyeleri ileti gönderebilir"
 
-#: zerver/models.py:2754
+#: zerver/models.py:2756
 msgid "Only organization administrators can post"
 msgstr "Sadece organizasyon yöneticileri ileti gönderebilir"
 
-#: zerver/models.py:2756
+#: zerver/models.py:2758
 msgid "Only organization administrators and moderators can post"
 msgstr "Yalnızca organizasyon yöneticileri ve moderatörler gönderi yayınlayabilir"
 
-#: zerver/models.py:2759
+#: zerver/models.py:2761
 msgid "Only organization full members can post"
 msgstr "Sadece organizasyon tam üyeleri ileti gönderebilir"
 
-#: zerver/models.py:3446
+#: zerver/models.py:3448
 msgid "Unicode emoji"
 msgstr "Unicode emoji"
 
-#: zerver/models.py:3447
+#: zerver/models.py:3449
 msgid "Custom emoji"
 msgstr "Özel emoji"
 
-#: zerver/models.py:3448
+#: zerver/models.py:3450
 msgid "Zulip extra emoji"
 msgstr "Zulip ekstra emoji"
 
-#: zerver/models.py:4978
+#: zerver/models.py:4983
 #, python-brace-format
 msgid "User with ID {user_id} is deactivated"
 msgstr ""
 
-#: zerver/models.py:4982
+#: zerver/models.py:4987
 #, python-brace-format
 msgid "User with ID {user_id} is a bot"
 msgstr ""
 
-#: zerver/models.py:5022
+#: zerver/models.py:5027
 msgid "List of options"
 msgstr "Seçenekler listesi"
 
-#: zerver/models.py:5025
+#: zerver/models.py:5030
 msgid "Person picker"
 msgstr "Kişi seçicisi"
 
-#: zerver/models.py:5037
+#: zerver/models.py:5042
 msgid "Short text"
 msgstr "Kısa metin"
 
-#: zerver/models.py:5038
+#: zerver/models.py:5043
 msgid "Long text"
 msgstr "Uzun metin"
 
-#: zerver/models.py:5039
+#: zerver/models.py:5044
 msgid "Date picker"
 msgstr "Tarih seçicisi"
 
-#: zerver/models.py:5040
+#: zerver/models.py:5045
 msgid "Link"
 msgstr "Link"
 
-#: zerver/models.py:5043
+#: zerver/models.py:5048
 msgid "External account"
 msgstr "Dış hesap"
 
-#: zerver/models.py:5048
+#: zerver/models.py:5053
 msgid "Pronouns"
 msgstr "Zamiler"
 
@@ -5272,19 +5375,19 @@ msgstr "İstemci, emoji_code veya reaction_type gönderdiğinde emoji_name de g�
 msgid "Invalid status: {status}"
 msgstr ""
 
-#: zerver/views/push_notifications.py:41
+#: zerver/views/push_notifications.py:42
 msgid "Invalid app ID"
 msgstr ""
 
-#: zerver/views/push_notifications.py:47
+#: zerver/views/push_notifications.py:48
 msgid "Empty or invalid length token"
 msgstr "Boş veya geçersiz uzunluk belirteci"
 
-#: zerver/views/push_notifications.py:53
+#: zerver/views/push_notifications.py:54
 msgid "Invalid APNS token"
 msgstr "Geçersiz APNS token"
 
-#: zerver/views/push_notifications.py:168
+#: zerver/views/push_notifications.py:171
 #, python-brace-format
 msgid "Error returned by the bouncer: {result}"
 msgstr ""
@@ -5299,26 +5402,26 @@ msgstr "Aşağıdaki argümanların en az biri gerekli: emoji_name, emoji_code"
 msgid "Read receipts are disabled in this organization."
 msgstr ""
 
-#: zerver/views/realm.py:190
+#: zerver/views/realm.py:189
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr ""
 
-#: zerver/views/realm.py:195
+#: zerver/views/realm.py:194
 msgid "At least one authentication method must be enabled."
 msgstr "En az bir kimlik doğrulama yöntemi etkinleştirilmelidir."
 
-#: zerver/views/realm.py:200
+#: zerver/views/realm.py:199
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr ""
 
-#: zerver/views/realm.py:208
+#: zerver/views/realm.py:207
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr ""
 
-#: zerver/views/realm.py:424
+#: zerver/views/realm.py:420
 msgid "Must be a demo organization."
 msgstr "Demo organizasyon olmalı."
 
@@ -5347,7 +5450,7 @@ msgstr ""
 
 #: zerver/views/realm_emoji.py:48 zerver/views/realm_icon.py:27
 #: zerver/views/realm_logo.py:33 zerver/views/upload.py:319
-#: zerver/views/user_settings.py:416
+#: zerver/views/user_settings.py:419
 #, python-brace-format
 msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
 msgstr ""
@@ -5590,24 +5693,24 @@ msgstr ""
 msgid "Invalid email batching period: {seconds} seconds"
 msgstr ""
 
-#: zerver/views/user_settings.py:329
+#: zerver/views/user_settings.py:332
 msgid "Your Zulip password is managed in LDAP"
 msgstr "Zulip parolan LDAP tarafından yönetilmektedir"
 
-#: zerver/views/user_settings.py:339
+#: zerver/views/user_settings.py:342
 msgid "Wrong password!"
 msgstr "Yanlış parola!"
 
-#: zerver/views/user_settings.py:344
+#: zerver/views/user_settings.py:347
 #, python-brace-format
 msgid "You're making too many attempts! Try again in {seconds} seconds."
 msgstr ""
 
-#: zerver/views/user_settings.py:350
+#: zerver/views/user_settings.py:353
 msgid "New password is too weak!"
 msgstr "Yeni parola zayıf!"
 
-#: zerver/views/user_settings.py:406
+#: zerver/views/user_settings.py:409
 msgid "You must upload exactly one avatar."
 msgstr "Tam olarak bir avatar resmi yüklemelisin."
 
@@ -5805,42 +5908,52 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "Geçerli Zulip sunucusu API anahtarı ile doğrulama yapmalısınız"
 
 #. error
-#: zilencer/views.py:67 zilencer/views.py:69
+#: zilencer/views.py:77 zilencer/views.py:79
 msgid "Invalid UUID"
 msgstr "Geçersiz UUID"
 
 #. error
-#: zilencer/views.py:74
+#: zilencer/views.py:84
 msgid "Invalid token type"
 msgstr "Geçersiz jeton (token) türü"
 
-#: zilencer/views.py:111
+#: zilencer/views.py:121
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:164
+#: zilencer/views.py:174
 msgid "Missing ios_app_id"
 msgstr ""
 
-#: zilencer/views.py:167
+#: zilencer/views.py:177
 msgid "Missing user_id or user_uuid"
 msgstr ""
 
-#: zilencer/views.py:534
+#: zilencer/views.py:602
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:540
+#: zilencer/views.py:605
+msgid "Invalid event type."
+msgstr ""
+
+#: zilencer/views.py:612
 msgid "Data is out of order."
 msgstr "Veri sırası doğru değil"
 
-#: zilencer/views.py:601
+#: zilencer/views.py:674
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:764
+#: zilencer/views.py:893
+msgid ""
+"Failed to migrate customer from server to realms. Please contact support for"
+" assistance."
+msgstr ""
+
+#: zilencer/views.py:940
 msgid "Malformed audit log data"
 msgstr ""
 

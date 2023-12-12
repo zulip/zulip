@@ -41,7 +41,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-09 01:45+0000\n"
+"POT-Creation-Date: 2023-12-12 17:56+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Viktor, 2023\n"
 "Language-Team: German (http://app.transifex.com/zulip/zulip/language/de/)\n"
@@ -95,7 +95,7 @@ msgstr "Die Startzeit ist später als die Endzeit. Start: {start}, Ende: {end}"
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Keine Analysedaten verfügbar. Bitte kontaktiere den:die Server-Administrator:in."
 
-#: analytics/views/support.py:182 analytics/views/support.py:419
+#: analytics/views/support.py:183 analytics/views/support.py:422
 #: zerver/views/streams.py:291 zerver/views/streams.py:295
 #: zerver/views/streams.py:303
 msgid "Invalid parameters"
@@ -157,134 +157,133 @@ msgid ""
 "{num_invites} users."
 msgstr "Deine Organisation hat nicht genügend Zulip-Lizenzen, um noch {num_invites} Nutzer:innen einzuladen."
 
-#: corporate/lib/remote_billing_util.py:126
-#: corporate/lib/remote_billing_util.py:149
+#: corporate/lib/remote_billing_util.py:133
+#: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
 msgstr "Registrierungen sind deaktiviert"
 
-#: corporate/lib/remote_billing_util.py:146
-#: corporate/views/remote_billing_page.py:237
+#: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
 msgstr "Ungültiger Remote-Server."
 
-#: corporate/lib/stripe.py:197
+#: corporate/lib/stripe.py:200
 #, python-brace-format
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr "Du musst Lizenzen für alle aktiven Nutzer:innen in deiner Organisation erwerben (mindestens {min_licenses})."
 
-#: corporate/lib/stripe.py:203
+#: corporate/lib/stripe.py:206
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
 msgstr "Rechnungen mit mehr als {max_licenses} Lizenzen können nicht von dieser Seite aus verarbeitet werden. Um das Upgrade zu vollenden, kontaktiere bitte {email}."
 
-#: corporate/lib/stripe.py:365
+#: corporate/lib/stripe.py:370
 msgid "No payment method on file."
 msgstr "Keine Zahlungsmethode hinterlegt."
 
-#: corporate/lib/stripe.py:373
+#: corporate/lib/stripe.py:378
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr "{brand} endet in {last4}"
 
-#: corporate/lib/stripe.py:381
+#: corporate/lib/stripe.py:386
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr "Unbekannte Zahlungsmethode. Bitte kontaktiere {email}."
 
-#: corporate/lib/stripe.py:397
+#: corporate/lib/stripe.py:402
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "Etwas hat nicht geklappt. Bitte {email} kontaktieren."
 
-#: corporate/lib/stripe.py:398
+#: corporate/lib/stripe.py:403
 msgid "Something went wrong. Please reload the page."
 msgstr "Etwas ist schief gelaufen.  Bitte lade die Seite erneut."
 
-#: corporate/lib/stripe.py:481
+#: corporate/lib/stripe.py:486
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "Etwas ist schief gelaufen. Bitte warte ein paar Sekunden und versuche es erneut."
 
-#: corporate/lib/stripe.py:1167
+#: corporate/lib/stripe.py:1204
 msgid "Please add a credit card before starting your free trial."
 msgstr "Bitte füge vor Beginn deiner kostenlosen Testphase eine Kreditkarte hinzu."
 
-#: corporate/lib/stripe.py:1188
+#: corporate/lib/stripe.py:1225
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "Bitte füge eine Kreditkarte hinzu, um ein Upgrade zu planen."
 
-#: corporate/lib/stripe.py:1874
+#: corporate/lib/stripe.py:1954
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
 msgstr "Konnte den Tarif nicht erneuern. Das Angebot ist abgelaufen und wurde durch ein neues ersetzt."
 
-#: corporate/lib/stripe.py:1879
+#: corporate/lib/stripe.py:1959
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Konnte den Tarif nicht erneuern. Das Angebot wurde beendet."
 
-#: corporate/lib/stripe.py:1934
+#: corporate/lib/stripe.py:2014
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr ""
+msgstr "Kann Lizenzen im aktuellen Abrechnungszeitraum für das kostenlose Testabonnement nicht aktualisieren."
 
-#: corporate/lib/stripe.py:1939 corporate/lib/stripe.py:1966
+#: corporate/lib/stripe.py:2019 corporate/lib/stripe.py:2047
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr "Konnte die Lizenzen nicht manuell erneuern. Dein Tarif sieht ein automatisches Lizenzmanagement vor."
 
-#: corporate/lib/stripe.py:1945
+#: corporate/lib/stripe.py:2025
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr "Dein Tarif hat bereits {licenses} Lizenzen im aktuellen Abrechnungszeitraum."
 
-#: corporate/lib/stripe.py:1950
+#: corporate/lib/stripe.py:2030
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "Du kannst die Anzahl der Lizenzen im aktuellen Abrechnungszeitraum nicht reduzieren."
 
-#: corporate/lib/stripe.py:1975
+#: corporate/lib/stripe.py:2056
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
-msgstr ""
+msgstr "Für einen Tarif, der herabgestuft wird, können Lizenzen für den nächsten Abrechnungszyklus nicht geändert werden."
 
-#: corporate/lib/stripe.py:1981
+#: corporate/lib/stripe.py:2062
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr "Dein Tarif sieht bereits vor, mit {licenses_at_next_renewal} verlängert zu werden."
 
-#: corporate/lib/stripe.py:1995
+#: corporate/lib/stripe.py:2077
 msgid "Nothing to change."
 msgstr "Es gibt nichts zu ändern."
 
-#: corporate/lib/stripe.py:2200
+#: corporate/lib/stripe.py:2282
 msgid "No customer for this organization!"
 msgstr "Du bist kein Kunde dieser Organisation!"
 
-#: corporate/lib/stripe.py:2209
+#: corporate/lib/stripe.py:2291
 msgid "Session not found"
 msgstr "Session nicht gefunden"
 
-#: corporate/lib/stripe.py:2215 zerver/decorator.py:197
+#: corporate/lib/stripe.py:2297 zerver/decorator.py:197
 msgid "Must be a billing administrator or an organization owner"
 msgstr "Muss ein:e Rechnungs-Administrator:in oder Eigentümer:in der Organisation sein."
 
-#: corporate/lib/stripe.py:2226
+#: corporate/lib/stripe.py:2308
 msgid "Payment intent not found"
 msgstr "Keine Zahlabsicht gefunden"
 
-#: corporate/lib/stripe.py:2229
+#: corporate/lib/stripe.py:2311
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
 msgstr "Übergib stripe_session_id oder stripe_payment_intent_id"
 
-#: corporate/lib/stripe.py:2650
+#: corporate/lib/stripe.py:2817
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
@@ -292,35 +291,38 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr "Der Antrag deiner Organisation auf gesponsertes Hosting wurde genehmigt! Ihr wurdet kostenlos auf {plan_name} hochgestuft. {emoji}\n\nWenn ihr {begin_link}Zulip als Sponsor auf eurer Website auflisten könntet{end_link}, wären wir euch sehr dankbar!"
 
-#: corporate/views/remote_billing_page.py:110
+#: corporate/views/remote_billing_page.py:125
 msgid "Billing access token expired."
 msgstr "Zugriffstoken für die Abrechnung ist abgelaufen."
 
-#: corporate/views/remote_billing_page.py:112
+#: corporate/views/remote_billing_page.py:127
 msgid "Invalid billing access token."
 msgstr "Zugriffstoken für die Abrechnung ist ungültig."
 
-#: corporate/views/remote_billing_page.py:176
-msgid "You must accept the Terms of Service to proceed."
+#: corporate/views/remote_billing_page.py:242
+msgid "User account doesn't exist yet."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:218 zerver/lib/exceptions.py:462
-msgid "User not authenticated"
-msgstr "Nutzer:in nicht authentifiziert"
+#: corporate/views/remote_billing_page.py:247
+#: corporate/views/remote_billing_page.py:612
+msgid "You must accept the Terms of Service to proceed."
+msgstr "Du musst den Nutzungsbedingungen zustimmen, um fortzufahren."
 
-#: corporate/views/remote_billing_page.py:324
-msgid "Did not find a server registration for this server_org_id."
-msgstr "Server-Registrierung für diese server_org_id konnte nicht gefunden werden."
+#: corporate/views/remote_billing_page.py:447
+msgid ""
+"This zulip_org_id is not registered with Zulip's billing management system."
+msgstr ""
 
-#: corporate/views/remote_billing_page.py:329
-msgid "Invalid server_org_secret."
-msgstr "server_org_secret ist ungültig."
+#: corporate/views/remote_billing_page.py:454
+msgid "Invalid zulip_org_key for this zulip_org_id."
+msgstr ""
 
-#: corporate/views/remote_billing_page.py:333
+#: corporate/views/remote_billing_page.py:458
 msgid "Your server registration has been deactivated."
 msgstr "Deine Server-Registrierung wurde deaktiviert."
 
 #: templates/404.html:4
+#: templates/zilencer/remote_realm_server_mismatch_error.html:4
 msgid "Error"
 msgstr "Fehler"
 
@@ -588,35 +590,34 @@ msgid ""
 msgstr "Vergewissere dich, dass du den Link korrekt in deinen Browser kopiert hast. Solltest du wieder auf dieser Seite landen, liegt es vermutlich an uns. Tut uns leid."
 
 #: templates/corporate/billing.html:5
-#: templates/corporate/remote_billing.html:5
 msgid "Billing"
 msgstr "Abrechnung"
 
-#: templates/corporate/billing.html:298 templates/corporate/billing.html:324
-#: templates/corporate/billing.html:353 templates/corporate/billing.html:382
-#: templates/corporate/billing.html:408
+#: templates/corporate/billing.html:301 templates/corporate/billing.html:327
+#: templates/corporate/billing.html:356 templates/corporate/billing.html:385
+#: templates/corporate/billing.html:411
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 msgid "Close modal"
 msgstr "Fenster schließen"
 
-#: templates/corporate/billing.html:309 templates/corporate/billing.html:338
-#: templates/corporate/billing.html:367
+#: templates/corporate/billing.html:312 templates/corporate/billing.html:341
+#: templates/corporate/billing.html:370
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: templates/corporate/billing.html:311 templates/corporate/billing.html:395
-#: templates/corporate/billing.html:418
+#: templates/corporate/billing.html:314 templates/corporate/billing.html:398
+#: templates/corporate/billing.html:421
 msgid "Downgrade"
 msgstr "Herabstufen"
 
-#: templates/corporate/billing.html:340 templates/corporate/billing.html:369
+#: templates/corporate/billing.html:343 templates/corporate/billing.html:372
 #: templates/zerver/change_email_address_visibility_modal.html:28
 msgid "Confirm"
 msgstr "Bestätigen"
 
-#: templates/corporate/billing.html:393 templates/corporate/billing.html:416
+#: templates/corporate/billing.html:396 templates/corporate/billing.html:419
 msgid "Never mind"
 msgstr "Abbrechen"
 
@@ -715,19 +716,6 @@ msgstr "Preise für Ausbildung"
 msgid "View pricing"
 msgstr "Preise ansehen"
 
-#: templates/corporate/remote_realm_billing_finalize_login_confirmation.html:5
-msgid "Billing login confirmation"
-msgstr ""
-
-#: templates/corporate/remote_realm_billing_finalize_login_confirmation.html:26
-#: templates/zerver/accounts_accept_terms.html:54
-#: templates/zerver/register.html:213
-#, python-format
-msgid ""
-"I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
-"target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Ich stimme den <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Nutzungsbedingungen</a> zu."
-
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
 msgstr "Zulip für Business"
@@ -788,7 +776,7 @@ msgstr "Probiere Zulip jetzt aus"
 msgid "Upgrade"
 msgstr "Upgrade"
 
-#: templates/corporate/upgrade.html:186
+#: templates/corporate/upgrade.html:199
 msgid "Convert demo organization before upgrading."
 msgstr "Vor dem Upgrade Demo-Organisation umwandeln."
 
@@ -825,6 +813,14 @@ msgstr "Willkomen bei Zulip"
 msgid "Email"
 msgstr "E-Mail"
 
+#: templates/zerver/accounts_accept_terms.html:54
+#: templates/zerver/register.html:213
+#, python-format
+msgid ""
+"I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
+msgstr "Ich stimme den <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Nutzungsbedingungen</a> zu."
+
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
 msgstr "Fortfahren"
@@ -858,7 +854,12 @@ msgstr "Registrieren mit %(identity_provider)s"
 msgid "Already have an account?"
 msgstr "Du hast bereits ein Konto?"
 
-#: templates/zerver/accounts_home.html:92 templates/zerver/footer.html:17
+#: templates/zerver/accounts_home.html:92
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:21
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:6
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:18
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:4
+#: templates/zerver/footer.html:17
 #: templates/zerver/log_into_subdomain_token_invalid.html:13
 #: templates/zerver/login.html:5 templates/zerver/login.html:128
 #: templates/zerver/portico-header.html:33
@@ -2264,36 +2265,112 @@ msgstr "Reaktiviere deine Zulip-Organisation"
 msgid "Click the link below to reactivate your organization."
 msgstr "Klicke den Button unten, um deine Organisation zu reaktivieren."
 
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:9
+#, python-format
+msgid ""
+"Either you, or someone on your behalf, has requested a log in link to manage"
+" the Zulip plan for <b>%(remote_server_hostname)s</b>."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:12
+msgid ""
+"\n"
+"    Click the button below to log in.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:16
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:13
+#, python-format
+msgid ""
+"\n"
+"    This link will expire in %(validity_in_hours)s hours.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:24
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:21
+#, python-format
+msgid ""
+"Questions? <a href=\"%(billing_help_link)s\">Learn more</a> or contact "
+"%(billing_contact_email)s."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.subject.txt:1
+#: templates/zerver/emails/remote_realm_billing_confirm_login.subject.txt:1
+msgid "Log in to Zulip plan management"
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:1
+#, python-format
+msgid ""
+"Either you, or someone on your behalf, has requested a log in link to manage"
+" the Zulip plan for %(remote_server_hostname)s."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
+msgid "Click the link below to log in."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:1
+#, python-format
+msgid "This link will expire in %(validity_in_hours)s hours."
+msgstr ""
+
+#: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:8
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:6
+#, python-format
+msgid ""
+"Questions? Learn more at %(billing_help_link)s or contact "
+"%(billing_contact_email)s."
+msgstr ""
+
+#: templates/zerver/emails/remote_realm_billing_confirm_login.html:9
+#, python-format
+msgid ""
+"\n"
+"    Click the button below to log in to Zulip plan management for <b>%(remote_realm_host)s</b>.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/remote_realm_billing_confirm_login.txt:1
+#, python-format
+msgid ""
+"Click the link below to log in to Zulip plan management for "
+"%(remote_realm_host)s."
+msgstr ""
+
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:9
 #, python-format
 msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the <a href=\"%(plans_link)s\">Zulip Community plan</a>."
-msgstr ""
+msgstr "Dein Antrag auf ein Zulip-Sponsoring wurde genehmigt! Deine Organisation wurde auf den <a href=\"%(plans_link)s\">Zulip Community-Tarif</a> upgegradet."
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:12
 #, python-format
 msgid ""
 "If you could <a href=\"%(link_to_zulip)s\">list Zulip as a sponsor on your "
 "website</a>, we would really appreciate it!"
-msgstr ""
+msgstr "Wenn du <a href=\"%(link_to_zulip)s\">Zulip als Sponsor auf deiner Website auflisten könntest</a>, würden wir uns sehr freuen!"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.subject.txt:1
 #, python-format
 msgid "Community plan sponsorship approved for %(billing_entity)s!"
-msgstr ""
+msgstr "Community-Tarif-Sponsoring für %(billing_entity)s genehmigt!"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:1
 msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the Zulip Community plan."
-msgstr ""
+msgstr "Dein Antrag auf ein Zulip-Sponsoring wurde genehmigt! Deine Organisation wurde auf den Zulip Community-Tarif upgegradet."
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:4
 msgid ""
 "If you could list Zulip as a sponsor on your website, we would really "
 "appreciate it!."
-msgstr ""
+msgstr "Wenn du Zulip als Sponsor auf deiner Website auflisten könntest, würden wir uns sehr freuen!"
 
 #: templates/zerver/find_account.html:4
 msgid "Find your accounts"
@@ -2327,7 +2404,7 @@ msgid "Email address"
 msgstr "E-Mail-Adresse"
 
 #: templates/zerver/find_account.html:53
-#: templates/zerver/portico-header.html:49
+#: templates/zerver/portico-header.html:48
 msgid "Find accounts"
 msgstr "Accounts finden"
 
@@ -2359,7 +2436,7 @@ msgstr "Integrationen"
 msgid "Desktop & mobile apps"
 msgstr "Desktop & mobile Apps"
 
-#: templates/zerver/footer.html:16 templates/zerver/portico-header.html:50
+#: templates/zerver/footer.html:16 templates/zerver/portico-header.html:49
 msgid "New organization"
 msgstr "Neue Organisation"
 
@@ -3071,21 +3148,37 @@ msgid ""
 "                        "
 msgstr "\n                        Du kannst auch die <a href=\"%(apps_page_link)s\">Zulip Desktop-App</a> verwenden.\n                        "
 
-#: zerver/actions/create_user.py:97
+#: templates/zilencer/remote_realm_server_mismatch_error.html:16
+msgid "Unexpected Zulip server registration"
+msgstr ""
+
+#: templates/zilencer/remote_realm_server_mismatch_error.html:18
+#, python-format
+msgid ""
+"\n"
+"                        Your Zulip organization is registered as associated with a\n"
+"                        different Zulip server installation.\n"
+"\n"
+"                        Please <a href=\"mailto:%(support_email)s\">contact Zulip support</a>\n"
+"                        for assistance in resolving this issue.\n"
+"                        "
+msgstr ""
+
+#: zerver/actions/create_user.py:98
 msgid "signups"
 msgstr "Anmeldungen"
 
-#: zerver/actions/create_user.py:110
+#: zerver/actions/create_user.py:111
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} hat sich gerade bei Zulip angemeldet. (gesamt: {user_count})"
 
-#: zerver/actions/create_user.py:260
+#: zerver/actions/create_user.py:261
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} hat deine Einladung zum Beitritt zu Zulip angenommen!"
 
-#: zerver/actions/create_user.py:640
+#: zerver/actions/create_user.py:643
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr "Ein Platzhalterkonto kann nicht aktiviert werden; fordere den:die Nutzer:in stattdessen auf, sich zu registrieren."
@@ -3262,11 +3355,11 @@ msgstr "Das Editierlimit für diese Nachricht ist ausgelaufen"
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Das Zeitlimit zum Bearbeiten des Themas dieser Nachricht ist abgelaufen."
 
-#: zerver/actions/message_edit.py:1307
+#: zerver/actions/message_edit.py:1308
 msgid "You don't have permission to move this message"
 msgstr "Du bist nicht berechtigt, diese Nachricht zu verschieben"
 
-#: zerver/actions/message_edit.py:1322
+#: zerver/actions/message_edit.py:1323
 msgid "The time limit for editing this message's stream has passed"
 msgstr "Die Frist, in der der Stream dieser Nachricht bearbeitet werden kann, ist abgelaufen"
 
@@ -3285,70 +3378,70 @@ msgstr "Flag nicht editierbar: '{flag}'"
 msgid "Invalid message flag operation: '{operation}'"
 msgstr "Ungültige Nachrichten-Flag-Operation: '{operation}'"
 
-#: zerver/actions/message_flags.py:337 zerver/lib/message.py:806
-#: zerver/lib/message.py:812
+#: zerver/actions/message_flags.py:337 zerver/lib/message.py:849
+#: zerver/lib/message.py:855
 msgid "Invalid message(s)"
 msgstr "Ungültige Nachricht(en)"
 
-#: zerver/actions/message_send.py:172
+#: zerver/actions/message_send.py:177
 msgid "Unable to render message"
 msgstr "Kann Nachricht nicht rendern"
 
-#: zerver/actions/message_send.py:1214
+#: zerver/actions/message_send.py:1285
 msgid "Expected exactly one stream"
 msgstr "Erwarte genau einen Stream"
 
-#: zerver/actions/message_send.py:1225
+#: zerver/actions/message_send.py:1296
 msgid "Invalid data type for stream"
 msgstr "Ungültiger Datentyp für Stream"
 
-#: zerver/actions/message_send.py:1241 zerver/actions/message_send.py:1251
+#: zerver/actions/message_send.py:1312 zerver/actions/message_send.py:1322
 #: zerver/lib/recipient_parsing.py:25
 msgid "Invalid data type for recipients"
 msgstr "Ungültiger Datentyp für Empfänger:innen"
 
-#: zerver/actions/message_send.py:1259 zerver/actions/message_send.py:1267
+#: zerver/actions/message_send.py:1330 zerver/actions/message_send.py:1338
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Empfängerlisten können E-Mail-Adressen oder Nutzer-IDs enthalten, aber nicht beides."
 
-#: zerver/actions/message_send.py:1412
+#: zerver/actions/message_send.py:1483
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "Dein Bot {bot_identity} hat versucht, eine Nachricht an den Stream mit der ID {stream_id} zu senden, aber es gibt keinen Stream mit dieser ID."
 
-#: zerver/actions/message_send.py:1423
+#: zerver/actions/message_send.py:1494
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "Dein Bot {bot_identity} hat versucht, eine Nachricht an den Stream {stream_name} zu senden, aber dieser Stream existiert nicht. Klicke [hier]({new_stream_link}), um ihn zu erstellen."
 
-#: zerver/actions/message_send.py:1435
+#: zerver/actions/message_send.py:1506
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "Dein Bot {bot_identity} hat versucht, eine Nachricht an den Stream {stream_name} zu senden. Der Stream existiert, hat aber keine Abonnent:innen."
 
-#: zerver/actions/message_send.py:1482
+#: zerver/actions/message_send.py:1553
 msgid "Direct messages are disabled in this organization."
 msgstr "Direktnachrichten sind in dieser Organisation deaktiviert."
 
-#: zerver/actions/message_send.py:1497
+#: zerver/actions/message_send.py:1568
 msgid "You do not have permission to access some of the recipients."
 msgstr "Du bist nicht berechtigt, auf einige der Empfänger:innen zuzugreifen."
 
-#: zerver/actions/message_send.py:1628
+#: zerver/actions/message_send.py:1699
 msgid "Topics are required in this organization"
 msgstr "In dieser Organisation müssen Themen angegeben werden."
 
-#: zerver/actions/message_send.py:1690
+#: zerver/actions/message_send.py:1761
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgets: Der API-Programmierer hat ungültiges JSON gesendet"
 
-#: zerver/actions/message_send.py:1696
+#: zerver/actions/message_send.py:1767
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Widgets: {error_msg}"
@@ -3805,115 +3898,119 @@ msgstr "Emoji-Bezeichnung fehlt"
 msgid "Could not allocate event queue"
 msgstr "Kann Ereigniskette nicht zuteilen"
 
-#: zerver/lib/exceptions.py:148
+#: zerver/lib/exceptions.py:149
 msgid "Not logged in: API authentication or user session required"
 msgstr "Nicht angemeldet: API-Authentifizierung oder Nutzer-Session benötigt"
 
-#: zerver/lib/exceptions.py:175
+#: zerver/lib/exceptions.py:176
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
 msgstr "Stream '{stream}' existiert nicht"
 
-#: zerver/lib/exceptions.py:188
+#: zerver/lib/exceptions.py:189
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
 msgstr "Stream mit ID '{stream_id}' existiert nicht"
 
-#: zerver/lib/exceptions.py:197
+#: zerver/lib/exceptions.py:198
 msgid "organization owner"
 msgstr "Organisations-Besitzer:in"
 
-#: zerver/lib/exceptions.py:197
+#: zerver/lib/exceptions.py:198
 msgid "user"
 msgstr "Nutzer:in"
 
-#: zerver/lib/exceptions.py:202
+#: zerver/lib/exceptions.py:203
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr "Mindestens eine/r/s {entity} muss aktiviert bleiben."
 
-#: zerver/lib/exceptions.py:215
+#: zerver/lib/exceptions.py:216
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
 msgstr "Ungültiges Markdown-Include-Statement: {include_statement}"
 
-#: zerver/lib/exceptions.py:228
+#: zerver/lib/exceptions.py:229
 msgid "API usage exceeded rate limit"
 msgstr "API-Nutzungsrate überschritten"
 
-#: zerver/lib/exceptions.py:254 zerver/lib/request.py:445
+#: zerver/lib/exceptions.py:255 zerver/lib/request.py:445
 #: zerver/lib/typed_endpoint.py:361 zerver/lib/validator.py:779
 msgid "Malformed JSON"
 msgstr "Fehlerhaftes JSON"
 
-#: zerver/lib/exceptions.py:266
+#: zerver/lib/exceptions.py:267
 msgid "Must be an organization member"
 msgstr "Muss ein Mitglied der Organisation sein"
 
-#: zerver/lib/exceptions.py:278 zerver/views/invite.py:42
+#: zerver/lib/exceptions.py:279 zerver/views/invite.py:42
 msgid "Must be an organization administrator"
 msgstr "Muss ein:e Organisations-Administrator:in sein"
 
-#: zerver/lib/exceptions.py:290
+#: zerver/lib/exceptions.py:291
 msgid "Must be an organization owner"
 msgstr "Muss ein:e Organisations-Besitzer:in sein"
 
-#: zerver/lib/exceptions.py:304
+#: zerver/lib/exceptions.py:305
 msgid "Your username or password is incorrect"
 msgstr "Dein Nutzername oder Passwort ist falsch"
 
-#: zerver/lib/exceptions.py:313
+#: zerver/lib/exceptions.py:314
 msgid "Account is deactivated"
 msgstr "Account ist deaktiviert"
 
-#: zerver/lib/exceptions.py:322
+#: zerver/lib/exceptions.py:323
 msgid "This organization has been deactivated"
 msgstr "Diese Organisation wurde deaktiviert"
 
-#: zerver/lib/exceptions.py:332
+#: zerver/lib/exceptions.py:333
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr "Die Registrierung für die mobilen Push-Benachrichtigungen wurde für deinen Server deaktiviert"
 
-#: zerver/lib/exceptions.py:342
+#: zerver/lib/exceptions.py:343
 msgid "Password authentication is disabled in this organization"
 msgstr "In dieser Organisation ist die Authentifikation mit Passwort ausgeschaltet."
 
-#: zerver/lib/exceptions.py:351
+#: zerver/lib/exceptions.py:352
 msgid "Your password has been disabled and needs to be reset"
 msgstr "Dein Passwort wurde deaktiviert und muss zurückgesetzt werden."
 
-#: zerver/lib/exceptions.py:368
+#: zerver/lib/exceptions.py:369
 msgid "Invalid API key"
 msgstr "Ungültiger API-Schlüssel"
 
-#: zerver/lib/exceptions.py:375
+#: zerver/lib/exceptions.py:376
 msgid "Malformed API key"
 msgstr "Inkorrekter API-Schlüssel"
 
-#: zerver/lib/exceptions.py:415
+#: zerver/lib/exceptions.py:416
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook; ignoring"
 msgstr "Das Ereignis '{event_type}' wird derzeit vom Webhook {webhook_name} nicht unterstützt; ignoriere"
 
-#: zerver/lib/exceptions.py:435
+#: zerver/lib/exceptions.py:436
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
 msgstr "Konnte die Anfrage nicht parsen: Hat {webhook_name} dieses Ereignis generiert?"
 
-#: zerver/lib/exceptions.py:475 zerver/views/auth.py:743
+#: zerver/lib/exceptions.py:463
+msgid "User not authenticated"
+msgstr "Nutzer:in nicht authentifiziert"
+
+#: zerver/lib/exceptions.py:476 zerver/views/auth.py:743
 #: zerver/views/auth.py:1078 zerver/views/auth.py:1142
 msgid "Invalid subdomain"
 msgstr "Ungültige Subdomain"
 
-#: zerver/lib/exceptions.py:516
+#: zerver/lib/exceptions.py:517
 msgid "Access denied"
 msgstr "Zugang verweigert"
 
-#: zerver/lib/exceptions.py:556
+#: zerver/lib/exceptions.py:557
 #, python-brace-format
 msgid ""
 "You only have permission to move the "
@@ -3921,24 +4018,30 @@ msgid ""
 "messages in this topic."
 msgstr "Du bist nur berechtigt, die {total_messages_allowed_to_move}/{total_messages_in_topic} neuesten Nachrichten in diesem Thema zu verschieben."
 
-#: zerver/lib/exceptions.py:569
+#: zerver/lib/exceptions.py:570
 msgid "Reaction already exists."
 msgstr "Reaktion existiert bereits."
 
-#: zerver/lib/exceptions.py:581
+#: zerver/lib/exceptions.py:582
 msgid "Reaction doesn't exist."
 msgstr "Reaktion existiert nicht."
 
-#: zerver/lib/exceptions.py:605
+#: zerver/lib/exceptions.py:607
+msgid ""
+"Your organization is registered to a different Zulip server. Please contact "
+"Zulip support for assistance in resolving this issue."
+msgstr ""
+
+#: zerver/lib/exceptions.py:621
 msgid "Organization not registered"
 msgstr "Organisation nicht registriert"
 
-#: zerver/lib/exceptions.py:617
+#: zerver/lib/exceptions.py:633
 msgid ""
 "You do not have permission to use stream wildcard mentions in this stream."
 msgstr "Du bist nicht berechtigt, Stream-Platzhalter-Erwähnungen in diesem Stream zu nutzen."
 
-#: zerver/lib/exceptions.py:629
+#: zerver/lib/exceptions.py:645
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr "Du bist nicht berechtigt, Themen-Platzhalter-Erwähnungen in diesem Stream zu nutzen."
@@ -4053,15 +4156,15 @@ msgstr "Produktivität"
 msgid "Version control"
 msgstr "Versionsverwaltung"
 
-#: zerver/lib/message.py:231
+#: zerver/lib/message.py:234
 msgid "Message must not be empty"
 msgstr "Nachricht darf nicht leer sein"
 
-#: zerver/lib/message.py:233
+#: zerver/lib/message.py:236
 msgid "Message must not contain null bytes"
 msgstr "Nachricht darf keine Null-Bytes enthalten"
 
-#: zerver/lib/message.py:1723
+#: zerver/lib/message.py:1766
 #, python-brace-format
 msgid ""
 "You are not allowed to mention user group '{user_group_name}'. You must be a"
@@ -4277,55 +4380,55 @@ msgstr "Ungültige JSON-Antwort"
 msgid "Invalid response format"
 msgstr "Ungültiges Format der Antwort"
 
-#: zerver/lib/push_notifications.py:432
+#: zerver/lib/push_notifications.py:431
 msgid "Invalid GCM option to bouncer: priority {priority!r}"
 msgstr "Ungültiger GCM-Option zum Bouncer: Priorität {priority!r}"
 
-#: zerver/lib/push_notifications.py:442
+#: zerver/lib/push_notifications.py:441
 #, python-brace-format
 msgid "Invalid GCM options to bouncer: {options}"
 msgstr "Ungültige GCM-Option zum Bouncer: {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:690 zilencer/views.py:223
+#: zerver/lib/push_notifications.py:731 zilencer/views.py:233
 msgid "Token does not exist"
 msgstr "Token existiert nicht"
 
-#: zerver/lib/push_notifications.py:889
+#: zerver/lib/push_notifications.py:902
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr "In dieser Organisation wurde die Option, Nachichteninhalte über mobile Push-Benachrichtigungen einzuschließen, deaktiviert."
 
-#: zerver/lib/push_notifications.py:1002
+#: zerver/lib/push_notifications.py:1015
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} hat @{user_group_name} erwähnt:"
 
-#: zerver/lib/push_notifications.py:1006
+#: zerver/lib/push_notifications.py:1019
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} hat dich erwähnt:"
 
-#: zerver/lib/push_notifications.py:1013
+#: zerver/lib/push_notifications.py:1026
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} hat alle erwähnt:"
 
-#: zerver/lib/push_notifications.py:1422
+#: zerver/lib/push_notifications.py:1436
 msgid "Test notification"
 msgstr "Testbenachrichtigung"
 
-#: zerver/lib/push_notifications.py:1423
+#: zerver/lib/push_notifications.py:1437
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
-msgstr ""
+msgstr "Dies ist eine Testbenachrichtigung von {realm_name} ({realm_uri})."
 
-#: zerver/lib/push_notifications.py:1474
+#: zerver/lib/push_notifications.py:1488
 msgid "Device not recognized"
 msgstr "Gerät nicht erkannt"
 
-#: zerver/lib/push_notifications.py:1486
+#: zerver/lib/push_notifications.py:1500
 msgid "Device not recognized by the push bouncer"
 msgstr "Gerät vom Push-Bouncer nicht erkannt"
 
@@ -4353,7 +4456,7 @@ msgstr "'{email}' verwendet Zulip nicht mehr."
 msgid "You can't send direct messages outside of your organization."
 msgstr "Du kannst keine Direktnachrichten außerhalb deiner Organisation senden."
 
-#: zerver/lib/remote_server.py:143
+#: zerver/lib/remote_server.py:185
 #, python-brace-format
 msgid "Push notifications bouncer error: {error}"
 msgstr "Push-Benachrichtigungen-Bouncer-Fehler: {error}"
@@ -4702,7 +4805,7 @@ msgstr "Ungültiger Bottyp"
 msgid "Invalid interface type"
 msgstr "Ungültiger Interface-Typ"
 
-#: zerver/lib/users.py:217 zerver/models.py:4974
+#: zerver/lib/users.py:217 zerver/models.py:4979
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr "Ungültige Nutzer-ID: {user_id}"
@@ -4848,7 +4951,7 @@ msgstr "Auf Zulip Cloud Standard verfügbar. Upgraden, um darauf zuzugreifen."
 
 #: zerver/models.py:688
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
-msgstr ""
+msgstr "Auf Zulip Cloud Standard verfügbar. Upgrade, um darauf zuzugreifen."
 
 #: zerver/models.py:758
 msgid "GIPHY integration disabled"
@@ -4913,137 +5016,137 @@ msgstr "Erforderliche Variable \"code\" fehlt in der URL-Vorlage"
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "\"code\" sollte die einzige Variable sein, die in der URL-Vorlage enthalten ist."
 
-#: zerver/models.py:1794
+#: zerver/models.py:1795
 msgid "Admins, moderators, members and guests"
 msgstr "Administrator:innen, Moderator:innen, Mitglieder und Gäste"
 
-#: zerver/models.py:1795
+#: zerver/models.py:1796
 msgid "Admins, moderators and members"
 msgstr "Administrator:innen, Moderator:innen und Mitglieder"
 
-#: zerver/models.py:1796
+#: zerver/models.py:1797
 msgid "Admins and moderators"
 msgstr "Administrator:innen und Moderator:innen"
 
-#: zerver/models.py:1797
+#: zerver/models.py:1798
 msgid "Admins only"
 msgstr "nur Administrator:innen"
 
-#: zerver/models.py:1798
+#: zerver/models.py:1799
 msgid "Nobody"
 msgstr "Niemand"
 
-#: zerver/models.py:1959
+#: zerver/models.py:1961
 msgid "Unknown user"
 msgstr "Unbekannte:r Nutzer:in"
 
-#: zerver/models.py:2115
+#: zerver/models.py:2117
 msgid "Organization owner"
 msgstr "Organisations-Besitzer:in"
 
-#: zerver/models.py:2116
+#: zerver/models.py:2118
 msgid "Organization administrator"
 msgstr "Organisations-Administrator:in"
 
-#: zerver/models.py:2117
+#: zerver/models.py:2119
 msgid "Moderator"
 msgstr "Moderator:in"
 
-#: zerver/models.py:2118
+#: zerver/models.py:2120
 msgid "Member"
 msgstr "Mitglied"
 
-#: zerver/models.py:2119
+#: zerver/models.py:2121
 msgid "Guest"
 msgstr "Gast"
 
-#: zerver/models.py:2707
+#: zerver/models.py:2709
 msgid "Web-public"
 msgstr "öffentlich im Netz"
 
-#: zerver/models.py:2713
+#: zerver/models.py:2715
 msgid "Public"
 msgstr "Öffentlich"
 
-#: zerver/models.py:2719
+#: zerver/models.py:2721
 msgid "Private, shared history"
 msgstr "Privat, geteilter Verlauf"
 
-#: zerver/models.py:2725
+#: zerver/models.py:2727
 msgid "Private, protected history"
 msgstr "Privat, geschützter Verlauf"
 
-#: zerver/models.py:2733
+#: zerver/models.py:2735
 msgid "Public, protected history"
 msgstr "Öffentlich, geschützter Verlauf"
 
-#: zerver/models.py:2753
+#: zerver/models.py:2755
 msgid "All stream members can post"
 msgstr "Alle Stream-Mitglieder können posten"
 
-#: zerver/models.py:2754
+#: zerver/models.py:2756
 msgid "Only organization administrators can post"
 msgstr "Nur Organisations-Administrator:innen können posten"
 
-#: zerver/models.py:2756
+#: zerver/models.py:2758
 msgid "Only organization administrators and moderators can post"
 msgstr "Nur Organisations-Administrator:innen und Moderator:innen können posten"
 
-#: zerver/models.py:2759
+#: zerver/models.py:2761
 msgid "Only organization full members can post"
 msgstr "Nur vollständige Mitglieder der Organisation können posten"
 
-#: zerver/models.py:3446
+#: zerver/models.py:3448
 msgid "Unicode emoji"
 msgstr "Unicode Emoji"
 
-#: zerver/models.py:3447
+#: zerver/models.py:3449
 msgid "Custom emoji"
 msgstr "Benutzerdefinierte Emoji"
 
-#: zerver/models.py:3448
+#: zerver/models.py:3450
 msgid "Zulip extra emoji"
 msgstr "Zulip Extra-Emoji"
 
-#: zerver/models.py:4978
+#: zerver/models.py:4983
 #, python-brace-format
 msgid "User with ID {user_id} is deactivated"
 msgstr "Nutzer:in mit ID {user_id} ist deaktiviert"
 
-#: zerver/models.py:4982
+#: zerver/models.py:4987
 #, python-brace-format
 msgid "User with ID {user_id} is a bot"
 msgstr "Nutzer:in mit ID {user_id} ist ein Bot"
 
-#: zerver/models.py:5022
+#: zerver/models.py:5027
 msgid "List of options"
 msgstr "Liste von Optionen"
 
-#: zerver/models.py:5025
+#: zerver/models.py:5030
 msgid "Person picker"
 msgstr "Personenauswahl"
 
-#: zerver/models.py:5037
+#: zerver/models.py:5042
 msgid "Short text"
 msgstr "Kurzer Text"
 
-#: zerver/models.py:5038
+#: zerver/models.py:5043
 msgid "Long text"
 msgstr "Langer Text"
 
-#: zerver/models.py:5039
+#: zerver/models.py:5044
 msgid "Date picker"
 msgstr "Datumsauswahl"
 
-#: zerver/models.py:5040
+#: zerver/models.py:5045
 msgid "Link"
 msgstr "Link"
 
-#: zerver/models.py:5043
+#: zerver/models.py:5048
 msgid "External account"
 msgstr "Externer Account"
 
-#: zerver/models.py:5048
+#: zerver/models.py:5053
 msgid "Pronouns"
 msgstr "Pronomen"
 
@@ -5184,7 +5287,7 @@ msgstr "Keine Abfrage von memcached möglich"
 #: zerver/views/hotspots.py:20
 #, python-brace-format
 msgid "Unknown onboarding_step: {onboarding_step}"
-msgstr ""
+msgstr "Unbekannter onboarding_step: {onboarding_step}"
 
 #: zerver/views/invite.py:77
 msgid "You must specify at least one email address."
@@ -5295,19 +5398,19 @@ msgstr "Der Client muss emoji_name mitsenden, wenn er entweder emoji_code oder r
 msgid "Invalid status: {status}"
 msgstr "Ungültiger Status: {status}"
 
-#: zerver/views/push_notifications.py:41
+#: zerver/views/push_notifications.py:42
 msgid "Invalid app ID"
 msgstr "Ungültige App-ID"
 
-#: zerver/views/push_notifications.py:47
+#: zerver/views/push_notifications.py:48
 msgid "Empty or invalid length token"
 msgstr "Token leer oder Länge ungültig"
 
-#: zerver/views/push_notifications.py:53
+#: zerver/views/push_notifications.py:54
 msgid "Invalid APNS token"
 msgstr "Ungültiges APNS Token"
 
-#: zerver/views/push_notifications.py:168
+#: zerver/views/push_notifications.py:171
 #, python-brace-format
 msgid "Error returned by the bouncer: {result}"
 msgstr "Vom Bouncer zurückgegebener Fehler: {result}"
@@ -5322,26 +5425,26 @@ msgstr "Mindestens eines der folgenden Argumente muss gegeben sein: emoji_name, 
 msgid "Read receipts are disabled in this organization."
 msgstr "Empfangsbestätigungen sind in dieser Organisation deaktiviert."
 
-#: zerver/views/realm.py:190
+#: zerver/views/realm.py:189
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "Ungültige Sprache '{language}'"
 
-#: zerver/views/realm.py:195
+#: zerver/views/realm.py:194
 msgid "At least one authentication method must be enabled."
 msgstr "Es muss mindestens eine Authentifizierungs-Möglichkeit aktiviert sein."
 
-#: zerver/views/realm.py:200
+#: zerver/views/realm.py:199
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "Ungültiger video_chat_provider {video_chat_provider}"
 
-#: zerver/views/realm.py:208
+#: zerver/views/realm.py:207
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "Ungültiges giphy_rating {giphy_rating}"
 
-#: zerver/views/realm.py:424
+#: zerver/views/realm.py:420
 msgid "Must be a demo organization."
 msgstr "Muss eine Demo-Organisation sein."
 
@@ -5370,7 +5473,7 @@ msgstr "Nur Administrator:innen können die Standard-Emoji überschreiben."
 
 #: zerver/views/realm_emoji.py:48 zerver/views/realm_icon.py:27
 #: zerver/views/realm_logo.py:33 zerver/views/upload.py:319
-#: zerver/views/user_settings.py:416
+#: zerver/views/user_settings.py:419
 #, python-brace-format
 msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
 msgstr "Hochgeladene Datei ist größer als das erlaubte Maximum von {max_size} MiB"
@@ -5613,24 +5716,24 @@ msgstr "Ungültiger Benachrichtigungs-Ton: '{notification_sound}'"
 msgid "Invalid email batching period: {seconds} seconds"
 msgstr "Ungültiger E-Mail-Batching-Zeitraum: {seconds} Sekunden"
 
-#: zerver/views/user_settings.py:329
+#: zerver/views/user_settings.py:332
 msgid "Your Zulip password is managed in LDAP"
 msgstr "Dein Zulip-Passwort wird von LDAP verwaltet"
 
-#: zerver/views/user_settings.py:339
+#: zerver/views/user_settings.py:342
 msgid "Wrong password!"
 msgstr "Falsches Passwort!"
 
-#: zerver/views/user_settings.py:344
+#: zerver/views/user_settings.py:347
 #, python-brace-format
 msgid "You're making too many attempts! Try again in {seconds} seconds."
 msgstr "Du brauchst zu viele Versuche! Versuche es in {seconds} Sekunden erneut."
 
-#: zerver/views/user_settings.py:350
+#: zerver/views/user_settings.py:353
 msgid "New password is too weak!"
 msgstr "Neues Passwort ist zu schwach!"
 
-#: zerver/views/user_settings.py:406
+#: zerver/views/user_settings.py:409
 msgid "You must upload exactly one avatar."
 msgstr "Du musst genau einen Avatar hochladen."
 
@@ -5828,42 +5931,52 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "Muss mit gültigem Zulip-Server-API-Schlüssel validiert werden."
 
 #. error
-#: zilencer/views.py:67 zilencer/views.py:69
+#: zilencer/views.py:77 zilencer/views.py:79
 msgid "Invalid UUID"
 msgstr "Ungültige UUID"
 
 #. error
-#: zilencer/views.py:74
+#: zilencer/views.py:84
 msgid "Invalid token type"
 msgstr "Ungültiger Token-Typ"
 
-#: zilencer/views.py:111
+#: zilencer/views.py:121
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr "{hostname} ist kein gültiger Hostname"
 
-#: zilencer/views.py:164
+#: zilencer/views.py:174
 msgid "Missing ios_app_id"
 msgstr "Fehlende ios_app_id"
 
-#: zilencer/views.py:167
+#: zilencer/views.py:177
 msgid "Missing user_id or user_uuid"
 msgstr "Fehlende user_id oder user_uuid"
 
-#: zilencer/views.py:534
+#: zilencer/views.py:602
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr "Ungültige Eigenschaft {property}"
 
-#: zilencer/views.py:540
+#: zilencer/views.py:605
+msgid "Invalid event type."
+msgstr ""
+
+#: zilencer/views.py:612
 msgid "Data is out of order."
 msgstr "Die Daten sind nicht in Ordnung."
 
-#: zilencer/views.py:601
+#: zilencer/views.py:674
 msgid "Duplicate registration detected."
 msgstr "Doppelte Registrierung erkannt."
 
-#: zilencer/views.py:764
+#: zilencer/views.py:893
+msgid ""
+"Failed to migrate customer from server to realms. Please contact support for"
+" assistance."
+msgstr ""
+
+#: zilencer/views.py:940
 msgid "Malformed audit log data"
 msgstr "Fehlerhafte Audit-Log-Daten"
 
