@@ -20,17 +20,25 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
 
     query = SQL(
         """
-        with icount as (
+        with icount_id as (
             select
                 server_id,
-                max(value) as max_value,
-                max(end_time) as max_end_time
+                max(id) as max_count_id
             from zilencer_remoteinstallationcount
             where
                 property='active_users:is_bot:day'
                 and subgroup='false'
             group by server_id
-            ),
+        ),
+        icount as (
+            select
+                icount_id.server_id,
+                value as latest_value,
+                end_time as latest_end_time
+            from icount_id
+            join zilencer_remoteinstallationcount
+            on max_count_id = zilencer_remoteinstallationcount.id
+        ),
         mobile_push_forwarded_count as (
             select
                 server_id,
@@ -53,15 +61,15 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             rserver.hostname,
             rserver.contact_email,
             rserver.last_version,
-            max_value,
+            latest_value,
             push_user_count,
-            max_end_time,
+            latest_end_time,
             push_forwarded_count
         from zilencer_remotezulipserver rserver
         left join icount on icount.server_id = rserver.id
         left join mobile_push_forwarded_count on mobile_push_forwarded_count.server_id = rserver.id
         left join remote_push_devices on remote_push_devices.server_id = rserver.id
-        order by max_value DESC NULLS LAST, push_user_count DESC NULLS LAST
+        order by latest_value DESC NULLS LAST, push_user_count DESC NULLS LAST
     """
     )
 
