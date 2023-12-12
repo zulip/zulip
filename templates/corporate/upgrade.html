@@ -8,6 +8,15 @@
 {% block portico_content %}
 <div id="upgrade-page" class="register-account flex full-page">
     <div class="center-block new-style">
+        {% if is_self_hosting_management_page and is_sponsorship_pending %}
+        <div class="alert alert-success billing-page-success" id="upgrade-page-sponsorship-pending-message-top">
+            This organization has requested sponsorship for a
+            {% if sponsorship_plan_name == "Business" %}
+            discounted
+            {% endif %}
+            <a href="{{ page_params.billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+        </div>
+        {% endif %}
         {% if success_message %}
         <div class="alert alert-success billing-page-success" id="upgrade-success-message-top">
             {{ success_message }}
