@@ -1190,10 +1190,10 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM).order_by("id")
     )
     apple_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
     )
     if uses_notification_bouncer():
         send_notifications_to_bouncer(
@@ -1356,11 +1356,11 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM).order_by("id")
     )
 
     apple_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
     )
     if uses_notification_bouncer():
         total_android_devices, total_apple_devices = send_notifications_to_bouncer(
