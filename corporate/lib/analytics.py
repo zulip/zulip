@@ -1,11 +1,23 @@
+from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, Dict
 
 from django.utils.timezone import now as timezone_now
 
-from corporate.lib.stripe import RealmBillingSession
+from corporate.lib.stripe import (
+    RealmBillingSession,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+)
 from corporate.models import Customer, CustomerPlan
 from zerver.lib.utils import assert_is_not_none
+
+
+@dataclass
+class RemoteActivityPlanData:
+    current_status: str
+    current_plan_name: str
+    annual_revenue: int
 
 
 def get_realms_with_default_discount_dict() -> Dict[str, Decimal]:
@@ -39,3 +51,44 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
             # TODO: Decimal stuff
             annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)
     return annual_revenue
+
+
+def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # nocoverage
+    remote_server_plan_data: Dict[int, RemoteActivityPlanData] = {}
+    for plan in CustomerPlan.objects.filter(
+        status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD
+    ).select_related("customer__remote_server", "customer__remote_realm"):
+        renewal_cents = 0
+        server_id = None
+
+        if plan.customer.remote_server is not None:
+            server_id = plan.customer.remote_server.id
+            renewal_cents = RemoteServerBillingSession(
+                remote_server=plan.customer.remote_server
+            ).get_customer_plan_renewal_amount(plan, timezone_now())
+        elif plan.customer.remote_realm is not None:
+            server_id = plan.customer.remote_realm.server.id
+            renewal_cents = RemoteRealmBillingSession(
+                remote_realm=plan.customer.remote_realm
+            ).get_customer_plan_renewal_amount(plan, timezone_now())
+
+        assert server_id is not None
+
+        if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+            renewal_cents *= 12
+
+        current_data = remote_server_plan_data.get(server_id)
+        if current_data is not None:
+            current_revenue = remote_server_plan_data[server_id].annual_revenue
+            remote_server_plan_data[server_id] = RemoteActivityPlanData(
+                current_status="Multiple plans",
+                current_plan_name="See support view",
+                annual_revenue=current_revenue + int(renewal_cents / 100),
+            )
+        else:
+            remote_server_plan_data[server_id] = RemoteActivityPlanData(
+                current_status=plan.get_plan_status_as_text(),
+                current_plan_name=plan.name,
+                annual_revenue=int(renewal_cents / 100),
+            )
+    return remote_server_plan_data
