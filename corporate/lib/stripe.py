@@ -2354,7 +2354,7 @@ class BillingSession(ABC):
             ):  # nocoverage
                 return sponsorship_request.requested_plan
 
-        # We only support sponsorships for these plans.
+        # Default name for sponsorship plan.
         sponsored_plan_name = CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD)
         if is_remotely_hosted:
             sponsored_plan_name = CustomerPlan.name_from_tier(
