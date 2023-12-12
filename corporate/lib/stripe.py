@@ -1180,6 +1180,7 @@ class BillingSession(ABC):
             current_licenses_count = self.get_billable_licenses_for_customer(
                 customer, plan_tier, licenses
             )
+            # In case user wants more licenses for the plan. (manual license management)
             billed_licenses = max(current_licenses_count, licenses)
             plan_params = {
                 "automanage_licenses": automanage_licenses,
@@ -1240,9 +1241,7 @@ class BillingSession(ABC):
                 )
                 # Update license_at_next_renewal as per new plan.
                 assert last_ledger_entry is not None
-                last_ledger_entry.licenses_at_next_renewal = (
-                    self.get_billable_licenses_for_customer(customer, plan_tier, licenses)
-                )
+                last_ledger_entry.licenses_at_next_renewal = billed_licenses
                 last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
                 remote_server_legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
                 remote_server_legacy_plan.save(update_fields=["status"])
