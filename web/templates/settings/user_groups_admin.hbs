@@ -1,0 +1,28 @@
+<div id="user-groups-admin" class="settings-section" data-name="user-groups-admin">
+    <div class="user-group-setting-tip-container {{#unless (or is_admin (not can_edit_user_groups))}}hide{{/unless}}">
+        {{#if (eq realm_user_group_edit_policy policy_values.by_members.code) }}
+        <div class="tip">{{t 'This organization is configured so that administrators, moderators and group members can modify user groups.' }}</div>
+        {{else if (eq realm_user_group_edit_policy policy_values.by_full_members.code) }}
+        <div class="tip">{{t 'This organization is configured so that administrators, moderators and full members belonging to the group can modify user groups.' }}</div>
+        {{else if (eq realm_user_group_edit_policy policy_values.by_moderators_only.code) }}
+        <div class="tip">{{t 'This organization is configured so that administrators and moderators can modify user groups.' }}</div>
+        {{else}}
+        <div class="tip">{{t 'This organization is configured so that only administrators can modify user groups.' }}</div>
+        {{/if}}
+    </div>
+    {{#unless is_guest}}
+        <p>
+            {{#tr}}
+                User groups allow you to <z-link>mention</z-link> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.
+                {{#*inline "z-link"}}<a href="/help/mention-a-user-or-group" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
+        {{#if can_edit_user_groups}}
+            <button id="show-add-user-group-modal" class="button rounded sea-green">
+                {{t 'Add a new user group' }}
+            </button>
+        {{/if}}
+    {{/unless}}
+
+    <div id="user-groups" class="new-style"></div>
+</div>

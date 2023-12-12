@@ -980,6 +980,27 @@ export function build_page() {
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
+    const $customWelcomeMessageSection = $('<div class="subsection" id="custom-welcome-message-settings">');
+    const $customWelcomeMessageCheckbox = $('<input type="checkbox" id="custom-welcome-message-checkbox">');
+    const $customWelcomeMessageLabel = $('<label for="custom-welcome-message-checkbox">Allow custom welcome bot message</label>');
+
+    const $customMessageTextInput = $('<input type="text" id="custom-welcome-message-text" placeholder="Custom Welcome Message">');
+
+    // Attach the input to the checkbox change event
+    $customWelcomeMessageCheckbox.change(function () {
+        if ($customWelcomeMessageCheckbox.prop('checked')) {
+            // Show the custom message text input when the checkbox is checked
+            $customMessageTextInput.show();
+        } else {
+            // Hide the custom message text input when the checkbox is unchecked
+            $customMessageTextInput.hide();
+        }
+    });
+
+    $customWelcomeMessageSection.append($customWelcomeMessageCheckbox, $customWelcomeMessageLabel, $customMessageTextInput);
+
+    $("#organization-settings").append($customWelcomeMessageSection);
+
     $(".settings-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
         if (keydown_util.is_enter_event(e)) {
