@@ -19,19 +19,18 @@ export function initialize(): void {
             form.submit();
         },
         invalidHandler() {
-            // this removes all previous errors that were put on screen
-            // by the server.
-            $("#server-login-form .alert.alert-error").remove();
-            $("#remote-billing-confirm-email-form .alert.alert-error").remove();
-            $("#remote-billing-confirm-login-form .alert.alert-error").remove();
+            $("*[class$='-error']").hide();
         },
         showErrors(error_map) {
-            if (error_map.password) {
-                $("#server-login-form .alert.alert-error").remove();
-                $("#remote-billing-confirm-email-form .alert.alert-error").remove();
-                $("#remote-billing-confirm-login-form .alert.alert-error").remove();
+            $("*[class$='-error']").hide();
+            for (const key in error_map) {
+                if (Object.prototype.hasOwnProperty.call(error_map, key)) {
+                    const error = error_map[key];
+                    const $error_element = $(`.${CSS.escape(key)}-error`);
+                    $error_element.text(error);
+                    $error_element.show();
+                }
             }
-            this.defaultShowErrors!();
         },
     });
 }
