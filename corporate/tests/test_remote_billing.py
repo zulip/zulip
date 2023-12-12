@@ -89,7 +89,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                     f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}"
                     r"(\S+)"
                 ),
-                email_body_contains="This link will expire in 24 hours",
+                email_body_contains="confirm your email and log in to Zulip plan management",
             )
             if return_without_clicking_confirmation_link:
                 return result
