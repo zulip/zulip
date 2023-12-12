@@ -1,15 +1,15 @@
 # User groups
 
-User groups allow you to [mention](/help/mention-a-user-or-group) multiple
-users at once, and add users in bulk to an existing stream or user group.
-When you mention a user group, everyone in the group is
-[notified](/help/dm-mention-alert-notifications) as if they were
-individually mentioned.
+{!user-groups-intro.md!}
 
-Note that user groups are not the same as group direct messages. If you're
-trying to send a message to a group of people, you'll want to either
-[create a stream](/help/create-a-stream), or send a
-[group direct message](/help/direct-messages).
+You can also:
+
+- Add a user group to another user group. This individually adds all the users
+  in the group.
+- Subscribe a user group to a stream. This individually subscribes all the users
+  in the group.
+- Compose a [direct message](/help/direct-messages) to a user group. This
+  automatically puts all the users in the group into the addressee field.
 
 ## Browse and join user groups
 
@@ -48,7 +48,7 @@ trying to send a message to a group of people, you'll want to either
 
 {tab|desktop-web}
 
-1. Click on a user group's mention in a message to open their **group card**.
+1. Click on a user group mention in a message to open the **group card**.
 
 {end_tabs}
 
