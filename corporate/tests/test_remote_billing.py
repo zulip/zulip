@@ -66,7 +66,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             # When logging in for the first time some extra steps are needed
             # to confirm and verify the email address.
             self.assertEqual(result.status_code, 200)
-            self.assert_in_success_response(["Enter log in email"], result)
+            self.assert_in_success_response(["Enter email"], result)
             self.assert_in_success_response([user.realm.host], result)
             self.assert_in_success_response(
                 [f'action="/remote-billing-login/{signed_access_token}/confirm/"'], result
@@ -80,7 +80,11 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 )
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(
-                ["We have sent a log in link", "link will expire in", user.delivery_email],
+                [
+                    "To finish logging in, check your email account (",
+                    ") for a confirmation email from Zulip.",
+                    user.delivery_email,
+                ],
                 result,
             )
             confirmation_url = self.get_confirmation_url_from_outbox(
