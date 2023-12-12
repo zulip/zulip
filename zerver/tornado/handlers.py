@@ -24,8 +24,8 @@ handlers: Dict[int, "AsyncDjangoHandler"] = {}
 fake_wsgi_container = WSGIContainer(lambda environ, start_response: [])
 
 
-def get_handler_by_id(handler_id: int) -> "AsyncDjangoHandler":
-    return handlers[handler_id]
+def get_handler_by_id(handler_id: int) -> Optional["AsyncDjangoHandler"]:
+    return handlers.get(handler_id)
 
 
 def allocate_handler_id(handler: "AsyncDjangoHandler") -> int:
@@ -52,12 +52,18 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
         from zerver.lib.request import RequestNotes
         from zerver.middleware import async_request_timer_restart
 
+        # The request handler may have been GC'd by a
+        # on_connection_close elsewhere already, so we have to check
+        # it is still around.
+        handler = get_handler_by_id(handler_id)
+        if handler is None:
+            return
+        request = handler._request
+        assert request is not None
+
         # We call async_request_timer_restart here in case we are
         # being finished without any events (because another
         # get_events request has supplanted this request)
-        handler = get_handler_by_id(handler_id)
-        request = handler._request
-        assert request is not None
         async_request_timer_restart(request)
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
