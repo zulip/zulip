@@ -442,12 +442,16 @@ def remote_billing_legacy_server_login(
         remote_server = get_remote_server_by_uuid(server_org_id)
     except RemoteZulipServer.DoesNotExist:
         context.update(
-            {"error_message": _("Did not find a server registration for this server_org_id.")}
+            {
+                "error_message": _(
+                    "This zulip_org_id is not registered with Zulip's billing management system."
+                )
+            }
         )
         return render(request, "corporate/legacy_server_login.html", context)
 
     if not constant_time_compare(server_org_secret, remote_server.api_key):
-        context.update({"error_message": _("Invalid server_org_secret.")})
+        context.update({"error_message": _("Invalid zulip_org_key for this zulip_org_id.")})
         return render(request, "corporate/legacy_server_login.html", context)
 
     if remote_server.deactivated:
