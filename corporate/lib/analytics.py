@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from django.utils.timezone import now as timezone_now
 
-from corporate.lib.stripe import renewal_amount
+from corporate.lib.stripe import RealmBillingSession
 from corporate.models import Customer, CustomerPlan
 from zerver.lib.utils import assert_is_not_none
 
@@ -31,7 +31,9 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         if plan.customer.realm is not None:
             # TODO: figure out what to do for plans that don't automatically
             # renew, but which probably will renew
-            renewal_cents = renewal_amount(plan, timezone_now())
+            renewal_cents = RealmBillingSession(
+                realm=plan.customer.realm
+            ).get_customer_plan_renewal_amount(plan, timezone_now())
             if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
                 renewal_cents *= 12
             # TODO: Decimal stuff
