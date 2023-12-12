@@ -133,8 +133,7 @@
                     </a>
                 </li>
                 {{/if}}
-                {{#if (and is_development_environment show_remote_billing) }}
-                {{! This is only shown in development environment until the UI is ready.}}
+                {{#if show_remote_billing }}
                 <li class="link-item navbar-dropdown-menu-inner-list-item">
                     <a href="/self-hosted-billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
                         <i class="navbar-dropdown-icon zulip-icon zulip-icon-rocket" aria-hidden="true"></i> {{t 'Plan management' }}
