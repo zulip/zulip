@@ -65,7 +65,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
             # When logging in for the first time some extra steps are needed
             # to confirm and verify the email address.
             self.assertEqual(result.status_code, 200)
-            self.assert_in_success_response(["Enter your email address"], result)
+            self.assert_in_success_response(["Enter log in email"], result)
             self.assert_in_success_response([user.realm.host], result)
             self.assert_in_success_response(
                 [f'action="/remote-billing-login/{signed_access_token}/confirm/"'], result
@@ -79,7 +79,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
                 )
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(
-                ["To complete the login process, check your email account", user.delivery_email],
+                ["We have sent a log in link", "link will expire in", user.delivery_email],
                 result,
             )
             confirmation_url = self.get_confirmation_url_from_outbox(
@@ -475,7 +475,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             )
 
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Enter your email address"], result)
+        self.assert_in_success_response(["Enter log in email"], result)
         if next_page is not None:
             self.assert_in_success_response(
                 [f'<input type="hidden" name="next_page" value="{next_page}" />'], result
@@ -506,7 +506,8 @@ class LegacyServerLoginTest(BouncerTestCase):
             )
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(
-            ["To complete the login process, check your email account", email], result
+            ["We have sent a log in link", "link will expire in", email],
+            result,
         )
 
         confirmation_url = self.get_confirmation_url_from_outbox(
