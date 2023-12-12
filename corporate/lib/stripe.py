@@ -4071,6 +4071,9 @@ class PushNotificationsEnabledStatus:
     message: str
 
 
+MAX_USERS_WITHOUT_PLAN = 10
+
+
 def get_push_status_for_remote_request(
     remote_server: RemoteZulipServer, remote_realm: Optional[RemoteRealm]
 ) -> PushNotificationsEnabledStatus:
@@ -4112,6 +4115,22 @@ def get_push_status_for_remote_request(
             can_push=True,
             expected_end_timestamp=None,
             message="Active plan",
+        )
+
+    try:
+        user_count = billing_session.current_count_for_billed_licenses()
+    except MissingDataError:
+        return PushNotificationsEnabledStatus(
+            can_push=False,
+            expected_end_timestamp=None,
+            message="Missing data",
+        )
+
+    if user_count > MAX_USERS_WITHOUT_PLAN:
+        return PushNotificationsEnabledStatus(
+            can_push=False,
+            expected_end_timestamp=None,
+            message="No plan many users",
         )
 
     return PushNotificationsEnabledStatus(
