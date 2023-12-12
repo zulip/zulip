@@ -28,13 +28,14 @@ from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
 from zerver.lib.push_notifications import sends_notifications_directly
-from zerver.lib.remote_server import enqueue_register_realm_with_push_bouncer_if_needed
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import upload_backend
 from zerver.lib.upload.base import BadImageError, sanitize_name
 from zerver.lib.upload.s3 import get_bucket
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
@@ -1419,10 +1420,21 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm.deactivated = data["zerver_realm"][0]["deactivated"]
     realm.save()
 
+    # This helps to have an accurate user count data for the billing
+    # system if someone tries to signup just after doing import.
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_IMPORTED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+        },
+    )
+
     # Ask the push notifications service if this realm can send
     # notifications, if we're using it. Needs to happen after the
     # Realm object is reactivated.
-    enqueue_register_realm_with_push_bouncer_if_needed(realm)
+    maybe_enqueue_audit_log_upload(realm)
 
     return realm
 

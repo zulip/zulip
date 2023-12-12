@@ -226,10 +226,21 @@
 }
 
 .streams_popover {
-    .topic-name {
-        text-align: center;
-        margin-top: 5px;
-        margin-bottom: 5px;
+    width: min-content;
+
+    .stream-menu-item {
+        white-space: nowrap;
+    }
+
+    .stream-name {
+        align-items: baseline;
+        color: var(--color-text-sidebar-popover-menu);
+        display: flex;
+        gap: 3px;
+        font-weight: 700;
+        line-height: 1.1;
+        margin: 6px 0;
+        white-space: normal;
     }
 
     .colorpicker-container {
@@ -277,6 +288,23 @@
     }
 }
 
+.topics_popover {
+    min-width: var(--popover-menu-min-width);
+    width: min-content;
+
+    .topic-menu-item {
+        white-space: nowrap;
+    }
+
+    .topic-name {
+        color: var(--color-text-sidebar-popover-menu);
+        font-weight: 700;
+        line-height: 1.1;
+        margin: 6px 0;
+        white-space: normal;
+    }
+}
+
 ul {
     &.user-card-popover-actions i,
     &.actions_popover i,
@@ -307,18 +335,6 @@ ul {
                 font-size: 17px;
                 line-height: 1;
                 top: 1px;
-            }
-        }
-    }
-
-    &.topics_popover {
-        .topic-name {
-            text-align: center;
-            margin-top: 5px;
-            margin-bottom: 5px;
-
-            .fa-chevron-right {
-                font-size: 12px;
             }
         }
     }
@@ -1208,15 +1224,22 @@ ul {
     border: solid 1px var(--color-border-dropdown-menu);
     background-color: var(--color-background-dropdown-menu);
     max-height: 85vh;
-    min-width: 230px;
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
     box-shadow: var(--box-shadow-navbar-dropdown-menu);
 
     .simplebar-content {
+        min-width: var(--popover-menu-min-width);
+        /*  This is necessary to set the dropdown menu width equal to
+            the width of the longest menu item, thus letting the menu
+            items control the width of the menu. */
+        width: min-content;
+    }
+
+    .navbar-dropdown-menu-inner-list-item {
         /*  This is necessary to keep long menu items on a single line. */
-        min-width: max-content;
+        white-space: nowrap;
     }
 
     .text-item,
@@ -1332,7 +1355,7 @@ ul {
 
         & li {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             font-size: 15px;
             font-style: normal;
             font-weight: 400;
@@ -1344,9 +1367,8 @@ ul {
             }
 
             .navbar-dropdown-menu-link {
-                padding: 2px 0;
+                padding: 2px 10px;
                 flex-grow: 1;
-                text-align: center;
                 text-decoration: none;
 
                 &:hover {
@@ -1369,6 +1391,7 @@ ul {
 
         .org-url {
             margin-bottom: 7px;
+            padding: 0 10px;
         }
 
         .org-name,
@@ -1380,9 +1403,12 @@ ul {
             font-size: 17px;
             font-weight: 600;
             line-height: 22px;
+            padding: 0 10px;
+            /* We set white-space to normal for the menu items
+               where we want to explicitly wrap. */
+            white-space: normal;
         }
 
-        .org-plan,
         .org-upgrade {
             font-size: 14px;
         }

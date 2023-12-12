@@ -20,6 +20,7 @@ class PlanData:
     licenses: Optional[int] = None
     licenses_used: Optional[int] = None
     is_legacy_plan: bool = False
+    has_fixed_price: bool = False
     warning: Optional[str] = None
 
 
@@ -65,5 +66,6 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
         plan_data.is_legacy_plan = (
             plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         )
+        plan_data.has_fixed_price = plan_data.current_plan.fixed_price is not None
 
     return plan_data

@@ -24,7 +24,7 @@ from zerver.lib.push_notifications import (
 from zerver.lib.remote_server import (
     UserDataForRemoteBilling,
     get_realms_info_for_push_bouncer,
-    send_realms_only_to_push_bouncer,
+    send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
 from zerver.lib.request import REQ, has_request_variables
@@ -162,7 +162,7 @@ def self_hosting_auth_redirect(
         result = send_to_push_bouncer("POST", "server/billing", post_data)
     except MissingRemoteRealmError:
         # Upload realm info and re-try. It should work now.
-        send_realms_only_to_push_bouncer()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
         result = send_to_push_bouncer("POST", "server/billing", post_data)
     except RemoteRealmServerMismatchError:
         return render(request, "zilencer/remote_realm_server_mismatch_error.html", status=403)

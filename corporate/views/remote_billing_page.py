@@ -58,6 +58,9 @@ VALID_NEXT_PAGES = [None, "sponsorship", "upgrade", "billing", "plans"]
 VALID_NEXT_PAGES_TYPE = Literal[None, "sponsorship", "upgrade", "billing", "plans"]
 
 REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 2 * 60 * 60
+# We use units of hours here so that we can pass this through to the
+# email template that tells the recipient how long these will last.
+LOGIN_CONFIRMATION_EMAIL_DURATION_HOURS = 24
 
 
 @csrf_exempt
@@ -249,7 +252,8 @@ def remote_realm_billing_finalize_login(
     if full_name is not None:
         remote_user.full_name = full_name
     remote_user.tos_version = settings.TERMS_OF_SERVICE_VERSION
-    remote_user.save(update_fields=["full_name", "tos_version"])
+    remote_user.last_login = timezone_now()
+    remote_user.save(update_fields=["full_name", "tos_version", "last_login"])
 
     identity_dict["remote_billing_user_id"] = remote_user.id
     request.session["remote_billing_identities"] = {}
@@ -307,15 +311,15 @@ def remote_realm_billing_confirm_email(
     url = create_remote_billing_confirmation_link(
         obj,
         Confirmation.REMOTE_REALM_BILLING_LEGACY_LOGIN,
-        # Use the same expiration time as for the signed access token,
-        # since this is similarly transient in nature.
-        validity_in_minutes=int(REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS / 60),
+        validity_in_minutes=LOGIN_CONFIRMATION_EMAIL_DURATION_HOURS * 60,
     )
 
     context = {
-        "remote_server_hostname": remote_server.hostname,
         "remote_realm_host": remote_realm.host,
         "confirmation_url": url,
+        "billing_help_link": "https://zulip.com/help/self-hosted-billing",
+        "billing_contact_email": "sales@zulip.com",
+        "validity_in_hours": LOGIN_CONFIRMATION_EMAIL_DURATION_HOURS,
     }
     send_email(
         "zerver/emails/remote_realm_billing_confirm_login",
@@ -370,6 +374,8 @@ def remote_realm_billing_from_login_confirmation_link(
         remote_realm=remote_realm,
         user_uuid=prereg_object.user_uuid,
     )
+    prereg_object.created_user = remote_billing_user
+    prereg_object.save(update_fields=["created_user"])
 
     identity_dict = RemoteBillingIdentityDict(
         user=RemoteBillingUserDict(
@@ -518,15 +524,15 @@ def remote_billing_legacy_server_confirm_login(
     url = create_remote_billing_confirmation_link(
         obj,
         Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN,
-        # Use the same expiration time as for the signed access token,
-        # since this is similarly transient in nature.
-        validity_in_minutes=int(REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS / 60),
+        validity_in_minutes=LOGIN_CONFIRMATION_EMAIL_DURATION_HOURS * 60,
     )
 
     context = {
         "remote_server_hostname": remote_server.hostname,
-        "remote_server_uuid": str(remote_server.uuid),
         "confirmation_url": url,
+        "billing_help_link": "https://zulip.com/help/self-hosted-billing",
+        "billing_contact_email": "sales@zulip.com",
+        "validity_in_hours": LOGIN_CONFIRMATION_EMAIL_DURATION_HOURS,
     }
     send_email(
         "zerver/emails/remote_billing_legacy_server_confirm_login",
@@ -608,6 +614,12 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         email=prereg_object.email,
         remote_server=remote_server,
     )
+    if created:
+        prereg_object.created_user = remote_billing_user
+        prereg_object.save(update_fields=["created_user"])
+
+    remote_billing_user.last_login = timezone_now()
+    remote_billing_user.save(update_fields=["last_login"])
 
     # Refresh IdentityDict in the session. (Or create it
     # if the user came here e.g. in a different browser than they

@@ -1137,7 +1137,11 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_realm_audit_log_event_type(r: Realm) -> Set[int]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
-                event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED, RealmAuditLog.STREAM_CREATED]
+                event_type__in=[
+                    RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                    RealmAuditLog.STREAM_CREATED,
+                    RealmAuditLog.REALM_IMPORTED,
+                ]
             )
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
@@ -1399,14 +1403,29 @@ class RealmImportExportTest(ExportFile):
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"), patch(
             "zerver.lib.remote_server.send_to_push_bouncer"
         ) as m:
-            new_realm = do_import_realm(get_output_dir(), "test-zulip")
+            get_response = {
+                "last_realm_count_id": 0,
+                "last_installation_count_id": 0,
+                "last_realmauditlog_id": 0,
+            }
+
+            def mock_send_to_push_bouncer_response(  # type: ignore[return]
+                method: str, *args: Any
+            ) -> Optional[Dict[str, int]]:
+                if method == "GET":
+                    return get_response
+
+            m.side_effect = mock_send_to_push_bouncer_response
+
+            with self.captureOnCommitCallbacks(execute=True):
+                new_realm = do_import_realm(get_output_dir(), "test-zulip")
 
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
-        calls_args_for_assert = m.call_args_list[0][0]
+        calls_args_for_assert = m.call_args_list[1][0]
         self.assertEqual(calls_args_for_assert[0], "POST")
         self.assertEqual(calls_args_for_assert[1], "server/analytics")
         self.assertIn(
-            new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[0][0][2]["realms"])]
+            new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[1][0][2]["realms"])]
         )
 
     def test_import_files_from_local(self) -> None:

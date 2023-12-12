@@ -10,7 +10,7 @@ from requests.models import Response
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand, check_config
-from zerver.lib.remote_server import PushBouncerSession
+from zerver.lib.remote_server import PushBouncerSession, send_server_data_to_push_bouncer
 
 if settings.DEVELOPMENT:
     SECRETS_FILENAME = "zproject/dev-secrets.conf"
@@ -94,6 +94,10 @@ class Command(ZulipBaseCommand):
         response = self._request_push_notification_bouncer_url(
             "/api/v1/remotes/server/register", request
         )
+
+        # Makes sure that we have a current state of user count when first
+        # logging in after the RemoteRealm flow.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         if response.json()["created"]:
             print(

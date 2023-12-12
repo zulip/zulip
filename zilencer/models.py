@@ -121,6 +121,8 @@ class RemoteRealm(models.Model):
 
     name = models.TextField(default="")
 
+    is_system_bot_realm = models.BooleanField(default=False)
+
     authentication_methods = models.JSONField(default=dict)
 
     org_type = models.PositiveSmallIntegerField(
@@ -161,12 +163,18 @@ class AbstractRemoteRealmBillingUser(models.Model):
     user_uuid = models.UUIDField()
     email = models.EmailField()
 
+    date_joined = models.DateTimeField(default=timezone_now)
+
     class Meta:
         abstract = True
 
 
 class RemoteRealmBillingUser(AbstractRemoteRealmBillingUser):
     full_name = models.TextField(default="")
+
+    last_login = models.DateTimeField(null=True)
+
+    is_active = models.BooleanField(default=True)
 
     TOS_VERSION_BEFORE_FIRST_LOGIN = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
@@ -188,11 +196,15 @@ class PreregistrationRemoteRealmBillingUser(AbstractRemoteRealmBillingUser):
     next_page = models.TextField(null=True)
     uri_scheme = models.TextField()
 
+    created_user = models.ForeignKey(RemoteRealmBillingUser, null=True, on_delete=models.SET_NULL)
+
 
 class AbstractRemoteServerBillingUser(models.Model):
     remote_server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
     email = models.EmailField()
+
+    date_joined = models.DateTimeField(default=timezone_now)
 
     class Meta:
         abstract = True
@@ -200,6 +212,10 @@ class AbstractRemoteServerBillingUser(models.Model):
 
 class RemoteServerBillingUser(AbstractRemoteServerBillingUser):
     full_name = models.TextField(default="")
+
+    last_login = models.DateTimeField(null=True)
+
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = [
@@ -213,6 +229,8 @@ class PreregistrationRemoteServerBillingUser(AbstractRemoteServerBillingUser):
     status = models.IntegerField(default=0)
 
     next_page = models.TextField(null=True)
+
+    created_user = models.ForeignKey(RemoteServerBillingUser, null=True, on_delete=models.SET_NULL)
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
