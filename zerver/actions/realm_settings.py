@@ -339,7 +339,6 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-@transaction.atomic
 def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
@@ -350,44 +349,50 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     if realm.deactivated:
         return
 
-    realm.deactivated = True
-    realm.save(update_fields=["deactivated"])
+    with transaction.atomic():
+        realm.deactivated = True
+        realm.save(update_fields=["deactivated"])
 
-    if settings.BILLING_ENABLED:
-        billing_session = RealmBillingSession(user=acting_user, realm=realm)
-        billing_session.downgrade_now_without_creating_additional_invoices()
+        if settings.BILLING_ENABLED:
+            billing_session = RealmBillingSession(user=acting_user, realm=realm)
+            billing_session.downgrade_now_without_creating_additional_invoices()
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=realm,
-        event_type=RealmAuditLog.REALM_DEACTIVATED,
-        event_time=event_time,
-        acting_user=acting_user,
-        extra_data={
-            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-        },
-    )
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_DEACTIVATED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+            },
+        )
 
-    from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 
-    maybe_enqueue_audit_log_upload(realm)
+        maybe_enqueue_audit_log_upload(realm)
 
-    ScheduledEmail.objects.filter(realm=realm).delete()
+        ScheduledEmail.objects.filter(realm=realm).delete()
+
+        # This event will only ever be received by clients with an active
+        # longpoll connection, because by this point clients will be
+        # unable to authenticate again to their event queue (triggering an
+        # immediate reload into the page explaining the realm was
+        # deactivated). So the purpose of sending this is to flush all
+        # active longpoll connections for the realm.
+        event = dict(type="realm", op="deactivated", realm_id=realm.id)
+        send_event_on_commit(realm, event, active_user_ids(realm.id))
 
     # Don't deactivate the users, as that would lose a lot of state if
     # the realm needs to be reactivated, but do delete their sessions
     # so they get bumped to the login screen, where they'll get a
     # realm deactivation notice when they try to log in.
+    #
+    # Note: This is intentionally outside the transaction because it
+    # is unsafe to modify sessions inside transactions with the
+    # cached_db session plugin we're using, and our session engine
+    # declared in zerver/lib/safe_session_cached_db.py enforces this.
     delete_realm_user_sessions(realm)
-
-    # This event will only ever be received by clients with an active
-    # longpoll connection, because by this point clients will be
-    # unable to authenticate again to their event queue (triggering an
-    # immediate reload into the page explaining the realm was
-    # deactivated). So the purpose of sending this is to flush all
-    # active longpoll connections for the realm.
-    event = dict(type="realm", op="deactivated", realm_id=realm.id)
-    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_reactivate_realm(realm: Realm) -> None:
