@@ -10,6 +10,7 @@ from analytics.views.activity_common import (
     remote_installation_stats_link,
     remote_installation_support_link,
 )
+from corporate.lib.analytics import get_plan_data_by_remote_server
 from zerver.decorator import require_server_admin
 from zilencer.models import get_remote_server_guest_and_non_guest_count
 
@@ -83,6 +84,9 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Mobile users",
         "Last update time",
         "Mobile pushes forwarded",
+        "Plan name",
+        "Plan status",
+        "ARR",
         "Non guest users",
         "Guest users",
         "Links",
@@ -91,13 +95,27 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     rows = get_query_data(query)
     total_row = []
     totals_columns = [4, 5]
+    plan_data_by_remote_server = get_plan_data_by_remote_server()
+
     for row in rows:
-        stats = remote_installation_stats_link(row[0])
-        support = remote_installation_support_link(row[1])
-        links = stats + " " + support
+        # Add estimated revenue for server
+        server_plan_data = plan_data_by_remote_server.get(row[0])
+        if server_plan_data is None:
+            row.append("---")
+            row.append("---")
+            row.append("---")
+        else:
+            row.append(server_plan_data.current_plan_name)
+            row.append(server_plan_data.current_status)
+            row.append(server_plan_data.annual_revenue)
+        # Add user counts
         remote_server_counts = get_remote_server_guest_and_non_guest_count(row[0])
         row.append(remote_server_counts.non_guest_user_count)
         row.append(remote_server_counts.guest_user_count)
+        # Add links
+        stats = remote_installation_stats_link(row[0])
+        support = remote_installation_support_link(row[1])
+        links = stats + " " + support
         row.append(links)
     for i, col in enumerate(cols):
         if col == "Last update time":
