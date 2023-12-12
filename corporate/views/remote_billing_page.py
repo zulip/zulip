@@ -54,8 +54,8 @@ from zilencer.models import (
 billing_logger = logging.getLogger("corporate.stripe")
 
 
-VALID_NEXT_PAGES = [None, "sponsorship", "upgrade", "billing", "plans"]
-VALID_NEXT_PAGES_TYPE = Literal[None, "sponsorship", "upgrade", "billing", "plans"]
+VALID_NEXT_PAGES = [None, "sponsorship", "upgrade", "billing", "plans", "deactivate"]
+VALID_NEXT_PAGES_TYPE = Literal[None, "sponsorship", "upgrade", "billing", "plans", "deactivate"]
 
 REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 2 * 60 * 60
 # We use units of hours here so that we can pass this through to the
@@ -654,3 +654,19 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         return HttpResponseRedirect(
             reverse("remote_server_billing_page", args=(remote_server_uuid,))
         )
+
+
+def generate_confirmation_link_for_server_deactivation(
+    remote_server: RemoteZulipServer, validity_in_minutes: int
+) -> str:
+    obj = PreregistrationRemoteServerBillingUser.objects.create(
+        email=remote_server.contact_email,
+        remote_server=remote_server,
+        next_page="deactivate",
+    )
+    url = create_remote_billing_confirmation_link(
+        obj,
+        Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN,
+        validity_in_minutes=validity_in_minutes,
+    )
+    return url

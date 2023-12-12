@@ -1,0 +1,47 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "upgrade" %}
+
+{% block title %}
+<title>{{ _("Deactivate server registration?") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div id="server-deactivate-page" class="register-account flex full-page">
+    <div class="center-block new-style">
+
+        <div class="pitch">
+            <h1>
+                Deactivate registration for {{ server_hostname }}?
+            </h1>
+        </div>
+        <div class="white-box">
+            <div id="server-deactivate-details">
+                <form id="server-deactivate-form" method="post" action="{{ action_url }}">
+                    {{ csrf_input }}
+                    <p class="not-editable-realm-field">
+                        You are about to deactivate this server's
+                        registration with
+                        the <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Zulip
+                        Mobile Push Notification Service</a>. This
+                        will disable delivery of mobile push
+                        notifications for all organizations hosted
+                        on <b>{{ server_hostname }}</b>.
+                    </p>
+                    <input type="hidden" name="confirmed" value="true" />
+                    <div class="upgrade-button-container">
+                        <button type="submit" id="server-deactivate-button" class="stripe-button-el invoice-button">
+                            <span class="server-deactivate-button-text">Deactivate registration</span>
+                            <img class="loader remote-billing-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                        </button>
+                    </div>
+                </form>
+                <div class="input-box upgrade-page-field">
+                    <div class="support-link not-editable-realm-field">
+                        Questions? Contact <a href="mailto:support@zulip.com">support@zulip.com</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
