@@ -1122,7 +1122,10 @@ class BillingSession(ABC):
             return
 
         plan = get_current_plan_by_customer(customer)
-        assert plan is not None
+        # Customers without a plan can always upgrade.
+        if plan is None:
+            return
+
         type_of_plan_change = self.get_type_of_plan_tier_change(plan.tier, new_plan_tier)
         if type_of_plan_change != PlanTierChangeType.UPGRADE:
             raise InvalidPlanUpgradeError(
