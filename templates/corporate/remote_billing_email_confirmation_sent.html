@@ -2,7 +2,7 @@
 {% set entrypoint = "upgrade" %}
 
 {% block title %}
-<title>{{ _("Confirm your email address") }} | Zulip</title>
+<title>Log in link sent | Zulip</title>
 {% endblock %}
 
 {% block portico_content %}
@@ -11,11 +11,11 @@
         <div class="inline-block">
 
             <div class="get-started">
-                <h1>{{ _("Confirm your email address") }}</h1>
+                <h1>Log in link sent</h1>
             </div>
 
             <div class="white-box">
-                <p>{% trans %}To complete the login process, check your email account (<span class="user_email semi-bold">{{ email }}</span>) for a confirmation email from Zulip.{% endtrans %}</p>
+                <p>We have sent a log in link for Zulip plan management to <span class="user_email semi-bold">{{ email }}</span>. This link will expire in 2 hours.</p>
 
                 {% include 'zerver/dev_env_email_access_details.html' %}
             </div>
