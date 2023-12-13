@@ -124,7 +124,7 @@ class Command(ZulipBaseCommand):
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
         session = PushBouncerSession()
         try:
-            response = session.post(registration_url, params=params)
+            response = session.post(registration_url, data=params)
         except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
