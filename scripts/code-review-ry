@@ -1,0 +1,16 @@
+Some of the things that stood out:
+A SHA key was documented inline in build-pgroonga 
+An outdated code that has comments about the previous issue. I have a feeling just removing it might be better 
+Most function names are good but many lack comments above it to give details on what the function does. I suggest adding more description to it to give devs more context. 
+The library directory with many of the script methods has script files and python files mixed in. Maybe create two directories to better organize shell scripts and python scripts. 
+The zulip_tools.py is a massive collection of functions. I think the tools in here could be split into multiple files to more compartmentalize them. Not enough comments here too to give more context to all of these functions.
+I don't know how good of a practice it is but in upgrade-zulip-stage-2 file, for shutdown server function, there are over 10 if, else if statements in sequence. Seems like there is too much branching logic. 
+Each of the files should have a description at the comment to describe what the file is for. Only clue is in the file name. 
+
+
+And here were good things that stood out to me:
+Line lengths were pretty readable 
+Absolute paths were used so devs would not get confused with file paths
+Comment for virtual environment at the top of python files
+A lot of error handling to give devs precise info of what went wrong
+Good use of date functions to help with localization issues. 
