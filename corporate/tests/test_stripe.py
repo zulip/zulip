@@ -4578,7 +4578,7 @@ class BillingHelpersTest(ZulipTestCase):
             hostname="demo.example.com",
             contact_email="email@example.com",
         )
-        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_HOSTED)
+        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
 
         do_change_remote_server_plan_type(remote_server, RemoteZulipServer.PLAN_TYPE_BUSINESS)
 
@@ -4588,7 +4588,7 @@ class BillingHelpersTest(ZulipTestCase):
         ).last()
         assert remote_realm_audit_log is not None
         expected_extra_data = {
-            "old_value": RemoteZulipServer.PLAN_TYPE_SELF_HOSTED,
+            "old_value": RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
             "new_value": RemoteZulipServer.PLAN_TYPE_BUSINESS,
         }
         self.assertEqual(remote_realm_audit_log.extra_data, expected_extra_data)
