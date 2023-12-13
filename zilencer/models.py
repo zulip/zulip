@@ -195,6 +195,9 @@ class RemoteRealmBillingUser(AbstractRemoteRealmBillingUser):
     TOS_VERSION_BEFORE_FIRST_LOGIN = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
 
+    enable_major_release_emails = models.BooleanField(default=True)
+    enable_maintenance_release_emails = models.BooleanField(default=True)
+
     class Meta:
         unique_together = [
             ("remote_realm", "user_uuid"),
@@ -232,6 +235,12 @@ class RemoteServerBillingUser(AbstractRemoteServerBillingUser):
     last_login = models.DateTimeField(null=True)
 
     is_active = models.BooleanField(default=True)
+
+    TOS_VERSION_BEFORE_FIRST_LOGIN = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+    tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
+
+    enable_major_release_emails = models.BooleanField(default=True)
+    enable_maintenance_release_emails = models.BooleanField(default=True)
 
     class Meta:
         unique_together = [
