@@ -27,7 +27,6 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
-    Client,
     Message,
     Realm,
     RealmAuditLog,
@@ -578,23 +577,21 @@ class TestDigestTopics(ZulipTestCase):
         bot_messages: int,
         realm: Realm,
     ) -> None:
-        def send_messages(client: Client, users: int, messages: int) -> None:
+        for is_bot, users, messages in [
+            (False, humans, human_messages),
+            (True, bots, bot_messages),
+        ]:
             messages_sent = 0
             while messages_sent < messages:
                 for index, username in enumerate(self.example_user_map, start=1):
-                    topic.add_message(
-                        Message(
-                            sender=self.example_user(username), sending_client=client, realm=realm
-                        )
-                    )
+                    if self.example_user(username).is_bot != is_bot:
+                        continue
+                    topic.add_message(Message(sender=self.example_user(username), realm=realm))
                     messages_sent += 1
                     if messages_sent == messages:
                         break
                     if index == users:
                         break
-
-        send_messages(Client(name="zulipmobile"), humans, human_messages)
-        send_messages(Client(name="bot"), bots, bot_messages)
 
     def test_get_hot_topics(self) -> None:
         realm = get_realm("zulip")
