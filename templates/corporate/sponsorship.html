@@ -52,7 +52,9 @@
                 <div class="input-box sponsorship-form-field no-validation">
                     <label for="sponsored-org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="sponsored-org-current-plan" class="not-editable-realm-field">
-                        {% if free_trial %}
+                        {% if is_sponsored %}
+                        {{ sponsorship_plan_name }}
+                        {% elif free_trial %}
                         {{ plan_name }} <i>(free trial)</i>
                         {% else %}
                         {{ plan_name }}
