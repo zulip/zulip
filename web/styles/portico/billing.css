@@ -354,6 +354,8 @@ input[name="licenses"] {
     background-color: hsl(240deg 96% 68%);
 }
 
+#account-deactivated-success-page .white-box,
+#server-deactivate-page .white-box,
 #remote-billing-confirm-login-page .white-box,
 #remote-billing-confirm-email .white-box,
 #server-login-page .white-box,
@@ -363,6 +365,8 @@ input[name="licenses"] {
     margin: 30px;
 }
 
+#account-deactivated-success-page #account-deactivated-success-page-details,
+#server-deactivate-page #server-deactivate-details,
 #server-login-page #server-login-page-details,
 #upgrade-page #upgrade-page-details,
 #billing-page #billing-page-details,
@@ -457,6 +461,8 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#account-deactivated-success-page .pitch,
+#server-deactivate-details .pitch,
 #remote-billing-confirm-login-page .pitch,
 #server-login-page .pitch,
 .sponsorship-page .pitch,
@@ -528,6 +534,7 @@ input[name="licenses"] {
     background-color: hsl(0deg 70% 40%);
 }
 
+#server-deactivate-button,
 #remote-billing-confirm-login-button,
 #remote-billing-confirm-email-button,
 #server-login-button,
@@ -587,6 +594,10 @@ input[name="licenses"] {
     margin-top: 10px;
 }
 
+#account-deactivated-success-page-details .not-editable-realm-field,
+#server-deactivate-details
+    #server-deactivate-form-top-description
+    .not-editable-realm-field,
 #remote-billing-confirm-email-intro .not-editable-realm-field,
 #billing-page-details .billing-frequency-message.not-editable-realm-field,
 #free-trial-top-banner .not-editable-realm-field,
@@ -701,6 +712,7 @@ input[name="licenses"] {
     margin-bottom: 15px;
 }
 
+#server-deactivate-details .upgrade-button-container,
 #server-login-page-button-container {
     width: 450px;
     margin: 30px auto 0;
@@ -718,4 +730,9 @@ input[name="licenses"] {
 
 #remote-billing-confirm-login-form #remote-billing-confirm-login-tos-wrapper {
     margin: 25px auto 10px;
+}
+
+#account-deactivated-success-page-details
+    #account-deactivated-success-page-top-message {
+    margin-top: 10px;
 }
