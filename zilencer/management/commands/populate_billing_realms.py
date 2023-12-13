@@ -27,7 +27,12 @@ from zerver.apps import flush_cache
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.streams import create_stream_if_needed
 from zerver.models import Realm, UserProfile, get_realm
-from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.models import (
+    RemoteRealm,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
+    RemoteZulipServer,
+)
 from zilencer.views import update_remote_realm_data_for_server
 from zproject.config import get_secret
 
@@ -414,10 +419,14 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
         last_audit_log_update=timezone_now(),
     )
 
-    billing_session = RemoteServerBillingSession(remote_server)
+    billing_user = RemoteServerBillingUser.objects.create(
+        full_name="Server user",
+        remote_server=remote_server,
+        email=f"{unique_id}@example.com",
+    )
+    billing_session = RemoteServerBillingSession(remote_server, billing_user)
     if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
         # Create customer plan for these servers for temporary period.
-        billing_session = RemoteServerBillingSession(remote_server)
         renewal_date = datetime.strptime(customer_profile.renewal_date, TIMESTAMP_FORMAT).replace(
             tzinfo=timezone.utc
         )
@@ -484,7 +493,15 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
     )
 
     remote_realm = RemoteRealm.objects.get(uuid=local_realm.uuid)
-    billing_session = RemoteRealmBillingSession(remote_realm)
+    user = UserProfile.objects.filter(realm=local_realm).first()
+    assert user is not None
+    billing_user = RemoteRealmBillingUser.objects.create(
+        full_name=user.full_name,
+        remote_realm=remote_realm,
+        user_uuid=user.uuid,
+        email=user.email,
+    )
+    billing_session = RemoteRealmBillingSession(remote_realm, billing_user)
     # TODO: Save property audit log  data for server.
     remote_realm.server.last_audit_log_update = timezone_now()
     remote_realm.server.save(update_fields=["last_audit_log_update"])
