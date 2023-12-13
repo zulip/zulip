@@ -3160,9 +3160,6 @@ class RemoteRealmBillingSession(BillingSession):
         else:
             raise AssertionError("Unexpected tier")
 
-        # TODO: Set usage limits.
-        # TODO: Set the usage limit in handle_customer_migration_from_server_to_realms.
-
         old_plan_type = self.remote_realm.plan_type
         self.remote_realm.plan_type = plan_type
         self.remote_realm.save(update_fields=["plan_type"])
@@ -3551,8 +3548,6 @@ class RemoteServerBillingSession(BillingSession):
             plan_type = RemoteZulipServer.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
-
-        # TODO: Set usage limits.
 
         old_plan_type = self.remote_server.plan_type
         self.remote_server.plan_type = plan_type
