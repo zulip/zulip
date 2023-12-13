@@ -10,6 +10,7 @@
             font-size: 1em;
             padding: 3px 10px;
             vertical-align: middle;
+            line-height: 1;
         }
 
         .compose_mobile_button {
@@ -30,21 +31,14 @@
 
         /* Button-like styling */
         border-radius: 4px;
-        background-color: var(
-            --color-compose-collapsed-reply-button-area-background
-        );
-        border: 1px solid
-            var(--color-compose-collapsed-reply-button-area-border);
+        background-color: var(--color-compose-collapsed-reply-button-area-background);
+        border: 1px solid var(--color-compose-collapsed-reply-button-area-border);
         transition: all 0.2s ease;
 
         &:hover,
         &:focus {
-            background-color: var(
-                --color-compose-collapsed-reply-button-area-background-interactive
-            );
-            border-color: var(
-                --color-compose-collapsed-reply-button-area-border-interactive
-            );
+            background-color: var(--color-compose-collapsed-reply-button-area-background-interactive);
+            border-color: var(--color-compose-collapsed-reply-button-area-border-interactive);
         }
 
         #left_bar_compose_reply_button_big,
@@ -76,16 +70,14 @@
             color: var(--color-compose-embedded-button-text-color);
 
             &:hover {
-                background-color: var(
-                    --color-compose-embedded-button-background-hover
-                );
+                background-color: var(--color-compose-embedded-button-background-hover);
                 color: var(--color-compose-embedded-button-text-color-hover);
             }
         }
     }
 
     .mobile_button_container {
-        @media (width >= $sm_min) {
+        @media (width >=$sm_min) {
             display: none;
         }
     }
@@ -248,7 +240,7 @@
             "message-formatting-controls-container . ";
         gap: 4px 6px;
 
-        @media ((width >= $sm_min) and (width < $mc_min)) {
+        @media ((width >=$sm_min) and (width < $mc_min)) {
             /* Drop to a 62px wide send column. */
             grid-template-columns: minmax(0, 1fr) 62px;
         }
@@ -294,7 +286,8 @@
        button and the textarea. */
     margin-left: 6px;
 
-    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+    @media (width < $sm_min),
+    ((width >=$sm_min) and (width < $mc_min)) {
         margin-left: 0;
     }
 }
@@ -353,7 +346,7 @@
     width: calc(112px - 23px + 6px);
     justify-content: flex-end;
 
-    @media ((width >= $sm_min) and (width < $mc_min)) {
+    @media ((width >=$sm_min) and (width < $mc_min)) {
         /* Align to compose controls at narrower widths */
         width: calc(62px - 23px + 6px);
     }
@@ -476,6 +469,7 @@
                width of the flex container. */
             margin-left: 10px;
         }
+
         /* Extra margin to ensure the layout is identical when there is no
            close button. */
         &.right_edge {
@@ -520,7 +514,7 @@
         align-items: center;
     }
 
-    .banner_content + .main-view-banner-close-button {
+    .banner_content+.main-view-banner-close-button {
         /* When there's no action button, set the max
            height for the typical height of the box
            when it contains only banner message text.
@@ -803,9 +797,7 @@ textarea.new_message_textarea,
         }
 
         &:hover {
-            background-color: var(
-                --color-compose-embedded-button-background-hover
-            );
+            background-color: var(--color-compose-embedded-button-background-hover);
             color: var(--color-compose-embedded-button-text-color-hover);
         }
 
@@ -853,15 +845,11 @@ textarea.new_message_textarea,
     &:focus-visible {
         border: 1px solid var(--color-compose-send-button-focus-border);
         box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
-        background-color: var(
-            --color-compose-send-button-background-interactive
-        );
+        background-color: var(--color-compose-send-button-background-interactive);
     }
 
     &:hover {
-        background-color: var(
-            --color-compose-send-button-background-interactive
-        );
+        background-color: var(--color-compose-send-button-background-interactive);
     }
 }
 
@@ -883,7 +871,8 @@ textarea.new_message_textarea,
        background */
     z-index: 1;
 
-    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+    @media (width < $sm_min),
+    ((width >=$sm_min) and (width < $mc_min)) {
         /* Drop to a square button,
            and don't flex any wider. */
         width: 30px;
@@ -942,6 +931,7 @@ textarea.new_message_textarea,
 
 .drafts-item-in-popover {
     display: none;
+
     /* Only show the Drafts item in the popover when it's not visible
        in the compose box. */
     @media (width < $sm_min) {
@@ -1025,7 +1015,7 @@ textarea.new_message_textarea,
             in the main row below the compose box. So, this is the same as
             the media query for .show_popover_buttons. */
 
-            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            @media (((width < $cb1_min) and (width >=$xl_min)) or ((width < $cb2_min) and (width >=$md_min)) or (width < $cb4_min)) {
                 display: flex;
             }
         }
@@ -1062,7 +1052,7 @@ textarea.new_message_textarea,
         single row. The media query below handles the hiding and showing of the
         buttons from the main row of compose buttons below the compose box. */
 
-        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+        @media (((width < $cb1_min) and (width >=$xl_min)) or ((width < $cb2_min) and (width >=$md_min)) or (width < $cb4_min)) {
             display: none;
         }
     }
@@ -1077,7 +1067,7 @@ textarea.new_message_textarea,
         compose buttons that we hide, and show in the popover only when the
         screen gets extremely narrow. */
 
-        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >=$md_min))) {
             display: none;
         }
     }
@@ -1088,7 +1078,7 @@ textarea.new_message_textarea,
         /* This is to show the popover 2 buttons in the popover, only when
         they are hidden in the main row below the compose box. */
 
-        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >=$md_min))) {
             display: flex;
         }
     }
@@ -1248,9 +1238,7 @@ textarea.new_message_textarea,
         /* We need to use !important here, regrettably, to keep the default
            dark-mode hover colors from showing. */
         color: var(--color-compose-send-control-button-interactive) !important;
-        background-color: var(
-            --color-compose-send-control-button-background-interactive
-        );
+        background-color: var(--color-compose-send-control-button-background-interactive);
         text-decoration: none;
     }
 }
@@ -1290,7 +1278,7 @@ textarea.new_message_textarea,
         border: 2px solid var(--color-outline-focus);
     }
 
-    @media ((width >= $sm_min) and (width < $mc_min)) {
+    @media ((width >=$sm_min) and (width < $mc_min)) {
         width: 32px;
     }
 
