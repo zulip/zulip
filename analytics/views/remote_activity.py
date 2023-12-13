@@ -69,6 +69,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         left join icount on icount.server_id = rserver.id
         left join mobile_push_forwarded_count on mobile_push_forwarded_count.server_id = rserver.id
         left join remote_push_devices on remote_push_devices.server_id = rserver.id
+        where not deactivated
         order by latest_value DESC NULLS LAST, push_user_count DESC NULLS LAST
     """
     )
