@@ -731,7 +731,7 @@ input[name="licenses"] {
 }
 
 #remote-billing-confirm-login-form #remote-billing-confirm-login-tos-wrapper {
-    margin: 25px auto 10px;
+    margin: 0 auto 10px;
 }
 
 #account-deactivated-success-page-details

@@ -1147,6 +1147,23 @@ button#register_auth_button_gitlab {
         }
     }
 
+    .remote-billing-confirm-email-subscription-form-field {
+        width: 450px;
+        margin-top: 15px;
+
+        .checkbox {
+            display: block;
+            /* Present a hanging indent on subscription copy
+               and checkboxes. */
+            text-indent: -26px;
+            margin: 0 0 10px 26px;
+        }
+
+        strong {
+            font-weight: 600;
+        }
+    }
+
     .org-url {
         margin-bottom: 5px !important;
     }
