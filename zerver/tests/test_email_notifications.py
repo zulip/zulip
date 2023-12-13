@@ -34,12 +34,12 @@ class TestCustomEmails(ZulipTestCase):
             markdown_template.flush()
             send_custom_email(
                 UserProfile.objects.filter(id=hamlet.id),
+                dry_run=False,
                 options={
                     "markdown_template_path": markdown_template.name,
                     "reply_to": reply_to,
                     "subject": email_subject,
                     "from_name": from_name,
-                    "dry_run": False,
                 },
             )
         self.assert_length(mail.outbox, 1)
@@ -66,12 +66,12 @@ class TestCustomEmails(ZulipTestCase):
         send_custom_email(
             UserProfile.objects.none(),
             target_emails=[contact_email],
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
                 "reply_to": reply_to,
                 "subject": email_subject,
                 "from_name": from_name,
-                "dry_run": False,
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -95,9 +95,9 @@ class TestCustomEmails(ZulipTestCase):
         )
         send_custom_email(
             UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
-                "dry_run": False,
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -113,9 +113,9 @@ class TestCustomEmails(ZulipTestCase):
         )
         send_custom_email(
             UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
-                "dry_run": False,
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -136,9 +136,9 @@ class TestCustomEmails(ZulipTestCase):
 
         send_custom_email(
             UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
-                "dry_run": False,
             },
             add_context=add_context,
         )
@@ -162,10 +162,10 @@ class TestCustomEmails(ZulipTestCase):
             NoEmailArgumentError,
             send_custom_email,
             UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
-                "dry_run": False,
             },
         )
 
@@ -173,10 +173,10 @@ class TestCustomEmails(ZulipTestCase):
             NoEmailArgumentError,
             send_custom_email,
             UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
-                "dry_run": False,
             },
         )
 
@@ -194,10 +194,10 @@ class TestCustomEmails(ZulipTestCase):
             DoubledEmailArgumentError,
             send_custom_email,
             UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
-                "dry_run": False,
             },
         )
 
@@ -205,10 +205,10 @@ class TestCustomEmails(ZulipTestCase):
             DoubledEmailArgumentError,
             send_custom_email,
             UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
-                "dry_run": False,
             },
         )
 
@@ -223,10 +223,10 @@ class TestCustomEmails(ZulipTestCase):
         )
         send_custom_email(
             UserProfile.objects.filter(id__in=(admin_user.id, non_admin_user.id)),
+            dry_run=False,
+            admins_only=True,
             options={
                 "markdown_template_path": markdown_template_path,
-                "admins_only": True,
-                "dry_run": False,
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -241,12 +241,12 @@ class TestCustomEmails(ZulipTestCase):
         with patch("builtins.print") as _:
             send_custom_email(
                 UserProfile.objects.filter(id=hamlet.id),
+                dry_run=True,
                 options={
                     "markdown_template_path": markdown_template_path,
                     "reply_to": reply_to,
                     "subject": email_subject,
                     "from_name": from_name,
-                    "dry_run": True,
                 },
             )
             self.assert_length(mail.outbox, 0)

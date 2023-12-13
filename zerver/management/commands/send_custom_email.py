@@ -86,7 +86,9 @@ class Command(ZulipBaseCommand):
         )
 
     @override
-    def handle(self, *args: Any, **options: str) -> None:
+    def handle(
+        self, *args: Any, dry_run: bool = False, admins_only: bool = False, **options: str
+    ) -> None:
         target_emails: List[str] = []
         users: QuerySet[UserProfile] = UserProfile.objects.none()
         add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None
@@ -156,10 +158,15 @@ class Command(ZulipBaseCommand):
                 Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
             )
         send_custom_email(
-            users, target_emails=target_emails, options=options, add_context=add_context
+            users,
+            target_emails=target_emails,
+            dry_run=dry_run,
+            admins_only=admins_only,
+            options=options,
+            add_context=add_context,
         )
 
-        if options["dry_run"]:
+        if dry_run:
             print("Would send the above email to:")
             for user in users:
                 print(f"  {user.delivery_email} ({user.realm.string_id})")

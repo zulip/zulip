@@ -511,7 +511,9 @@ def send_custom_email(
     users: QuerySet[UserProfile],
     *,
     target_emails: Sequence[str] = [],
-    options: Dict[str, Any],
+    dry_run: bool,
+    options: Dict[str, str],
+    admins_only: bool = False,
     add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
 ) -> None:
     """
@@ -562,7 +564,7 @@ def send_custom_email(
 
     # Finally, we send the actual emails.
     for user_profile in users.select_related("realm").order_by("id"):
-        if options.get("admins_only") and not user_profile.is_realm_admin:
+        if admins_only and not user_profile.is_realm_admin:
             continue
         context: Dict[str, object] = {
             "realm": user_profile.realm,
@@ -582,10 +584,10 @@ def send_custom_email(
                     options.get("from_name"), parsed_email_template.get("from"), "from_name"
                 ),
                 context=context,
-                dry_run=options["dry_run"],
+                dry_run=dry_run,
             )
 
-        if options["dry_run"]:
+        if dry_run:
             break
 
     # Now send emails to any recipients without a user account.
@@ -600,10 +602,10 @@ def send_custom_email(
                 options.get("from_name"), parsed_email_template.get("from"), "from_name"
             ),
             context={"remote_server_email": True},
-            dry_run=options["dry_run"],
+            dry_run=dry_run,
         )
 
-        if options["dry_run"]:
+        if dry_run:
             break
 
 
