@@ -806,17 +806,15 @@ export function declare_bankruptcy() {
 }
 
 export function get_unread_pm(include_per_bucket_latest_msg_id = false) {
-    const pm_res = unread_direct_message_counter.get_counts(include_per_bucket_latest_msg_id);
-    return pm_res;
+    return unread_direct_message_counter.get_counts(include_per_bucket_latest_msg_id);
 }
 
 export function get_unread_topics(include_per_topic_latest_msg_id = false) {
     const include_per_topic_count = true;
-    const topics_res = unread_topic_counter.get_counts(
+    return unread_topic_counter.get_counts(
         include_per_topic_count,
         include_per_topic_latest_msg_id,
     );
-    return topics_res;
 }
 
 export function get_counts() {
