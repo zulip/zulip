@@ -41,6 +41,7 @@ export const page_params: {
     max_icon_file_size_mib: number;
     max_logo_file_size_mib: number;
     muted_users: {id: number; timestamp: number}[];
+    narrow_stream?: string;
     needs_tutorial: boolean;
     page_load_time: number;
     promote_sponsoring_zulip: boolean;
