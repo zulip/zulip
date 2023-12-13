@@ -342,7 +342,6 @@ class Command(BaseCommand):
                 enable_read_receipts=True,
                 enable_spectator_access=True,
             )
-
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             assert zulip_realm.notifications_stream is not None
             zulip_realm.notifications_stream.name = "Verona"
