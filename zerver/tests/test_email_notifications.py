@@ -16,9 +16,14 @@ from zerver.lib.email_notifications import (
     get_onboarding_email_schedule,
     send_account_registered_email,
 )
-from zerver.lib.send_email import deliver_scheduled_emails, send_custom_email
+from zerver.lib.send_email import (
+    deliver_scheduled_emails,
+    send_custom_email,
+    send_custom_server_email,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Realm, ScheduledEmail, UserProfile, get_realm
+from zilencer.models import RemoteZulipServer
 
 
 class TestCustomEmails(ZulipTestCase):
@@ -60,11 +65,9 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         reply_to = "reply_to_test"
         from_name = "from_name_test"
-        contact_email = "zulip-admin@example.com"
         markdown_template_path = "templates/corporate/policies/index.md"
-        send_custom_email(
-            UserProfile.objects.none(),
-            target_emails=[contact_email],
+        send_custom_server_email(
+            remote_servers=RemoteZulipServer.objects.all(),
             dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
@@ -76,7 +79,7 @@ class TestCustomEmails(ZulipTestCase):
         self.assert_length(mail.outbox, 1)
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, email_subject)
-        self.assertEqual(msg.to, [contact_email])
+        self.assertEqual(msg.to, ["remotezulipserver@zulip.com"])
         self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
