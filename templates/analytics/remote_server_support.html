@@ -54,25 +54,24 @@
 
             {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
                 {% with %}
-                    {% set customer = remote_servers_plan_data[remote_server.id].customer %}
+                    {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
                     {% set remote_id = remote_server.id %}
                     {% set remote_type = "remote_server_id" %}
-                    {% set has_fixed_price = remote_servers_plan_data[remote_server.id].has_fixed_price %}
-                    {% set get_discount = get_discount %}
+                    {% set has_fixed_price = remote_servers_support_data[remote_server.id].plan_data.has_fixed_price %}
                     {% include 'analytics/sponsorship_forms_support.html' %}
                 {% endwith %}
             {% endif %}
 
-            {% if remote_servers_plan_data[remote_server.id].current_plan %}
+            {% if remote_servers_support_data[remote_server.id].plan_data.current_plan %}
             <div class="remote-server-information">
                 {% with %}
-                    {% set plan_data = remote_servers_plan_data[remote_server.id] %}
+                    {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
                     {% include 'analytics/current_plan_details.html' %}
                 {% endwith %}
             </div>
 
             {% with %}
-                {% set current_plan = remote_servers_plan_data[remote_server.id].current_plan %}
+                {% set current_plan = remote_servers_support_data[remote_server.id].plan_data.current_plan %}
                 {% set remote_id = remote_server.id %}
                 {% set remote_type = "remote_server_id" %}
                 {% include 'analytics/current_plan_forms_support.html' %}
@@ -83,7 +82,7 @@
             <hr />
             <div>
                 {% with %}
-                    {% set plan_data = remote_realms_plan_data %}
+                    {% set support_data = remote_realms_support_data %}
                     {% set get_discount = get_discount %}
                     {% include "analytics/remote_realm_details.html" %}
                 {% endwith %}
