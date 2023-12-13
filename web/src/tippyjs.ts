@@ -5,6 +5,7 @@ import tippy, {delegate} from "tippy.js";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
+import * as popovers from "./popovers";
 import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
@@ -504,6 +505,29 @@ export function initialize(): void {
     delegate("body", {
         target: "#user_info_popover .status-emoji",
         appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: ".status-emoji-name",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for most locations in the app. This
+            basic tooltip logic is overridden by separate logic in
+            click_handlers.js for the left and right sidebars, to
+            avoid problematic interactions with the main tooltips for
+            those regions.
+        */
+
+        onShow() {
+            popovers.hide_all();
+        },
+
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     delegate("body", {
