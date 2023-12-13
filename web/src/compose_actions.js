@@ -336,6 +336,24 @@ export function cancel() {
     $(document).trigger("compose_canceled.zulip");
 }
 
+export function on_show_navigation_view() {
+    /* This function dictates the behavior of the compose box
+     * when navigating to a view, as opposed to a narrow. */
+
+    // Leave the compose box closed if it was already closed.
+    if (!compose_state.composing()) {
+        return;
+    }
+
+    // Leave the compose box open if there is content or if the recipient was edited.
+    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+        return;
+    }
+
+    // Otherwise, close the compose box.
+    cancel();
+}
+
 export function on_topic_narrow() {
     if (!compose_state.composing()) {
         // If our compose box is closed, then just
