@@ -60,8 +60,10 @@ if settings.BILLING_ENABLED:
     )
     from corporate.lib.support import (
         PlanData,
+        SupportData,
         get_current_plan_data_for_support_view,
         get_customer_discount_for_support_view,
+        get_data_for_support_view,
     )
     from corporate.models import CustomerPlan
 
@@ -476,8 +478,8 @@ def remote_servers_support(
         email_to_search=email_to_search, hostname_to_search=hostname_to_search
     )
     remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
-    server_plan_data: Dict[int, PlanData] = {}
-    realm_plan_data: Dict[int, PlanData] = {}
+    server_support_data: Dict[int, SupportData] = {}
+    realm_support_data: Dict[int, SupportData] = {}
     remote_realms: Dict[int, List[RemoteRealm]] = {}
     for remote_server in remote_servers:
         # Get remote realms attached to remote server
@@ -488,12 +490,12 @@ def remote_servers_support(
         # Get plan data for remote realms
         for remote_realm in remote_realms[remote_server.id]:
             realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-            remote_realm_plan_data = get_current_plan_data_for_support_view(realm_billing_session)
-            realm_plan_data[remote_realm.id] = remote_realm_plan_data
+            remote_realm_data = get_data_for_support_view(realm_billing_session)
+            realm_support_data[remote_realm.id] = remote_realm_data
         # Get plan data for remote server
         server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
-        remote_server_plan_data = get_current_plan_data_for_support_view(server_billing_session)
-        server_plan_data[remote_server.id] = remote_server_plan_data
+        remote_server_data = get_data_for_support_view(server_billing_session)
+        server_support_data[remote_server.id] = remote_server_data
         # Get max monthly messages
         try:
             remote_server_to_max_monthly_messages[remote_server.id] = compute_max_monthly_messages(
@@ -503,11 +505,10 @@ def remote_servers_support(
             remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
 
     context["remote_servers"] = remote_servers
-    context["remote_servers_plan_data"] = server_plan_data
+    context["remote_servers_support_data"] = server_support_data
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
     context["remote_realms"] = remote_realms
-    context["remote_realms_plan_data"] = realm_plan_data
-    context["get_discount"] = get_customer_discount_for_support_view
+    context["remote_realms_support_data"] = realm_support_data
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY

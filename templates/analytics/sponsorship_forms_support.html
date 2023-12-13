@@ -3,13 +3,13 @@
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     <select name="sponsorship_pending">
-        <option value="true" {% if customer and customer.sponsorship_pending %}selected{% endif %}>Yes</option>
-        <option value="false" {% if not customer or not customer.sponsorship_pending %}selected{% endif %}>No</option>
+        <option value="true" {% if sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
+        <option value="false" {% if not sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
     </select>
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
 </form>
 
-{% if customer and customer.sponsorship_pending %}
+{% if sponsorship_data.sponsorship_pending %}
 <form method="POST" class="">
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
@@ -25,10 +25,10 @@
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     {% if has_fixed_price %}
-    <input type="number" name="discount" value="{{ get_discount(customer) }}" disabled />
+    <input type="number" name="discount" value="{{ sponsorship_data.default_discount }}" disabled />
     <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
     {% else %}
-    <input type="number" name="discount" value="{{ get_discount(customer) }}" required />
+    <input type="number" name="discount" value="{{ sponsorship_data.default_discount }}" required />
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
     {% endif %}
 </form>
