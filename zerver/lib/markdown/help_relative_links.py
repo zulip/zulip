@@ -37,7 +37,7 @@ gear_info = {
     ],
     "stats": ['<i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics', "/stats"],
     "integrations": ['<i class="zulip-icon-git-pull-request"></i> Integrations', "/integrations/"],
-    "plans": ['<i class="fa fa-rocket"></i> Plans and pricing', "/plans/"],
+    "plans": ['<i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing', "/plans/"],
     "billing": ['<i class="zulip-icon zulip-icon-credit-card"></i> Billing', "/billing/"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
