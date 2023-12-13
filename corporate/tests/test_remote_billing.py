@@ -767,7 +767,7 @@ class TestGenerateDeactivationLink(BouncerTestCase):
 
         result = self.client_get(confirmation_url, subdomain="selfhosting")
         self.assert_in_success_response(
-            ["Log in to Zulip plan management", server.contact_email], result
+            ["Log in to deactivate registration for", server.contact_email], result
         )
         payload = {"full_name": "test", "tos_consent": "true"}
         result = self.client_post(confirmation_url, payload, subdomain="selfhosting")

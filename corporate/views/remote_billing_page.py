@@ -597,6 +597,7 @@ def remote_billing_legacy_server_from_login_confirmation_link(
                 args=(confirmation_key,),
             ),
             "legacy_server_confirmation_flow": True,
+            "next_page": prereg_object.next_page,
         }
         return render(
             request,
