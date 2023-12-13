@@ -65,6 +65,20 @@ export function initialize(): void {
             }
         },
     });
+
+    $<HTMLInputElement>("#enable-major-release-emails").on("change", function () {
+        if (this.checked) {
+            $(this).val("true");
+        }
+        $(this).val("false");
+    });
+
+    $<HTMLInputElement>("#enable-maintenance-release-emails").on("change", function () {
+        if (this.checked) {
+            $(this).val("true");
+        }
+        $(this).val("false");
+    });
 }
 
 $(() => {
