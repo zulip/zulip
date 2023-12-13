@@ -3144,8 +3144,11 @@ class RemoteRealmBillingSession(BillingSession):
     def update_data_for_checkout_session_and_payment_intent(
         self, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:  # nocoverage
-        # TODO: Figure out what this should do.
+        assert self.remote_billing_user is not None
         updated_metadata = dict(
+            remote_realm_user_id=self.remote_billing_user.id,
+            remote_realm_user_email=self.get_email(),
+            remote_realm_host=self.remote_realm.host,
             **metadata,
         )
         return updated_metadata
@@ -3533,9 +3536,11 @@ class RemoteServerBillingSession(BillingSession):
     def update_data_for_checkout_session_and_payment_intent(
         self, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:  # nocoverage
+        assert self.remote_billing_user is not None
         updated_metadata = dict(
-            server=self.remote_server,
-            email=self.get_email(),
+            remote_server_user_id=self.remote_billing_user.id,
+            remote_server_user_email=self.get_email(),
+            remote_server_host=self.remote_server.hostname,
             **metadata,
         )
         return updated_metadata
