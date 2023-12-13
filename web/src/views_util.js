@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as compose_actions from "./compose_actions";
 import * as compose_recipient from "./compose_recipient";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
@@ -87,6 +88,7 @@ export function show(opts) {
     compose_recipient.handle_middle_pane_transition();
     search.clear_search_form();
     opts.complete_rerender();
+    compose_actions.on_show_navigation_view();
 
     // Misc.
     if (opts.is_recent_view) {
