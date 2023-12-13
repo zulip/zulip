@@ -669,6 +669,7 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#server-deactivate-error,
 #server-login-error,
 #autopay-error {
     font-weight: 400;
@@ -697,6 +698,7 @@ input[name="licenses"] {
     top: 5px;
 }
 
+#server-deactivate-error,
 #server-login-error {
     text-align: left;
     margin: 0 auto;

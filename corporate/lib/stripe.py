@@ -424,6 +424,14 @@ class StripeConnectionError(BillingError):
     pass
 
 
+class ServerDeactivateWithExistingPlanError(BillingError):  # nocoverage
+    def __init__(self) -> None:
+        super().__init__(
+            "server deactivation with existing plan",
+            "",
+        )
+
+
 class UpgradeWithExistingPlanError(BillingError):
     def __init__(self) -> None:
         super().__init__(
@@ -3853,16 +3861,45 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
 
 
 @transaction.atomic
-def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
-    # TODO: This should also ensure that the server doesn't have an active plan,
-    # and deactivate it otherwise. (Like do_deactivate_realm does.)
-
+def do_deactivate_remote_server(
+    remote_server: RemoteZulipServer, billing_session: RemoteServerBillingSession
+) -> None:
     if remote_server.deactivated:
         billing_logger.warning(
             "Cannot deactivate remote server with ID %d, server has already been deactivated.",
             remote_server.id,
         )
         return
+
+    server_plans_to_consider = CustomerPlan.objects.filter(
+        customer__remote_server=remote_server
+    ).exclude(status=CustomerPlan.ENDED)
+    realm_plans_to_consider = CustomerPlan.objects.filter(
+        customer__remote_realm__server=remote_server
+    ).exclude(status=CustomerPlan.ENDED)
+
+    for possible_plan in list(server_plans_to_consider) + list(realm_plans_to_consider):
+        if possible_plan.tier in [
+            CustomerPlan.TIER_SELF_HOSTED_BASE,
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+        ]:  # nocoverage
+            # No action required for free plans.
+            continue
+
+        if possible_plan.status in [
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+        ]:  # nocoverage
+            # No action required for plans scheduled to downgrade
+            # automatically.
+            continue
+
+        # This customer has some sort of paid plan; ask the customer
+        # to downgrade their paid plan so that they get the
+        # communication in that flow, and then they can come back and
+        # deactivate their server.
+        raise ServerDeactivateWithExistingPlanError  # nocoverage
 
     remote_server.deactivated = True
     remote_server.save(update_fields=["deactivated"])

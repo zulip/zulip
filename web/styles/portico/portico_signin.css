@@ -479,6 +479,7 @@ html {
 
     .alert {
         &:not(
+                #server-deactivate-error,
                 #server-login-error,
                 .alert-info,
                 .billing-page-success,

@@ -14,6 +14,7 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
+    ServerDeactivateWithExistingPlanError,
     UpdatePlanRequest,
     do_deactivate_remote_server,
 )
@@ -300,11 +301,11 @@ def remote_server_deactivate_page(
         return HttpResponseNotAllowed(["GET", "POST"])
 
     remote_server = billing_session.remote_server
+    context = {
+        "server_hostname": remote_server.hostname,
+        "action_url": reverse(remote_server_deactivate_page, args=[str(remote_server.uuid)]),
+    }
     if request.method == "GET":
-        context = {
-            "server_hostname": remote_server.hostname,
-            "action_url": reverse(remote_server_deactivate_page, args=[str(remote_server.uuid)]),
-        }
         return render(request, "corporate/remote_billing_server_deactivate.html", context=context)
 
     assert request.method == "POST"
@@ -312,7 +313,12 @@ def remote_server_deactivate_page(
         # Should be impossible if the user is using the UI.
         raise JsonableError(_("Parameter 'confirmed' is required"))
 
-    do_deactivate_remote_server(remote_server)
+    try:
+        do_deactivate_remote_server(remote_server, billing_session)
+    except ServerDeactivateWithExistingPlanError:  # nocoverage
+        context["show_existing_plan_error"] = "true"
+        return render(request, "corporate/remote_billing_server_deactivate.html", context=context)
+
     return render(
         request,
         "corporate/remote_billing_server_deactivated_success.html",
