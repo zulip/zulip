@@ -48,7 +48,7 @@ def remote_realm_event_status(
     *,
     stripe_session_id: Optional[str] = None,
     stripe_payment_intent_id: Optional[str] = None,
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_payment_intent_id=stripe_payment_intent_id
     )
