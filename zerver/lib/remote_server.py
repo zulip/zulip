@@ -392,7 +392,16 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
     assert isinstance(response["realms"], dict)  # for mypy
     realms = response["realms"]
     for realm_uuid, data in realms.items():
-        realm = Realm.objects.get(uuid=realm_uuid)
+        try:
+            realm = Realm.objects.get(uuid=realm_uuid)
+        except Realm.DoesNotExist:
+            # This occurs if the installation's database was rebuilt
+            # from scratch or a realm was hard-deleted from the local
+            # database, after generating secrets and talking to the
+            # bouncer.
+            logger.warning("Received unexpected realm UUID from bouncer %s", realm_uuid)
+            continue
+
         do_set_realm_property(
             realm, "push_notifications_enabled", data["can_push"], acting_user=None
         )
