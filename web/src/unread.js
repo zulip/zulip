@@ -52,7 +52,7 @@ class Bucketer {
     reverse_lookup = new Map();
 
     constructor(options) {
-        this.key_to_bucket = new options.key_to_bucket();
+        this.key_to_bucket = options.key_to_bucket;
         this.make_bucket = options.make_bucket;
     }
 
@@ -107,7 +107,7 @@ class Bucketer {
 
 class UnreadDirectMessageCounter {
     bucketer = new Bucketer({
-        key_to_bucket: Map,
+        key_to_bucket: new Map(),
         make_bucket: () => new Set(),
     });
 
@@ -217,14 +217,14 @@ const unread_direct_message_counter = new UnreadDirectMessageCounter();
 
 function make_per_stream_bucketer() {
     return new Bucketer({
-        key_to_bucket: FoldDict, // bucket keys are topics
+        key_to_bucket: new FoldDict(), // bucket keys are topics
         make_bucket: () => new Set(),
     });
 }
 
 class UnreadTopicCounter {
     bucketer = new Bucketer({
-        key_to_bucket: Map, // bucket keys are stream_ids
+        key_to_bucket: new Map(), // bucket keys are stream_ids
         make_bucket: make_per_stream_bucketer,
     });
 
