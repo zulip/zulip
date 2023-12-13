@@ -132,7 +132,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
         # Splitting the event command into command and text
         events_command = event["command"].split(maxsplit=1)
-        
+
         # If no command was supplied
         if events_command[0][0] != "/":
             command, text = "", event["command"]
