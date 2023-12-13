@@ -13,6 +13,8 @@ from corporate.models import (
     Customer,
     CustomerPlan,
     LicenseLedger,
+    SponsoredPlanTypes,
+    ZulipSponsorshipRequest,
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
@@ -23,6 +25,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.models import (
     MultiuseInvite,
+    OrgTypeEnum,
     PreregistrationUser,
     Realm,
     UserMessage,
@@ -43,6 +46,24 @@ from zilencer.models import RemoteZulipServer
 class TestRemoteServerSupportEndpoint(ZulipTestCase):
     @override
     def setUp(self) -> None:
+        def add_sponsorship_request(
+            hostname: str, org_type: int, website: str, paid_users: str, plan: str
+        ) -> None:
+            remote_server = RemoteZulipServer.objects.get(hostname=hostname)
+            customer = Customer.objects.create(
+                remote_server=remote_server, sponsorship_pending=True
+            )
+            ZulipSponsorshipRequest.objects.create(
+                customer=customer,
+                org_type=org_type,
+                org_website=website,
+                org_description="We help people.",
+                expected_total_users="20-35",
+                paid_users_count=paid_users,
+                paid_users_description="",
+                requested_plan=plan,
+            )
+
         super().setUp()
 
         # Set up some initial example data.
@@ -51,6 +72,23 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             RemoteZulipServer.objects.create(
                 hostname=hostname, contact_email=f"admin@{hostname}", plan_type=1, uuid=uuid.uuid4()
             )
+
+        # Add example sponsorship request data
+        add_sponsorship_request(
+            hostname="zulip-1.example.com",
+            org_type=OrgTypeEnum.Community.value,
+            website="",
+            paid_users="None",
+            plan=SponsoredPlanTypes.BUSINESS.value,
+        )
+
+        add_sponsorship_request(
+            hostname="zulip-2.example.com",
+            org_type=OrgTypeEnum.OpenSource.value,
+            website="example.org",
+            paid_users="",
+            plan=SponsoredPlanTypes.COMMUNITY.value,
+        )
 
     def test_search(self) -> None:
         self.login("cordelia")
@@ -77,6 +115,19 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(["<b>Max monthly messages</b>: 1000"], result)
         self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
 
+        # Sponsorship request information
+        self.assert_in_success_response(["<li><b>Organization type</b>: Community</li>"], result)
+        self.assert_in_success_response(
+            ["<li><b>Organization website</b>: No website submitted</li>"], result
+        )
+        self.assert_in_success_response(["<li><b>Paid users</b>: None</li>"], result)
+        self.assert_in_success_response(["<li><b>Requested plan</b>: Business</li>"], result)
+        self.assert_in_success_response(
+            ["<li><b>Organization description</b>: We help people.</li>"], result
+        )
+        self.assert_in_success_response(["<li><b>Estimated total users</b>: 20-35</li>"], result)
+        self.assert_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
+
         with mock.patch(
             "analytics.views.support.compute_max_monthly_messages", side_effect=MissingDataError
         ):
@@ -95,6 +146,35 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
         self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-2.example.com"], result)
         self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+
+        # Sponsorship request information
+        self.assert_in_success_response(
+            ["<li><b>Organization type</b>: Open-source project</li>"], result
+        )
+        self.assert_in_success_response(
+            ["<li><b>Organization website</b>: example.org</li>"], result
+        )
+        self.assert_in_success_response(["<li><b>Paid users</b>: </li>"], result)
+        self.assert_in_success_response(["<li><b>Requested plan</b>: Community</li>"], result)
+        self.assert_in_success_response(
+            ["<li><b>Organization description</b>: We help people.</li>"], result
+        )
+        self.assert_in_success_response(["<li><b>Estimated total users</b>: 20-35</li>"], result)
+        self.assert_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
+
+        result = self.client_get("/activity/remote/support", {"q": "admin@zulip-3.example.com"})
+        self.assert_in_success_response(["<h3>zulip-3.example.com</h3>"], result)
+        self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-3.example.com"], result)
+        self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+
+        # Sponsorship request information
+        self.assert_not_in_success_response(
+            ["<li><b>Organization description</b>: We help people.</li>"], result
+        )
+        self.assert_not_in_success_response(
+            ["<li><b>Estimated total users</b>: 20-35</li>"], result
+        )
+        self.assert_not_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
 
 
 class TestSupportEndpoint(ZulipTestCase):

@@ -32,3 +32,22 @@
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
     {% endif %}
 </form>
+
+{% if sponsorship_data.sponsorship_pending %}
+<div class="">
+    <h4>Sponsorship request information:</h4>
+    {% if sponsorship_data.latest_sponsorship_request %}
+    <ul>
+        <li><b>Organization type</b>: {{ sponsorship_data.latest_sponsorship_request.org_type }}</li>
+        <li><b>Organization website</b>: {{ sponsorship_data.latest_sponsorship_request.org_website }}</li>
+        <li><b>Organization description</b>: {{ sponsorship_data.latest_sponsorship_request.org_description }}</li>
+        <li><b>Estimated total users</b>: {{ sponsorship_data.latest_sponsorship_request.total_users }}</li>
+        <li><b>Paid users</b>: {{ sponsorship_data.latest_sponsorship_request.paid_users }}</li>
+        <li><b>Description of paid users</b>: {{ sponsorship_data.latest_sponsorship_request.paid_users_description }}</li>
+        <li><b>Requested plan</b>: {{ sponsorship_data.latest_sponsorship_request.requested_plan }}</li>
+    </ul>
+    {% else %}
+    <b>No sponsorship requests have been submitted.</b><br /><br />
+    {% endif %}
+</div>
+{% endif %}
