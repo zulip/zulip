@@ -573,6 +573,27 @@ export function initialize() {
             get_target_node,
             check_reference_removed,
         );
+
+        /*
+           The following implements a little tooltip giving the name for status emoji
+           when hovering them in the right sidebar. This requires special logic, to avoid
+           conflicting with the main tooltip or showing duplicate tooltips.
+        */
+        $(".user-presence-link .status-emoji-name").off("mouseenter").off("mouseleave");
+        $(".user-presence-link .status-emoji-name").on("mouseenter", () => {
+            const instance = $elem.parent()[0]._tippy;
+            if (instance && instance.state.isVisible) {
+                instance.destroy();
+            }
+        });
+        $(".user-presence-link .status-emoji-name").on("mouseleave", () => {
+            do_render_buddy_list_tooltip(
+                $elem.parent(),
+                title_data,
+                get_target_node,
+                check_reference_removed,
+            );
+        });
     });
 
     // DIRECT MESSAGE LIST TOOLTIPS (not displayed on touch devices)
@@ -606,6 +627,27 @@ export function initialize() {
             check_reference_removed,
             check_subtree,
         );
+
+        /*
+           The following implements a little tooltip giving the name for status emoji
+           when hovering them in the left sidebar. This requires special logic, to avoid
+           conflicting with the main tooltip or showing duplicate tooltips.
+        */
+        $(".dm-user-status .status-emoji-name").off("mouseenter").off("mouseleave");
+        $(".dm-user-status .status-emoji-name").on("mouseenter", () => {
+            const instance = $elem[0]._tippy;
+            if (instance && instance.state.isVisible) {
+                instance.destroy();
+            }
+        });
+        $(".dm-user-status .status-emoji-name").on("mouseleave", () => {
+            do_render_buddy_list_tooltip(
+                $elem,
+                title_data,
+                get_target_node,
+                check_reference_removed,
+            );
+        });
     });
 
     // Recent conversations direct messages (Not displayed on small widths)
