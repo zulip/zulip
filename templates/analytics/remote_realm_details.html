@@ -11,25 +11,24 @@
 
 {% if remote_realm.plan_type != SPONSORED_PLAN_TYPE %}
 {% with %}
-    {% set customer = plan_data[remote_realm.id].customer %}
+    {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
     {% set remote_id = remote_realm.id %}
     {% set remote_type = "remote_realm_id" %}
-    {% set has_fixed_price = plan_data[remote_realm.id].has_fixed_price %}
-    {% set get_discount = get_discount %}
+    {% set has_fixed_price = support_data[remote_realm.id].plan_data.has_fixed_price %}
     {% include 'analytics/sponsorship_forms_support.html' %}
 {% endwith %}
 {% endif %}
 
-{% if plan_data[remote_realm.id].current_plan %}
+{% if support_data[remote_realm.id].plan_data.current_plan %}
 <div class="remote-realm-information">
     {% with %}
-        {% set plan_data = plan_data[remote_realm.id] %}
+        {% set plan_data = support_data[remote_realm.id].plan_data %}
         {% include 'analytics/current_plan_details.html' %}
     {% endwith %}
 </div>
 
 {% with %}
-    {% set current_plan = plan_data[remote_realm.id].current_plan %}
+    {% set current_plan = support_data[remote_realm.id].plan_data.current_plan %}
     {% set remote_id = remote_realm.id %}
     {% set remote_type = "remote_realm_id" %}
     {% include 'analytics/current_plan_forms_support.html' %}
