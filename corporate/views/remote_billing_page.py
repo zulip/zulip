@@ -30,6 +30,7 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingUserDict,
     get_remote_server_and_user_from_session,
 )
+from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
@@ -261,18 +262,30 @@ def remote_realm_billing_finalize_login(
         f"remote_realm:{remote_realm_uuid}"
     ] = identity_dict
 
-    # TODO: Figure out redirects based on whether the realm/server already has a plan
-    # and should be taken to /billing or doesn't have and should be taken to /plans.
-    # For now we're only implemented the case where we have the RemoteRealm, and we take
-    # to /plans.
-
-    assert identity_dict["next_page"] in VALID_NEXT_PAGES
-    if identity_dict["next_page"] is None:
-        return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(remote_realm_uuid,)))
-    else:
+    next_page = identity_dict["next_page"]
+    assert next_page in VALID_NEXT_PAGES
+    if next_page is not None:
         return HttpResponseRedirect(
-            reverse(f"remote_realm_{identity_dict['next_page']}_page", args=(remote_realm_uuid,))
+            reverse(f"remote_realm_{next_page}_page", args=(remote_realm_uuid,))
         )
+    elif remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED:
+        # If they have a scheduled upgrade, redirect to billing page.
+        billing_session = RemoteRealmBillingSession(remote_realm)
+        customer = billing_session.get_customer()
+        if (
+            customer is not None
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is not None
+        ):
+            return HttpResponseRedirect(
+                reverse("remote_realm_billing_page", args=(remote_realm_uuid,))
+            )
+        return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(remote_realm_uuid,)))
+    elif remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:
+        return HttpResponseRedirect(
+            reverse("remote_realm_sponsorship_page", args=(remote_realm_uuid,))
+        )
+    else:
+        return HttpResponseRedirect(reverse("remote_realm_billing_page", args=(remote_realm_uuid,)))
 
 
 @self_hosting_management_endpoint
@@ -612,8 +625,6 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         # don't need a pretty error.
         raise JsonableError(_("You must accept the Terms of Service to proceed."))
 
-    next_page = prereg_object.next_page
-
     remote_billing_user, created = RemoteServerBillingUser.objects.update_or_create(
         defaults={"full_name": full_name},
         email=prereg_object.email,
@@ -640,12 +651,23 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         remote_billing_user_id=remote_billing_user.id,
     )
 
+    next_page = prereg_object.next_page
     assert next_page in VALID_NEXT_PAGES
     if next_page is not None:
         return HttpResponseRedirect(
             reverse(f"remote_server_{next_page}_page", args=(remote_server_uuid,))
         )
     elif remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED:
+        # If they have a scheduled upgrade, redirect to billing page.
+        billing_session = RemoteServerBillingSession(remote_server)
+        customer = billing_session.get_customer()
+        if (
+            customer is not None
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is not None
+        ):
+            return HttpResponseRedirect(
+                reverse("remote_server_billing_page", args=(remote_server_uuid,))
+            )
         return HttpResponseRedirect(reverse("remote_server_plans_page", args=(remote_server_uuid,)))
     elif remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY:
         return HttpResponseRedirect(
