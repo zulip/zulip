@@ -152,6 +152,9 @@ class Command(ZulipBaseCommand):
             realm = self.get_realm(options)
             users = self.get_users(options, realm, is_bot=False)
 
+        if admins_only:
+            users = users.filter(is_realm_admin=True)
+
         # Only email users who've agreed to the terms of service.
         if settings.TERMS_OF_SERVICE_VERSION is not None:
             users = users.exclude(
@@ -161,7 +164,6 @@ class Command(ZulipBaseCommand):
             users,
             target_emails=target_emails,
             dry_run=dry_run,
-            admins_only=admins_only,
             options=options,
             add_context=add_context,
         )

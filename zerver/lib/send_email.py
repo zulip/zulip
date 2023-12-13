@@ -513,7 +513,6 @@ def send_custom_email(
     target_emails: Sequence[str] = [],
     dry_run: bool,
     options: Dict[str, str],
-    admins_only: bool = False,
     add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
 ) -> None:
     """
@@ -564,8 +563,6 @@ def send_custom_email(
 
     # Finally, we send the actual emails.
     for user_profile in users.select_related("realm").order_by("id"):
-        if admins_only and not user_profile.is_realm_admin:
-            continue
         context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,

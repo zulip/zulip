@@ -11,7 +11,6 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.actions.users import do_change_user_role
 from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
     get_onboarding_email_schedule,
@@ -211,26 +210,6 @@ class TestCustomEmails(ZulipTestCase):
                 "from_name": from_name,
             },
         )
-
-    def test_send_custom_email_admins_only(self) -> None:
-        admin_user = self.example_user("hamlet")
-        do_change_user_role(admin_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        non_admin_user = self.example_user("cordelia")
-
-        markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
-        )
-        send_custom_email(
-            UserProfile.objects.filter(id__in=(admin_user.id, non_admin_user.id)),
-            dry_run=False,
-            admins_only=True,
-            options={
-                "markdown_template_path": markdown_template_path,
-            },
-        )
-        self.assert_length(mail.outbox, 1)
-        self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
 
     def test_send_custom_email_dry_run(self) -> None:
         hamlet = self.example_user("hamlet")
