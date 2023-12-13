@@ -6,18 +6,25 @@
 {% endblock %}
 
 {% block portico_content %}
-<div class="app portico-page">
-    <div class="app-main portico-page-container flex full-page account-deactivation account-email-confirm-container new-style">
+<div class="register-account flex full-page" id="account-deactivated-success-page">
+    <div class="center-block new-style">
         <div class="pitch">
             <h1>
                 Registration deactivated for<br />{{ server_hostname }}
             </h1>
         </div>
         <div class="white-box">
-            <p>Your server's registration has been deactivated.</p>
+            <div id="account-deactivated-success-page-details">
+                <div class="input-box account-deactivated-success-page-field no-validation" id="account-deactivated-success-page-top-message">
+                    <div class="not-editable-realm-field">
+                        Your server's registration has been deactivated.
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block customhead %}

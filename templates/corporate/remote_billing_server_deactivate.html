@@ -17,15 +17,17 @@
             <div id="server-deactivate-details">
                 <form id="server-deactivate-form" method="post" action="{{ action_url }}">
                     {{ csrf_input }}
-                    <p class="not-editable-realm-field">
-                        You are about to deactivate this server's
-                        registration with
-                        the <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Zulip
+                    <div id="server-deactivate-form-top-description" class="input-box server-deactivate-form-field no-validation">
+                        <div class="not-editable-realm-field">
+                            You are about to deactivate this server's
+                            registration with
+                            the <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Zulip
                         Mobile Push Notification Service</a>. This
                         will disable delivery of mobile push
                         notifications for all organizations hosted
                         on <b>{{ server_hostname }}</b>.
-                    </p>
+                        </div>
+                    </div>
                     <input type="hidden" name="confirmed" value="true" />
                     <div class="upgrade-button-container">
                         <button type="submit" id="server-deactivate-button" class="stripe-button-el invoice-button">
