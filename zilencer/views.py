@@ -768,10 +768,10 @@ def handle_customer_migration_from_server_to_realms(
         and server_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         and server_plan.status == CustomerPlan.ACTIVE
     ):
-        assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+        assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
         assert server_plan.end_date is not None
         remote_realms = RemoteRealm.objects.filter(
-            uuid__in=realm_uuids, server=server, plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED
+            uuid__in=realm_uuids, server=server, plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
         )
 
         # Verify that all the realms are on self hosted plan.
@@ -799,7 +799,7 @@ def handle_customer_migration_from_server_to_realms(
     # We only do this migration if there is only one realm besides the system bot realm.
     elif len(realm_uuids) == 1:
         remote_realm = RemoteRealm.objects.get(
-            uuid=realm_uuids[0], plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED
+            uuid=realm_uuids[0], plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
         )
         # Migrate customer from server to remote realm if there is only one realm.
         server_customer.remote_realm = remote_realm
@@ -809,7 +809,7 @@ def handle_customer_migration_from_server_to_realms(
         # Might be better to call do_change_plan_type here.
         remote_realm.plan_type = server.plan_type
         remote_realm.save(update_fields=["plan_type"])
-        server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+        server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
         server.save(update_fields=["plan_type"])
         remote_realm_audit_logs.append(
             RemoteRealmAuditLog(
@@ -819,7 +819,7 @@ def handle_customer_migration_from_server_to_realms(
                 event_time=event_time,
                 extra_data={
                     "attr_name": "plan_type",
-                    "old_value": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                    "old_value": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
                     "new_value": remote_realm.plan_type,
                 },
             )

@@ -54,13 +54,22 @@ class RemoteZulipServer(models.Model):
     deactivated = models.BooleanField(default=False)
 
     # Plan types for self-hosted customers
+    #
+    # We reserve PLAN_TYPE_SELF_HOSTED=Realm.PLAN_TYPE_SELF_HOSTED for
+    # self-hosted installations that aren't using the notifications
+    # service.
+    #
+    # The other values align with, e.g., CustomerPlan.TIER_SELF_HOSTED_BASE
     PLAN_TYPE_SELF_HOSTED = 1
-    PLAN_TYPE_COMMUNITY = 100
-    PLAN_TYPE_BUSINESS = 101
-    PLAN_TYPE_ENTERPRISE = 102
+    PLAN_TYPE_SELF_MANAGED = 100
+    PLAN_TYPE_SELF_MANAGED_LEGACY = 101
+    PLAN_TYPE_COMMUNITY = 102
+    PLAN_TYPE_BUSINESS = 103
+    PLAN_TYPE_PLUS = 104
+    PLAN_TYPE_ENTERPRISE = 105
 
     # The current billing plan for the remote server, similar to Realm.plan_type.
-    plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
+    plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_MANAGED)
 
     # This is not synced with the remote server, but only filled for sponsorship requests.
     org_type = models.PositiveSmallIntegerField(
@@ -143,13 +152,20 @@ class RemoteRealm(models.Model):
     realm_date_created = models.DateTimeField()
 
     # Plan types for self-hosted customers
+    #
+    # We reserve PLAN_TYPE_SELF_HOSTED=Realm.PLAN_TYPE_SELF_HOSTED for
+    # self-hosted installations that aren't using the notifications
+    # service.
+    #
+    # The other values align with, e.g., CustomerPlan.TIER_SELF_HOSTED_BASE
     PLAN_TYPE_SELF_HOSTED = 1
-    PLAN_TYPE_COMMUNITY = 100
-    PLAN_TYPE_BUSINESS = 101
-    PLAN_TYPE_ENTERPRISE = 102
-
-    # The current billing plan for the remote server, similar to Realm.plan_type.
-    plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED, db_index=True)
+    PLAN_TYPE_SELF_MANAGED = 100
+    PLAN_TYPE_SELF_MANAGED_LEGACY = 101
+    PLAN_TYPE_COMMUNITY = 102
+    PLAN_TYPE_BUSINESS = 103
+    PLAN_TYPE_PLUS = 104
+    PLAN_TYPE_ENTERPRISE = 105
+    plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_MANAGED, db_index=True)
 
     @override
     def __str__(self) -> str:

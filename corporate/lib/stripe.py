@@ -3177,10 +3177,6 @@ class RemoteRealmBillingSession(BillingSession):
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
-        elif (
-            tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
-        ):  # nocoverage # Plus plan doesn't use this code path yet.
-            plan_type = RemoteRealm.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
 
@@ -3259,7 +3255,7 @@ class RemoteRealmBillingSession(BillingSession):
     def process_downgrade(self, plan: CustomerPlan) -> None:  # nocoverage
         with transaction.atomic():
             old_plan_type = self.remote_realm.plan_type
-            new_plan_type = RemoteRealm.PLAN_TYPE_SELF_HOSTED
+            new_plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED
             self.remote_realm.plan_type = new_plan_type
             self.remote_realm.save(update_fields=["plan_type"])
             self.write_to_audit_log(
@@ -3565,18 +3561,12 @@ class RemoteServerBillingSession(BillingSession):
     def do_change_plan_type(
         self, *, tier: Optional[int], is_sponsored: bool = False
     ) -> None:  # nocoverage
-        # TODO: Create actual plan types.
-
         # This function needs to translate between the different
         # formats of CustomerPlan.tier and RealmZulipServer.plan_type.
         if is_sponsored:
             plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
-        elif (
-            tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
-        ):  # nocoverage # Plus plan doesn't use this code path yet.
-            plan_type = RemoteZulipServer.PLAN_TYPE_ENTERPRISE
         else:
             raise AssertionError("Unexpected tier")
 
@@ -3628,7 +3618,7 @@ class RemoteServerBillingSession(BillingSession):
     def process_downgrade(self, plan: CustomerPlan) -> None:  # nocoverage
         with transaction.atomic():
             old_plan_type = self.remote_server.plan_type
-            new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+            new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
             self.remote_server.plan_type = new_plan_type
             self.remote_server.save(update_fields=["plan_type"])
             self.write_to_audit_log(

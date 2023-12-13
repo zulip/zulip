@@ -268,7 +268,10 @@ def remote_realm_billing_finalize_login(
         return HttpResponseRedirect(
             reverse(f"remote_realm_{next_page}_page", args=(remote_realm_uuid,))
         )
-    elif remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED:
+    elif remote_realm.plan_type in [
+        RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+        RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+    ]:
         # If they have a scheduled upgrade, redirect to billing page.
         billing_session = RemoteRealmBillingSession(remote_realm)
         customer = billing_session.get_customer()
@@ -657,7 +660,10 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         return HttpResponseRedirect(
             reverse(f"remote_server_{next_page}_page", args=(remote_server_uuid,))
         )
-    elif remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED:
+    elif remote_server.plan_type in [
+        RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
+        RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY,
+    ]:
         # If they have a scheduled upgrade, redirect to billing page.
         billing_session = RemoteServerBillingSession(remote_server)
         customer = billing_session.get_customer()
