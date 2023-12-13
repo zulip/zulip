@@ -253,7 +253,7 @@ EXEMPT_FILES = make_set(
         "web/src/ui_init.js",
         "web/src/ui_report.ts",
         "web/src/ui_util.ts",
-        "web/src/unread.js",
+        "web/src/unread.ts",
         "web/src/unread_ops.js",
         "web/src/unread_ui.js",
         "web/src/upload.js",
