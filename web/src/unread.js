@@ -307,7 +307,7 @@ class UnreadTopicCounter {
                 // get_stream_count calculates both the number of
                 // unmuted unread as well as the number of muted
                 // unreads.
-                res.stream_count.set(stream_id, this.get_stream_count(stream_id));
+                res.stream_count.set(stream_id, this.get_stream_count_info(stream_id));
                 res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
                 res.followed_topic_unread_messages +=
                     res.stream_count.get(stream_id).followed_count;
@@ -358,7 +358,7 @@ class UnreadTopicCounter {
         return result;
     }
 
-    get_stream_count(stream_id) {
+    get_stream_count_info(stream_id) {
         const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
@@ -896,8 +896,8 @@ export function get_notifiable_count() {
     return calculate_notifiable_count(res);
 }
 
-export function num_unread_for_stream(stream_id) {
-    return unread_topic_counter.get_stream_count(stream_id);
+export function unread_count_info_for_stream(stream_id) {
+    return unread_topic_counter.get_stream_count_info(stream_id);
 }
 
 export function num_unread_for_topic(stream_id, topic_name) {
