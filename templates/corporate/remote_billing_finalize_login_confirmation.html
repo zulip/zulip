@@ -2,14 +2,24 @@
 {% set entrypoint = "upgrade" %}
 
 {% block title %}
-<title>Log in to Zulip plan management for {{ host }} | Zulip</title>
+<title>
+    {% if next_page and next_page == "deactivate" %}
+    Log in to deactivate registration for {{ host }} | Zulip
+    {% else %}
+    Log in to Zulip plan management for {{ host }} | Zulip
+    {% endif %}
+</title>
 {% endblock %}
 
 {% block portico_content %}
 <div id="remote-billing-confirm-login-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
+            {% if next_page and next_page == "deactivate" %}
+            <h1>Log in to deactivate registration for<br/>{{ host }}</h1>
+            {% else %}
             <h1>Log in to Zulip plan management for<br/>{{ host }}</h1>
+            {% endif %}
         </div>
         <div class="white-box">
             <form id="remote-billing-confirm-login-form" method="post" action="{{ action_url }}">
