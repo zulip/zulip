@@ -364,7 +364,8 @@ def populate_realm(customer_profile: CustomerProfile) -> Optional[Realm]:
         # Remote realm billing data on their local server is irrelevant.
         return realm
 
-    if customer_profile.sponsorship_pending:
+    if customer_profile.sponsorship_pending or customer_profile.is_sponsored:
+        # plan_type is already set correctly above for sponsored realms.
         customer = Customer.objects.create(
             realm=realm,
             sponsorship_pending=customer_profile.sponsorship_pending,
@@ -512,7 +513,8 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
         billing_session.do_change_plan_type(
             tier=customer_profile.tier, is_sponsored=customer_profile.is_sponsored
         )
-        create_plan_for_customer(customer, customer_profile)
+        if not customer_profile.is_sponsored:
+            create_plan_for_customer(customer, customer_profile)
 
     if customer_profile.sponsorship_pending:
         billing_session.update_customer_sponsorship_status(True)
