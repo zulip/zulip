@@ -759,7 +759,7 @@ export function update_message_for_mention(message, content_edited = false) {
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);
         add_message_to_unread_mention_topics(message.id);
-        if (!message.stream_id) {
+        if (message.type === "private") {
             direct_message_with_mention_count.add(message.id);
         }
     } else {
