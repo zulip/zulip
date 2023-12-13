@@ -511,7 +511,7 @@ class LegacyServerLoginTest(BouncerTestCase):
             )
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(
-            ["We have sent a log in link", "link will expire in", email],
+            ["We have sent", "a log in", "link will expire in", email],
             result,
         )
 
