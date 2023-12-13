@@ -2987,7 +2987,7 @@ class RealmBillingSession(BillingSession):
         pass
 
 
-class RemoteRealmBillingSession(BillingSession):  # nocoverage
+class RemoteRealmBillingSession(BillingSession):
     def __init__(
         self,
         remote_realm: RemoteRealm,
@@ -2996,7 +2996,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     ) -> None:
         self.remote_realm = remote_realm
         self.remote_billing_user = remote_billing_user
-        if support_staff is not None:
+        if support_staff is not None:  # nocoverage
             assert support_staff.is_staff
             self.support_session = True
         else:
@@ -3004,12 +3004,12 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
 
     @override
     @property
-    def billing_entity_display_name(self) -> str:
+    def billing_entity_display_name(self) -> str:  # nocoverage
         return self.remote_realm.name
 
     @override
     @property
-    def billing_session_url(self) -> str:
+    def billing_session_url(self) -> str:  # nocoverage
         return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/realm/{self.remote_realm.uuid}"
 
     @override
@@ -3018,7 +3018,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         return f"/realm/{self.remote_realm.uuid}"
 
     @override
-    def support_url(self) -> str:
+    def support_url(self) -> str:  # nocoverage
         return build_support_url("remote_servers_support", self.remote_realm.server.hostname)
 
     @override
@@ -3039,7 +3039,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         )
         return remote_realm_counts.non_guest_user_count + remote_realm_counts.guest_user_count
 
-    def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:
+    def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:  # nocoverage
         # The RemoteRealm error page code path should not really be
         # possible, in that the self-hosted server will have uploaded
         # current audit log data as needed as part of logging the user
@@ -3053,7 +3053,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         )
 
     @override
-    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
+    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:  # nocoverage
         if event_type is AuditLogEventType.STRIPE_CUSTOMER_CREATED:
             return RemoteRealmAuditLog.STRIPE_CUSTOMER_CREATED
         elif event_type is AuditLogEventType.STRIPE_CARD_CHANGED:
@@ -3084,7 +3084,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         event_time: datetime,
         *,
         extra_data: Optional[Dict[str, Any]] = None,
-    ) -> None:
+    ) -> None:  # nocoverage
         # These audit logs don't use all the fields of `RemoteRealmAuditLog`:
         #
         # * remote_id is None because this is not synced from a remote table.
@@ -3104,7 +3104,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         RemoteRealmAuditLog.objects.create(**log_data)
 
     @override
-    def get_data_for_stripe_customer(self) -> StripeCustomerData:
+    def get_data_for_stripe_customer(self) -> StripeCustomerData:  # nocoverage
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
         metadata: Dict[str, Any] = {}
@@ -3120,7 +3120,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @override
     def update_data_for_checkout_session_and_payment_intent(
         self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Any]:  # nocoverage
         # TODO: Figure out what this should do.
         updated_metadata = dict(
             **metadata,
@@ -3130,7 +3130,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @override
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
-    ) -> Customer:
+    ) -> Customer:  # nocoverage
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
             assert self.support_session is False
@@ -3146,7 +3146,9 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             return customer
 
     @override
-    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+    def do_change_plan_type(
+        self, *, tier: Optional[int], is_sponsored: bool = False
+    ) -> None:  # nocoverage
         if is_sponsored:
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
@@ -3171,7 +3173,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         )
 
     @override
-    def approve_sponsorship(self) -> str:
+    def approve_sponsorship(self) -> str:  # nocoverage
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
@@ -3211,7 +3213,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         return self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:  # nocoverage
         assert self.remote_billing_user is not None
         return {"type": "card_update", "remote_realm_user_id": str(self.remote_billing_user.id)}
 
@@ -3228,7 +3230,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         )
 
     @override
-    def process_downgrade(self, plan: CustomerPlan) -> None:
+    def process_downgrade(self, plan: CustomerPlan) -> None:  # nocoverage
         with transaction.atomic():
             old_plan_type = self.remote_realm.plan_type
             new_plan_type = RemoteRealm.PLAN_TYPE_SELF_HOSTED
@@ -3246,7 +3248,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @override
     def get_type_of_plan_tier_change(
         self, current_plan_tier: int, new_plan_tier: int
-    ) -> PlanTierChangeType:
+    ) -> PlanTierChangeType:  # nocoverage
         valid_plan_tiers = [
             CustomerPlan.TIER_SELF_HOSTED_LEGACY,
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
@@ -3274,7 +3276,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
             return PlanTierChangeType.DOWNGRADE
 
     @override
-    def has_billing_access(self) -> bool:
+    def has_billing_access(self) -> bool:  # nocoverage
         # We don't currently have a way to authenticate a remote
         # session that isn't authorized for billing access.
         return True
@@ -3285,7 +3287,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     ]
 
     @override
-    def on_paid_plan(self) -> bool:
+    def on_paid_plan(self) -> bool:  # nocoverage
         return self.remote_realm.plan_type in self.PAID_PLANS
 
     @override
@@ -3306,7 +3308,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
     @override
     def get_sponsorship_request_session_specific_context(
         self,
-    ) -> SponsorshipRequestSessionSpecificContext:
+    ) -> SponsorshipRequestSessionSpecificContext:  # nocoverage
         assert self.remote_billing_user is not None
         return SponsorshipRequestSessionSpecificContext(
             realm_user=None,
@@ -3321,13 +3323,13 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         )
 
     @override
-    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:  # nocoverage
         if self.remote_realm.org_type != org_type:
             self.remote_realm.org_type = org_type
             self.remote_realm.save(update_fields=["org_type"])
 
     @override
-    def sync_license_ledger_if_needed(self) -> None:
+    def sync_license_ledger_if_needed(self) -> None:  # nocoverage
         last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
         if last_ledger is None:
             return
@@ -3375,7 +3377,7 @@ class RemoteRealmBillingSession(BillingSession):  # nocoverage
         }
 
 
-class RemoteServerBillingSession(BillingSession):  # nocoverage
+class RemoteServerBillingSession(BillingSession):
     """Billing session for pre-8.0 servers that do not yet support
     creating RemoteRealm objects."""
 
@@ -3387,7 +3389,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     ) -> None:
         self.remote_server = remote_server
         self.remote_billing_user = remote_billing_user
-        if support_staff is not None:
+        if support_staff is not None:  # nocoverage
             assert support_staff.is_staff
             self.support_session = True
         else:
@@ -3395,12 +3397,12 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
 
     @override
     @property
-    def billing_entity_display_name(self) -> str:
+    def billing_entity_display_name(self) -> str:  # nocoverage
         return self.remote_server.hostname
 
     @override
     @property
-    def billing_session_url(self) -> str:
+    def billing_session_url(self) -> str:  # nocoverage
         return f"{settings.EXTERNAL_URI_SCHEME}{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}/server/{self.remote_server.uuid}"
 
     @override
@@ -3409,7 +3411,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return f"/server/{self.remote_server.uuid}"
 
     @override
-    def support_url(self) -> str:
+    def support_url(self) -> str:  # nocoverage
         return build_support_url("remote_servers_support", self.remote_server.hostname)
 
     @override
@@ -3422,7 +3424,9 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return self.remote_billing_user.email
 
     @override
-    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
+    def current_count_for_billed_licenses(
+        self, event_time: datetime = timezone_now()
+    ) -> int:  # nocoverage
         if has_stale_audit_log(self.remote_server):
             raise MissingDataError
         remote_server_counts = get_remote_server_guest_and_non_guest_count(
@@ -3430,7 +3434,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         )
         return remote_server_counts.non_guest_user_count + remote_server_counts.guest_user_count
 
-    def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:
+    def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:  # nocoverage
         # The remedy for a RemoteZulipServer login is usually
         # upgrading to Zulip 8.0 or enabling SUBMIT_USAGE_STATISTICS.
         missing_data_context = {
@@ -3442,7 +3446,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         )
 
     @override
-    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
+    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:  # nocoverage
         if event_type is AuditLogEventType.STRIPE_CUSTOMER_CREATED:
             return RemoteZulipServerAuditLog.STRIPE_CUSTOMER_CREATED
         elif event_type is AuditLogEventType.STRIPE_CARD_CHANGED:
@@ -3473,7 +3477,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         event_time: datetime,
         *,
         extra_data: Optional[Dict[str, Any]] = None,
-    ) -> None:
+    ) -> None:  # nocoverage
         audit_log_event = self.get_audit_log_event(event_type)
         log_data = {
             "server": self.remote_server,
@@ -3487,7 +3491,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         RemoteZulipServerAuditLog.objects.create(**log_data)
 
     @override
-    def get_data_for_stripe_customer(self) -> StripeCustomerData:
+    def get_data_for_stripe_customer(self) -> StripeCustomerData:  # nocoverage
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
         metadata: Dict[str, Any] = {}
@@ -3503,7 +3507,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @override
     def update_data_for_checkout_session_and_payment_intent(
         self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Any]:  # nocoverage
         updated_metadata = dict(
             server=self.remote_server,
             email=self.get_email(),
@@ -3514,7 +3518,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @override
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
-    ) -> Customer:
+    ) -> Customer:  # nocoverage
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
             assert self.support_session is False
@@ -3530,7 +3534,9 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
             return customer
 
     @override
-    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+    def do_change_plan_type(
+        self, *, tier: Optional[int], is_sponsored: bool = False
+    ) -> None:  # nocoverage
         # TODO: Create actual plan types.
 
         # This function needs to translate between the different
@@ -3558,7 +3564,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         )
 
     @override
-    def approve_sponsorship(self) -> str:
+    def approve_sponsorship(self) -> str:  # nocoverage
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
@@ -3588,7 +3594,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
-    def process_downgrade(self, plan: CustomerPlan) -> None:
+    def process_downgrade(self, plan: CustomerPlan) -> None:  # nocoverage
         with transaction.atomic():
             old_plan_type = self.remote_server.plan_type
             new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
@@ -3608,7 +3614,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         return self.remote_server.plan_type == self.remote_server.PLAN_TYPE_COMMUNITY
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:  # nocoverage
         assert self.remote_billing_user is not None
         return {"type": "card_update", "remote_server_user_id": str(self.remote_billing_user.id)}
 
@@ -3627,7 +3633,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @override
     def get_type_of_plan_tier_change(
         self, current_plan_tier: int, new_plan_tier: int
-    ) -> PlanTierChangeType:
+    ) -> PlanTierChangeType:  # nocoverage
         valid_plan_tiers = [
             CustomerPlan.TIER_SELF_HOSTED_LEGACY,
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
@@ -3672,11 +3678,11 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     ]
 
     @override
-    def on_paid_plan(self) -> bool:
+    def on_paid_plan(self) -> bool:  # nocoverage
         return self.remote_server.plan_type in self.PAID_PLANS
 
     @override
-    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
+    def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:  # nocoverage
         context.update(
             realm_org_type=self.remote_server.org_type,
             sorted_org_types=sorted(
@@ -3693,7 +3699,7 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
     @override
     def get_sponsorship_request_session_specific_context(
         self,
-    ) -> SponsorshipRequestSessionSpecificContext:
+    ) -> SponsorshipRequestSessionSpecificContext:  # nocoverage
         assert self.remote_billing_user is not None
         return SponsorshipRequestSessionSpecificContext(
             realm_user=None,
@@ -3708,13 +3714,13 @@ class RemoteServerBillingSession(BillingSession):  # nocoverage
         )
 
     @override
-    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:
+    def save_org_type_from_request_sponsorship_session(self, org_type: int) -> None:  # nocoverage
         if self.remote_server.org_type != org_type:
             self.remote_server.org_type = org_type
             self.remote_server.save(update_fields=["org_type"])
 
     @override
-    def sync_license_ledger_if_needed(self) -> None:
+    def sync_license_ledger_if_needed(self) -> None:  # nocoverage
         last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
         if last_ledger is None:
             return
