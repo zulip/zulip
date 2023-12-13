@@ -617,11 +617,19 @@ def send_custom_server_email(
 ) -> None:
     email_sender = custom_email_sender(**options, dry_run=dry_run)
 
+    assert settings.CORPORATE_ENABLED
+    from corporate.views.remote_billing_page import (
+        generate_confirmation_link_for_server_deactivation,
+    )
+
     for server in remote_servers:
         email_sender(
             to_email=server.contact_email,
             context={
                 "remote_server_email": True,
+                "unsubscribe_link": generate_confirmation_link_for_server_deactivation(
+                    server, 60 * 24 * 2
+                ),
             },
         )
 
