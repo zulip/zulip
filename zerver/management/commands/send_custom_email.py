@@ -101,7 +101,27 @@ class Command(ZulipBaseCommand):
 
         if options["remote_servers"]:
             servers = RemoteZulipServer.objects.filter(deactivated=False)
-            send_custom_server_email(servers, dry_run=dry_run, options=options)
+            add_server_context = None
+            if options["json_file"]:
+                with open(options["json_file"]) as f:
+                    server_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
+                servers = RemoteZulipServer.objects.filter(
+                    id__in=[int(server_id) for server_id in server_data]
+                )
+
+                def add_server_context_from_dict(
+                    context: Dict[str, object], server: RemoteZulipServer
+                ) -> None:
+                    context.update(server_data.get(str(server.id), {}))
+
+                add_server_context = add_server_context_from_dict
+
+            send_custom_server_email(
+                servers,
+                dry_run=dry_run,
+                options=options,
+                add_context=add_server_context,
+            )
             if dry_run:
                 print("Would send the above email to:")
                 for server in servers:
