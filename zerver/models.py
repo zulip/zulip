@@ -3254,6 +3254,7 @@ class Message(AbstractMessage):
                     "zulipios",
                     "zulipdesktop",
                     "zulipmobile",
+                    "zulipflutter",
                     "zulipelectron",
                     "zulipterminal",
                     "snipe",
