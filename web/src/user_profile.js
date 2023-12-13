@@ -393,7 +393,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         if (is_system_bot) {
             args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
-            const bot_owner = people.get_bot_owner_user(bot_owner_id);
+            const bot_owner = people.get_bot_owner_user(user);
             args.bot_owner = bot_owner;
         }
         args.bot_type = settings_data.bot_type_id_to_string(user.bot_type);
