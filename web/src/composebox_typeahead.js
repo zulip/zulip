@@ -5,6 +5,7 @@ import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
+import {banner_not_already_displayed} from "./compose_actions";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -926,7 +927,9 @@ export function content_typeahead_selected(item, event) {
             } else {
                 beginning += "** ";
             }
-            compose_validate.warn_if_private_stream_is_linked(item, $textbox);
+            if (banner_not_already_displayed(item)) {
+                compose_validate.warn_if_private_stream_is_linked(item, $textbox);
+            }
             break;
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including

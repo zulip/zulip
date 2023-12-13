@@ -27,6 +27,15 @@ import * as stream_data from "./stream_data";
 
 const compose_clear_box_hooks = [];
 const compose_cancel_hooks = [];
+let displayed_banner_list = [];
+
+export function banner_not_already_displayed(item) {
+    if (displayed_banner_list.includes(item)) {
+        return false;
+    }
+    displayed_banner_list.push(item);
+    return true;
+}
 
 export function register_compose_box_clear_hook(hook) {
     compose_clear_box_hooks.push(hook);
@@ -59,6 +68,7 @@ function hide_box() {
 }
 
 function show_compose_box(msg_type, opts) {
+    displayed_banner_list = [];
     compose_recipient.update_compose_for_message_type(msg_type, opts);
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
