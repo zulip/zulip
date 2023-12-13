@@ -149,21 +149,12 @@
                 </div>
             </div>
 
-            {% if user_is_authenticated and not is_self_hosted_realm %}
-            <div class="self-hosted-plan-title inactive-pricing-tab">
-                <h2>Self-hosted</h2>
-                <p>
-                    <a href="https://zulip.com/plans/#self-hosted">View self-hosted plans and pricing</a>.
-                </p>
-            </div>
-            {% else %}
             <div id="self-hosted" class="self-hosted-plan-title pricing-tab">
                 <h2>Self-hosted</h2>
                 <p>
                     Retain full control over your data.<br />100% open-source software.
                 </p>
             </div>
-            {% endif %}
 
             <div class="pricing-pane-scroll-container self-hosted-scroll">
                 <div class="self-hosted-plan-pricing pricing-pane">
