@@ -2620,7 +2620,11 @@ class BillingSession(ABC):
             **legacy_plan_params,
         )
 
-        billed_licenses = self.get_billable_licenses_for_customer(customer, legacy_plan.tier)
+        try:
+            billed_licenses = self.get_billable_licenses_for_customer(customer, legacy_plan.tier)
+        except MissingDataError:
+            billed_licenses = 0
+
         # Create a ledger entry for the legacy plan for tracking purposes.
         ledger_entry = LicenseLedger.objects.create(
             plan=legacy_plan,
