@@ -1171,7 +1171,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     "realm_date_created": realm.date_created,
                     "registration_deactivated": False,
                     "realm_deactivated": False,
-                    "plan_type": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                    "plan_type": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
                     "is_system_bot_realm": realm.string_id == "zulipinternal",
                 }
                 for realm in Realm.objects.order_by("id")
@@ -1613,7 +1613,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realm_date_created=realm.date_created,
             registration_deactivated=False,
             realm_deactivated=False,
-            plan_type=RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+            plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED,
         )
 
         with transaction.atomic(), self.assertLogs("zulip.analytics", level="WARNING") as m:
@@ -1903,7 +1903,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     "realm_date_created": realm.date_created,
                     "registration_deactivated": False,
                     "realm_deactivated": False,
-                    "plan_type": RemoteRealm.PLAN_TYPE_SELF_HOSTED,
+                    "plan_type": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
                 }
                 for realm in Realm.objects.order_by("id")
             ],

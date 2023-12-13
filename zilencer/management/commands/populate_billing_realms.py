@@ -394,11 +394,11 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
     ):
         plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
     elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
-        plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+        plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
     elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
         plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
     elif customer_profile.tier is CustomerPlan.TIER_SELF_HOSTED_BASE:
-        plan_type = RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+        plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
     else:
         raise AssertionError("Unexpected tier!")
 

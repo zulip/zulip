@@ -127,7 +127,11 @@ def remote_realm_billing_page(
         or get_current_plan_by_customer(customer) is None
         or (
             billing_session.get_legacy_remote_server_next_plan_name(customer) is None
-            and billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_HOSTED
+            and billing_session.remote_realm.plan_type
+            in [
+                RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+                RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+            ]
         )
     ):
         return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
@@ -186,7 +190,11 @@ def remote_server_billing_page(
         or get_current_plan_by_customer(customer) is None
         or (
             billing_session.get_legacy_remote_server_next_plan_name(customer) is None
-            and billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_HOSTED
+            and billing_session.remote_server.plan_type
+            in [
+                RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
+                RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY,
+            ]
         )
     ):
         return HttpResponseRedirect(
