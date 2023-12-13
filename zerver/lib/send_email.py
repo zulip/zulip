@@ -8,7 +8,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import backoff
 import css_inline
@@ -31,6 +31,9 @@ from confirmation.models import generate_key
 from zerver.lib.logging_util import log_to_file
 from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
 from zproject.email_backends import EmailLogBackEnd, get_forward_address
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 MAX_CONNECTION_TRIES = 3
 
@@ -507,26 +510,15 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     return str(option or header)
 
 
-def send_custom_email(
-    users: QuerySet[UserProfile],
-    *,
-    target_emails: Sequence[str] = [],
+def custom_email_sender(
+    markdown_template_path: str,
     dry_run: bool,
-    options: Dict[str, str],
-    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
-) -> None:
-    """
-    Helper for `manage.py send_custom_email`.
-
-    Can be used directly with from a management shell with
-    send_custom_email(user_profile_list, dict(
-        markdown_template_path="/path/to/markdown/file.md",
-        subject="Email subject",
-        from_name="Sender Name")
-    )
-    """
-
-    with open(options["markdown_template_path"]) as f:
+    subject: Optional[str] = None,
+    from_name: Optional[str] = None,
+    reply_to: Optional[str] = None,
+    **kwargs: Any,
+) -> Callable[..., None]:
+    with open(markdown_template_path) as f:
         text = f.read()
         parsed_email_template = Parser(policy=default).parsestr(text)
         email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
@@ -559,9 +551,45 @@ def send_custom_email(
             f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
-        f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))
+        f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))
 
-    # Finally, we send the actual emails.
+    def send_one_email(
+        context: Dict[str, Any], to_user_id: Optional[int] = None, to_email: Optional[str] = None
+    ) -> None:
+        assert to_user_id is not None or to_email is not None
+        with suppress(EmailNotDeliveredError):
+            send_email(
+                email_id,
+                to_user_ids=[to_user_id] if to_user_id is not None else None,
+                to_emails=[to_email] if to_email is not None else None,
+                from_address=FromAddress.SUPPORT,
+                reply_to_email=reply_to,
+                from_name=get_header(from_name, parsed_email_template.get("from"), "from_name"),
+                context=context,
+                dry_run=dry_run,
+            )
+
+    return send_one_email
+
+
+def send_custom_email(
+    users: QuerySet[UserProfile],
+    *,
+    dry_run: bool,
+    options: Dict[str, str],
+    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
+) -> None:
+    """
+    Helper for `manage.py send_custom_email`.
+
+    Can be used directly with from a management shell with
+    send_custom_email(user_profile_list, dict(
+        markdown_template_path="/path/to/markdown/file.md",
+        subject="Email subject",
+        from_name="Sender Name")
+    )
+    """
+    email_sender = custom_email_sender(**options, dry_run=dry_run)
     for user_profile in users.select_related("realm").order_by("id"):
         context: Dict[str, object] = {
             "realm": user_profile.realm,
@@ -571,35 +599,30 @@ def send_custom_email(
         }
         if add_context is not None:
             add_context(context, user_profile)
-        with suppress(EmailNotDeliveredError):
-            send_email(
-                email_id,
-                to_user_ids=[user_profile.id],
-                from_address=FromAddress.SUPPORT,
-                reply_to_email=options.get("reply_to"),
-                from_name=get_header(
-                    options.get("from_name"), parsed_email_template.get("from"), "from_name"
-                ),
-                context=context,
-                dry_run=dry_run,
-            )
+        email_sender(
+            to_user_id=user_profile.id,
+            context=context,
+        )
 
         if dry_run:
             break
 
-    # Now send emails to any recipients without a user account.
-    # This code path is intended for rare RemoteZulipServer emails.
-    for email_address in target_emails:
-        send_email(
-            email_id,
-            to_emails=[email_address],
-            from_address=FromAddress.SUPPORT,
-            reply_to_email=options.get("reply_to"),
-            from_name=get_header(
-                options.get("from_name"), parsed_email_template.get("from"), "from_name"
-            ),
-            context={"remote_server_email": True},
-            dry_run=dry_run,
+
+def send_custom_server_email(
+    remote_servers: QuerySet["RemoteZulipServer"],
+    *,
+    dry_run: bool,
+    options: Dict[str, str],
+    add_context: Optional[Callable[[Dict[str, object], "RemoteZulipServer"], None]] = None,
+) -> None:
+    email_sender = custom_email_sender(**options, dry_run=dry_run)
+
+    for server in remote_servers:
+        email_sender(
+            to_email=server.contact_email,
+            context={
+                "remote_server_email": True,
+            },
         )
 
         if dry_run:
