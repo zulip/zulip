@@ -56,7 +56,7 @@ class DigestTopic:
         if len(self.sample_messages) < 2:
             self.sample_messages.append(message)
 
-        if message.sent_by_human():
+        if not message.sender.is_bot:
             self.human_senders.add(message.sender.full_name)
             self.num_human_messages += 1
 
@@ -195,12 +195,15 @@ def get_recent_topics(
         .select_related(
             "recipient",  # build_message_list looks up recipient.type
             "sender",  # we need the sender's full name
-            "sending_client",  # for Message.sent_by_human
         )
         .defer(
-            # This construction, to only fetch the sender's full_name,
+            # This construction, to only fetch the sender's full_name and is_bot,
             # is because `.only()` doesn't work with select_related tables.
-            *{f"sender__{f.name}" for f in UserProfile._meta.fields if f.name not in {"full_name"}}
+            *{
+                f"sender__{f.name}"
+                for f in UserProfile._meta.fields
+                if f.name not in {"full_name", "is_bot"}
+            }
         )
     )
 
