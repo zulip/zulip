@@ -56,7 +56,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
 def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # nocoverage
     remote_server_plan_data: Dict[int, RemoteActivityPlanData] = {}
     for plan in CustomerPlan.objects.filter(
-        status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD
+        status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD, customer__realm__isnull=True
     ).select_related("customer__remote_server", "customer__remote_realm"):
         renewal_cents = 0
         server_id = None
