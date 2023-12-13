@@ -24,7 +24,7 @@ ParamT = ParamSpec("ParamT")
 
 def is_self_hosting_management_subdomain(request: HttpRequest) -> bool:
     subdomain = get_subdomain(request)
-    return settings.DEVELOPMENT and subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN
+    return subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN
 
 
 def self_hosting_management_endpoint(
