@@ -1,0 +1,74 @@
+{
+  "after_expiration": null,
+  "allow_promotion_codes": null,
+  "amount_subtotal": null,
+  "amount_total": null,
+  "automatic_tax": {
+    "enabled": false,
+    "status": null
+  },
+  "billing_address_collection": null,
+  "cancel_url": "http://selfhosting.testserver/realm/8bb4095c-58a8-42b8-afd4-9d92e91691e5/upgrade/",
+  "client_reference_id": null,
+  "client_secret": null,
+  "consent": null,
+  "consent_collection": null,
+  "created": 1702576334,
+  "currency": null,
+  "currency_conversion": null,
+  "custom_fields": [],
+  "custom_text": {
+    "after_submit": null,
+    "shipping_address": null,
+    "submit": null,
+    "terms_of_service_acceptance": null
+  },
+  "customer": "cus_PBgRA4C5R3pi4D",
+  "customer_creation": null,
+  "customer_details": {
+    "address": null,
+    "email": "hamlet@zulip.com",
+    "name": null,
+    "phone": null,
+    "tax_exempt": null,
+    "tax_ids": null
+  },
+  "customer_email": null,
+  "expires_at": 1702662734,
+  "id": "cs_test_c1qc1I3QN6VOVyLmmPYRt748pBxWTIgXj1XJRwQN5cD8HCNx5X6vq036GI",
+  "invoice": null,
+  "invoice_creation": null,
+  "livemode": false,
+  "locale": null,
+  "metadata": {
+    "remote_realm_user_id": "1",
+    "type": "card_update"
+  },
+  "mode": "setup",
+  "object": "checkout.session",
+  "payment_intent": null,
+  "payment_link": null,
+  "payment_method_collection": "always",
+  "payment_method_configuration_details": null,
+  "payment_method_options": {},
+  "payment_method_types": [
+    "card"
+  ],
+  "payment_status": "no_payment_required",
+  "phone_number_collection": {
+    "enabled": false
+  },
+  "recovered_from": null,
+  "setup_intent": "seti_1ONJ50DEQaroqDjs4pap3aTQ",
+  "shipping": null,
+  "shipping_address_collection": null,
+  "shipping_options": [],
+  "shipping_rate": null,
+  "status": "open",
+  "submit_type": null,
+  "subscription": null,
+  "success_url": "http://selfhosting.testserver/realm/8bb4095c-58a8-42b8-afd4-9d92e91691e5/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
+  "total_details": null,
+  "ui_mode": "hosted",
+  "url": "https://checkout.stripe.com/c/pay/cs_test_c1qc1I3QN6VOVyLmmPYRt748pBxWTIgXj1XJRwQN5cD8HCNx5X6vq036GI#fidkdWxOYHwnPyd1blpxYHZxWl1UZjFOczZJXUE2PUpzUWNPV2ZpdlFzUCcpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBaZmppcGhrJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl"
+}

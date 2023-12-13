@@ -3384,7 +3384,7 @@ class RemoteRealmBillingSession(BillingSession):
             self.remote_realm.save(update_fields=["org_type"])
 
     @override
-    def sync_license_ledger_if_needed(self) -> None:  # nocoverage
+    def sync_license_ledger_if_needed(self) -> None:
         last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
         if last_ledger is None:
             return
@@ -3406,7 +3406,7 @@ class RemoteRealmBillingSession(BillingSession):
                 current_plan, audit_log.event_time
             )
             if end_of_cycle_plan is None:
-                return
+                return  # nocoverage
             current_plan = end_of_cycle_plan
 
     def get_push_service_validity_dict(self) -> RemoteRealmDictValue:

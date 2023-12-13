@@ -75,7 +75,7 @@ def start_card_update_stripe_session_for_remote_realm_upgrade(
     billing_session: RemoteRealmBillingSession,
     *,
     manual_license_management: Json[bool] = False,
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     session_data = billing_session.create_card_update_session_for_upgrade(manual_license_management)
     return json_success(
         request,
