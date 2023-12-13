@@ -83,8 +83,7 @@ from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
     check_can_access_user,
-    check_user_can_access_all_users,
-    get_accessible_user_ids,
+    get_inaccessible_user_ids,
     get_subscribers_of_target_user_subscriptions,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
@@ -1556,14 +1555,9 @@ def check_private_message_policy(
 def check_sender_can_access_recipients(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
-    if check_user_can_access_all_users(sender):
-        return
+    recipient_user_ids = [user.id for user in user_profiles]
+    inaccessible_recipients = get_inaccessible_user_ids(recipient_user_ids, sender)
 
-    users_accessible_to_sender = set(get_accessible_user_ids(realm, sender))
-    # Guest users can access all the bots (including cross-realm bots).
-    non_bot_recipient_user_ids = {user.id for user in user_profiles if not user.is_bot}
-
-    inaccessible_recipients = non_bot_recipient_user_ids - users_accessible_to_sender
     if inaccessible_recipients:
         raise JsonableError(_("You do not have permission to access some of the recipients."))
 
