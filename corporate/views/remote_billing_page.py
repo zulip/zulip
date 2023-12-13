@@ -85,8 +85,6 @@ def remote_realm_billing_entry(
     uri_scheme: Literal["http://", "https://"] = "https://",
     next_page: VALID_NEXT_PAGES_TYPE = None,
 ) -> HttpResponse:
-    if not settings.DEVELOPMENT:
-        return render(request, "404.html", status=404)
     try:
         remote_realm = RemoteRealm.objects.get(uuid=realm.uuid, server=remote_server)
     except RemoteRealm.DoesNotExist:
