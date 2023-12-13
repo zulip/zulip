@@ -99,16 +99,17 @@ export function format_money(cents: number): string {
 }
 
 export function update_discount_details(organization_type: string): void {
-    let discount_notice =
-        "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
+    const plan_name_element = document.querySelector("#sponsorship-plan-name-hidden-info");
+    const plan_name = plan_name_element?.getAttribute("data-plan-name") || "Zulip Cloud Standard";
+
+    let discount_notice = `Your organization may be eligible for a discount on the ${plan_name} plan. Organizations whose members are not employees are generally eligible.`;
     const discount_details: DiscountDetails = {
-        opensource: "Zulip Cloud Standard is free for open-source projects.",
-        research: "Zulip Cloud Standard is free for academic research.",
-        nonprofit: "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
-        event: "Zulip Cloud Standard is free for academic conferences and most non-profit events.",
-        education: "Zulip Cloud Standard is discounted 85% for education.",
-        education_nonprofit:
-            "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
+        opensource: `${plan_name} plan is free for open-source projects.`,
+        research: `${plan_name} plan is free for academic research.`,
+        nonprofit: `${plan_name} plan is discounted 85%+ for registered non-profits.`,
+        event: `${plan_name} plan is free for academic conferences and most non-profit events.`,
+        education: `${plan_name} plan is discounted 85% for education.`,
+        education_nonprofit: `${plan_name} plan is discounted 90% for education non-profits with online purchase.`,
     };
 
     try {
