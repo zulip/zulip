@@ -24,7 +24,7 @@
 
             <div class="white-box">
                 {% if remote_server_hostname %}
-                <p>We have sent a log in link for Zulip plan management to <span class="user_email semi-bold">{{ email }}</span>. This link will expire in 2 hours.</p>
+                <p>We have sent <span class="user_email semi-bold">{{ email }}</span> a log in link for Zulip plan management. This link will expire in 24 hours.</p>
                 {% else %}
                 <p>To finish logging in, check your email account (<span class="user_email semi-bold">{{ email }}</span>) for a confirmation email from Zulip.</p>
                 {% endif %}
