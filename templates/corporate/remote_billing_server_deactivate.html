@@ -15,6 +15,13 @@
         </div>
         <div class="white-box">
             <div id="server-deactivate-details">
+                {% if show_existing_plan_error %}
+                <div id="server-deactivate-error" class="alert alert-danger">
+                    Could not deactivate registration. You must first
+                    <a href="https://zulip.com/help/self-hosted-billing#cancel-paid-plan">cancel</a>
+                    all paid plans associated with this server, including scheduled plan upgrades.
+                </div>
+                {% endif %}
                 <form id="server-deactivate-form" method="post" action="{{ action_url }}">
                     {{ csrf_input }}
                     <div id="server-deactivate-form-top-description" class="input-box server-deactivate-form-field no-validation">
