@@ -1159,6 +1159,20 @@ class BillingSession(ABC):
                 f"Cannot upgrade from {plan.name} to {CustomerPlan.name_from_tier(new_plan_tier)}"
             )
 
+    def check_customer_not_on_paid_plan(self, customer: Customer) -> str:  # nocoverage
+        current_plan = get_current_plan_by_customer(customer)
+        if current_plan is not None:
+            # Check if the customer is scheduled for an upgrade.
+            next_plan = self.get_next_plan(current_plan)
+            if next_plan is not None:
+                return f"Customer scheduled for upgrade to {next_plan.name}. Please cancel upgrade before approving sponsorship!"
+
+            # It is fine to end legacy plan not scheduled for an upgrade.
+            if current_plan.tier != CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+                return f"Customer on plan {current_plan.name}. Please end current plan before approving sponsorship!"
+
+        return ""
+
     @catch_stripe_errors
     def process_initial_upgrade(
         self,
@@ -2849,10 +2863,15 @@ class RealmBillingSession(BillingSession):
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
+        customer = self.get_customer()
+        if customer is not None:
+            error_message = self.check_customer_not_on_paid_plan(customer)
+            if error_message != "":  # nocoverage
+                return error_message
+
         from zerver.actions.message_send import internal_send_private_message
 
         self.do_change_plan_type(tier=None, is_sponsored=True)
-        customer = self.get_customer()
         if customer is not None and customer.sponsorship_pending:
             customer.sponsorship_pending = False
             customer.save(update_fields=["sponsorship_pending"])
@@ -3178,8 +3197,13 @@ class RemoteRealmBillingSession(BillingSession):
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
-        self.do_change_plan_type(tier=None, is_sponsored=True)
         customer = self.get_customer()
+        if customer is not None:
+            error_message = self.check_customer_not_on_paid_plan(customer)
+            if error_message != "":
+                return error_message
+
+        self.do_change_plan_type(tier=None, is_sponsored=True)
         if customer is not None and customer.sponsorship_pending:
             customer.sponsorship_pending = False
             customer.save(update_fields=["sponsorship_pending"])
@@ -3567,8 +3591,13 @@ class RemoteServerBillingSession(BillingSession):
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
-        self.do_change_plan_type(tier=None, is_sponsored=True)
         customer = self.get_customer()
+        if customer is not None:
+            error_message = self.check_customer_not_on_paid_plan(customer)
+            if error_message != "":
+                return error_message
+
+        self.do_change_plan_type(tier=None, is_sponsored=True)
         if customer is not None and customer.sponsorship_pending:
             customer.sponsorship_pending = False
             customer.save(update_fields=["sponsorship_pending"])
