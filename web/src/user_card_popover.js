@@ -298,7 +298,7 @@ function get_user_card_popover_data(
         if (is_system_bot) {
             args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
-            const bot_owner = people.get_bot_owner_user(bot_owner_id);
+            const bot_owner = people.get_bot_owner_user(user);
             args.bot_owner = bot_owner;
         }
     }
