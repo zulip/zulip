@@ -105,7 +105,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(!compose_validate.validate_stream_message_address_info("social"));
     assert.ok(user_not_subscribed_rendered);
 
-    page_params.narrow_stream = false;
+    page_params.narrow_stream = "social";
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "social");
         payload.data.subscribed = true;
