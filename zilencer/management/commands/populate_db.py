@@ -20,6 +20,7 @@ from typing_extensions import override
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user
 from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
@@ -33,12 +34,13 @@ from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
-from zerver.actions.create_user import do_create_user
-from zerver.actions.create_realm import do_create_realm
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
-from zerver.lib.onboarding import create_if_missing_realm_internal_bots
-from zerver.lib.onboarding import send_initial_direct_message, send_initial_realm_messages
+from zerver.lib.onboarding import (
+    create_if_missing_realm_internal_bots,
+    send_initial_direct_message,
+    send_initial_realm_messages,
+)
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
@@ -355,11 +357,12 @@ class Command(BaseCommand):
             )
             realm_user_default.save()
 
-            if UserProfile.objects.filter(realm = zulip_realm).exists():
-                user = do_create_user('iago1@zulip.com', 'password', zulip_realm, 'Iago', acting_user=None)
+            if UserProfile.objects.filter(realm=zulip_realm).exists():
+                user = do_create_user(
+                    "iago1@zulip.com", "password", zulip_realm, "Iago", acting_user=None
+                )
                 send_initial_direct_message(user)
                 send_initial_realm_messages(zulip_realm)
-            
             if options["test_suite"]:
                 mit_realm = do_create_realm(
                     string_id="zephyr",
@@ -369,12 +372,12 @@ class Command(BaseCommand):
                     plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
-            
-                if UserProfile.objects.filter(realm = mit_realm).exists():
-                    user = do_create_user('iago2@zulip.com', 'password', mit_realm, 'Iago2', acting_user=None)
+                if UserProfile.objects.filter(realm=mit_realm).exists():
+                    user = do_create_user(
+                        "iago2@zulip.com", "password", mit_realm, "Iago2", acting_user=None
+                    )
                     send_initial_direct_message(user)
                     send_initial_realm_messages(mit_realm)
-
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
                 lear_realm = do_create_realm(
                     string_id="lear",
@@ -385,11 +388,12 @@ class Command(BaseCommand):
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
 
-                if UserProfile.objects.filter(realm = lear_realm).exists():
-                    user = do_create_user('iago3@zulip.com', 'password', lear_realm, 'Iago3', acting_user=None)
+                if UserProfile.objects.filter(realm=lear_realm).exists():
+                    user = do_create_user(
+                        "iago3@zulip.com", "password", lear_realm, "Iago3", acting_user=None
+                    )
                     send_initial_direct_message(user)
                     send_initial_realm_messages(lear_realm)
-
                 # Default to allowing all members to send mentions in
                 # large streams for the test suite to keep
                 # mention-related tests simple.
