@@ -469,7 +469,7 @@ class StreamSidebarRow {
     }
 
     update_unread_count() {
-        const count = unread.num_unread_for_stream(this.sub.stream_id);
+        const count = unread.unread_count_info_for_stream(this.sub.stream_id);
         const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
             this.sub.stream_id,
         );
