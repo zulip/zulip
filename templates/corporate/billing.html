@@ -45,11 +45,18 @@
                     <label for="org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="org-current-plan" class="not-editable-realm-field">
                         {% if free_trial or downgrade_at_end_of_free_trial %}
-                        {{ plan_name }} <i>(free trial)</i>
+                        <a href="{{ billing_base_url }}/plans/">
+                            {{ plan_name }} <i>(free trial)</i>
+                        </a>
                         {% elif is_server_on_legacy_plan %}
-                        {{ plan_name }} <i>(legacy plan)</i>
-                        {% else %}
+                        <a href="{{ billing_base_url }}/plans/">
                         {{ plan_name }}
+                        </a>
+                        <i>(legacy plan)</i>
+                        {% else %}
+                        <a href="{{ billing_base_url }}/plans/">
+                        {{ plan_name }}
+                        </a>
                         {% endif %}
                     </div>
                 </div>
