@@ -3204,6 +3204,15 @@ class RemoteRealmBillingSession(BillingSession):
             if error_message != "":
                 return error_message
 
+            if self.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY:
+                plan = get_current_plan_by_customer(customer)
+                # Ideally we should have always have a plan here but since this is support page, we can be lenient about it.
+                if plan is not None:
+                    assert self.get_next_plan(plan) is None
+                    assert plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+                    plan.status = CustomerPlan.ENDED
+                    plan.save(update_fields=["status"])
+
         self.do_change_plan_type(tier=None, is_sponsored=True)
         if customer is not None and customer.sponsorship_pending:
             customer.sponsorship_pending = False
@@ -3595,6 +3604,15 @@ class RemoteServerBillingSession(BillingSession):
             error_message = self.check_customer_not_on_paid_plan(customer)
             if error_message != "":
                 return error_message
+
+            if self.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY:
+                plan = get_current_plan_by_customer(customer)
+                # Ideally we should have always have a plan here but since this is support page, we can be lenient about it.
+                if plan is not None:
+                    assert self.get_next_plan(plan) is None
+                    assert plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+                    plan.status = CustomerPlan.ENDED
+                    plan.save(update_fields=["status"])
 
         self.do_change_plan_type(tier=None, is_sponsored=True)
         if customer is not None and customer.sponsorship_pending:
