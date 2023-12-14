@@ -30,7 +30,11 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingUserDict,
     get_remote_server_and_user_from_session,
 )
-from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
+from corporate.lib.stripe import (
+    BILLING_SUPPORT_EMAIL,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+)
 from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
@@ -334,7 +338,7 @@ def remote_realm_billing_confirm_email(
         "remote_realm_host": remote_realm.host,
         "confirmation_url": url,
         "billing_help_link": "https://zulip.com/help/self-hosted-billing",
-        "billing_contact_email": "sales@zulip.com",
+        "billing_contact_email": BILLING_SUPPORT_EMAIL,
         "validity_in_hours": LOGIN_CONFIRMATION_EMAIL_DURATION_HOURS,
     }
     send_email(
@@ -551,7 +555,7 @@ def remote_billing_legacy_server_confirm_login(
         "remote_server_hostname": remote_server.hostname,
         "confirmation_url": url,
         "billing_help_link": "https://zulip.com/help/self-hosted-billing",
-        "billing_contact_email": "sales@zulip.com",
+        "billing_contact_email": BILLING_SUPPORT_EMAIL,
         "validity_in_hours": LOGIN_CONFIRMATION_EMAIL_DURATION_HOURS,
     }
     send_email(
