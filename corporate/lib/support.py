@@ -44,6 +44,7 @@ class SponsorshipRequestDict(TypedDict):
 class SponsorshipData:
     sponsorship_pending: bool = False
     default_discount: Optional[Decimal] = None
+    minimum_licenses: Optional[int] = None
     latest_sponsorship_request: Optional[SponsorshipRequestDict] = None
 
 
@@ -89,6 +90,7 @@ def get_customer_discount_for_support_view(
 def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
     pending = customer.sponsorship_pending
     discount = customer.default_discount
+    licenses = customer.minimum_licenses
     sponsorship_request = None
     if pending:
         last_sponsorship_request = (
@@ -116,6 +118,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
     return SponsorshipData(
         sponsorship_pending=pending,
         default_discount=discount,
+        minimum_licenses=licenses,
         latest_sponsorship_request=sponsorship_request,
     )
 
