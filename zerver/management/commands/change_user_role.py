@@ -13,6 +13,17 @@ from zerver.actions.users import (
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
 
+ROLE_CHOICES = [
+    "owner",
+    "admin",
+    "moderator",
+    "member",
+    "guest",
+    "can_forge_sender",
+    "can_create_users",
+    "is_billing_admin",
+]
+
 
 class Command(ZulipBaseCommand):
     help = """Change role of an existing user in their (own) Realm.
@@ -26,17 +37,8 @@ ONLY perform this on customer request from an authorized person.
         parser.add_argument(
             "new_role",
             metavar="<new_role>",
-            choices=[
-                "owner",
-                "admin",
-                "moderator",
-                "member",
-                "guest",
-                "can_forge_sender",
-                "can_create_users",
-                "is_billing_admin",
-            ],
-            help="new role of the user",
+            choices=ROLE_CHOICES,
+            help="new role of the user; choose from " + ", ".join(ROLE_CHOICES),
         )
         parser.add_argument(
             "--revoke",
