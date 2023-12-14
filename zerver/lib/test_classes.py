@@ -1075,10 +1075,11 @@ Output:
         from_user: UserProfile,
         to_user: UserProfile,
         content: str = "test content",
-        sending_client_name: str = "test suite",
+        *,
+        read_by_sender: bool = True,
     ) -> int:
         recipient_list = [to_user.id]
-        (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         sent_message_result = check_send_message(
             from_user,
@@ -1087,6 +1088,7 @@ Output:
             recipient_list,
             None,
             content,
+            read_by_sender=read_by_sender,
         )
         return sent_message_result.message_id
 
@@ -1095,12 +1097,13 @@ Output:
         from_user: UserProfile,
         to_users: List[UserProfile],
         content: str = "test content",
-        sending_client_name: str = "test suite",
+        *,
+        read_by_sender: bool = True,
     ) -> int:
         to_user_ids = [u.id for u in to_users]
         assert len(to_user_ids) >= 2
 
-        (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         sent_message_result = check_send_message(
             from_user,
@@ -1109,6 +1112,7 @@ Output:
             to_user_ids,
             None,
             content,
+            read_by_sender=read_by_sender,
         )
         return sent_message_result.message_id
 
@@ -1119,10 +1123,11 @@ Output:
         content: str = "test content",
         topic_name: str = "test",
         recipient_realm: Optional[Realm] = None,
-        sending_client_name: str = "test suite",
+        *,
         allow_unsubscribed_sender: bool = False,
+        read_by_sender: bool = True,
     ) -> int:
-        (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         message_id = check_send_stream_message(
             sender=sender,
@@ -1131,6 +1136,7 @@ Output:
             topic=topic_name,
             body=content,
             realm=recipient_realm,
+            read_by_sender=read_by_sender,
         )
         if (
             not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists()

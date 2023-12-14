@@ -733,13 +733,11 @@ def create_user_messages(
     followed_topic_email_user_ids: AbstractSet[int],
     mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
-    scheduled_message_to_self: bool,
     topic_participant_user_ids: Set[int],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
-    sender_id = message.sender.id
     is_stream_message = message.is_stream_message()
 
     base_flags = 0
@@ -770,17 +768,8 @@ def create_user_messages(
     user_messages = []
     for user_profile_id in um_eligible_user_ids:
         flags = base_flags
-        if (
-            (
-                # Messages you sent from a non-API client are
-                # automatically marked as read for yourself; scheduled
-                # messages to yourself only are not.
-                user_profile_id == sender_id
-                and message.sending_client.default_read_by_sender()
-                and not scheduled_message_to_self
-            )
-            or user_profile_id in mark_as_read_user_ids
-            or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
+        if user_profile_id in mark_as_read_user_ids or (
+            limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids
         ):
             flags |= UserMessage.flags.read
         if user_profile_id in mentioned_user_ids:
@@ -866,7 +855,6 @@ def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
     email_gateway: bool = False,
-    scheduled_message_to_self: bool = False,
     mark_as_read: Sequence[int] = [],
 ) -> List[SentMessageResult]:
     """See
@@ -916,7 +904,6 @@ def do_send_messages(
                 followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
                 mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
-                scheduled_message_to_self=scheduled_message_to_self,
                 topic_participant_user_ids=send_request.topic_participant_user_ids,
             )
 
@@ -1346,11 +1333,15 @@ def check_send_stream_message(
     stream_name: str,
     topic: str,
     body: str,
+    *,
     realm: Optional[Realm] = None,
+    read_by_sender: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic)
     message = check_message(sender, client, addressee, body, realm)
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages(
+        [message], mark_as_read=[sender.id] if read_by_sender else []
+    )[0]
     return sent_message_result.message_id
 
 
@@ -1395,6 +1386,7 @@ def check_send_message(
     widget_content: Optional[str] = None,
     *,
     skip_stream_access_check: bool = False,
+    read_by_sender: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
@@ -1414,7 +1406,7 @@ def check_send_message(
         )
     except ZephyrMessageAlreadySentError as e:
         return SentMessageResult(message_id=e.message_id)
-    return do_send_messages([message])[0]
+    return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
