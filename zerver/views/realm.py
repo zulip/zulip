@@ -32,13 +32,13 @@ from zerver.lib.user_groups import access_user_group_for_setting
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
+    check_capped_url,
     check_dict,
     check_int,
     check_int_in,
     check_string_in,
     check_string_or_int,
     check_union,
-    check_url,
     to_non_negative_int,
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
@@ -52,6 +52,9 @@ def parse_jitsi_server_url(
         return special_values_map[value]
 
     return value
+
+
+JITSI_SERVER_URL_MAX_LENGTH = 200
 
 
 @require_realm_admin
@@ -147,7 +150,10 @@ def update_realm(
     jitsi_server_url_raw: Optional[str] = REQ(
         "jitsi_server_url",
         json_validator=check_union(
-            [check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())), check_url]
+            [
+                check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())),
+                check_capped_url(JITSI_SERVER_URL_MAX_LENGTH),
+            ]
         ),
         default=None,
     ),
