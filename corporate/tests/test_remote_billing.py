@@ -15,17 +15,25 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingIdentityDict,
     RemoteBillingUserDict,
 )
+from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession, add_months
+from corporate.models import (
+    CustomerPlan,
+    get_current_plan_by_customer,
+    get_customer_by_remote_realm,
+    get_customer_by_remote_server,
+)
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 from zilencer.models import (
     PreregistrationRemoteRealmBillingUser,
     PreregistrationRemoteServerBillingUser,
     RemoteRealm,
     RemoteRealmBillingUser,
     RemoteServerBillingUser,
+    RemoteZulipServer,
 )
 
 if TYPE_CHECKING:
@@ -450,6 +458,302 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # Access is not allowed. The user doesn't have an IdentityDict in the session, so
         # we can't do a nice redirect back to their original server.
         self.assertEqual(result.status_code, 401)
+
+    @responses.activate
+    def test_transfer_legacy_plan_from_server_to_all_realms(self) -> None:
+        # Assert current server is not on any plan.
+        self.assertIsNone(get_customer_by_remote_server(self.server))
+
+        start_date = timezone_now()
+        end_date = add_months(timezone_now(), 10)
+
+        # Migrate server to legacy to plan.
+        server_billing_session = RemoteServerBillingSession(self.server)
+        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+
+        server_customer = server_billing_session.get_customer()
+        assert server_customer is not None
+        server_plan = get_current_plan_by_customer(server_customer)
+        assert server_plan is not None
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
+        self.assertEqual(server_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(server_plan.status, CustomerPlan.ACTIVE)
+
+        # There are four test realms on this server:
+        # <Realm: zulipinternal 1>, <Realm: zephyr 3>, <Realm: lear 4>, <Realm: zulip 2>
+        self.assert_length(Realm.objects.all(), 4)
+
+        # Delete any existing remote realms.
+        RemoteRealm.objects.all().delete()
+
+        # Send server data to push bouncer.
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # RemoteRealm objects should be created for all realms on the server.
+        self.assert_length(RemoteRealm.objects.all(), 4)
+
+        # Server plan status was reset
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+        # Check no CustomerPlan exists for server.
+        self.assertIsNone(get_current_plan_by_customer(server_customer))
+
+        # Check legacy CustomerPlan exists for all realms except bot realm.
+        for remote_realm in RemoteRealm.objects.all():
+            if remote_realm.is_system_bot_realm:
+                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
+                continue
+
+            customer = get_customer_by_remote_realm(remote_realm)
+            assert customer is not None
+            plan = get_current_plan_by_customer(customer)
+            assert plan is not None
+            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY)
+            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+            self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+            self.assertEqual(plan.billing_cycle_anchor, start_date)
+            self.assertEqual(plan.end_date, end_date)
+
+    @responses.activate
+    def test_transfer_legacy_plan_scheduled_for_upgrade_from_server_to_realm(
+        self,
+    ) -> None:
+        # Assert current server is not on any plan.
+        self.assertIsNone(get_customer_by_remote_server(self.server))
+
+        start_date = timezone_now()
+        end_date = add_months(timezone_now(), 10)
+
+        # Migrate server to legacy to plan.
+        server_billing_session = RemoteServerBillingSession(self.server)
+        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+
+        server_customer = server_billing_session.get_customer()
+        assert server_customer is not None
+        server_plan = get_current_plan_by_customer(server_customer)
+        assert server_plan is not None
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
+        self.assertEqual(server_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(server_plan.status, CustomerPlan.ACTIVE)
+
+        # Schedule upgrade for plan.
+        server_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        server_plan.save(update_fields=["status"])
+
+        # Just create a temporary plan and check if gets transferred or not.
+        server_next_plan = CustomerPlan.objects.create(
+            customer=server_customer,
+            billing_cycle_anchor=end_date,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            status=CustomerPlan.NEVER_STARTED,
+        )
+
+        # There are four test realms on this server:
+        # <Realm: zulipinternal 1>, <Realm: zephyr 3>, <Realm: lear 4>, <Realm: zulip 2>
+        self.assert_length(Realm.objects.all(), 4)
+
+        # Delete any existing remote realms.
+        RemoteRealm.objects.all().delete()
+
+        # Send server data to push bouncer.
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Server plan status stayed the same.
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
+
+        # RemoteRealm objects should be created for all realms on the server but no customer plans.
+        self.assert_length(RemoteRealm.objects.all(), 4)
+        for remote_realm in RemoteRealm.objects.all():
+            self.assertIsNone(get_customer_by_remote_realm(remote_realm))
+
+        # Same customer plan exists for server since there are multiple realms to manage here.
+        server_plan.refresh_from_db()
+        self.assertEqual(get_current_plan_by_customer(server_customer), server_plan)
+        self.assertEqual(server_plan.customer, server_customer)
+
+        # Deactivate realms other than bot realm and zulip realm then try the migration again.
+        Realm.objects.exclude(string_id__in=["zulip", "zulipinternal"]).update(deactivated=True)
+
+        # Send server data to push bouncer.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Server plan status was reset
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+        # Check if zephyr and lear were deactivated
+        self.assertEqual(
+            list(RemoteRealm.objects.filter(realm_deactivated=True).values_list("host", flat=True)),
+            ["zephyr.testserver", "lear.testserver"],
+        )
+
+        # Check legacy CustomerPlan exists for all realms except bot realm.
+        for remote_realm in RemoteRealm.objects.filter(realm_deactivated=False):
+            if remote_realm.is_system_bot_realm:
+                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
+                continue
+
+            self.assertEqual(remote_realm.host, "zulip.testserver")
+            customer = get_customer_by_remote_realm(remote_realm)
+            assert customer is not None
+            # Customer got transferred from server to realm.
+            self.assertEqual(customer, server_customer)
+            plan = get_current_plan_by_customer(customer)
+            assert plan is not None
+            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY)
+            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+            self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+            self.assertEqual(plan.billing_cycle_anchor, start_date)
+            self.assertEqual(plan.end_date, end_date)
+            self.assertEqual(
+                RemoteRealmBillingSession(remote_realm).get_next_plan(plan), server_next_plan
+            )
+
+    @responses.activate
+    def test_transfer_business_plan_from_server_to_realm(
+        self,
+    ) -> None:
+        # Assert current server is not on any plan.
+        self.assertIsNone(get_customer_by_remote_server(self.server))
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+
+        # Add server to business plan.
+        server_billing_session = RemoteServerBillingSession(self.server)
+        server_customer = server_billing_session.update_or_create_customer(stripe_customer_id=None)
+        assert server_customer is not None
+
+        # Just create a temporary plan and check if gets transferred or not.
+        server_plan = CustomerPlan.objects.create(
+            customer=server_customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            status=CustomerPlan.ACTIVE,
+        )
+        self.server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
+        self.server.save(update_fields=["plan_type"])
+
+        # There are four test realms on this server:
+        # <Realm: zulipinternal 1>, <Realm: zephyr 3>, <Realm: lear 4>, <Realm: zulip 2>
+        self.assert_length(Realm.objects.all(), 4)
+
+        # Delete any existing remote realms.
+        RemoteRealm.objects.all().delete()
+
+        # Send server data to push bouncer.
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Server plan status stayed the same.
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
+
+        # RemoteRealm objects should be created for all realms on the server but no customer plans.
+        self.assert_length(RemoteRealm.objects.all(), 4)
+        for remote_realm in RemoteRealm.objects.all():
+            self.assertIsNone(get_customer_by_remote_realm(remote_realm))
+
+        # Same customer plan exists for server since there are multiple realms to manage here.
+        server_plan.refresh_from_db()
+        self.assertEqual(get_current_plan_by_customer(server_customer), server_plan)
+        self.assertEqual(server_plan.customer, server_customer)
+
+        # Deactivate realms other than bot realm and zulip realm then try the migration again.
+        Realm.objects.exclude(string_id__in=["zulip", "zulipinternal"]).update(deactivated=True)
+
+        # Send server data to push bouncer.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Server plan status was reset
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+
+        # Check business CustomerPlan exists for all realms except bot realm.
+        for remote_realm in RemoteRealm.objects.filter(realm_deactivated=False):
+            if remote_realm.is_system_bot_realm:
+                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
+                continue
+
+            self.assertEqual(remote_realm.host, "zulip.testserver")
+            customer = get_customer_by_remote_realm(remote_realm)
+            assert customer is not None
+            # Customer got transferred from server to realm.
+            self.assertEqual(customer, server_customer)
+            plan = get_current_plan_by_customer(customer)
+            assert plan is not None
+            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_BUSINESS)
+            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+            self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+
+    @responses.activate
+    def test_transfer_plan_from_server_to_realm_edge_cases(self) -> None:
+        # CASE: Server has no customer
+        self.assertIsNone(get_customer_by_remote_server(self.server))
+
+        # Send server data to push bouncer.
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Still no customer.
+        self.assertIsNone(get_customer_by_remote_server(self.server))
+
+        # CASE: Server has customer but no plan.
+        server_billing_session = RemoteServerBillingSession(self.server)
+        server_customer = server_billing_session.update_or_create_customer(stripe_customer_id=None)
+
+        # Send server data to push bouncer.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Server still has no plan.
+        self.assertIsNone(get_current_plan_by_customer(server_customer))
+
+        # CASE: Server has legacy plan but all realms are deactivated.
+        start_date = timezone_now()
+        end_date = add_months(timezone_now(), 10)
+        server_billing_session = RemoteServerBillingSession(self.server)
+        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+        # All realms are deactivated.
+        Realm.objects.all().update(deactivated=True)
+
+        # Send server data to push bouncer.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Server stays on the same plan.
+        server_plan = get_current_plan_by_customer(server_customer)
+        assert server_plan is not None
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
+        self.assertEqual(server_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(server_plan.status, CustomerPlan.ACTIVE)
+
+        # CASE: Server has business plan but all realms are deactivated.
+        server_plan.tier = CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+        server_plan.save(update_fields=["tier"])
+        self.server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
+        self.server.save(update_fields=["plan_type"])
+
+        # Send server data to push bouncer.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Server stays on the same plan.
+        server_customer.refresh_from_db()
+        server_plan.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
+        self.assertEqual(server_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+
+        # CASE: Server has business plan but there are no realms.
+        Realm.objects.all().delete()
+
+        # Send server data to push bouncer.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        server_customer.refresh_from_db()
+        server_plan.refresh_from_db()
+        # Server stays on same plan.
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
+        self.assertEqual(server_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(server_plan.status, CustomerPlan.ACTIVE)
 
 
 class LegacyServerLoginTest(BouncerTestCase):

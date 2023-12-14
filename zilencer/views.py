@@ -752,7 +752,7 @@ def get_human_user_realm_uuids(realms: List[RealmDataForAnalytics]) -> List[UUID
 @transaction.atomic
 def handle_customer_migration_from_server_to_realms(
     server: RemoteZulipServer, realms: List[RealmDataForAnalytics]
-) -> None:  # nocoverage
+) -> None:
     server_billing_session = RemoteServerBillingSession(server)
     server_customer = server_billing_session.get_customer()
     if server_customer is None:
