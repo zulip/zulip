@@ -739,6 +739,7 @@ def get_human_user_realm_uuids(realms: List[RealmDataForAnalytics]) -> List[UUID
         # TODO: Remove the `zulipinternal` string_id check once no server is on 8.0-beta.
         if (
             realm.is_system_bot_realm
+            or realm.deactivated
             or realm.host.startswith("zulipinternal.")
             or (settings.DEVELOPMENT and realm.host.startswith("analytics."))
         ):
