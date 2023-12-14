@@ -4,6 +4,7 @@
     <b>Remote server hostname:</b> {{ remote_realm.host }}<br />
     <b>Date created</b>: {{ remote_realm.realm_date_created.strftime('%d %B %Y') }}<br />
     <b>Org type</b>: {{ get_org_type_display_name(remote_realm.org_type) }}<br />
+    <b>Plan type</b>: {{ get_plan_type_name(remote_realm.plan_type) }}<br />
     {% if remote_realm.plan_type == SPONSORED_PLAN_TYPE %}
         <h4>On 100% sponsored Zulip Community plan.</h4>
     {% endif %}
