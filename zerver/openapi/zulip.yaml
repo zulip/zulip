@@ -5606,6 +5606,17 @@ paths:
             in UTC seconds.
           required: true
           example: 3165826990
+        - name: read_by_sender
+          in: query
+          schema:
+            type: boolean
+          description: |
+            Whether the message should be initially marked read by its
+            sender. If unspecified, the server uses a heuristic based
+            on the client name and the recipient.
+
+            **Changes**: New in Zulip 8.0 (feature level 236).
+          example: true
       responses:
         "200":
           description: Success.
@@ -6373,6 +6384,17 @@ paths:
             chosen freely by the client; the server will pass it back to the client without
             inspecting it, as described in the `queue_id` description.
           example: "100.01"
+        - name: read_by_sender
+          in: query
+          schema:
+            type: boolean
+          description: |
+            Whether the message should be initially marked read by its
+            sender. If unspecified, the server uses a heuristic based
+            on the client name.
+
+            **Changes**: New in Zulip 8.0 (feature level 236).
+          example: true
       responses:
         "200":
           description: Success.

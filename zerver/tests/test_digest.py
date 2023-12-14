@@ -33,7 +33,6 @@ from zerver.models import (
     Stream,
     UserActivityInterval,
     UserProfile,
-    get_client,
     get_realm,
     get_stream,
 )
@@ -547,8 +546,6 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_info["html"], [])
 
     def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
-        client = "website"  # this makes `default_read_by_sender` return True
-        sending_client = get_client(client)
         message_ids = []  # List[int]
         for sender_name in senders:
             sender = self.example_user(sender_name)
@@ -556,7 +553,6 @@ class TestDigestEmailMessages(ZulipTestCase):
             content = f"some content for {stream} from {sender_name}"
             message_id = self.send_stream_message(sender, stream, content)
             message_ids.append(message_id)
-        Message.objects.filter(id__in=message_ids).update(sending_client=sending_client)
         return message_ids
 
 
