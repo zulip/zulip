@@ -2505,27 +2505,40 @@ class HandlePushNotificationTest(PushNotificationTest):
             "zerver.lib.push_notifications.get_message_payload_gcm",
             return_value=({"gcm": True}, {}),
         ), mock.patch(
-            "zerver.lib.push_notifications.send_notifications_to_bouncer", return_value=(3, 5)
+            "zerver.lib.push_notifications.send_json_to_push_bouncer",
+            return_value=dict(
+                total_android_devices=3,
+                total_apple_devices=5,
+                deleted_devices=DevicesToCleanUpDict(android_devices=[], apple_devices=[]),
+                realm=None,
+            ),
         ) as mock_send, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as mock_logging_info:
             handle_push_notification(user_profile.id, missed_message)
             mock_send.assert_called_with(
-                user_profile,
-                {"apns": True},
-                {"gcm": True},
-                {},
-                list(
-                    PushDeviceToken.objects.filter(
-                        user=user_profile, kind=PushDeviceToken.GCM
-                    ).order_by("id")
-                ),
-                list(
-                    PushDeviceToken.objects.filter(
-                        user=user_profile, kind=PushDeviceToken.APNS
-                    ).order_by("id")
-                ),
+                "POST",
+                "push/notify",
+                {
+                    "user_uuid": str(user_profile.uuid),
+                    "user_id": user_profile.id,
+                    "realm_uuid": str(user_profile.realm.uuid),
+                    "apns_payload": {"apns": True},
+                    "gcm_payload": {"gcm": True},
+                    "gcm_options": {},
+                    "android_devices": list(
+                        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
+                        .order_by("id")
+                        .values_list("token", flat=True)
+                    ),
+                    "apple_devices": list(
+                        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
+                        .order_by("id")
+                        .values_list("token", flat=True)
+                    ),
+                },
             )
+
             self.assertEqual(
                 mock_logging_info.output,
                 [
@@ -3702,13 +3715,19 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
     def test_send_notifications_to_bouncer_when_no_devices(self) -> None:
         user = self.example_user("hamlet")
 
-        with mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as mock_send:
-            total_android_devices, total_apple_devices = send_notifications_to_bouncer(
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer"
+        ) as mock_send, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as mock_logging_info:
+            send_notifications_to_bouncer(
                 user, {"apns": True}, {"gcm": True}, {}, android_devices=[], apple_devices=[]
             )
 
-        self.assertEqual(total_android_devices, 0)
-        self.assertEqual(total_apple_devices, 0)
+        self.assertIn(
+            f"INFO:zerver.lib.push_notifications:Skipping contacting the bouncer for user {user.id} because there are no registered devices",
+            mock_logging_info.output,
+        )
         mock_send.assert_not_called()
 
     @mock.patch("zerver.lib.remote_server.send_to_push_bouncer")
@@ -3738,9 +3757,10 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
             ),
             "realm": {"can_push": True, "expected_end_timestamp": None},
         }
-        total_android_devices, total_apple_devices = send_notifications_to_bouncer(
-            user, {"apns": True}, {"gcm": True}, {}, list(android_devices), list(apple_devices)
-        )
+        with self.assertLogs("zerver.lib.push_notifications", level="INFO") as mock_logging_info:
+            send_notifications_to_bouncer(
+                user, {"apns": True}, {"gcm": True}, {}, list(android_devices), list(apple_devices)
+            )
         post_data = {
             "user_uuid": user.uuid,
             "user_id": user.id,
@@ -3757,8 +3777,10 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
             orjson.dumps(post_data),
             extra_headers={"Content-type": "application/json"},
         )
-        self.assertEqual(total_android_devices, 1)
-        self.assertEqual(total_apple_devices, 3)
+        self.assertIn(
+            f"INFO:zerver.lib.push_notifications:Sent mobile push notifications for user {user.id} through bouncer: 1 via FCM devices, 3 via APNs devices",
+            mock_logging_info.output,
+        )
 
         remote_realm_count = RealmCount.objects.values("property", "subgroup", "value").last()
         self.assertEqual(
@@ -3766,7 +3788,7 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
             dict(
                 property="mobile_pushes_sent::day",
                 subgroup=None,
-                value=total_android_devices + total_apple_devices,
+                value=4,
             ),
         )
 
@@ -3784,7 +3806,7 @@ class TestSendNotificationsToBouncer(PushNotificationTest):
                 apple_devices=[],
             ),
         }
-        total_android_devices, total_apple_devices = send_notifications_to_bouncer(
+        send_notifications_to_bouncer(
             user, {"apns": True}, {"gcm": True}, {}, list(android_devices), list(apple_devices)
         )
         user.realm.refresh_from_db()
