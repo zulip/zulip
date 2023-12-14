@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
@@ -210,7 +210,7 @@ run_test("updates", () => {
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
 
-    $("#personal-menu .header-button-avatar").css = () => {};
+    $("#personal-menu .header-button-avatar").css = noop;
 
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);
@@ -275,7 +275,7 @@ run_test("updates", () => {
     user_events.update_person({user_id: isaac.user_id, is_active: true});
     assert.ok(people.is_person_active(isaac.user_id));
 
-    stream_events.remove_deactivated_user_from_all_streams = () => {};
+    stream_events.remove_deactivated_user_from_all_streams = noop;
 
     let bot_data_updated = false;
     settings_users.update_bot_data = (user_id) => {

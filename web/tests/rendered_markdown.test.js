@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
@@ -586,7 +586,7 @@ run_test("code playground none", ({override, mock_template}) => {
         return undefined;
     });
 
-    override(copied_tooltip, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, false);
     assert.deepEqual(prepends, [$copy_code]);
@@ -602,7 +602,7 @@ run_test("code playground single", ({override, mock_template}) => {
         return [{name: "Some Javascript Playground"}];
     });
 
-    override(copied_tooltip, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);
@@ -622,7 +622,7 @@ run_test("code playground multiple", ({override, mock_template}) => {
         return ["whatever", "whatever"];
     });
 
-    override(copied_tooltip, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);

@@ -3,11 +3,10 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
-const noop = () => {};
 const test_url = () => "https://www.example.com";
 
 // We assign this in our test() wrapper.
@@ -435,7 +434,7 @@ function stub_out_filter_buttons() {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $(".header").css = () => {};
+        $(".header").css = noop;
         page_params.development_environment = true;
 
         messages = sample_messages.map((message) => ({...message}));
@@ -462,11 +461,11 @@ test("test_recent_view_show", ({mock_template}) => {
         return "<recent_view table stub>";
     });
 
-    mock_template("recent_view_row.hbs", false, () => {});
+    mock_template("recent_view_row.hbs", false, noop);
 
     stub_out_filter_buttons();
     // We don't test the css calls; we just skip over them.
-    $("#mark_read_on_scroll_state_banner").toggleClass = () => {};
+    $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     rt.clear_for_tests();
     rt.process_messages(messages);
@@ -817,7 +816,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();
 
-    mock_template("recent_view_table.hbs", false, () => {});
+    mock_template("recent_view_table.hbs", false, noop);
     mock_template("recent_view_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
@@ -946,8 +945,8 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 });
 
 test("test_reify_local_echo_message", ({mock_template}) => {
-    mock_template("recent_view_table.hbs", false, () => {});
-    mock_template("recent_view_row.hbs", false, () => {});
+    mock_template("recent_view_table.hbs", false, noop);
+    mock_template("recent_view_row.hbs", false, noop);
 
     rt.clear_for_tests();
     stub_out_filter_buttons();

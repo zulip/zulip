@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
@@ -309,8 +309,8 @@ test("sending", ({override, override_rewire}) => {
 
     let emoji_name = "smile"; // should be a current reaction
 
-    override_rewire(reactions, "add_reaction", () => {});
-    override_rewire(reactions, "remove_reaction", () => {});
+    override_rewire(reactions, "add_reaction", noop);
+    override_rewire(reactions, "remove_reaction", noop);
 
     {
         const stub = make_stub();
@@ -397,7 +397,7 @@ test("prevent_simultaneous_requests_updating_reaction", ({override, override_rew
         assert.equal(message_id, message.id);
         return message;
     });
-    override_rewire(reactions, "add_reaction", () => {});
+    override_rewire(reactions, "add_reaction", noop);
     const stub = make_stub();
     channel.post = stub.f;
 
@@ -485,8 +485,8 @@ test("update_vote_text_on_message", ({override_rewire}) => {
 
     user_settings.display_emoji_reaction_users = true;
 
-    override_rewire(reactions, "find_reaction", () => {});
-    override_rewire(reactions, "set_reaction_vote_text", () => {});
+    override_rewire(reactions, "find_reaction", noop);
+    override_rewire(reactions, "set_reaction_vote_text", noop);
 
     reactions.update_vote_text_on_message(message);
 
@@ -1168,7 +1168,7 @@ test("view.remove_reaction (last person)", () => {
 });
 
 test("error_handling", ({override, override_rewire}) => {
-    override(message_store, "get", () => {});
+    override(message_store, "get", noop);
 
     blueslip.expect("error", "reactions: Bad message id");
 
@@ -1208,7 +1208,7 @@ test("remove last user", ({override}) => {
     const message = {...sample_message};
 
     override(message_store, "get", () => message);
-    override(reactions.view, "remove_reaction", () => {});
+    override(reactions.view, "remove_reaction", noop);
 
     function assert_names(names) {
         assert.deepEqual(
@@ -1241,7 +1241,7 @@ test("local_reaction_id", () => {
 });
 
 test("process_reaction_click", ({override}) => {
-    override(reactions.view, "remove_reaction", () => {});
+    override(reactions.view, "remove_reaction", noop);
 
     const message = {...sample_message};
     override(message_store, "get", () => message);

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const events = require("./lib/events");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
 
@@ -29,8 +29,6 @@ const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
-
-const noop = () => {};
 
 people.add_active_user(test_user);
 
@@ -137,7 +135,7 @@ test("add error handling", () => {
 });
 
 test("peer event error handling (bad stream_ids/user_ids)", ({override}) => {
-    override(stream_events, "process_subscriber_update", () => {});
+    override(stream_events, "process_subscriber_update", noop);
 
     const add_event = {
         type: "subscription",
@@ -260,7 +258,7 @@ test("stream delete (special streams)", ({override}) => {
 });
 
 test("stream delete (stream is selected in compose)", ({override, override_rewire}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     const event = event_fixtures.stream__delete;
 

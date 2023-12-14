@@ -3,11 +3,9 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
-
-const noop = () => {};
 
 mock_esm("../src/stream_topic_history", {
     add_message: noop,
