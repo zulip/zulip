@@ -756,16 +756,24 @@ def handle_customer_migration_from_server_to_realms(
     server_customer = server_billing_session.get_customer()
     if server_customer is None:
         return
+
     server_plan = get_current_plan_by_customer(server_customer)
+    if server_plan is None:
+        # If the server has no current plan, either because it never
+        # had one or because a previous legacy plan was migrated to
+        # the RemoteRealm object, there's nothing to potentially
+        # migrate.
+        return
+
     realm_uuids = get_human_user_realm_uuids(realms)
     if not realm_uuids:
         return
 
     event_time = timezone_now()
     remote_realm_audit_logs = []
+
     if (
-        server_plan is not None
-        and server_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        server_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         and server_plan.status == CustomerPlan.ACTIVE
     ):
         assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
@@ -796,8 +804,9 @@ def handle_customer_migration_from_server_to_realms(
                 )
             )
 
-    # We only do this migration if there is only one realm besides the system bot realm.
     elif len(realm_uuids) == 1:
+        # Here, we have exactly one non-system-bot realm, and some
+        # sort of plan on the server; move it to the realm.
         remote_realm = RemoteRealm.objects.get(
             uuid=realm_uuids[0], plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
         )
@@ -805,8 +814,7 @@ def handle_customer_migration_from_server_to_realms(
         server_customer.remote_realm = remote_realm
         server_customer.remote_server = None
         server_customer.save(update_fields=["remote_realm", "remote_server"])
-        # TODO: Set usage limits for remote realm and server.
-        # Might be better to call do_change_plan_type here.
+        # TODO: Might be better to call do_change_plan_type here.
         remote_realm.plan_type = server.plan_type
         remote_realm.save(update_fields=["plan_type"])
         server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
