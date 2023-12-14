@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 236**
+
+* [`POST /messages`](/api/send-message), [`POST
+  /scheduled_messages`](/api/create-scheduled-message): The new
+  `read_by_sender` parameter lets the client override the heuristic
+  that determines whether the new message will be initially marked
+  read by its sender.
+
 **Feature level 235**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
