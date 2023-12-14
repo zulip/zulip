@@ -28,6 +28,7 @@ class Customer(models.Model):
     sponsorship_pending = models.BooleanField(default=False)
     # A percentage, like 85.
     default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)
+    minimum_licenses = models.PositiveIntegerField(null=True)
     # Some non-profit organizations on manual license management pay
     # only for their paid employees.  We don't prevent these
     # organizations from adding more users than the number of licenses
