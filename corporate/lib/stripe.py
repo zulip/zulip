@@ -2653,6 +2653,8 @@ class BillingSession(ABC):
             extra_data=legacy_plan_params,
         )
 
+        self.do_change_plan_type(tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY, is_sponsored=False)
+
     def get_last_ledger_for_automanaged_plan_if_exists(
         self,
     ) -> Optional[LicenseLedger]:  # nocoverage
@@ -3177,6 +3179,8 @@ class RemoteRealmBillingSession(BillingSession):
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+            plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY
         else:
             raise AssertionError("Unexpected tier")
 
@@ -3567,6 +3571,8 @@ class RemoteServerBillingSession(BillingSession):
             plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+            plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
         else:
             raise AssertionError("Unexpected tier")
 
