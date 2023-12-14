@@ -389,6 +389,22 @@ def check_url(var_name: str, val: object) -> str:
         raise ValidationError(_("{var_name} is not a URL").format(var_name=var_name))
 
 
+def check_capped_url(max_length: int) -> Validator[str]:
+    def validator(var_name: str, val: object) -> str:
+        # Ensure val is a string and length of the string does not
+        # exceed max_length.
+        s = check_capped_string(max_length)(var_name, val)
+        # Validate as URL.
+        validate = URLValidator()
+        try:
+            validate(s)
+            return s
+        except ValidationError:
+            raise ValidationError(_("{var_name} is not a URL").format(var_name=var_name))
+
+    return validator
+
+
 def check_external_account_url_pattern(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
 
