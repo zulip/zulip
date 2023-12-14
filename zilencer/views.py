@@ -789,6 +789,9 @@ def handle_customer_migration_from_server_to_realms(
         server_plan.status = CustomerPlan.ENDED
         server_plan.save(update_fields=["status"])
 
+        server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
+        server.save(update_fields=["plan_type"])
+
         # Create new legacy plan for each remote realm.
         for remote_realm in remote_realms:
             RemoteRealmBillingSession(remote_realm).migrate_customer_to_legacy_plan(
