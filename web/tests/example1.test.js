@@ -39,7 +39,7 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 
-// The `people`object is a very fundamental object in the
+// The `people` object is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading
 // the tests in people.test.js in the same directory as this file.
 
