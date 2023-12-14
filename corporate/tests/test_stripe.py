@@ -19,7 +19,10 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypeVar,
+    Union,
+    cast,
 )
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -109,6 +112,8 @@ from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
 )
@@ -5432,3 +5437,98 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.assertEqual(success_message, "zulip downgraded and voided 1 open invoices")
         original_plan.refresh_from_db()
         self.assertEqual(original_plan.status, CustomerPlan.ENDED)
+
+
+class TestRemoteBillingWriteAuditLog(StripeTestCase):
+    def test_write_audit_log(self) -> None:
+        support_admin = self.example_user("iago")
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        realm_uuid = str(uuid.uuid4())
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=realm_uuid,
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+        )
+        remote_realm_billing_user = RemoteRealmBillingUser.objects.create(
+            remote_realm=remote_realm, email="admin@example.com", user_uuid=uuid.uuid4()
+        )
+        remote_server_billing_user = RemoteServerBillingUser.objects.create(
+            remote_server=remote_server, email="admin@example.com"
+        )
+        event_time = timezone_now()
+
+        def assert_audit_log(
+            audit_log: Union[RemoteRealmAuditLog, RemoteZulipServerAuditLog],
+            acting_remote_user: Optional[Union[RemoteRealmBillingUser, RemoteServerBillingUser]],
+            acting_support_user: Optional[UserProfile],
+            event_type: int,
+            event_time: datetime,
+        ) -> None:
+            self.assertEqual(audit_log.event_type, event_type)
+            self.assertEqual(audit_log.event_time, event_time)
+            self.assertEqual(audit_log.acting_remote_user, acting_remote_user)
+            self.assertEqual(audit_log.acting_support_user, acting_support_user)
+
+        for session_class, audit_log_class, remote_object, remote_user in [
+            (
+                RemoteRealmBillingSession,
+                RemoteRealmAuditLog,
+                remote_realm,
+                remote_realm_billing_user,
+            ),
+            (
+                RemoteServerBillingSession,
+                RemoteZulipServerAuditLog,
+                remote_server,
+                remote_server_billing_user,
+            ),
+        ]:
+            # Necessary cast or mypy doesn't understand that we can use Django's
+            # model .objects. style queries on this.
+            audit_log_model = cast(
+                Union[Type[RemoteRealmAuditLog], Type[RemoteZulipServerAuditLog]], audit_log_class
+            )
+            assert isinstance(remote_user, (RemoteRealmBillingUser, RemoteServerBillingUser))
+            # No acting user:
+            session = session_class(remote_object)
+            session.write_to_audit_log(
+                # This "ordinary billing" event type value gets translated by write_to_audit_log
+                # into a RemoteRealmBillingSession.CUSTOMER_PLAN_CREATED or
+                # RemoteServerBillingSession.CUSTOMER_PLAN_CREATED value.
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=event_time,
+            )
+            audit_log = audit_log_model.objects.latest("id")
+            assert_audit_log(
+                audit_log, None, None, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+            )
+
+            session = session_class(remote_object, remote_billing_user=remote_user)
+            session.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=event_time,
+            )
+            audit_log = audit_log_model.objects.latest("id")
+            assert_audit_log(
+                audit_log, remote_user, None, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+            )
+
+            session = session_class(
+                remote_object, remote_billing_user=None, support_staff=support_admin
+            )
+            session.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=event_time,
+            )
+            audit_log = audit_log_model.objects.latest("id")
+            assert_audit_log(
+                audit_log, None, support_admin, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+            )
