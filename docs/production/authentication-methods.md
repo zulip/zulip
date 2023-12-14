@@ -747,7 +747,7 @@ integration](../production/scim.md).
    `https://authentik.company/application/saml/<application slug>/sso/binding/redirect/` where `<application slug>`
    is the application slug you've assigned to this application in Authentik settings (e.g `zulip`).
 1. Update the attribute mapping in your new entry in `SOCIAL_AUTH_SAML_ENABLED_IDPS` to match how
-   Authentik specifies attributes in its`SAMLResponse`:
+   Authentik specifies attributes in its `SAMLResponse`:
 
    ```
    "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
@@ -791,7 +791,7 @@ this with another IdP.
    Disable `Force POST Binding`, as Zulip only supports the Redirect binding.
 1. In `Fine Grain SAML Endpoint Configuration`, set `Logout Service Redirect Binding URL`
    to the same value you provided for `SSO URL` above.
-1. Add the IdP's `Redirect Binding URL`for `SingleLogoutService` to
+1. Add the IdP's `Redirect Binding URL` for `SingleLogoutService` to
    your IdP configuration dict in `SOCIAL_AUTH_SAML_ENABLED_IDPS` in
    `/etc/zulip/settings.py` as `slo_url`. For example it may look like
    this:
