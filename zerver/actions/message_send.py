@@ -775,7 +775,7 @@ def create_user_messages(
                 # automatically marked as read for yourself; scheduled
                 # messages to yourself only are not.
                 user_profile_id == sender_id
-                and message.sent_by_human()
+                and message.sending_client.default_read_by_sender()
                 and not scheduled_message_to_self
             )
             or user_profile_id in mark_as_read_user_ids

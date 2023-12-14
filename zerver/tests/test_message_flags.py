@@ -880,7 +880,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             # Check our test setup is correct--the message should
             # not have looked like it was sent by a human.
             message = Message.objects.get(id=message_id)
-            self.assertFalse(message.sent_by_human())
+            self.assertFalse(message.sending_client.default_read_by_sender())
 
             # And since it was not sent by a human, it should not
             # be read, not even by the sender (Hamlet).
