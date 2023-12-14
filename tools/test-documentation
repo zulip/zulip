@@ -6,10 +6,12 @@ import sys
 
 
 def color_message(color_code, message):
+    """Prints colored messages to the console."""
     print(f"\033[{color_code}m{message}\033[0m")
 
 
 def usage():
+    """Prints usage information for the script."""
     print(
         """
 usage:
@@ -22,13 +24,27 @@ usage:
 
 
 def validate_html():
+    """Validates HTML using the vnu.jar tool."""
     color_message(94, "Validating HTML...")
     try:
+        # Use os.path.abspath for better path resolution
+        vnu_jar_path = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "node_modules",
+                "vnu-jar",
+                "build",
+                "dist",
+                "vnu.jar",
+            )
+        )
+
         subprocess.run(
             [
                 "java",
                 "-jar",
-                "../node_modules/vnu-jar/build/dist/vnu.jar",
+                vnu_jar_path,
                 "--filterfile",
                 "../tools/documentation.vnufilter",
                 "--skip-non-html",
@@ -36,6 +52,7 @@ def validate_html():
             ],
             check=True,
         )
+
         color_message(92, "Passed!")
     except subprocess.CalledProcessError:
         color_message(91, "Failed!")
@@ -43,6 +60,7 @@ def validate_html():
 
 
 def test_links(loglevel, skip_check_links, skip_external_links):
+    """Tests links in the documentation using scrapy."""
     if skip_check_links:
         color_message(94, "Skipped testing links in documentation.")
     else:
@@ -82,7 +100,9 @@ if __name__ == "__main__":
         elif arg == "--skip-external-links":
             skip_external_links = True
 
-    os.chdir(os.path.join(os.path.dirname(__file__), "..", "docs"))
+    # Use os.path.abspath for better path resolution
+    docs_path = os.path.join(os.path.dirname(__file__), "..", "docs")
+    os.chdir(docs_path)
 
     try:
         subprocess.run(
