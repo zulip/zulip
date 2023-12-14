@@ -261,6 +261,11 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
+    acting_remote_user = models.ForeignKey(
+        RemoteServerBillingUser, null=True, on_delete=models.SET_NULL
+    )
+    acting_support_user = models.ForeignKey(UserProfile, null=True, on_delete=models.SET_NULL)
+
     @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
@@ -282,6 +287,11 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     realm_id = models.IntegerField(null=True, blank=True)
     # The remote_id field lets us deduplicate data from the remote server
     remote_id = models.IntegerField(null=True)
+
+    acting_remote_user = models.ForeignKey(
+        RemoteRealmBillingUser, null=True, on_delete=models.SET_NULL
+    )
+    acting_support_user = models.ForeignKey(UserProfile, null=True, on_delete=models.SET_NULL)
 
     @override
     def __str__(self) -> str:
