@@ -45,11 +45,6 @@ class Command(ZulipBaseCommand):
             action="store_true",
             help="Send to all organization administrators of sponsored organizations.",
         )
-        targets.add_argument(
-            "--json-file",
-            help="Load the JSON file, and send to the users whose ids are the keys in that dict; "
-            "the context for each email will be extended by each value in the dict.",
-        )
         self.add_user_list_args(
             targets,
             help="Email addresses of user(s) to send emails to.",
@@ -58,6 +53,15 @@ class Command(ZulipBaseCommand):
         # Realm is only required for --users and --all-users, so it is
         # not mutually exclusive with the rest of the above.
         self.add_realm_args(parser)
+
+        # This is an additional filter on the above.  It ideally would
+        # be in the mutually-exclusive set, but we would like to reuse
+        # it with --remote-servers
+        parser.add_argument(
+            "--json-file",
+            help="Load the JSON file, and send to the users whose ids are the keys in that dict; "
+            "the context for each email will be extended by each value in the dict.",
+        )
 
         # This is an additional filter which is composed with the above
         parser.add_argument(
@@ -140,19 +144,19 @@ class Command(ZulipBaseCommand):
                 realm__deactivated=False,
                 realm__in=sponsored_realms,
             ).distinct("delivery_email")
-        elif options["json_file"]:
+        else:
+            realm = self.get_realm(options)
+            users = self.get_users(options, realm, is_bot=False)
+
+        if options["json_file"]:
             with open(options["json_file"]) as f:
                 user_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
-            users = UserProfile.objects.filter(id__in=[int(user_id) for user_id in user_data])
+            users = users.filter(id__in=[int(user_id) for user_id in user_data])
 
             def add_context_from_dict(context: Dict[str, object], user: UserProfile) -> None:
                 context.update(user_data.get(str(user.id), {}))
 
             add_context = add_context_from_dict
-
-        else:
-            realm = self.get_realm(options)
-            users = self.get_users(options, realm, is_bot=False)
 
         if admins_only:
             users = users.filter(is_realm_admin=True)
