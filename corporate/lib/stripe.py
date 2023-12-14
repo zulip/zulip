@@ -2408,6 +2408,9 @@ class BillingSession(ABC):
             if plan is not None:
                 context["plan_name"] = plan.name
                 context["free_trial"] = plan.is_free_trial()
+                context["is_server_on_legacy_plan"] = (
+                    plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+                )
 
         self.add_sponsorship_info_to_context(context)
         return context
