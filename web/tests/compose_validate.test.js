@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
@@ -164,13 +164,13 @@ test_ui("validate", ({mock_template}) => {
         $("#private_message_recipient")[0] = {};
         $("#private_message_recipient").set_parent($pm_pill_container);
         $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-        $("#private_message_recipient").before = () => {};
+        $("#private_message_recipient").before = noop;
 
         compose_pm_pill.initialize({
             on_pill_create_or_remove: compose_recipient.update_placeholder_text,
         });
 
-        $("#zephyr-mirror-error").is = () => {};
+        $("#zephyr-mirror-error").is = noop;
 
         mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
 

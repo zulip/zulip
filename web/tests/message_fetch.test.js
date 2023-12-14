@@ -5,13 +5,11 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 set_global("document", "document-stub");
-
-const noop = () => {};
 
 function MessageListView() {
     return {
@@ -365,7 +363,7 @@ run_test("loading_newer", () => {
         });
 
         msg_list = simulate_narrow();
-        msg_list.append_to_view = () => {};
+        msg_list.append_to_view = noop;
         // Instead of using 444 as page_param.pointer, we
         // should have a message with that id in the message_list.
         msg_list.append(message_range(444, 445), false);

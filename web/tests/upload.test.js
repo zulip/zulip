@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
@@ -181,7 +181,7 @@ test("get_item", () => {
 });
 
 test("show_error_message", ({mock_template}) => {
-    $("#compose_banners .upload_banner .moving_bar").css = () => {};
+    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
 
     let banner_shown = false;
@@ -206,8 +206,8 @@ test("show_error_message", ({mock_template}) => {
 });
 
 test("upload_files", async ({mock_template, override_rewire}) => {
-    $("#compose_banners .upload_banner").remove = () => {};
-    $("#compose_banners .upload_banner .moving_bar").css = () => {};
+    $("#compose_banners .upload_banner").remove = noop;
+    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
 
     let files = [
@@ -502,9 +502,9 @@ test("copy_paste", ({override, override_rewire}) => {
 });
 
 test("uppy_events", ({override_rewire, mock_template}) => {
-    $("#compose_banners .upload_banner .moving_bar").css = () => {};
+    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
-    override_rewire(compose_ui, "smart_insert_inline", () => {});
+    override_rewire(compose_ui, "smart_insert_inline", noop);
 
     const callbacks = {};
     let state = {};

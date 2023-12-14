@@ -194,7 +194,7 @@ function make_zjquery() {
                 over that aspect of the module for the purpose
                 of testing, see if you can wrap the code
                 that extends $.fn and use override() to
-                replace the wrapper with () => {}.
+                replace the wrapper with tests.lib.noop.
             `);
         },
     });

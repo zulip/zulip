@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
@@ -69,7 +69,7 @@ run_test("basics", ({override}) => {
     });
 
     override(message_viewport, "height", () => 550);
-    override(padded_widget, "update_padding", () => {});
+    override(padded_widget, "update_padding", noop);
 
     let appended;
     $("#buddy-list-users-matching-view").append = (html) => {

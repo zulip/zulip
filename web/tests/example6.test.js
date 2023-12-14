@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 
 /*
     The previous example was a bit extreme.  Generally we just
@@ -43,8 +43,8 @@ run_test("explore make_stub", ({override}) => {
     // effects get in the way.  We have to override them to do
     // the simple test here.
 
-    override(app, "notify_server_of_deposit", () => {});
-    override(app, "pop_up_fancy_confirmation_screen", () => {});
+    override(app, "notify_server_of_deposit", noop);
+    override(app, "pop_up_fancy_confirmation_screen", noop);
     deposit_paycheck(10);
     assert.equal(balance, 50);
 
