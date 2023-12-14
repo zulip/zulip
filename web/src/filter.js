@@ -397,6 +397,200 @@ export class Filter {
         return parts.join(" ");
     }
 
+    static term_type(term) {
+        const operator = term.operator;
+        const operand = term.operand;
+        const negated = term.negated;
+
+        let result = negated ? "not-" : "";
+
+        result += operator;
+
+        if (["is", "has", "in", "streams"].includes(operator)) {
+            result += "-" + operand;
+        }
+
+        return result;
+    }
+
+    static sorted_term_types(term_types) {
+        const levels = [
+            "in",
+            "streams-public",
+            "stream",
+            "topic",
+            "dm",
+            "dm-including",
+            "sender",
+            "near",
+            "id",
+            "is-alerted",
+            "is-mentioned",
+            "is-dm",
+            "is-starred",
+            "is-unread",
+            "is-resolved",
+            "has-link",
+            "has-image",
+            "has-attachment",
+            "search",
+        ];
+
+        const level = (term_type) => {
+            let i = levels.indexOf(term_type);
+            if (i === -1) {
+                i = 999;
+            }
+            return i;
+        };
+
+        const compare = (a, b) => {
+            const diff = level(a) - level(b);
+            if (diff !== 0) {
+                return diff;
+            }
+            return util.strcmp(a, b);
+        };
+
+        return [...term_types].sort(compare);
+    }
+
+    static operator_to_prefix(operator, negated) {
+        operator = Filter.canonicalize_operator(operator);
+
+        if (operator === "search") {
+            return negated ? "exclude" : "search for";
+        }
+
+        const verb = negated ? "exclude " : "";
+
+        switch (operator) {
+            case "stream":
+                return verb + "stream";
+            case "streams":
+                return verb + "streams";
+            case "near":
+                return verb + "messages around";
+
+            // Note: We hack around using this in "describe" below.
+            case "has":
+                return verb + "messages with one or more";
+
+            case "id":
+                return verb + "message ID";
+
+            case "topic":
+                return verb + "topic";
+
+            case "sender":
+                return verb + "sent by";
+
+            case "dm":
+                return verb + "direct messages with";
+
+            case "dm-including":
+                return verb + "direct messages including";
+
+            case "in":
+                return verb + "messages in";
+
+            // Note: We hack around using this in "describe" below.
+            case "is":
+                return verb + "messages that are";
+        }
+        return "";
+    }
+
+    // Convert a list of operators to a human-readable description.
+    static parts_for_describe(operators) {
+        const parts = [];
+
+        if (operators.length === 0) {
+            parts.push({type: "plain_text", content: "all messages"});
+            return parts;
+        }
+
+        if (operators.length >= 2) {
+            const is = (term, expected) => term.operator === expected && !term.negated;
+
+            if (is(operators[0], "stream") && is(operators[1], "topic")) {
+                const stream = operators[0].operand;
+                const topic = operators[1].operand;
+                parts.push({
+                    type: "stream_topic",
+                    stream,
+                    topic,
+                });
+                operators = operators.slice(2);
+            }
+        }
+
+        const more_parts = operators.map((elem) => {
+            const operand = elem.operand;
+            const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
+            if (canonicalized_operator === "is") {
+                const verb = elem.negated ? "exclude " : "";
+                return {
+                    type: "is_operator",
+                    verb,
+                    operand,
+                };
+            }
+            if (canonicalized_operator === "has") {
+                // search_suggestion.get_suggestions takes care that this message will
+                // only be shown if the `has` operator is not at the last.
+                const valid_has_operands = [
+                    "image",
+                    "images",
+                    "link",
+                    "links",
+                    "attachment",
+                    "attachments",
+                ];
+                if (!valid_has_operands.includes(operand)) {
+                    return {
+                        type: "invalid_has",
+                        operand,
+                    };
+                }
+            }
+            const prefix_for_operator = Filter.operator_to_prefix(
+                canonicalized_operator,
+                elem.negated,
+            );
+            if (prefix_for_operator !== "") {
+                return {
+                    type: "prefix_for_operator",
+                    prefix_for_operator,
+                    operand,
+                };
+            }
+            return {
+                type: "plain_text",
+                content: "unknown operator",
+            };
+        });
+        return [...parts, ...more_parts];
+    }
+
+    static search_description_as_html(operators) {
+        return render_search_description({
+            parts: Filter.parts_for_describe(operators),
+        });
+    }
+
+    static is_spectator_compatible(ops) {
+        for (const op of ops) {
+            if (op.operand === undefined) {
+                return false;
+            }
+            if (!hash_parser.allowed_web_public_narrows.includes(op.operator)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     predicate() {
         if (this._predicate === undefined) {
             this._predicate = this._build_predicate();
@@ -947,200 +1141,6 @@ export class Filter {
                 }
                 return ok;
             });
-    }
-
-    static term_type(term) {
-        const operator = term.operator;
-        const operand = term.operand;
-        const negated = term.negated;
-
-        let result = negated ? "not-" : "";
-
-        result += operator;
-
-        if (["is", "has", "in", "streams"].includes(operator)) {
-            result += "-" + operand;
-        }
-
-        return result;
-    }
-
-    static sorted_term_types(term_types) {
-        const levels = [
-            "in",
-            "streams-public",
-            "stream",
-            "topic",
-            "dm",
-            "dm-including",
-            "sender",
-            "near",
-            "id",
-            "is-alerted",
-            "is-mentioned",
-            "is-dm",
-            "is-starred",
-            "is-unread",
-            "is-resolved",
-            "has-link",
-            "has-image",
-            "has-attachment",
-            "search",
-        ];
-
-        const level = (term_type) => {
-            let i = levels.indexOf(term_type);
-            if (i === -1) {
-                i = 999;
-            }
-            return i;
-        };
-
-        const compare = (a, b) => {
-            const diff = level(a) - level(b);
-            if (diff !== 0) {
-                return diff;
-            }
-            return util.strcmp(a, b);
-        };
-
-        return [...term_types].sort(compare);
-    }
-
-    static operator_to_prefix(operator, negated) {
-        operator = Filter.canonicalize_operator(operator);
-
-        if (operator === "search") {
-            return negated ? "exclude" : "search for";
-        }
-
-        const verb = negated ? "exclude " : "";
-
-        switch (operator) {
-            case "stream":
-                return verb + "stream";
-            case "streams":
-                return verb + "streams";
-            case "near":
-                return verb + "messages around";
-
-            // Note: We hack around using this in "describe" below.
-            case "has":
-                return verb + "messages with one or more";
-
-            case "id":
-                return verb + "message ID";
-
-            case "topic":
-                return verb + "topic";
-
-            case "sender":
-                return verb + "sent by";
-
-            case "dm":
-                return verb + "direct messages with";
-
-            case "dm-including":
-                return verb + "direct messages including";
-
-            case "in":
-                return verb + "messages in";
-
-            // Note: We hack around using this in "describe" below.
-            case "is":
-                return verb + "messages that are";
-        }
-        return "";
-    }
-
-    // Convert a list of operators to a human-readable description.
-    static parts_for_describe(operators) {
-        const parts = [];
-
-        if (operators.length === 0) {
-            parts.push({type: "plain_text", content: "all messages"});
-            return parts;
-        }
-
-        if (operators.length >= 2) {
-            const is = (term, expected) => term.operator === expected && !term.negated;
-
-            if (is(operators[0], "stream") && is(operators[1], "topic")) {
-                const stream = operators[0].operand;
-                const topic = operators[1].operand;
-                parts.push({
-                    type: "stream_topic",
-                    stream,
-                    topic,
-                });
-                operators = operators.slice(2);
-            }
-        }
-
-        const more_parts = operators.map((elem) => {
-            const operand = elem.operand;
-            const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
-            if (canonicalized_operator === "is") {
-                const verb = elem.negated ? "exclude " : "";
-                return {
-                    type: "is_operator",
-                    verb,
-                    operand,
-                };
-            }
-            if (canonicalized_operator === "has") {
-                // search_suggestion.get_suggestions takes care that this message will
-                // only be shown if the `has` operator is not at the last.
-                const valid_has_operands = [
-                    "image",
-                    "images",
-                    "link",
-                    "links",
-                    "attachment",
-                    "attachments",
-                ];
-                if (!valid_has_operands.includes(operand)) {
-                    return {
-                        type: "invalid_has",
-                        operand,
-                    };
-                }
-            }
-            const prefix_for_operator = Filter.operator_to_prefix(
-                canonicalized_operator,
-                elem.negated,
-            );
-            if (prefix_for_operator !== "") {
-                return {
-                    type: "prefix_for_operator",
-                    prefix_for_operator,
-                    operand,
-                };
-            }
-            return {
-                type: "plain_text",
-                content: "unknown operator",
-            };
-        });
-        return [...parts, ...more_parts];
-    }
-
-    static search_description_as_html(operators) {
-        return render_search_description({
-            parts: Filter.parts_for_describe(operators),
-        });
-    }
-
-    static is_spectator_compatible(ops) {
-        for (const op of ops) {
-            if (op.operand === undefined) {
-                return false;
-            }
-            if (!hash_parser.allowed_web_public_narrows.includes(op.operator)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     is_conversation_view() {
