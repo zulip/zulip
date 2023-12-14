@@ -5,6 +5,7 @@ from urllib.parse import urlsplit, urlunsplit
 from django.conf import settings
 from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Exists, OuterRef
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -34,6 +35,11 @@ from corporate.lib.stripe import (
     BILLING_SUPPORT_EMAIL,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
+)
+from corporate.models import (
+    CustomerPlan,
+    get_current_plan_by_customer,
+    get_customer_by_remote_server,
 )
 from zerver.lib.exceptions import (
     JsonableError,
@@ -189,6 +195,19 @@ def remote_realm_billing_finalize_login(
         # These should definitely still exist, since the access token was signed
         # pretty recently. (And we generally don't delete these at all.)
         raise AssertionError
+
+    # Redirect to error page if server is on an active plan
+    server_customer = get_customer_by_remote_server(remote_server)
+    if server_customer is not None:
+        server_plan = get_current_plan_by_customer(server_customer)
+        if server_plan is not None:
+            return render(
+                request,
+                "corporate/remote_realm_login_error_for_server_on_active_plan.html",
+                context={
+                    "server_plan_name": server_plan.name,
+                },
+            )
 
     user_dict = identity_dict["user"]
 
@@ -592,6 +611,21 @@ def remote_billing_legacy_server_confirm_login(
     )
 
 
+def has_live_plan_for_any_remote_realm_on_server(server: RemoteZulipServer) -> bool:
+    has_plan_with_status_lt_live_threshold = CustomerPlan.objects.filter(
+        customer__remote_realm__server=server,
+        status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD,
+        customer__remote_realm=OuterRef("pk"),
+    )
+
+    return (
+        RemoteRealm.objects.filter(server=server)
+        .annotate(has_plan=Exists(has_plan_with_status_lt_live_threshold))
+        .filter(has_plan=True)
+        .exists()
+    )
+
+
 @self_hosting_management_endpoint
 @typed_endpoint
 def remote_billing_legacy_server_from_login_confirmation_link(
@@ -657,6 +691,12 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         # This shouldn't be possible without tampering with the form, so we
         # don't need a pretty error.
         raise JsonableError(_("You must accept the Terms of Service to proceed."))
+
+    if has_live_plan_for_any_remote_realm_on_server(remote_server):
+        return render(
+            request,
+            "corporate/remote_server_login_error_for_any_realm_on_active_plan.html",
+        )
 
     if remote_billing_user is None:
         assert full_name is not None
