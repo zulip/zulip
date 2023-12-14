@@ -86,6 +86,8 @@ log_to_file(logging.getLogger("stripe"), BILLING_LOG_PATH)
 ParamT = ParamSpec("ParamT")
 ReturnT = TypeVar("ReturnT")
 
+BILLING_SUPPORT_EMAIL = "sales@zulip.com"
+
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
@@ -2464,7 +2466,7 @@ class BillingSession(ABC):
         }
         send_email(
             "zerver/emails/sponsorship_request",
-            to_emails=[FromAddress.SUPPORT],
+            to_emails=[BILLING_SUPPORT_EMAIL],
             # Sent to the server's support team, so this email is not user-facing.
             from_name="Zulip sponsorship request",
             from_address=FromAddress.tokenized_no_reply_address(),
@@ -3235,7 +3237,7 @@ class RemoteRealmBillingSession(BillingSession):
             send_email(
                 "zerver/emails/sponsorship_approved_community_plan",
                 to_emails=billing_emails,
-                from_address="sales@zulip.com",
+                from_address=BILLING_SUPPORT_EMAIL,
                 context={
                     "billing_entity": self.billing_entity_display_name,
                     "plans_link": "https://zulip.com/plans/#self-hosted",
@@ -3639,7 +3641,7 @@ class RemoteServerBillingSession(BillingSession):
         send_email(
             "zerver/emails/sponsorship_approved_community_plan",
             to_emails=billing_emails,
-            from_address="sales@zulip.com",
+            from_address=BILLING_SUPPORT_EMAIL,
             context={
                 "billing_entity": self.billing_entity_display_name,
                 "plans_link": "https://zulip.com/plans/#self-hosted",
