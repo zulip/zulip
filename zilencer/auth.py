@@ -2,6 +2,7 @@ import logging
 from functools import wraps
 from typing import Any, Callable
 
+import sentry_sdk
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.urls import path
@@ -96,6 +97,7 @@ def validate_remote_server(
         raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
     RequestNotes.get_notes(request).remote_server = remote_server
     process_client(request)
+    sentry_sdk.set_user({"server": remote_server.uuid})
     return remote_server
 
 
