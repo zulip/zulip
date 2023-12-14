@@ -341,7 +341,7 @@ def get_caches_to_be_purged(
     # and threshold days, this function return a list of caches
     # which can be purged. Remove the cache only if it is:
     # 1: Not in use by the current installation(in dev as well as in prod).
-    # 2: Not in use by a deployment not older than `threshold_days`(in prod).
+    # 2: Not in use by a deployment not older than `threshold_days` (in prod).
     # 3: Not in use by '/root/zulip'.
     # 4: Not older than `threshold_days`.
     caches_to_purge = set()

@@ -54,6 +54,6 @@ export function save_pre_narrow_offset_for_reload() {
 
 export function initialize() {
     // For users with automatic color scheme, we need to detect change
-    // in `prefers-color-scheme`as it changes based on time.
+    // in `prefers-color-scheme` as it changes based on time.
     ui_util.listener_for_preferred_color_scheme_change(update_recipient_bar_background_color);
 }

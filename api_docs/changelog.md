@@ -24,8 +24,8 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
   [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
-  Added a new user setting,`automatically_follow_topics_where_mentioned`
-  that allows user to automatically follow topics where the user is mentioned.
+  Added a new user setting, `automatically_follow_topics_where_mentioned`,
+  that allows the user to automatically follow topics where the user is mentioned.
 
 **Feature level 234**
 

@@ -568,7 +568,7 @@ Apache requires you use the hostname, not the IP address; see
 ### HAProxy configuration
 
 Below is a working example of a HAProxy configuration. It assumes that
-your Zulip server sits at `https://10.10.10.10:443`see
+your Zulip server sits at `https://10.10.10.10:443`; see
 [above](#configuring-zulip-to-allow-http) to switch to HTTP.
 
 1. Follow the instructions to [configure Zulip to trust

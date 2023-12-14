@@ -66,7 +66,7 @@ Also pass the following as environment variables in `.github/workflows/update-on
 - Delete the test droplet `oneclickapp-{release_version}-test` after you have completed testing
   by going to the [DigitalOcean Zulip team account](https://cloud.digitalocean.com/droplets?i=0242e0).
   If there are other existing test droplets with the same name format but with with older release versions
-  feel free to delete them as well. These droplets are also tagged with `github-action` and`temporary`
+  feel free to delete them as well. These droplets are also tagged with the `github-action` and `temporary`
   tags.
 
 **Errors**
