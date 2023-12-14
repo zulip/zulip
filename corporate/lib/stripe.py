@@ -553,6 +553,7 @@ class SupportType(Enum):
     attach_discount = 3
     update_billing_modality = 4
     modify_plan = 5
+    update_minimum_licenses = 6
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -562,6 +563,7 @@ class SupportViewRequest(TypedDict, total=False):
     billing_modality: Optional[str]
     plan_modification: Optional[str]
     new_plan_tier: Optional[int]
+    minimum_licenses: Optional[int]
 
 
 class AuditLogEventType(Enum):
@@ -575,6 +577,7 @@ class AuditLogEventType(Enum):
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 8
     CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 9
     BILLING_ENTITY_PLAN_TYPE_CHANGED = 10
+    MINIMUM_LICENSES_CHANGED = 11
 
 
 class PlanTierChangeType(Enum):
@@ -1084,6 +1087,46 @@ class BillingSession(ABC):
             else "0"
         )
         return f"Discount for {self.billing_entity_display_name} changed to {new_discount_string}% from {old_discount_string}%."
+
+    def update_customer_minimum_licenses(self, new_minimum_license_count: int) -> str:
+        previous_minimum_license_count = None
+        customer = self.get_customer()
+
+        # Currently, the support admin view shows the form for adding
+        # a minimum license count after a default discount has been set.
+        assert customer is not None
+        if customer.default_discount is None or int(customer.default_discount) == 0:
+            raise SupportRequestError(
+                f"Discount for {self.billing_entity_display_name} must be updated before setting a minimum number of licenses."
+            )
+
+        plan = get_current_plan_by_customer(customer)
+        if plan is not None and plan.tier != CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+            raise SupportRequestError(
+                f"Cannot set minimum licenses; active plan already exists for {self.billing_entity_display_name}."
+            )
+
+        next_plan = self.get_legacy_remote_server_next_plan(customer)
+        if next_plan is not None:  # nocoverage
+            raise SupportRequestError(
+                f"Cannot set minimum licenses; upgrade to new plan already scheduled for {self.billing_entity_display_name}."
+            )
+
+        previous_minimum_license_count = customer.minimum_licenses
+        customer.minimum_licenses = new_minimum_license_count
+        customer.save(update_fields=["minimum_licenses"])
+
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.MINIMUM_LICENSES_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "old_minimum_licenses": previous_minimum_license_count,
+                "new_minimum_licenses": new_minimum_license_count,
+            },
+        )
+        if previous_minimum_license_count is None:
+            previous_minimum_license_count = 0
+        return f"Minimum licenses for {self.billing_entity_display_name} changed to {new_minimum_license_count} from {previous_minimum_license_count}."
 
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
@@ -2027,6 +2070,11 @@ class BillingSession(ABC):
         return None, context
 
     def min_licenses_for_plan(self, tier: int) -> int:
+        customer = self.get_customer()
+        if customer is not None and customer.minimum_licenses:
+            assert customer.default_discount is not None
+            return customer.minimum_licenses
+
         if tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:
             return 10
         if tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
@@ -2587,6 +2635,10 @@ class BillingSession(ABC):
             assert support_request["discount"] is not None
             new_discount = support_request["discount"]
             success_message = self.attach_discount_to_customer(new_discount)
+        elif support_type == SupportType.update_minimum_licenses:
+            assert support_request["minimum_licenses"] is not None
+            new_minimum_license_count = support_request["minimum_licenses"]
+            success_message = self.update_customer_minimum_licenses(new_minimum_license_count)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
             assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
@@ -2909,6 +2961,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RealmAuditLog.REALM_DISCOUNT_CHANGED
+        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
+            return RealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
@@ -3265,6 +3319,8 @@ class RemoteRealmBillingSession(BillingSession):
             return RemoteRealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:  # nocoverage
             return RemoteRealmAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
+        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
+            return RemoteRealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
@@ -3675,6 +3731,8 @@ class RemoteServerBillingSession(BillingSession):
             return RemoteZulipServerAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
+            return RemoteZulipServerAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
