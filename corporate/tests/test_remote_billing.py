@@ -877,9 +877,7 @@ class LegacyServerLoginTest(RemoteServerTestCase):
     def test_server_login_get(self) -> None:
         result = self.client_get("/serverlogin/", subdomain="selfhosting")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(
-            ["Authenticate server for Zulip billing management"], result
-        )
+        self.assert_in_success_response(["Authenticate server for Zulip plan management"], result)
 
     def test_server_login_invalid_zulip_org_id(self) -> None:
         result = self.client_post(

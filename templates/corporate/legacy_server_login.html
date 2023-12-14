@@ -1,14 +1,14 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "upgrade" %}
 
-{% set PAGE_TITLE = "Authenticate server for Zulip billing management" %}
+{% set PAGE_TITLE = "Authenticate server for Zulip plan management" %}
 
 {% block portico_content %}
 
 <div id="server-login-page" class="register-account flex full-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Authenticate server<br/>for Zulip billing management</h1>
+            <h1>Authenticate server<br/>for Zulip plan management</h1>
         </div>
         <div class="white-box">
             <div id="server-login-page-details">
@@ -23,15 +23,13 @@
                         {% endif %}
                         <div id="server-login-form-title" class="input-box server-login-form no-validation">
                             <div class="not-editable-realm-field">
-                                Authenticate your server with Zulip's billing management system.
+                                To access plan management for a Zulip
+                                server, first enter <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#plan-management-for-an-entire-zulip-server">your server's credentials</a>.
                             </div>
                         </div>
                         <div class="input-box server-login-form-field">
                             <label for="zulip-org-id" class="inline-block label-title">
                                 zulip_org_id
-                                <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html" target="_blank">
-                                    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
-                                </a>
                             </label>
                             <input id="zulip-org-id" name="zulip_org_id" class="required" type="text"/>
                             <div class="alert alert-danger server-login-form-field-error zulip_org_id-error"></div>
