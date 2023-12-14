@@ -51,7 +51,7 @@ from zerver.lib.remote_server import (
     RealmCountDataForAnalytics,
     RealmDataForAnalytics,
 )
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -425,6 +425,9 @@ def remote_server_notify_push(
         remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
 
     push_status = get_push_status_for_remote_request(server, remote_realm)
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[can_push={push_status.can_push}/{push_status.message}]"
     if not push_status.can_push:
         if server.last_api_feature_level is None:
             raise OldZulipServerError(_("Your plan doesn't allow sending push notifications."))
@@ -1059,16 +1062,32 @@ def remote_server_post_analytics(
             remote_server_billing_session = RemoteServerBillingSession(remote_server=server)
             remote_server_billing_session.sync_license_ledger_if_needed()
 
-    remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    can_push_values = set()
+
     remote_realms = RemoteRealm.objects.filter(server=server, realm_locally_deleted=False)
+    remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
+    remote_human_realm_count = remote_realms.filter(is_system_bot_realm=False).count()
     for remote_realm in remote_realms:
         uuid = str(remote_realm.uuid)
         status = get_push_status_for_remote_request(server, remote_realm)
+        if remote_human_realm_count == 1:  # nocoverage
+            log_data["extra"] = f"[can_push={status.can_push}/{status.message}]"
+        elif not remote_realm.is_system_bot_realm:
+            can_push_values.add(status.can_push)
         remote_realm_dict[uuid] = {
             "can_push": status.can_push,
             "expected_end_timestamp": status.expected_end_timestamp,
         }
 
+    if len(can_push_values) == 1:
+        can_push_value = next(iter(can_push_values))
+        log_data["extra"] = f"[can_push={can_push_value}/{remote_human_realm_count} realms]"
+    elif can_push_values == {True, False}:
+        log_data["extra"] = f"[can_push=mixed/{remote_human_realm_count} realms]"
+    elif remote_human_realm_count == 0:
+        log_data["extra"] = "[0 realms]"
     return json_success(request, data={"realms": remote_realm_dict})
 
 
