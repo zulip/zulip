@@ -315,19 +315,9 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
         scheduled_message.realm,
     )
 
-    read_by_sender = scheduled_message.read_by_sender
-    if read_by_sender is None:  # nocoverage
-        # Legacy default: a scheduled message you sent from a non-API client is
-        # automatically marked as read for yourself, unless it was sent to
-        # yourself only.
-        read_by_sender = (
-            scheduled_message.sending_client.default_read_by_sender()
-            and scheduled_message.recipient != scheduled_message.sender.recipient
-        )
-
     sent_message_result = do_send_messages(
         [send_request],
-        mark_as_read=[scheduled_message.sender_id] if read_by_sender else [],
+        mark_as_read=[scheduled_message.sender_id] if scheduled_message.read_by_sender else [],
     )[0]
     scheduled_message.delivered_message_id = sent_message_result.message_id
     scheduled_message.delivered = True
