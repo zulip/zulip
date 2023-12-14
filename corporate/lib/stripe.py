@@ -3019,6 +3019,7 @@ class RemoteRealmBillingSession(BillingSession):
     ) -> None:
         self.remote_realm = remote_realm
         self.remote_billing_user = remote_billing_user
+        self.support_staff = support_staff
         if support_staff is not None:  # nocoverage
             assert support_staff.is_staff
             self.support_session = True
@@ -3119,6 +3120,10 @@ class RemoteRealmBillingSession(BillingSession):
             "remote_realm": self.remote_realm,
             "event_type": audit_log_event,
             "event_time": event_time,
+            # At most one of these should be set, but we may
+            # not want an assert for that yet:
+            "acting_support_user": self.support_staff,
+            "acting_remote_user": self.remote_billing_user,
         }
 
         if extra_data:
@@ -3424,6 +3429,7 @@ class RemoteServerBillingSession(BillingSession):
     ) -> None:
         self.remote_server = remote_server
         self.remote_billing_user = remote_billing_user
+        self.support_staff = support_staff
         if support_staff is not None:  # nocoverage
             assert support_staff.is_staff
             self.support_session = True
@@ -3518,6 +3524,10 @@ class RemoteServerBillingSession(BillingSession):
             "server": self.remote_server,
             "event_type": audit_log_event,
             "event_time": event_time,
+            # At most one of these should be set, but we may
+            # not want an assert for that yet:
+            "acting_support_user": self.support_staff,
+            "acting_remote_user": self.remote_billing_user,
         }
 
         if extra_data:
