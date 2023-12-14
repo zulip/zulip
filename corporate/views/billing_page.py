@@ -114,8 +114,11 @@ def remote_realm_billing_page(
 
     customer = billing_session.get_customer()
     if customer is not None and customer.sponsorship_pending:
-        # Don't redirect to sponsorship page if the remote realm is on a paid plan
-        if not billing_session.on_paid_plan():
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        if (
+            not billing_session.on_paid_plan()
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+        ):
             return HttpResponseRedirect(
                 reverse("remote_realm_sponsorship_page", args=(realm_uuid,))
             )
@@ -174,8 +177,11 @@ def remote_server_billing_page(
 
     customer = billing_session.get_customer()
     if customer is not None and customer.sponsorship_pending:
-        # Don't redirect to sponsorship page if the remote realm is on a paid plan
-        if not billing_session.on_paid_plan():
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        if (
+            not billing_session.on_paid_plan()
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+        ):
             return HttpResponseRedirect(
                 reverse(
                     "remote_server_sponsorship_page",
