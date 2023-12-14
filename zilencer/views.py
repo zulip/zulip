@@ -976,9 +976,8 @@ def remote_server_post_analytics(
             # We need to update 'last_audit_log_update' before calling the
             # 'sync_license_ledger_if_needed' method to avoid 'MissingDataError'
             # due to 'has_stale_audit_log' being True.
-            RemoteZulipServer.objects.filter(uuid=server.uuid).update(
-                last_audit_log_update=timezone_now()
-            )
+            server.last_audit_log_update = timezone_now()
+            server.save(update_fields=["last_audit_log_update"])
 
             # Update LicenseLedger for remote_realm customers using logs in RemoteRealmAuditlog.
             for remote_realm in remote_realms_set:
