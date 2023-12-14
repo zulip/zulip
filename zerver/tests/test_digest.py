@@ -547,7 +547,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_info["html"], [])
 
     def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
-        client = "website"  # this makes `sent_by_human` return True
+        client = "website"  # this makes `default_read_by_sender` return True
         sending_client = get_client(client)
         message_ids = []  # List[int]
         for sender_name in senders:
