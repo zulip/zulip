@@ -768,7 +768,7 @@ def handle_customer_migration_from_server_to_realms(
         and server_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         and server_plan.status == CustomerPlan.ACTIVE
     ):
-        assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
+        assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
         assert server_plan.end_date is not None
         remote_realms = RemoteRealm.objects.filter(
             uuid__in=realm_uuids, server=server, plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
