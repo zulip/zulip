@@ -289,6 +289,10 @@ class CustomerPlan(models.Model):
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
 
+    @override
+    def __str__(self) -> str:
+        return f"{self.name} (status: {self.get_plan_status_as_text()})"
+
     @staticmethod
     def name_from_tier(tier: int) -> str:
         # NOTE: Check `statement_descriptor` values after updating this.
