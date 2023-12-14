@@ -588,11 +588,14 @@ def send_notifications_to_bouncer(
     gcm_options: Dict[str, Any],
     android_devices: Sequence[DeviceToken],
     apple_devices: Sequence[DeviceToken],
-) -> Tuple[int, int]:
-    if not android_devices and not apple_devices:
-        # Avoid making a useless API request to the bouncer if there
-        # are no mobile devices registered for this user.
-        return 0, 0
+) -> None:
+    if len(android_devices) + len(apple_devices) == 0:
+        logger.info(
+            "Skipping contacting the bouncer for user %s because there are no registered devices",
+            user_profile.id,
+        )
+
+        return
 
     post_data = {
         "user_uuid": str(user_profile.uuid),
@@ -656,7 +659,12 @@ def send_notifications_to_bouncer(
             user_profile.realm, remote_realm_dict["expected_end_timestamp"], acting_user=None
         )
 
-    return total_android_devices, total_apple_devices
+    logger.info(
+        "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
+        user_profile.id,
+        total_android_devices,
+        total_apple_devices,
+    )
 
 
 #
@@ -1378,14 +1386,8 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
     )
     if uses_notification_bouncer():
-        total_android_devices, total_apple_devices = send_notifications_to_bouncer(
+        send_notifications_to_bouncer(
             user_profile, apns_payload, gcm_payload, gcm_options, android_devices, apple_devices
-        )
-        logger.info(
-            "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
-            user_profile_id,
-            total_android_devices,
-            total_apple_devices,
         )
         return
 
