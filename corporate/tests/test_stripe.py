@@ -1853,7 +1853,7 @@ class StripeTest(StripeTestCase):
 
         for message in outbox:
             self.assert_length(message.to, 1)
-            self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
+            self.assertEqual(message.to[0], "sales@zulip.com")
             self.assertEqual(message.subject, "Sponsorship request (Open-source project) for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
