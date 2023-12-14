@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
@@ -71,7 +71,7 @@ run_test("single item list", ({override}) => {
     };
 
     override(conf.list, "find_li", () => $li_stub);
-    override(cursor, "adjust_scroll", () => {});
+    override(cursor, "adjust_scroll", noop);
 
     cursor.go_to(valid_key);
 
@@ -91,7 +91,7 @@ run_test("multiple item list", ({override}) => {
         prev_key: (key) => (key > 1 ? key - 1 : undefined),
     });
     const cursor = new ListCursor(conf);
-    override(cursor, "adjust_scroll", () => {});
+    override(cursor, "adjust_scroll", noop);
 
     function li(key) {
         return $.create(`item-${key}`, {children: ["stub"]});

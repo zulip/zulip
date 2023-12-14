@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 const spoilers = zrequire("spoilers");
@@ -22,7 +22,7 @@ const get_spoiler_elem = (title) => {
     const $block = $.create(`block-${title}`);
     const $header = $.create(`header-${title}`);
     const $content = $.create(`content-${title}`);
-    $content.remove = () => {};
+    $content.remove = noop;
     $header.text(title);
     $block.set_find_results(".spoiler-header", $header);
     $block.set_find_results(".spoiler-content", $content);

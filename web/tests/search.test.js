@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 const narrow_state = mock_esm("../src/narrow_state");
@@ -294,7 +294,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
 
     assert.ok(!is_blurred);
 
-    override_rewire(search, "exit_search", () => {});
+    override_rewire(search, "exit_search", noop);
     ev.key = "Enter";
     $search_query_box.is = () => true;
     $searchbox_form.trigger(ev);

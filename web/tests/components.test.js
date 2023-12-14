@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {$t} = require("./lib/i18n");
 const {mock_jquery, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 
 let env;
@@ -165,8 +165,6 @@ mock_jquery((sel) => {
 });
 
 const components = zrequire("components");
-
-const noop = () => {};
 
 const LEFT_KEY = {key: "ArrowLeft", preventDefault: noop, stopPropagation: noop};
 const RIGHT_KEY = {key: "ArrowRight", preventDefault: noop, stopPropagation: noop};

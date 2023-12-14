@@ -5,12 +5,10 @@ const {strict: assert} = require("assert");
 const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, realm_user_settings_defaults, user_settings} = require("./lib/zpage_params");
-
-const noop = () => {};
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
@@ -593,7 +591,7 @@ run_test("realm_bot add", ({override}) => {
     const event = event_fixtures.realm_bot__add;
     const bot_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "render_bots", () => {});
+    override(settings_bots, "render_bots", noop);
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
@@ -605,7 +603,7 @@ run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
     override(bot_data, "del", bot_stub.f);
-    override(settings_bots, "render_bots", () => {});
+    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -617,7 +615,7 @@ run_test("realm_bot update", ({override}) => {
     const event = event_fixtures.realm_bot__update;
     const bot_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "render_bots", () => {});
+    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
 
@@ -834,7 +832,7 @@ run_test("stream_typing", ({override}) => {
 });
 
 run_test("user_settings", ({override}) => {
-    settings_display.set_default_language_name = () => {};
+    settings_display.set_default_language_name = noop;
     let event = event_fixtures.user_settings__default_language;
     user_settings.default_language = "en";
     override(settings_display, "update_page", noop);

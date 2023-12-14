@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 const channel = mock_esm("../src/channel");
@@ -15,7 +15,6 @@ const alert_words_ui = zrequire("alert_words_ui");
 alert_words.initialize({
     alert_words: ["foo", "bar"],
 });
-const noop = () => {};
 
 run_test("rerender_alert_words_ui", ({mock_template}) => {
     let list_widget_create_called = false;
@@ -45,7 +44,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
 });
 
 run_test("remove_alert_word", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
+    override_rewire(alert_words_ui, "rerender_alert_words_ui", noop);
     alert_words_ui.set_up_alert_words();
 
     const $word_list = $("#alert-words-table");
@@ -95,7 +94,7 @@ run_test("remove_alert_word", ({override_rewire}) => {
 });
 
 run_test("close_status_message", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
+    override_rewire(alert_words_ui, "rerender_alert_words_ui", noop);
     alert_words_ui.set_up_alert_words();
 
     const $alert_word_settings = $("#alert-word-settings");
