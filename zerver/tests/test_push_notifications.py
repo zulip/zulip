@@ -1026,6 +1026,104 @@ class PushBouncerNotificationTest(BouncerTestCase):
 class AnalyticsBouncerTest(BouncerTestCase):
     TIME_ZERO = datetime(1988, 3, 14, tzinfo=timezone.utc)
 
+    def assertPushNotificationsAre(self, should_be: bool) -> None:
+        self.assertEqual(
+            {should_be},
+            set(
+                Realm.objects.all().distinct().values_list("push_notifications_enabled", flat=True)
+            ),
+        )
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_analytics_failure_api(self) -> None:
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+        ANALYTICS_URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/analytics"
+        ANALYTICS_STATUS_URL = ANALYTICS_URL + "/status"
+
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
+            resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
+            Realm.objects.all().update(push_notifications_enabled=True)
+            send_server_data_to_push_bouncer()
+            self.assertEqual(
+                "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer",
+                mock_warning.output[0],
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            self.assertPushNotificationsAre(False)
+
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
+            resp.add(responses.GET, ANALYTICS_STATUS_URL, body="This is not JSON")
+            Realm.objects.all().update(push_notifications_enabled=True)
+            send_server_data_to_push_bouncer()
+            self.assertTrue(
+                mock_warning.output[0].startswith(
+                    f"ERROR:zulip.analytics:Exception communicating with {settings.PUSH_NOTIFICATION_BOUNCER_URL}\nTraceback",
+                )
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            self.assertPushNotificationsAre(False)
+
+        with responses.RequestsMock() as resp, self.assertLogs("", level="WARNING") as mock_warning:
+            resp.add(responses.GET, ANALYTICS_STATUS_URL, body="Server error", status=502)
+            Realm.objects.all().update(push_notifications_enabled=True)
+            send_server_data_to_push_bouncer()
+            self.assertEqual(
+                "WARNING:root:Received 502 from push notification bouncer",
+                mock_warning.output[0],
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            self.assertPushNotificationsAre(True)
+
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
+            Realm.objects.all().update(push_notifications_enabled=True)
+            resp.add(
+                responses.GET,
+                ANALYTICS_STATUS_URL,
+                status=401,
+                json={"CODE": "UNAUTHORIZED", "msg": "Some problem", "result": "error"},
+            )
+            send_server_data_to_push_bouncer()
+            self.assertIn(
+                "WARNING:zulip.analytics:Some problem",
+                mock_warning.output[0],
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            self.assertPushNotificationsAre(False)
+
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
+            Realm.objects.all().update(push_notifications_enabled=True)
+            resp.add(
+                responses.GET,
+                ANALYTICS_STATUS_URL,
+                json={
+                    "last_realm_count_id": 0,
+                    "last_installation_count_id": 0,
+                    "last_realmauditlog_id": 0,
+                },
+            )
+            resp.add(
+                responses.POST,
+                ANALYTICS_URL,
+                status=401,
+                json={"CODE": "UNAUTHORIZED", "msg": "Some problem", "result": "error"},
+            )
+            send_server_data_to_push_bouncer()
+            self.assertIn(
+                "WARNING:zulip.analytics:Some problem",
+                mock_warning.output[0],
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_URL, 1))
+            self.assertPushNotificationsAre(False)
+
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
     def test_analytics_api(self) -> None:
@@ -1037,17 +1135,6 @@ class AnalyticsBouncerTest(BouncerTestCase):
         ANALYTICS_STATUS_URL = ANALYTICS_URL + "/status"
         user = self.example_user("hamlet")
         end_time = self.TIME_ZERO
-
-        with responses.RequestsMock() as resp, self.assertLogs(
-            "zulip.analytics", level="WARNING"
-        ) as mock_warning:
-            resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
-            send_server_data_to_push_bouncer()
-            self.assertIn(
-                "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer\nTraceback ",
-                mock_warning.output[0],
-            )
-            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
 
         self.add_mock_response()
         # Send any existing data over, so that we can start the test with a "clean" slate
@@ -1854,7 +1941,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     )
 
         with mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m, self.assertLogs(
-            "zulip.analytics", level="ERROR"
+            "zulip.analytics", level="WARNING"
         ) as exception_log:
             get_response = {
                 "last_realm_count_id": 0,
@@ -1864,7 +1951,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
             def mock_send_to_push_bouncer_response(method: str, *args: Any) -> Dict[str, int]:
                 if method == "POST":
-                    raise Exception
+                    raise PushNotificationBouncerRetryLaterError("Some problem")
                 return get_response
 
             m.side_effect = mock_send_to_push_bouncer_response
@@ -1874,10 +1961,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
             realms = Realm.objects.all()
             for realm in realms:
                 self.assertFalse(realm.push_notifications_enabled)
-            self.assertIn(
-                "ERROR:zulip.analytics:Exception asking push bouncer if notifications will work.",
-                exception_log.output[0],
-            )
+        self.assertEqual(
+            exception_log.output,
+            ["WARNING:zulip.analytics:Some problem"],
+        )
 
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
