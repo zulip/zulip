@@ -5402,6 +5402,50 @@ class TestSupportBillingHelpers(StripeTestCase):
         ):
             billing_session.approve_sponsorship()
 
+    @mock_stripe()
+    def test_add_minimum_licenses(self, *mocks: Mock) -> None:
+        min_licenses = 25
+        support_view_request = SupportViewRequest(
+            support_type=SupportType.update_minimum_licenses, minimum_licenses=min_licenses
+        )
+        support_admin = self.example_user("iago")
+        user = self.example_user("hamlet")
+        billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+
+        billing_session.update_or_create_customer()
+        with self.assertRaisesRegex(
+            SupportRequestError,
+            "Discount for zulip must be updated before setting a minimum number of licenses.",
+        ):
+            billing_session.process_support_view_request(support_view_request)
+
+        billing_session.attach_discount_to_customer(Decimal(50))
+        message = billing_session.process_support_view_request(support_view_request)
+        self.assertEqual("Minimum licenses for zulip changed to 25 from 0.", message)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {"old_minimum_licenses": None, "new_minimum_licenses": 25}
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        self.login_user(user)
+        self.add_card_and_upgrade(user)
+        customer = billing_session.get_customer()
+        assert customer is not None
+        [charge] = iter(stripe.Charge.list(customer=customer.stripe_customer_id))
+        self.assertEqual(4000 * min_licenses, charge.amount)
+
+        min_licenses = 50
+        support_view_request = SupportViewRequest(
+            support_type=SupportType.update_minimum_licenses, minimum_licenses=min_licenses
+        )
+        with self.assertRaisesRegex(
+            SupportRequestError,
+            "Cannot set minimum licenses; active plan already exists for zulip.",
+        ):
+            billing_session.process_support_view_request(support_view_request)
+
     def test_approve_realm_sponsorship(self) -> None:
         realm = get_realm("zulip")
         self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)

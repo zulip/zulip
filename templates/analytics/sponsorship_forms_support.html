@@ -33,6 +33,17 @@
     {% endif %}
 </form>
 
+{% if not has_fixed_price and (sponsorship_data.default_discount or sponsorship_data.minimum_licenses) %}
+<form method="POST" class="remote-form">
+    <b>Minimum licenses</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="number" name="minimum_licenses" value="{{ sponsorship_data.minimum_licenses }}" required />
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+{% endif %}
+
+
 {% if sponsorship_data.sponsorship_pending %}
 <div class="">
     <h4>Sponsorship request information:</h4>

@@ -409,6 +409,7 @@ def remote_servers_support(
     remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     remote_realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
     billing_modality: Optional[str] = REQ(
@@ -457,6 +458,11 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
                 discount=discount,
+            )
+        elif minimum_licenses is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_minimum_licenses,
+                minimum_licenses=minimum_licenses,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(
