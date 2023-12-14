@@ -2968,6 +2968,37 @@ class Client(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    def default_read_by_sender(self) -> bool:
+        """Used to determine whether a message was sent by a full Zulip UI
+        style client (and thus whether the message should be treated
+        as sent by a human and automatically marked as read for the
+        sender).  The purpose of this distinction is to ensure that
+        message sent to the user by e.g. a Google Calendar integration
+        using the user's own API key don't get marked as read
+        automatically.
+        """
+        sending_client = self.name.lower()
+
+        return (
+            sending_client
+            in (
+                "zulipandroid",
+                "zulipios",
+                "zulipdesktop",
+                "zulipmobile",
+                "zulipelectron",
+                "zulipterminal",
+                "snipe",
+                "website",
+                "ios",
+                "android",
+            )
+            or "desktop app" in sending_client
+            # Since the vast majority of messages are sent by humans
+            # in Zulip, treat test suite messages as such.
+            or (sending_client == "test suite" and settings.TEST_SUITE)
+        )
+
 
 get_client_cache: Dict[str, Client] = {}
 
@@ -3233,39 +3264,6 @@ class Message(AbstractMessage):
             rendered_content is None
             or rendered_content_version is None
             or rendered_content_version < markdown_version
-        )
-
-    def sent_by_human(self) -> bool:
-        """Used to determine whether a message was sent by a full Zulip UI
-        style client (and thus whether the message should be treated
-        as sent by a human and automatically marked as read for the
-        sender).  The purpose of this distinction is to ensure that
-        message sent to the user by e.g. a Google Calendar integration
-        using the user's own API key don't get marked as read
-        automatically.
-        """
-        sending_client = self.sending_client.name.lower()
-
-        return (
-            (
-                sending_client
-                in (
-                    "zulipandroid",
-                    "zulipios",
-                    "zulipdesktop",
-                    "zulipmobile",
-                    "zulipelectron",
-                    "zulipterminal",
-                    "snipe",
-                    "website",
-                    "ios",
-                    "android",
-                )
-            )
-            or ("desktop app" in sending_client)
-            # Since the vast majority of messages are sent by humans
-            # in Zulip, treat test suite messages as such.
-            or (sending_client == "test suite" and settings.TEST_SUITE)
         )
 
     @staticmethod
