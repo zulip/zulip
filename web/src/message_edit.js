@@ -870,10 +870,8 @@ export function save_inline_topic_edit($row) {
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
-        if (topic_changed) {
-            message = echo.edit_locally(message, {new_topic});
-            $row = message_lists.current.get_row(message_id);
-        }
+        message = echo.edit_locally(message, {new_topic});
+        $row = message_lists.current.get_row(message_id);
         end_inline_topic_edit($row);
         return;
     }
