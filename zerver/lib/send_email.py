@@ -198,7 +198,8 @@ def build_email(
     # have not implemented.
     if "unsubscribe_link" in context:
         extra_headers["List-Unsubscribe"] = f"<{context['unsubscribe_link']}>"
-        extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+        if not context.get("remote_server_email", False):
+            extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
     reply_to = None
     if reply_to_email is not None:
