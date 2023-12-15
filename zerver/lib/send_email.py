@@ -515,6 +515,7 @@ def custom_email_sender(
     markdown_template_path: str,
     dry_run: bool,
     subject: Optional[str] = None,
+    from_address: str = FromAddress.SUPPORT,
     from_name: Optional[str] = None,
     reply_to: Optional[str] = None,
     **kwargs: Any,
@@ -563,7 +564,7 @@ def custom_email_sender(
                 email_id,
                 to_user_ids=[to_user_id] if to_user_id is not None else None,
                 to_emails=[to_email] if to_email is not None else None,
-                from_address=FromAddress.SUPPORT,
+                from_address=from_address,
                 reply_to_email=reply_to,
                 from_name=get_header(from_name, parsed_email_template.get("from"), "from_name"),
                 context=context,
@@ -616,11 +617,14 @@ def send_custom_server_email(
     options: Dict[str, str],
     add_context: Optional[Callable[[Dict[str, object], "RemoteZulipServer"], None]] = None,
 ) -> None:
-    email_sender = custom_email_sender(**options, dry_run=dry_run)
-
     assert settings.CORPORATE_ENABLED
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
     from corporate.views.remote_billing_page import (
         generate_confirmation_link_for_server_deactivation,
+    )
+
+    email_sender = custom_email_sender(
+        **options, dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL
     )
 
     for server in remote_servers:
