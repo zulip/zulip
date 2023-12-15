@@ -26,6 +26,7 @@ from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_redirect_to_login
+from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
@@ -37,7 +38,7 @@ from zerver.lib.upload import (
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
-from zerver.models import UserProfile, validate_attachment_request
+from zerver.models import UserProfile
 
 
 def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
