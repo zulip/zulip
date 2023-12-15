@@ -31,7 +31,11 @@ from corporate.lib.stripe import (
 )
 from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
-from zerver.lib.exceptions import JsonableError, RemoteRealmServerMismatchError
+from zerver.lib.exceptions import (
+    JsonableError,
+    RemoteRealmServerMismatchError,
+    RemoteServerDeactivatedError,
+)
 from zerver.lib.push_notifications import (
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
@@ -149,12 +153,15 @@ def register_remote_server(
         else:
             if not constant_time_compare(remote_server.api_key, zulip_org_key):
                 raise InvalidZulipServerKeyError(zulip_org_id)
-            else:
-                remote_server.hostname = hostname
-                remote_server.contact_email = contact_email
-                if new_org_key is not None:
-                    remote_server.api_key = new_org_key
-                remote_server.save()
+
+            if remote_server.deactivated:
+                raise RemoteServerDeactivatedError
+
+            remote_server.hostname = hostname
+            remote_server.contact_email = contact_email
+            if new_org_key is not None:
+                remote_server.api_key = new_org_key
+            remote_server.save()
 
     return json_success(request, data={"created": created})
 
