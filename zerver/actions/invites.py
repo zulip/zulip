@@ -24,15 +24,8 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_email
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UnspecifiedValue
-from zerver.models import (
-    Message,
-    MultiuseInvite,
-    PreregistrationUser,
-    Realm,
-    Stream,
-    UserProfile,
-    filter_to_valid_prereg_users,
-)
+from zerver.models import Message, MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
+from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.tornado.django_api import send_event
 
 
