@@ -74,10 +74,10 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_usermessage_by_message_id,
     query_for_ids,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.messages import get_usermessage_by_message_id
 from zerver.models.realms import get_fake_email_domain
 
 
