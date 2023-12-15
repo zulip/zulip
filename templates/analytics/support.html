@@ -49,7 +49,10 @@
             </form>
             <hr />
             <div>
-                {% include "analytics/realm_details.html" %}
+                {% with %}
+                    {% set format_discount = format_discount %}
+                    {% include "analytics/realm_details.html" %}
+                {% endwith %}
             </div>
             <hr />
         </div>
@@ -57,7 +60,10 @@
 
         {% for realm in realms %}
         <div class="support-query-result">
-            {% include "analytics/realm_details.html" %}
+            {% with %}
+                {% set format_discount = format_discount %}
+                {% include "analytics/realm_details.html" %}
+            {% endwith %}
         </div>
         {% endfor %}
 
@@ -106,7 +112,10 @@
             {% if show_realm_details %}
             <hr />
             <div>
-                {% include "analytics/realm_details.html" %}
+                {% with %}
+                    {% set format_discount = format_discount %}
+                    {% include "analytics/realm_details.html" %}
+                {% endwith %}
             </div>
             {% elif realm %}
             <b>Realm</b>: {{ realm.string_id }}

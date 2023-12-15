@@ -615,10 +615,11 @@ class TestSupportEndpoint(ZulipTestCase):
             )
 
     def test_attach_discount(self) -> None:
-        cordelia = self.example_user("cordelia")
         lear_realm = get_realm("lear")
-        self.login_user(cordelia)
+        customer = self.create_customer_and_plan(lear_realm, True)
 
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
         )
@@ -632,9 +633,26 @@ class TestSupportEndpoint(ZulipTestCase):
             "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
         )
         self.assert_in_success_response(["Discount for lear changed to 25% from 0%"], result)
-        customer = get_customer_by_realm(lear_realm)
-        assert customer is not None
+
+        customer.refresh_from_db()
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
         self.assertEqual(customer.default_discount, Decimal(25))
+        self.assertEqual(plan.discount, Decimal(25))
+
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            [
+                "<b>Plan name</b>: Zulip Cloud Standard",
+                "<b>Status</b>: Active",
+                "<b>Discount</b>: 25%",
+                "<b>Billing schedule</b>: Monthly",
+                "<b>Licenses</b>: 2/10 (Manual)",
+                "<b>Price per license</b>: $6.0",
+                "<b>Next invoice date</b>: 02 February 2016",
+            ],
+            result,
+        )
 
     def test_change_sponsorship_status(self) -> None:
         lear_realm = get_realm("lear")

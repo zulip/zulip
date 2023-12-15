@@ -10,6 +10,9 @@
 {% if plan_data.current_plan.tier == plan_data.current_plan.TIER_SELF_HOSTED_COMMUNITY %}
 <!-- Any data below doesn't makes sense for sponsored organizations. -->
 {% else %}
+{% if plan_data.current_plan.discount %}
+    <b>Discount</b>: {{ format_discount(plan_data.current_plan.discount) }}%<br />
+{% endif %}
 {% if plan_data.is_legacy_plan %}
     <b>End date</b>: {{ plan_data.current_plan.end_date.strftime('%d %B %Y') }}<br />
 {% else %}
