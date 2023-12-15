@@ -318,12 +318,12 @@ class CustomerPlan(models.Model):
     def get_plan_status_as_text(self) -> str:
         return {
             self.ACTIVE: "Active",
-            self.DOWNGRADE_AT_END_OF_CYCLE: "Scheduled for downgrade at end of cycle",
+            self.DOWNGRADE_AT_END_OF_CYCLE: "Downgrade end of cycle",
             self.FREE_TRIAL: "Free trial",
-            self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled for switch to annual at end of cycle",
-            self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled for switch to monthly at end of cycle",
-            self.DOWNGRADE_AT_END_OF_FREE_TRIAL: "Scheduled for downgrade at end of free trial",
-            self.SWITCH_PLAN_TIER_AT_PLAN_END: "Scheduled for switch to new plan at the end of plan",
+            self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled switch to annual",
+            self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled switch to monthly",
+            self.DOWNGRADE_AT_END_OF_FREE_TRIAL: "Downgrade end of free trial",
+            self.SWITCH_PLAN_TIER_AT_PLAN_END: "New plan scheduled",
             self.ENDED: "Ended",
             self.NEVER_STARTED: "Never started",
         }[self.status]
