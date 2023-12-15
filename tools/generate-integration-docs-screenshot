@@ -50,7 +50,8 @@ from zerver.lib.storage import static_path
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.webhooks.common import get_fixture_http_headers
-from zerver.models import Message, UserProfile, get_realm, get_user_by_delivery_email
+from zerver.models import Message, UserProfile, get_realm
+from zerver.models.users import get_user_by_delivery_email
 
 
 def create_integration_bot(integration: Integration, bot_name: Optional[str] = None) -> UserProfile:

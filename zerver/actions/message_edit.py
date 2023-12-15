@@ -77,8 +77,8 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_stream_by_id_in_realm,
-    get_system_bot,
 )
+from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event
 
 

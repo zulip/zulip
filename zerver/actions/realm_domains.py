@@ -10,9 +10,9 @@ from zerver.models import (
     RealmDomain,
     RealmDomainDict,
     UserProfile,
-    active_user_ids,
     get_realm_domains,
 )
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 

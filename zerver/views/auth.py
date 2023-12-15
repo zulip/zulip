@@ -76,8 +76,8 @@ from zerver.models import (
     UserProfile,
     filter_to_valid_prereg_users,
     get_realm,
-    remote_user_to_email,
 )
+from zerver.models.users import remote_user_to_email
 from zerver.signals import email_on_new_login
 from zerver.views.errors import config_error
 from zproject.backends import (

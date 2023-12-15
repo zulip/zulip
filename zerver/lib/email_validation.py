@@ -14,9 +14,8 @@ from zerver.models import (
     EmailContainsPlusError,
     Realm,
     RealmDomain,
-    get_users_by_delivery_email,
-    is_cross_realm_bot_email,
 )
+from zerver.models.users import get_users_by_delivery_email, is_cross_realm_bot_email
 
 
 def validate_disposable(email: str) -> None:

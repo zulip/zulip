@@ -6,7 +6,8 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.create_user import created_bot_event
 from zerver.actions.streams import bulk_remove_subscriptions
 from zerver.lib.streams import get_subscribed_private_streams_for_user
-from zerver.models import RealmAuditLog, Stream, UserProfile, active_user_ids, bot_owner_user_ids
+from zerver.models import RealmAuditLog, Stream, UserProfile
+from zerver.models.users import active_user_ids, bot_owner_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 

@@ -20,7 +20,8 @@ from zerver.lib.bot_storage import (
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
-from zerver.models import UserProfile, get_active_user
+from zerver.models import UserProfile
+from zerver.models.users import get_active_user
 
 
 def get_bot_handler(service_name: str) -> Any:

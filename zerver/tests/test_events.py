@@ -243,8 +243,8 @@ from zerver.models import (
     UserTopic,
     get_client,
     get_stream,
-    get_user_by_delivery_email,
 )
+from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.django_api import send_event
 from zerver.tornado.event_queue import (

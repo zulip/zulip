@@ -86,11 +86,10 @@ from zerver.models import (
     get_default_stream_groups,
     get_org_type_display_name,
     get_realm,
-    get_source_profile,
-    get_user_by_delivery_email,
     name_changes_disabled,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.users import get_source_profile, get_user_by_delivery_email
 from zerver.views.auth import (
     create_preregistration_realm,
     create_preregistration_user,

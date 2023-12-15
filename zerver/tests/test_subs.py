@@ -104,15 +104,13 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
-    active_non_guest_user_ids,
     get_default_stream_groups,
     get_realm,
     get_stream,
-    get_user,
-    get_user_profile_by_id_in_realm,
     validate_attachment_request,
     validate_attachment_request_for_spectator_access,
 )
+from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
 from zerver.views.streams import compose_views
 
 if TYPE_CHECKING:

@@ -110,7 +110,6 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     MultiuseInvite,
-    PasswordTooWeakError,
     PreregistrationUser,
     Realm,
     RealmDomain,
@@ -119,8 +118,8 @@ from zerver.models import (
     UserProfile,
     clear_supported_auth_backends_cache,
     get_realm,
-    get_user_by_delivery_email,
 )
+from zerver.models.users import PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
 from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
 from zproject.backends import (

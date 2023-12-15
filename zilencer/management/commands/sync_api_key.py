@@ -5,7 +5,8 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from typing_extensions import override
 
-from zerver.models import UserProfile, get_realm, get_user_by_delivery_email
+from zerver.models import UserProfile, get_realm
+from zerver.models.users import get_user_by_delivery_email
 
 
 class Command(BaseCommand):

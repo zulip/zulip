@@ -42,8 +42,8 @@ from zerver.models import (
     UserProfile,
     get_org_type_display_name,
     get_realm,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_user_profile_by_id
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.ZILENCER_ENABLED:

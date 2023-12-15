@@ -38,9 +38,8 @@ from zerver.models import (
     get_client,
     get_display_recipient,
     get_stream_by_id_in_realm,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active
 
 logger = logging.getLogger(__name__)
