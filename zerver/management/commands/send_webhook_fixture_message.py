@@ -9,7 +9,7 @@ from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.webhooks.common import standardize_headers
-from zerver.models import get_realm
+from zerver.models.realms import get_realm
 
 
 class Command(ZulipBaseCommand):

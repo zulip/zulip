@@ -40,9 +40,8 @@ from zerver.models import (
     Realm,
     RealmReactivationStatus,
     UserProfile,
-    get_org_type_display_name,
-    get_realm,
 )
+from zerver.models.realms import get_org_type_display_name, get_realm
 from zerver.models.users import get_user_profile_by_id
 from zerver.views.invite import get_invitee_emails_set
 

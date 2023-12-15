@@ -13,7 +13,8 @@ from typing_extensions import override
 from zerver.lib.email_mirror import mirror_email_message
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Realm, get_realm, get_stream
+from zerver.models import Realm, get_stream
+from zerver.models.realms import get_realm
 
 # This command loads an email from a specified file and sends it
 # to the email mirror. Simple emails can be passed in a JSON file,

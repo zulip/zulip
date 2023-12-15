@@ -8,7 +8,8 @@ from zerver.actions.message_send import create_mirror_user_if_needed
 from zerver.lib.create_user import create_user_profile
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-from zerver.models import UserProfile, get_client, get_realm
+from zerver.models import UserProfile, get_client
+from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 from zerver.views.message_send import InvalidMirrorInputError, create_mirrored_message_users
 

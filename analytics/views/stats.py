@@ -36,7 +36,8 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.validator import to_non_negative_int
-from zerver.models import Client, Realm, Stream, UserProfile, get_realm
+from zerver.models import Client, Realm, Stream, UserProfile
+from zerver.models.realms import get_realm
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, RemoteZulipServer

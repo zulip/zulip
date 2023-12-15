@@ -11,7 +11,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.utils import assert_is_not_none
 from zerver.middleware import LogRequests, is_slow_query, write_log_line
-from zerver.models import get_realm
+from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
 
 

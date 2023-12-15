@@ -57,11 +57,11 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_or_create_huddle,
-    get_realm,
     get_stream,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user
 from zerver.views.message_send import InvalidMirrorInputError
 

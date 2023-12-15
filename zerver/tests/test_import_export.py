@@ -86,10 +86,10 @@ from zerver.models import (
     get_active_streams,
     get_client,
     get_huddle_hash,
-    get_realm,
     get_stream,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 

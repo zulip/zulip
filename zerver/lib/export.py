@@ -69,8 +69,8 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    get_realm,
 )
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 # Custom mypy types follow:

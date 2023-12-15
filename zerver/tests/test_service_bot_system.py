@@ -15,7 +15,8 @@ from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
-from zerver.models import NotificationTriggers, Recipient, UserProfile, get_realm
+from zerver.models import NotificationTriggers, Recipient, UserProfile
+from zerver.models.realms import get_realm
 
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: "outgoing_webhooks",

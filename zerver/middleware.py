@@ -42,7 +42,8 @@ from zerver.lib.response import (
 )
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_agent import parse_user_agent
-from zerver.models import Realm, get_realm
+from zerver.models import Realm
+from zerver.models.realms import get_realm
 
 ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")

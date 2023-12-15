@@ -20,9 +20,9 @@ from zerver.models import (
     Stream,
     UserProfile,
     get_display_recipient,
-    get_realm,
     get_stream,
 )
+from zerver.models.realms import get_realm
 
 
 class MessageDictTest(ZulipTestCase):

@@ -45,9 +45,9 @@ from zerver.models import (
     Realm,
     RealmDomain,
     UserProfile,
-    get_realm,
     validate_attachment_request,
 )
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 

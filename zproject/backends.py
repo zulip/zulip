@@ -103,9 +103,6 @@ from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
-    DisposableEmailError,
-    DomainNotAllowedForRealmError,
-    EmailContainsPlusError,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -113,6 +110,11 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
     custom_profile_fields_for_realm,
+)
+from zerver.models.realms import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
     get_realm,
     supported_auth_backends,
 )

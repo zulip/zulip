@@ -86,14 +86,12 @@ from zerver.lib.validator import (
     check_union,
     check_url,
 )
-from zerver.models import (
+from zerver.models import Service, Stream, UserProfile
+from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
-    Service,
-    Stream,
-    UserProfile,
 )
 from zerver.models.users import (
     get_user_by_delivery_email,

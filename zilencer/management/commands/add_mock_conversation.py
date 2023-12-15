@@ -11,7 +11,8 @@ from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.streams import ensure_stream
 from zerver.lib.upload import upload_avatar_image
-from zerver.models import Message, UserProfile, get_realm
+from zerver.models import Message, UserProfile
+from zerver.models.realms import get_realm
 
 
 class Command(BaseCommand):

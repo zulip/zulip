@@ -23,16 +23,8 @@ from zerver.actions.realm_settings import do_change_realm_org_type, do_send_real
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-from zerver.models import (
-    MultiuseInvite,
-    OrgTypeEnum,
-    PreregistrationUser,
-    Realm,
-    UserMessage,
-    UserProfile,
-    get_org_type_display_name,
-    get_realm,
-)
+from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserMessage, UserProfile
+from zerver.models.realms import OrgTypeEnum, get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
 
 if TYPE_CHECKING:
