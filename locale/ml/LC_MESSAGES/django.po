@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 20:30+0000\n"
+"POT-Creation-Date: 2023-12-15 17:44+0000\n"
 "PO-Revision-Date: 2021-05-27 07:08+0000\n"
 "Last-Translator: Akash Nimare <svnitakash@gmail.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/"
@@ -255,7 +255,7 @@ msgstr ""
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:2891
+#: corporate/lib/stripe.py:2901
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -269,35 +269,35 @@ msgstr ""
 msgid "Parameter 'confirmed' is required"
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:130
+#: corporate/views/remote_billing_page.py:136
 msgid "Billing access token expired."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:132
+#: corporate/views/remote_billing_page.py:138
 msgid "Invalid billing access token."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:256
+#: corporate/views/remote_billing_page.py:275
 msgid "User account doesn't exist yet."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:261
-#: corporate/views/remote_billing_page.py:659
+#: corporate/views/remote_billing_page.py:280
+#: corporate/views/remote_billing_page.py:693
 #, fuzzy
 #| msgid "Terms of Service"
 msgid "You must accept the Terms of Service to proceed."
 msgstr "സേവന നിബന്ധനകൾ"
 
-#: corporate/views/remote_billing_page.py:487
+#: corporate/views/remote_billing_page.py:506
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:494
+#: corporate/views/remote_billing_page.py:513
 msgid "Invalid zulip_org_key for this zulip_org_id."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:498
+#: corporate/views/remote_billing_page.py:517
 msgid "Your server registration has been deactivated."
 msgstr ""
 
@@ -590,9 +590,9 @@ msgstr ""
 msgid "Billing"
 msgstr ""
 
-#: templates/corporate/billing.html:312 templates/corporate/billing.html:338
-#: templates/corporate/billing.html:367 templates/corporate/billing.html:396
-#: templates/corporate/billing.html:422
+#: templates/corporate/billing.html:313 templates/corporate/billing.html:339
+#: templates/corporate/billing.html:368 templates/corporate/billing.html:397
+#: templates/corporate/billing.html:423
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 #, fuzzy
@@ -600,25 +600,25 @@ msgstr ""
 msgid "Close modal"
 msgstr "അടയ്‌ക്കുക"
 
-#: templates/corporate/billing.html:323 templates/corporate/billing.html:352
-#: templates/corporate/billing.html:381
+#: templates/corporate/billing.html:324 templates/corporate/billing.html:353
+#: templates/corporate/billing.html:382
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr "റദ്ദാക്കുക"
 
-#: templates/corporate/billing.html:325 templates/corporate/billing.html:409
-#: templates/corporate/billing.html:432
+#: templates/corporate/billing.html:326 templates/corporate/billing.html:410
+#: templates/corporate/billing.html:433
 msgid "Downgrade"
 msgstr ""
 
-#: templates/corporate/billing.html:354 templates/corporate/billing.html:383
+#: templates/corporate/billing.html:355 templates/corporate/billing.html:384
 #: templates/zerver/change_email_address_visibility_modal.html:28
 #, fuzzy
 #| msgid "Confirm password"
 msgid "Confirm"
 msgstr "രഹസ്യവാക്ക് ഉറപ്പിക"
 
-#: templates/corporate/billing.html:407 templates/corporate/billing.html:430
+#: templates/corporate/billing.html:408 templates/corporate/billing.html:431
 msgid "Never mind"
 msgstr ""
 
@@ -724,6 +724,58 @@ msgstr ""
 #| msgid "Deactivated organization"
 msgid "Deactivate server registration?"
 msgstr "നിഷ്ക്രീയമാക്കിയ സംഘടന"
+
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:4
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:16
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:4
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:16
+msgid "Plan management not available"
+msgstr ""
+
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:18
+#, python-format
+msgid ""
+" Plan management is not available for this\n"
+"                        organization, because your Zulip server is already "
+"on a\n"
+"                        %(server_plan_name)s plan, which covers all\n"
+"                        organizations on this server. Follow the <a\n"
+"                        href=\"https://zulip.com/help/self-hosted-"
+"billing#manage-billing\">log\n"
+"                        in instructions</a>\n"
+"                        for <b>All older versions</b>\n"
+"                        of the Zulip server to manage your plan.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:29
+msgid ""
+" To move the plan from the server to this\n"
+"                        organization, or for other questions, <a "
+"href=\"mailto:{{\n"
+"                        support_email }}\">contact support</a>.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:18
+msgid ""
+"\n"
+"                        Plan management for this server is not available "
+"because at least one organization\n"
+"                        hosted on this server already has an active plan.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:24
+#, python-format
+msgid ""
+"\n"
+"                        <a href=\"https://zulip.com/help/self-hosted-"
+"billing#manage-billing\">Log in</a> to plan management for your\n"
+"                        organization instead, or <a href='mailto:"
+"%(support_email)s'>contact support</a> with any questions.\n"
+"                        "
+msgstr ""
 
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
@@ -2442,7 +2494,7 @@ msgstr ""
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:4
 msgid ""
 "If you could list Zulip as a sponsor on your website, we would really "
-"appreciate it!."
+"appreciate it!"
 msgstr ""
 
 #: templates/zerver/find_account.html:4
@@ -4522,47 +4574,47 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:731 zilencer/views.py:234
+#: zerver/lib/push_notifications.py:739 zilencer/views.py:241
 msgid "Token does not exist"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:902
+#: zerver/lib/push_notifications.py:910
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1015
+#: zerver/lib/push_notifications.py:1023
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1019
+#: zerver/lib/push_notifications.py:1027
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1026
+#: zerver/lib/push_notifications.py:1034
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1436
+#: zerver/lib/push_notifications.py:1438
 #, fuzzy
 #| msgid "Notifications"
 msgid "Test notification"
 msgstr "അറിയിപ്പുകൾ"
 
-#: zerver/lib/push_notifications.py:1437
+#: zerver/lib/push_notifications.py:1439
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1488
+#: zerver/lib/push_notifications.py:1490
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1500
+#: zerver/lib/push_notifications.py:1502
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -4939,7 +4991,7 @@ msgstr ""
 msgid "Invalid interface type"
 msgstr ""
 
-#: zerver/lib/users.py:217 zerver/models.py:4978
+#: zerver/lib/users.py:217 zerver/models.py:4979
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
@@ -5246,45 +5298,45 @@ msgstr "നിങ്ങൾക്ക് വേണ്ട ഇമോജി"
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:4982
+#: zerver/models.py:4983
 #, python-brace-format
 msgid "User with ID {user_id} is deactivated"
 msgstr ""
 
-#: zerver/models.py:4986
+#: zerver/models.py:4987
 #, python-brace-format
 msgid "User with ID {user_id} is a bot"
 msgstr ""
 
-#: zerver/models.py:5026
+#: zerver/models.py:5027
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:5029
+#: zerver/models.py:5030
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:5041
+#: zerver/models.py:5042
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:5042
+#: zerver/models.py:5043
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:5043
+#: zerver/models.py:5044
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:5044
+#: zerver/models.py:5045
 msgid "Link"
 msgstr ""
 
-#: zerver/models.py:5047
+#: zerver/models.py:5048
 msgid "External account"
 msgstr ""
 
-#: zerver/models.py:5052
+#: zerver/models.py:5053
 msgid "Pronouns"
 msgstr ""
 
@@ -6077,52 +6129,52 @@ msgid "Must validate with valid Zulip server API key"
 msgstr ""
 
 #. error
-#: zilencer/views.py:77 zilencer/views.py:79
+#: zilencer/views.py:81 zilencer/views.py:83
 msgid "Invalid UUID"
 msgstr ""
 
 #. error
-#: zilencer/views.py:84
+#: zilencer/views.py:88
 msgid "Invalid token type"
 msgstr ""
 
-#: zilencer/views.py:122
+#: zilencer/views.py:126
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:175
+#: zilencer/views.py:182
 msgid "Missing ios_app_id"
 msgstr ""
 
-#: zilencer/views.py:178
+#: zilencer/views.py:185
 msgid "Missing user_id or user_uuid"
 msgstr ""
 
-#: zilencer/views.py:603
+#: zilencer/views.py:610
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:606
+#: zilencer/views.py:613
 msgid "Invalid event type."
 msgstr ""
 
-#: zilencer/views.py:613
+#: zilencer/views.py:620
 msgid "Data is out of order."
 msgstr ""
 
-#: zilencer/views.py:675
+#: zilencer/views.py:696
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:905
+#: zilencer/views.py:957
 msgid ""
 "Failed to migrate customer from server to realms. Please contact support for "
 "assistance."
 msgstr ""
 
-#: zilencer/views.py:957
+#: zilencer/views.py:1009
 msgid "Malformed audit log data"
 msgstr ""
 

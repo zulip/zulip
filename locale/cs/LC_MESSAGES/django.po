@@ -2102,7 +2102,7 @@ msgstr "Jít na Zulip"
 
 #: templates/zerver/emails/onboarding_zulip_topics.subject.txt:1
 msgid "Keep your conversations organized with topics"
-msgstr "Udržujte konverzace uspořádané pomocí témat"
+msgstr "Udržujte rozhovory uspořádány pomocí témat"
 
 #: templates/zerver/emails/onboarding_zulip_topics.txt:3
 msgid ""
@@ -2415,7 +2415,7 @@ msgstr "Bezpečnost"
 
 #: templates/zerver/footer.html:14
 msgid "Integrations"
-msgstr "Integrace"
+msgstr "Doplňky"
 
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
@@ -2597,7 +2597,7 @@ msgstr "Stáhnout nejnovější vydání."
 #: templates/zerver/integrations/index.html:23
 #, python-format
 msgid "Over %(integrations_count_display)s native integrations."
-msgstr "Více než %(integrations_count_display)s nativních integrací."
+msgstr "Více než %(integrations_count_display)s nativních doplňků."
 
 #: templates/zerver/integrations/index.html:27
 msgid ""
@@ -2611,12 +2611,12 @@ msgstr "\n                        A stovky dalších od\n                       
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
-msgstr "Hledat integrace"
+msgstr "Hledat doplňky"
 
 #: templates/zerver/integrations/index.html:61
 #: templates/zerver/integrations/index.html:88
 msgid "Custom integrations"
-msgstr "Vlastní začlenění"
+msgstr "Vlastní doplňky"
 
 #: templates/zerver/integrations/index.html:63
 #: templates/zerver/integrations/index.html:90
@@ -4087,11 +4087,11 @@ msgstr "Klepněte zde pro zahájení nové konverzace. Vyberte si téma (nejlep�
 
 #: zerver/lib/integrations.py:38
 msgid "Integration frameworks"
-msgstr "Frameworky integrací"
+msgstr "Rámce doplňků"
 
 #: zerver/lib/integrations.py:44
 msgid "Continuous integration"
-msgstr "Nepřetržitá integrace"
+msgstr "Průběžná integrace"
 
 #: zerver/lib/integrations.py:45
 msgid "Customer support"
@@ -4766,7 +4766,7 @@ msgstr "Špatný název nebo uživatelské jméno"
 #: zerver/lib/users.py:105
 #, python-brace-format
 msgid "Invalid integration '{integration_name}'."
-msgstr ""
+msgstr "Neplatný doplněk '{integration_name}'."
 
 #: zerver/lib/users.py:111
 #, python-brace-format
@@ -4940,7 +4940,7 @@ msgstr ""
 
 #: zerver/models.py:758
 msgid "GIPHY integration disabled"
-msgstr ""
+msgstr "Doplněk GIPHY zakázán"
 
 #: zerver/models.py:763
 msgid "Allow GIFs rated Y (Very young audience)"
@@ -5023,7 +5023,7 @@ msgstr "Nikdo"
 
 #: zerver/models.py:1961
 msgid "Unknown user"
-msgstr ""
+msgstr "Neznámý uživatel"
 
 #: zerver/models.py:2117
 msgid "Organization owner"
