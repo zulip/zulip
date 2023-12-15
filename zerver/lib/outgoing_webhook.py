@@ -19,14 +19,8 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
-from zerver.models import (
-    GENERIC_INTERFACE,
-    SLACK_INTERFACE,
-    Realm,
-    Service,
-    UserProfile,
-    get_client,
-)
+from zerver.models import GENERIC_INTERFACE, SLACK_INTERFACE, Realm, Service, UserProfile
+from zerver.models.clients import get_client
 from zerver.models.users import get_user_profile_by_id
 
 

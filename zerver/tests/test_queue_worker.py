@@ -31,8 +31,8 @@ from zerver.models import (
     ScheduledMessageNotificationEmail,
     UserActivity,
     UserProfile,
-    get_client,
 )
+from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import build_offline_notification
