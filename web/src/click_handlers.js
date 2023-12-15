@@ -311,7 +311,7 @@ export function initialize() {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
-        message_edit.save_inline_topic_edit($recipient_row);
+        message_edit.try_save_inline_topic_edit($recipient_row);
         e.stopPropagation();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
