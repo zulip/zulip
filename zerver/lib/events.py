@@ -80,12 +80,12 @@ from zerver.models import (
     UserStatus,
     UserTopic,
     custom_profile_fields_for_realm,
-    get_all_custom_emoji_for_realm,
     get_default_stream_groups,
     get_realm_playgrounds,
     linkifiers_for_realm,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realms import get_realm_domains
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
