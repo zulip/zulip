@@ -198,6 +198,15 @@ Some of the graphs on your server's [usage statistics
 page](https://zulip.com/help/analytics) can be generated from these
 statistics.
 
+When enabled, usage statistics are submitted via an hourly cron
+job. If you'd like to access plan management immediately after
+enabling `SUBMIT_USAGE_STATISTICS=True` on a pre-8.0 Zulip server, you
+can run the analytics job manually via:
+
+```
+/home/zulip/deployments/current/manage.py update_analytics_counts
+```
+
 Our use of uploaded usage statistics is governed by the same [Terms of
 Service](https://zulip.com/policies/terms) and [Privacy
 Policy](https://zulip.com/policies/privacy) that covers the Mobile
