@@ -37,8 +37,8 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
-    get_client,
 )
+from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot

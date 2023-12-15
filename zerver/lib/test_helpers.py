@@ -52,15 +52,8 @@ from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import (
-    Client,
-    Message,
-    RealmUserDefault,
-    Subscription,
-    UserMessage,
-    UserProfile,
-    get_client,
-)
+from zerver.models import Client, Message, RealmUserDefault, Subscription, UserMessage, UserProfile
+from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id

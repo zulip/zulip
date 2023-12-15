@@ -13,7 +13,8 @@ from django.db.models import Q, QuerySet
 from typing_extensions import override
 
 from zerver.lib.initial_password import initial_password
-from zerver.models import Client, Realm, UserProfile, get_client
+from zerver.models import Client, Realm, UserProfile
+from zerver.models.clients import get_client
 
 
 def is_integer_string(val: str) -> bool:

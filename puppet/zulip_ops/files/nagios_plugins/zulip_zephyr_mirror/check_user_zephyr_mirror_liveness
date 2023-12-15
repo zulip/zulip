@@ -28,7 +28,8 @@ django.setup()
 
 from typing import Dict
 
-from zerver.models import UserActivity, get_client
+from zerver.models import UserActivity
+from zerver.models.clients import get_client
 
 states: Dict[str, int] = {
     "OK": 0,

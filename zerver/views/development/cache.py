@@ -7,7 +7,7 @@ from zerver.decorator import require_post
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.response import json_success
-from zerver.models import clear_client_cache
+from zerver.models.clients import clear_client_cache
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 
