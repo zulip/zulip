@@ -31,9 +31,8 @@ from zerver.models import (
     RealmUserDefault,
     Stream,
     UserProfile,
-    get_org_type_display_name,
-    get_realm,
 )
+from zerver.models.realms import get_org_type_display_name, get_realm
 from zerver.models.users import get_system_bot
 from zproject.backends import all_implemented_backend_names
 

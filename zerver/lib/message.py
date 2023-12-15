@@ -75,11 +75,11 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_display_recipient_by_id,
-    get_fake_email_domain,
     get_usermessage_by_message_id,
     query_for_ids,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.realms import get_fake_email_domain
 
 
 class MessageDetailsDict(TypedDict, total=False):

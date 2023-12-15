@@ -116,9 +116,8 @@ from zerver.models import (
     Stream,
     UserGroup,
     UserProfile,
-    clear_supported_auth_backends_cache,
-    get_realm,
 )
+from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.users import PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
 from zerver.views.auth import log_into_subdomain, maybe_send_to_registration

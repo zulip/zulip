@@ -9,7 +9,8 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.upload.base import BadImageError
-from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
+from zerver.models import Realm, RealmEmoji, UserProfile
+from zerver.models.realms import get_realm
 
 
 class RealmEmojiTest(ZulipTestCase):

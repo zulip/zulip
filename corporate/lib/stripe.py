@@ -50,7 +50,8 @@ from zerver.lib.send_email import (
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, RealmAuditLog, UserProfile, get_org_type_display_name, get_realm
+from zerver.models import Realm, RealmAuditLog, UserProfile
+from zerver.models.realms import get_org_type_display_name, get_realm
 from zerver.models.users import get_system_bot
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (

@@ -16,7 +16,7 @@ import markdown
 from django.conf import settings
 from zulip import Client
 
-from zerver.models import get_realm
+from zerver.models.realms import get_realm
 from zerver.openapi import markdown_extension
 from zerver.openapi.curl_param_value_generators import (
     AUTHENTICATION_LINE,

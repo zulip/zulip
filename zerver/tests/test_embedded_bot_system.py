@@ -5,7 +5,8 @@ from typing_extensions import override
 
 from zerver.lib.bot_lib import EmbeddedBotQuitError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserProfile, get_display_recipient, get_realm, get_service_profile
+from zerver.models import UserProfile, get_display_recipient, get_service_profile
+from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
 

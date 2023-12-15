@@ -26,7 +26,8 @@ from zerver.actions.streams import bulk_add_subscriptions
 from zerver.apps import flush_cache
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.streams import create_stream_if_needed
-from zerver.models import Realm, UserProfile, get_realm
+from zerver.models import Realm, UserProfile
+from zerver.models.realms import get_realm
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmBillingUser,

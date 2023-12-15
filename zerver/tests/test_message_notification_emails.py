@@ -33,9 +33,9 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_name_keyed_dict_for_active_realm_emoji,
-    get_realm,
     get_stream,
 )
+from zerver.models.realms import get_realm
 
 
 class TestMessageNotificationEmails(ZulipTestCase):

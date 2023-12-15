@@ -14,7 +14,8 @@ from zerver.context_processors import get_apps_page_url
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
-from zerver.models import Realm, get_realm
+from zerver.models import Realm
+from zerver.models.realms import get_realm
 from zerver.views.documentation import add_api_url_context
 
 if TYPE_CHECKING:

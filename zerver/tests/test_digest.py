@@ -33,9 +33,9 @@ from zerver.models import (
     Stream,
     UserActivityInterval,
     UserProfile,
-    get_realm,
     get_stream,
 )
+from zerver.models.realms import get_realm
 
 
 class TestDigestEmailMessages(ZulipTestCase):

@@ -1060,7 +1060,8 @@ def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
 
 
 def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
-    from zerver.models import Realm, get_realm_by_id
+    from zerver.models import Realm
+    from zerver.models.realms import get_realm_by_id
 
     try:
         return get_user_by_delivery_email(email, get_realm_by_id(realm_id))

@@ -591,7 +591,7 @@ def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None
     cache_delete(get_muting_users_cache_key(mute_object.muted_user_id))
 
 
-# Called by models/__init__.py to flush various caches whenever we save
+# Called by models/realms.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
 def flush_realm(
