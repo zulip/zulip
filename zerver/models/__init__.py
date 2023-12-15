@@ -1,10 +1,4 @@
-from typing import List, Tuple, Union
-
-from django.db import models
-from django.db.backends.base.base import BaseDatabaseWrapper
-from django.db.models.sql.compiler import SQLCompiler
-from typing_extensions import override
-
+from zerver.models import lookups as lookups
 from zerver.models.alert_words import AlertWord as AlertWord
 from zerver.models.bots import BotConfigData as BotConfigData
 from zerver.models.bots import BotStorageData as BotStorageData
@@ -71,29 +65,3 @@ from zerver.models.user_topics import UserTopic as UserTopic
 from zerver.models.users import RealmUserDefault as RealmUserDefault
 from zerver.models.users import UserBaseSettings as UserBaseSettings
 from zerver.models.users import UserProfile as UserProfile
-
-
-@models.Field.register_lookup
-class AndZero(models.Lookup[int]):
-    lookup_name = "andz"
-
-    @override
-    def as_sql(
-        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
-    ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
-        lhs, lhs_params = self.process_lhs(compiler, connection)
-        rhs, rhs_params = self.process_rhs(compiler, connection)
-        return f"{lhs} & {rhs} = 0", lhs_params + rhs_params
-
-
-@models.Field.register_lookup
-class AndNonZero(models.Lookup[int]):
-    lookup_name = "andnz"
-
-    @override
-    def as_sql(
-        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
-    ) -> Tuple[str, List[Union[str, int]]]:  # nocoverage # currently only used in migrations
-        lhs, lhs_params = self.process_lhs(compiler, connection)
-        rhs, rhs_params = self.process_rhs(compiler, connection)
-        return f"{lhs} & {rhs} != 0", lhs_params + rhs_params
