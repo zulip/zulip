@@ -234,7 +234,6 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
-    SystemGroups,
     UserGroup,
     UserMessage,
     UserPresence,
@@ -244,6 +243,7 @@ from zerver.models import (
     get_client,
     get_stream,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.django_api import send_event

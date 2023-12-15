@@ -31,11 +31,11 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserProfile,
     get_realm,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
