@@ -12,7 +12,6 @@ from bitfield import BitField
 from bitfield.types import Bit, BitHandler
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
@@ -29,7 +28,6 @@ from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise, ValuesQuerySet
 from typing_extensions import override
 
-from confirmation import settings as confirmation_settings
 from zerver.lib import cache
 from zerver.lib.cache import (
     cache_delete,
@@ -54,7 +52,6 @@ from zerver.lib.types import (
     ProfileDataElementBase,
     ProfileDataElementValue,
     RealmUserValidator,
-    UnspecifiedValue,
     UserFieldElement,
     Validator,
 )
@@ -67,12 +64,17 @@ from zerver.lib.validator import (
     check_url,
     validate_select_field,
 )
-from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH, MAX_TOPIC_NAME_LENGTH
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
 from zerver.models.groups import SystemGroups
 from zerver.models.groups import UserGroup as UserGroup
 from zerver.models.groups import UserGroupMembership as UserGroupMembership
 from zerver.models.linkifiers import RealmFilter as RealmFilter
+from zerver.models.prereg_users import EmailChangeStatus as EmailChangeStatus
+from zerver.models.prereg_users import MultiuseInvite as MultiuseInvite
+from zerver.models.prereg_users import PreregistrationRealm as PreregistrationRealm
+from zerver.models.prereg_users import PreregistrationUser as PreregistrationUser
+from zerver.models.prereg_users import RealmReactivationStatus as RealmReactivationStatus
 from zerver.models.realm_emoji import RealmEmoji as RealmEmoji
 from zerver.models.realm_playgrounds import RealmPlayground as RealmPlayground
 from zerver.models.realms import Realm as Realm
@@ -137,167 +139,6 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
-
-
-class PreregistrationRealm(models.Model):
-    """Data on a partially created realm entered by a user who has
-    completed the "new organization" form. Used to transfer the user's
-    selections from the pre-confirmation "new organization" form to
-    the post-confirmation user registration form.
-
-    Note that the values stored here may not match those of the
-    created realm (in the event the user creates a realm at all),
-    because we allow the user to edit these values in the registration
-    form (and in fact the user will be required to do so if the
-    `string_id` is claimed by another realm before registraiton is
-    completed).
-    """
-
-    name = models.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
-    org_type = models.PositiveSmallIntegerField(
-        default=Realm.ORG_TYPES["unspecified"]["id"],
-        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
-    )
-    default_language = models.CharField(
-        default="en",
-        max_length=MAX_LANGUAGE_ID_LENGTH,
-    )
-    string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
-    email = models.EmailField()
-
-    confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_realm")
-    status = models.IntegerField(default=0)
-
-    # The Realm created upon completion of the registration
-    # for this PregistrationRealm
-    created_realm = models.ForeignKey(Realm, null=True, related_name="+", on_delete=models.SET_NULL)
-
-    # The UserProfile created upon completion of the registration
-    # for this PregistrationRealm
-    created_user = models.ForeignKey(
-        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
-    )
-
-
-class PreregistrationUser(models.Model):
-    # Data on a partially created user, before the completion of
-    # registration.  This is used in at least three major code paths:
-    # * Realm creation, in which case realm is None.
-    #
-    # * Invitations, in which case referred_by will always be set.
-    #
-    # * Social authentication signup, where it's used to store data
-    #   from the authentication step and pass it to the registration
-    #   form.
-
-    email = models.EmailField()
-
-    confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_user")
-    # If the pre-registration process provides a suggested full name for this user,
-    # store it here to use it to prepopulate the full name field in the registration form:
-    full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
-    full_name_validated = models.BooleanField(default=False)
-    referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
-    streams = models.ManyToManyField("zerver.Stream")
-    invited_at = models.DateTimeField(auto_now=True)
-    realm_creation = models.BooleanField(default=False)
-    # Indicates whether the user needs a password.  Users who were
-    # created via SSO style auth (e.g. GitHub/Google) generally do not.
-    password_required = models.BooleanField(default=True)
-
-    # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_USED
-    status = models.IntegerField(default=0)
-
-    # The realm should only ever be None for PreregistrationUser
-    # objects created as part of realm creation.
-    realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
-
-    # These values should be consistent with the values
-    # in settings_config.user_role_values.
-    INVITE_AS = dict(
-        REALM_OWNER=100,
-        REALM_ADMIN=200,
-        MODERATOR=300,
-        MEMBER=400,
-        GUEST_USER=600,
-    )
-    invited_as = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
-
-    multiuse_invite = models.ForeignKey("MultiuseInvite", null=True, on_delete=models.SET_NULL)
-
-    # The UserProfile created upon completion of the registration
-    # for this PregistrationUser
-    created_user = models.ForeignKey(
-        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
-    )
-
-    class Meta:
-        indexes = [
-            models.Index(Upper("email"), name="upper_preregistration_email_idx"),
-        ]
-
-
-def filter_to_valid_prereg_users(
-    query: QuerySet[PreregistrationUser],
-    invite_expires_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
-) -> QuerySet[PreregistrationUser]:
-    """
-    If invite_expires_in_days is specified, we return only those PreregistrationUser
-    objects that were created at most that many days in the past.
-    """
-    used_value = confirmation_settings.STATUS_USED
-    revoked_value = confirmation_settings.STATUS_REVOKED
-
-    query = query.exclude(status__in=[used_value, revoked_value])
-    if invite_expires_in_minutes is None:
-        # Since invite_expires_in_minutes is None, we're invitation will never
-        # expire, we do not need to check anything else and can simply return
-        # after excluding objects with active and revoked status.
-        return query
-
-    assert invite_expires_in_minutes is not None
-    if not isinstance(invite_expires_in_minutes, UnspecifiedValue):
-        lowest_datetime = timezone_now() - timedelta(minutes=invite_expires_in_minutes)
-        return query.filter(invited_at__gte=lowest_datetime)
-    else:
-        return query.filter(
-            Q(confirmation__expiry_date=None) | Q(confirmation__expiry_date__gte=timezone_now())
-        )
-
-
-class MultiuseInvite(models.Model):
-    referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    streams = models.ManyToManyField("zerver.Stream")
-    realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
-
-    # status for tracking whether the invite has been revoked.
-    # If revoked, set to confirmation.settings.STATUS_REVOKED.
-    # STATUS_USED is not supported, because these objects are supposed
-    # to be usable multiple times.
-    status = models.IntegerField(default=0)
-
-
-class EmailChangeStatus(models.Model):
-    new_email = models.EmailField()
-    old_email = models.EmailField()
-    updated_at = models.DateTimeField(auto_now=True)
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-
-    # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_USED
-    status = models.IntegerField(default=0)
-
-    realm = models.ForeignKey(Realm, on_delete=CASCADE)
-
-
-class RealmReactivationStatus(models.Model):
-    # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_USED
-    status = models.IntegerField(default=0)
-
-    realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
 
 class AbstractPushDeviceToken(models.Model):
