@@ -134,7 +134,8 @@ def bulk_fetch_user_display_recipients(
     Returns dict mapping recipient_id to corresponding display_recipient
     """
 
-    from zerver.models import Recipient, bulk_get_huddle_user_ids
+    from zerver.models import Recipient
+    from zerver.models.recipients import bulk_get_huddle_user_ids
 
     if len(recipient_tuples) == 0:
         return {}
