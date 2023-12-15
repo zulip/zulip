@@ -44,8 +44,8 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
-    get_context_for_message,
 )
+from zerver.models.messages import get_context_for_message
 from zerver.models.users import get_user_profile_by_id
 
 if sys.version_info < (3, 9):  # nocoverage
