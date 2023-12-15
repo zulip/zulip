@@ -9,11 +9,8 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
-from zerver.models import (
-    Reaction,
-    Realm,
-    RealmEmoji,
-    UserProfile,
+from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
+from zerver.models.realm_emoji import (
     get_all_custom_emoji_for_realm,
     get_name_keyed_dict_for_active_realm_emoji,
 )
