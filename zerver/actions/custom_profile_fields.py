@@ -9,13 +9,8 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
 from zerver.lib.users import get_user_ids_who_can_access_user
-from zerver.models import (
-    CustomProfileField,
-    CustomProfileFieldValue,
-    Realm,
-    UserProfile,
-    custom_profile_fields_for_realm,
-)
+from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event
 
