@@ -31,7 +31,7 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: BaseDatabaseSche
       }
     """
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
-    # Constants from models/__init__.py
+    # Constants from models/realm_audit_logs.py
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
     USER_DEFAULT_REGISTER_STREAM_CHANGED = 130
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
