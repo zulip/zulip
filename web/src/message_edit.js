@@ -922,7 +922,6 @@ export function save_inline_topic_edit($row) {
             }
             loading.destroy_indicator($spinner);
             if (msg_list === message_lists.current) {
-                message_id = rows.id_for_recipient_row($row);
                 const message = channel.xhr_error_message(
                     $t({defaultMessage: "Error saving edit"}),
                     xhr,
