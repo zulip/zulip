@@ -690,7 +690,10 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         # don't need a pretty error.
         raise JsonableError(_("You must accept the Terms of Service to proceed."))
 
-    if has_live_plan_for_any_remote_realm_on_server(remote_server):
+    if (
+        has_live_plan_for_any_remote_realm_on_server(remote_server)
+        and prereg_object.next_page != "deactivate"
+    ):
         return render(
             request,
             "corporate/remote_server_login_error_for_any_realm_on_active_plan.html",
