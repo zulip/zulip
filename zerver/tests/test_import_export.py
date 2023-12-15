@@ -85,11 +85,11 @@ from zerver.models import (
     UserTopic,
     get_active_streams,
     get_client,
-    get_huddle_hash,
     get_stream,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_huddle_hash
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 
