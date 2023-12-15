@@ -35,12 +35,12 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     Realm,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
     get_realm,
 )
+from zerver.models.groups import SystemGroups
 
 
 class UserGroupTestCase(ZulipTestCase):

@@ -16,11 +16,11 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     Stream,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 
 
 class UserGroupDict(TypedDict):

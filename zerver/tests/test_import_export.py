@@ -76,7 +76,6 @@ from zerver.models import (
     ScheduledMessage,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
@@ -90,6 +89,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 
