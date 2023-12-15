@@ -18,6 +18,7 @@ from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
@@ -57,7 +58,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_display_recipient,
     get_stream,
 )
 from zerver.models.realms import get_realm

@@ -14,6 +14,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
     internal_send_stream_message,
 )
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.email_mirror_helpers import (
     ZulipEmailForwardError,
     ZulipEmailForwardUserError,
@@ -36,7 +37,6 @@ from zerver.models import (
     Stream,
     UserProfile,
     get_client,
-    get_display_recipient,
     get_stream_by_id_in_realm,
 )
 from zerver.models.users import get_system_bot, get_user_profile_by_id
