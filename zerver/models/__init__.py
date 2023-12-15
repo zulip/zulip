@@ -32,7 +32,6 @@ from zerver.lib.cache import (
     cache_delete,
     cache_with_key,
     flush_message,
-    flush_muting_users_cache,
     flush_submessage,
     flush_used_upload_space_cache,
     realm_alert_words_automaton_cache_key,
@@ -65,6 +64,7 @@ from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
 from zerver.models.groups import UserGroup as UserGroup
 from zerver.models.groups import UserGroupMembership as UserGroupMembership
 from zerver.models.linkifiers import RealmFilter as RealmFilter
+from zerver.models.muted_users import MutedUser as MutedUser
 from zerver.models.prereg_users import EmailChangeStatus as EmailChangeStatus
 from zerver.models.prereg_users import MultiuseInvite as MultiuseInvite
 from zerver.models.prereg_users import PreregistrationRealm as PreregistrationRealm
@@ -141,23 +141,6 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
-
-
-class MutedUser(models.Model):
-    user_profile = models.ForeignKey(UserProfile, related_name="muter", on_delete=CASCADE)
-    muted_user = models.ForeignKey(UserProfile, related_name="muted", on_delete=CASCADE)
-    date_muted = models.DateTimeField(default=timezone_now)
-
-    class Meta:
-        unique_together = ("user_profile", "muted_user")
-
-    @override
-    def __str__(self) -> str:
-        return f"{self.user_profile.email} -> {self.muted_user.email}"
-
-
-post_save.connect(flush_muting_users_cache, sender=MutedUser)
-post_delete.connect(flush_muting_users_cache, sender=MutedUser)
 
 
 class Client(models.Model):
