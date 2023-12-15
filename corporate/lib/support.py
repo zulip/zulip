@@ -14,7 +14,8 @@ from corporate.models import (
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
 )
-from zerver.models import Realm, get_org_type_display_name, get_realm
+from zerver.models import Realm
+from zerver.models.realms import get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
 
 

@@ -37,7 +37,8 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
-from zerver.models import Attachment, Recipient, Stream, UserProfile, get_realm, get_stream
+from zerver.models import Attachment, Recipient, Stream, UserProfile, get_stream
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
 from zerver.worker.queue_processors import MirrorWorker
 

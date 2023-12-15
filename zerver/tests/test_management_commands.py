@@ -20,7 +20,8 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
-from zerver.models import Message, Reaction, Realm, Recipient, UserProfile, get_realm, get_stream
+from zerver.models import Message, Reaction, Realm, Recipient, UserProfile, get_stream
+from zerver.models.realms import get_realm
 from zerver.models.users import get_user_profile_by_email
 
 

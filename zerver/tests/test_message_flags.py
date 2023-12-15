@@ -33,9 +33,9 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_realm,
     get_stream,
 )
+from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse

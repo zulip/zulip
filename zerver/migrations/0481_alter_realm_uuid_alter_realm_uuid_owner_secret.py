@@ -4,7 +4,7 @@ import uuid
 
 from django.db import migrations, models
 
-from zerver.models import generate_realm_uuid_owner_secret
+from zerver.models.realms import generate_realm_uuid_owner_secret
 
 
 class Migration(migrations.Migration):

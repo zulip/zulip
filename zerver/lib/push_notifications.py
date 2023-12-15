@@ -65,8 +65,8 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_display_recipient,
-    get_fake_email_domain,
 )
+from zerver.models.realms import get_fake_email_domain
 from zerver.models.users import get_user_profile_by_id
 
 if TYPE_CHECKING:

@@ -34,9 +34,9 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     get_client,
-    get_realm,
     get_stream,
 )
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,

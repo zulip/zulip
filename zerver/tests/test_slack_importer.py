@@ -48,7 +48,8 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
-from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
+from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.realms import get_realm
 
 
 def remove_folder(path: str) -> None:

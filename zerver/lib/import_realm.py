@@ -77,9 +77,9 @@ from zerver.models import (
     UserStatus,
     UserTopic,
     get_huddle_hash,
-    get_realm,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 realm_tables = [

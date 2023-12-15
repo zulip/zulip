@@ -59,7 +59,6 @@ from zerver.lib.users import (
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
-    InvalidFakeEmailDomainError,
     Message,
     OnboardingStep,
     PreregistrationUser,
@@ -76,11 +75,10 @@ from zerver.models import (
     check_valid_user_ids,
     filter_to_valid_prereg_users,
     get_client,
-    get_fake_email_domain,
-    get_realm,
     get_stream,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm
 from zerver.models.users import (
     get_source_profile,
     get_system_bot,

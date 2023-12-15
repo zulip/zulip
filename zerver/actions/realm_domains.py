@@ -4,14 +4,8 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.models import (
-    Realm,
-    RealmAuditLog,
-    RealmDomain,
-    RealmDomainDict,
-    UserProfile,
-    get_realm_domains,
-)
+from zerver.models import Realm, RealmAuditLog, RealmDomain, UserProfile
+from zerver.models.realms import RealmDomainDict, get_realm_domains
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 

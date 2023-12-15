@@ -36,7 +36,8 @@ from zerver.lib.upload.base import (
     resize_avatar,
 )
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import Attachment, RealmEmoji, UserProfile, get_realm
+from zerver.models import Attachment, RealmEmoji, UserProfile
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
 
 
