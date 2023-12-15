@@ -4,6 +4,7 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -19,7 +20,6 @@ from zerver.models import (
     Recipient,
     Stream,
     UserProfile,
-    get_display_recipient,
     get_stream,
 )
 from zerver.models.realms import get_realm

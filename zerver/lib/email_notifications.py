@@ -21,6 +21,7 @@ from django.utils.translation import override as override_language
 from lxml.html import builder as e
 
 from confirmation.models import one_click_unsubscribe_link
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group_name
@@ -44,7 +45,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_context_for_message,
-    get_display_recipient,
 )
 from zerver.models.users import get_user_profile_by_id
 

@@ -15,19 +15,13 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
+from zerver.lib.display_recipient import get_recipient_ids
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
 from zerver.lib.message import SendMessageRequest, render_markdown, truncate_topic
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
-from zerver.models import (
-    Client,
-    Realm,
-    ScheduledMessage,
-    Subscription,
-    UserProfile,
-    get_recipient_ids,
-)
+from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event
 
