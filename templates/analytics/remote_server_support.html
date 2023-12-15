@@ -52,7 +52,9 @@
                 <b>Last updated</b>: {{ remote_server.last_updated|timesince }} ago<br />
                 <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
                 <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
-                <b>Has remote realm(s)</b>: {{ remote_realms[remote_server.id] != [] }}
+                <b>Has remote realm(s)</b>: {{ remote_realms[remote_server.id] != [] }}<br />
+                <b>Non-guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.non_guest_user_count }}<br />
+                <b>Guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.guest_user_count }}<br />
             </div>
 
             {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
