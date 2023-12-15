@@ -39,6 +39,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
@@ -64,7 +65,6 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
-    get_display_recipient,
 )
 from zerver.models.realms import get_fake_email_domain
 from zerver.models.users import get_user_profile_by_id

@@ -43,8 +43,8 @@ from zerver.lib.cache import (
     realm_alert_words_automaton_cache_key,
     realm_alert_words_cache_key,
 )
+from zerver.lib.display_recipient import get_display_recipient, get_recipient_ids
 from zerver.lib.exceptions import RateLimitedError
-from zerver.lib.per_request_cache import return_same_value_during_entire_request
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
     DefaultStreamDict,
@@ -56,7 +56,6 @@ from zerver.lib.types import (
     ProfileDataElementValue,
     RealmUserValidator,
     UnspecifiedValue,
-    UserDisplayRecipient,
     UserFieldElement,
     Validator,
 )
@@ -137,51 +136,6 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
-
-
-@return_same_value_during_entire_request
-def get_display_recipient_by_id(
-    recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
-) -> List[UserDisplayRecipient]:
-    """
-    returns: an object describing the recipient (using a cache).
-    If the type is a stream, the type_id must be an int; a string is returned.
-    Otherwise, type_id may be None; an array of recipient dicts is returned.
-    """
-    # Have to import here, to avoid circular dependency.
-    from zerver.lib.display_recipient import get_display_recipient_remote_cache
-
-    return get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
-
-
-def get_display_recipient(recipient: "Recipient") -> List[UserDisplayRecipient]:
-    return get_display_recipient_by_id(
-        recipient.id,
-        recipient.type,
-        recipient.type_id,
-    )
-
-
-def get_recipient_ids(
-    recipient: Optional["Recipient"], user_profile_id: int
-) -> Tuple[List[int], str]:
-    if recipient is None:
-        recipient_type_str = ""
-        to = []
-    elif recipient.type == Recipient.STREAM:
-        recipient_type_str = "stream"
-        to = [recipient.type_id]
-    else:
-        recipient_type_str = "private"
-        if recipient.type == Recipient.PERSONAL:
-            to = [recipient.type_id]
-        else:
-            to = []
-            for r in get_display_recipient(recipient):
-                assert not isinstance(r, str)  # It will only be a string for streams
-                if r["id"] != user_profile_id:
-                    to.append(r["id"])
-    return to, recipient_type_str
 
 
 class Recipient(models.Model):
