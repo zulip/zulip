@@ -37,7 +37,7 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import bulk_fetch_display_recipients
+from zerver.lib.display_recipient import bulk_fetch_display_recipients, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -74,7 +74,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_display_recipient_by_id,
     get_usermessage_by_message_id,
     query_for_ids,
 )

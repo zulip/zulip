@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Set, Tuple, TypedDict
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, TypedDict
 
 from django_stubs_ext import ValuesQuerySet
 
@@ -9,8 +9,11 @@ from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     single_user_display_recipient_cache_key,
 )
+from zerver.lib.per_request_cache import return_same_value_during_entire_request
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
-from zerver.models import Recipient, Stream, UserProfile, bulk_get_huddle_user_ids
+
+if TYPE_CHECKING:
+    from zerver.models import Recipient
 
 display_recipient_fields = [
     "id",
@@ -44,6 +47,8 @@ def get_display_recipient_remote_cache(
     Do not use this for streams.
     """
 
+    from zerver.models import Recipient, UserProfile
+
     assert recipient_type != Recipient.STREAM
 
     # The main priority for ordering here is being deterministic.
@@ -64,6 +69,8 @@ def user_dict_id_fetcher(user_dict: UserDisplayRecipient) -> int:
 
 
 def bulk_fetch_single_user_display_recipients(uids: List[int]) -> Dict[int, UserDisplayRecipient]:
+    from zerver.models import UserProfile
+
     return bulk_cached_fetch(
         # Use a separate cache key to protect us from conflicts with
         # the get_user_profile_by_id cache.
@@ -84,6 +91,8 @@ def bulk_fetch_stream_names(
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient
     """
+
+    from zerver.models import Stream
 
     if len(recipient_tuples) == 0:
         return {}
@@ -124,6 +133,8 @@ def bulk_fetch_user_display_recipients(
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient
     """
+
+    from zerver.models import Recipient, bulk_get_huddle_user_ids
 
     if len(recipient_tuples) == 0:
         return {}
@@ -172,6 +183,8 @@ def bulk_fetch_display_recipients(
     Returns dict mapping recipient_id to corresponding display_recipient
     """
 
+    from zerver.models import Recipient
+
     stream_recipients = {
         recipient for recipient in recipient_tuples if recipient[1] == Recipient.STREAM
     }
@@ -184,3 +197,50 @@ def bulk_fetch_display_recipients(
 
     # Glue the dicts together and return:
     return {**stream_display_recipients, **personal_and_huddle_display_recipients}
+
+
+@return_same_value_during_entire_request
+def get_display_recipient_by_id(
+    recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
+) -> List[UserDisplayRecipient]:
+    """
+    returns: an object describing the recipient (using a cache).
+    If the type is a stream, the type_id must be an int; a string is returned.
+    Otherwise, type_id may be None; an array of recipient dicts is returned.
+    """
+    # Have to import here, to avoid circular dependency.
+    from zerver.lib.display_recipient import get_display_recipient_remote_cache
+
+    return get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
+
+
+def get_display_recipient(recipient: "Recipient") -> List[UserDisplayRecipient]:
+    return get_display_recipient_by_id(
+        recipient.id,
+        recipient.type,
+        recipient.type_id,
+    )
+
+
+def get_recipient_ids(
+    recipient: Optional["Recipient"], user_profile_id: int
+) -> Tuple[List[int], str]:
+    from zerver.models import Recipient
+
+    if recipient is None:
+        recipient_type_str = ""
+        to = []
+    elif recipient.type == Recipient.STREAM:
+        recipient_type_str = "stream"
+        to = [recipient.type_id]
+    else:
+        recipient_type_str = "private"
+        if recipient.type == Recipient.PERSONAL:
+            to = [recipient.type_id]
+        else:
+            to = []
+            for r in get_display_recipient(recipient):
+                assert not isinstance(r, str)  # It will only be a string for streams
+                if r["id"] != user_profile_id:
+                    to.append(r["id"])
+    return to, recipient_type_str
