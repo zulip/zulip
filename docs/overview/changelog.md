@@ -3716,7 +3716,7 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 8.0](#upgrade-notes-for-90)
+- [Draft upgrade notes for 9.0](#upgrade-notes-for-90)
 - [Upgrade notes for 8.0](#upgrade-notes-for-80)
 - [Upgrade notes for 7.0](#upgrade-notes-for-70)
 - [Upgrade notes for 6.0](#upgrade-notes-for-60)
