@@ -104,8 +104,8 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
-    get_bot_services,
 )
+from zerver.models.bots import get_bot_services
 from zerver.models.clients import get_client
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.users import get_system_bot, get_user_profile_by_id
