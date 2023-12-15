@@ -11,6 +11,8 @@
     <b>Date created</b>: {{ remote_realm.realm_date_created.strftime('%d %B %Y') }}<br />
     <b>Org type</b>: {{ get_org_type_display_name(remote_realm.org_type) }}<br />
     <b>Plan type</b>: {{ get_plan_type_name(remote_realm.plan_type) }}<br />
+    <b>Non-guest user count</b>: {{ support_data[remote_realm.id].user_data.non_guest_user_count }}<br />
+    <b>Guest user count</b>: {{ support_data[remote_realm.id].user_data.guest_user_count }}<br />
 </div>
 
 {% if remote_realm.plan_type != SPONSORED_PLAN_TYPE %}

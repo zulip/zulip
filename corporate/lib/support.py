@@ -7,7 +7,11 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
-from corporate.lib.stripe import BillingSession
+from corporate.lib.stripe import (
+    BillingSession,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+)
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -17,6 +21,11 @@ from corporate.models import (
 from zerver.models import Realm
 from zerver.models.realms import get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
+from zilencer.models import (
+    RemoteCustomerUserCount,
+    get_remote_realm_guest_and_non_guest_count,
+    get_remote_server_guest_and_non_guest_count,
+)
 
 
 class SponsorshipRequestDict(TypedDict):
@@ -51,6 +60,7 @@ class PlanData:
 class SupportData:
     plan_data: PlanData
     sponsorship_data: SponsorshipData
+    user_data: RemoteCustomerUserCount
 
 
 def get_realm_support_url(realm: Realm) -> str:
@@ -135,6 +145,11 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
 
 
 def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
+    if isinstance(billing_session, RemoteServerBillingSession):
+        user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
+    else:  # nocoverage
+        assert isinstance(billing_session, RemoteRealmBillingSession)
+        user_data = get_remote_realm_guest_and_non_guest_count(billing_session.remote_realm)
     plan_data = get_current_plan_data_for_support_view(billing_session)
     customer = billing_session.get_customer()
     if customer is not None:
@@ -145,4 +160,5 @@ def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
     return SupportData(
         plan_data=plan_data,
         sponsorship_data=sponsorship_data,
+        user_data=user_data,
     )
