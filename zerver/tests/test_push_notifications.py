@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
@@ -1998,19 +1999,25 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
-    def test_non_existent_realm_uuid(self) -> None:
+    def test_deleted_realm(self) -> None:
         self.add_mock_response()
+        logger = logging.getLogger("zulip.analytics")
+
         realm_info = get_realms_info_for_push_bouncer()
 
         # Hard-delete a realm to test the non existent realm uuid case.
-        realm = Realm.objects.order_by("id").first()
+        realm = get_realm("zephyr")
         assert realm is not None
         deleted_realm_uuid = realm.uuid
         realm.delete()
 
+        # This mock causes us to still send data to the bouncer as if the realm existed,
+        # causing the bouncer to include its corresponding info in the response. Through
+        # that, we're testing our graceful handling of seeing a non-existent realm uuid
+        # in that response.
         with mock.patch(
             "zerver.lib.remote_server.get_realms_info_for_push_bouncer", return_value=realm_info
-        ) as m, self.assertLogs("zulip.analytics", level="WARNING") as analytics_logger:
+        ) as m, self.assertLogs(logger, level="WARNING") as analytics_logger:
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             m.assert_called()
             realms = Realm.objects.all()
@@ -2025,6 +2032,26 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 f"Received unexpected realm UUID from bouncer {deleted_realm_uuid}"
             ],
         )
+
+        # Now we want to test the other side of this - bouncer's handling
+        # of a deleted realm.
+        with self.assertLogs(logger, level="WARNING") as analytics_logger:
+            # This time the logger shouldn't get triggered - because the bouncer doesn't
+            # include .realm_locally_deleted realms in its response.
+            # Note: This is hacky, because until Python 3.10 we don't have access to
+            # assertNoLogs - and regular assertLogs demands that the logger gets triggered.
+            # So we do a dummy warning ourselves here, to satisfy it.
+            # TODO: Replace this with assertNoLogs once we fully upgrade to Python 3.10.
+            logger.warning("Dummy warning")
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        remote_realm_for_deleted_realm = RemoteRealm.objects.get(uuid=deleted_realm_uuid)
+        self.assertEqual(remote_realm_for_deleted_realm.registration_deactivated, True)
+        self.assertEqual(remote_realm_for_deleted_realm.realm_locally_deleted, True)
+        self.assertEqual(analytics_logger.output, ["WARNING:zulip.analytics:Dummy warning"])
+
+        audit_log = RemoteRealmAuditLog.objects.latest("id")
+        self.assertEqual(audit_log.event_type, RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED)
+        self.assertEqual(audit_log.remote_realm, remote_realm_for_deleted_realm)
 
 
 class PushNotificationTest(BouncerTestCase):

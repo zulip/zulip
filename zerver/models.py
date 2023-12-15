@@ -4861,6 +4861,7 @@ class AbstractRealmAuditLog(models.Model):
     # via send_server_data_to_push_bouncer.
     REMOTE_REALM_VALUE_UPDATED = 20001
     REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM = 20002
+    REMOTE_REALM_LOCALLY_DELETED = 20003
 
     event_type = models.PositiveSmallIntegerField()
 
