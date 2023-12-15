@@ -100,17 +100,27 @@ def send_message_to_signup_notification_stream(
     internal_send_stream_message(sender, signup_notifications_stream, topic_name, message)
 
 
-def notify_new_user(user_profile: UserProfile) -> None:
+def notify_new_user(user_profile: UserProfile, referrer: Optional[UserProfile] = None) -> None:
     user_count = realm_user_count(user_profile.realm)
     sender_email = settings.NOTIFICATION_BOT
     sender = get_system_bot(sender_email, user_profile.realm_id)
 
     is_first_user = user_count == 1
     if not is_first_user:
-        with override_language(user_profile.realm.default_language):
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-                user=silent_mention_syntax_for_user(user_profile), user_count=user_count
-            )
+        if referrer is not None and referrer.realm.signup_notifications_include_referrer:
+            with override_language(user_profile.realm.default_language):
+                message = _(
+                    "{user} accepted {referrer}'s invite to join Zulip. (total: {user_count})"
+                ).format(
+                    user=silent_mention_syntax_for_user(user_profile),
+                    referrer=silent_mention_syntax_for_user(referrer),
+                    user_count=user_count,
+                )
+        else:
+            with override_language(user_profile.realm.default_language):
+                message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+                    user=silent_mention_syntax_for_user(user_profile), user_count=user_count
+                )
 
         if settings.BILLING_ENABLED:
             from corporate.lib.registration import generate_licenses_low_warning_message_if_required
@@ -285,8 +295,10 @@ def process_new_human_user(
 
     if prereg_user is not None and prereg_user.referred_by is not None:
         notify_invites_changed(user_profile.realm, changed_invite_referrer=prereg_user.referred_by)
+        notify_new_user(user_profile, referrer=prereg_user.referred_by)
+    else:
+        notify_new_user(user_profile)
 
-    notify_new_user(user_profile)
     # Clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)

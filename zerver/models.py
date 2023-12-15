@@ -568,6 +568,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         blank=True,
         on_delete=models.SET_NULL,
     )
+    signup_notifications_include_referrer = models.BooleanField(default=True)
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
@@ -836,6 +837,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         private_message_policy=int,
         push_notifications_enabled=bool,
         send_welcome_emails=bool,
+        signup_notifications_include_referrer=bool,
         user_group_edit_policy=int,
         video_chat_provider=int,
         waiting_period_threshold=int,

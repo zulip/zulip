@@ -236,6 +236,7 @@ export function dispatch_normal_event(event) {
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
+                signup_notifications_include_referrer: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
