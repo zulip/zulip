@@ -42,6 +42,7 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
+from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
@@ -74,7 +75,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    query_for_ids,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.messages import get_usermessage_by_message_id
