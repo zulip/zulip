@@ -109,8 +109,8 @@ from zerver.models import (
     UserGroup,
     UserGroupMembership,
     UserProfile,
-    custom_profile_fields_for_realm,
 )
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,

@@ -79,9 +79,9 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    custom_profile_fields_for_realm,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
