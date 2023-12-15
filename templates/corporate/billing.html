@@ -216,12 +216,13 @@
                                 {%- else %}
                                     {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
                                 {%- endif -%})
-                                {% if using_min_licenses_for_plan %}
-                                    (<i>minimum purchase</i>)
-                                {% endif %}
                                 {% if discount_percent %}
                                 <br />
-                                <i class="billing-page-discount">Includes {{ discount_percent }}% discount.</i>
+                                <i class="billing-page-discount">Includes: {{ discount_percent }}% discount</i>
+                                {% endif %}
+                                {% if using_min_licenses_for_plan %}
+                                <br />
+                                <i>Minimum purchase for this plan: 10 licenses</i>
                                 {% endif %}
                             {% endif %}
                             {% endif %}
