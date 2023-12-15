@@ -654,7 +654,21 @@ def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: List[RealmDataForAnalytics]
 ) -> None:
     uuids = [realm.uuid for realm in server_realms_info]
-    already_registered_remote_realms = RemoteRealm.objects.filter(uuid__in=uuids, server=server)
+    all_registered_remote_realms_for_server = list(RemoteRealm.objects.filter(server=server))
+    already_registered_remote_realms = [
+        remote_realm
+        for remote_realm in all_registered_remote_realms_for_server
+        if remote_realm.uuid in uuids
+    ]
+    # RemoteRealm registrations that we have for this server, but aren't
+    # present in the data sent to us. We assume this to mean the server
+    # must have deleted those realms from the database.
+    remote_realms_missing_from_server_data = [
+        remote_realm
+        for remote_realm in all_registered_remote_realms_for_server
+        if remote_realm.uuid not in uuids
+    ]
+
     already_registered_uuids = {
         remote_realm.uuid for remote_realm in already_registered_remote_realms
     }
@@ -689,6 +703,10 @@ def update_remote_realm_data_for_server(
     # Update RemoteRealm entries, for which the corresponding realm's info has changed
     # (for the attributes that make sense to sync like this).
     for remote_realm in already_registered_remote_realms:
+        # TODO: We'll also want to check if .realm_locally_deleted is True, and if so,
+        # toggle it off (and potentially restore registration_deactivated=True too),
+        # since the server is now sending us data for this realm again.
+
         modified = False
         realm = uuid_to_realm_dict[str(remote_realm.uuid)]
         for remote_realm_attr, realm_dict_key in [
@@ -736,6 +754,32 @@ def update_remote_realm_data_for_server(
             "org_type",
             "is_system_bot_realm",
         ],
+    )
+    RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
+
+    remote_realms_to_update = []
+    remote_realm_audit_logs = []
+    for remote_realm in remote_realms_missing_from_server_data:
+        if not remote_realm.realm_locally_deleted:
+            # Otherwise we already knew about this, so nothing to do.
+            remote_realm.realm_locally_deleted = True
+            remote_realm.registration_deactivated = True
+
+            remote_realm_audit_logs.append(
+                RemoteRealmAuditLog(
+                    server=server,
+                    remote_id=None,
+                    remote_realm=remote_realm,
+                    realm_id=None,
+                    event_type=RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED,
+                    event_time=now,
+                )
+            )
+            remote_realms_to_update.append(remote_realm)
+
+    RemoteRealm.objects.bulk_update(
+        remote_realms_to_update,
+        ["realm_locally_deleted", "registration_deactivated"],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
@@ -998,7 +1042,7 @@ def remote_server_post_analytics(
             remote_server_billing_session.sync_license_ledger_if_needed()
 
     remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
-    remote_realms = RemoteRealm.objects.filter(server=server)
+    remote_realms = RemoteRealm.objects.filter(server=server, realm_locally_deleted=False)
     for remote_realm in remote_realms:
         uuid = str(remote_realm.uuid)
         billing_session = RemoteRealmBillingSession(remote_realm)

@@ -147,6 +147,9 @@ class RemoteRealm(models.Model):
     registration_deactivated = models.BooleanField(default=False)
     # Whether the realm has been deactivated on the remote server.
     realm_deactivated = models.BooleanField(default=False)
+    # Whether we believe the remote server deleted this realm
+    # from the database.
+    realm_locally_deleted = models.BooleanField(default=False)
 
     # When the realm was created on the remote server.
     realm_date_created = models.DateTimeField()
