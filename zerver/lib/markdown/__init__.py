@@ -74,7 +74,8 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import Message, Realm, linkifiers_for_realm
+from zerver.models import Message, Realm
+from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_realm_emoji
 
 ReturnT = TypeVar("ReturnT")
