@@ -1,7 +1,6 @@
 # https://github.com/typeddjango/django-stubs/issues/1698
 # mypy: disable-error-code="explicit-override"
 
-from datetime import timedelta
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 import orjson
@@ -88,6 +87,8 @@ from zerver.models.streams import DefaultStream as DefaultStream
 from zerver.models.streams import DefaultStreamGroup as DefaultStreamGroup
 from zerver.models.streams import Stream as Stream
 from zerver.models.streams import Subscription as Subscription
+from zerver.models.user_activity import UserActivity as UserActivity
+from zerver.models.user_activity import UserActivityInterval as UserActivityInterval
 from zerver.models.user_topics import UserTopic as UserTopic
 from zerver.models.users import RealmUserDefault as RealmUserDefault
 from zerver.models.users import UserBaseSettings as UserBaseSettings
@@ -146,45 +147,6 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
-
-
-class UserActivity(models.Model):
-    """Data table recording the last time each user hit Zulip endpoints
-    via which Clients; unlike UserPresence, these data are not exposed
-    to users via the Zulip API.
-
-    Useful for debugging as well as to answer analytics questions like
-    "How many users have accessed the Zulip mobile app in the last
-    month?" or "Which users/organizations have recently used API
-    endpoint X that is about to be desupported" for communications
-    and database migration purposes.
-    """
-
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    client = models.ForeignKey(Client, on_delete=CASCADE)
-    query = models.CharField(max_length=50, db_index=True)
-
-    count = models.IntegerField()
-    last_visit = models.DateTimeField("last visit")
-
-    class Meta:
-        unique_together = ("user_profile", "client", "query")
-
-
-class UserActivityInterval(models.Model):
-    MIN_INTERVAL_LENGTH = timedelta(minutes=15)
-
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    start = models.DateTimeField("start time", db_index=True)
-    end = models.DateTimeField("end time", db_index=True)
-
-    class Meta:
-        indexes = [
-            models.Index(
-                fields=["user_profile", "end"],
-                name="zerver_useractivityinterval_user_profile_id_end_bb3bfc37_idx",
-            ),
-        ]
 
 
 class UserPresence(models.Model):
