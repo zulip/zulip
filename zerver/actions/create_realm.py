@@ -33,8 +33,8 @@ from zerver.models import (
     UserProfile,
     get_org_type_display_name,
     get_realm,
-    get_system_bot,
 )
+from zerver.models.users import get_system_bot
 from zproject.backends import all_implemented_backend_names
 
 if settings.CORPORATE_ENABLED:

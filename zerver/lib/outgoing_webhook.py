@@ -26,8 +26,8 @@ from zerver.models import (
     Service,
     UserProfile,
     get_client,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_user_profile_by_id
 
 
 class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):

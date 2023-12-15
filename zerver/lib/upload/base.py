@@ -10,7 +10,8 @@ from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
 from PIL.Image import DecompressionBombError
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.models import Attachment, Realm, UserProfile, is_cross_realm_bot_email
+from zerver.models import Attachment, Realm, UserProfile
+from zerver.models.users import is_cross_realm_bot_email
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500

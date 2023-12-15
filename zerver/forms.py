@@ -42,9 +42,8 @@ from zerver.models import (
     Realm,
     UserProfile,
     get_realm,
-    get_user_by_delivery_email,
-    is_cross_realm_bot_email,
 )
+from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
 if settings.BILLING_ENABLED:

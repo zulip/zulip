@@ -12,10 +12,10 @@ from zerver.models import (
     RealmAuditLog,
     RealmFilter,
     UserProfile,
-    active_user_ids,
     flush_linkifiers,
     linkifiers_for_realm,
 )
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 

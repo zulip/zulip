@@ -66,8 +66,8 @@ from zerver.models import (
     UserProfile,
     get_display_recipient,
     get_fake_email_domain,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_user_profile_by_id
 
 if TYPE_CHECKING:
     import aioapns

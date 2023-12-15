@@ -18,14 +18,8 @@ from zerver.actions.realm_settings import do_deactivate_realm, do_set_realm_prop
 from zerver.actions.user_settings import do_change_user_setting, do_start_email_change_process
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    EmailChangeStatus,
-    UserProfile,
-    get_realm,
-    get_user,
-    get_user_by_delivery_email,
-    get_user_profile_by_id,
-)
+from zerver.models import EmailChangeStatus, UserProfile, get_realm
+from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 
 
 class EmailChangeTestCase(ZulipTestCase):

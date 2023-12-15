@@ -70,9 +70,8 @@ from zerver.models import (
     UserStatus,
     UserTopic,
     get_realm,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 # Custom mypy types follow:
 Record: TypeAlias = Dict[str, Any]

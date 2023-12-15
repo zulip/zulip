@@ -83,6 +83,8 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_active_streams,
+)
+from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
 )

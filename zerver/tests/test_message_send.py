@@ -60,10 +60,9 @@ from zerver.models import (
     get_or_create_huddle,
     get_realm,
     get_stream,
-    get_system_bot,
-    get_user,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.users import get_system_bot, get_user
 from zerver.views.message_send import InvalidMirrorInputError
 
 

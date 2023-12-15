@@ -56,9 +56,8 @@ from zerver.models import (
     UserProfile,
     get_realm,
     get_stream,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 
 class RealmTest(ZulipTestCase):

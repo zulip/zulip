@@ -36,8 +36,8 @@ from zerver.models import (
     get_client,
     get_realm,
     get_stream,
-    get_system_bot,
 )
+from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,

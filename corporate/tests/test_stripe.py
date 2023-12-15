@@ -102,15 +102,8 @@ from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import (
-    Message,
-    Realm,
-    RealmAuditLog,
-    Recipient,
-    UserProfile,
-    get_realm,
-    get_system_bot,
-)
+from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
+from zerver.models.users import get_system_bot
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteRealm,

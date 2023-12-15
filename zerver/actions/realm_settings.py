@@ -34,9 +34,9 @@ from zerver.models import (
     SystemGroups,
     UserGroup,
     UserProfile,
-    active_user_ids,
     get_realm,
 )
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:

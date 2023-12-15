@@ -106,7 +106,6 @@ from zerver.models import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    PasswordTooWeakError,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -115,10 +114,13 @@ from zerver.models import (
     UserProfile,
     custom_profile_fields_for_realm,
     get_realm,
+    supported_auth_backends,
+)
+from zerver.models.users import (
+    PasswordTooWeakError,
     get_user_by_delivery_email,
     get_user_profile_by_id,
     remote_user_to_email,
-    supported_auth_backends,
 )
 from zproject.settings_types import OIDCIdPConfigDict
 

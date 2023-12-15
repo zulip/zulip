@@ -79,9 +79,8 @@ from zerver.models import (
     UserTopic,
     get_huddle_hash,
     get_realm,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 realm_tables = [
     ("zerver_realmauthenticationmethod", RealmAuthenticationMethod, "realmauthenticationmethod"),

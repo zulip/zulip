@@ -79,9 +79,8 @@ from zerver.models import (
     UserGroup,
     UserProfile,
     get_client,
-    get_user,
-    is_cross_realm_bot_email,
 )
+from zerver.models.users import get_user, is_cross_realm_bot_email
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,

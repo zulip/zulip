@@ -40,8 +40,8 @@ from zerver.models import (
     get_client,
     get_realm,
     get_stream,
-    get_system_bot,
 )
+from zerver.models.users import get_system_bot
 
 # Class with helper functions useful for testing archiving of reactions:
 from zerver.tornado.django_api import send_event

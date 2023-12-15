@@ -12,8 +12,8 @@ from zerver.models import (
     RealmUserDefault,
     UserProfile,
     get_client,
-    get_system_bot,
 )
+from zerver.models.users import get_system_bot
 from zproject.backends import all_implemented_backend_names
 
 

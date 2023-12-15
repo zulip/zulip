@@ -13,9 +13,9 @@ from zerver.models import (
     DefaultStreamGroup,
     Realm,
     Stream,
-    active_non_guest_user_ids,
     get_default_stream_groups,
 )
+from zerver.models.users import active_non_guest_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
