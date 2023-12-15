@@ -15,11 +15,11 @@ from zerver.models import (
     GroupGroupMembership,
     Realm,
     RealmAuditLog,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event, send_event_on_commit
 

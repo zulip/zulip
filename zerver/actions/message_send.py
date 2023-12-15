@@ -98,7 +98,6 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
-    SystemGroups,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -109,6 +108,7 @@ from zerver.models import (
     get_stream_by_id_in_realm,
     query_for_ids,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event
 
