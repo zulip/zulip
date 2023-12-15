@@ -6,7 +6,7 @@ from django.db.migrations.state import StateApps
 from django.db.models import F, Func, JSONField, TextField, Value
 from django.db.models.functions import Cast
 
-# ScheduledMessage.type for onboarding emails from zerver/models/__init__.py
+# ScheduledMessage.type for onboarding emails from zerver/models/scheduled_jobs.py
 WELCOME = 1
 
 

@@ -36,16 +36,9 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
-from zerver.models import (
-    Message,
-    NotificationTriggers,
-    Realm,
-    Recipient,
-    Stream,
-    UserMessage,
-    UserProfile,
-)
+from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserProfile
 from zerver.models.messages import get_context_for_message
+from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
 
 if sys.version_info < (3, 9):  # nocoverage
