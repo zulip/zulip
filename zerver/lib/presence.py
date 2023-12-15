@@ -6,9 +6,10 @@ from typing import Any, Dict, Mapping, Optional, Sequence, Set
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
-from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, query_for_ids
+from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile
 
 
 def get_presence_dicts_for_rows(
