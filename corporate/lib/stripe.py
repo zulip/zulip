@@ -2551,12 +2551,16 @@ class BillingSession(ABC):
             raise AssertionError("Pass licenses or licenses_at_next_renewal")
 
     def get_billable_licenses_for_customer(
-        self, customer: Customer, tier: int, licenses: Optional[int] = None
+        self,
+        customer: Customer,
+        tier: int,
+        licenses: Optional[int] = None,
+        event_time: datetime = timezone_now(),
     ) -> int:
         if licenses is not None and customer.exempt_from_license_number_check:
             return licenses
 
-        current_licenses_count = self.current_count_for_billed_licenses()
+        current_licenses_count = self.current_count_for_billed_licenses(event_time)
         min_licenses_for_plan = self.min_licenses_for_plan(tier)
         if customer.exempt_from_license_number_check:  # nocoverage
             billed_licenses = current_licenses_count
@@ -2577,16 +2581,22 @@ class BillingSession(ABC):
             next_plan = self.get_next_plan(plan)
             assert next_plan is not None
             licenses_at_next_renewal = self.get_billable_licenses_for_customer(
-                plan.customer, next_plan.tier
+                plan.customer,
+                next_plan.tier,
+                event_time=event_time,
             )
             # Current licenses stay as per the limits of current plan.
             current_plan_licenses_at_next_renewal = self.get_billable_licenses_for_customer(
-                plan.customer, plan.tier
+                plan.customer,
+                plan.tier,
+                event_time=event_time,
             )
             licenses = max(current_plan_licenses_at_next_renewal, last_ledger_entry.licenses)
         else:
             licenses_at_next_renewal = self.get_billable_licenses_for_customer(
-                plan.customer, plan.tier
+                plan.customer,
+                plan.tier,
+                event_time=event_time,
             )
             licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
 
