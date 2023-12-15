@@ -70,7 +70,6 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroupMembership,
     UserProfile,
     UserTopic,
@@ -81,6 +80,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.users import (
     get_source_profile,
     get_system_bot,

@@ -64,7 +64,6 @@ from zerver.models import (
     Message,
     RealmEmoji,
     RealmFilter,
-    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -73,6 +72,7 @@ from zerver.models import (
     get_stream,
     linkifiers_for_realm,
 )
+from zerver.models.groups import SystemGroups
 
 
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):

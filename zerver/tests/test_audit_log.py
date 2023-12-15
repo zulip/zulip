@@ -81,7 +81,6 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserProfile,
     get_all_custom_emoji_for_realm,
@@ -91,6 +90,7 @@ from zerver.models import (
     get_stream,
     linkifiers_for_realm,
 )
+from zerver.models.groups import SystemGroups
 
 
 class TestRealmAuditLog(ZulipTestCase):
