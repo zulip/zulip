@@ -77,20 +77,18 @@ from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
-    RealmDomainDict,
     RealmPlayground,
     Recipient,
     Subscription,
     UserGroup,
     UserProfile,
     get_all_custom_emoji_for_realm,
-    get_realm,
-    get_realm_domains,
     get_realm_playgrounds,
     get_stream,
     linkifiers_for_realm,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
 
 
 class TestRealmAuditLog(ZulipTestCase):

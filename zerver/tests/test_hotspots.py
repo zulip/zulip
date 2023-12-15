@@ -10,7 +10,8 @@ from zerver.lib.hotspots import (
     get_next_onboarding_steps,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import OnboardingStep, UserProfile, get_realm
+from zerver.models import OnboardingStep, UserProfile
+from zerver.models.realms import get_realm
 
 
 # Splitting this out, since I imagine this will eventually have most of the

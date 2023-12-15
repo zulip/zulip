@@ -10,7 +10,8 @@ from analytics.models import FillState, RealmCount, StreamCount, UserCount
 from analytics.views.stats import rewrite_client_arrays, sort_by_totals, sort_client_labels
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
-from zerver.models import Client, get_realm
+from zerver.models import Client
+from zerver.models.realms import get_realm
 
 
 class TestStatsEndpoint(ZulipTestCase):

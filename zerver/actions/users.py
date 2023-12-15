@@ -42,8 +42,8 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
     get_bot_services,
-    get_fake_email_domain,
 )
+from zerver.models.realms import get_fake_email_domain
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,

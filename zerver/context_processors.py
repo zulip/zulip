@@ -20,7 +20,8 @@ from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.models import Realm, UserProfile, get_realm
+from zerver.models import Realm, UserProfile
+from zerver.models.realms import get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     auth_enabled_helper,

@@ -14,7 +14,8 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
-from zerver.models import UserProfile, get_realm
+from zerver.models import UserProfile
+from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse

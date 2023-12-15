@@ -20,8 +20,8 @@ from zerver.models import (
     CustomProfileFieldValue,
     UserProfile,
     custom_profile_fields_for_realm,
-    get_realm,
 )
+from zerver.models.realms import get_realm
 
 
 class CustomProfileFieldTestCase(ZulipTestCase):

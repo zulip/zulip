@@ -50,7 +50,7 @@ rules:
       - pattern-not: from zerver.models import filter_pattern_validator
       - pattern-not: from zerver.models import url_template_validator
       - pattern-not: from zerver.models import generate_email_token_for_stream
-      - pattern-not: from zerver.models import generate_realm_uuid_owner_secret
+      - pattern-not: from zerver.models.realms import generate_realm_uuid_owner_secret
       - pattern-either:
           - pattern: from zerver import $X
           - pattern: from analytics import $X
