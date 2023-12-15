@@ -6,9 +6,10 @@ from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
+from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.thumbnail import generate_thumbnail_url
-from zerver.models import Realm, UserProfile, validate_attachment_request
+from zerver.models import Realm, UserProfile
 
 
 def validate_thumbnail_request(
