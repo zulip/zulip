@@ -102,9 +102,9 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     UserTopic,
-    get_client,
     query_for_ids,
 )
+from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.streams import get_stream, get_stream_by_id_in_realm

@@ -4,7 +4,8 @@ import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_status import UserInfoDict, get_user_status_dict, update_user_status
-from zerver.models import UserProfile, UserStatus, get_client
+from zerver.models import UserProfile, UserStatus
+from zerver.models.clients import get_client
 
 
 def user_status_info(user: UserProfile, acting_user: Optional[UserProfile] = None) -> UserInfoDict:

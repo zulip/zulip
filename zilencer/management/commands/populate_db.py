@@ -65,8 +65,8 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     flush_alert_word,
-    get_client,
 )
+from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream

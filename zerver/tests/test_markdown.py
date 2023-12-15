@@ -60,15 +60,8 @@ from zerver.lib.message import render_markdown
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
-from zerver.models import (
-    Message,
-    RealmEmoji,
-    RealmFilter,
-    UserGroup,
-    UserMessage,
-    UserProfile,
-    get_client,
-)
+from zerver.models import Message, RealmEmoji, RealmFilter, UserGroup, UserMessage, UserProfile
+from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realms import get_realm
