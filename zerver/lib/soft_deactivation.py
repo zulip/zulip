@@ -14,7 +14,6 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
-    NotificationTriggers,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -23,6 +22,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.scheduled_jobs import NotificationTriggers
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
