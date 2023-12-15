@@ -5,12 +5,14 @@
     flex-direction: row;
     align-items: center;
 
+
     .new_message_button {
         .button.small {
             font-size: 1em;
             padding: 3px 10px;
             vertical-align: middle;
-            line-height: 1;
+            line-height: 1em;
+
         }
 
         .compose_mobile_button {
