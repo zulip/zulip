@@ -80,7 +80,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
-    NotificationTriggers,
     PushDeviceToken,
     Realm,
     RealmAuditLog,
@@ -93,6 +92,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 from zilencer.models import RemoteZulipServerAuditLog
 from zilencer.views import DevicesToCleanUpDict

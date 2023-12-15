@@ -3,11 +3,10 @@ from typing import List, Union
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import ResourceNotFoundError
-from zerver.models import (
+from zerver.models import ScheduledMessage, UserProfile
+from zerver.models.scheduled_jobs import (
     APIScheduledDirectMessageDict,
     APIScheduledStreamMessageDict,
-    ScheduledMessage,
-    UserProfile,
 )
 
 

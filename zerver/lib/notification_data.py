@@ -4,7 +4,8 @@ from typing import Any, Collection, Dict, List, Optional, Set
 
 from zerver.lib.mention import MentionData
 from zerver.lib.user_groups import get_user_group_direct_member_ids
-from zerver.models import NotificationTriggers, UserGroup, UserProfile, UserTopic
+from zerver.models import UserGroup, UserProfile, UserTopic
+from zerver.models.scheduled_jobs import NotificationTriggers
 
 
 @dataclass
