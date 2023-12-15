@@ -9,7 +9,8 @@ from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, 
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.models import RealmEmoji, UserProfile, get_all_custom_emoji_for_realm
+from zerver.models import RealmEmoji, UserProfile
+from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 
 
 def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
