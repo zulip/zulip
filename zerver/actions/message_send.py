@@ -68,6 +68,7 @@ from zerver.lib.notification_data import (
     get_user_group_mentions_data,
     user_allows_notifications_in_StreamTopic,
 )
+from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.stream_subscription import (
@@ -101,7 +102,6 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     UserTopic,
-    query_for_ids,
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
