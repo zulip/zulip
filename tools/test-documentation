@@ -1,92 +1,116 @@
-#!/usr/bin/env bash
-set -e
+#!/usr/bin/env python3
 
-color_message() {
-    local color_code="$1" message="$2"
-    printf '\e[%sm%s\e[0m\n' "$color_code" "$message" >&2
-}
+import os
+import subprocess
+import sys
 
-loglevel=()
 
-usage() {
-    cat <<EOF
+def color_message(color_code, message):
+    """Prints colored messages to the console."""
+    print(f"\033[{color_code}m{message}\033[0m")
+
+
+def usage():
+    """Prints usage information for the script."""
+    print(
+        """
 usage:
   --help, -h                   show this help message and exit
   --loglevel=LEVEL, -L LEVEL   log level (default: ERROR)
   --skip-check-links           skip checking of links
   --skip-external-links        skip checking of external links
-EOF
-}
+"""
+    )
 
-args="$(getopt -o hL: --long help,loglevel:,skip-check-links,skip-external-links -- "$@")" \
-    || {
-        usage >&2
-        exit 1
-    }
-eval "set -- $args"
-while true; do
-    case "$1" in
-        -h | --help)
-            usage
-            exit 0
-            ;;
-        -L | --loglevel)
-            loglevel=("$1" "$2")
-            shift 2
-            ;;
-        --skip-check-links)
-            skip_check_links=1
-            shift
-            ;;
-        --skip-external-links)
-            skip_external_links=1
-            shift
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *) exit 1 ;;
-    esac
-done
 
-cd "$(dirname "$0")"/../docs
+def validate_html():
+    """Validates HTML using the vnu.jar tool."""
+    color_message(94, "Validating HTML...")
+    try:
+        # Use os.path.abspath for better path resolution
+        vnu_jar_path = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "node_modules",
+                "vnu-jar",
+                "build",
+                "dist",
+                "vnu.jar",
+            )
+        )
 
-# collapse_navigation is set to False in conf.py to improve sidebar navigation for users.
-# However, we must change its value to True before we begin testing links.
-# Otherwise, sphinx would generate a large number of links we don't need to test.
-# The crawler would take a very long time to finish and TravisCI would fail as a result.
-make clean html O='-D html_theme_options.collapse_navigation=True'
+        subprocess.run(
+            [
+                "java",
+                "-jar",
+                vnu_jar_path,
+                "--filterfile",
+                "../tools/documentation.vnufilter",
+                "--skip-non-html",
+                "_build/html",
+            ],
+            check=True,
+        )
 
-err=0
+        color_message(92, "Passed!")
+    except subprocess.CalledProcessError:
+        color_message(91, "Failed!")
+        sys.exit(1)
 
-check() {
-    if "$@"; then
-        color_message 92 "Passed!"
-    else
-        color_message 91 "Failed!"
-        err=1
-    fi
-}
 
-color_message 94 "Validating HTML..."
-check java -jar ../node_modules/vnu-jar/build/dist/vnu.jar \
-    --filterfile ../tools/documentation.vnufilter \
-    --skip-non-html \
-    _build/html
+def test_links(loglevel, skip_check_links, skip_external_links):
+    """Tests links in the documentation using scrapy."""
+    if skip_check_links:
+        color_message(94, "Skipped testing links in documentation.")
+    else:
+        os.chdir("../tools/documentation_crawler")
+        if skip_external_links:
+            color_message(94, "Testing only internal links in documentation...")
+            crawl_args = ["-a", "skip_external=set"] + loglevel
+        else:
+            color_message(94, "Testing links in documentation...")
+            crawl_args = loglevel
 
-if [ -n "$skip_check_links" ]; then
-    color_message 94 "Skipped testing links in documentation."
-else
-    cd ../tools/documentation_crawler
-    if [ -n "$skip_external_links" ]; then
-        color_message 94 "Testing only internal links in documentation..."
-        check scrapy crawl_with_status documentation_crawler -a skip_external=set "${loglevel[@]}"
-        # calling crawl directly as parameter needs to be passed
-    else
-        color_message 94 "Testing links in documentation..."
-        check scrapy crawl_with_status documentation_crawler "${loglevel[@]}"
-    fi
-fi
+        try:
+            subprocess.run(
+                ["scrapy", "crawl_with_status", "documentation_crawler"] + crawl_args, check=True
+            )
+            color_message(92, "Passed!")
+        except subprocess.CalledProcessError:
+            color_message(91, "Failed!")
+            sys.exit(1)
 
-exit "$err"
+
+if __name__ == "__main__":
+    loglevel = []
+    skip_check_links = False
+    skip_external_links = False
+
+    args = sys.argv[1:]
+    while args:
+        arg = args.pop(0)
+        if arg in ("-h", "--help"):
+            usage()
+            sys.exit(0)
+        elif arg in ("-L", "--loglevel"):
+            loglevel = [arg, args.pop(0)]
+        elif arg == "--skip-check-links":
+            skip_check_links = True
+        elif arg == "--skip-external-links":
+            skip_external_links = True
+
+    # Use os.path.abspath for better path resolution
+    docs_path = os.path.join(os.path.dirname(__file__), "..", "docs")
+    os.chdir(docs_path)
+
+    try:
+        subprocess.run(
+            ["make", "clean", "html", "-o", "-D html_theme_options.collapse_navigation=True"],
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        sys.exit(1)
+
+    validate_html()
+    test_links(loglevel, skip_check_links, skip_external_links)
