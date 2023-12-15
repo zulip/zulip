@@ -623,14 +623,18 @@ def send_custom_server_email(
     )
 
     for server in remote_servers:
+        context = {
+            "remote_server_email": True,
+            "hostname": server.hostname,
+            "unsubscribe_link": generate_confirmation_link_for_server_deactivation(
+                server, 60 * 24 * 2
+            ),
+        }
+        if add_context is not None:
+            add_context(context, server)
         email_sender(
             to_email=server.contact_email,
-            context={
-                "remote_server_email": True,
-                "unsubscribe_link": generate_confirmation_link_for_server_deactivation(
-                    server, 60 * 24 * 2
-                ),
-            },
+            context=context,
         )
 
         if dry_run:
