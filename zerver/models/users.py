@@ -583,7 +583,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return str(self.ROLE_ID_TO_NAME_MAP[self.role])
 
     def profile_data(self) -> ProfileData:
-        from zerver.models import CustomProfileFieldValue, custom_profile_fields_for_realm
+        from zerver.models import CustomProfileFieldValue
+        from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
         user_data = {
