@@ -75,6 +75,8 @@ from zerver.models.prereg_users import MultiuseInvite as MultiuseInvite
 from zerver.models.prereg_users import PreregistrationRealm as PreregistrationRealm
 from zerver.models.prereg_users import PreregistrationUser as PreregistrationUser
 from zerver.models.prereg_users import RealmReactivationStatus as RealmReactivationStatus
+from zerver.models.push_notifications import AbstractPushDeviceToken as AbstractPushDeviceToken
+from zerver.models.push_notifications import PushDeviceToken as PushDeviceToken
 from zerver.models.realm_emoji import RealmEmoji as RealmEmoji
 from zerver.models.realm_playgrounds import RealmPlayground as RealmPlayground
 from zerver.models.realms import Realm as Realm
@@ -139,42 +141,6 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
-
-
-class AbstractPushDeviceToken(models.Model):
-    APNS = 1
-    GCM = 2
-
-    KINDS = (
-        (APNS, "apns"),
-        (GCM, "gcm"),
-    )
-
-    kind = models.PositiveSmallIntegerField(choices=KINDS)
-
-    # The token is a unique device-specific token that is
-    # sent to us from each device:
-    #   - APNS token if kind == APNS
-    #   - GCM registration id if kind == GCM
-    token = models.CharField(max_length=4096, db_index=True)
-
-    # TODO: last_updated should be renamed date_created, since it is
-    # no longer maintained as a last_updated value.
-    last_updated = models.DateTimeField(auto_now=True)
-
-    # [optional] Contains the app id of the device if it is an iOS device
-    ios_app_id = models.TextField(null=True)
-
-    class Meta:
-        abstract = True
-
-
-class PushDeviceToken(AbstractPushDeviceToken):
-    # The user whose device this is
-    user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
-
-    class Meta:
-        unique_together = ("user", "kind", "token")
 
 
 def generate_email_token_for_stream() -> str:
