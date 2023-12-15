@@ -106,7 +106,8 @@
                     </button>
                     <div id="org-billing-frequency-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
-                {% if automanage_licenses %}
+                {% if is_server_on_legacy_plan %}
+                {% elif automanage_licenses %}
                 <div class="input-box billing-page-field no-validation">
                     <label for="automatic-license-count" class="inline-block label-title">
                         Number of licenses
