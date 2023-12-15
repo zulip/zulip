@@ -40,8 +40,7 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
-@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
-class RemoteBillingAuthenticationTest(BouncerTestCase):
+class RemoteRealmBillingTestCase(BouncerTestCase):
     def execute_remote_billing_authentication_flow(
         self,
         user: UserProfile,
@@ -169,6 +168,9 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         # depending on the set up and intent of the test.
         return result
 
+
+@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
     @responses.activate
     def test_remote_billing_authentication_flow(self) -> None:
         self.login("desdemona")
@@ -756,7 +758,7 @@ class RemoteBillingAuthenticationTest(BouncerTestCase):
         self.assertEqual(server_plan.status, CustomerPlan.ACTIVE)
 
 
-class LegacyServerLoginTest(BouncerTestCase):
+class RemoteServerTestCase(BouncerTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
@@ -870,6 +872,8 @@ class LegacyServerLoginTest(BouncerTestCase):
 
         return result
 
+
+class LegacyServerLoginTest(RemoteServerTestCase):
     def test_server_login_get(self) -> None:
         result = self.client_get("/serverlogin/", subdomain="selfhosting")
         self.assertEqual(result.status_code, 200)
