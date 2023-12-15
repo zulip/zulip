@@ -72,9 +72,9 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
     UserTopic,
-    check_valid_user_ids,
 )
 from zerver.models.clients import get_client
+from zerver.models.custom_profile_fields import check_valid_user_ids
 from zerver.models.groups import SystemGroups
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm

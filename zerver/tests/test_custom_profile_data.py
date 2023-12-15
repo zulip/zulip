@@ -15,12 +15,8 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
-from zerver.models import (
-    CustomProfileField,
-    CustomProfileFieldValue,
-    UserProfile,
-    custom_profile_fields_for_realm,
-)
+from zerver.models import CustomProfileField, CustomProfileFieldValue, UserProfile
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.realms import get_realm
 
 
