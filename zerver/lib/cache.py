@@ -518,7 +518,7 @@ def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
 def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm: "Realm") -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
-    from zerver.models import is_cross_realm_bot_email
+    from zerver.models.users import is_cross_realm_bot_email
 
     keys = []
     for user_profile in user_profiles:
@@ -554,7 +554,7 @@ def changed(update_fields: Optional[Sequence[str]], fields: List[str]) -> bool:
     return any(f in update_fields_set for f in fields)
 
 
-# Called by models/__init__.py to flush the user_profile cache whenever we save
+# Called by models/users.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(
     *,

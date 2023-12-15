@@ -16,9 +16,9 @@ from zerver.models import (
     RealmAuditLog,
     RealmEmoji,
     UserProfile,
-    active_user_ids,
     get_all_custom_emoji_for_realm,
 )
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 

@@ -32,9 +32,8 @@ from zerver.models import (
     UserProfile,
     get_realm,
     get_stream,
-    get_system_bot,
-    get_user,
 )
+from zerver.models.users import get_system_bot, get_user
 from zerver.worker.queue_processors import UserActivityWorker
 
 if TYPE_CHECKING:

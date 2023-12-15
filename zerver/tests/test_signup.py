@@ -78,10 +78,8 @@ from zerver.models import (
     UserProfile,
     get_realm,
     get_stream,
-    get_system_bot,
-    get_user,
-    get_user_by_delivery_email,
 )
+from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.development.registration import confirmation_key
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult, email_auth_enabled

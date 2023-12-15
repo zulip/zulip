@@ -22,7 +22,8 @@ from typing import Any, Callable, Dict, List, Set, TypeVar
 from typing_extensions import ParamSpec
 from zulip import Client
 
-from zerver.models import get_realm, get_user
+from zerver.models import get_realm
+from zerver.models.users import get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

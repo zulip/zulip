@@ -26,9 +26,8 @@ from zerver.models import (
     get_bot_services,
     get_realm,
     get_stream,
-    get_user,
-    is_cross_realm_bot_email,
 )
+from zerver.models.users import get_user, is_cross_realm_bot_email
 
 
 # A test validator

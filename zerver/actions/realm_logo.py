@@ -4,7 +4,8 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.realm_logo import get_realm_logo_data
-from zerver.models import Realm, RealmAuditLog, UserProfile, active_user_ids
+from zerver.models import Realm, RealmAuditLog, UserProfile
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 

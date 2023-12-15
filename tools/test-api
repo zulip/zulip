@@ -36,7 +36,8 @@ with test_server_running(
     from zerver.actions.users import change_user_is_active
     from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
     from zerver.lib.users import get_api_key
-    from zerver.models import get_realm, get_user
+    from zerver.models import get_realm
+    from zerver.models.users import get_user
     from zerver.openapi.javascript_examples import test_js_bindings
     from zerver.openapi.python_examples import (
         test_invalid_api_key,

@@ -15,7 +15,8 @@ from zerver.actions.message_send import (
 from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest
-from zerver.models import Message, Realm, UserProfile, get_system_bot
+from zerver.models import Message, Realm, UserProfile
+from zerver.models.users import get_system_bot
 
 
 def missing_any_realm_internal_bots() -> bool:

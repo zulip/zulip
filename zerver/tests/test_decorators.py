@@ -52,7 +52,8 @@ from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.middleware import LogRequests, parse_client
-from zerver.models import Client, Realm, UserProfile, clear_client_cache, get_realm, get_user
+from zerver.models import Client, Realm, UserProfile, clear_client_cache, get_realm
+from zerver.models.users import get_user
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer

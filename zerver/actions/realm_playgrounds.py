@@ -6,14 +6,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.exceptions import ValidationFailureError
 from zerver.lib.types import RealmPlaygroundDict
-from zerver.models import (
-    Realm,
-    RealmAuditLog,
-    RealmPlayground,
-    UserProfile,
-    active_user_ids,
-    get_realm_playgrounds,
-)
+from zerver.models import Realm, RealmAuditLog, RealmPlayground, UserProfile, get_realm_playgrounds
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
