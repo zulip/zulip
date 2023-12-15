@@ -15,7 +15,7 @@ ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "8.0"
 LATEST_RELEASE_VERSION = "8.0"
-LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2023/05/31/zulip-7-0-released/"
+LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2023/12/15/zulip-8-0-released/"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
 # prevented from connecting to the Zulip server.  Versions above
