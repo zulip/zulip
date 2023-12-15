@@ -263,7 +263,7 @@ msgstr "Your organisation's request for sponsored hosting has been approved! You
 
 #: corporate/views/billing_page.py:328
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "Parameter 'confirmed' is required"
 
 #: corporate/views/remote_billing_page.py:130
 msgid "Billing access token expired."
@@ -692,7 +692,7 @@ msgstr "View pricing"
 
 #: templates/corporate/remote_billing_server_deactivate.html:5
 msgid "Deactivate server registration?"
-msgstr ""
+msgstr "Deactivate server registration?"
 
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
@@ -2305,23 +2305,23 @@ msgid ""
 "\n"
 "    Click the button below to confirm your email and log in to Zulip plan management for <b>%(remote_realm_host)s</b>.\n"
 "    "
-msgstr ""
+msgstr "\n    Click the button below to confirm your email and log in to Zulip plan management for <b>%(remote_realm_host)s</b>.\n    "
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:14
 #: templates/zerver/emails/remote_realm_billing_confirm_login.txt:4
 msgid "Confirm and log in"
-msgstr ""
+msgstr "Confirm and log in"
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.subject.txt:1
 msgid "Confirm email for Zulip plan management"
-msgstr ""
+msgstr "Confirm email for Zulip plan management"
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.txt:1
 #, python-format
 msgid ""
 "Click the link below to confirm your email and log in to Zulip plan "
 "management for %(remote_realm_host)s."
-msgstr ""
+msgstr "Click the link below to confirm your email and log in to Zulip plan management for %(remote_realm_host)s."
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:9
 #, python-format
