@@ -49,6 +49,7 @@ from zerver.lib.validator import (
 )
 from zerver.models.clients import Client as Client
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.drafts import Draft as Draft
 from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
 from zerver.models.groups import UserGroup as UserGroup
 from zerver.models.groups import UserGroupMembership as UserGroupMembership
@@ -147,33 +148,6 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
-
-
-class Draft(models.Model):
-    """Server-side storage model for storing drafts so that drafts can be synced across
-    multiple clients/devices.
-    """
-
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
-    topic = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)
-    content = models.TextField()  # Length should not exceed MAX_MESSAGE_LENGTH
-    last_edit_time = models.DateTimeField(db_index=True)
-
-    @override
-    def __str__(self) -> str:
-        return f"{self.user_profile.email} / {self.id} / {self.last_edit_time}"
-
-    def to_dict(self) -> Dict[str, Any]:
-        to, recipient_type_str = get_recipient_ids(self.recipient, self.user_profile_id)
-        return {
-            "id": self.id,
-            "type": recipient_type_str,
-            "to": to,
-            "topic": self.topic,
-            "content": self.content,
-            "timestamp": int(self.last_edit_time.timestamp()),
-        }
 
 
 def validate_attachment_request_for_spectator_access(
