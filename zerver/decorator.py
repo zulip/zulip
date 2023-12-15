@@ -61,7 +61,8 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
-from zerver.models import UserProfile, get_client
+from zerver.models import UserProfile
+from zerver.models.clients import get_client
 from zerver.models.users import get_user_profile_by_api_key
 
 if TYPE_CHECKING:

@@ -90,8 +90,8 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_client,
 )
+from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zilencer.models import RemoteZulipServerAuditLog

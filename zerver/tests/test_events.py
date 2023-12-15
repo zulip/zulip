@@ -240,8 +240,8 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    get_client,
 )
+from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
