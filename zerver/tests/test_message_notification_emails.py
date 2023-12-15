@@ -27,14 +27,8 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    NotificationTriggers,
-    UserMessage,
-    UserProfile,
-    UserTopic,
-    get_name_keyed_dict_for_active_realm_emoji,
-    get_stream,
-)
+from zerver.models import NotificationTriggers, UserMessage, UserProfile, UserTopic, get_stream
+from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
 
 

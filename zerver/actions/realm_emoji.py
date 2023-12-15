@@ -10,14 +10,8 @@ from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import upload_emoji_image
-from zerver.models import (
-    EmojiInfo,
-    Realm,
-    RealmAuditLog,
-    RealmEmoji,
-    UserProfile,
-    get_all_custom_emoji_for_realm,
-)
+from zerver.models import Realm, RealmAuditLog, RealmEmoji, UserProfile
+from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
