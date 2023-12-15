@@ -103,12 +103,12 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_client,
-    get_huddle_user_ids,
     get_stream,
     get_stream_by_id_in_realm,
     query_for_ids,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event
 
