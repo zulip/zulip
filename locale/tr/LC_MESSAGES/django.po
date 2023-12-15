@@ -12,6 +12,7 @@
 # Oktay, 2023
 # Onur Temiz <onurmain@gmail.com>, 2023
 # Eren Dogan, 2023
+# xe1st, 2023
 # Transifex Bot <>, 2023
 # 
 #, fuzzy
@@ -48,11 +49,11 @@ msgstr "Özel kanallar"
 
 #: analytics/views/stats.py:296
 msgid "Direct messages"
-msgstr "Direkt mesajlar"
+msgstr "Direkt iletiler"
 
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
-msgstr "Grup direkt mesaları"
+msgstr "Grup direkt iletileri"
 
 #: analytics/views/stats.py:318
 msgid "Unknown chart name: {}"
@@ -382,11 +383,11 @@ msgstr "Misafir sayısı"
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
-msgstr "Toplam mesaj sayısı"
+msgstr "Toplam ileti sayısı"
 
 #: templates/analytics/stats.html:31
 msgid "Number of messages in the last 30 days"
-msgstr "Son 30 gündeki mesaj sayısı"
+msgstr "Son 30 gündeki ileti sayısı"
 
 #: templates/analytics/stats.html:32
 msgid "File storage in use"
@@ -508,11 +509,11 @@ msgstr ""
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
-msgstr ""
+msgstr "E-posta adresiniz doğrulanıyor"
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "Doğrulama bağlantısı mevcut değil"
 
 #: templates/confirmation/link_does_not_exist.html:13
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -531,7 +532,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "Doğrulama bağlantısının süresi doldu veya devre dışı bırakıldı"
 
 #: templates/confirmation/link_expired.html:14
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -773,15 +774,15 @@ msgstr "Gönder"
 
 #: templates/corporate/support_request_thanks.html:4
 msgid "Thanks for contacting us"
-msgstr ""
+msgstr "Bize ulaştığıınız için teşekkürler"
 
 #: templates/corporate/support_request_thanks.html:10
 msgid "Thanks for contacting us!"
-msgstr ""
+msgstr "Bize ulaştığıınız için teşekkürler!"
 
 #: templates/corporate/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "Yakın zamanda dönüş yapacağız."
 
 #: templates/corporate/support_request_thanks.html:13
 msgid ""
@@ -790,6 +791,9 @@ msgid ""
 "            <a href=\"/help/\">Zulip help center</a>.\n"
 "            "
 msgstr ""
+"\n"
+"Sık sorulan soruların yanıtlarını \n"
+"<a href=\"/help/\">Zulip yardım merkezi</a>'nde bulabilirsiniz."
 
 #: templates/corporate/team.html:146
 msgid "Avatar"
@@ -797,7 +801,7 @@ msgstr "Avatar"
 
 #: templates/corporate/try-zulip.html:36
 msgid "Try Zulip now"
-msgstr ""
+msgstr "Şimdi Zulip'i deneyin"
 
 #: templates/corporate/upgrade.html:5
 msgid "Upgrade"
@@ -865,7 +869,7 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
-msgstr ""
+msgstr "Zulip'e hoşgeldiniz"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/login.html:102 templates/zerver/register.html:79
@@ -880,10 +884,12 @@ msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
+"<a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Kullanım Şartları</a>'nı kabul ediyorum."
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "Devam et"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
@@ -912,7 +918,7 @@ msgstr "%(identity_provider)s ile kayıt oluştur"
 
 #: templates/zerver/accounts_send_confirm.html:5
 msgid "Confirm your email address"
-msgstr ""
+msgstr "E-posta adresinizi doğrulayın"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Thanks for signing up!"
@@ -990,7 +996,7 @@ msgstr "Zulip"
 
 #: templates/zerver/change_email_address_visibility_modal.html:6
 msgid "Configure email address privacy"
-msgstr ""
+msgstr "E-posta adresi gizliliğini doğrulayın"
 
 #: templates/zerver/change_email_address_visibility_modal.html:8
 msgid "Close modal"
@@ -1010,7 +1016,7 @@ msgstr ""
 
 #: templates/zerver/change_email_address_visibility_modal.html:15
 msgid "Who can access your email address"
-msgstr ""
+msgstr "E-posta hesabınıza kimler erişebilir"
 
 #: templates/zerver/change_email_address_visibility_modal.html:22
 #, python-format
@@ -1055,7 +1061,7 @@ msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:4
 msgid "Account not found"
-msgstr ""
+msgstr "Hesap bulunamadı"
 
 #: templates/zerver/confirm_continue_registration.html:14
 msgid "Zulip account not found."
@@ -1093,7 +1099,7 @@ msgstr "E-posta adresinizi girin"
 
 #: templates/zerver/create_realm.html:29
 msgid "Your email"
-msgstr ""
+msgstr "E-postanız"
 
 #: templates/zerver/create_realm.html:43
 msgid ""
@@ -1173,7 +1179,7 @@ msgstr "Anahtar kabul edildi. Giriş yapılıyor..."
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
-msgstr ""
+msgstr "Masaüstü uygulamasına giriş yapın"
 
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
@@ -2112,7 +2118,7 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.txt:25
 #, python-format
 msgid "Your account email: %(email)s"
-msgstr ""
+msgstr "Hesap e-postanız: %(email)s"
 
 #: templates/zerver/emails/followup_day1.html:45
 msgid "Go to organization"
@@ -3090,7 +3096,7 @@ msgstr "%(retry_after)s saniye içinde tekrar deneyebilirsiniz."
 #: templates/zerver/realm_creation_disabled.html:4
 #: templates/zerver/realm_creation_disabled.html:13
 msgid "Organization creation link required"
-msgstr ""
+msgstr "Organizasyon oluşturma bağlantısı gerekli"
 
 #: templates/zerver/realm_creation_disabled.html:15
 msgid ""
@@ -3127,7 +3133,7 @@ msgstr "%(external_host)s kullan"
 #: templates/zerver/realm_creation_link_invalid.html:4
 #: templates/zerver/realm_creation_link_invalid.html:14
 msgid "Organization creation link expired or invalid"
-msgstr ""
+msgstr "Organizasyon oluşturma bağlantısının süresi doldu veya geçersiz"
 
 #: templates/zerver/realm_creation_link_invalid.html:16
 msgid ""
@@ -3184,7 +3190,7 @@ msgstr "Yeni bir organizasyon oluştur."
 
 #: templates/zerver/register.html:5
 msgid "Registration"
-msgstr ""
+msgstr "Kayıt"
 
 #: templates/zerver/register.html:21
 msgid "Create your organization"
@@ -3203,7 +3209,7 @@ msgstr ""
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
-msgstr ""
+msgstr "Organizasyonunuz"
 
 #: templates/zerver/register.html:66
 msgid "Your account"
@@ -3259,6 +3265,8 @@ msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
 msgstr ""
+"Parolanızı mı unuttunuz? Hiç sorun değil, kayıt olmak için kullandığınız "
+"e-postanıza parolanızı sıfırlamak için bağlantı göndereceğiz."
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
@@ -3266,7 +3274,7 @@ msgstr "Sıfırlama linki gönder"
 
 #: templates/zerver/reset_confirm.html:5
 msgid "Set a new password"
-msgstr ""
+msgstr "Yeni bir parola belirleyin"
 
 #: templates/zerver/reset_confirm.html:15
 msgid "Set a new password."
@@ -3283,11 +3291,11 @@ msgstr ""
 
 #: templates/zerver/reset_done.html:4
 msgid " New password successfully set"
-msgstr ""
+msgstr "Yeni parola başarıyla ayarlandı"
 
 #: templates/zerver/reset_done.html:13
 msgid "You've set a new password!"
-msgstr ""
+msgstr "Yeni bir parola ayarladınız!"
 
 #: templates/zerver/reset_done.html:17
 #, python-format
@@ -3296,7 +3304,7 @@ msgstr "Lütfen yeni parolanızla <a href=\"%(login_url)s\">giriş yapın</a>."
 
 #: templates/zerver/reset_emailed.html:4
 msgid "Password reset email sent"
-msgstr ""
+msgstr "Parola yenileme e-postası gönderildi"
 
 #: templates/zerver/reset_emailed.html:13
 msgid "Password reset sent!"
@@ -3800,7 +3808,7 @@ msgstr "Eski açıklama"
 
 #: zerver/actions/streams.py:1190
 msgid "New description"
-msgstr ""
+msgstr "Yeni açıklama"
 
 #: zerver/actions/streams.py:1258 zerver/actions/streams.py:1263
 msgid "Forever"
@@ -4276,11 +4284,11 @@ msgstr ""
 
 #: zerver/lib/external_accounts.py:36
 msgid "Twitter username"
-msgstr ""
+msgstr "Twitter kullanıcı adı"
 
 #: zerver/lib/external_accounts.py:42
 msgid "GitHub username"
-msgstr ""
+msgstr "Github kullanıcı adı"
 
 #: zerver/lib/external_accounts.py:71
 msgid "Custom external account must define URL pattern"
@@ -4365,7 +4373,7 @@ msgstr "Finansal"
 
 #: zerver/lib/integrations.py:49
 msgid "Human resources"
-msgstr ""
+msgstr "İnsan kaynakları"
 
 #: zerver/lib/integrations.py:50
 msgid "Marketing"
@@ -4807,7 +4815,7 @@ msgstr "Resim boyutu limiti aşmaktadır."
 
 #: zerver/lib/upload/base.py:107
 msgid "Corrupt animated image."
-msgstr ""
+msgstr "Bozuk animasyonlu görüntü."
 
 #: zerver/lib/upload/base.py:116
 msgid "Unknown animated image format."
@@ -5078,7 +5086,7 @@ msgstr ""
 
 #: zerver/models.py:689
 msgid "GIPHY integration disabled"
-msgstr ""
+msgstr "GIPHY entegrasyonu devre dışı"
 
 #: zerver/models.py:694
 msgid "Allow GIFs rated Y (Very young audience)"
@@ -5257,7 +5265,7 @@ msgstr "Dış hesap"
 
 #: zerver/models.py:4714
 msgid "Pronouns"
-msgstr ""
+msgstr "Zamiler"
 
 #: zerver/signals.py:95
 msgid "Unknown IP address"
@@ -5316,7 +5324,7 @@ msgstr "Alt alan gerekli"
 
 #: zerver/views/auth.py:1144
 msgid "Password is incorrect."
-msgstr ""
+msgstr "Parola yanlış"
 
 #: zerver/views/compatibility.py:18
 msgid "User-Agent header missing from request"
@@ -5563,11 +5571,11 @@ msgstr "Dışa aktarım zaten silinmiş"
 
 #: zerver/views/realm_export.py:113
 msgid "Export failed, nothing to delete"
-msgstr ""
+msgstr "Dışa aktarma başarısız oldu, silinecek bir şey yok"
 
 #: zerver/views/realm_export.py:114
 msgid "Export still in progress"
-msgstr ""
+msgstr "Dışa aktarma hala devam ediyor"
 
 #: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."

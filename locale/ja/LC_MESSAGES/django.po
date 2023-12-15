@@ -4318,7 +4318,7 @@ msgstr "こんにちは、そしてZulipへようこそ"
 
 #: zerver/lib/onboarding.py:107
 msgid "This is a direct message from me, Welcome Bot."
-msgstr "これは自分からのダイレクトメッセージです。Welcome Bot"
+msgstr "これはWelcome Botからのダイレクトメッセージです。"
 
 #: zerver/lib/onboarding.py:112
 msgid ""
@@ -4328,7 +4328,7 @@ msgstr "使用を始めるためのお手伝いもできます！このメッセ
 
 #: zerver/lib/onboarding.py:115 zerver/lib/onboarding.py:227
 msgid "Here are a few messages I understand:"
-msgstr "いくつかのメッセージを理解できました："
+msgstr "これらのメッセージを理解できます："
 
 #: zerver/lib/onboarding.py:156
 msgid ""

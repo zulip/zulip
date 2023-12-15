@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-15 22:07+0000\n"
+"POT-Creation-Date: 2023-12-15 21:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,8 +57,8 @@ msgstr ""
 msgid "No analytics data available. Please contact your server administrator."
 msgstr ""
 
-#: analytics/views/support.py:189 zerver/views/streams.py:304
-#: zerver/views/streams.py:308 zerver/views/streams.py:316
+#: analytics/views/support.py:189 zerver/views/streams.py:305
+#: zerver/views/streams.py:309 zerver/views/streams.py:317
 msgid "Invalid parameters"
 msgstr ""
 
@@ -3251,14 +3251,14 @@ msgstr ""
 msgid "Stream {stream_name} un-archived."
 msgstr ""
 
-#: zerver/actions/streams.py:927
+#: zerver/actions/streams.py:937
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
 msgstr ""
 
-#: zerver/actions/streams.py:1111
+#: zerver/actions/streams.py:1114
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions](/help/stream-sending-policy) for "
@@ -3268,38 +3268,38 @@ msgid ""
 "* **New permissions**: {new_policy}.\n"
 msgstr ""
 
-#: zerver/actions/streams.py:1246
+#: zerver/actions/streams.py:1237
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr ""
 
-#: zerver/actions/streams.py:1265 zerver/actions/streams.py:1267
-#: zerver/views/streams.py:793
+#: zerver/actions/streams.py:1253 zerver/actions/streams.py:1255
+#: zerver/views/streams.py:794
 msgid "No description."
 msgstr ""
 
-#: zerver/actions/streams.py:1270
+#: zerver/actions/streams.py:1258
 #, python-brace-format
 msgid "{user} changed the description for this stream."
 msgstr ""
 
-#: zerver/actions/streams.py:1272
+#: zerver/actions/streams.py:1260
 msgid "Old description"
 msgstr ""
 
-#: zerver/actions/streams.py:1276
+#: zerver/actions/streams.py:1264
 msgid "New description"
 msgstr ""
 
-#: zerver/actions/streams.py:1344 zerver/actions/streams.py:1349
+#: zerver/actions/streams.py:1332 zerver/actions/streams.py:1337
 msgid "Forever"
 msgstr ""
 
-#: zerver/actions/streams.py:1350
+#: zerver/actions/streams.py:1338
 msgid "Messages in this stream will now be retained forever."
 msgstr ""
 
-#: zerver/actions/streams.py:1356
+#: zerver/actions/streams.py:1344
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period](/help/message-retention-"
@@ -3342,8 +3342,8 @@ msgstr ""
 #: zerver/lib/streams.py:727 zerver/lib/streams.py:742
 #: zerver/lib/user_groups.py:35 zerver/lib/user_groups.py:42
 #: zerver/lib/users.py:249 zerver/lib/users.py:278 zerver/views/invite.py:60
-#: zerver/views/realm_emoji.py:31 zerver/views/streams.py:336
-#: zerver/views/streams.py:630
+#: zerver/views/realm_emoji.py:31 zerver/views/streams.py:337
+#: zerver/views/streams.py:631
 msgid "Insufficient permission"
 msgstr ""
 
@@ -3633,7 +3633,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr ""
 
-#: zerver/lib/events.py:1539
+#: zerver/lib/events.py:1584
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -4196,7 +4196,7 @@ msgstr ""
 
 #: zerver/lib/streams.py:315 zerver/lib/streams.py:334
 #: zerver/lib/streams.py:417 zerver/lib/streams.py:483
-#: zerver/views/streams.py:399 zerver/views/user_topics.py:101
+#: zerver/views/streams.py:400 zerver/views/user_topics.py:101
 msgid "Invalid stream ID"
 msgstr ""
 
@@ -4212,7 +4212,7 @@ msgstr ""
 msgid "Stream(s) ({}) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:738 zerver/views/streams.py:334
+#: zerver/lib/streams.py:738 zerver/views/streams.py:335
 msgid "Web-public streams are not enabled."
 msgstr ""
 
@@ -4240,11 +4240,11 @@ msgstr ""
 msgid "Invalid character in topic, at position {}!"
 msgstr ""
 
-#: zerver/lib/subscription_info.py:295
+#: zerver/lib/subscription_info.py:316
 msgid "Subscriber data is not available for this stream"
 msgstr ""
 
-#: zerver/lib/subscription_info.py:302
+#: zerver/lib/subscription_info.py:323
 msgid "Unable to retrieve subscribers for private stream"
 msgstr ""
 
@@ -5060,79 +5060,79 @@ msgstr ""
 msgid "Invalid DSN"
 msgstr ""
 
-#: zerver/views/streams.py:121
+#: zerver/views/streams.py:122
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr ""
 
-#: zerver/views/streams.py:163
+#: zerver/views/streams.py:164
 msgid "Private streams cannot be made default."
 msgstr ""
 
-#: zerver/views/streams.py:195
+#: zerver/views/streams.py:196
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr ""
 
-#: zerver/views/streams.py:225
+#: zerver/views/streams.py:226
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 
-#: zerver/views/streams.py:322
+#: zerver/views/streams.py:323
 msgid "Default streams cannot be made private."
 msgstr ""
 
-#: zerver/views/streams.py:370
+#: zerver/views/streams.py:371
 msgid "Stream already has that name!"
 msgstr ""
 
-#: zerver/views/streams.py:452 zerver/views/user_groups.py:108
+#: zerver/views/streams.py:453 zerver/views/user_groups.py:108
 #: zerver/views/user_groups.py:285
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
-#: zerver/views/streams.py:536
+#: zerver/views/streams.py:537
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
 msgstr ""
 
-#: zerver/views/streams.py:542
+#: zerver/views/streams.py:543
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
 msgstr ""
 
-#: zerver/views/streams.py:646
+#: zerver/views/streams.py:647
 #, python-brace-format
 msgid "Unable to access stream ({stream_name})."
 msgstr ""
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:660
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr ""
 
-#: zerver/views/streams.py:767
+#: zerver/views/streams.py:768
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
 msgstr ""
 
-#: zerver/views/streams.py:769
+#: zerver/views/streams.py:770
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
 msgstr ""
 
-#: zerver/views/streams.py:770
+#: zerver/views/streams.py:771
 msgid "new streams"
 msgstr ""
 
-#: zerver/views/streams.py:802
+#: zerver/views/streams.py:803
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1060
+#: zerver/views/streams.py:1061
 msgid "Unknown subscription property: {}"
 msgstr ""
 
-#: zerver/views/streams.py:1064
+#: zerver/views/streams.py:1065
 msgid "Not subscribed to stream id {}"
 msgstr ""
 
@@ -5394,16 +5394,16 @@ msgstr ""
 msgid "Malformed JSON input"
 msgstr ""
 
-#: zerver/webhooks/newrelic/view.py:81 zerver/webhooks/newrelic/view.py:132
+#: zerver/webhooks/newrelic/view.py:82 zerver/webhooks/newrelic/view.py:133
 msgid "The newrelic webhook requires timestamp in milliseconds"
 msgstr ""
 
-#: zerver/webhooks/newrelic/view.py:98
+#: zerver/webhooks/newrelic/view.py:99
 msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/newrelic/view.py:152
+#: zerver/webhooks/newrelic/view.py:153
 msgid ""
 "The newrelic webhook requires state be in [created|activated|acknowledged|"
 "closed]"

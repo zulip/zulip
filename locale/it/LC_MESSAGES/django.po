@@ -1388,6 +1388,8 @@ msgid ""
 "\n"
 "Your Zulip account on <a href=\"%(realm_uri)s\" style=\"color:#5f5ec7; text-decoration:underline\">%(realm_uri)s</a> has been deactivated, and you will no longer be able to log in.\n"
 msgstr ""
+"\n"
+"Il tuo account Zulip su <a href=\"%(realm_uri)s\" style=\"color:#5f5ec7; text-decoration:underline\">%(realm_uri)s</a> è stato disattivato e non sarai più in grado di effettuare l'accesso.\n"
 
 #: templates/zerver/emails/compiled/deactivate.html:15
 #: templates/zerver/emails/deactivate.html:15
@@ -1578,6 +1580,12 @@ msgid ""
 "href=\"https://zulip.com/development-community/\" style=\"color:#5f5ec7; "
 "text-decoration:underline\">Zulip community server</a>!"
 msgstr ""
+"PS: Seguici su <a href=\"https://twitter.com/zulip\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">Twitter</a>, metti una stella su <a "
+"href=\"https://github.com/zulip/zulip\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">GitHub</a>, o chatta con noi in diretta sul <a "
+"href=\"https://zulip.com/development-community/\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">server della comunità Zulip</a>!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 msgid "Hey,"
@@ -1780,6 +1788,11 @@ msgid ""
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
 msgstr ""
+"Rispondi direttamente a questa email, <a href=\"%(narrow_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">visualizzala in "
+"%(realm_name)s Zulip</a>, oppure <a href=\"%(notif_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">gestisci le preferenze "
+"email</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:41
 #, python-format
@@ -1789,6 +1802,10 @@ msgid ""
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
 msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Visualizza o rispondi in Zulip %(realm_name)s</a>, "
+"oppure <a href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">gestisci le preferenze email</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:43
 #, python-format
@@ -1798,6 +1815,10 @@ msgid ""
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
 msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Rispondi in Zulip %(realm_name)s</a>, o <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">gestisci le preferenze email</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:45
 #, python-format
@@ -6128,6 +6149,8 @@ msgid ""
 "User group {user_group_id} is already a subgroup of one of the passed "
 "subgroups."
 msgstr ""
+"Il gruppo utente {user_group_id} è già un sottogruppo di uno dei sottogruppi"
+" passati."
 
 #: zerver/views/user_groups.py:266
 #, python-brace-format

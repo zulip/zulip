@@ -1595,10 +1595,10 @@ msgid ""
 " up on what's happened while you're away—read the topics that are relevant "
 "to you, and ignore the ones that aren't!"
 msgstr ""
-"Proč se zdržovat s tématy? Má to dva důvody: dělají konverzaci přehlednější "
+"Proč se zdržovat s tématy? Má to dva důvody: dělají rozhovor přehlednější "
 "(představte si kdyby chyběly u e-mailů!) a pomáhají vám se rychle "
-"zorientovat co vám uniklo když jste zrovna byli pryč—stačí přečíst jen "
-"témata, která se vás týkají a ignorovat ty ostatní!"
+"zorientovat co vám uniklo když jste zrovna byli pryč — stačí přečíst jen "
+"témata, která se vás týkají a nevšímat si těch ostatních!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:26
 msgid "Take it for a spin now."
@@ -2256,6 +2256,8 @@ msgid ""
 "Here are some tips for keeping your Zulip conversations organized with "
 "topics."
 msgstr ""
+"Zde je několik rad, jak udržovat rozhovory na Zulipu uspořádané pomocí "
+"témat."
 
 #: templates/zerver/emails/followup_day2.html:13
 msgid ""
@@ -2269,6 +2271,8 @@ msgid ""
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
+"Pomocí témat můžete číst v Zulipu rozhovory po jednom. Každou zprávu uvidíte"
+" v souvislosti bez ohledu na to, kolik různých diskusí právě probíhá."
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -2282,6 +2286,10 @@ msgid ""
 "For a good topic name, think about finishing the sentence: “Hey, can we chat"
 " about…?”"
 msgstr ""
+"Chcete-li zahájit nový rozhovor, stačí vybrat kanál a založit nové téma. "
+"Tímto způsobem nové vlákno rozhovoru nepřeruší probíhající diskuse. Pro "
+"dobrý název tématu se zamyslete nad dokončením věty: \"Ahoj, můžeme si "
+"popovídat o...?\"."
 
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
@@ -2309,7 +2317,7 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
-msgstr ""
+msgstr "Udržujte rozhovory uspořádány pomocí témat"
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
@@ -2756,7 +2764,7 @@ msgstr "Bezpečnost"
 
 #: templates/zerver/footer.html:14
 msgid "Integrations"
-msgstr "Integrace"
+msgstr "Doplňky"
 
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
@@ -2938,7 +2946,7 @@ msgstr "Stáhnout nejnovější vydání."
 #: templates/zerver/integrations/index.html:23
 #, python-format
 msgid "Over %(integrations_count_display)s native integrations."
-msgstr "Více než %(integrations_count_display)s nativních integrací."
+msgstr "Více než %(integrations_count_display)s nativních doplňků."
 
 #: templates/zerver/integrations/index.html:27
 msgid ""
@@ -2958,12 +2966,12 @@ msgstr ""
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
-msgstr "Hledat integrace"
+msgstr "Hledat doplňky"
 
 #: templates/zerver/integrations/index.html:61
 #: templates/zerver/integrations/index.html:88
 msgid "Custom integrations"
-msgstr "Vlastní začlenění"
+msgstr "Vlastní doplňky"
 
 #: templates/zerver/integrations/index.html:63
 #: templates/zerver/integrations/index.html:90
@@ -3788,7 +3796,7 @@ msgstr ""
 
 #: zerver/actions/message_send.py:1265
 msgid "Direct messages are disabled in this organization."
-msgstr ""
+msgstr "Přímé zprávy jsou v této organizaci zakázány."
 
 #: zerver/actions/message_send.py:1342
 msgid "Topics are required in this organization"
@@ -4403,8 +4411,8 @@ msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
 msgstr ""
-"Každá zpráva má téma. Témata udržují konverzaci přehlednou a usnadňují "
-"zapojení do konverzací, které začaly když jste zrovna nebyli připojeni k "
+"Každá zpráva má téma. Témata udržují rozhovory přehlednými a usnadňují "
+"zapojení do rozhovorů, které začaly, když jste zrovna nebyli připojeni k "
 "internetu."
 
 #: zerver/lib/hotspots.py:28
@@ -4425,16 +4433,16 @@ msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
 msgstr ""
-"Klepněte zde pro zahájení nové konverzace. Vyberte si téma (nejlepší jsou "
+"Klepněte zde pro zahájení nového rozhovoru. Vyberte si téma (nejlepší jsou "
 "2-3 slova) a vyzkoušejte si to!"
 
 #: zerver/lib/integrations.py:37
 msgid "Integration frameworks"
-msgstr "Frameworky integrací"
+msgstr "Rámce doplňků"
 
 #: zerver/lib/integrations.py:43
 msgid "Continuous integration"
-msgstr "Nepřetržitá integrace"
+msgstr "Průběžná integrace"
 
 #: zerver/lib/integrations.py:44
 msgid "Customer support"
@@ -4958,7 +4966,7 @@ msgstr "Špatný název nebo uživatelské jméno"
 
 #: zerver/lib/users.py:95
 msgid "Invalid integration '{}'."
-msgstr "Neplatná integrace '{}'."
+msgstr "Neplatný doplněk '{}'."
 
 #: zerver/lib/users.py:100
 msgid "Missing configuration parameters: {}"
@@ -5172,7 +5180,7 @@ msgstr "Dostupné v serveru Zulip Standard. Pro přístup povyšte."
 
 #: zerver/models.py:689
 msgid "GIPHY integration disabled"
-msgstr ""
+msgstr "Doplněk GIPHY zakázán"
 
 #: zerver/models.py:694
 msgid "Allow GIFs rated Y (Very young audience)"

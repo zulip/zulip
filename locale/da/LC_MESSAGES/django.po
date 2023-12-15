@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Jens Hymøller, 2023
+# jens_hymoller, 2023
 # Transifex Bot <>, 2023
 # 
 #, fuzzy
@@ -775,7 +775,7 @@ msgstr ""
 
 #: templates/corporate/upgrade.html:105
 msgid "Automatic"
-msgstr ""
+msgstr "Automatisk"
 
 #: templates/corporate/upgrade.html:106
 msgid "Most convenient"
@@ -957,7 +957,7 @@ msgstr ""
 
 #: templates/zerver/change_email_address_visibility_modal.html:15
 msgid "Who can access your email address"
-msgstr ""
+msgstr "Hvem kan se din e-mail adresse"
 
 #: templates/zerver/change_email_address_visibility_modal.html:22
 #, python-format
@@ -2482,7 +2482,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:14
 msgid "Integrations"
-msgstr ""
+msgstr " Integrationer"
 
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
@@ -2610,7 +2610,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:95
 msgid "Support Zulip"
-msgstr ""
+msgstr "Støt Zulip"
 
 #: templates/zerver/footer.html:105
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
@@ -3309,12 +3309,12 @@ msgstr ""
 #: zerver/actions/message_edit.py:162
 #, python-brace-format
 msgid "{user} has marked this topic as resolved."
-msgstr ""
+msgstr "{user} har markeret dette emne som løst."
 
 #: zerver/actions/message_edit.py:164
 #, python-brace-format
 msgid "{user} has marked this topic as unresolved."
-msgstr ""
+msgstr "{user} har markeret dette emne som uløst."
 
 #: zerver/actions/message_edit.py:967
 #, python-brace-format
@@ -4145,6 +4145,8 @@ msgid ""
 "If you are new to Zulip, check out our [Using Zulip for a class "
 "guide]({getting_started_url})!"
 msgstr ""
+"Hvis du aldrig har prøvet zulip før, kan du læse [Using Zulip for a class "
+"guide]({getting_started_url})!"
 
 #: zerver/lib/onboarding.py:66
 #, python-brace-format
@@ -4152,6 +4154,8 @@ msgid ""
 "If you are new to Zulip, check out our [Getting started "
 "guide]({getting_started_url})!"
 msgstr ""
+"Hvis du aldrig har prøvet zulip før, kan du læse vores [Guide til at komme i"
+" gang]({getting_started_url})!"
 
 #: zerver/lib/onboarding.py:78
 #, python-brace-format
@@ -4785,7 +4789,7 @@ msgstr ""
 
 #: zerver/models.py:500
 msgid "stream events"
-msgstr "kanalhendelser"
+msgstr "kanalhistorik"
 
 #: zerver/models.py:631
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
@@ -4971,7 +4975,7 @@ msgstr ""
 
 #: zerver/models.py:4714
 msgid "Pronouns"
-msgstr ""
+msgstr "Pronomener"
 
 #: zerver/signals.py:95
 msgid "Unknown IP address"
@@ -5346,12 +5350,12 @@ msgstr ""
 #: zerver/views/streams.py:536
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
-msgstr ""
+msgstr "{user_full_name} tilføjede dig til kanalen {stream_name}."
 
 #: zerver/views/streams.py:542
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
-msgstr ""
+msgstr "{user_full_name} tilføjede dig til følgende kanaler:"
 
 #: zerver/views/streams.py:646
 #, python-brace-format
@@ -5379,7 +5383,7 @@ msgstr "nye kanaler"
 #: zerver/views/streams.py:802
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
-msgstr ""
+msgstr "**{policy}** kanal oprettet af {user_name}. **Beskrivelse:**"
 
 #: zerver/views/streams.py:1050
 msgid "Unknown subscription property: {}"
@@ -5437,7 +5441,7 @@ msgstr ""
 #: zerver/views/user_groups.py:149
 #, python-brace-format
 msgid "{user_full_name} added you to the group {group_name}."
-msgstr ""
+msgstr "{user_full_name} tilføjede dig til gruppen {group_name}."
 
 #: zerver/views/user_groups.py:154
 #, python-brace-format

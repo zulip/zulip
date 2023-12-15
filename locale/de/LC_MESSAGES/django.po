@@ -16,7 +16,7 @@
 # Roman Bannack <apxwn@yandex.ru>, 2023
 # Samuel Plentz, 2023
 # Transifex Bot <>, 2023
-# Viktor Illmer, 2023
+# Viktor, 2023
 # 
 #, fuzzy
 msgid ""
@@ -25,7 +25,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-12 23:45+0000\n"
 "PO-Revision-Date: 2023-06-12 23:55+0000\n"
-"Last-Translator: Viktor Illmer, 2023\n"
+"Last-Translator: Viktor, 2023\n"
 "Language-Team: German (https://app.transifex.com/zulip/teams/53893/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -6305,7 +6305,7 @@ msgstr "E-Mail-Adresse '{}' wird schon verwendet"
 
 #: zerver/views/video_calls.py:47
 msgid "Invalid Zoom access token"
-msgstr "Ungültiger Zoom-Access-Token"
+msgstr "Ungültiger Zoom-Zugriffstoken"
 
 #: zerver/views/video_calls.py:52
 msgid "Zoom credentials have not been configured"

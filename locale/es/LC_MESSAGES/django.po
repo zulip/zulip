@@ -11,8 +11,9 @@
 # Alfonso <vivancos@outlook.es>, 2023
 # Yago González, 2023
 # Dickinson Roman Arismendy Torres, 2023
-# Transifex Bot <>, 2023
 # Jose Franca <francajluis@gmail.com>, 2023
+# Noelia López, 2023
+# Transifex Bot <>, 2023
 # 
 #, fuzzy
 msgid ""
@@ -21,7 +22,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-12 23:45+0000\n"
 "PO-Revision-Date: 2023-06-12 23:55+0000\n"
-"Last-Translator: Jose Franca <francajluis@gmail.com>, 2023\n"
+"Last-Translator: Transifex Bot <>, 2023\n"
 "Language-Team: Spanish (https://app.transifex.com/zulip/teams/53893/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -98,6 +99,10 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
 msgstr ""
+"Tu organización solo tiene una licencia Zulip restante. Puedes [incrementar "
+"el número de licencias]({billing_page_link}) o [desactivar a usuarios "
+"inactivos]({deactivate_user_help_page_link}) para permitir que pueda unirse "
+"más de un usuario a tu organización."
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -107,6 +112,10 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
 msgstr ""
+"Tu organización solo tiene una licencia Zulip restante. Puedes [incrementar "
+"el número de licencias]({billing_page_link}) o [desactivar a usuarios "
+"inactivos]({deactivate_user_help_page_link}) para permitir que puedan unirse"
+" más de dos usuarios a tu organización."
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -116,6 +125,10 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
 msgstr ""
+"Tu organización solo tiene una licencia Zulip restante. Puedes [incrementar "
+"el número de licencias]({billing_page_link}) o [desactivar a usuarios "
+"inactivos]({deactivate_user_help_page_link}) para permitir que puedan unirse"
+" más de tres usuarios a tu organización."
 
 #: corporate/lib/registration.py:57
 #, python-brace-format
@@ -125,6 +138,11 @@ msgid ""
 "licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow new members to join."
 msgstr ""
+"El nuevo miembro({email}) no ha podido unirse a tu organización porque todas"
+" tus licencias Zulip están en uso. Por favor [incrementa el número de "
+"licencias]({billing_page_link}) o [desactiva a usuarios "
+"inactivos]({deactivate_user_help_page_link}) para permitir que se unan "
+"nuevos usuarios."
 
 #: corporate/lib/registration.py:109
 msgid "All Zulip licenses for this organization are currently in use."
@@ -171,6 +189,9 @@ msgid ""
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
+"¡La solicitud de alojamiento patrocinado de su organización ha sido aprobada! Se ha actualizado tu plan a {plan_name} de forma gratuita. {emoji}\n"
+"\n"
+"Agradeceríamos mucho si pudieras {begin_link} añadir a Zulip como un patrocinador de tu página web{end_link}"
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -196,23 +217,28 @@ msgstr ""
 
 #: corporate/views/billing_page.py:202
 msgid "Unable to update the plan. The plan has ended."
-msgstr ""
+msgstr "No es posible actualizar el plan. El plan ha finalizado."
 
 #: corporate/views/billing_page.py:225 corporate/views/billing_page.py:253
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
+"No es posible actualizar las licencias manualmente. Tu plan gestiona las "
+"licencias automáticamente."
 
 #: corporate/views/billing_page.py:231
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
+"Tu plan ya dispone de {licenses} licencias en el periodo de facturación "
+"actual."
 
 #: corporate/views/billing_page.py:236
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
+"No puedes disminuir las licencias en el periodo de facturación actual."
 
 #: corporate/views/billing_page.py:259
 #, python-brace-format
@@ -220,6 +246,8 @@ msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
+"Tu plan ya está planeado para renovarse con {licenses_at_next_renewal} "
+"licencias."
 
 #: corporate/views/billing_page.py:273
 msgid "Nothing to change."
@@ -241,7 +269,7 @@ msgstr ""
 
 #: corporate/views/event_status.py:47
 msgid "Payment intent not found"
-msgstr ""
+msgstr "Intento de pago no encontrado"
 
 #: corporate/views/event_status.py:49
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
@@ -269,11 +297,11 @@ msgstr "Error"
 
 #: templates/404.html:17
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "Método no permitido (405)"
 
 #: templates/404.html:19
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Página no encontrada (404)"
 
 #: templates/404.html:22
 #, python-format
@@ -283,6 +311,9 @@ msgid ""
 "                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "                        "
 msgstr ""
+"\n"
+"Si este error no es esperado, puede \n"
+"<a href=\"mailto:%(support_email)s\">contactar con el soporte</a>."
 
 #: templates/500.html:4 templates/500.html:21
 #: zerver/actions/scheduled_messages.py:411 zerver/middleware.py:433
@@ -295,6 +326,8 @@ msgid ""
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
 msgstr ""
+"\n"
+"Tu chat Zulip no puede ser cargado dado que el servidor está sufriendo dificultades técnicas."
 
 #: templates/500.html:28
 msgid ""
@@ -302,6 +335,8 @@ msgid ""
 "                        This page will reload automatically when service is restored.\n"
 "                        "
 msgstr ""
+"\n"
+" Esta página será recargada automáticamente cuando el servicio esté restablecido."
 
 #: templates/500.html:32
 #, python-format
@@ -349,27 +384,27 @@ msgstr "Analíticas de Zulip para %(target_name)s"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
-msgstr ""
+msgstr "Resumen de la organización"
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
-msgstr ""
+msgstr "Número de usuarios"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Usuarios activos en los últimos 15 días"
 
 #: templates/analytics/stats.html:29
 msgid "Number of guests"
-msgstr ""
+msgstr "Número de invitados"
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
-msgstr ""
+msgstr "Número total de mensajes"
 
 #: templates/analytics/stats.html:31
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Número de mensajes en los últimos 30 días"
 
 #: templates/analytics/stats.html:32
 msgid "File storage in use"
@@ -472,7 +507,7 @@ msgstr ""
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
-msgstr ""
+msgstr "Email actualizado"
 
 #: templates/confirmation/confirm_email_change.html:12
 msgid "Email changed!"
@@ -493,11 +528,11 @@ msgstr ""
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
-msgstr ""
+msgstr "Confirmando tu dirección de email"
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "El enlace de confirmación no existe"
 
 #: templates/confirmation/link_does_not_exist.html:13
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -517,7 +552,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "El enlace de confirmación ha expirado o ha sido desactivado"
 
 #: templates/confirmation/link_expired.html:14
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -530,7 +565,7 @@ msgstr ""
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "El enlace de confirmación mal formado"
 
 #: templates/confirmation/link_malformed.html:13
 msgid "Whoops. The confirmation link is malformed."
@@ -579,21 +614,21 @@ msgstr ""
 #: templates/corporate/development-community.html:30
 #: templates/corporate/development-community.html:55
 msgid "Join as a user"
-msgstr ""
+msgstr "Unirse como usuario"
 
 #: templates/corporate/development-community.html:33
 #: templates/corporate/development-community.html:58
 msgid "Join as a self-hoster"
-msgstr ""
+msgstr "Unirse como autohospedador."
 
 #: templates/corporate/development-community.html:36
 #: templates/corporate/development-community.html:61
 msgid "Join as a contributor"
-msgstr ""
+msgstr "Unirse como contribuidor"
 
 #: templates/corporate/event_status.html:5
 msgid "Billing status"
-msgstr ""
+msgstr "Estado de facturación"
 
 #: templates/corporate/for/business.html:33
 #: templates/corporate/for/communities.html:34
@@ -613,7 +648,7 @@ msgstr "Crear organización"
 #: templates/corporate/for/business.html:36
 #: templates/corporate/for/use-cases.html:26
 msgid "View pricing"
-msgstr ""
+msgstr "Mostrar precios"
 
 #: templates/corporate/for/business.html:39
 #: templates/corporate/for/communities.html:40
@@ -627,7 +662,7 @@ msgstr ""
 #: templates/corporate/for/research.html:408
 #: templates/corporate/for/use-cases.html:29
 msgid "Self-host Zulip"
-msgstr ""
+msgstr "Zulip autohospedado"
 
 #: templates/corporate/for/communities.html:37
 #: templates/corporate/for/communities.html:67
@@ -721,11 +756,11 @@ msgstr "Inicia sesión ahora"
 
 #: templates/corporate/self-hosting.html:27
 msgid "Features & pricing"
-msgstr ""
+msgstr "Funcionalidades y precios"
 
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
-msgstr ""
+msgstr "Zulip para empresas"
 
 #: templates/corporate/sponsorship.html:24
 msgid "Leave blank if your organization does not have a website."
@@ -762,15 +797,15 @@ msgstr "Enviar"
 
 #: templates/corporate/support_request_thanks.html:4
 msgid "Thanks for contacting us"
-msgstr ""
+msgstr "Gracias por contactarnos"
 
 #: templates/corporate/support_request_thanks.html:10
 msgid "Thanks for contacting us!"
-msgstr ""
+msgstr "¡Gracias por contactarnos!"
 
 #: templates/corporate/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "Nos pondremos en contacto contigo pronto."
 
 #: templates/corporate/support_request_thanks.html:13
 msgid ""
@@ -786,11 +821,11 @@ msgstr "Avatar"
 
 #: templates/corporate/try-zulip.html:36
 msgid "Try Zulip now"
-msgstr ""
+msgstr "Probar Zulip ahora"
 
 #: templates/corporate/upgrade.html:5
 msgid "Upgrade"
-msgstr ""
+msgstr "Mejorar"
 
 #: templates/corporate/upgrade.html:23
 #, python-format
@@ -850,7 +885,7 @@ msgstr "Usar token de respaldo"
 
 #: templates/zerver/accounts_accept_terms.html:4
 msgid "Accept the Terms of Service"
-msgstr ""
+msgstr "Acepta los Términos de Servicio."
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
@@ -869,10 +904,12 @@ msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
+"Acepta los <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Términos de Servicio</a>."
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "Continuar"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
@@ -901,7 +938,7 @@ msgstr "Registrarse con %(identity_provider)s"
 
 #: templates/zerver/accounts_send_confirm.html:5
 msgid "Confirm your email address"
-msgstr ""
+msgstr "Confirma tu dirección de email"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Thanks for signing up!"
@@ -932,7 +969,7 @@ msgstr ""
 
 #: templates/zerver/app/index.html:164
 msgid "Unable to connect to Zulip."
-msgstr ""
+msgstr "No ha sido posible conectar con Zulip"
 
 #: templates/zerver/app/index.html:165
 msgid "Updates may be delayed."
@@ -940,7 +977,7 @@ msgstr "Las actualizaciones pueden estar retrasadas."
 
 #: templates/zerver/app/index.html:166
 msgid "Retrying soon…"
-msgstr ""
+msgstr "Volviéndolo a intentar pronto..."
 
 #: templates/zerver/app/index.html:167
 msgid "Try now."
@@ -979,7 +1016,7 @@ msgstr "Zulip"
 
 #: templates/zerver/change_email_address_visibility_modal.html:6
 msgid "Configure email address privacy"
-msgstr ""
+msgstr "Configurar la privacidad de las direcciones de correo. "
 
 #: templates/zerver/change_email_address_visibility_modal.html:8
 msgid "Close modal"
@@ -1019,15 +1056,15 @@ msgstr "Confirmar"
 
 #: templates/zerver/close_window.html:5
 msgid "Video call ended"
-msgstr ""
+msgstr "Videollamada finalizada"
 
 #: templates/zerver/close_window.html:13
 msgid "You may now close this window."
-msgstr ""
+msgstr "Ya puedes cerrar esta pestaña."
 
 #: templates/zerver/config_error.html:4 templates/zerver/config_error.html:15
 msgid "Configuration error"
-msgstr ""
+msgstr "Error en la configuración."
 
 #: templates/zerver/config_error.html:18
 msgid ""
@@ -1040,7 +1077,7 @@ msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:4
 msgid "Account not found"
-msgstr ""
+msgstr "Cuenta no encontrada"
 
 #: templates/zerver/confirm_continue_registration.html:14
 msgid "Zulip account not found."
@@ -1078,7 +1115,7 @@ msgstr "Introduce tu dirección de correo electrónico"
 
 #: templates/zerver/create_realm.html:29
 msgid "Your email"
-msgstr ""
+msgstr "Tu email"
 
 #: templates/zerver/create_realm.html:43
 msgid ""
@@ -1120,7 +1157,7 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
-msgstr ""
+msgstr "Finalizar inicio de sesión en la aplicación de escritorio"
 
 #: templates/zerver/desktop_login.html:11
 msgid "Finish desktop login"
@@ -1150,7 +1187,7 @@ msgstr "Token correcto. Iniciando sesión..."
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
-msgstr ""
+msgstr "Iniciar sesión en la aplicación de escritorio"
 
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
@@ -1163,15 +1200,15 @@ msgstr "Copiar"
 
 #: templates/zerver/desktop_redirect.html:19
 msgid "You may then close this window."
-msgstr ""
+msgstr "Podrás entonces cerrar esta pestaña."
 
 #: templates/zerver/desktop_redirect.html:20
 msgid "Or, continue in your browser."
-msgstr ""
+msgstr "O, continuar en tu navegador."
 
 #: templates/zerver/development/dev_login.html:26
 msgid "Anonymous user"
-msgstr ""
+msgstr "Usuario anónimo"
 
 #: templates/zerver/development/dev_login.html:32
 msgid "Owners"
@@ -1393,7 +1430,7 @@ msgstr "Usuario: %(ldap_username)s"
 #: templates/zerver/emails/followup_day1.html:39
 #: templates/zerver/emails/followup_day1.txt:22
 msgid "Use your LDAP account to log in"
-msgstr ""
+msgstr "Usa tu cuenta LDAP para iniciar sesión"
 
 #: templates/zerver/emails/compiled/followup_day1.html:38
 #, python-format
@@ -1889,7 +1926,7 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
-msgstr ""
+msgstr "Crea tu organización Zulip"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:4
 msgid "Activate your Zulip account"
@@ -1924,6 +1961,8 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at %(support_email)s."
 msgstr ""
+"Si tienes alguna duda, por favor contacta con el administrador de este "
+"servidor Zulip en el siguiente email %(support_email)s"
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 msgid "Unsubscribe from marketing emails"
@@ -2021,17 +2060,17 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.txt:20
 #, python-format
 msgid "Your username: %(ldap_username)s"
-msgstr ""
+msgstr "Tu nombre de usuario:%(ldap_username)s"
 
 #: templates/zerver/emails/followup_day1.html:42
 #: templates/zerver/emails/followup_day1.txt:25
 #, python-format
 msgid "Your account email: %(email)s"
-msgstr ""
+msgstr "Tu cuenta de email:%(email)s"
 
 #: templates/zerver/emails/followup_day1.html:45
 msgid "Go to organization"
-msgstr ""
+msgstr "Ir a tu organización"
 
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
@@ -2039,6 +2078,8 @@ msgid ""
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
+"Si eres nuevo en Zulip, echa un vistazo a nuestra <a "
+"href=\"%(getting_user_started_link)s\">Guia de introducción </a>"
 
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
@@ -2047,6 +2088,9 @@ msgid ""
 "href=\"%(getting_organization_started_link)s\">Setting up your "
 "organization</a>."
 msgstr ""
+"También tenemos una guía para <a "
+"href=\"%(getting_organization_started_link)s\">Configurar tu "
+"organización</a>."
 
 #: templates/zerver/emails/followup_day1.html:57
 #, python-format
@@ -2071,6 +2115,10 @@ msgid ""
 "this organization will be automatically deleted in 30 days. Learn more about"
 " demo organizations here: %(demo_organizations_help_link)s!"
 msgstr ""
+"Felicidades, has creado una nueva organización Zulip de prueba. Ten en "
+"cuenta que esta organización será eliminada automáticamente en 30 días. "
+"Infórmate sobre las organizaciones de prueba aquí: "
+"%(demo_organizations_help_link)s"
 
 #: templates/zerver/emails/followup_day1.txt:7
 #, python-format
@@ -2109,6 +2157,8 @@ msgstr ""
 #, python-format
 msgid "Questions? Contact us at %(support_email)s — we'd love to help!"
 msgstr ""
+"¿Tienes dudas? Contáctanos en %(support_email)s — ¡Estaremos encantados de "
+"ayudarte!"
 
 #: templates/zerver/emails/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.txt:1
@@ -5558,6 +5608,8 @@ msgstr ""
 #: zerver/views/typing.py:56
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
+"El usuario ha desactivado las notificaciones de escritura para los mensajes "
+"directos."
 
 #: zerver/views/upload.py:180
 msgid "<p>File not found.</p>"

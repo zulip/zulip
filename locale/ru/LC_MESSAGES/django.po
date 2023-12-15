@@ -14,8 +14,8 @@
 # Султонбек Ахмедов <nyfe@bk.ru>, 2023
 # Sergey Korablin <s.korablin@gmail.com>, 2023
 # Roman Bannack <apxwn@yandex.ru>, 2023
-# Lev Shereshevsky, 2023
 # Transifex Bot <>, 2023
+# Lev Shereshevsky, 2023
 # 
 #, fuzzy
 msgid ""
@@ -24,7 +24,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-12 23:45+0000\n"
 "PO-Revision-Date: 2023-06-12 23:55+0000\n"
-"Last-Translator: Transifex Bot <>, 2023\n"
+"Last-Translator: Lev Shereshevsky, 2023\n"
 "Language-Team: Russian (https://app.transifex.com/zulip/teams/53893/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -191,7 +191,7 @@ msgid ""
 msgstr ""
 "Запрос вашей организации на спонсируемый хостинг одобрен!  Вы были переведены на {plan_name} бесплатно. {emoji}\n"
 "\n"
-"Если бы вы могли {begin_link}указать Zulip в качестве спонсора на своем веб-сайте{end_link}, мы были бы вам очень признательны!"
+"Если вы сможете {begin_link}указать Zulip в качестве спонсора на своем веб-сайте{end_link}, мы будем вам очень признательны!"
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -211,26 +211,26 @@ msgstr "Неизвестный способ оплаты. Пожалуйста, 
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
-msgstr "Невозможно обновить план. Тарифный план истек и заменен новым. "
+msgstr "Невозможно обновить тариф. Тарифный план истек и заменен новым. "
 
 #: corporate/views/billing_page.py:202
 msgid "Unable to update the plan. The plan has ended."
-msgstr "Невозможно обновить план. Тарифный план закончился."
+msgstr "Невозможно обновить тариф. Тарифный план закончился."
 
 #: corporate/views/billing_page.py:225 corporate/views/billing_page.py:253
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
-"Невозможно обновить лицензии вручную. На вашем плане лицензия управляется "
-"автоматически."
+"Невозможно обновить лицензии вручную. На вашем плане управление лицензиями "
+"выполняется автоматически."
 
 #: corporate/views/billing_page.py:231
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
-"Ваш план уже включает {licenses} лицензий в текущем расчетном периоде. "
+"Ваш тариф уже включает {licenses} лицензий в текущем расчетном периоде. "
 
 #: corporate/views/billing_page.py:236
 msgid "You cannot decrease the licenses in the current billing period."
@@ -243,8 +243,8 @@ msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
-"Ваш план уже запланирован к продлению с использованием лицензий "
-"{licenses_at_next_renewal}."
+"Ваш тариф уже запланирован к продлению на {licenses_at_next_renewal} "
+"лицензий."
 
 #: corporate/views/billing_page.py:273
 msgid "Nothing to change."
@@ -1072,7 +1072,7 @@ msgstr ""
 
 #: templates/zerver/change_email_address_visibility_modal.html:15
 msgid "Who can access your email address"
-msgstr "Кто имеет доступ к вашему адресу электронной почты"
+msgstr "Кто имеет доступ к моему адресу электронной почты"
 
 #: templates/zerver/change_email_address_visibility_modal.html:22
 #, python-format
@@ -1216,11 +1216,11 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
-msgstr "Завершить авторизацию в настольном приложении"
+msgstr "Завершить вход в приложение для компьютера"
 
 #: templates/zerver/desktop_login.html:11
 msgid "Finish desktop login"
-msgstr "Завершить авторизацию на рабочем столе"
+msgstr "Завершить вход на компьютере"
 
 #: templates/zerver/desktop_login.html:14
 msgid ""
@@ -1248,7 +1248,7 @@ msgstr "Токен принят. Производится авторизация
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
-msgstr "Войти в приложении рабочего стола"
+msgstr "Войти в приложение для компьютера"
 
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
@@ -1485,7 +1485,7 @@ msgstr "Вы создали новую организацию Zulip <b>%(realm_n
 #: templates/zerver/emails/compiled/followup_day1.html:19
 #, python-format
 msgid "You've joined the Zulip organization <b>%(realm_name)s</b>."
-msgstr "Вы подключились к организации Zulip <b>%(realm_name)s</b>."
+msgstr "Вы присоединились к организации Zulip <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/compiled/followup_day1.html:24
 msgid "Your account details:"
@@ -2223,7 +2223,7 @@ msgstr ""
 msgid ""
 "You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
 "    "
-msgstr "Вы подключились к организации Zulip <b>%(realm_name)s</b>."
+msgstr "Вы присоединились к организации Zulip <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/followup_day1.html:32
 #, python-format
@@ -2309,7 +2309,7 @@ msgstr "Вы создали новую организацию Zulip: %(realm_nam
 #: templates/zerver/emails/followup_day1.txt:10
 #, python-format
 msgid "You've joined the Zulip organization %(realm_name)s."
-msgstr "Вы подключились к организации Zulip %(realm_name)s."
+msgstr "Вы присоединились к организации Zulip %(realm_name)s."
 
 #: templates/zerver/emails/followup_day1.txt:14
 #, python-format
@@ -2350,7 +2350,7 @@ msgid ""
 "Here are some tips for keeping your Zulip conversations organized with "
 "topics."
 msgstr ""
-"Вот несколько рекомендаций о том, как упорядочить разговоры в Zulip по "
+"Вот несколько рекомендаций о том, как упорядочить переписку в Zulip по "
 "темам."
 
 #: templates/zerver/emails/followup_day2.html:13
@@ -2367,9 +2367,9 @@ msgid ""
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
-"Используя темы, вы можете читать Zulip по одной беседе. Вы увидите каждое "
-"сообщение в контексте, независимо от того, сколько различных обсуждений "
-"происходит."
+"Темы позволяют читать сообщения Zulip последовательно в рамках конкретных "
+"бесед. Вы увидите каждое сообщение в контексте, независимо от того, сколько "
+"различных обсуждений ведется."
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -2383,10 +2383,10 @@ msgid ""
 "For a good topic name, think about finishing the sentence: “Hey, can we chat"
 " about…?”"
 msgstr ""
-"Чтобы начать новый разговор, просто выберите канал и начните новую тему. "
-"Таким образом, новая ветка беседы не будет прерывать текущие обсуждения. Для"
-" хорошего названия темы подумайте о том, как закончить предложение: «Привет,"
-" мы можем поговорить о…?»"
+"Чтобы начать новую беседу, просто выберите канал и начните новую тему. Таким"
+" образом, новая ветка беседы не будет прерывать текущие обсуждения. Для "
+"хорошего названия темы подумайте о том, как закончить предложение: «Привет, "
+"мы можем обсудить…?»"
 
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
@@ -2397,8 +2397,8 @@ msgid ""
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
-"Не волнуйтесь о том чтобы выбрать идеальное название для вашей темы. Если "
-"что-то выйдет за ее пределы, можно легко <a "
+"Не напрягайтесь, подбирая идеальное название для своей темы. Если обсуждение"
+" выйдет за ее пределы, можно легко <a "
 "href=\"%(move_messages_link)s\">переместить сообщения</a>, <a "
 "href=\"%(rename_topics_link)s\">переименовать тему</a>, или даже <a "
 "href=\"%(move_topic_to_different_stream_link)s\">переместить тему в другой "
@@ -2420,7 +2420,7 @@ msgstr "Отписаться от приветственных писем %(real
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
-msgstr "Организуйте свои разговоры по темам"
+msgstr "Держите переписку упорядоченной по темам"
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
@@ -2438,8 +2438,8 @@ msgid ""
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
-"Не волнуйтесь о том чтобы выбрать идеальное название для вашей темы. Если "
-"что-то выйдет за ее пределы, можно легко переместить сообщения "
+"Не напрягайтесь, подбирая идеальное название для своей темы. Если обсуждение"
+" выйдет за ее пределы, можно легко переместить сообщения "
 "(%(move_messages_link)s), переименовать тему (%(rename_topics_link)s), или "
 "даже переместить тему в другой канал "
 "(%(move_topic_to_different_stream_link)s)."
@@ -3053,8 +3053,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        Вы используете устаревшую версию приложения Zulip для\n"
-"                        рабочего стола, которая больше не поддерживается.\n"
+"                        Вы используете устаревшую версию приложения Zulip\n"
+"                        для компьютера, которая больше не поддерживается.\n"
 "                        "
 
 #: templates/zerver/insecure_desktop_app.html:25
@@ -3065,8 +3065,8 @@ msgid ""
 "                        "
 msgstr ""
 "\n"
-"                        Функция автоматического обновления в настоящей, устаревшей версии\n"
-"                        приложения Zulip для рабочего стола более не работает.\n"
+"                        Функция автообновления в этой устаревшей версии\n"
+"                        приложения Zulip для компьютера уже не работает.\n"
 "                        "
 
 #: templates/zerver/insecure_desktop_app.html:34
@@ -3696,7 +3696,7 @@ msgstr ""
 "\n"
 "                        Вы также можете\n"
 "                        использовать <a href=\"%(apps_page_link)s\">приложение\n"
-"                        Zulip для рабочего стола</a>.\n"
+"                        Zulip для компьютера</a>.\n"
 "                        "
 
 #: zerver/actions/create_user.py:88
@@ -4468,7 +4468,7 @@ msgstr ""
 
 #: zerver/lib/emoji.py:123
 msgid "Emoji name is missing"
-msgstr "Не хватает названия эмодзи."
+msgstr "Отсутствует название эмодзи."
 
 #: zerver/lib/events.py:1539
 msgid "Could not allocate event queue"
@@ -4638,8 +4638,8 @@ msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
 msgstr ""
-"У каждого сообщения есть тема. Темы позволяют легко отслеживать разговоры и "
-"позволяют легко отвечать на разговоры, которые начинаются пока вас не было."
+"У каждого сообщения есть тема. Темы позволяют легко отслеживать беседы и "
+"участвовать в обсуждениях, которые начинаются в ваше отсутствие."
 
 #: zerver/lib/hotspots.py:28
 msgid "Settings"
@@ -4652,15 +4652,15 @@ msgstr ""
 
 #: zerver/lib/hotspots.py:34
 msgid "Compose"
-msgstr "Составить"
+msgstr "Написать"
 
 #: zerver/lib/hotspots.py:36
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
 msgstr ""
-"Нажмите здесь, чтобы начать новый разговор. Выберите тему (лучше всего 2-3 "
-"слова) и отправьте её!"
+"Нажмите здесь, чтобы начать новую беседу. Укажите тему (лучше всего 2-3 "
+"слова) и напишите сообщение!"
 
 #: zerver/lib/integrations.py:37
 msgid "Integration frameworks"
@@ -4737,7 +4737,7 @@ msgstr "Неверные уточняющий оператор: {desc}"
 
 #: zerver/lib/narrow.py:1038
 msgid "Missing 'anchor' argument."
-msgstr "Пропущен параметр 'anchor'."
+msgstr "Отсутствует параметр 'anchor'."
 
 #: zerver/lib/narrow.py:1058
 msgid "Invalid anchor"
@@ -4868,9 +4868,9 @@ msgid ""
 "return to this conversation by clicking \"Direct messages\" in the upper "
 "left."
 msgstr ""
-"Проверьте [Последние разговоры](#recent), чтобы узнать, что происходит! Вы "
-"можете вернуться к этому разговору, нажав \"Личные сообщения\" в левом "
-"верхнем углу."
+"Проверьте [Последние беседы](#recent), чтобы узнать, что происходит! Вы "
+"можете вернуться к этой беседе, нажав \"Личные сообщения\" в левом верхнем "
+"углу."
 
 #: zerver/lib/onboarding.py:202
 msgid ""
@@ -5454,7 +5454,7 @@ msgstr "События канала"
 #: zerver/models.py:631
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr ""
-"Доступно в тарифе Zulip Cloud Standard. Произведите апгрейд, чтобы получить "
+"Доступно в тарифе Zulip Cloud Standard. Выполните апгрейд, чтобы получить "
 "доступ."
 
 #: zerver/models.py:689
@@ -5657,11 +5657,11 @@ msgstr "Неизвестный браузер"
 
 #: zerver/tornado/event_queue.py:673
 msgid "Missing 'queue_id' argument"
-msgstr "Пропущен параметр 'queue_id'"
+msgstr "Отсутствует параметр 'queue_id'"
 
 #: zerver/tornado/event_queue.py:676
 msgid "Missing 'last_event_id' argument"
-msgstr "Пропущен параметр 'last_event_id'"
+msgstr "Отсутствует параметр 'last_event_id'"
 
 #: zerver/tornado/event_queue.py:683
 #, python-brace-format
@@ -6431,7 +6431,7 @@ msgstr "Вам необходимо сбросить пароль."
 
 #: zproject/backends.py:2203
 msgid "Missing id_token parameter"
-msgstr "Не хватает параметра id_token"
+msgstr "Отсутствует параметр id_token"
 
 #: zproject/backends.py:2904
 msgid "Invalid OTP"

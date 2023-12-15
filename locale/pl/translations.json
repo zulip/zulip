@@ -1,8 +1,8 @@
 {
-  "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "",
-  "(attached file)": "",
-  "(forever)": "",
-  "(hidden)": "",
+  "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' przekracza maksymalny rozmiar pliku załącznika ({variable} MB).",
+  "(attached file)": "(załączony plik)",
+  "(forever)": "(na zawsze)",
+  "(hidden)": "(ukryte)",
   "(no description)": "(brak opisu)",
   "(no topic)": "(brak wątku)",
   "(you)": "(ty)",

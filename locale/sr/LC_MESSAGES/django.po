@@ -183,6 +183,9 @@ msgid ""
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
+"Захтев ваше организације за спонзорисаним хостингом је одобрен! Унапређени сте на {plan_name}, потпуно бесплатно. {emoji}\n"
+"\n"
+"Ако би сте могли да {begin_link}наведете Зулип као спонзора на вашем веб сајту{end_link}, били би смо вам много захвални!"
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -642,7 +645,7 @@ msgstr "Статус наплате"
 #: templates/corporate/for/use-cases.html:23
 #: templates/zerver/create_realm.html:38
 msgid "Create organization"
-msgstr "Креирајте организацију"
+msgstr "Направите организацију"
 
 #: templates/corporate/for/business.html:36
 #: templates/corporate/for/use-cases.html:26
@@ -676,7 +679,7 @@ msgstr "Затражите спонзорство"
 
 #: templates/corporate/for/education.html:35
 msgid "Education pricing"
-msgstr "Цена за едукативне институције"
+msgstr "Цена за образовне институције"
 
 #: templates/corporate/hello.html:62
 msgid "Streams in Zulip"
@@ -894,7 +897,7 @@ msgstr "Прихватите услове сервиса"
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
-msgstr ""
+msgstr "Добродошли у Зулип"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/login.html:102 templates/zerver/register.html:79
@@ -909,10 +912,12 @@ msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
+"Слажем се са <a href=\"%(root_domain_url)s/policies/terms\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">условима коришћења</a>."
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "Настави"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
@@ -1063,6 +1068,9 @@ msgid ""
 "href=\"%(root_domain_url)s/help/configure-email-visibility\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">after you join</a>."
 msgstr ""
+"Такође можете променити ово подешавање <a "
+"href=\"%(root_domain_url)s/help/configure-email-visibility\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">након што приступите</a>."
 
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
@@ -1131,7 +1139,7 @@ msgstr "Направите нову организацију"
 
 #: templates/zerver/create_realm.html:16
 msgid "Create a new Zulip organization"
-msgstr "Креирајте нову Зулип организацију"
+msgstr "Направите нову Зулип организацију"
 
 #: templates/zerver/create_realm.html:27 templates/zerver/reset.html:27
 msgid "Enter your email address"
@@ -1139,7 +1147,7 @@ msgstr "Упишите адресу ваше е-поште"
 
 #: templates/zerver/create_realm.html:29
 msgid "Your email"
-msgstr ""
+msgstr "Адреса ваше е-поште"
 
 #: templates/zerver/create_realm.html:43
 msgid ""
@@ -1149,6 +1157,11 @@ msgid ""
 "                <a href=\"/help/import-from-gitter\">Gitter</a>, or <a href=\"/help/import-from-rocketchat\">Rocket.Chat</a>.\n"
 "                "
 msgstr ""
+"\n"
+"                Или увезите\n"
+"                из <a href=\"/help/import-from-slack\">Slack</a>, <a href=\"/help/import-from-mattermost\">Mattermost</a>,\n"
+"                <a href=\"/help/import-from-gitter\">Gitter</a>, или <a href=\"/help/import-from-rocketchat\">Rocket.Chat</a>.\n"
+"                "
 
 #: templates/zerver/deactivated.html:4 templates/zerver/deactivated.html:19
 msgid "Deactivated organization"
@@ -1326,7 +1339,7 @@ msgstr "Недавно сте се регистровали на Зулип. О�
 msgid ""
 "Click the button below to create the organization and register your account."
 msgstr ""
-"Кликните на дугме испод да направите организацију у региструјете ваш налог."
+"Кликните на дугме испод да направите организацију и региструјете ваш налог."
 
 #: templates/zerver/emails/compiled/confirm_registration.html:20
 #: templates/zerver/emails/confirm_registration.html:19
@@ -1359,6 +1372,8 @@ msgid ""
 "\n"
 "Your Zulip account on <a href=\"%(realm_uri)s\" style=\"color:#5f5ec7; text-decoration:underline\">%(realm_uri)s</a> has been deactivated, and you will no longer be able to log in.\n"
 msgstr ""
+"\n"
+"Ваш Зулип налог на <a href=\"%(realm_uri)s\" style=\"color:#5f5ec7; text-decoration:underline\">%(realm_uri)s</a> је деактивиран, и више нећете моћи да се пријавите.\n"
 
 #: templates/zerver/emails/compiled/deactivate.html:15
 #: templates/zerver/emails/deactivate.html:15
@@ -1383,7 +1398,7 @@ msgstr "Кликните овде да се пријавите у Зулип и 
 #: templates/zerver/emails/digest.html:39
 #: templates/zerver/emails/notify_new_login.html:46
 msgid "Manage email preferences"
-msgstr "Управљајте подешавањима е-поште"
+msgstr "Управљајте поставкама е-поште"
 
 #: templates/zerver/emails/compiled/digest.html:41
 #: templates/zerver/emails/digest.html:40
@@ -1410,6 +1425,9 @@ msgid ""
 "organizations hosted by <a href=\"%(external_host)s\" style=\"color:#5f5ec7;"
 " text-decoration:underline\">%(external_host)s</a>:"
 msgstr ""
+"Ваша адреса е-поште %(email)s има налоге са следећим Зулип организацијама "
+"које хостује <a href=\"%(external_host)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">%(external_host)s</a>:"
 
 #: templates/zerver/emails/compiled/find_team.html:19
 #: templates/zerver/emails/find_team.html:18
@@ -1440,16 +1458,20 @@ msgid ""
 "href=\"https://zulip.com/help/demo-organizations\" style=\"color:#5f5ec7; "
 "text-decoration:underline\">here</a>!"
 msgstr ""
+"Направили сте демонстративну Зулип организацију. Упамтите да ће ова "
+"организација бити аутоматски обрисана за 30 дана. Сазнајте више о "
+"демонстративним организацијама <a href=\"https://zulip.com/help/demo-"
+"organizations\" style=\"color:#5f5ec7; text-decoration:underline\">овде</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:16
 #, python-format
 msgid "You've created the new Zulip organization <b>%(realm_name)s</b>."
-msgstr ""
+msgstr "Направили сте нову Зулип организацију <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/compiled/followup_day1.html:19
 #, python-format
 msgid "You've joined the Zulip organization <b>%(realm_name)s</b>."
-msgstr ""
+msgstr "Придружили сте се Зулип организацији <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/compiled/followup_day1.html:24
 msgid "Your account details:"
@@ -1485,6 +1507,9 @@ msgid ""
 "style=\"color:#5f5ec7; text-decoration:underline\">mobile and desktop</a> "
 "apps)"
 msgstr ""
+"(ово ће вам бити потребно да би сте се пријавили у апликацијама на <a "
+"href=\"%(apps_page_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">телефону и рачунару</a>)"
 
 #: templates/zerver/emails/compiled/followup_day1.html:47
 #, python-format
@@ -1495,6 +1520,12 @@ msgid ""
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#5f5ec7; text-decoration:underline\">dive right in</a>!"
 msgstr ""
+"Погледајте наш <a href=\"%(getting_started_link)s\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">водич за администраторе</a>, постаните Зулип "
+"професионалац са неколико <a href=\"%(keyboard_shortcuts_link)s\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">пречица на тастатури</a>,"
+" или <a href=\"%(realm_uri)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">уроните одмах</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:49
 #, python-format
@@ -1505,6 +1536,12 @@ msgid ""
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#5f5ec7; text-decoration:underline\">dive right in</a>!"
 msgstr ""
+"<a href=\"%(getting_started_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">Сазнајте више</a> о Зулипу, постаните професионалац "
+"са неколико <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">пречица на тастатури</a>, или <a "
+"href=\"%(realm_uri)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">уроните одмах</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:54
 msgid "Cheers,"
@@ -1526,6 +1563,13 @@ msgid ""
 "href=\"https://zulip.com/development-community/\" style=\"color:#5f5ec7; "
 "text-decoration:underline\">Zulip community server</a>!"
 msgstr ""
+"ПС: Пратите нас на <a href=\"https://twitter.com/zulip\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">Твитеру</a>, означите нас"
+" звездицом на <a href=\"https://github.com/zulip/zulip\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">GitHub-у</a>, или "
+"ћаскајте уживо са нама на <a href=\"https://zulip.com/development-"
+"community/\" style=\"color:#5f5ec7; text-decoration:underline\">серверу "
+"Зулип заједнице</a>!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 msgid "Hey,"
@@ -1550,6 +1594,9 @@ msgid ""
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em—you can always edit the message later!"
 msgstr ""
+"Теме су попут поља за наслов у е-порукама. Велика разлика, међутим, је у "
+"томе што су оне веома кратке и једноставне. Две или три речи су довољне. "
+"Немојте пуно да мозгате—касније увек можете да измените поруку!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:18
 msgid "Good topics: design mockup, Bug 345, acme burgers"
@@ -1574,6 +1621,10 @@ msgid ""
 " up on what's happened while you're away—read the topics that are relevant "
 "to you, and ignore the ones that aren't!"
 msgstr ""
+"Зашто се замарати са темама? Па, због два разлога: оне чине разговоре "
+"јаснијим (замислите да их е-поруке немају!), и омогућавају вам да ефикасније"
+" испратите шта се дешавало док нисте били ту—прочитајте теме које су "
+"значајне вама, и игноришите оне које нису!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:26
 msgid "Take it for a spin now."
@@ -1602,6 +1653,8 @@ msgid ""
 "%(referrer_name)s wants you to join them on Zulip — the team communication "
 "tool designed for productivity."
 msgstr ""
+"%(referrer_name)s жели да им се придружите на Зулипу — алату за комуникацију"
+" тимова осмишљен за продуктивност."
 
 #: templates/zerver/emails/compiled/invitation.html:16
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
@@ -1622,6 +1675,8 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip — the team communication tool designed for productivity."
 msgstr ""
+"Ово је пријатељско подсећање да %(referrer_name)s жели да им се придружите "
+"на Зулипу — алату за комуникацију тимова осмишљен за продуктивност."
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:19
 #: templates/zerver/emails/invitation_reminder.html:18
@@ -1651,6 +1706,10 @@ msgid ""
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
 msgstr ""
+"Ова е-порука не садржи садржај поруке јер је организација онемогућила да се "
+"<a class=\"content_disabled_help_link\" href=\"%(help_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">садржај појављује у "
+"обавештењима путем е-порука</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:20
 #, python-format
@@ -1660,6 +1719,10 @@ msgid ""
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
 msgstr ""
+"Ова е-порука не садржи садржај поруке јер сте ви онемогућили да се <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">садржај појављује у "
+"обавештењима путем е-порука</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:30
 #: templates/zerver/emails/missed_message.html:29
@@ -1701,6 +1764,10 @@ msgid ""
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
 msgstr ""
+"Одговоритедиректно на ову е-поруку, <a href=\"%(narrow_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">прегледајте је у "
+"%(realm_name)s Зулипу</a>, или <a href=\"%(notif_url)s\" style=\"color:#15c;"
+" text-decoration:underline\">управљајте подешавањима е-порука</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:41
 #, python-format
@@ -1710,6 +1777,10 @@ msgid ""
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
 msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Прегледајте или одговорите у %(realm_name)s "
+"Зулипу</a>, или <a href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">управљајте подешавањима е-порука</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:43
 #, python-format
@@ -1719,6 +1790,10 @@ msgid ""
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
 msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Одговорите у %(realm_name)s Зулипу</a>, или <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">управљајте подешавањима е-порука</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:45
 #, python-format
@@ -1727,6 +1802,9 @@ msgid ""
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">help</a>).\n"
 "    "
 msgstr ""
+"\n"
+"    Не одговарајте на ову е-поруку. Овај Зулип сервер није подешен да прихвата долазне е-поруке (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">помоћ</a>).\n"
+"    "
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:11
 #: templates/zerver/emails/notify_change_in_email.html:10
@@ -1810,6 +1888,10 @@ msgid ""
 "decoration:underline\">reset your password</a> or contact us immediately at "
 "%(support_email)s."
 msgstr ""
+"Ако не препознајете ову пријаву, или мислите да је ваш налог компромитован, "
+"молим вас <a href=\"%(reset_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">ресетујте вашу лозинку</a> или нас моментално "
+"контактирајте на %(support_email)s."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:43
 #: templates/zerver/emails/notify_new_login.html:41
@@ -1851,6 +1933,10 @@ msgid ""
 "href=\"%(help_link)s\" style=\"color:#5f5ec7; text-"
 "decoration:underline\">reactivate your account</a>."
 msgstr ""
+"Раније сте имали налог на %(organization_url)s, али је он деактивиран. "
+"Можете контактирати администратора организације да <a href=\"%(help_link)s\""
+" style=\"color:#5f5ec7; text-decoration:underline\">поново активира ваш "
+"налог</a>."
 
 #: templates/zerver/emails/compiled/password_reset.html:22
 #: templates/zerver/emails/password_reset.html:21
@@ -1973,7 +2059,7 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
-msgstr "Креирајте вашу Зулип организацију"
+msgstr "Направите вашу Зулип организацију"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:4
 msgid "Activate your Zulip account"
@@ -1983,10 +2069,12 @@ msgstr "Активирајте ваш Зулип налог"
 msgid ""
 "Click the link below to create the organization and register your account."
 msgstr ""
+"Кликните на везу испод да би сте направили организацију и регистровали ваш "
+"налог."
 
 #: templates/zerver/emails/confirm_registration.txt:10
 msgid "Click the link below to complete registration."
-msgstr ""
+msgstr "Кликните на везу испод да би сте завршили регистрацију."
 
 #: templates/zerver/emails/confirm_registration.txt:15
 #: templates/zerver/emails/invitation.txt:9
@@ -1997,6 +2085,8 @@ msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
+"Да ли имате питања или утисак који би сте поделили? Контактирајте нас на "
+"%(support_email)s — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/confirm_registration.txt:17
 #: templates/zerver/emails/followup_day1.txt:38
@@ -2008,6 +2098,8 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at %(support_email)s."
 msgstr ""
+"Ако имате било каква питања, молим вас контактирајте администратора Зулип "
+"сервера на %(support_email)s."
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 msgid "Unsubscribe from marketing emails"
@@ -2045,10 +2137,11 @@ msgstr "Зулип сажетак за %(realm_name)s"
 #, python-format
 msgid "Click here to log in to Zulip and catch up: %(organization_url)s."
 msgstr ""
+"Кликните овде да се пријавите у Зулип и будете у току: %(organization_url)s."
 
 #: templates/zerver/emails/digest.txt:15
 msgid "Manage email preferences:"
-msgstr "Управљајте подешавањима е-порука:"
+msgstr "Управљајте поставкама е-поште:"
 
 #: templates/zerver/emails/digest.txt:19
 msgid "Unsubscribe from digest emails:"
@@ -2060,7 +2153,7 @@ msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by <a href=\"%(external_host)s\">%(external_host)s</a>:"
 msgstr ""
-"Ваша адреса е-поште %(email)s има налоге са следећим Зулип организацијама "
+"Ваша адреса е-поште %(email)s има налоге у следећим Зулип организацијама "
 "које хостује <a href=\"%(external_host)s\">%(external_host)s</a>:"
 
 #: templates/zerver/emails/find_team.subject.txt:1
@@ -2073,7 +2166,7 @@ msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
 msgstr ""
-"Ваша адреса е-поште %(email)s има налоге са следећим Зулип организацијама "
+"Ваша адреса е-поште %(email)s има налоге у следећим Зулип организацијама "
 "које хостује %(external_host)s:"
 
 #: templates/zerver/emails/followup_day1.html:11
@@ -2159,6 +2252,8 @@ msgstr ""
 msgid ""
 "Questions? <a href=\"%(support_email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
+"Питања? <a href=\"%(support_email)s\">Контактирајте нас</a> — волели би смо "
+"да помогнемо!"
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -2223,6 +2318,7 @@ msgstr ""
 #, python-format
 msgid "Questions? Contact us at %(support_email)s — we'd love to help!"
 msgstr ""
+"Питања? Контактирајте нас на %(support_email)s — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.txt:1
@@ -2230,12 +2326,16 @@ msgid ""
 "Here are some tips for keeping your Zulip conversations organized with "
 "topics."
 msgstr ""
+"Ево неколико савета за одржавање ваших Зулип разговора организованим са "
+"темема."
 
 #: templates/zerver/emails/followup_day2.html:13
 msgid ""
 "In Zulip, <b>streams</b> determine who gets a message. <b>Topics</b> tell "
 "you what the message is about."
 msgstr ""
+"У Зулипу, <b>токови</b> одређују ко прима поруку. <b>Тема</b> говори о чему "
+"се ради у поруци."
 
 #: templates/zerver/emails/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.txt:3
@@ -2243,10 +2343,13 @@ msgid ""
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
+"Користећи теме, можете читати Зулип  разговор по разговор. Видећете сваку "
+"поруку у контексту, без обзира колико различитих разговора се води "
+"истовремено."
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
-msgstr ""
+msgstr "Токови и теме у Зулип апликацији"
 
 #: templates/zerver/emails/followup_day2.html:19
 #: templates/zerver/emails/followup_day2.txt:5
@@ -2256,6 +2359,10 @@ msgid ""
 "For a good topic name, think about finishing the sentence: “Hey, can we chat"
 " about…?”"
 msgstr ""
+"Да би сте започели нови разговор, само изаберите ток и покрените нову тему. "
+"На овај начин, нови разговор неће ометати постојеће разговоре. За добар "
+"назив теме, размислите о завршетку реченице: “Хеј, можемо ли да разговарамо "
+"о...?”"
 
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
@@ -2266,6 +2373,11 @@ msgid ""
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
+"Не брините о избору савршеног назива ваше теме. Ако се нешто не слаже, веома"
+" је лако <a href=\"%(move_messages_link)s\">преместити поруке</a>, <a "
+"href=\"%(rename_topics_link)s\">преименовати теме</a>, или чак <a "
+"href=\"%(move_topic_to_different_stream_link)s\">преместити тему у неки "
+"други ток</a>."
 
 #: templates/zerver/emails/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.txt:10
@@ -2279,17 +2391,19 @@ msgstr "Идите на Зулип"
 #: templates/zerver/emails/onboarding_zulip_guide.txt:27
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
-msgstr ""
+msgstr "Откажите претплату на е-поруке добродошлице за %(realm_name)s"
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
-msgstr ""
+msgstr "Одржавајте ваше разговоре организованим са темама"
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
+"У Зулипу, токови одређују ко добија поруку. Теме говоре о чему се ради у "
+"поруци."
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
@@ -2299,6 +2413,10 @@ msgid ""
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
+"Не брините о избору савршеног назива ваше теме. Ако се нешто не слаже, веома"
+" је лако преместити поруке (%(move_messages_link)s), преименовати теме "
+"(%(rename_topics_link)s), или чак преместити тему у неки други ток "
+"(%(move_topic_to_different_stream_link)s)."
 
 #: templates/zerver/emails/invitation.html:12
 #, python-format
@@ -2371,6 +2489,8 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at <a href=\"%(email)s\">%(email)s</a>."
 msgstr ""
+"Ако имате било какво питање, молим вас контактирајте администратора овог "
+"Зулип сервера на <a href=\"%(email)s\">%(email)s</a>."
 
 #: templates/zerver/emails/macros.html:18
 #, python-format
@@ -2378,6 +2498,8 @@ msgid ""
 "Do you have questions or feedback to share? <a href=\"%(email)s\">Contact "
 "us</a> — we'd love to help!"
 msgstr ""
+"Да ли имате питања или утисак који би сте поделили? <a "
+"href=\"%(email)s\">Контактирајте нас</a> — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/missed_message.html:17
 #, python-format
@@ -2410,7 +2532,7 @@ msgid ""
 msgstr ""
 "Одговорите директно на ову е-поруку, <a href=\"%(narrow_url)s\">прегледајте "
 "је у %(realm_name)s Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте "
-"подешавањима е-порука</a>."
+"поставкама е-поште</a>."
 
 #: templates/zerver/emails/missed_message.html:40
 #, python-format
@@ -2419,8 +2541,7 @@ msgid ""
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
 "<a href=\"%(narrow_url)s\">Прегледајте или одговорите у %(realm_name)s "
-"Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте подешавањима "
-"е-порука</a>."
+"Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте поставкама е-поште</a>."
 
 #: templates/zerver/emails/missed_message.html:42
 #, python-format
@@ -2429,7 +2550,7 @@ msgid ""
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
 "<a href=\"%(narrow_url)s\">Одговорите у %(realm_name)s Зулипу</a>, или <a "
-"href=\"%(notif_url)s\">управљајте подешавањима е-порука</a>."
+"href=\"%(notif_url)s\">управљајте поставкама е-поште</a>."
 
 #: templates/zerver/emails/missed_message.html:44
 #, python-format
@@ -2511,7 +2632,7 @@ msgstr ""
 
 #: templates/zerver/emails/missed_message.txt:54
 msgid "Manage email preferences: "
-msgstr "Управљајте подешавањима е-порука:"
+msgstr "Управљајте поставкама е-поште:"
 
 #: templates/zerver/emails/notify_change_in_email.subject.txt:1
 #, python-format
@@ -2566,69 +2687,72 @@ msgid ""
 " can work best for your needs. Check out this guide to key Zulip features "
 "for organizations like yours!"
 msgstr ""
+"Како започињете са Зулипом, волели бисмо да вам помогнемо да откријете како "
+"може најбоље да одговара вашим потребама. Погледајте овај водич за кључне "
+"Зулип функције за организације попут ваше!"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:13
 #: templates/zerver/emails/onboarding_zulip_guide.txt:4
 msgid "View Zulip guide for businesses"
-msgstr ""
+msgstr "Погледај Зулипов водич за компаније"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:15
 #: templates/zerver/emails/onboarding_zulip_guide.txt:6
 msgid "View Zulip guide for open-source projects"
-msgstr ""
+msgstr "Погледај Зулипов водич за пројекте отвореног кода"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:17
 #: templates/zerver/emails/onboarding_zulip_guide.txt:8
 msgid "View Zulip guide for education"
-msgstr ""
+msgstr "Погледај Зулип водич за образовне"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:19
 #: templates/zerver/emails/onboarding_zulip_guide.txt:10
 msgid "View Zulip guide for research"
-msgstr ""
+msgstr "Погледај Зулипов водич за истраживања"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:21
 #: templates/zerver/emails/onboarding_zulip_guide.txt:12
 msgid "View Zulip guide for events and conferences"
-msgstr ""
+msgstr "Погледај Зулипов водич за догађаје и семинаре"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:23
 #: templates/zerver/emails/onboarding_zulip_guide.txt:14
 msgid "View Zulip guide for non-profits"
-msgstr ""
+msgstr "Погледај Зулипов водич за непрофитне организације"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:25
 #: templates/zerver/emails/onboarding_zulip_guide.txt:16
 msgid "View Zulip guide for communities"
-msgstr ""
+msgstr "Погледај Зулипов водич за заједнице"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:2
 msgid "Zulip guide for businesses"
-msgstr ""
+msgstr "Зулипов водич за компаније"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:4
 msgid "Zulip guide for open-source projects"
-msgstr ""
+msgstr "Зулипов водич за пројекте отвореног кода"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:6
 msgid "Zulip guide for education"
-msgstr ""
+msgstr "Зулип водич за образовне"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:8
 msgid "Zulip guide for research"
-msgstr ""
+msgstr "Зулипов водич за истраживање"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:10
 msgid "Zulip guide for events and conferences"
-msgstr ""
+msgstr "Зулипов водич за догађаје и семинаре"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:12
 msgid "Zulip guide for non-profits"
-msgstr ""
+msgstr "Зулипов водич за непрофитне организације"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:14
 msgid "Zulip guide for communities"
-msgstr ""
+msgstr "Зулипов водич за заједнице"
 
 #: templates/zerver/emails/password_reset.html:19
 #, python-format
@@ -2701,7 +2825,7 @@ msgstr "Адреса е-поште"
 #: templates/zerver/find_account.html:53
 #: templates/zerver/portico-header.html:49
 msgid "Find accounts"
-msgstr "Нађи рачуне"
+msgstr "Пронађи налоге"
 
 #: templates/zerver/footer.html:6
 msgid "Product"
@@ -2757,7 +2881,7 @@ msgstr "Компанија"
 
 #: templates/zerver/footer.html:26
 msgid "Education"
-msgstr "Образовање"
+msgstr "Образовна"
 
 #: templates/zerver/footer.html:27
 msgid "Research"
@@ -2960,11 +3084,11 @@ msgstr "Неисправна е-пошта"
 
 #: templates/zerver/invalid_email.html:15
 msgid "Email not allowed"
-msgstr ""
+msgstr "Е-пошта није дозвољена"
 
 #: templates/zerver/invalid_email.html:21
 msgid "The email address you are trying to sign up with is not valid."
-msgstr ""
+msgstr "Адреса е-поште којом покушавате да се региструјете није исправна."
 
 #: templates/zerver/invalid_email.html:24
 #, python-format
@@ -2992,11 +3116,11 @@ msgstr ""
 
 #: templates/zerver/invalid_email.html:33
 msgid "Please sign up using a valid email address."
-msgstr ""
+msgstr "Молим вас региструјте се са исправном адресом е-поште."
 
 #: templates/zerver/invalid_email.html:35
 msgid "Please sign up using an allowed email address."
-msgstr ""
+msgstr "Молим вас региструјте се са дозвољеном адресом е-поште."
 
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
@@ -3066,24 +3190,32 @@ msgid ""
 "Administrators of this Zulip organization will be able to see this email address.\n"
 "            "
 msgstr ""
+"Администратори ове Зулип организације ће моћи да виде ову адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
 "Administrators and moderators of this Zulip organization will be able to see this email address.\n"
 "            "
 msgstr ""
+"Администратори и модератори ове Зулип организације ће моћи да виде ову адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:11
 msgid ""
 "Nobody in this Zulip organization will be able to see this email address.\n"
 "            "
 msgstr ""
+"Нико у овој Зулип организацији неће моћи да види ову адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:14
 msgid ""
 "Other users in this Zulip organization will be able to see this email address.\n"
 "            "
 msgstr ""
+"Остали корисници ове Зулип организације ће моћи да виде ову адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:18
 msgid "Change"
@@ -3095,7 +3227,7 @@ msgstr "Нема доступних лиценци"
 
 #: templates/zerver/no_spare_licenses.html:12
 msgid "Organization cannot accept new members right now"
-msgstr ""
+msgstr "Организација тренутно не може да прими нове чланове"
 
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
@@ -3113,11 +3245,11 @@ msgstr ""
 
 #: templates/zerver/rate_limit_exceeded.html:4
 msgid "Rate limit exceeded"
-msgstr ""
+msgstr "Прекорачено је ограничење брзине"
 
 #: templates/zerver/rate_limit_exceeded.html:15
 msgid "Rate limit exceeded."
-msgstr ""
+msgstr "Прекорачено је ограничење брзине."
 
 #: templates/zerver/rate_limit_exceeded.html:17
 msgid ""
@@ -3229,7 +3361,7 @@ msgstr "Потребно вам је да покренете вашу групу
 
 #: templates/zerver/realm_redirect.html:47
 msgid "Create a new organization."
-msgstr "Креирајте нову организацију."
+msgstr "Направите нову организацију."
 
 #: templates/zerver/register.html:5
 msgid "Registration"
@@ -3237,11 +3369,11 @@ msgstr "Регистрација"
 
 #: templates/zerver/register.html:21
 msgid "Create your organization"
-msgstr "Креирајте вашу организацију"
+msgstr "Направите вашу организацију"
 
 #: templates/zerver/register.html:23
 msgid "Create your account"
-msgstr "Креирајте ваш налог"
+msgstr "Направите ваш налог"
 
 #: templates/zerver/register.html:26
 msgid ""
@@ -3249,6 +3381,9 @@ msgid ""
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
 msgstr ""
+"\n"
+"            <p>Унеисте детаље вашег налога да би сте завршили регистрацију.</p>\n"
+"            "
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
@@ -3297,6 +3432,7 @@ msgstr "За шта сте заинтересовани?"
 #: templates/zerver/register.html:224
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
 msgstr ""
+"Претплати ме на Зулипов нискофреквентни билтен (неколико е-порука годишње)."
 
 #: templates/zerver/reset.html:4 templates/zerver/reset.html:12
 msgid "Reset your password"
@@ -3398,17 +3534,19 @@ msgstr ""
 
 #: templates/zerver/unsubscribe_link_error.html:4
 msgid "Error unsubscribing email"
-msgstr ""
+msgstr "Грешка одјаве е-поште"
 
 #: templates/zerver/unsubscribe_link_error.html:12
 msgid "Unknown email unsubscribe request"
-msgstr ""
+msgstr "Захтев за отказивање претплате непознате е-поште"
 
 #: templates/zerver/unsubscribe_link_error.html:16
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
 "don't recognize the URL."
 msgstr ""
+"Здраво! Изгледа да сте покушали да откажете претплату са нечега, али не "
+"препознајемо адресу."
 
 #: templates/zerver/unsubscribe_link_error.html:19
 #, python-format
@@ -3443,6 +3581,10 @@ msgid ""
 "                    <a href=\"%(realm_uri)s/#settings/notifications\">notification settings</a>.\n"
 "                    "
 msgstr ""
+"\n"
+"                    Можете да поништите ову промену или да проверите ваше поставке у вашим\n"
+"                    <a href=\"%(realm_uri)s/#settings/notifications\">поставкама обавештења</a>.\n"
+"                    "
 
 #: templates/zerver/unsupported_browser.html:4
 #: templates/zerver/unsupported_browser.html:15
@@ -3787,7 +3929,7 @@ msgstr ""
 #: zerver/actions/message_send.py:1404
 #, python-brace-format
 msgid "Widgets: {error_msg}"
-msgstr ""
+msgstr "Виџети: {error_msg}"
 
 #: zerver/actions/reactions.py:116
 msgid "Reaction already exists."
@@ -3803,21 +3945,21 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:57
 msgid "Recipient list may only contain user IDs"
-msgstr ""
+msgstr "Списак прималаца може садржати само ИД корисника"
 
 #: zerver/actions/scheduled_messages.py:161
 msgid "Scheduled message was already sent"
-msgstr ""
+msgstr "Заказана порука је већ послата"
 
 #: zerver/actions/scheduled_messages.py:166
 #: zerver/views/scheduled_messages.py:89
 #: zerver/views/scheduled_messages.py:129
 msgid "Scheduled delivery time must be in the future."
-msgstr ""
+msgstr "Време заказане доставе мора бити у будућности."
 
 #: zerver/actions/scheduled_messages.py:300
 msgid "Message could not be sent at the scheduled time."
-msgstr ""
+msgstr "Порука није могла бити послата у заказано време."
 
 #: zerver/actions/scheduled_messages.py:351
 #, python-brace-format
@@ -3825,6 +3967,8 @@ msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
 "the following error:"
 msgstr ""
+"Порука коју сте заказали за {delivery_datetime} није послата због следеће "
+"грешке:"
 
 #: zerver/actions/scheduled_messages.py:356
 msgid "[View scheduled messages](#scheduled)"
@@ -3832,7 +3976,7 @@ msgstr ""
 
 #: zerver/actions/streams.py:76
 msgid "Stream is already deactivated"
-msgstr ""
+msgstr "Ток је већ деактивиран"
 
 #: zerver/actions/streams.py:841
 #, python-brace-format
@@ -4674,8 +4818,7 @@ msgstr ""
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
-msgstr ""
-"Ово је приватан ток, како је означено са иконицом катанца поред назива тока."
+msgstr "Ово је приватан ток, означен са иконицом катанца поред назива тока."
 
 #: zerver/lib/onboarding.py:273
 msgid "Private streams are only visible to stream members."
@@ -4820,7 +4963,7 @@ msgstr "Аргумент \"{}\" није исправан JSON."
 
 #: zerver/lib/scheduled_messages.py:20
 msgid "Scheduled message does not exist"
-msgstr ""
+msgstr "Заказана порука не постоји"
 
 #: zerver/lib/send_email.py:72
 msgid "Zulip Account Security"
@@ -5684,7 +5827,7 @@ msgstr ""
 
 #: zerver/views/realm_export.py:114
 msgid "Export still in progress"
-msgstr ""
+msgstr "Извоз је још увек у току"
 
 #: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."

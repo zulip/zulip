@@ -41,11 +41,11 @@ msgstr "Ffrydiau preifat"
 
 #: analytics/views/stats.py:296
 msgid "Direct messages"
-msgstr ""
+msgstr "Negeseuon uniongyrchol"
 
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
-msgstr ""
+msgstr "Grwpio negeseuon uniongyrchol"
 
 #: analytics/views/stats.py:318
 msgid "Unknown chart name: {}"
@@ -821,7 +821,7 @@ msgstr "Avatar"
 
 #: templates/corporate/try-zulip.html:36
 msgid "Try Zulip now"
-msgstr ""
+msgstr "Rhowch gynnig ar Zulip nawr"
 
 #: templates/corporate/upgrade.html:5
 msgid "Upgrade"
@@ -891,7 +891,7 @@ msgstr "Derbyn y Telerau Gwasanaeth"
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
-msgstr ""
+msgstr "Croeso i Zulip"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/login.html:102 templates/zerver/register.html:79
@@ -906,10 +906,12 @@ msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
+"Rwy'n cytuno i'r <a href=\"%(root_domain_url)s/policies/terms\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Telerau Gwasanaeth</a> ."
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
-msgstr ""
+msgstr "Parhau"
 
 #: templates/zerver/accounts_home.html:5
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:154
