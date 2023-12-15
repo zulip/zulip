@@ -107,9 +107,8 @@ from zerver.models import (
     filter_to_valid_prereg_users,
     get_bot_services,
     get_client,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 logger = logging.getLogger(__name__)
 

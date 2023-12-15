@@ -79,8 +79,10 @@ from zerver.models import (
     get_client,
     get_fake_email_domain,
     get_realm,
-    get_source_profile,
     get_stream,
+)
+from zerver.models.users import (
+    get_source_profile,
     get_system_bot,
     get_user,
     get_user_by_delivery_email,

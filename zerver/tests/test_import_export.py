@@ -89,9 +89,8 @@ from zerver.models import (
     get_huddle_hash,
     get_realm,
     get_stream,
-    get_system_bot,
-    get_user_by_delivery_email,
 )
+from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 
 def make_datetime(val: float) -> datetime:

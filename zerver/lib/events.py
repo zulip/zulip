@@ -453,7 +453,7 @@ def fetch_initial_state_data(
         assert spectator_requested_language is not None
         # When UserProfile=None, we want to serve the values for various
         # settings as the defaults.  Instead of copying the default values
-        # from models/__init__.py here, we access these default values from a
+        # from models/users.py here, we access these default values from a
         # temporary UserProfile object that will not be saved to the database.
         #
         # We also can set various fields to avoid duplicating code

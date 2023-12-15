@@ -99,7 +99,8 @@ from zerver.lib.validator import (
     check_union,
     to_non_negative_int,
 )
-from zerver.models import Realm, Stream, UserGroup, UserMessage, UserProfile, get_system_bot
+from zerver.models import Realm, Stream, UserGroup, UserMessage, UserProfile
+from zerver.models.users import get_system_bot
 
 
 def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) -> UserProfile:

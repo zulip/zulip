@@ -13,7 +13,7 @@ from corporate.lib.stripe import (
     UpgradeWithExistingPlanError,
 )
 from corporate.models import Customer, CustomerPlan, Event, PaymentIntent, Session
-from zerver.models import get_active_user_profile_by_id_in_realm
+from zerver.models.users import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
 

@@ -4,7 +4,8 @@ import orjson
 from django.core.exceptions import ValidationError
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Stream, get_realm, get_user
+from zerver.models import Message, Stream, get_realm
+from zerver.models.users import get_user
 
 
 class TestIntegrationsDevPanel(ZulipTestCase):

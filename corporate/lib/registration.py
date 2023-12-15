@@ -7,7 +7,8 @@ from corporate.lib.stripe import LicenseLimitError, get_latest_seat_count, get_s
 from corporate.models import get_current_plan_by_realm
 from zerver.actions.create_user import send_message_to_signup_notification_stream
 from zerver.lib.exceptions import InvitationError
-from zerver.models import Realm, UserProfile, get_system_bot
+from zerver.models import Realm, UserProfile
+from zerver.models.users import get_system_bot
 
 
 def generate_licenses_low_warning_message_if_required(realm: Realm) -> Optional[str]:

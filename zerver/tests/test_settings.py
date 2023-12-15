@@ -16,8 +16,8 @@ from zerver.models import (
     NotificationTriggers,
     ScheduledMessageNotificationEmail,
     UserProfile,
-    get_user_profile_by_api_key,
 )
+from zerver.models.users import get_user_profile_by_api_key
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
