@@ -57,7 +57,6 @@ from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
     Message,
-    NotificationTriggers,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -67,6 +66,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.realms import get_fake_email_domain
+from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
 
 if TYPE_CHECKING:

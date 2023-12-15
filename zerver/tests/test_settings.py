@@ -11,12 +11,8 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.lib.users import get_all_api_keys
-from zerver.models import (
-    Draft,
-    NotificationTriggers,
-    ScheduledMessageNotificationEmail,
-    UserProfile,
-)
+from zerver.models import Draft, ScheduledMessageNotificationEmail, UserProfile
+from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_api_key
 
 if TYPE_CHECKING:
