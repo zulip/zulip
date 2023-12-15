@@ -113,6 +113,7 @@
 <div class="current-plan-details">
     {% with %}
         {% set plan_data = plan_data[realm.id] %}
+        {% set format_discount = format_discount %}
         {% include 'analytics/current_plan_details.html' %}
     {% endwith %}
 </div>
