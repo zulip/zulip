@@ -89,6 +89,7 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
+from corporate.tests.test_remote_billing import RemoteRealmBillingTestCase, RemoteServerTestCase
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
@@ -98,7 +99,7 @@ from zerver.actions.create_user import (
 from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
-from zerver.lib.test_classes import BouncerTestCase, ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -435,7 +436,7 @@ class StripeTestCase(ZulipTestCase):
         hamlet.save(update_fields=["is_billing_admin"])
 
         self.billing_session: Union[
-            RealmBillingSession, RemoteRealmBillingSession
+            RealmBillingSession, RemoteRealmBillingSession, RemoteServerBillingSession
         ] = RealmBillingSession(user=hamlet, realm=realm)
 
     def get_signed_seat_count_from_response(self, response: "TestHttpResponse") -> Optional[str]:
@@ -5608,7 +5609,7 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
 
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
-class TestRemoteRealmBillingFlow(StripeTestCase, BouncerTestCase):
+class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
     @override
     def setUp(self) -> None:
         # We need to time travel to 2012-1-2 because super().setUp()
@@ -5697,3 +5698,238 @@ class TestRemoteRealmBillingFlow(StripeTestCase, BouncerTestCase):
         latest_ledger = LicenseLedger.objects.last()
         assert latest_ledger is not None
         self.assertEqual(latest_ledger.licenses, user_count + 10)
+
+    @responses.activate
+    def test_request_sponsorship(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        billing_base_url = self.billing_session.billing_base_url
+
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
+        self.assertIsNone(self.billing_session.get_customer())
+        result = self.execute_remote_billing_authentication_flow(hamlet)
+
+        # User has no plan, so we redirect to /plans by default.
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
+
+        # Check strings on plans page.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(["Request sponsorship"], result)
+        self.assert_not_in_success_response(["Sponsorship pending"], result)
+
+        # Navigate to request sponsorship page.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["Description of your organization", "Requested plan"], result
+        )
+
+        # Submit form data.
+        data = {
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
+            "website": "https://infinispan.org/",
+            "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+            "expected_total_users": "10 users",
+            "paid_users_count": "1 user",
+            "paid_users_description": "We have 1 paid user.",
+            "requested_plan": "Community",
+        }
+        response = self.client_billing_post("/billing/sponsorship", data)
+        self.assert_json_success(response)
+
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+
+        sponsorship_request = ZulipSponsorshipRequest.objects.get(customer=customer)
+        self.assertEqual(sponsorship_request.requested_plan, data["requested_plan"])
+        self.assertEqual(sponsorship_request.org_website, data["website"])
+        self.assertEqual(sponsorship_request.org_description, data["description"])
+        self.assertEqual(
+            sponsorship_request.org_type,
+            Realm.ORG_TYPES["opensource"]["id"],
+        )
+
+        from django.core.mail import outbox
+
+        # First email is remote user email confirmation, second email is for sponsorship
+        message = outbox[1]
+        self.assert_length(outbox, 2)
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.subject, "Sponsorship request (Open-source project) for Zulip Dev")
+        self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+        self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
+        self.assertIn(
+            "Support URL: http://zulip.testserver/activity/remote/support?q=demo.example.com",
+            message.body,
+        )
+        self.assertIn("Website: https://infinispan.org", message.body)
+        self.assertIn("Organization type: Open-source", message.body)
+        self.assertIn("Description:\nInfinispan is a distributed in-memory", message.body)
+
+        # Check /billing redirects you to sponsorship page.
+        response = self.client_get(f"{billing_base_url}/billing/", subdomain="selfhosting")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"/realm/{realm.uuid!s}/sponsorship/")
+
+        # Check sponsorship page shows sponsorship pending banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["This organization has requested sponsorship for a", "Community"], result
+        )
+
+        # Approve sponsorship
+        billing_session = RemoteRealmBillingSession(
+            remote_realm=remote_realm, support_staff=self.example_user("iago")
+        )
+        billing_session.approve_sponsorship()
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_COMMUNITY)
+
+        # Check email sent.
+        expected_message = (
+            "Your request for Zulip sponsorship has been approved! Your organization has been upgraded to the Zulip Community plan."
+            "\n\nIf you could list Zulip as a sponsor on your website, we would really appreciate it!"
+        )
+        self.assert_length(outbox, 3)
+        message = outbox[2]
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "hamlet@zulip.com")
+        self.assertEqual(message.subject, "Community plan sponsorship approved for Zulip Dev!")
+        self.assertEqual(message.from_email, "noreply@testserver")
+        self.assertIn(expected_message[0], message.body)
+        self.assertIn(expected_message[1], message.body)
+
+        # Check sponsorship approved banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(["Zulip is sponsoring a free", "Community"], result)
+
+
+@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.remote_server = RemoteZulipServer.objects.get(hostname="demo.example.com")
+        self.billing_session = RemoteServerBillingSession(remote_server=self.remote_server)
+
+    @responses.activate
+    def test_request_sponsorship(self) -> None:
+        hamlet = self.example_user("hamlet")
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
+            )
+
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        billing_base_url = self.billing_session.billing_base_url
+
+        self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+        self.assertIsNone(self.billing_session.get_customer())
+
+        # User has no plan, so we redirect to /plans by default.
+        self.assertEqual(result["Location"], f"/server/{self.remote_server.uuid!s}/plans/")
+
+        # Check strings on plans page.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(["Request sponsorship"], result)
+        self.assert_not_in_success_response(["Sponsorship pending"], result)
+
+        # Navigate to request sponsorship page.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["Description of your organization", "Requested plan"], result
+        )
+
+        # Submit form data.
+        data = {
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
+            "website": "https://infinispan.org/",
+            "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+            "expected_total_users": "10 users",
+            "paid_users_count": "1 user",
+            "paid_users_description": "We have 1 paid user.",
+            "requested_plan": "Community",
+        }
+        response = self.client_billing_post("/billing/sponsorship", data)
+        self.assert_json_success(response)
+
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+
+        sponsorship_request = ZulipSponsorshipRequest.objects.get(customer=customer)
+        self.assertEqual(sponsorship_request.requested_plan, data["requested_plan"])
+        self.assertEqual(sponsorship_request.org_website, data["website"])
+        self.assertEqual(sponsorship_request.org_description, data["description"])
+        self.assertEqual(
+            sponsorship_request.org_type,
+            Realm.ORG_TYPES["opensource"]["id"],
+        )
+
+        from django.core.mail import outbox
+
+        # First email is remote user email confirmation, second email is for sponsorship
+        message = outbox[1]
+        self.assert_length(outbox, 2)
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(
+            message.subject, "Sponsorship request (Open-source project) for demo.example.com"
+        )
+        self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+        self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
+        self.assertIn(
+            "Support URL: http://zulip.testserver/activity/remote/support?q=demo.example.com",
+            message.body,
+        )
+        self.assertIn("Website: https://infinispan.org", message.body)
+        self.assertIn("Organization type: Open-source", message.body)
+        self.assertIn("Description:\nInfinispan is a distributed in-memory", message.body)
+
+        # Check /billing redirects you to sponsorship page.
+        response = self.client_get(f"{billing_base_url}/billing/", subdomain="selfhosting")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"/server/{self.remote_server.uuid!s}/sponsorship/")
+
+        # Check sponsorship page shows sponsorship pending banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["This organization has requested sponsorship for a", "Community"], result
+        )
+
+        # Approve sponsorship
+        billing_session = RemoteServerBillingSession(
+            remote_server=self.remote_server, support_staff=self.example_user("iago")
+        )
+        billing_session.approve_sponsorship()
+        self.remote_server.refresh_from_db()
+        self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_COMMUNITY)
+
+        # Check email sent.
+        expected_message = (
+            "Your request for Zulip sponsorship has been approved! Your organization has been upgraded to the Zulip Community plan."
+            "\n\nIf you could list Zulip as a sponsor on your website, we would really appreciate it!"
+        )
+        self.assert_length(outbox, 3)
+        message = outbox[2]
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "hamlet@zulip.com")
+        self.assertEqual(
+            message.subject, "Community plan sponsorship approved for demo.example.com!"
+        )
+        self.assertEqual(message.from_email, "noreply@testserver")
+        self.assertIn(expected_message[0], message.body)
+        self.assertIn(expected_message[1], message.body)
+
+        # Check sponsorship approved banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(["Zulip is sponsoring a free", "Community"], result)
