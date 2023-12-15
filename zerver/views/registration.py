@@ -80,7 +80,6 @@ from zerver.models import (
     RealmUserDefault,
     Stream,
     UserProfile,
-    get_default_stream_groups,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
 from zerver.models.realms import (
@@ -91,6 +90,7 @@ from zerver.models.realms import (
     get_realm,
     name_changes_disabled,
 )
+from zerver.models.streams import get_default_stream_groups
 from zerver.models.users import get_source_profile, get_user_by_delivery_email
 from zerver.views.auth import (
     create_preregistration_realm,

@@ -182,7 +182,7 @@ def convert_channel_data(
         # should be allowed to post in the converted Zulip stream.
         # For more details: https://zulip.com/help/stream-sending-policy
         #
-        # See `Stream` model in `zerver/models/__init__.py` to know about what each
+        # See `Stream` model in `zerver/models/streams.py` to know about what each
         # number represent.
         stream_post_policy = 4 if channel_dict.get("ro", False) else 1
 

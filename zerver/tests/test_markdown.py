@@ -68,11 +68,11 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_client,
-    get_stream,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):

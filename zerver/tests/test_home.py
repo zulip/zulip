@@ -24,8 +24,9 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, queries_captured
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile, get_stream
+from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
 from zerver.worker.queue_processors import UserActivityWorker
 

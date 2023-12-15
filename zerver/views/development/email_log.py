@@ -16,8 +16,9 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.models import Realm, get_realm_stream
+from zerver.models import Realm
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_realm_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES
 from zproject.email_backends import get_forward_address, set_forward_address

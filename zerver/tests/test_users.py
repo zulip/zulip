@@ -74,11 +74,11 @@ from zerver.models import (
     UserTopic,
     check_valid_user_ids,
     get_client,
-    get_stream,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm
+from zerver.models.streams import get_stream
 from zerver.models.users import (
     get_source_profile,
     get_system_bot,

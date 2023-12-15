@@ -37,8 +37,8 @@ from zerver.models import (
     Stream,
     UserProfile,
     get_client,
-    get_stream_by_id_in_realm,
 )
+from zerver.models.streams import get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active
 

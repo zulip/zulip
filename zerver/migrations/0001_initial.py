@@ -12,7 +12,7 @@ from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models.functions import Upper
 
-from zerver.models import generate_email_token_for_stream
+from zerver.models.streams import generate_email_token_for_stream
 
 
 def migrate_existing_attachment_data(
