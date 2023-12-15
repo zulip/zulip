@@ -4258,6 +4258,16 @@ class PushBouncerSignupTest(ZulipTestCase):
             status_code=401,
         )
 
+        # Now try to do a request to server/register again. Normally, this updates
+        # the server's registration details. But the server is deactivated, so it
+        # should return the corresponding error.
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(
+            result,
+            "The mobile push notification service registration for your server has been deactivated",
+            status_code=401,
+        )
+
     def test_push_signup_invalid_host(self) -> None:
         zulip_org_id = str(uuid.uuid4())
         zulip_org_key = get_random_string(64)
