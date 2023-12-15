@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <!-- user_full_name is not present only when user first logs in which also perfect to set email preferences  -->
-                {% if not user_full_name %}
+                {% if (not user_full_name) and (not (next_page and next_page == "deactivate")) %}
                 <div class="input-group remote-billing-confirm-email-subscription-form-field">
                     <label for="enable-major-release-emails" class="checkbox">
                         <input id="enable-major-release-emails" name="enable_major_release_emails" type="checkbox" value="true" checked="checked" />
