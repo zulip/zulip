@@ -66,10 +66,10 @@ from zerver.models import (
     UserProfile,
     flush_alert_word,
     get_client,
-    get_stream,
 )
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_huddle
+from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 from zilencer.models import RemoteRealm, RemoteZulipServer
 from zilencer.views import update_remote_realm_data_for_server

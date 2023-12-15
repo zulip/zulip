@@ -28,15 +28,9 @@ from zerver.lib.test_helpers import (
     stub_event_queue_user_events,
 )
 from zerver.lib.users import get_api_key, get_users_for_api
-from zerver.models import (
-    CustomProfileField,
-    UserMessage,
-    UserPresence,
-    UserProfile,
-    get_client,
-    get_stream,
-)
+from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile, get_client
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,

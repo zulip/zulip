@@ -12,17 +12,9 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
-from zerver.models import (
-    Message,
-    Reaction,
-    Realm,
-    RealmFilter,
-    Recipient,
-    Stream,
-    UserProfile,
-    get_stream,
-)
+from zerver.models import Message, Reaction, Realm, RealmFilter, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class MessageDictTest(ZulipTestCase):
