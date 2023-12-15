@@ -4,6 +4,7 @@ import $ from "jquery";
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
+import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
@@ -38,6 +39,7 @@ import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import * as stream_topic_history from "./stream_topic_history";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -382,7 +384,7 @@ function handle_inline_topic_edit_keydown(e) {
             return;
         }
         const $row = $(e.target).closest(".recipient_row");
-        save_inline_topic_edit($row);
+        try_save_inline_topic_edit($row);
         e.stopPropagation();
         e.preventDefault();
     } else if (e.key === "Escape") {
@@ -850,10 +852,9 @@ export function end_message_edit(message_id) {
     }
 }
 
-export function save_inline_topic_edit($row) {
-    const msg_list = message_lists.current;
-    let message_id = rows.id_for_recipient_row($row);
-    let message = message_lists.current.get(message_id);
+export function try_save_inline_topic_edit($row) {
+    const message_id = rows.id_for_recipient_row($row);
+    const message = message_lists.current.get(message_id);
 
     const old_topic = message.topic;
     const new_topic = $row.find(".inline_topic_edit").val();
@@ -866,11 +867,30 @@ export function save_inline_topic_edit($row) {
         return;
     }
 
+    const $message_header = $row.find(".message_header").expectOne();
+    const stream_id = Number.parseInt($message_header.attr("data-stream-id"), 10);
+    const stream_topics = stream_topic_history.get_recent_topic_names(stream_id);
+    if (stream_topics.includes(new_topic)) {
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Merge with another topic?"}),
+            html_body: render_confirm_merge_topics_with_rename({
+                topic_name: new_topic,
+            }),
+            focus_submit_on_open: false,
+            on_click: () => do_save_inline_topic_edit($row, message, new_topic),
+        });
+    } else {
+        do_save_inline_topic_edit($row, message, new_topic);
+    }
+}
+
+export function do_save_inline_topic_edit($row, message, new_topic) {
+    const msg_list = message_lists.current;
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
         message = echo.edit_locally(message, {new_topic});
-        $row = message_lists.current.get_row(message_id);
+        $row = message_lists.current.get_row(message.id);
         end_inline_topic_edit($row);
         return;
     }
