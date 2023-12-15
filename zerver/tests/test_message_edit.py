@@ -34,7 +34,6 @@ from zerver.models import (
     Message,
     Realm,
     Stream,
-    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -43,6 +42,7 @@ from zerver.models import (
     get_stream,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.groups import SystemGroups
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
