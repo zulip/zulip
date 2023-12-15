@@ -886,7 +886,7 @@ def map_receiver_id_to_recipient_id(
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
-# This is inspired by get_huddle_hash from zerver/models/__init__.py. It
+# This is inspired by get_huddle_hash from zerver/models/recipients.py. It
 # expects strings identifying Rocket.Chat users, like
 # `LdBZ7kPxtKESyHPEe`, not integer IDs.
 #
