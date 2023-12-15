@@ -7,7 +7,6 @@ from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import CASCADE, QuerySet
 from django.db.models.signals import post_delete, post_save
 from django.db.models.sql.compiler import SQLCompiler
-from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise, ValuesQuerySet
@@ -61,6 +60,7 @@ from zerver.models.messages import Reaction as Reaction
 from zerver.models.messages import SubMessage as SubMessage
 from zerver.models.messages import UserMessage as UserMessage
 from zerver.models.muted_users import MutedUser as MutedUser
+from zerver.models.onboarding_steps import OnboardingStep as OnboardingStep
 from zerver.models.prereg_users import EmailChangeStatus as EmailChangeStatus
 from zerver.models.prereg_users import MultiuseInvite as MultiuseInvite
 from zerver.models.prereg_users import PreregistrationRealm as PreregistrationRealm
@@ -150,15 +150,6 @@ def query_for_ids(
         params=(tuple(user_ids),),
     )
     return query
-
-
-class OnboardingStep(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    onboarding_step = models.CharField(max_length=30)
-    timestamp = models.DateTimeField(default=timezone_now)
-
-    class Meta:
-        unique_together = ("user", "onboarding_step")
 
 
 def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:
