@@ -39,10 +39,9 @@ from zerver.models import (
     ScheduledMessageNotificationEmail,
     UserPresence,
     UserProfile,
-    bot_owner_user_ids,
     get_client,
-    get_user_profile_by_id,
 )
+from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 

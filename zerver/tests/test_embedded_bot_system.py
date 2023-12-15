@@ -5,13 +5,8 @@ from typing_extensions import override
 
 from zerver.lib.bot_lib import EmbeddedBotQuitError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    UserProfile,
-    get_display_recipient,
-    get_realm,
-    get_service_profile,
-    get_user,
-)
+from zerver.models import UserProfile, get_display_recipient, get_realm, get_service_profile
+from zerver.models.users import get_user
 
 
 class TestEmbeddedBotMessaging(ZulipTestCase):

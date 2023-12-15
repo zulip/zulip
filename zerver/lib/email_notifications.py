@@ -45,8 +45,8 @@ from zerver.models import (
     UserProfile,
     get_context_for_message,
     get_display_recipient,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_user_profile_by_id
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo

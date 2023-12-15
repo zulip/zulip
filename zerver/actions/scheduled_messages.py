@@ -27,8 +27,8 @@ from zerver.models import (
     Subscription,
     UserProfile,
     get_recipient_ids,
-    get_system_bot,
 )
+from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event
 
 SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10

@@ -69,10 +69,8 @@ from zerver.models import (
     get_or_create_huddle,
     get_realm,
     get_stream,
-    get_user,
-    get_user_by_delivery_email,
-    get_user_profile_by_id,
 )
+from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 from zilencer.models import RemoteRealm, RemoteZulipServer
 from zilencer.views import update_remote_realm_data_for_server
 

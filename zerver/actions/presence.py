@@ -12,7 +12,8 @@ from zerver.lib.presence import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import get_user_ids_who_can_access_user
-from zerver.models import Client, UserPresence, UserProfile, active_user_ids, get_client
+from zerver.models import Client, UserPresence, UserProfile, get_client
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event
 
 

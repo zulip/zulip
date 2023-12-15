@@ -46,10 +46,9 @@ from zerver.models import (
     RealmDomain,
     UserProfile,
     get_realm,
-    get_system_bot,
-    get_user_by_delivery_email,
     validate_attachment_request,
 )
+from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):

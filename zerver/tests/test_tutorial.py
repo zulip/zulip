@@ -4,7 +4,8 @@ from typing_extensions import override
 from zerver.actions.message_send import internal_send_private_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import message_stream_count, most_recent_message
-from zerver.models import UserProfile, get_system_bot
+from zerver.models import UserProfile
+from zerver.models.users import get_system_bot
 
 
 class TutorialTests(ZulipTestCase):

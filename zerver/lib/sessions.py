@@ -10,7 +10,8 @@ from django.contrib.sessions.models import Session
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.models import Realm, UserProfile, get_user_profile_by_id
+from zerver.models import Realm, UserProfile
+from zerver.models.users import get_user_profile_by_id
 
 
 class SessionEngine(Protocol):

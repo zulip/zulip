@@ -12,14 +12,8 @@ from zerver.lib.outgoing_webhook import get_service_interface_class, process_suc
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import (
-    SLACK_INTERFACE,
-    Message,
-    NotificationTriggers,
-    get_realm,
-    get_stream,
-    get_user,
-)
+from zerver.models import SLACK_INTERFACE, Message, NotificationTriggers, get_realm, get_stream
+from zerver.models.users import get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 

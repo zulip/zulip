@@ -14,9 +14,9 @@ from zerver.models import (
     CustomProfileFieldValue,
     Realm,
     UserProfile,
-    active_user_ids,
     custom_profile_fields_for_realm,
 )
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event
 
 
