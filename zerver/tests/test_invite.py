@@ -63,10 +63,10 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
-    get_stream,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
 from zerver.views.registration import accounts_home

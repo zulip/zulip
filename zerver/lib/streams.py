@@ -30,12 +30,14 @@ from zerver.models import (
     Subscription,
     UserGroup,
     UserProfile,
+)
+from zerver.models.groups import SystemGroups
+from zerver.models.streams import (
     bulk_get_streams,
     get_realm_stream,
     get_stream,
     get_stream_by_id_in_realm,
 )
-from zerver.models.groups import SystemGroups
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event
 

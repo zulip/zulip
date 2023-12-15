@@ -32,9 +32,9 @@ from zerver.models import (
     UserActivity,
     UserProfile,
     get_client,
-    get_stream,
 )
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (

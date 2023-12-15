@@ -76,9 +76,9 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
-    get_stream,
 )
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.development.registration import confirmation_key

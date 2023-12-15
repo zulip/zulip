@@ -5,7 +5,7 @@ from typing_extensions import override
 
 from zerver.actions.streams import merge_streams
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import get_stream
+from zerver.models.streams import get_stream
 
 
 class Command(ZulipBaseCommand):
