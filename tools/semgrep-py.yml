@@ -49,7 +49,7 @@ rules:
       - pattern-not: from zerver.lib.utils import generate_api_key
       - pattern-not: from zerver.models.linkifiers import filter_pattern_validator
       - pattern-not: from zerver.models.linkifiers import url_template_validator
-      - pattern-not: from zerver.models import generate_email_token_for_stream
+      - pattern-not: from zerver.models.streams import generate_email_token_for_stream
       - pattern-not: from zerver.models.realms import generate_realm_uuid_owner_secret
       - pattern-either:
           - pattern: from zerver import $X

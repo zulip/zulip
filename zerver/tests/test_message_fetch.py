@@ -58,9 +58,9 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_stream,
 )
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.views.message_fetch import get_messages_backend
 
 if TYPE_CHECKING:

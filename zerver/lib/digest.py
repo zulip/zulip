@@ -29,8 +29,8 @@ from zerver.models import (
     Subscription,
     UserActivityInterval,
     UserProfile,
-    get_active_streams,
 )
+from zerver.models.streams import get_active_streams
 
 logger = logging.getLogger(__name__)
 log_to_file(logger, settings.DIGEST_LOG_PATH)

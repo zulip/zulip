@@ -81,13 +81,13 @@ from zerver.models import (
     Subscription,
     UserGroup,
     UserProfile,
-    get_stream,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
+from zerver.models.streams import get_stream
 
 
 class TestRealmAuditLog(ZulipTestCase):

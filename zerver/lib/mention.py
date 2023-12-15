@@ -7,7 +7,8 @@ from django.conf import settings
 from django.db.models import Q
 
 from zerver.lib.users import get_inaccessible_user_ids
-from zerver.models import UserGroup, UserProfile, get_linkable_streams
+from zerver.models import UserGroup, UserProfile
+from zerver.models.streams import get_linkable_streams
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
 

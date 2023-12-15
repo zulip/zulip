@@ -30,19 +30,11 @@ from zerver.lib.user_topics import (
     topic_has_visibility_policy,
 )
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import (
-    Message,
-    Realm,
-    Stream,
-    UserGroup,
-    UserMessage,
-    UserProfile,
-    UserTopic,
-    get_stream,
-)
+from zerver.models import Message, Realm, Stream, UserGroup, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
