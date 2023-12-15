@@ -639,7 +639,7 @@ def realm_text_description_cache_key(realm: "Realm") -> str:
     return f"realm_text_description:{realm.string_id}"
 
 
-# Called by models/__init__.py to flush the stream cache whenever we save a stream
+# Called by models/streams.py to flush the stream cache whenever we save a stream
 # object.
 def flush_stream(
     *,

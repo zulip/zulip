@@ -38,9 +38,9 @@ from zerver.models import (
     SubMessage,
     UserMessage,
     get_client,
-    get_stream,
 )
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 
 # Class with helper functions useful for testing archiving of reactions:

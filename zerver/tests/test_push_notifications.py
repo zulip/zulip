@@ -91,9 +91,9 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_client,
-    get_stream,
 )
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zilencer.models import RemoteZulipServerAuditLog
 from zilencer.views import DevicesToCleanUpDict
 

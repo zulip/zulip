@@ -12,7 +12,8 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_topics import get_topic_mutes, topic_has_visibility_policy
-from zerver.models import UserProfile, UserTopic, get_stream
+from zerver.models import UserProfile, UserTopic
+from zerver.models.streams import get_stream
 
 
 class MutedTopicsTestsDeprecated(ZulipTestCase):

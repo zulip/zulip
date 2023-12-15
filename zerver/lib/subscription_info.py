@@ -25,7 +25,8 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
 )
-from zerver.models import Realm, Stream, Subscription, UserProfile, get_active_streams
+from zerver.models import Realm, Stream, Subscription, UserProfile
+from zerver.models.streams import get_active_streams
 
 
 def get_web_public_subs(realm: Realm) -> SubscriptionInfo:

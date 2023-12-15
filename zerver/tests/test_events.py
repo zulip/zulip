@@ -241,9 +241,9 @@ from zerver.models import (
     UserStatus,
     UserTopic,
     get_client,
-    get_stream,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.django_api import send_event

@@ -60,9 +60,9 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_client,
-    get_stream,
 )
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
 from zilencer.models import RemoteZulipServer
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
