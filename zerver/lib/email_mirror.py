@@ -29,15 +29,8 @@ from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.string_validation import is_character_printable
 from zerver.lib.upload import upload_message_attachment
-from zerver.models import (
-    Message,
-    MissedMessageEmailAddress,
-    Realm,
-    Recipient,
-    Stream,
-    UserProfile,
-    get_client,
-)
+from zerver.models import Message, MissedMessageEmailAddress, Realm, Recipient, Stream, UserProfile
+from zerver.models.clients import get_client
 from zerver.models.streams import get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active

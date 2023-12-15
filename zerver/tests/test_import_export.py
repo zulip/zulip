@@ -83,8 +83,8 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    get_client,
 )
+from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_huddle_hash

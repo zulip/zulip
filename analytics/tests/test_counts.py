@@ -77,8 +77,8 @@ from zerver.models import (
     UserActivityInterval,
     UserGroup,
     UserProfile,
-    get_client,
 )
+from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.users import get_user, is_cross_realm_bot_email
 from zilencer.models import (
