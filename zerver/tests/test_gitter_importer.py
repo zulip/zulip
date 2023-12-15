@@ -10,7 +10,8 @@ import time_machine
 from zerver.data_import.gitter import do_convert_data, get_usermentions
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserProfile, get_realm
+from zerver.models import Message, UserProfile
+from zerver.models.realms import get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     GitHubAuthBackend,

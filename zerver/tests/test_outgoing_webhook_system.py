@@ -19,7 +19,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.users import add_service
-from zerver.models import Recipient, Service, UserProfile, get_realm, get_stream
+from zerver.models import Recipient, Service, UserProfile, get_stream
+from zerver.models.realms import get_realm
 
 
 class ResponseMock:

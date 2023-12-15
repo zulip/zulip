@@ -52,12 +52,8 @@ from zerver.lib.validator import (
     check_string_in,
     check_timezone,
 )
-from zerver.models import (
-    EmailChangeStatus,
-    UserProfile,
-    avatar_changes_disabled,
-    name_changes_disabled,
-)
+from zerver.models import EmailChangeStatus, UserProfile
+from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 

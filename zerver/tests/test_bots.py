@@ -24,9 +24,9 @@ from zerver.models import (
     Subscription,
     UserProfile,
     get_bot_services,
-    get_realm,
     get_stream,
 )
+from zerver.models.realms import get_realm
 from zerver.models.users import get_user, is_cross_realm_bot_email
 
 

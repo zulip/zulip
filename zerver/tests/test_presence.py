@@ -18,8 +18,8 @@ from zerver.models import (
     UserActivityInterval,
     UserPresence,
     UserProfile,
-    get_realm,
 )
+from zerver.models.realms import get_realm
 
 
 class TestClientModel(ZulipTestCase):

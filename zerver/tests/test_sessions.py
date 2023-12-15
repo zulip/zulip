@@ -18,7 +18,8 @@ from zerver.lib.sessions import (
     user_sessions,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Realm, UserProfile, get_realm
+from zerver.models import Realm, UserProfile
+from zerver.models.realms import get_realm
 
 
 class TestSessions(ZulipTestCase):

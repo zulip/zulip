@@ -10,7 +10,8 @@ from zerver.actions.users import do_change_user_role
 from zerver.lib.domains import validate_domain
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import DomainNotAllowedForRealmError, RealmDomain, UserProfile, get_realm
+from zerver.models import RealmDomain, UserProfile
+from zerver.models.realms import DomainNotAllowedForRealmError, get_realm
 
 
 class RealmDomainTest(ZulipTestCase):

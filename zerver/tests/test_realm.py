@@ -53,10 +53,10 @@ from zerver.models import (
     UserGroupMembership,
     UserMessage,
     UserProfile,
-    get_realm,
     get_stream,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 

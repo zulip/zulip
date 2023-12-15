@@ -32,7 +32,8 @@ from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.validator import check_bool, check_dict, check_string
-from zerver.models import UserProfile, get_realm
+from zerver.models import UserProfile
+from zerver.models.realms import get_realm
 
 
 class VideoCallSession(OutgoingSession):
