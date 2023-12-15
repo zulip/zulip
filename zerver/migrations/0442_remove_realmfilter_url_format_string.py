@@ -1,6 +1,6 @@
 from django.db import migrations, models
 
-from zerver.models import url_template_validator
+from zerver.models.linkifiers import url_template_validator
 
 
 class Migration(migrations.Migration):

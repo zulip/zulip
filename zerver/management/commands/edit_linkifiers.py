@@ -7,7 +7,7 @@ from typing_extensions import override
 
 from zerver.actions.realm_linkifiers import do_add_linkifier, do_remove_linkifier
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import linkifiers_for_realm
+from zerver.models.linkifiers import linkifiers_for_realm
 
 
 class Command(ZulipBaseCommand):
