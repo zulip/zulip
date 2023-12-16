@@ -783,7 +783,7 @@ export function initialize() {
     $("body").on("click", ".language_selection_widget button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        settings_display.launch_default_language_setting_modal();
+        settings_preferences.launch_default_language_setting_modal();
     });
 
     $("body").on("click", "#header-container .brand", (e) => {

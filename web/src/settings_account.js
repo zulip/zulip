@@ -145,7 +145,7 @@ export function update_avatar_change_display() {
     }
 }
 
-export function update_account_settings_display() {
+export function update_account_settings_preferences() {
     if ($("#user_details_section").length === 0) {
         return;
     }

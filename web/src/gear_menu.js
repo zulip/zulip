@@ -154,7 +154,7 @@ export function initialize() {
                 instance.hide();
                 e.preventDefault();
                 e.stopPropagation();
-                settings_display.launch_default_language_setting_modal();
+                settings_preferences.launch_default_language_setting_modal();
             });
 
             // We cannot update recipient bar color using dark_theme.enable/disable due to

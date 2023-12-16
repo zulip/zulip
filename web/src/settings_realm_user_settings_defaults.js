@@ -58,7 +58,7 @@ export function set_up() {
     const $notification_sound_elem = $("audio#realm-default-notification-sound-audio");
     const $notification_sound_dropdown = $container.find(".setting_notification_sound");
 
-    settings_display.set_up(realm_default_settings_panel);
+    settings_preferences.set_up(realm_default_settings_panel);
 
     audible_notifications.update_notification_sound_source(
         $notification_sound_elem,

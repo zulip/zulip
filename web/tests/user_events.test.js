@@ -13,7 +13,7 @@ const settings_account = mock_esm("../src/settings_account", {
     maybe_update_deactivate_account_button() {},
     update_email() {},
     update_full_name() {},
-    update_account_settings_display() {},
+    update_account_settings_preferences() {},
 });
 const settings_users = mock_esm("../src/settings_users", {
     update_user_data() {},
