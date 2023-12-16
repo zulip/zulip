@@ -262,7 +262,9 @@ def team_view(request: HttpRequest) -> HttpResponse:
 
 @add_google_analytics
 def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
-    return TemplateResponse(request, template_name, latest_info_context())
+    context = latest_info_context()
+    context["billing_base_url"] = ""
+    return TemplateResponse(request, template_name, context)
 
 
 @add_google_analytics
