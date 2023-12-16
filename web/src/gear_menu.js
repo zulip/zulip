@@ -10,7 +10,7 @@ import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
-import * as settings_display from "./settings_display";
+import * as settings_preferences from "./settings_preferences";
 import {parse_html} from "./ui_util";
 
 /*

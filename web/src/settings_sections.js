@@ -3,7 +3,7 @@ import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
-import * as settings_display from "./settings_display";
+import * as settings_preferences from "./settings_preferences";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
 import * as settings_invites from "./settings_invites";
