@@ -198,7 +198,7 @@ EXEMPT_FILES = make_set(
         "web/src/settings_account.js",
         "web/src/settings_bots.js",
         "web/src/settings_components.js",
-        "web/src/settings_display.js",
+        "web/src/settings_preferences.js",
         "web/src/settings_emoji.ts",
         "web/src/settings_exports.ts",
         "web/src/settings_invites.ts",

@@ -15,7 +15,7 @@ import * as people from "./people";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import * as settings_display from "./settings_display";
+import * as settings_preferences from "./settings_preferences";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";

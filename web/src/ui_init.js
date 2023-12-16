@@ -102,7 +102,7 @@ import * as search from "./search";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
 import * as settings_data from "./settings_data";
-import * as settings_display from "./settings_display";
+import * as settings_preferences from "./settings_preferences";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
