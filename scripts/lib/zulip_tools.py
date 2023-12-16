@@ -5,7 +5,7 @@ import functools
 import hashlib
 import json
 import logging
-import pyPWD
+import pwd
 import os
 import random
 import shlex
@@ -152,15 +152,15 @@ def is_invalid_upgrade(current_version: str, new_version: str) -> bool:
     return False
 
 
-def get_zulip_pwent() -> pyPWD.struct_passwd:
+def get_zulip_pwent() -> pwd.struct_passwd:
     deploy_root_uid = os.stat(get_deploy_root()).st_uid
     if deploy_root_uid != 0:
-        return pyPWD.getpwuid(deploy_root_uid)
+        return pwd.getpwuid(deploy_root_uid)
 
     # In the case that permissions got messed up and the deployment
     # directory is unexpectedly owned by root, we fall back to the
     # `zulip` user as that's the correct value in production.
-    return pyPWD.getpwnam("zulip")
+    return pwd.getpwnam("zulip")
 
 
 def get_postgres_pwent() -> pwd.struct_passwd:
