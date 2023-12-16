@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ("enter_sends", models.BooleanField(null=True, default=False)),
                 ("left_side_userlist", models.BooleanField(default=False)),
                 ("default_language", models.CharField(default="en", max_length=50)),
-                ("default_view", models.TextField(default="recent_topics")),
+                ("default_view", models.TextField(default="topics")),
                 ("dense_mode", models.BooleanField(default=True)),
                 ("fluid_layout_width", models.BooleanField(default=False)),
                 ("high_contrast_mode", models.BooleanField(default=False)),

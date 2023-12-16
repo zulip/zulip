@@ -12,6 +12,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="userprofile",
             name="default_view",
-            field=models.TextField(default="recent_topics"),
+            field=models.TextField(default="topics"),
         ),
     ]
