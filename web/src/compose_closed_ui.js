@@ -129,10 +129,7 @@ export function update_buttons_for_private() {
         !narrow_state.pm_ids_string() ||
         people.user_can_direct_message(narrow_state.pm_ids_string())
     ) {
-        $("#new_conversation_button").attr(
-            "data-tooltip-template-id",
-            "new_direct_message_button_tooltip_template",
-        );
+        $("#new_conversation_button").attr("data-conversation-type", "direct");
         update_buttons(text_stream, is_direct_message_narrow);
         return;
     }
@@ -148,19 +145,13 @@ export function update_buttons_for_private() {
 
 export function update_buttons_for_stream_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr(
-        "data-tooltip-template-id",
-        "new_topic_message_button_tooltip_template",
-    );
+    $("#new_conversation_button").attr("data-conversation-type", "stream");
     update_buttons(text_stream);
 }
 
 export function update_buttons_for_non_stream_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr(
-        "data-tooltip-template-id",
-        "new_stream_message_button_tooltip_template",
-    );
+    $("#new_conversation_button").attr("data-conversation-type", "non-stream");
     update_buttons(text_stream);
 }
 
