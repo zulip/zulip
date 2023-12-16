@@ -265,11 +265,17 @@
         border-radius: 16px;
         color: var(--color-box-copy);
         background: var(--color-background-box);
-        min-width: 1040px;
         margin: 0 16px;
+        /* 1040 + 16px*2 margin */
+        @media (width <= 1072px) {
+            min-width: 1040px;
+        }
 
         &.self-hosted-plan-pricing {
-            min-width: 1220px;
+            /* 1220 + 16px*2 margin */
+            @media (width <= 1252px) {
+                min-width: 1220px;
+            }
         }
 
         @media screen and (width <= 700px) {
