@@ -3,11 +3,10 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 const channel = mock_esm("../src/channel");
-const noop = () => {};
 mock_esm("../src/ui_report", {
     success(msg, elem) {
         elem.val(msg);

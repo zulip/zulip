@@ -17,6 +17,8 @@ exports.set_verbose = (value) => {
     verbose = value;
 };
 
+exports.noop = () => {};
+
 exports.suite = [];
 
 async function execute_test(label, f, opts) {

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire, with_overrides} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {user_settings} = require("./lib/zpage_params");
 
@@ -24,8 +24,6 @@ const aaron = {
     full_name: "Aaron",
 };
 people.add_active_user(aaron);
-
-const noop = () => {};
 
 const setTimeout_delay = 3000;
 set_global("setTimeout", (f, delay) => {
@@ -88,7 +86,7 @@ const short_msg = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#draft_overlay").css = () => {};
+        $("#draft_overlay").css = noop;
         window.localStorage.clear();
         f(helpers);
     });
@@ -609,7 +607,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     $.clear_all_elements();
     $.create("#drafts_table .overlay-message-row", {children: []});
-    $("#draft_overlay").css = () => {};
+    $("#draft_overlay").css = noop;
 
     override_rewire(sub_store, "get", (stream_id) => {
         assert.ok([30, 40].includes(stream_id));

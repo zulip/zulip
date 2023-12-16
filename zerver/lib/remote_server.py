@@ -168,11 +168,11 @@ def send_to_push_bouncer(
         )
 
     if res.status_code >= 500:
-        # 500s should be resolved by the people who run the push
+        # 5xx's should be resolved by the people who run the push
         # notification bouncer service, and they'll get an appropriate
         # error notification from the server. We raise an exception to signal
         # to the callers that the attempt failed and they can retry.
-        error_msg = "Received 500 from push notification bouncer"
+        error_msg = f"Received {res.status_code} from push notification bouncer"
         logging.warning(error_msg)
         raise PushNotificationBouncerServerError(error_msg)
     elif res.status_code >= 400:
@@ -237,6 +237,30 @@ def send_json_to_push_bouncer(
         orjson.dumps(post_data),
         extra_headers={"Content-type": "application/json"},
     )
+
+
+def maybe_mark_pushes_disabled(
+    e: Union[JsonableError, orjson.JSONDecodeError], logger: logging.Logger
+) -> None:
+    if isinstance(e, PushNotificationBouncerServerError):
+        # We don't fall through and deactivate the flag, since this is
+        # not under the control of the caller.
+        return
+
+    if isinstance(e, JsonableError):
+        logger.warning(e.msg)
+    else:
+        logger.exception("Exception communicating with %s", settings.PUSH_NOTIFICATION_BOUNCER_URL)
+
+    # An exception was thrown talking to the push bouncer. There may
+    # be certain transient failures that we could ignore here, but the
+    # default explanation is that there is something wrong either with
+    # our credentials being corrupted or our ability to reach the
+    # bouncer service over the network, so we immediately move to
+    # reporting push notifications as likely not working.
+    for realm in Realm.objects.filter(push_notifications_enabled=True):
+        do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
+        do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
 
 
 def build_analytics_data(
@@ -319,8 +343,8 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
     # first, check what's latest
     try:
         result = send_to_push_bouncer("GET", "server/analytics/status", {})
-    except PushNotificationBouncerRetryLaterError as e:
-        logger.warning(e.msg, exc_info=True)
+    except (JsonableError, orjson.JSONDecodeError) as e:
+        maybe_mark_pushes_disabled(e, logger)
         return
 
     # Gather only entries with IDs greater than the last ID received by the push bouncer.
@@ -364,29 +388,8 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
         response = send_to_push_bouncer(
             "POST", "server/analytics", request.model_dump(round_trip=True)
         )
-    except PushNotificationBouncerServerError:  # nocoverage
-        # 50x errors from the bouncer cannot be addressed by the
-        # administrator of this server, and may be localized to
-        # this endpoint; don't rashly mark push notifications as
-        # disabled when they are likely working perfectly fine.
-        return
-    except Exception as e:
-        if isinstance(e, JsonableError):
-            # Log exceptions with server error messages to the analytics log.
-            logger.warning(e.msg)
-
-        # An exception was thrown trying to ask the bouncer service whether we can send
-        # push notifications or not. There may be certain transient failures that we could
-        # ignore here, but the default explanation is that there is something wrong either
-        # with our credentials being corrupted or our ability to reach the bouncer service
-        # over the network, so we immediately move to reporting push notifications as likely not working,
-        # as whatever failed here is likely to also fail when trying to send a push notification.
-        for realm in Realm.objects.filter(push_notifications_enabled=True):
-            do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
-            do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
-        if not isinstance(e, JsonableError):
-            # Log this generic error only if we haven't already logged specific error above.
-            logger.exception("Exception asking push bouncer if notifications will work.")
+    except (JsonableError, orjson.JSONDecodeError) as e:
+        maybe_mark_pushes_disabled(e, logger)
         return
 
     assert isinstance(response["realms"], dict)  # for mypy

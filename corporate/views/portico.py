@@ -154,9 +154,13 @@ def remote_realm_plans_page(
             if context.customer_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
                 # Free trial is disabled for legacy customers.
                 context.free_trial_days = None
-            context.on_free_tier = context.customer_plan.tier in (
-                CustomerPlan.TIER_SELF_HOSTED_LEGACY,
-                CustomerPlan.TIER_SELF_HOSTED_BASE,
+            context.on_free_tier = (
+                context.customer_plan.tier
+                in (
+                    CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                    CustomerPlan.TIER_SELF_HOSTED_BASE,
+                )
+                and not context.is_sponsored
             )
             context.on_free_trial = is_customer_on_free_trial(context.customer_plan)
             context.is_legacy_server_with_scheduled_upgrade = (

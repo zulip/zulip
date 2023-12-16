@@ -2935,6 +2935,24 @@ class UserSignUpTest(ZulipTestCase):
             form.errors["email"][0],
         )
 
+    def test_signup_confirm_injection(self) -> None:
+        result = self.client_get("/accounts/send_confirm/?email=bogus@example.com")
+        self.assert_in_success_response(
+            [
+                'check your email account (<span class="user_email semi-bold">bogus@example.com</span>)'
+            ],
+            result,
+        )
+
+        result = self.client_get(
+            "/accounts/send_confirm/?email={quote(email)}",
+            {"email": "bogus@example.com for example"},
+        )
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response(
+            "The email address you are trying to sign up with is not valid", result
+        )
+
     def test_access_signup_page_in_root_domain_without_realm(self) -> None:
         result = self.client_get("/register", subdomain="", follow=True)
         self.assert_in_success_response(["Find your Zulip accounts"], result)

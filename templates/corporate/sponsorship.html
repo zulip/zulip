@@ -53,11 +53,21 @@
                     <label for="sponsored-org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="sponsored-org-current-plan" class="not-editable-realm-field">
                         {% if is_sponsored %}
+                        <a href="{{ billing_base_url }}/plans/">
                         {{ sponsorship_plan_name }}
+                        </a>
                         {% elif free_trial %}
-                        {{ plan_name }} <i>(free trial)</i>
+                        <a href="{{ billing_base_url }}/plans/">
+                        {{ plan_name -}}
+                        </a> <i>(free trial)</i>
+                        {% elif is_server_on_legacy_plan %}
+                        <a href="{{ billing_base_url }}/plans/">
+                        {{ plan_name.replace(" (legacy plan)", "") -}}
+                        </a> <i>(legacy plan)</i>
                         {% else %}
+                        <a href="{{ billing_base_url }}/plans/">
                         {{ plan_name }}
+                        </a>
                         {% endif %}
                     </div>
                 </div>
@@ -90,7 +100,7 @@
         <div class="white-box">
             <div id="sponsorship-error" class="alert alert-danger"></div>
             <div id="sponsorship-input-section">
-                <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}">
+                <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}" data-is-remotely-hosted="{{ is_remotely_hosted }}">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-name" class="inline-block label-title">Organization</label>
@@ -110,7 +120,14 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <label for="organization_type" class="inline-block label-title">Organization type</label>
+                        <label for="organization_type" class="inline-block label-title">
+                            Organization type
+                            {% if is_remotely_hosted %}
+                            <a href="https://zulip.com/help/self-hosted-billing#free-community-plan" target="_blank" rel="noopener noreferrer">
+                                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                            </a>
+                            {% endif %}
+                        </label>
                     </div>
                     <p id="sponsorship-discount-details"></p>
                     {% if is_remotely_hosted %}

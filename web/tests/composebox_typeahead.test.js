@@ -5,11 +5,9 @@ const {strict: assert} = require("assert");
 const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
-
-const noop = () => {};
 
 let autosize_called;
 
@@ -487,7 +485,7 @@ test("content_typeahead_selected", ({override}) => {
     // mention
     fake_this.completing = "mention";
 
-    override(compose_validate, "warn_if_mentioning_unsubscribed_user", () => {});
+    override(compose_validate, "warn_if_mentioning_unsubscribed_user", noop);
     override(
         compose_validate,
         "convert_mentions_to_silent_in_direct_messages",
@@ -755,7 +753,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         assert.equal(typeof data.has_image, "boolean");
         return html;
     });
-    override(stream_topic_history_util, "get_server_history", () => {});
+    override(stream_topic_history_util, "get_server_history", noop);
 
     let topic_typeahead_called = false;
     $("input#stream_message_recipient_topic").typeahead = (options) => {
@@ -1307,7 +1305,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         assert.equal(stream_id, sweden_stream.stream_id);
         return sweden_topics_to_show;
     });
-    override(stream_topic_history_util, "get_server_history", () => {});
+    override(stream_topic_history_util, "get_server_history", noop);
 
     const begin_typehead_this = {
         options: {

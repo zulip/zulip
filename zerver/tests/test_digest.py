@@ -27,14 +27,12 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
-    Client,
     Message,
     Realm,
     RealmAuditLog,
     Stream,
     UserActivityInterval,
     UserProfile,
-    get_client,
     get_realm,
     get_stream,
 )
@@ -548,8 +546,6 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_info["html"], [])
 
     def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
-        client = "website"  # this makes `sent_by_human` return True
-        sending_client = get_client(client)
         message_ids = []  # List[int]
         for sender_name in senders:
             sender = self.example_user(sender_name)
@@ -557,7 +553,6 @@ class TestDigestEmailMessages(ZulipTestCase):
             content = f"some content for {stream} from {sender_name}"
             message_id = self.send_stream_message(sender, stream, content)
             message_ids.append(message_id)
-        Message.objects.filter(id__in=message_ids).update(sending_client=sending_client)
         return message_ids
 
 
@@ -578,23 +573,21 @@ class TestDigestTopics(ZulipTestCase):
         bot_messages: int,
         realm: Realm,
     ) -> None:
-        def send_messages(client: Client, users: int, messages: int) -> None:
+        for is_bot, users, messages in [
+            (False, humans, human_messages),
+            (True, bots, bot_messages),
+        ]:
             messages_sent = 0
             while messages_sent < messages:
                 for index, username in enumerate(self.example_user_map, start=1):
-                    topic.add_message(
-                        Message(
-                            sender=self.example_user(username), sending_client=client, realm=realm
-                        )
-                    )
+                    if self.example_user(username).is_bot != is_bot:
+                        continue
+                    topic.add_message(Message(sender=self.example_user(username), realm=realm))
                     messages_sent += 1
                     if messages_sent == messages:
                         break
                     if index == users:
                         break
-
-        send_messages(Client(name="zulipmobile"), humans, human_messages)
-        send_messages(Client(name="bot"), bots, bot_messages)
 
     def test_get_hot_topics(self) -> None:
         realm = get_realm("zulip")

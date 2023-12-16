@@ -48,7 +48,6 @@ from zerver.lib.send_email import (
     send_email_to_billing_admins_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.types import RemoteRealmDictValue
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -85,6 +84,8 @@ log_to_file(logging.getLogger("stripe"), BILLING_LOG_PATH)
 
 ParamT = ParamSpec("ParamT")
 ReturnT = TypeVar("ReturnT")
+
+BILLING_SUPPORT_EMAIL = "sales@zulip.com"
 
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
@@ -2406,6 +2407,9 @@ class BillingSession(ABC):
             if plan is not None:
                 context["plan_name"] = plan.name
                 context["free_trial"] = plan.is_free_trial()
+                context["is_server_on_legacy_plan"] = (
+                    plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+                )
 
         self.add_sponsorship_info_to_context(context)
         return context
@@ -2464,7 +2468,7 @@ class BillingSession(ABC):
         }
         send_email(
             "zerver/emails/sponsorship_request",
-            to_emails=[FromAddress.SUPPORT],
+            to_emails=[BILLING_SUPPORT_EMAIL],
             # Sent to the server's support team, so this email is not user-facing.
             from_name="Zulip sponsorship request",
             from_address=FromAddress.tokenized_no_reply_address(),
@@ -2546,12 +2550,16 @@ class BillingSession(ABC):
             raise AssertionError("Pass licenses or licenses_at_next_renewal")
 
     def get_billable_licenses_for_customer(
-        self, customer: Customer, tier: int, licenses: Optional[int] = None
+        self,
+        customer: Customer,
+        tier: int,
+        licenses: Optional[int] = None,
+        event_time: datetime = timezone_now(),
     ) -> int:
         if licenses is not None and customer.exempt_from_license_number_check:
             return licenses
 
-        current_licenses_count = self.current_count_for_billed_licenses()
+        current_licenses_count = self.current_count_for_billed_licenses(event_time)
         min_licenses_for_plan = self.min_licenses_for_plan(tier)
         if customer.exempt_from_license_number_check:  # nocoverage
             billed_licenses = current_licenses_count
@@ -2572,16 +2580,22 @@ class BillingSession(ABC):
             next_plan = self.get_next_plan(plan)
             assert next_plan is not None
             licenses_at_next_renewal = self.get_billable_licenses_for_customer(
-                plan.customer, next_plan.tier
+                plan.customer,
+                next_plan.tier,
+                event_time=event_time,
             )
             # Current licenses stay as per the limits of current plan.
             current_plan_licenses_at_next_renewal = self.get_billable_licenses_for_customer(
-                plan.customer, plan.tier
+                plan.customer,
+                plan.tier,
+                event_time=event_time,
             )
             licenses = max(current_plan_licenses_at_next_renewal, last_ledger_entry.licenses)
         else:
             licenses_at_next_renewal = self.get_billable_licenses_for_customer(
-                plan.customer, plan.tier
+                plan.customer,
+                plan.tier,
+                event_time=event_time,
             )
             licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
 
@@ -3019,6 +3033,7 @@ class RemoteRealmBillingSession(BillingSession):
     ) -> None:
         self.remote_realm = remote_realm
         self.remote_billing_user = remote_billing_user
+        self.support_staff = support_staff
         if support_staff is not None:  # nocoverage
             assert support_staff.is_staff
             self.support_session = True
@@ -3119,6 +3134,10 @@ class RemoteRealmBillingSession(BillingSession):
             "remote_realm": self.remote_realm,
             "event_type": audit_log_event,
             "event_time": event_time,
+            # At most one of these should be set, but we may
+            # not want an assert for that yet:
+            "acting_support_user": self.support_staff,
+            "acting_remote_user": self.remote_billing_user,
         }
 
         if extra_data:
@@ -3230,7 +3249,7 @@ class RemoteRealmBillingSession(BillingSession):
             send_email(
                 "zerver/emails/sponsorship_approved_community_plan",
                 to_emails=billing_emails,
-                from_address="sales@zulip.com",
+                from_address=BILLING_SUPPORT_EMAIL,
                 context={
                     "billing_entity": self.billing_entity_display_name,
                     "plans_link": "https://zulip.com/plans/#self-hosted",
@@ -3364,7 +3383,7 @@ class RemoteRealmBillingSession(BillingSession):
             self.remote_realm.save(update_fields=["org_type"])
 
     @override
-    def sync_license_ledger_if_needed(self) -> None:  # nocoverage
+    def sync_license_ledger_if_needed(self) -> None:
         last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
         if last_ledger is None:
             return
@@ -3386,30 +3405,8 @@ class RemoteRealmBillingSession(BillingSession):
                 current_plan, audit_log.event_time
             )
             if end_of_cycle_plan is None:
-                return
+                return  # nocoverage
             current_plan = end_of_cycle_plan
-
-    def get_push_service_validity_dict(self) -> RemoteRealmDictValue:
-        customer = self.get_customer()
-        if customer is None:
-            return {"can_push": True, "expected_end_timestamp": None}
-
-        current_plan = get_current_plan_by_customer(customer)
-        if current_plan is None:
-            return {"can_push": True, "expected_end_timestamp": None}
-
-        expected_end_timestamp = None
-        if current_plan.status in [
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-        ]:
-            expected_end_timestamp = datetime_to_timestamp(
-                self.get_next_billing_cycle(current_plan)
-            )
-        return {
-            "can_push": True,
-            "expected_end_timestamp": expected_end_timestamp,
-        }
 
 
 class RemoteServerBillingSession(BillingSession):
@@ -3424,6 +3421,7 @@ class RemoteServerBillingSession(BillingSession):
     ) -> None:
         self.remote_server = remote_server
         self.remote_billing_user = remote_billing_user
+        self.support_staff = support_staff
         if support_staff is not None:  # nocoverage
             assert support_staff.is_staff
             self.support_session = True
@@ -3518,6 +3516,10 @@ class RemoteServerBillingSession(BillingSession):
             "server": self.remote_server,
             "event_type": audit_log_event,
             "event_time": event_time,
+            # At most one of these should be set, but we may
+            # not want an assert for that yet:
+            "acting_support_user": self.support_staff,
+            "acting_remote_user": self.remote_billing_user,
         }
 
         if extra_data:
@@ -3629,7 +3631,7 @@ class RemoteServerBillingSession(BillingSession):
         send_email(
             "zerver/emails/sponsorship_approved_community_plan",
             to_emails=billing_emails,
-            from_address="sales@zulip.com",
+            from_address=BILLING_SUPPORT_EMAIL,
             context={
                 "billing_entity": self.billing_entity_display_name,
                 "plans_link": "https://zulip.com/plans/#self-hosted",
@@ -4058,3 +4060,81 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
                 # the last invoice open, void the open invoices.
                 billing_session = RealmBillingSession(user=None, realm=realm)
                 billing_session.void_all_open_invoices()
+
+
+@dataclass
+class PushNotificationsEnabledStatus:
+    can_push: bool
+    expected_end_timestamp: Optional[int]
+
+    # Not sent to clients, just for debugging
+    message: str
+
+
+MAX_USERS_WITHOUT_PLAN = 10
+
+
+def get_push_status_for_remote_request(
+    remote_server: RemoteZulipServer, remote_realm: Optional[RemoteRealm]
+) -> PushNotificationsEnabledStatus:
+    # First, get the operative Customer object for this
+    # installation. If there's a `RemoteRealm` customer, that
+    # takes precedence.
+    customer = None
+
+    if remote_realm is not None:
+        billing_session: BillingSession = RemoteRealmBillingSession(remote_realm)
+        customer = billing_session.get_customer()
+
+    if customer is None:
+        billing_session = RemoteServerBillingSession(remote_server)
+        customer = billing_session.get_customer()
+
+    if customer is not None:
+        current_plan = get_current_plan_by_customer(customer)
+    else:
+        current_plan = None
+
+    if current_plan is not None:
+        if current_plan.status in [
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ]:
+            # Plans scheduled to end
+            expected_end_timestamp = datetime_to_timestamp(
+                billing_session.get_next_billing_cycle(current_plan)
+            )
+            return PushNotificationsEnabledStatus(
+                can_push=True,
+                expected_end_timestamp=expected_end_timestamp,
+                message="Scheduled end",
+            )
+
+        # Current plan, no expected end.
+        return PushNotificationsEnabledStatus(
+            can_push=True,
+            expected_end_timestamp=None,
+            message="Active plan",
+        )
+
+    try:
+        user_count = billing_session.current_count_for_billed_licenses()
+    except MissingDataError:
+        return PushNotificationsEnabledStatus(
+            can_push=False,
+            expected_end_timestamp=None,
+            message="Missing data",
+        )
+
+    if user_count > MAX_USERS_WITHOUT_PLAN:
+        return PushNotificationsEnabledStatus(
+            can_push=False,
+            expected_end_timestamp=None,
+            message="No plan many users",
+        )
+
+    return PushNotificationsEnabledStatus(
+        can_push=True,
+        expected_end_timestamp=None,
+        message="No plan",
+    )

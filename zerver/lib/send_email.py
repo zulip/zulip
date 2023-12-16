@@ -198,7 +198,8 @@ def build_email(
     # have not implemented.
     if "unsubscribe_link" in context:
         extra_headers["List-Unsubscribe"] = f"<{context['unsubscribe_link']}>"
-        extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+        if not context.get("remote_server_email", False):
+            extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
     reply_to = None
     if reply_to_email is not None:
@@ -514,6 +515,7 @@ def custom_email_sender(
     markdown_template_path: str,
     dry_run: bool,
     subject: Optional[str] = None,
+    from_address: str = FromAddress.SUPPORT,
     from_name: Optional[str] = None,
     reply_to: Optional[str] = None,
     **kwargs: Any,
@@ -562,7 +564,7 @@ def custom_email_sender(
                 email_id,
                 to_user_ids=[to_user_id] if to_user_id is not None else None,
                 to_emails=[to_email] if to_email is not None else None,
-                from_address=FromAddress.SUPPORT,
+                from_address=from_address,
                 reply_to_email=reply_to,
                 from_name=get_header(from_name, parsed_email_template.get("from"), "from_name"),
                 context=context,
@@ -615,22 +617,29 @@ def send_custom_server_email(
     options: Dict[str, str],
     add_context: Optional[Callable[[Dict[str, object], "RemoteZulipServer"], None]] = None,
 ) -> None:
-    email_sender = custom_email_sender(**options, dry_run=dry_run)
-
     assert settings.CORPORATE_ENABLED
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
     from corporate.views.remote_billing_page import (
         generate_confirmation_link_for_server_deactivation,
     )
 
+    email_sender = custom_email_sender(
+        **options, dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL
+    )
+
     for server in remote_servers:
+        context = {
+            "remote_server_email": True,
+            "hostname": server.hostname,
+            "unsubscribe_link": generate_confirmation_link_for_server_deactivation(
+                server, 60 * 24 * 2
+            ),
+        }
+        if add_context is not None:
+            add_context(context, server)
         email_sender(
             to_email=server.contact_email,
-            context={
-                "remote_server_email": True,
-                "unsubscribe_link": generate_confirmation_link_for_server_deactivation(
-                    server, 60 * 24 * 2
-                ),
-            },
+            context=context,
         )
 
         if dry_run:

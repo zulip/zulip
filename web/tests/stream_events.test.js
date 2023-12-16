@@ -4,11 +4,9 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-
-const noop = () => {};
 
 const color_data = mock_esm("../src/color_data");
 const compose_fade = mock_esm("../src/compose_fade");

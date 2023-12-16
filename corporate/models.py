@@ -289,6 +289,10 @@ class CustomerPlan(models.Model):
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
 
+    @override
+    def __str__(self) -> str:
+        return f"{self.name} (status: {self.get_plan_status_as_text()})"
+
     @staticmethod
     def name_from_tier(tier: int) -> str:
         # NOTE: Check `statement_descriptor` values after updating this.
@@ -298,7 +302,7 @@ class CustomerPlan(models.Model):
             CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
             CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
-            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Self-managed",
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Self-managed (legacy plan)",
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
             CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
         }[tier]

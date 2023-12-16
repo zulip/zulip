@@ -3,13 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 // This tests the stream searching functionality which currently
 // lives in stream_list.js.
-
-const noop = () => {};
 
 mock_esm("../src/resize", {
     resize_page_components: noop,

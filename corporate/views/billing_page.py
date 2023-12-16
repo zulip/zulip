@@ -99,7 +99,7 @@ def remote_realm_billing_page(
     billing_session: RemoteRealmBillingSession,
     *,
     success_message: str = "",
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     realm_uuid = billing_session.remote_realm.uuid
     context: Dict[str, Any] = {
         # We wouldn't be here if user didn't have access.
@@ -109,13 +109,16 @@ def remote_realm_billing_page(
         "billing_base_url": billing_session.billing_base_url,
     }
 
-    if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:
+    if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:  # nocoverage
         return HttpResponseRedirect(reverse("remote_realm_sponsorship_page", args=(realm_uuid,)))
 
     customer = billing_session.get_customer()
-    if customer is not None and customer.sponsorship_pending:
-        # Don't redirect to sponsorship page if the remote realm is on a paid plan
-        if not billing_session.on_paid_plan():
+    if customer is not None and customer.sponsorship_pending:  # nocoverage
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        if (
+            not billing_session.on_paid_plan()
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+        ):
             return HttpResponseRedirect(
                 reverse("remote_realm_sponsorship_page", args=(realm_uuid,))
             )
@@ -133,12 +136,12 @@ def remote_realm_billing_page(
                 RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
             ]
         )
-    ):
+    ):  # nocoverage
         return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
 
     try:
         main_context = billing_session.get_billing_page_context()
-    except MissingDataError:
+    except MissingDataError:  # nocoverage
         return billing_session.missing_data_error_page(request)
 
     if main_context:
@@ -174,8 +177,11 @@ def remote_server_billing_page(
 
     customer = billing_session.get_customer()
     if customer is not None and customer.sponsorship_pending:
-        # Don't redirect to sponsorship page if the remote realm is on a paid plan
-        if not billing_session.on_paid_plan():
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        if (
+            not billing_session.on_paid_plan()
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+        ):
             return HttpResponseRedirect(
                 reverse(
                     "remote_server_sponsorship_page",

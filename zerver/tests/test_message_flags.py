@@ -874,16 +874,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
             message_id = self.send_personal_message(
                 from_user=hamlet,
                 to_user=other_user,
-                sending_client_name="some_api_program",
+                read_by_sender=False,
             )
-
-            # Check our test setup is correct--the message should
-            # not have looked like it was sent by a human.
             message = Message.objects.get(id=message_id)
-            self.assertFalse(message.sent_by_human())
 
-            # And since it was not sent by a human, it should not
-            # be read, not even by the sender (Hamlet).
+            # This message should not be read, not even by the sender (Hamlet).
             um = UserMessage.objects.get(
                 user_profile_id=hamlet.id,
                 message_id=message_id,

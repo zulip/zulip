@@ -1,6 +1,8 @@
 import json
 import os
+import random
 import re
+import string
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 from unittest import mock
@@ -924,6 +926,12 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
 
         req = dict(jitsi_server_url=orjson.dumps(12).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        url_string = "".join(random.choices(string.ascii_lowercase, k=180))
+        long_url = "https://jitsi.example.com/" + url_string
+        req = dict(jitsi_server_url=orjson.dumps(long_url).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
 

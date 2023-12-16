@@ -241,6 +241,7 @@
 ## Support
 * [View Zulip version](/help/view-zulip-version)
 * [Zulip Cloud billing](/help/zulip-cloud-billing)
+* [Self-hosted billing](/help/self-hosted-billing)
 * [Support the Zulip project](/help/support-zulip-project)
 * [Linking to the Zulip website](/help/linking-to-zulip-website)
 * [Contact support](/help/contact-support)

@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
 const narrow_state = mock_esm("../src/narrow_state");
@@ -459,7 +459,7 @@ test("has_suggestions", ({override, mock_template}) => {
     let query = "h";
     stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream_name", () => {});
+    override(narrow_state, "stream_name", noop);
 
     let suggestions = get_suggestions(query);
     let expected = ["h", "has:link", "has:image", "has:attachment"];
@@ -518,7 +518,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
 
     stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream_name", () => {});
+    override(narrow_state, "stream_name", noop);
 
     let query = "i";
     let suggestions = get_suggestions(query);
@@ -599,7 +599,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
 test("sent_by_me_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    override(narrow_state, "stream_name", () => {});
+    override(narrow_state, "stream_name", noop);
 
     let query = "";
     let suggestions = get_suggestions(query);
@@ -675,7 +675,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     let suggestions;
     let expected;
 
-    override(stream_topic_history_util, "get_server_history", () => {});
+    override(stream_topic_history_util, "get_server_history", noop);
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     override(narrow_state, "stream_name", () => "office");
 
@@ -800,7 +800,7 @@ test("whitespace_glitch", ({override, mock_template}) => {
 
     const query = "stream:office "; // note trailing space
 
-    override(stream_topic_history_util, "get_server_history", () => {});
+    override(stream_topic_history_util, "get_server_history", noop);
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
 
     const suggestions = get_suggestions(query);
@@ -816,7 +816,7 @@ test("stream_completion", ({override, mock_template}) => {
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
 
-    override(narrow_state, "stream_name", () => {});
+    override(narrow_state, "stream_name", noop);
 
     let query = "stream:of";
     let suggestions = get_suggestions(query);
@@ -839,7 +839,7 @@ test("people_suggestions", ({override, mock_template}) => {
 
     let query = "te";
 
-    override(narrow_state, "stream_name", () => {});
+    override(narrow_state, "stream_name", noop);
 
     const ted = {
         email: "ted@zulip.com",

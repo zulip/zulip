@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
@@ -11,7 +11,6 @@ set_global("document", {});
 class ClipboardEvent {}
 set_global("ClipboardEvent", ClipboardEvent);
 
-const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
 mock_esm("../src/ui_util", {
@@ -114,7 +113,7 @@ function set_up() {
     const $pill_input = $.create("pill_input");
 
     $pill_input[0] = {};
-    $pill_input.before = () => {};
+    $pill_input.before = noop;
 
     const create_item_from_text = (text) => items[text];
 
@@ -503,7 +502,7 @@ run_test("exit button on pill", ({mock_template}) => {
 
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
-        pill.$element.remove = () => {};
+        pill.$element.remove = noop;
     }
 
     let next_pill_focused = false;
@@ -613,7 +612,7 @@ run_test("appendValue/clear", ({mock_template}) => {
         get_text_from_item: /* istanbul ignore next */ (s) => s.display_value,
     };
 
-    $pill_input.before = () => {};
+    $pill_input.before = noop;
     $pill_input[0] = {};
 
     const widget = input_pill.create(config);

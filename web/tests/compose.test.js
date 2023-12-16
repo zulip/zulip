@@ -8,13 +8,11 @@ const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
-
-const noop = () => {};
 
 set_global("document", {
     querySelector() {},
@@ -29,8 +27,8 @@ set_global(
 
 const fake_now = 555;
 
-const autosize = () => {};
-autosize.update = () => {};
+const autosize = noop;
+autosize.update = noop;
 mock_esm("autosize", {default: autosize});
 
 const channel = mock_esm("../src/channel");
@@ -125,8 +123,8 @@ function test_ui(label, f) {
 function initialize_handlers({override}) {
     override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
     override(page_params, "realm_video_chat_provider", 0);
-    override(upload, "feature_check", () => {});
-    override(resize, "watch_manual_resize", () => {});
+    override(upload, "feature_check", noop);
+    override(resize, "watch_manual_resize", noop);
     compose_setup.initialize();
 }
 
@@ -237,8 +235,8 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
-        override(markdown, "apply_markdown", () => {});
-        override(markdown, "add_topic_links", () => {});
+        override(markdown, "apply_markdown", noop);
+        override(markdown, "add_topic_links", noop);
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
@@ -336,7 +334,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         $(".compose-submit-button .loader").show();
         $("textarea#compose-textarea").off("select");
         echo_error_msg_checked = false;
-        override_rewire(echo, "try_deliver_locally", () => {});
+        override_rewire(echo, "try_deliver_locally", noop);
 
         override(sent_messages, "get_new_local_id", () => "loc-55");
 
@@ -360,7 +358,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("textarea#compose-textarea").toggleClass = noop;
     mock_stream_header_colorblock();
-    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -411,7 +409,7 @@ test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
     mock_stream_header_colorblock();
 
-    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -500,7 +498,7 @@ test_ui("initialize", ({override}) => {
             uppy_cancel_all_called = true;
         },
     });
-    override(upload, "feature_check", () => {});
+    override(upload, "feature_check", noop);
 
     compose_setup.initialize();
 
@@ -607,7 +605,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
     initialize_handlers({override});
 
-    override(rendered_markdown, "update_elements", () => {});
+    override(rendered_markdown, "update_elements", noop);
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");

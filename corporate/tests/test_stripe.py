@@ -19,7 +19,10 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypeVar,
+    Union,
+    cast,
 )
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -31,6 +34,7 @@ import stripe.util
 import time_machine
 from django.conf import settings
 from django.core import signing
+from django.test import override_settings
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
@@ -85,6 +89,7 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
+from corporate.tests.test_remote_billing import RemoteRealmBillingTestCase, RemoteServerTestCase
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
@@ -93,6 +98,7 @@ from zerver.actions.create_user import (
 )
 from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
 from zerver.actions.users import do_deactivate_user
+from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
@@ -109,6 +115,8 @@ from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
 )
@@ -427,6 +435,10 @@ class StripeTestCase(ZulipTestCase):
         hamlet.is_billing_admin = True
         hamlet.save(update_fields=["is_billing_admin"])
 
+        self.billing_session: Union[
+            RealmBillingSession, RemoteRealmBillingSession, RemoteServerBillingSession
+        ] = RealmBillingSession(user=hamlet, realm=realm)
+
     def get_signed_seat_count_from_response(self, response: "TestHttpResponse") -> Optional[str]:
         match = re.search(r"name=\"signed_seat_count\" value=\"(.+)\"", response.content.decode())
         return match.group(1) if match else None
@@ -457,8 +469,8 @@ class StripeTestCase(ZulipTestCase):
     def assert_details_of_valid_session_from_event_status_endpoint(
         self, stripe_session_id: str, expected_details: Dict[str, Any]
     ) -> None:
-        json_response = self.client_get(
-            "/json/billing/event/status",
+        json_response = self.client_billing_get(
+            "/billing/event/status",
             {
                 "stripe_session_id": stripe_session_id,
             },
@@ -471,8 +483,8 @@ class StripeTestCase(ZulipTestCase):
         stripe_payment_intent_id: str,
         expected_details: Dict[str, Any],
     ) -> None:
-        json_response = self.client_get(
-            "/json/billing/event/status",
+        json_response = self.client_billing_get(
+            "/billing/event/status",
             {
                 "stripe_payment_intent_id": stripe_payment_intent_id,
             },
@@ -528,8 +540,8 @@ class StripeTestCase(ZulipTestCase):
             most_recent_event = events_old_to_new[-1]
 
     def add_card_to_customer_for_upgrade(self, charge_succeeds: bool = True) -> None:
-        start_session_json_response = self.client_post(
-            "/json/upgrade/session/start_card_update_session"
+        start_session_json_response = self.client_billing_post(
+            "/upgrade/session/start_card_update_session"
         )
         response_dict = self.assert_json_success(start_session_json_response)
         self.assert_details_of_valid_session_from_event_status_endpoint(
@@ -568,7 +580,14 @@ class StripeTestCase(ZulipTestCase):
         **kwargs: Any,
     ) -> "TestHttpResponse":
         if upgrade_page_response is None:
-            upgrade_page_response = self.client_get("/upgrade/", {})
+            if self.billing_session.billing_base_url:
+                upgrade_page_response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/", {}, subdomain="selfhosting"
+                )
+            else:
+                upgrade_page_response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/", {}
+                )
         params: Dict[str, Any] = {
             "schedule": "annual",
             "signed_seat_count": self.get_signed_seat_count_from_response(upgrade_page_response),
@@ -593,7 +612,7 @@ class StripeTestCase(ZulipTestCase):
         if talk_to_stripe:
             [last_event] = iter(stripe.Event.list(limit=1))
 
-        upgrade_json_response = self.client_post("/json/billing/upgrade", params)
+        upgrade_json_response = self.client_billing_post("/billing/upgrade", params)
 
         if upgrade_json_response.status_code != 200 or dont_confirm_payment:
             # Return early if the upgrade request failed.
@@ -622,15 +641,22 @@ class StripeTestCase(ZulipTestCase):
         self.send_stripe_webhook_events(last_event)
         return upgrade_json_response
 
-    def add_card_and_upgrade(self, user: UserProfile, **kwargs: Any) -> stripe.Customer:
+    def add_card_and_upgrade(
+        self, user: Optional[UserProfile] = None, **kwargs: Any
+    ) -> stripe.Customer:
         # Add card
         with time_machine.travel(self.now, tick=False):
             self.add_card_to_customer_for_upgrade()
 
         # Check that we correctly created a Customer object in Stripe
-        stripe_customer = stripe_get_customer(
-            assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        )
+        if user is not None:
+            stripe_customer = stripe_get_customer(
+                assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
+            )
+        else:
+            customer = self.billing_session.get_customer()
+            assert customer is not None
+            stripe_customer = stripe_get_customer(assert_is_not_none(customer.stripe_customer_id))
         self.assertTrue(stripe_customer_has_credit_card_as_default_payment_method(stripe_customer))
 
         with time_machine.travel(self.now, tick=False):
@@ -687,6 +713,30 @@ class StripeTestCase(ZulipTestCase):
             mocked["InvoiceItem"].create.return_value = None
             callback(*args, **kwargs)
             return mocked
+
+    def client_billing_get(self, url_suffix: str, info: Mapping[str, Any] = {}) -> Any:
+        url = f"/json{self.billing_session.billing_base_url}" + url_suffix
+        if self.billing_session.billing_base_url:
+            response = self.client_get(url, info, subdomain="selfhosting")
+        else:
+            response = self.client_get(url, info)
+        return response
+
+    def client_billing_post(self, url_suffix: str, info: Mapping[str, Any] = {}) -> Any:
+        url = f"/json{self.billing_session.billing_base_url}" + url_suffix
+        if self.billing_session.billing_base_url:
+            response = self.client_post(url, info, subdomain="selfhosting")
+        else:
+            response = self.client_post(url, info)
+        return response
+
+    def client_billing_patch(self, url_suffix: str, info: Mapping[str, Any] = {}) -> Any:
+        url = f"/json{self.billing_session.billing_base_url}" + url_suffix
+        if self.billing_session.billing_base_url:
+            response = self.client_patch(url, info, subdomain="selfhosting")  # nocoverage
+        else:
+            response = self.client_patch(url, info)
+        return response
 
 
 class StripeTest(StripeTestCase):
@@ -1456,8 +1506,8 @@ class StripeTest(StripeTestCase):
         self.login_user(hamlet)
         hamlet_upgrade_page_response = self.client_get("/upgrade/")
         self.add_card_to_customer_for_upgrade()
-        self.client_post(
-            "/json/billing/upgrade",
+        self.client_billing_post(
+            "/billing/upgrade",
             {
                 "billing_modality": "charge_automatically",
                 "schedule": "annual",
@@ -1741,7 +1791,7 @@ class StripeTest(StripeTestCase):
             "paid_users_description": "We have 1 paid user.",
         }
 
-        response = self.client_post("/json/billing/sponsorship", data)
+        response = self.client_billing_post("/billing/sponsorship", data)
 
         self.assert_json_error(response, "Enter a valid URL.")
 
@@ -1757,7 +1807,7 @@ class StripeTest(StripeTestCase):
             "paid_users_description": "We have 1 paid user.",
         }
 
-        response = self.client_post("/json/billing/sponsorship", data)
+        response = self.client_billing_post("/billing/sponsorship", data)
 
         self.assert_json_success(response)
 
@@ -1823,7 +1873,7 @@ class StripeTest(StripeTestCase):
             "paid_users_count": "1 user",
             "paid_users_description": "We have 1 paid user.",
         }
-        response = self.client_post("/json/billing/sponsorship", data)
+        response = self.client_billing_post("/billing/sponsorship", data)
         self.assert_json_success(response)
 
         customer = get_customer_by_realm(user.realm)
@@ -1848,7 +1898,7 @@ class StripeTest(StripeTestCase):
 
         for message in outbox:
             self.assert_length(message.to, 1)
-            self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
+            self.assertEqual(message.to[0], "sales@zulip.com")
             self.assertEqual(message.subject, "Sponsorship request (Open-source project) for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
@@ -2094,8 +2144,8 @@ class StripeTest(StripeTestCase):
         stripe.Invoice.finalize_invoice(stripe_invoice)
         RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).delete()
 
-        start_session_json_response = self.client_post(
-            "/json/billing/session/start_card_update_session"
+        start_session_json_response = self.client_billing_post(
+            "/billing/session/start_card_update_session"
         )
         response_dict = self.assert_json_success(start_session_json_response)
         self.assert_details_of_valid_session_from_event_status_endpoint(
@@ -2115,8 +2165,8 @@ class StripeTest(StripeTestCase):
                 self.get_test_card_string(attaches_to_customer=False)
             )
 
-        start_session_json_response = self.client_post(
-            "/json/billing/session/start_card_update_session"
+        start_session_json_response = self.client_billing_post(
+            "/billing/session/start_card_update_session"
         )
         response_dict = self.assert_json_success(start_session_json_response)
         self.assert_details_of_valid_session_from_event_status_endpoint(
@@ -2160,8 +2210,8 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["No payment method on file."], response)
 
-        start_session_json_response = self.client_post(
-            "/json/billing/session/start_card_update_session"
+        start_session_json_response = self.client_billing_post(
+            "/billing/session/start_card_update_session"
         )
         self.assert_json_success(start_session_json_response)
         self.trigger_stripe_checkout_session_completed_webhook(
@@ -2181,8 +2231,8 @@ class StripeTest(StripeTestCase):
         )
 
         self.login_user(self.example_user("iago"))
-        response = self.client_get(
-            "/json/billing/event/status",
+        response = self.client_billing_get(
+            "/billing/event/status",
             {"stripe_session_id": response_dict["stripe_session_id"]},
         )
         self.assert_json_error_contains(
@@ -2201,8 +2251,9 @@ class StripeTest(StripeTestCase):
         )
 
         # Test if manual license management upgrade session is created and is successfully recovered.
-        start_session_json_response = self.client_post(
-            "/json/upgrade/session/start_card_update_session", {"manual_license_management": "true"}
+        start_session_json_response = self.client_billing_post(
+            "/upgrade/session/start_card_update_session",
+            {"manual_license_management": "true"},
         )
         response_dict = self.assert_json_success(start_session_json_response)
         self.assert_details_of_valid_session_from_event_status_endpoint(
@@ -2227,8 +2278,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                response = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+                response = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
                 stripe_customer_id = Customer.objects.get(realm=user.realm).id
                 new_plan = get_current_plan_by_realm(user.realm)
@@ -2346,8 +2398,8 @@ class StripeTest(StripeTestCase):
 
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                response = self.client_patch(
-                    "/json/billing/plan",
+                response = self.client_billing_patch(
+                    "/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
                 )
                 expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}"
@@ -2538,8 +2590,8 @@ class StripeTest(StripeTestCase):
         assert new_plan is not None
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                response = self.client_patch(
-                    "/json/billing/plan",
+                response = self.client_billing_patch(
+                    "/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
                 )
                 self.assertEqual(
@@ -2655,8 +2707,8 @@ class StripeTest(StripeTestCase):
         assert self.now is not None
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                response = self.client_patch(
-                    "/json/billing/plan",
+                response = self.client_billing_patch(
+                    "/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE},
                 )
                 expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE}"
@@ -2825,8 +2877,9 @@ class StripeTest(StripeTestCase):
             )
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                response = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+                response = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
                 stripe_customer_id = Customer.objects.get(realm=user.realm).id
                 new_plan = get_current_plan_by_realm(user.realm)
@@ -2839,7 +2892,10 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                response = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
+                response = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.ACTIVE},
+                )
                 expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
                 self.assertEqual(m.output[0], expected_log)
                 self.assert_json_success(response)
@@ -2867,8 +2923,9 @@ class StripeTest(StripeTestCase):
             new_plan = get_current_plan_by_realm(user.realm)
             assert new_plan is not None
             with time_machine.travel(self.now, tick=False):
-                self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+                self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
             expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
             self.assertEqual(m.output[0], expected_log)
@@ -2899,8 +2956,8 @@ class StripeTest(StripeTestCase):
 
                 customer = get_customer_by_realm(user.realm)
                 assert customer is not None
-                result = self.client_patch(
-                    "/json/billing/plan",
+                result = self.client_billing_patch(
+                    "/billing/plan",
                     {
                         "status": CustomerPlan.FREE_TRIAL,
                         "schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
@@ -2954,8 +3011,8 @@ class StripeTest(StripeTestCase):
 
                 customer = get_customer_by_realm(user.realm)
                 assert customer is not None
-                result = self.client_patch(
-                    "/json/billing/plan",
+                result = self.client_billing_patch(
+                    "/billing/plan",
                     {
                         "status": CustomerPlan.FREE_TRIAL,
                         "schedule": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
@@ -3020,7 +3077,10 @@ class StripeTest(StripeTestCase):
             self.login_user(user)
 
             with time_machine.travel(self.now, tick=False):
-                self.client_patch("/json/billing/plan", {"status": CustomerPlan.ENDED})
+                self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.ENDED},
+                )
 
             plan.refresh_from_db()
             self.assertEqual(get_realm("zulip").plan_type, Realm.PLAN_TYPE_LIMITED)
@@ -3064,8 +3124,8 @@ class StripeTest(StripeTestCase):
             # Schedule downgrade
             with self.assertLogs("corporate.stripe", "INFO") as m:
                 with time_machine.travel(self.now, tick=False):
-                    response = self.client_patch(
-                        "/json/billing/plan",
+                    response = self.client_billing_patch(
+                        "/billing/plan",
                         {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
                     )
                     stripe_customer_id = Customer.objects.get(realm=user.realm).id
@@ -3175,8 +3235,8 @@ class StripeTest(StripeTestCase):
             # Schedule downgrade
             with self.assertLogs("corporate.stripe", "INFO") as m:
                 with time_machine.travel(self.now, tick=False):
-                    response = self.client_patch(
-                        "/json/billing/plan",
+                    response = self.client_billing_patch(
+                        "/billing/plan",
                         {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
                     )
                     stripe_customer_id = Customer.objects.get(realm=user.realm).id
@@ -3195,8 +3255,9 @@ class StripeTest(StripeTestCase):
             # Cancel downgrade
             with self.assertLogs("corporate.stripe", "INFO") as m:
                 with time_machine.travel(self.now, tick=False):
-                    response = self.client_patch(
-                        "/json/billing/plan", {"status": CustomerPlan.FREE_TRIAL}
+                    response = self.client_billing_patch(
+                        "/billing/plan",
+                        {"status": CustomerPlan.FREE_TRIAL},
                     )
                     stripe_customer_id = Customer.objects.get(realm=user.realm).id
                     new_plan = get_current_plan_by_realm(user.realm)
@@ -3222,8 +3283,9 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+                self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
             stripe_customer_id = Customer.objects.get(realm=user.realm).id
             new_plan = get_current_plan_by_realm(user.realm)
@@ -3281,38 +3343,44 @@ class StripeTest(StripeTestCase):
             self.upgrade(invoice=True, licenses=100)
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses": 100})
+            result = self.client_billing_patch("/billing/plan", {"licenses": 100})
             self.assert_json_error_contains(
                 result, "Your plan is already on 100 licenses in the current billing period."
             )
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 100})
+            result = self.client_billing_patch(
+                "/billing/plan",
+                {"licenses_at_next_renewal": 100},
+            )
             self.assert_json_error_contains(
                 result, "Your plan is already scheduled to renew with 100 licenses."
             )
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses": 50})
+            result = self.client_billing_patch("/billing/plan", {"licenses": 50})
             self.assert_json_error_contains(
                 result, "You cannot decrease the licenses in the current billing period."
             )
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 25})
+            result = self.client_billing_patch(
+                "/billing/plan",
+                {"licenses_at_next_renewal": 25},
+            )
             self.assert_json_error_contains(
                 result,
                 "You must purchase licenses for all active users in your organization (minimum 30).",
             )
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses": 2000})
+            result = self.client_billing_patch("/billing/plan", {"licenses": 2000})
             self.assert_json_error_contains(
                 result, "Invoices with more than 1000 licenses can't be processed from this page."
             )
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses": 150})
+            result = self.client_billing_patch("/billing/plan", {"licenses": 150})
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year)
         stripe_customer = stripe_get_customer(
@@ -3362,7 +3430,10 @@ class StripeTest(StripeTestCase):
             self.assertEqual(extra_license_item.get(key), value)
 
         with time_machine.travel(self.next_year, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 120})
+            result = self.client_billing_patch(
+                "/billing/plan",
+                {"licenses_at_next_renewal": 120},
+            )
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year + timedelta(days=365))
         stripe_customer = stripe_get_customer(
@@ -3415,8 +3486,8 @@ class StripeTest(StripeTestCase):
             self.local_upgrade(100, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch(
-                "/json/billing/plan",
+            result = self.client_billing_patch(
+                "/billing/plan",
                 {"licenses_at_next_renewal": get_latest_seat_count(user.realm) - 2},
             )
 
@@ -3465,11 +3536,14 @@ class StripeTest(StripeTestCase):
             )
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses": 100})
+            result = self.client_billing_patch("/billing/plan", {"licenses": 100})
             self.assert_json_error_contains(result, "Your plan is on automatic license management.")
 
         with time_machine.travel(self.now, tick=False):
-            result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 100})
+            result = self.client_billing_patch(
+                "/billing/plan",
+                {"licenses_at_next_renewal": 100},
+            )
             self.assert_json_error_contains(result, "Your plan is on automatic license management.")
 
     def test_update_plan_with_invalid_status(self) -> None:
@@ -3479,8 +3553,8 @@ class StripeTest(StripeTestCase):
             )
         self.login_user(self.example_user("hamlet"))
 
-        response = self.client_patch(
-            "/json/billing/plan",
+        response = self.client_billing_patch(
+            "/billing/plan",
             {"status": CustomerPlan.NEVER_STARTED},
         )
         self.assert_json_error_contains(response, "Invalid status")
@@ -3493,7 +3567,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(self.example_user("hamlet"))
         with time_machine.travel(self.now, tick=False):
-            response = self.client_patch("/json/billing/plan", {})
+            response = self.client_billing_patch("/billing/plan", {})
         self.assert_json_error_contains(response, "Nothing to change")
 
     def test_update_plan_that_which_is_due_for_expiry(self) -> None:
@@ -3505,8 +3579,9 @@ class StripeTest(StripeTestCase):
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                result = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+                result = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
                 self.assert_json_success(result)
                 self.assertRegex(
@@ -3515,7 +3590,10 @@ class StripeTest(StripeTestCase):
                 )
 
         with time_machine.travel(self.next_year, tick=False):
-            result = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
+            result = self.client_billing_patch(
+                "/billing/plan",
+                {"status": CustomerPlan.ACTIVE},
+            )
             self.assert_json_error_contains(
                 result, "Unable to update the plan. The plan has ended."
             )
@@ -3529,8 +3607,9 @@ class StripeTest(StripeTestCase):
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with time_machine.travel(self.now, tick=False):
-                result = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}
+                result = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
                 )
                 self.assert_json_success(result)
                 self.assertRegex(
@@ -3539,7 +3618,7 @@ class StripeTest(StripeTestCase):
                 )
 
         with time_machine.travel(self.next_month, tick=False):
-            result = self.client_patch("/json/billing/plan", {})
+            result = self.client_billing_patch("/billing/plan", {})
             self.assert_json_error_contains(
                 result,
                 "Unable to update the plan. The plan has been expired and replaced with a new plan.",
@@ -5432,3 +5511,425 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.assertEqual(success_message, "zulip downgraded and voided 1 open invoices")
         original_plan.refresh_from_db()
         self.assertEqual(original_plan.status, CustomerPlan.ENDED)
+
+
+class TestRemoteBillingWriteAuditLog(StripeTestCase):
+    def test_write_audit_log(self) -> None:
+        support_admin = self.example_user("iago")
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        realm_uuid = str(uuid.uuid4())
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=realm_uuid,
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+        )
+        remote_realm_billing_user = RemoteRealmBillingUser.objects.create(
+            remote_realm=remote_realm, email="admin@example.com", user_uuid=uuid.uuid4()
+        )
+        remote_server_billing_user = RemoteServerBillingUser.objects.create(
+            remote_server=remote_server, email="admin@example.com"
+        )
+        event_time = timezone_now()
+
+        def assert_audit_log(
+            audit_log: Union[RemoteRealmAuditLog, RemoteZulipServerAuditLog],
+            acting_remote_user: Optional[Union[RemoteRealmBillingUser, RemoteServerBillingUser]],
+            acting_support_user: Optional[UserProfile],
+            event_type: int,
+            event_time: datetime,
+        ) -> None:
+            self.assertEqual(audit_log.event_type, event_type)
+            self.assertEqual(audit_log.event_time, event_time)
+            self.assertEqual(audit_log.acting_remote_user, acting_remote_user)
+            self.assertEqual(audit_log.acting_support_user, acting_support_user)
+
+        for session_class, audit_log_class, remote_object, remote_user in [
+            (
+                RemoteRealmBillingSession,
+                RemoteRealmAuditLog,
+                remote_realm,
+                remote_realm_billing_user,
+            ),
+            (
+                RemoteServerBillingSession,
+                RemoteZulipServerAuditLog,
+                remote_server,
+                remote_server_billing_user,
+            ),
+        ]:
+            # Necessary cast or mypy doesn't understand that we can use Django's
+            # model .objects. style queries on this.
+            audit_log_model = cast(
+                Union[Type[RemoteRealmAuditLog], Type[RemoteZulipServerAuditLog]], audit_log_class
+            )
+            assert isinstance(remote_user, (RemoteRealmBillingUser, RemoteServerBillingUser))
+            # No acting user:
+            session = session_class(remote_object)
+            session.write_to_audit_log(
+                # This "ordinary billing" event type value gets translated by write_to_audit_log
+                # into a RemoteRealmBillingSession.CUSTOMER_PLAN_CREATED or
+                # RemoteServerBillingSession.CUSTOMER_PLAN_CREATED value.
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=event_time,
+            )
+            audit_log = audit_log_model.objects.latest("id")
+            assert_audit_log(
+                audit_log, None, None, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+            )
+
+            session = session_class(remote_object, remote_billing_user=remote_user)
+            session.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=event_time,
+            )
+            audit_log = audit_log_model.objects.latest("id")
+            assert_audit_log(
+                audit_log, remote_user, None, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+            )
+
+            session = session_class(
+                remote_object, remote_billing_user=None, support_staff=support_admin
+            )
+            session.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=event_time,
+            )
+            audit_log = audit_log_model.objects.latest("id")
+            assert_audit_log(
+                audit_log, None, support_admin, audit_log_class.CUSTOMER_PLAN_CREATED, event_time
+            )
+
+
+@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
+    @override
+    def setUp(self) -> None:
+        # We need to time travel to 2012-1-2 because super().setUp()
+        # creates users and changes roles with event_time=timezone_now().
+        # That affects the LicenseLedger queries as their event_time would
+        # be more recent than other operations we perform in this test.
+        with time_machine.travel(datetime(2012, 1, 2, 3, 4, 5, tzinfo=timezone.utc), tick=False):
+            super().setUp()
+
+        hamlet = self.example_user("hamlet")
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        self.billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+
+    @responses.activate
+    @mock_stripe()
+    def test_non_sponsorship_billing(self, *mocks: Mock) -> None:
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        result = self.execute_remote_billing_authentication_flow(hamlet)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{self.billing_session.billing_base_url}/plans/")
+
+        # upgrade to business plan
+        with time_machine.travel(self.now, tick=False):
+            result = self.client_get(
+                f"{self.billing_session.billing_base_url}/upgrade/", subdomain="selfhosting"
+            )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Add card", "Purchase Zulip Business"], result)
+
+        self.assertFalse(Customer.objects.exists())
+        self.assertFalse(CustomerPlan.objects.exists())
+        self.assertFalse(LicenseLedger.objects.exists())
+
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade()
+
+        customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+        plan = CustomerPlan.objects.get(customer=customer)
+        LicenseLedger.objects.get(plan=plan)
+
+        with time_machine.travel(self.now + timedelta(days=1), tick=False):
+            response = self.client_get(
+                f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+            )
+        for substring in [
+            "Zulip Business",
+            "Number of licenses",
+            "10 (managed automatically)",
+            "Your plan will automatically renew on",
+            "Visa ending in 4242",
+            "Update card",
+        ]:
+            self.assert_in_response(substring, response)
+
+        # Verify that change in user count updates LicenseLedger.
+        audit_log_count = RemoteRealmAuditLog.objects.count()
+        self.assertEqual(LicenseLedger.objects.count(), 1)
+
+        with time_machine.travel(self.now + timedelta(days=2), tick=False):
+            user_count = self.billing_session.current_count_for_billed_licenses(
+                self.now + timedelta(days=2)
+            )
+            for count in range(10):
+                do_create_user(
+                    f"email {count}",
+                    f"password {count}",
+                    hamlet.realm,
+                    "name",
+                    role=UserProfile.ROLE_MEMBER,
+                    acting_user=None,
+                )
+
+        with time_machine.travel(self.now + timedelta(days=3), tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.assertEqual(
+            RemoteRealmAuditLog.objects.count(),
+            audit_log_count + 10,
+        )
+        latest_ledger = LicenseLedger.objects.last()
+        assert latest_ledger is not None
+        self.assertEqual(latest_ledger.licenses, user_count + 10)
+
+    @responses.activate
+    def test_request_sponsorship(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        billing_base_url = self.billing_session.billing_base_url
+
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
+        self.assertIsNone(self.billing_session.get_customer())
+        result = self.execute_remote_billing_authentication_flow(hamlet)
+
+        # User has no plan, so we redirect to /plans by default.
+        self.assertEqual(result["Location"], f"/realm/{realm.uuid!s}/plans/")
+
+        # Check strings on plans page.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(["Request sponsorship"], result)
+        self.assert_not_in_success_response(["Sponsorship pending"], result)
+
+        # Navigate to request sponsorship page.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["Description of your organization", "Requested plan"], result
+        )
+
+        # Submit form data.
+        data = {
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
+            "website": "https://infinispan.org/",
+            "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+            "expected_total_users": "10 users",
+            "paid_users_count": "1 user",
+            "paid_users_description": "We have 1 paid user.",
+            "requested_plan": "Community",
+        }
+        response = self.client_billing_post("/billing/sponsorship", data)
+        self.assert_json_success(response)
+
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+
+        sponsorship_request = ZulipSponsorshipRequest.objects.get(customer=customer)
+        self.assertEqual(sponsorship_request.requested_plan, data["requested_plan"])
+        self.assertEqual(sponsorship_request.org_website, data["website"])
+        self.assertEqual(sponsorship_request.org_description, data["description"])
+        self.assertEqual(
+            sponsorship_request.org_type,
+            Realm.ORG_TYPES["opensource"]["id"],
+        )
+
+        from django.core.mail import outbox
+
+        # First email is remote user email confirmation, second email is for sponsorship
+        message = outbox[1]
+        self.assert_length(outbox, 2)
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.subject, "Sponsorship request (Open-source project) for Zulip Dev")
+        self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+        self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
+        self.assertIn(
+            "Support URL: http://zulip.testserver/activity/remote/support?q=demo.example.com",
+            message.body,
+        )
+        self.assertIn("Website: https://infinispan.org", message.body)
+        self.assertIn("Organization type: Open-source", message.body)
+        self.assertIn("Description:\nInfinispan is a distributed in-memory", message.body)
+
+        # Check /billing redirects you to sponsorship page.
+        response = self.client_get(f"{billing_base_url}/billing/", subdomain="selfhosting")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"/realm/{realm.uuid!s}/sponsorship/")
+
+        # Check sponsorship page shows sponsorship pending banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["This organization has requested sponsorship for a", "Community"], result
+        )
+
+        # Approve sponsorship
+        billing_session = RemoteRealmBillingSession(
+            remote_realm=remote_realm, support_staff=self.example_user("iago")
+        )
+        billing_session.approve_sponsorship()
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_COMMUNITY)
+
+        # Check email sent.
+        expected_message = (
+            "Your request for Zulip sponsorship has been approved! Your organization has been upgraded to the Zulip Community plan."
+            "\n\nIf you could list Zulip as a sponsor on your website, we would really appreciate it!"
+        )
+        self.assert_length(outbox, 3)
+        message = outbox[2]
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "hamlet@zulip.com")
+        self.assertEqual(message.subject, "Community plan sponsorship approved for Zulip Dev!")
+        self.assertEqual(message.from_email, "noreply@testserver")
+        self.assertIn(expected_message[0], message.body)
+        self.assertIn(expected_message[1], message.body)
+
+        # Check sponsorship approved banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(["Zulip is sponsoring a free", "Community"], result)
+
+
+@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.remote_server = RemoteZulipServer.objects.get(hostname="demo.example.com")
+        self.billing_session = RemoteServerBillingSession(remote_server=self.remote_server)
+
+    @responses.activate
+    def test_request_sponsorship(self) -> None:
+        hamlet = self.example_user("hamlet")
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
+            )
+
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        billing_base_url = self.billing_session.billing_base_url
+
+        self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+        self.assertIsNone(self.billing_session.get_customer())
+
+        # User has no plan, so we redirect to /plans by default.
+        self.assertEqual(result["Location"], f"/server/{self.remote_server.uuid!s}/plans/")
+
+        # Check strings on plans page.
+        result = self.client_get(result["Location"], subdomain="selfhosting")
+        self.assert_in_success_response(["Request sponsorship"], result)
+        self.assert_not_in_success_response(["Sponsorship pending"], result)
+
+        # Navigate to request sponsorship page.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["Description of your organization", "Requested plan"], result
+        )
+
+        # Submit form data.
+        data = {
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
+            "website": "https://infinispan.org/",
+            "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+            "expected_total_users": "10 users",
+            "paid_users_count": "1 user",
+            "paid_users_description": "We have 1 paid user.",
+            "requested_plan": "Community",
+        }
+        response = self.client_billing_post("/billing/sponsorship", data)
+        self.assert_json_success(response)
+
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+
+        sponsorship_request = ZulipSponsorshipRequest.objects.get(customer=customer)
+        self.assertEqual(sponsorship_request.requested_plan, data["requested_plan"])
+        self.assertEqual(sponsorship_request.org_website, data["website"])
+        self.assertEqual(sponsorship_request.org_description, data["description"])
+        self.assertEqual(
+            sponsorship_request.org_type,
+            Realm.ORG_TYPES["opensource"]["id"],
+        )
+
+        from django.core.mail import outbox
+
+        # First email is remote user email confirmation, second email is for sponsorship
+        message = outbox[1]
+        self.assert_length(outbox, 2)
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(
+            message.subject, "Sponsorship request (Open-source project) for demo.example.com"
+        )
+        self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+        self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
+        self.assertIn(
+            "Support URL: http://zulip.testserver/activity/remote/support?q=demo.example.com",
+            message.body,
+        )
+        self.assertIn("Website: https://infinispan.org", message.body)
+        self.assertIn("Organization type: Open-source", message.body)
+        self.assertIn("Description:\nInfinispan is a distributed in-memory", message.body)
+
+        # Check /billing redirects you to sponsorship page.
+        response = self.client_get(f"{billing_base_url}/billing/", subdomain="selfhosting")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"/server/{self.remote_server.uuid!s}/sponsorship/")
+
+        # Check sponsorship page shows sponsorship pending banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(
+            ["This organization has requested sponsorship for a", "Community"], result
+        )
+
+        # Approve sponsorship
+        billing_session = RemoteServerBillingSession(
+            remote_server=self.remote_server, support_staff=self.example_user("iago")
+        )
+        billing_session.approve_sponsorship()
+        self.remote_server.refresh_from_db()
+        self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_COMMUNITY)
+
+        # Check email sent.
+        expected_message = (
+            "Your request for Zulip sponsorship has been approved! Your organization has been upgraded to the Zulip Community plan."
+            "\n\nIf you could list Zulip as a sponsor on your website, we would really appreciate it!"
+        )
+        self.assert_length(outbox, 3)
+        message = outbox[2]
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "hamlet@zulip.com")
+        self.assertEqual(
+            message.subject, "Community plan sponsorship approved for demo.example.com!"
+        )
+        self.assertEqual(message.from_email, "noreply@testserver")
+        self.assertIn(expected_message[0], message.body)
+        self.assertIn(expected_message[1], message.body)
+
+        # Check sponsorship approved banner.
+        result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
+        self.assert_in_success_response(["Zulip is sponsoring a free", "Community"], result)

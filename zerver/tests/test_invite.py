@@ -1194,7 +1194,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.save()
 
         result = self.submit_reg_form_for_user("foo@example.com", "password")
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 400)
         self.assert_in_response(
             "does not allow signups using emails with your email domain", result
         )
@@ -1221,7 +1221,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.save()
 
         result = self.submit_reg_form_for_user("foo@mailnator.com", "password")
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 400)
         self.assert_in_response("does not allow signups using disposable email addresses.", result)
 
     def test_invite_with_email_containing_plus_before_closing(self) -> None:
@@ -1247,7 +1247,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.save()
 
         result = self.submit_reg_form_for_user(external_address, "password")
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 400)
         self.assert_in_response('does not allow signups using emails that contain "+".', result)
 
     def test_invalid_email_check_after_confirming_email(self) -> None:
@@ -1263,7 +1263,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         prereg_user.save()
 
         result = self.submit_reg_form_for_user(email, "password")
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 400)
         self.assert_in_response(
             "The email address you are trying to sign up with is not valid", result
         )

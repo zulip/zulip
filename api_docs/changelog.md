@@ -18,7 +18,24 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 9.0
+
+Feature levels 238-239 are reserved for future use in 8.x maintenance
+releases.
+
 ## Changes in Zulip 8.0
+
+**Feature level 237**
+
+No changes; feature level used for Zulip 8.0 release.
+
+**Feature level 236**
+
+* [`POST /messages`](/api/send-message), [`POST
+  /scheduled_messages`](/api/create-scheduled-message): The new
+  `read_by_sender` parameter lets the client override the heuristic
+  that determines whether the new message will be initially marked
+  read by its sender.
 
 **Feature level 235**
 

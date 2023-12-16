@@ -147,6 +147,9 @@ class RemoteRealm(models.Model):
     registration_deactivated = models.BooleanField(default=False)
     # Whether the realm has been deactivated on the remote server.
     realm_deactivated = models.BooleanField(default=False)
+    # Whether we believe the remote server deleted this realm
+    # from the database.
+    realm_locally_deleted = models.BooleanField(default=False)
 
     # When the realm was created on the remote server.
     realm_date_created = models.DateTimeField()
@@ -195,6 +198,9 @@ class RemoteRealmBillingUser(AbstractRemoteRealmBillingUser):
     TOS_VERSION_BEFORE_FIRST_LOGIN = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
 
+    enable_major_release_emails = models.BooleanField(default=True)
+    enable_maintenance_release_emails = models.BooleanField(default=True)
+
     class Meta:
         unique_together = [
             ("remote_realm", "user_uuid"),
@@ -233,6 +239,12 @@ class RemoteServerBillingUser(AbstractRemoteServerBillingUser):
 
     is_active = models.BooleanField(default=True)
 
+    TOS_VERSION_BEFORE_FIRST_LOGIN = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+    tos_version = models.TextField(default=TOS_VERSION_BEFORE_FIRST_LOGIN)
+
+    enable_major_release_emails = models.BooleanField(default=True)
+    enable_maintenance_release_emails = models.BooleanField(default=True)
+
     class Meta:
         unique_together = [
             ("remote_server", "email"),
@@ -261,6 +273,11 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
+    acting_remote_user = models.ForeignKey(
+        RemoteServerBillingUser, null=True, on_delete=models.SET_NULL
+    )
+    acting_support_user = models.ForeignKey(UserProfile, null=True, on_delete=models.SET_NULL)
+
     @override
     def __str__(self) -> str:
         return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
@@ -282,6 +299,11 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     realm_id = models.IntegerField(null=True, blank=True)
     # The remote_id field lets us deduplicate data from the remote server
     remote_id = models.IntegerField(null=True)
+
+    acting_remote_user = models.ForeignKey(
+        RemoteRealmBillingUser, null=True, on_delete=models.SET_NULL
+    )
+    acting_support_user = models.ForeignKey(UserProfile, null=True, on_delete=models.SET_NULL)
 
     @override
     def __str__(self) -> str:

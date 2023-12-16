@@ -16,6 +16,7 @@ export function setup_subscriptions_stream_hash(
 ): void {
     const hash = hash_util.stream_edit_url(sub, right_side_tab);
     browser_history.update(hash);
+    select_tab = right_side_tab;
 }
 
 export function setup_toggler(): void {

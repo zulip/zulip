@@ -3,11 +3,23 @@
 This page contains the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
+## Zulip 9.x series
+
+### 9.0 -- unreleased
+
+This section is an incomplete draft of the release notes for the next
+major release, and is only updated occasionally. See the [commit
+log][commit-log] for an up-to-date list of all changes.
+
+#### Upgrade notes for 9.0
+
+- None yet.
+
 ## Zulip Server 8.x series
 
-### Zulip Server 8.0-beta2
+### Zulip Server 8.0
 
-_Released 2023-12-12_
+_Released 2023-12-15_
 
 #### Highlights
 
@@ -3704,7 +3716,8 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 8.0](#upgrade-notes-for-80)
+- [Draft upgrade notes for 9.0](#upgrade-notes-for-90)
+- [Upgrade notes for 8.0](#upgrade-notes-for-80)
 - [Upgrade notes for 7.0](#upgrade-notes-for-70)
 - [Upgrade notes for 6.0](#upgrade-notes-for-60)
 - [Upgrade notes for 5.0](#upgrade-notes-for-50)

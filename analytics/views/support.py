@@ -76,7 +76,9 @@ def get_plan_type_string(plan_type: int) -> str:
         Realm.PLAN_TYPE_STANDARD_FREE: "Standard free",
         Realm.PLAN_TYPE_PLUS: "Plus",
         RemoteZulipServer.PLAN_TYPE_SELF_MANAGED: "Self-managed",
-        RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY: "Self-managed (legacy)",
+        RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY: CustomerPlan.name_from_tier(
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ),
         RemoteZulipServer.PLAN_TYPE_COMMUNITY: "Community",
         RemoteZulipServer.PLAN_TYPE_BUSINESS: "Business",
         RemoteZulipServer.PLAN_TYPE_ENTERPRISE: "Enterprise",
