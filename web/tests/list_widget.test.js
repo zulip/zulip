@@ -65,14 +65,14 @@ function make_scroll_container() {
     // Capture the scroll callback so we can call it in
     // our tests.
     $scroll_container.on = (ev, f) => {
-        assert.equal(ev, "scroll.list_widget_container");
+        assert.equal(ev, "scroll.list-widget-container");
         $scroll_container.call_scroll = () => {
             f.call($scroll_container);
         };
     };
 
     $scroll_container.off = (ev) => {
-        assert.equal(ev, "scroll.list_widget_container");
+        assert.equal(ev, "scroll.list-widget-container");
         $scroll_container.cleared = true;
     };
 
@@ -85,13 +85,13 @@ function make_sort_container() {
     $sort_container.cleared = false;
 
     $sort_container.on = (ev, sel, f) => {
-        assert.equal(ev, "click.list_widget_sort");
+        assert.equal(ev, "click.list-widget-sort");
         assert.equal(sel, "[data-sort]");
         $sort_container.f = f;
     };
 
     $sort_container.off = (ev) => {
-        assert.equal(ev, "click.list_widget_sort");
+        assert.equal(ev, "click.list-widget-sort");
         $sort_container.cleared = true;
     };
 
@@ -104,12 +104,12 @@ function make_filter_element() {
     $element.cleared = false;
 
     $element.on = (ev, f) => {
-        assert.equal(ev, "input.list_widget_filter");
+        assert.equal(ev, "input.list-widget-filter");
         $element.f = f;
     };
 
     $element.off = (ev) => {
-        assert.equal(ev, "input.list_widget_filter");
+        assert.equal(ev, "input.list-widget-filter");
         $element.cleared = true;
     };
 
@@ -125,7 +125,7 @@ function make_search_input() {
     $element.to_jquery = () => $element;
 
     $element.on = (event_name, f) => {
-        assert.equal(event_name, "input.list_widget_filter");
+        assert.equal(event_name, "input.list-widget-filter");
         $element.simulate_input_event = () => {
             const elem = {
                 value: $element.val(),

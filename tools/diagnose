@@ -36,7 +36,7 @@ def check_python_version() -> bool:
 
 
 @run
-def pwd() -> bool:
+def pyPWD() -> bool:
     print(os.getcwd())
     return True
 

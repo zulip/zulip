@@ -6,6 +6,10 @@ import sys
 
 
 def setup_path() -> None:
+    """
+
+    @rtype: object
+    """
     if os.path.basename(sys.prefix) != "zulip-py3-venv":
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         venv = os.path.join(BASE_DIR, "zulip-py3-venv")
