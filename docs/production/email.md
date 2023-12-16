@@ -72,6 +72,10 @@ follows:
   providers
 - The password like `email_password = abcd1234` in `/etc/zulip/zulip-secrets.conf`.
 
+Note that this assumes your provider is using explicit SSL/TLS via 
+STARTTLS. See the [Advanced Troubleshooting section](#advanced-troubleshooting) if your provider uses 
+implicit SSL/TLS on Port 465.
+
 ### Using system email
 
 If you'd like to send outgoing email using the local operating
@@ -201,10 +205,13 @@ aren't receiving emails from Zulip:
   should be in `/var/log/zulip/errors.log`, along with any other
   exceptions Zulip encounters.
 
-- If your SMTP provider uses SSL on port 465 (and not TLS on port
-  587), you need to set `EMAIL_PORT = 465` as well as replacing
+- If your SMTP provider uses implicit TLS/SSL on port 465 (and not STARTTLS
+  on port 587), you need to set `EMAIL_PORT = 465` as well as replacing
   `EMAIL_USE_TLS = True` with `EMAIL_USE_SSL = True`; otherwise, Zulip
-  will try to use the TLS protocol on port 465, which won't work.
+  will try to use the STARTTLS protocol on port 465, which won't work.
+  These Django variables are somewhat misleading as `EMAIL_USE_TLS` actually
+  means use explicit SSL/TLS via the STARTTLS command and `EMAIL_USE_SSL`
+  means use implicit SSL/TLS.
 
 - Zulip's email sending configuration is based on the standard Django
   [SMTP backend](https://docs.djangoproject.com/en/3.2/topics/email/#smtp-backend)
