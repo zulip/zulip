@@ -227,14 +227,15 @@ types of organizations are generally eligible for the free Community plan.
 - Open-source projects, including projects with a small paid team.
 - Research organizations, such as research groups, cross-institutional
   collaborations, etc.
-- Communities, such as clubs or special interest groups.
 - Education and non-profit organizations with up to 100 users.
+- Communities and personal organizations (clubs, groups of
+  friends, volunteer groups, etc.).
 
 Organizations that have up to 10 users, or do not require mobile push
 notifications, will likely find the Self-managed plan to be the most convenient
 option. Larger organizations are encouraged to apply for the free Community
 plan, which includes unlimited push notifications and support for many Zulip
-features
+features.
 
 If you aren't sure whether your organization qualifies, submitting a sponsorship
 form describing your situation is a great starting point. Many organizations
