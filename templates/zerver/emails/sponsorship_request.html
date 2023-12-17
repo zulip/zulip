@@ -1,6 +1,12 @@
 {% extends "zerver/emails/email_base_messages.html" %}
 
 {% block content %}
+<br />
+
+<b>Zulip Cloud?</b> {{ is_cloud_organization }}
+
+<br /><br />
+
 <b>Support URL</b>: <a class="sponsorship_request_link" href="{{ support_url }}">{{ support_url }}</a>
 
 <br /><br />
@@ -19,14 +25,13 @@
 
 <br /><br />
 
-<b>Expected users</b>:
-<br />
-<ul>
-    <li>Total: {{ expected_total_users }}</li>
-    <li>Paid: {{ paid_users_count }}</li>
-</ul>
+<b>Expected Users</b>: {{ expected_total_users }}
+<br/>
+<b>Paid staff</b>: {{ paid_users_count }}
 
-<b>Description of paid users</b>:
+<br /><br />
+
+<b>Description of paid staff</b>:
 <br />
 {{ paid_users_description }}
 
