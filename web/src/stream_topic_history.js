@@ -1,7 +1,10 @@
 import {all_messages_data} from "./all_messages_data";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
+import * as stream_list from "./stream_list";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
+import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
@@ -96,8 +99,8 @@ export class PerStreamHistory {
           topic would likely suffice, though we need to think about
           private stream corner cases).
         * pretty_name: The topic_name, with original case.
-        * historical: Whether the user actually received any messages in
-          the topic (has UserMessage rows) or is just viewing the stream.
+        * historical: Whether messages of the topic are available locally
+          or not.
         * count: Number of known messages in the topic.  Used to detect
           when the last messages in a topic were moved to other topics or
           deleted.
@@ -133,12 +136,16 @@ export class PerStreamHistory {
                 pretty_name: topic_name,
                 historical: false,
                 count: 1,
+                is_fully_loaded: false,
             });
             return;
         }
 
         if (!existing.historical) {
             existing.count += 1;
+        } else {
+            existing.historical = false;
+            existing.count = 1;
         }
 
         if (message_id > existing.message_id) {
@@ -147,10 +154,18 @@ export class PerStreamHistory {
         }
     }
 
-    maybe_remove(topic_name, num_messages) {
+    maybe_remove(topic_name, num_messages, removing_all_messages) {
         const existing = this.topics.get(topic_name);
 
         if (!existing) {
+            return;
+        }
+
+        if (removing_all_messages) {
+            // We can remove the topic from sidebar if we know
+            // for sure that all messages are removed, like by
+            // moving messages with "change_all" propagate mode.
+            this.topics.delete(topic_name);
             return;
         }
 
@@ -162,7 +177,11 @@ export class PerStreamHistory {
         }
 
         if (existing.count <= num_messages) {
-            this.topics.delete(topic_name);
+            if (existing.is_fully_loaded) {
+                this.topics.delete(topic_name);
+                return;
+            }
+            existing.count = 0;
             return;
         }
 
@@ -194,6 +213,7 @@ export class PerStreamHistory {
                 message_id,
                 pretty_name: topic_name,
                 historical: true,
+                is_fully_loaded: false,
             });
             this.update_stream_max_message_id(message_id);
         }
@@ -221,6 +241,19 @@ export class PerStreamHistory {
     get_max_message_id() {
         return this.max_message_id;
     }
+
+    set_is_fully_loaded(topic_name) {
+        const existing = this.topics.get(topic_name);
+        if (!existing) {
+            return;
+        }
+
+        if (existing.historical) {
+            return;
+        }
+
+        existing.is_fully_loaded = true;
+    }
 }
 
 export function remove_messages(opts) {
@@ -229,6 +262,7 @@ export function remove_messages(opts) {
     const num_messages = opts.num_messages;
     const max_removed_msg_id = opts.max_removed_msg_id;
     const history = stream_dict.get(stream_id);
+    const removing_all_messages = opts.propagate_mode === "change_all";
 
     // This is the special case of "removing" a message from
     // a topic, which happens when we edit topics.
@@ -238,11 +272,43 @@ export function remove_messages(opts) {
     }
 
     // This is the normal case of an incoming message.
-    history.maybe_remove(topic_name, num_messages);
+    history.maybe_remove(topic_name, num_messages, removing_all_messages);
 
     const existing_topic = history.topics.get(topic_name);
     if (!existing_topic) {
+        if (history.max_message_id <= max_removed_msg_id) {
+            history.max_message_id = message_util.get_max_message_id_in_stream(stream_id);
+        }
         return;
+    }
+
+    if (!existing_topic.historical && existing_topic.count === 0) {
+        // We cannot be certain whether there are more messages in
+        // the topic or not as all the locally available messages are
+        // removed, so we just remove the history for the stream and
+        // fetch it again from server.
+        clear_history_for_stream(stream_id);
+        if (topic_list.active_stream_id() === stream_id) {
+            stream_topic_history_util.get_server_history(
+                stream_id,
+                stream_list.update_streams_sidebar,
+            );
+            return;
+        }
+    }
+
+    if (existing_topic.historical && existing_topic.message_id <= max_removed_msg_id) {
+        // We cannot be certain whether there are more messages in
+        // the topic or not, so we just remove the history for the
+        // stream and fetch it again from server.
+        clear_history_for_stream(stream_id);
+        if (topic_list.active_stream_id() === stream_id) {
+            stream_topic_history_util.get_server_history(
+                stream_id,
+                stream_list.update_streams_sidebar,
+            );
+            return;
+        }
     }
 
     // Update max_message_id in topic
@@ -307,6 +373,20 @@ export function get_max_message_id(stream_id) {
     const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
+}
+
+export function set_is_fully_loaded(stream_id, topic) {
+    const history = stream_dict.get(stream_id);
+    if (!history) {
+        return;
+    }
+
+    history.set_is_fully_loaded(topic);
+}
+
+export function clear_history_for_stream(stream_id) {
+    fetched_stream_ids.delete(stream_id);
+    stream_dict.delete(stream_id);
 }
 
 export function reset() {

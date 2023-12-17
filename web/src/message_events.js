@@ -347,6 +347,7 @@ export function update_messages(events) {
                     topic_name: moved_message.topic,
                     num_messages: 1,
                     max_removed_msg_id: moved_message.id,
+                    propagate_mode: event.propagate_mode,
                 });
 
                 // Update the unread counts; again, this must be called
@@ -567,6 +568,7 @@ export function update_messages(events) {
 
 export function remove_messages(message_ids) {
     all_messages_data.remove(message_ids);
+    message_store.remove(message_ids);
     for (const list of message_lists.all_rendered_message_lists()) {
         list.remove_and_rerender(message_ids);
     }
