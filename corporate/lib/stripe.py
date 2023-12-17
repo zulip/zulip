@@ -2460,6 +2460,7 @@ class BillingSession(ABC):
             "paid_users_count": sponsorship_request.paid_users_count,
             "paid_users_description": sponsorship_request.paid_users_description,
             "requested_plan": sponsorship_request.requested_plan,
+            "is_cloud_organization": isinstance(self, RealmBillingSession),
         }
         send_email(
             "zerver/emails/sponsorship_request",
