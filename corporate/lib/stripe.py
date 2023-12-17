@@ -4090,6 +4090,13 @@ def get_push_status_for_remote_request(
     else:
         current_plan = None
 
+    if billing_session.is_sponsored():
+        return PushNotificationsEnabledStatus(
+            can_push=True,
+            expected_end_timestamp=None,
+            message="Community plan",
+        )
+
     if current_plan is not None:
         if current_plan.status in [
             CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
