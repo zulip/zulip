@@ -25,10 +25,10 @@
     </td>
     {{#if ../can_modify}}
     <td class="actions">
-        <button class="button rounded small btn-warning open-edit-form-modal" title="{{t 'Edit' }}" data-profile-field-id="{{id}}">
+        <button class="button rounded small btn-warning open-edit-form-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edit custom profile field' }}" data-profile-field-id="{{id}}">
             <i class="fa fa-pencil" aria-hidden="true"></i>
         </button>
-        <button class="button rounded small delete btn-danger" title="{{t 'Delete' }}" data-profile-field-id="{{id}}">
+        <button class="button rounded small delete btn-danger tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Delete custom profile field' }}" data-profile-field-id="{{id}}">
             <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </td>
