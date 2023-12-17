@@ -28,11 +28,11 @@ import * as modals from "./modals";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
-import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as timerender from "./timerender";
@@ -139,7 +139,7 @@ function change_state_of_subscribe_button(event, dropdown) {
 
 function reset_subscribe_widget() {
     $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-    stream_ui_updates.initialize_disable_btn_hint_popover(
+    settings_components.initialize_disable_btn_hint_popover(
         $("#user-profile-modal .add-subscription-button-wrapper"),
         $t({defaultMessage: "Select a stream to subscribe"}),
     );

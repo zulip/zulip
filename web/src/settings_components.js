@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -683,4 +684,19 @@ function enable_or_disable_save_button($subsection_elem) {
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
+export function initialize_disable_btn_hint_popover($btn_wrapper, hint_text) {
+    const opts = {
+        animation: false,
+        hideOnClick: false,
+        placement: "bottom",
+    };
+
+    // If hint_text is undefined, we use the HTML content of a
+    // <template> whose id is given by data-tooltip-template-id
+    if (hint_text !== undefined) {
+        opts.content = hint_text;
+    }
+    tippy($btn_wrapper[0], opts);
 }
