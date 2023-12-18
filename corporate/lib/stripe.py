@@ -622,6 +622,7 @@ class UpgradePageContext(TypedDict):
     is_demo_organization: bool
     manual_license_management: bool
     using_min_licenses_for_plan: bool
+    min_licenses_for_plan: int
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
@@ -1782,6 +1783,7 @@ class BillingSession(ABC):
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "legacy_remote_server_next_plan_name": legacy_remote_server_next_plan_name,
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
+            "min_licenses_for_plan": min_licenses_for_plan,
         }
         return context
 
@@ -1914,6 +1916,7 @@ class BillingSession(ABC):
                 "billing_base_url": self.billing_base_url,
             },
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
+            "min_licenses_for_plan": min_licenses_for_plan,
             "payment_method": current_payment_method,
             "plan": CustomerPlan.name_from_tier(tier),
             "salt": salt,

@@ -140,7 +140,7 @@
                             {% endif %}
                             {% if not manual_license_management and using_min_licenses_for_plan %}
                             <br />
-                            <i>Minimum purchase for this plan: 10 licenses</i>
+                            <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
                             {% endif %}
                             <h1>$<span class="due-today-price"></span></h1>
                             {% if free_trial_days %}
