@@ -7,6 +7,9 @@
 {% endif %}
 <b>Plan name</b>: {{ plan_data.current_plan.name }}<br />
 <b>Status</b>: {{ plan_data.current_plan.get_plan_status_as_text() }}<br />
+{% if plan_data.current_plan.tier == plan_data.current_plan.TIER_SELF_HOSTED_COMMUNITY %}
+<!-- Any data below doesn't makes sense for sponsored organizations. -->
+{% else %}
 {% if plan_data.is_legacy_plan %}
     <b>End date</b>: {{ plan_data.current_plan.end_date.strftime('%d %B %Y') }}<br />
 {% else %}
@@ -18,4 +21,5 @@
         <b>Fixed price</b>: ${{ plan_data.current_plan.fixed_price/100 }}<br />
     {% endif %}
     <b>Next invoice date</b>: {{ plan_data.current_plan.next_invoice_date.strftime('%d %B %Y') }}<br />
+{% endif %}
 {% endif %}

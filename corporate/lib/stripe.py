@@ -2665,6 +2665,59 @@ class BillingSession(ABC):
 
         self.do_change_plan_type(tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY, is_sponsored=False)
 
+    def add_customer_to_community_plan(self) -> None:
+        # There is no CustomerPlan for organizations on Zulip Cloud and
+        # they enjoy the same benefits as the Standard plan.
+        # For self-hosted organizations, sponsored organizations have
+        # a Community CustomerPlan and they have different benefits compared
+        # to customers on Business plan.
+        assert not isinstance(self, RealmBillingSession)
+
+        customer = self.update_or_create_customer()
+        plan = get_current_plan_by_customer(customer)
+        # Only plan that can be active is legacy plan. Which is already
+        # ended by the support path from which is this function is called.
+        assert plan is None
+        now = timezone_now()
+        community_plan_params = {
+            "billing_cycle_anchor": now,
+            "status": CustomerPlan.ACTIVE,
+            "tier": CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+            # The primary mechanism for preventing charges under this
+            # plan is setting a null `next_invoice_date`, but setting
+            # a 0 price is useful defense in depth here.
+            "next_invoice_date": None,
+            "price_per_license": 0,
+            "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            "automanage_licenses": True,
+        }
+        community_plan = CustomerPlan.objects.create(
+            customer=customer,
+            **community_plan_params,
+        )
+
+        try:
+            billed_licenses = self.get_billable_licenses_for_customer(customer, community_plan.tier)
+        except MissingDataError:
+            billed_licenses = 0
+
+        # Create a ledger entry for the community plan for tracking purposes.
+        # Also, since it is an active plan we need to it have at least one license ledger entry.
+        ledger_entry = LicenseLedger.objects.create(
+            plan=community_plan,
+            is_renewal=True,
+            event_time=now,
+            licenses=billed_licenses,
+            licenses_at_next_renewal=billed_licenses,
+        )
+        community_plan.invoiced_through = ledger_entry
+        community_plan.save(update_fields=["invoiced_through"])
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+            event_time=now,
+            extra_data=community_plan_params,
+        )
+
     def get_last_ledger_for_automanaged_plan_if_exists(
         self,
     ) -> Optional[LicenseLedger]:  # nocoverage
@@ -2848,6 +2901,7 @@ class RealmBillingSession(BillingSession):
         # This function needs to translate between the different
         # formats of CustomerPlan.tier and Realm.plan_type.
         if is_sponsored:
+            # Cloud sponsored customers don't have an active CustomerPlan.
             plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
             plan_type = Realm.PLAN_TYPE_STANDARD
@@ -3187,11 +3241,13 @@ class RemoteRealmBillingSession(BillingSession):
             return customer
 
     @override
+    @transaction.atomic
     def do_change_plan_type(
         self, *, tier: Optional[int], is_sponsored: bool = False
     ) -> None:  # nocoverage
         if is_sponsored:
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
+            self.add_customer_to_community_plan()
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
         elif tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
@@ -3569,6 +3625,7 @@ class RemoteServerBillingSession(BillingSession):
             return customer
 
     @override
+    @transaction.atomic
     def do_change_plan_type(
         self, *, tier: Optional[int], is_sponsored: bool = False
     ) -> None:  # nocoverage
@@ -3576,6 +3633,7 @@ class RemoteServerBillingSession(BillingSession):
         # formats of CustomerPlan.tier and RealmZulipServer.plan_type.
         if is_sponsored:
             plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
+            self.add_customer_to_community_plan()
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
         elif tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
