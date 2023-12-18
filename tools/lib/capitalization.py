@@ -25,6 +25,7 @@ IGNORED_PHRASES = [
     r"IDs",
     r"IP",
     r"JSON",
+    r"Jitsi",
     r"Kerberos",
     r"LinkedIn",
     r"LDAP",
