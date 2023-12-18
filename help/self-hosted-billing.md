@@ -6,25 +6,25 @@ questions about plans and billing for self-hosted organizations. Please refer to
 details.  If you have any questions not answered here, please don't hesitate to
 reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
-## Business plan details and upgrades
-
-The Business plan is appropriate for most business organizations. It includes
-unlimited access to the Mobile Push Notification Service and commercial support
-for dozens of features and integrations that help businesses take full advantage
-of their Zulip implementation.
+## Paid plan details and upgrades
 
 For businesses with up to 10 Zulip users, the Self-managed plan is a good
-option, and includes free access to the Mobile Push Notification service. For
-commercial support with your installation, sign up for the Business plan, with a
-minimum purchase of 10 licenses.
+option, and includes free access to the Mobile Push Notification Service.
 
-If you organization requires hands-on support, such as real-time support during
+For businesses with more than 10 Zulip users, both the Basic and Business plans
+include unlimited access to the Mobile Push Notification Service.
+
+The Business plan also includes commercial support for dozens of features and
+integrations that help businesses take full advantage of their Zulip
+implementation. The minimum purchase is 25 licenses.
+
+If your organization requires hands-on support, such as real-time support during
 installation and upgrades, support for advanced deployment options, custom
 feature development or integrations, etc., should contact
 [sales@zulip.com](mailto:sales@zulip.com) to discuss pricing.
 
-Business plan discounts are available in a variety of situations; see
-[below](#business-plan-discounts) for details.
+Paid plan discounts are available in a variety of situations; see
+[below](#paid-plan-discounts) for details.
 
 ### Upgrades for legacy customers
 
@@ -289,7 +289,7 @@ eligibility prior to setting up a server, contact
 
 {end_tabs}
 
-## Business plan discounts
+## Paid plan discounts
 
 The following types of organizations are generally eligible for significant
 discounts on the Zulip Business plan. You can also contact
