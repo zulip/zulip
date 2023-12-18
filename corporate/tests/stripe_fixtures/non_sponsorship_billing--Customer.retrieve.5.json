@@ -1,16 +1,16 @@
 {
   "address": null,
   "balance": 0,
-  "created": 1702576334,
+  "created": 1000000000,
   "currency": "usd",
   "default_currency": "usd",
   "default_source": null,
   "delinquent": false,
-  "description": "zulip.testserver 8bb4095c-58a",
+  "description": "zulip.testserver b46d7a23-a8e",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_PBgRA4C5R3pi4D",
-  "invoice_prefix": "3F94EF3A",
+  "id": "cus_NORMALIZED0001",
+  "invoice_prefix": "NORMA01",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": {
@@ -37,7 +37,7 @@
         "country": "US",
         "exp_month": 12,
         "exp_year": 2024,
-        "fingerprint": "9XKsMixKBi6kIIzd",
+        "fingerprint": "NORMALIZED000001",
         "funding": "credit",
         "generated_from": null,
         "last4": "4242",
@@ -52,9 +52,9 @@
         },
         "wallet": null
       },
-      "created": 1702576335,
-      "customer": "cus_PBgRA4C5R3pi4D",
-      "id": "pm_1ONJ51DEQaroqDjs55u0UX9G",
+      "created": 1000000000,
+      "customer": "cus_NORMALIZED0001",
+      "id": "pm_1OOgxnDEQaroqDjsVKBHx8El",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -66,7 +66,7 @@
   "livemode": false,
   "metadata": {
     "remote_realm_host": "zulip.testserver",
-    "remote_realm_uuid": "8bb4095c-58a8-42b8-afd4-9d92e91691e5"
+    "remote_realm_uuid": "b46d7a23-a8ef-4fe3-9650-b7b85e2a9b43"
   },
   "name": null,
   "next_invoice_sequence": 2,

@@ -84,7 +84,7 @@
                                     </div>
                                 </div>
                                 {% if is_cloud_realm and on_free_tier and not sponsorship_pending %}
-                                <a href="/upgrade/" class="button upgrade-button">
+                                <a href="/upgrade/?tier%3D{{ tier_cloud_standard }}" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
                                     {% else %}
@@ -263,11 +263,11 @@
                                     Upgrade is scheduled
                                 </a>
                                 {% elif is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business" %}
-                                <a href="{{ billing_base_url }}/upgrade/" class="button current-plan-button" type="button">
+                                <a href="{{ billing_base_url }}/upgrade/?tier%3D{{ tier_self_hosted_business }}" class="button current-plan-button" type="button">
                                     Sponsorship requested
                                 </a>
                                 {% elif is_self_hosted_realm and on_free_tier and not sponsorship_pending %}
-                                <a href="{{ billing_base_url }}/upgrade/" class="button upgrade-button">
+                                <a href="{{ billing_base_url }}/upgrade/?tier%3D{{ tier_self_hosted_business }}" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
                                     {% else %}
@@ -284,7 +284,7 @@
                                     {% endif %}
                                 </a>
                                 {% elif is_self_hosted_realm %}
-                                <a href="{{ billing_base_url }}/upgrade/" class="button upgrade-button">
+                                <a href="{{ billing_base_url }}/upgrade/?tier%3D{{ tier_self_hosted_business }}" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
                                     {% else %}

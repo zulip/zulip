@@ -42,9 +42,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpZOU5TZ2NBTXd6ZFpmSVo1QWpGUHdVaGNtcEJQLDkyMDM1MDUw0200AbiyJmyG?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdRSFdWNEZsN2U4TWkwUHZOSmczcHRQQlk2WmJpLDkzNDQ4MTM20200Bzqi3QuD?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpZOU5TZ2NBTXd6ZFpmSVo1QWpGUHdVaGNtcEJQLDkyMDM1MDUw0200AbiyJmyG/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdRSFdWNEZsN2U4TWkwUHZOSmczcHRQQlk2WmJpLDkzNDQ4MTM20200Bzqi3QuD/pdf?s=ap",
       "last_finalization_error": null,
       "latest_revision": null,
       "lines": {
@@ -200,9 +200,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpZQmdsNFNBR29EU0hlY0dLMDJBeVhKNWM4aWtVLDkyMDM1MDUw0200L3jt5DAq?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdRM0JobGJnMDhibVBkbE5COGVUeGJ2U05DS0ZNLDkzNDQ4MTM20200utAhnC6H?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpZQmdsNFNBR29EU0hlY0dLMDJBeVhKNWM4aWtVLDkyMDM1MDUw0200L3jt5DAq/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdRM0JobGJnMDhibVBkbE5COGVUeGJ2U05DS0ZNLDkzNDQ4MTM20200utAhnC6H/pdf?s=ap",
       "last_finalization_error": null,
       "latest_revision": null,
       "lines": {
