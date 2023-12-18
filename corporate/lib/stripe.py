@@ -4098,17 +4098,17 @@ def get_push_status_for_remote_request(
         billing_session = RemoteServerBillingSession(remote_server)
         customer = billing_session.get_customer()
 
-    if customer is not None:
-        current_plan = get_current_plan_by_customer(customer)
-    else:
-        current_plan = None
-
     if billing_session.is_sponsored():
         return PushNotificationsEnabledStatus(
             can_push=True,
             expected_end_timestamp=None,
             message="Community plan",
         )
+
+    if customer is not None:
+        current_plan = get_current_plan_by_customer(customer)
+    else:
+        current_plan = None
 
     if current_plan is not None:
         if current_plan.status in [
