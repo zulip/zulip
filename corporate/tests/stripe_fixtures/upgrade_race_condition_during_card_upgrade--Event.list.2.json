@@ -83,7 +83,7 @@
                 },
                 "paid": true,
                 "payment_intent": "pi_NORMALIZED00000000000001",
-                "payment_method": "pm_1OIlc2DEQaroqDjsvrjhetiI",
+                "payment_method": "pm_1OOgxLDEQaroqDjsjl7ObYvT",
                 "payment_method_details": {
                   "card": {
                     "amount_authorized": 48000,
@@ -123,10 +123,9 @@
                   },
                   "type": "card"
                 },
-                "radar_options": {},
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
-                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKOn8qqsGMgY7MyOA_s06LBZ_labKK4xiZWECMaYSFJw-_GPVK46R98x2qkiuPUZgX7zYwSioWQWyjGod",
+                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKM-UgawGMgZlToFp7lo6LBYuJSL8AqApCBeMnqlt3NfY0UHVl0YQohnZ2YXBS_kCXhEKOiWb2Rmq_Fu-",
                 "refunded": false,
                 "refunds": {
                   "data": [],
@@ -151,7 +150,7 @@
             "total_count": 1,
             "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_Awp9pKTlpnSRnN4R7HAujr9vg",
+          "client_secret": "pi_NORMALIZED00000000000001_secret_Qbm75F2SS2b2nyTGzImQbKAJJ",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
@@ -179,7 +178,7 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1OIlc2DEQaroqDjsvrjhetiI",
+          "payment_method": "pm_1OOgxLDEQaroqDjsjl7ObYvT",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -205,13 +204,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3OIlc4DEQaroqDjs0rCeAMne",
+      "id": "evt_3OOgxODEQaroqDjs1w8DmN3W",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "1e3aa969-1bb3-42a0-b995-19d5aeeaccf4"
+        "idempotency_key": "ebf17ddf-7152-4dce-8a54-a929aae4d79a"
       },
       "type": "payment_intent.succeeded"
     }

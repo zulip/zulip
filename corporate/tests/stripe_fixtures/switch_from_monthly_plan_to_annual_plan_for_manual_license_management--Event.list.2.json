@@ -83,7 +83,7 @@
                 },
                 "paid": true,
                 "payment_intent": "pi_NORMALIZED00000000000001",
-                "payment_method": "pm_1OIlaoDEQaroqDjss3b8TkWd",
+                "payment_method": "pm_1OOgw8DEQaroqDjs7oGMTyce",
                 "payment_method_details": {
                   "card": {
                     "amount_authorized": 28000,
@@ -123,10 +123,9 @@
                   },
                   "type": "card"
                 },
-                "radar_options": {},
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
-                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJ_8qqsGMgZrhwDQRyw6LBb9FE9Hy4kC_kftck-2BSRblvRhj6eZplrzgd6TkE53NjIQTGlc7F1i2qQD",
+                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKIWUgawGMgYAJF6zHKo6LBYdAknvtpLGw7M2pzxLiAyvSk5aUbai4O8qhj2uuSXyytNEElq4bz-b01Bc",
                 "refunded": false,
                 "refunds": {
                   "data": [],
@@ -151,7 +150,7 @@
             "total_count": 1,
             "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_jD8RRYvzX8GmbB0YS3Zn797pE",
+          "client_secret": "pi_NORMALIZED00000000000001_secret_uGgaeqUZEZ6udK8lBgnp0SvKI",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
@@ -179,7 +178,7 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1OIlaoDEQaroqDjss3b8TkWd",
+          "payment_method": "pm_1OOgw8DEQaroqDjs7oGMTyce",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -205,13 +204,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3OIlasDEQaroqDjs1kSuXumA",
+      "id": "evt_3OOgwCDEQaroqDjs0R6d8de0",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 2,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "34bf0066-3977-44d5-9669-a36fb22f7948"
+        "idempotency_key": "880c62a6-e8ff-47a7-b6b6-0ec58ed3b325"
       },
       "type": "payment_intent.succeeded"
     },
@@ -283,7 +282,7 @@
           },
           "paid": true,
           "payment_intent": "pi_NORMALIZED00000000000001",
-          "payment_method": "pm_1OIlaoDEQaroqDjss3b8TkWd",
+          "payment_method": "pm_1OOgw8DEQaroqDjs7oGMTyce",
           "payment_method_details": {
             "card": {
               "amount_authorized": 28000,
@@ -323,10 +322,9 @@
             },
             "type": "card"
           },
-          "radar_options": {},
           "receipt_email": "hamlet@zulip.com",
           "receipt_number": null,
-          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJ_8qqsGMgZ_m9YmO0E6LBZvrpEr9oSnwYKlyKO2SN5CBpRSGBSk_IR--SjUDde-R6Bn9rbgKUvdl4pi",
+          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKIWUgawGMgbTOM9nPy46LBaS9KkkECJmCiNODReZZm_yxsDd8XaywkPFJQFAcw_nUFpzdgCslFTBFIqg",
           "refunded": false,
           "refunds": {
             "data": [],
@@ -346,13 +344,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3OIlasDEQaroqDjs1YFG3zAJ",
+      "id": "evt_3OOgwCDEQaroqDjs0uhduxuA",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "34bf0066-3977-44d5-9669-a36fb22f7948"
+        "idempotency_key": "880c62a6-e8ff-47a7-b6b6-0ec58ed3b325"
       },
       "type": "charge.succeeded"
     }

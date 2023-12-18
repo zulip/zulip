@@ -119,6 +119,9 @@ class Session(models.Model):
     # Did the user opt to manually manage licenses before clicking on update button?
     is_manual_license_management_upgrade_session = models.BooleanField(default=False)
 
+    # CustomerPlan tier that the user is upgrading to.
+    tier = models.SmallIntegerField(null=True)
+
     def get_status_as_string(self) -> str:
         return {Session.CREATED: "created", Session.COMPLETED: "completed"}[self.status]
 
@@ -136,6 +139,7 @@ class Session(models.Model):
         session_dict[
             "is_manual_license_management_upgrade_session"
         ] = self.is_manual_license_management_upgrade_session
+        session_dict["tier"] = self.tier
         event = self.get_last_associated_event()
         if event is not None:
             session_dict["event_handler"] = event.get_event_handler_details_as_dict()

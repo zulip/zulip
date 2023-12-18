@@ -13,6 +13,7 @@ const stripe_response_schema = z.object({
         stripe_payment_intent_id: z.string().optional(),
         status: z.string(),
         is_manual_license_management_upgrade_session: z.boolean().optional(),
+        tier: z.number(),
         event_handler: z
             .object({
                 status: z.string(),
@@ -47,6 +48,7 @@ function handle_session_complete_event(session: StripeSession): void {
         case "card_update_from_upgrade_page":
             redirect_to = helpers.get_upgrade_page_url(
                 session.is_manual_license_management_upgrade_session,
+                session.tier,
                 billing_base_url,
             );
             break;

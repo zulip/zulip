@@ -587,6 +587,7 @@ class UpgradePageParams(TypedDict):
     monthly_price: int
     seat_count: int
     billing_base_url: str
+    tier: int
 
 
 class UpgradePageSessionTypeSpecificContext(TypedDict):
@@ -959,12 +960,18 @@ class BillingSession(ABC):
     def create_card_update_session_for_upgrade(
         self,
         manual_license_management: bool,
+        tier: int,
     ) -> Dict[str, Any]:
         metadata = self.get_metadata_for_stripe_update_card()
         customer = self.update_or_create_stripe_customer()
-        cancel_url = f"{self.billing_session_url}/upgrade/"
-        if manual_license_management:
-            cancel_url = f"{self.billing_session_url}/upgrade/?manual_license_management=true"
+
+        # URL when user cancels the card update session.
+        base_cancel_url = f"{self.billing_session_url}/upgrade/"
+        params = {
+            "manual_license_management": str(manual_license_management).lower(),
+            "tier": str(tier),
+        }
+        cancel_url = f"{base_cancel_url}?{urlencode(params)}"
 
         stripe_session = stripe.checkout.Session.create(
             cancel_url=cancel_url,
@@ -979,6 +986,7 @@ class BillingSession(ABC):
             customer=customer,
             type=Session.CARD_UPDATE_FROM_UPGRADE_PAGE,
             is_manual_license_management_upgrade_session=manual_license_management,
+            tier=tier,
         )
         return {
             "stripe_session_url": stripe_session.url,
@@ -1914,6 +1922,7 @@ class BillingSession(ABC):
                 ),
                 "seat_count": seat_count,
                 "billing_base_url": self.billing_base_url,
+                "tier": tier,
             },
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "min_licenses_for_plan": min_licenses_for_plan,
