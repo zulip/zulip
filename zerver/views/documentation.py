@@ -182,7 +182,10 @@ class MarkdownDirectoryView(ApiURLView):
             context["doc_root"] = "/policies/"
             context["doc_root_title"] = "Terms and policies"
             sidebar_article = self.get_path("sidebar_index")
-            sidebar_index = sidebar_article.article_path
+            if sidebar_article.article_http_status == 200:
+                sidebar_index = sidebar_article.article_path
+            else:
+                sidebar_index = None
             title_base = "Zulip terms and policies"
         elif self.api_doc_view:
             context["page_is_api_center"] = True
@@ -234,7 +237,10 @@ class MarkdownDirectoryView(ApiURLView):
         if endpoint_name and endpoint_method:
             context["api_url_context"]["API_ENDPOINT_NAME"] = endpoint_name + ":" + endpoint_method
 
-        sidebar_html = render_markdown_path(sidebar_index)
+        if sidebar_index is not None:
+            sidebar_html = render_markdown_path(sidebar_index)
+        else:
+            sidebar_html = ""
         tree = html.fragment_fromstring(sidebar_html, create_parent=True)
         if not context.get("page_is_policy_center", False):
             home_h1 = Element("h1")
