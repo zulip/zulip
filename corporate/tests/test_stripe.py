@@ -5619,26 +5619,42 @@ class TestRemoteBillingWriteAuditLog(StripeTestCase):
 class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
     @override
     def setUp(self) -> None:
-        # We need to time travel to 2012-1-2 because super().setUp()
-        # creates users and changes roles with event_time=timezone_now().
-        # That affects the LicenseLedger queries as their event_time would
-        # be more recent than other operations we perform in this test.
-        with time_machine.travel(datetime(2012, 1, 2, 3, 4, 5, tzinfo=timezone.utc), tick=False):
-            super().setUp()
+        super().setUp()
 
-        hamlet = self.example_user("hamlet")
-        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        # Reset already created audit logs for this test as they have
+        # event_time=timezone_now() that will affects the LicenseLedger
+        # queries as their event_time would be more recent than other
+        # operations we perform in this test.
+        zulip_realm = get_realm("zulip")
+        RealmAuditLog.objects.filter(
+            realm=zulip_realm, event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS
+        ).delete()
+        with time_machine.travel(self.now, tick=False):
+            for count in range(4):
+                do_create_user(
+                    f"email {count}",
+                    f"password {count}",
+                    zulip_realm,
+                    "name",
+                    acting_user=None,
+                )
+
+        remote_realm = RemoteRealm.objects.get(uuid=zulip_realm.uuid)
         self.billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
 
     @responses.activate
     @mock_stripe()
     def test_non_sponsorship_billing(self, *mocks: Mock) -> None:
-        self.add_mock_response()
-        with time_machine.travel(self.now, tick=False):
-            send_server_data_to_push_bouncer(consider_usage_statistics=False)
-
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
+
+        self.add_mock_response()
+        realm_user_count = UserProfile.objects.filter(
+            realm=hamlet.realm, is_bot=False, is_active=True
+        ).count()
+
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         result = self.execute_remote_billing_authentication_flow(hamlet)
         self.assertEqual(result.status_code, 302)
@@ -5670,8 +5686,10 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         for substring in [
             "Zulip Business",
             "Number of licenses",
-            "10 (managed automatically)",
+            f"{realm_user_count} (managed automatically)",
+            "January 2, 2013",
             "Your plan will automatically renew on",
+            f"${80 * realm_user_count:,.2f}",
             "Visa ending in 4242",
             "Update card",
         ]:
@@ -5682,10 +5700,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 1)
 
         with time_machine.travel(self.now + timedelta(days=2), tick=False):
-            user_count = self.billing_session.current_count_for_billed_licenses(
-                self.now + timedelta(days=2)
-            )
-            for count in range(10):
+            for count in range(4, 14):
                 do_create_user(
                     f"email {count}",
                     f"password {count}",
@@ -5704,7 +5719,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         )
         latest_ledger = LicenseLedger.objects.last()
         assert latest_ledger is not None
-        self.assertEqual(latest_ledger.licenses, user_count + 10)
+        self.assertEqual(latest_ledger.licenses, realm_user_count + 10)
 
     @responses.activate
     def test_request_sponsorship(self) -> None:
