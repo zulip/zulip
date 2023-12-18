@@ -54,6 +54,7 @@ class PlanData:
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
     warning: Optional[str] = None
+    annual_recurring_revenue: Optional[int] = None
 
 
 @dataclass
@@ -140,6 +141,13 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
             plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         )
         plan_data.has_fixed_price = plan_data.current_plan.fixed_price is not None
+        plan_revenue = billing_session.get_customer_plan_renewal_amount(
+            plan_data.current_plan, timezone_now(), last_ledger_entry
+        )
+        if plan_data.current_plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+            plan_data.annual_recurring_revenue = plan_revenue * 12
+        else:
+            plan_data.annual_recurring_revenue = plan_revenue
 
     return plan_data
 
