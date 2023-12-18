@@ -573,7 +573,11 @@ html_rules: List["Rule"] = [
         "good_lines": ['<a href="{{variable}}">'],
         "bad_lines": ["<a href={{variable}}>"],
         # Exclude the use of URL templates from this check.
-        "exclude_pattern": "={code}",
+        # Exclude the use GET parameters in URLs from this check.
+        "exclude_pattern": "={code}|\\?[a-z]+={|\\&[a-z]+={",
+        "exclude": {
+            "templates/corporate/pricing_model.html",
+        },
     },
     {
         "pattern": " '}}",

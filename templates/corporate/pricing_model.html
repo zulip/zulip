@@ -84,7 +84,7 @@
                                     </div>
                                 </div>
                                 {% if is_cloud_realm and on_free_tier and not sponsorship_pending %}
-                                <a href="/upgrade/?tier%3D{{ tier_cloud_standard }}" class="button upgrade-button">
+                                <a href="/upgrade/?tier={{ tier_cloud_standard }}" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
                                     {% else %}
@@ -160,22 +160,17 @@
                 <div class="self-hosted-plan-pricing pricing-pane">
                     <div class="price-box" tabindex="-1">
                         <div class="text-content">
-                            <h2>Self-managed</h2>
+                            <h2>Free</h2>
                             <ul class="feature-list">
-                                <li><span><a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile push notifications</a> for organizations with up to 10&nbsp;users</span></li>
-                                <li class="support-note"><span>Friendly <a href="/development-community/">community</a> support for:</span></li>
-                                <li><span>Tools for <a href="/why-zulip/">efficient communication</a></span></li>
-                                <li><span>Unlimited <a href="/help/search-for-messages">search</a> history</span></li>
-                                <li><span>Unlimited <a href="/help/start-a-call">voice and video calls</a></span></li>
-                                <li><span>Unlimited <a href="/integrations/">integrations</a></span></li>
-                                <li><span>Easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a> and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html">maintenance</a></span></li>
-                                <li class="comparison-table-pointer"><span>And <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">much more</a>!</span></li>
+                                <li><span>Complete team chat solution, with <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">all Zulip features</a> included</span></li>
+                                <li><span><a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile notifications</a> for organizations with up to 10&nbsp;users</span></li>
+                                <li><span>Many organizations are eligible for unlimited mobile notifications on the free Community plan (see below)</span></li>
                             </ul>
                         </div>
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    <div class="price">Free</div>
+                                    <div class="price no-discount">Free</div>
                                 </div>
                                 {% if is_self_hosted_realm and on_free_tier %}
                                 <span class="button current-plan-descriptor" type="button">
@@ -195,38 +190,73 @@
 
                     <div class="price-box" tabindex="-1">
                         <div class="text-content">
-                            <h2>Community</h2>
+                            <h2>Basic</h2>
                             <ul class="feature-list">
-                                <li class="unlimited-push-notifications"><span>Unlimited <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">mobile push notifications</a></span></li>
-                                <li class="support-note"><span>Friendly <a href="/development-community/">community</a> support for:</span></li>
-                                <li><span><a href="/help/configure-authentication-methods">OAuth social login</a> (e.g., Google, GitHub)</span></li>
-                                <li><span><a href="/help/public-access-option">Public access option</a></span></li>
-                                <li><span><a href="/help/moderating-open-organizations">Advanced moderation tools</a></span></li>
-                                <li><span><a href="/help/format-your-message-using-markdown">Expressive formatting</a> (code, LaTeX)</span></li>
-                                <li class="comparison-table-pointer"><span>And <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">much more</a>!</span></li>
+                                <li><span>Complete team chat solution, with <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">all Zulip features</a> included</span></li>
+                                <li><span>Unlimited <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">mobile notifications</a></span></li>
+                                <li><span>Support Zulip's open-source development</span></li>
                             </ul>
                         </div>
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    <div class="price">Free</div>
+                                    {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC)
+                                      or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Basic")
+                                      or (is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_BASIC)%}
+                                    <div class="price no-discount"><span class="currency-symbol">$</span>3.50</div>
+                                    <div class="details">
+                                        <p>
+                                            /user/month billed monthly
+                                        </p>
+                                    </div>
+                                    {% else %}
+                                    <div class="price"><span class="currency-symbol">$</span>3.50</div>
+                                    <div class="details">
+                                        <p>
+                                            /user/month billed monthly
+                                        </p>
+                                    </div>
+                                    <div class="discount">
+                                        <b>$20/month off</b> for the first year!
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                {% if is_self_hosted_realm and is_sponsored %}
-                                <a href='{{ billing_base_url }}/billing' class="button current-plan-button" type="button">
-                                    <i class="icon current-plan-icon"></i>
-                                    Current plan
+                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC %}
+                                <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
+                                    Upgrade is scheduled
                                 </a>
-                                {% elif is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Community" %}
-                                <a href="{{ billing_base_url }}/billing/" class="button current-plan-button" type="button">
+                                {% elif is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business" %}
+                                <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_basic }}" class="button current-plan-button" type="button">
                                     Sponsorship requested
                                 </a>
+                                {% elif is_self_hosted_realm and on_free_tier and not sponsorship_pending %}
+                                <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_basic }}" class="button upgrade-button">
+                                    {% if free_trial_days %}
+                                    Start {{ free_trial_days }}-day free trial
+                                    {% else %}
+                                    Upgrade to Basic
+                                    {% endif %}
+                                </a>
+                                {% elif is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_BASIC %}
+                                <a href='{{ billing_base_url }}/billing' class="button current-plan-button" type="button">
+                                    <i class="icon current-plan-icon"></i>
+                                    {% if on_free_trial %}
+                                    Current plan (free trial)
+                                    {% else %}
+                                    Current plan
+                                    {% endif %}
+                                </a>
                                 {% elif is_self_hosted_realm %}
-                                <a href="{{ billing_base_url }}/sponsorship/" class="button upgrade-button">
-                                    Request sponsorship
+                                <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_basic }}" class="button upgrade-button">
+                                    {% if free_trial_days %}
+                                    Start {{ free_trial_days }}-day free trial
+                                    {% else %}
+                                    Upgrade to Basic
+                                    {% endif %}
                                 </a>
                                 {% else %}
-                                <a href="/help/self-hosted-billing#free-community-plan" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
-                                    Log in to apply
+                                <a href="/help/self-hosted-billing" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Log in to upgrade
                                 </a>
                                 {% endif %}
                             </div>
@@ -235,9 +265,10 @@
 
                     <div class="price-box" tabindex="-1">
                         <div class="text-content">
-                            <h2 class="with-fine-print">Business <small>10 users minimum</small></h2>
+                            <h2 class="with-fine-print">Business <small>25 users minimum</small></h2>
                             <ul class="feature-list">
-                                <li class="unlimited-push-notifications"><span>Unlimited <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">mobile push notifications</a></span></li>
+                                <li><span>Complete team chat solution, with <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">all Zulip features</a> included</span></li>
+                                <li><span>Unlimited <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">mobile notifications</a></span></li>
                                 <li class="support-note"><span>Email and chat support for:</span></li>
                                 <li><span><a href="/help/saml-authentication">SSO with SAML, Azure AD</a></span></li>
                                 <li><span><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">AD/LDAP user sync </a></span></li>
@@ -250,12 +281,29 @@
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    <div class="price"><span class="currency-symbol">$</span>6.67</div>
-                                    <div class="details">
-                                        <p>
-                                            /user/month billed annually
-                                            or&nbsp;<b>$8</b>&nbsp;billed monthly
-                                        </p>
+                                    <div class="standard-price-box">
+                                        {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS)
+                                          or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business")
+                                          or (is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_BUSINESS)%}
+                                        <div class="price no-discount"><span class="currency-symbol">$</span>6.67</div>
+                                        <div class="details">
+                                            <p>
+                                                /user/month billed annually
+                                                or&nbsp;<b>$8</b>&nbsp;billed monthly
+                                            </p>
+                                        </div>
+                                        {% else %}
+                                        <div class="price"><span class="currency-symbol">$</span>6.67</div>
+                                        <div class="details">
+                                            <p>
+                                                /user/month billed annually
+                                                or&nbsp;<b>$8</b>&nbsp;billed monthly
+                                            </p>
+                                        </div>
+                                        <div class="discount">
+                                            <b>$20/month off</b> for the first year!
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS %}
@@ -263,11 +311,11 @@
                                     Upgrade is scheduled
                                 </a>
                                 {% elif is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business" %}
-                                <a href="{{ billing_base_url }}/upgrade/?tier%3D{{ tier_self_hosted_business }}" class="button current-plan-button" type="button">
+                                <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_business }}" class="button current-plan-button" type="button">
                                     Sponsorship requested
                                 </a>
                                 {% elif is_self_hosted_realm and on_free_tier and not sponsorship_pending %}
-                                <a href="{{ billing_base_url }}/upgrade/?tier%3D{{ tier_self_hosted_business }}" class="button upgrade-button">
+                                <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_business }}" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
                                     {% else %}
@@ -284,7 +332,7 @@
                                     {% endif %}
                                 </a>
                                 {% elif is_self_hosted_realm %}
-                                <a href="{{ billing_base_url }}/upgrade/?tier%3D{{ tier_self_hosted_business }}" class="button upgrade-button">
+                                <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_business }}" class="button upgrade-button">
                                     {% if free_trial_days %}
                                     Start {{ free_trial_days }}-day free trial
                                     {% else %}
@@ -304,7 +352,8 @@
                         <div class="text-content">
                             <h2>Enterprise</h2>
                             <ul class="feature-list">
-                                <li class="unlimited-push-notifications"><span>Unlimited <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">mobile push notifications</a></span></li>
+                                <li><span>Complete team chat solution, with <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">all Zulip features</a> included</span></li>
+                                <li><span>Unlimited <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">mobile notifications</a></span></li>
                                 <li class="support-note"><span>Email, chat and phone support for:</span></li>
                                 <li><span><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#openid-connect">SSO with OpenID Connect</a></span></li>
                                 <li><span><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">AD/LDAP group sync</a></span></li>
