@@ -72,6 +72,7 @@
                 {% with %}
                     {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
                     {% set format_discount = format_discount %}
+                    {% set dollar_amount = dollar_amount %}
                     {% include 'analytics/current_plan_details.html' %}
                 {% endwith %}
             </div>
@@ -91,6 +92,7 @@
                     {% set support_data = remote_realms_support_data %}
                     {% set get_plan_type_name = get_plan_type_name %}
                     {% set format_discount = format_discount %}
+                    {% set dollar_amount = dollar_amount %}
                     {% include "analytics/remote_realm_details.html" %}
                 {% endwith %}
             </div>
