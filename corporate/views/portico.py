@@ -84,6 +84,10 @@ class PlansPageContext:
 
     billing_base_url: str = ""
 
+    tier_self_hosted_business: int = CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+
+    tier_cloud_standard: int = CustomerPlan.TIER_CLOUD_STANDARD
+
 
 @add_google_analytics
 def plans_view(request: HttpRequest) -> HttpResponse:

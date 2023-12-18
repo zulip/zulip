@@ -46,6 +46,7 @@ def upgrade(
         default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
     ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+    tier: int = REQ(default=CustomerPlan.TIER_CLOUD_STANDARD, json_validator=check_int),
 ) -> HttpResponse:
     try:
         upgrade_request = UpgradeRequest(
@@ -55,8 +56,7 @@ def upgrade(
             salt=salt,
             license_management=license_management,
             licenses=licenses,
-            # TODO: tier should be a passed parameter.
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            tier=tier,
             remote_server_plan_start_date=None,
         )
         billing_session = RealmBillingSession(user)
@@ -97,6 +97,7 @@ def remote_realm_upgrade(
     ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
     remote_server_plan_start_date: Optional[str] = REQ(default=None),
+    tier: int = REQ(default=CustomerPlan.TIER_SELF_HOSTED_BUSINESS, json_validator=check_int),
 ) -> HttpResponse:
     try:
         upgrade_request = UpgradeRequest(
@@ -106,8 +107,7 @@ def remote_realm_upgrade(
             salt=salt,
             license_management=license_management,
             licenses=licenses,
-            # TODO: tier should be a passed parameter.
-            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            tier=tier,
             remote_server_plan_start_date=remote_server_plan_start_date,
         )
         data = billing_session.do_upgrade(upgrade_request)
@@ -146,6 +146,7 @@ def remote_server_upgrade(
     ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
     remote_server_plan_start_date: Optional[str] = REQ(default=None),
+    tier: int = REQ(default=CustomerPlan.TIER_SELF_HOSTED_BUSINESS, json_validator=check_int),
 ) -> HttpResponse:  # nocoverage
     try:
         upgrade_request = UpgradeRequest(
@@ -155,8 +156,7 @@ def remote_server_upgrade(
             salt=salt,
             license_management=license_management,
             licenses=licenses,
-            # TODO: tier should be a passed parameter.
-            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            tier=tier,
             remote_server_plan_start_date=remote_server_plan_start_date,
         )
         data = billing_session.do_upgrade(upgrade_request)
@@ -186,6 +186,7 @@ def remote_server_upgrade(
 def upgrade_page(
     request: HttpRequest,
     manual_license_management: bool = REQ(default=False, json_validator=check_bool),
+    tier: int = REQ(default=CustomerPlan.TIER_CLOUD_STANDARD, json_validator=check_int),
 ) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
@@ -195,7 +196,7 @@ def upgrade_page(
 
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
-        tier=CustomerPlan.TIER_CLOUD_STANDARD,
+        tier=tier,
     )
     billing_session = RealmBillingSession(user)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
@@ -215,10 +216,11 @@ def remote_realm_upgrade_page(
     *,
     manual_license_management: Json[bool] = False,
     success_message: str = "",
+    tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
 ) -> HttpResponse:
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
-        tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        tier=int(tier),
         success_message=success_message,
     )
     try:
@@ -241,10 +243,11 @@ def remote_server_upgrade_page(
     *,
     manual_license_management: Json[bool] = False,
     success_message: str = "",
+    tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
 ) -> HttpResponse:  # nocoverage
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
-        tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        tier=int(tier),
         success_message=success_message,
     )
     try:

@@ -535,7 +535,10 @@ class StripeTestCase(ZulipTestCase):
 
     def add_card_to_customer_for_upgrade(self, charge_succeeds: bool = True) -> None:
         start_session_json_response = self.client_billing_post(
-            "/upgrade/session/start_card_update_session"
+            "/upgrade/session/start_card_update_session",
+            {
+                "tier": 1,
+            },
         )
         response_dict = self.assert_json_success(start_session_json_response)
         self.assert_details_of_valid_session_from_event_status_endpoint(
@@ -544,6 +547,7 @@ class StripeTestCase(ZulipTestCase):
                 "type": "card_update_from_upgrade_page",
                 "status": "created",
                 "is_manual_license_management_upgrade_session": False,
+                "tier": 1,
             },
         )
         self.trigger_stripe_checkout_session_completed_webhook(
@@ -560,6 +564,7 @@ class StripeTestCase(ZulipTestCase):
                 "type": "card_update_from_upgrade_page",
                 "status": "completed",
                 "is_manual_license_management_upgrade_session": False,
+                "tier": 1,
                 "event_handler": {"status": "succeeded"},
             },
         )
@@ -2148,6 +2153,7 @@ class StripeTest(StripeTestCase):
                 "type": "card_update_from_billing_page",
                 "status": "created",
                 "is_manual_license_management_upgrade_session": False,
+                "tier": None,
             },
         )
         with self.assertRaises(stripe.error.CardError):
@@ -2169,6 +2175,7 @@ class StripeTest(StripeTestCase):
                 "type": "card_update_from_billing_page",
                 "status": "created",
                 "is_manual_license_management_upgrade_session": False,
+                "tier": None,
             },
         )
         with self.assertLogs("corporate.stripe", "INFO") as m:
@@ -2186,6 +2193,7 @@ class StripeTest(StripeTestCase):
                 "type": "card_update_from_billing_page",
                 "status": "completed",
                 "is_manual_license_management_upgrade_session": False,
+                "tier": None,
                 "event_handler": {
                     "status": "failed",
                     "error": {"message": "Your card was declined.", "description": "card error"},
@@ -2220,6 +2228,7 @@ class StripeTest(StripeTestCase):
                 "type": "card_update_from_billing_page",
                 "status": "completed",
                 "is_manual_license_management_upgrade_session": False,
+                "tier": None,
                 "event_handler": {"status": "succeeded"},
             },
         )
@@ -2247,7 +2256,10 @@ class StripeTest(StripeTestCase):
         # Test if manual license management upgrade session is created and is successfully recovered.
         start_session_json_response = self.client_billing_post(
             "/upgrade/session/start_card_update_session",
-            {"manual_license_management": "true"},
+            {
+                "manual_license_management": "true",
+                "tier": 1,
+            },
         )
         response_dict = self.assert_json_success(start_session_json_response)
         self.assert_details_of_valid_session_from_event_status_endpoint(
@@ -2256,6 +2268,7 @@ class StripeTest(StripeTestCase):
                 "type": "card_update_from_upgrade_page",
                 "status": "created",
                 "is_manual_license_management_upgrade_session": True,
+                "tier": 1,
             },
         )
 

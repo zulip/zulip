@@ -182,11 +182,15 @@ export function redirect_to_billing_with_successful_upgrade(billing_base_url: st
 
 export function get_upgrade_page_url(
     is_manual_license_management_upgrade_session: boolean | undefined,
+    tier: number,
     billing_base_url: string,
 ): string {
-    let redirect_to = "/upgrade";
-    if (is_manual_license_management_upgrade_session) {
-        redirect_to += "/?manual_license_management=true";
+    const base_url = billing_base_url + "/upgrade/";
+    let params = `tier=${String(tier)}`;
+    if (is_manual_license_management_upgrade_session !== undefined) {
+        params += `&manual_license_management=${String(
+            is_manual_license_management_upgrade_session,
+        )}`;
     }
-    return billing_base_url + redirect_to;
+    return base_url + "?" + params;
 }

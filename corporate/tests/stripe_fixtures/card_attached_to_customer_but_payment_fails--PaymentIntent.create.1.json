@@ -87,7 +87,7 @@
             },
             "paid": false,
             "payment_intent": "pi_NORMALIZED00000000000001",
-            "payment_method": "pm_1OIlXtDEQaroqDjsW5IClxeu",
+            "payment_method": "pm_1OOgtJDEQaroqDjswedepU4i",
             "payment_method_details": {
               "card": {
                 "amount_authorized": null,
@@ -127,7 +127,6 @@
               },
               "type": "card"
             },
-            "radar_options": {},
             "receipt_email": "hamlet@zulip.com",
             "receipt_number": null,
             "receipt_url": null,
@@ -149,7 +148,7 @@
         "total_count": 1,
         "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
       },
-      "client_secret": "pi_NORMALIZED00000000000001_secret_n1KKNJkXE3HBn9XQXDPAxg09C",
+      "client_secret": "pi_NORMALIZED00000000000001_secret_TeKOrWHhfOdaeyKvKYhOSoLWP",
       "confirmation_method": "automatic",
       "created": 1010000004,
       "currency": "usd",
@@ -204,7 +203,7 @@
           },
           "created": 1010000002,
           "customer": "cus_NORMALIZED0001",
-          "id": "pm_1OIlXtDEQaroqDjsW5IClxeu",
+          "id": "pm_1OOgtJDEQaroqDjswedepU4i",
           "livemode": false,
           "metadata": {},
           "object": "payment_method",
@@ -297,13 +296,13 @@
       },
       "created": 1010000002,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OIlXtDEQaroqDjsW5IClxeu",
+      "id": "pm_1OOgtJDEQaroqDjswedepU4i",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
       "type": "card"
     },
-    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0002?t=1701494121",
+    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0002?t=1702906196",
     "setup_intent": null,
     "source": null,
     "type": "card_error"
@@ -316,11 +315,11 @@
     "Access-Control-Max-Age": "300",
     "Cache-Control": "no-cache, no-store",
     "Connection": "keep-alive",
-    "Content-Length": "9960",
+    "Content-Length": "9914",
     "Content-Security-Policy": "report-uri https://q.stripe.com/csp-report?p=v1%2Fpayment_intents; block-all-mixed-content; default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'",
     "Content-Type": "application/json",
     "Date": "NORMALIZED DATETIME",
-    "Idempotency-Key": "2a366e05-a7b2-4fd7-81d6-8cb36f6a2b1b",
+    "Idempotency-Key": "b48a3e58-fdc2-416c-aeaf-85c42e7f0a9e",
     "Original-Request": "req_NORMALIZED0002",
     "Request-Id": "req_NORMALIZED0002",
     "Server": "nginx",
@@ -418,7 +417,7 @@
               },
               "paid": false,
               "payment_intent": "pi_NORMALIZED00000000000001",
-              "payment_method": "pm_1OIlXtDEQaroqDjsW5IClxeu",
+              "payment_method": "pm_1OOgtJDEQaroqDjswedepU4i",
               "payment_method_details": {
                 "card": {
                   "amount_authorized": null,
@@ -458,7 +457,6 @@
                 },
                 "type": "card"
               },
-              "radar_options": {},
               "receipt_email": "hamlet@zulip.com",
               "receipt_number": null,
               "receipt_url": null,
@@ -486,7 +484,7 @@
           "total_count": 1,
           "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
         },
-        "client_secret": "pi_NORMALIZED00000000000001_secret_n1KKNJkXE3HBn9XQXDPAxg09C",
+        "client_secret": "pi_NORMALIZED00000000000001_secret_TeKOrWHhfOdaeyKvKYhOSoLWP",
         "confirmation_method": "automatic",
         "created": 1010000004,
         "currency": "usd",
@@ -541,7 +539,7 @@
             },
             "created": 1010000002,
             "customer": "cus_NORMALIZED0001",
-            "id": "pm_1OIlXtDEQaroqDjsW5IClxeu",
+            "id": "pm_1OOgtJDEQaroqDjswedepU4i",
             "livemode": false,
             "metadata": {},
             "object": "payment_method",
@@ -634,13 +632,13 @@
         },
         "created": 1010000002,
         "customer": "cus_NORMALIZED0001",
-        "id": "pm_1OIlXtDEQaroqDjsW5IClxeu",
+        "id": "pm_1OOgtJDEQaroqDjswedepU4i",
         "livemode": false,
         "metadata": {},
         "object": "payment_method",
         "type": "card"
       },
-      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0002?t=1701494121",
+      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0002?t=1702906196",
       "type": "card_error"
     }
   },
