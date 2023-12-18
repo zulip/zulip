@@ -706,6 +706,7 @@ Not all versions of Zulip Server support all versions of PostgreSQL, however:
 | 5.x                  | 10, 11, 12, 13, 14               |
 | 6.x                  | 11, 12, 13, 14                   |
 | 7.x                  | 12, 13, 14, 15                   |
+| 8.x                  | 12, 13, 14, 15, 16               |
 
 To upgrade the version of PostgreSQL on the Zulip server:
 
