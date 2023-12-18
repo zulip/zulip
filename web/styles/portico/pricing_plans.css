@@ -351,6 +351,9 @@
 
         .standard-price-box {
             display: flex;
+            /* Handle a discount line, when
+               needed. */
+            flex-wrap: wrap;
             align-items: flex-start;
             gap: 4px;
             min-height: 56px;
@@ -360,16 +363,38 @@
                 font-size: 38px;
                 line-height: 1;
                 letter-spacing: -1px;
+
+                &.no-discount {
+                    /* Pad prices that do not have
+                       a discount (e.g., Free, or a
+                       customer's current plan). */
+                    padding-bottom: 25px;
+                }
             }
 
             .currency-symbol {
                 opacity: 0.5;
             }
 
-            .details p {
-                margin: 2px 0 0;
-                font-size: 15px;
-                line-height: 17px;
+            .details {
+                flex: 1 0 0;
+
+                p {
+                    margin: 2px 0 0;
+                    font-size: 15px;
+                    line-height: 17px;
+                }
+            }
+
+            .discount {
+                /* Keep the discount to its own
+                   line in the wrapping flexbox. */
+                flex: 0 0 100%;
+                text-align: center;
+                padding: 1px 0 6px;
+                margin-bottom: -5px;
+                border-radius: 4px 4px 0 0;
+                background-color: hsl(0deg 0% 85%);
             }
         }
     }
@@ -504,6 +529,9 @@
         letter-spacing: 0.06ch;
         padding: 8px 10px;
         border-radius: 4px;
+        /* Position relatively for discount tab */
+        position: relative;
+        z-index: 5;
     }
 
     .button-placeholder {
