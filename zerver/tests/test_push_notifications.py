@@ -2191,7 +2191,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         with mock.patch(
             "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
-        ) as m:
+        ):
             with mock.patch(
                 "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
             ) as m:
@@ -2200,7 +2200,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     return_value=11,
                 ):
                     send_server_data_to_push_bouncer(consider_usage_statistics=False)
-                    m.assert_called()
+                    m.assert_not_called()
                     realms = Realm.objects.all()
                     for realm in realms:
                         self.assertEqual(realm.push_notifications_enabled, True)
