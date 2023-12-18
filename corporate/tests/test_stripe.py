@@ -5797,6 +5797,14 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         billing_session.approve_sponsorship()
         remote_realm.refresh_from_db()
         self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_COMMUNITY)
+        # Assert such a plan exists
+        CustomerPlan.objects.get(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+            status=CustomerPlan.ACTIVE,
+            next_invoice_date=None,
+            price_per_license=0,
+        )
 
         # Check email sent.
         expected_message = (
@@ -5920,6 +5928,14 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         billing_session.approve_sponsorship()
         self.remote_server.refresh_from_db()
         self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_COMMUNITY)
+        # Assert such a plan exists
+        CustomerPlan.objects.get(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+            status=CustomerPlan.ACTIVE,
+            next_invoice_date=None,
+            price_per_license=0,
+        )
 
         # Check email sent.
         expected_message = (
