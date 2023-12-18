@@ -694,6 +694,10 @@ class PrivacyTermsTest(ZulipTestCase):
             response = self.client_get("/policies/terms")
         self.assert_in_response(not_configured_message, response)
 
+        with self.settings(POLICIES_DIRECTORY="zerver/policies_minimal"):
+            response = self.client_get("/policies/terms")
+        self.assert_in_success_response(["These are the custom terms and conditions."], response)
+
         with self.settings(POLICIES_DIRECTORY="corporate/policies"):
             response = self.client_get("/policies/terms")
         self.assert_in_success_response(["Kandra Labs"], response)
@@ -703,6 +707,10 @@ class PrivacyTermsTest(ZulipTestCase):
         with self.settings(POLICIES_DIRECTORY="zerver/policies_absent"):
             response = self.client_get("/policies/privacy")
         self.assert_in_response(not_configured_message, response)
+
+        with self.settings(POLICIES_DIRECTORY="zerver/policies_minimal"):
+            response = self.client_get("/policies/privacy")
+        self.assert_in_success_response(["This is the custom privacy policy."], response)
 
         with self.settings(POLICIES_DIRECTORY="corporate/policies"):
             response = self.client_get("/policies/privacy")
