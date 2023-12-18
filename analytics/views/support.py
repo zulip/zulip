@@ -79,6 +79,7 @@ def get_plan_type_string(plan_type: int) -> str:
             CustomerPlan.TIER_SELF_HOSTED_LEGACY
         ),
         RemoteZulipServer.PLAN_TYPE_COMMUNITY: "Community",
+        RemoteZulipServer.PLAN_TYPE_BASIC: "Basic",
         RemoteZulipServer.PLAN_TYPE_BUSINESS: "Business",
         RemoteZulipServer.PLAN_TYPE_ENTERPRISE: "Enterprise",
     }[plan_type]

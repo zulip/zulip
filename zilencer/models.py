@@ -64,8 +64,8 @@ class RemoteZulipServer(models.Model):
     PLAN_TYPE_SELF_MANAGED = 100
     PLAN_TYPE_SELF_MANAGED_LEGACY = 101
     PLAN_TYPE_COMMUNITY = 102
-    PLAN_TYPE_BUSINESS = 103
-    PLAN_TYPE_PLUS = 104
+    PLAN_TYPE_BASIC = 103
+    PLAN_TYPE_BUSINESS = 104
     PLAN_TYPE_ENTERPRISE = 105
 
     # The current billing plan for the remote server, similar to Realm.plan_type.
@@ -165,8 +165,8 @@ class RemoteRealm(models.Model):
     PLAN_TYPE_SELF_MANAGED = 100
     PLAN_TYPE_SELF_MANAGED_LEGACY = 101
     PLAN_TYPE_COMMUNITY = 102
-    PLAN_TYPE_BUSINESS = 103
-    PLAN_TYPE_PLUS = 104
+    PLAN_TYPE_BASIC = 103
+    PLAN_TYPE_BUSINESS = 104
     PLAN_TYPE_ENTERPRISE = 105
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_MANAGED, db_index=True)
 

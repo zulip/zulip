@@ -1833,10 +1833,10 @@ class BillingSession(ABC):
         customer = self.get_customer()
 
         # Allow users to upgrade to business regardless of current sponsorship status.
-        if (
-            self.is_sponsored_or_pending(customer)
-            and initial_upgrade_request.tier != CustomerPlan.TIER_SELF_HOSTED_BUSINESS
-        ):
+        if self.is_sponsored_or_pending(customer) and initial_upgrade_request.tier not in [
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        ]:
             return f"{self.billing_session_url}/sponsorship", None
 
         remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
@@ -1935,8 +1935,10 @@ class BillingSession(ABC):
         return None, context
 
     def min_licenses_for_plan(self, tier: int) -> int:
-        if tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
+        if tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:
             return 10
+        if tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
+            return 25
         return 1
 
     def downgrade_at_the_end_of_billing_cycle(self, plan: Optional[CustomerPlan] = None) -> None:
@@ -3258,6 +3260,8 @@ class RemoteRealmBillingSession(BillingSession):
         if is_sponsored:
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
             self.add_customer_to_community_plan()
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:
+            plan_type = RemoteRealm.PLAN_TYPE_BASIC
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
         elif tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
@@ -3367,8 +3371,8 @@ class RemoteRealmBillingSession(BillingSession):
     ) -> PlanTierChangeType:  # nocoverage
         valid_plan_tiers = [
             CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
-            CustomerPlan.TIER_SELF_HOSTED_PLUS,
         ]
         if (
             current_plan_tier not in valid_plan_tiers
@@ -3377,18 +3381,18 @@ class RemoteRealmBillingSession(BillingSession):
         ):
             return PlanTierChangeType.INVALID
         if (
-            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
-            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
         ):
             return PlanTierChangeType.UPGRADE
         elif current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY and new_plan_tier in (
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
-            CustomerPlan.TIER_SELF_HOSTED_PLUS,
         ):
             return PlanTierChangeType.UPGRADE
         else:
-            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
-            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
             return PlanTierChangeType.DOWNGRADE
 
     @override
@@ -3398,6 +3402,7 @@ class RemoteRealmBillingSession(BillingSession):
         return True
 
     PAID_PLANS = [
+        RemoteRealm.PLAN_TYPE_BASIC,
         RemoteRealm.PLAN_TYPE_BUSINESS,
         RemoteRealm.PLAN_TYPE_ENTERPRISE,
     ]
@@ -3644,6 +3649,8 @@ class RemoteServerBillingSession(BillingSession):
         if is_sponsored:
             plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
             self.add_customer_to_community_plan()
+        elif tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:
+            plan_type = RemoteZulipServer.PLAN_TYPE_BASIC
         elif tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
         elif tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
@@ -3747,8 +3754,8 @@ class RemoteServerBillingSession(BillingSession):
     ) -> PlanTierChangeType:  # nocoverage
         valid_plan_tiers = [
             CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
-            CustomerPlan.TIER_SELF_HOSTED_PLUS,
         ]
         if (
             current_plan_tier not in valid_plan_tiers
@@ -3758,23 +3765,28 @@ class RemoteServerBillingSession(BillingSession):
             return PlanTierChangeType.INVALID
 
         if current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY and new_plan_tier in (
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
-            CustomerPlan.TIER_SELF_HOSTED_PLUS,
         ):
             return PlanTierChangeType.UPGRADE
         elif (
-            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
-            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
         ):
             return PlanTierChangeType.UPGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ):
+            return PlanTierChangeType.DOWNGRADE
         elif (
             current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
             and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         ):
             return PlanTierChangeType.DOWNGRADE
         else:
-            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_PLUS
-            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
             return PlanTierChangeType.DOWNGRADE
 
     @override
@@ -3784,6 +3796,7 @@ class RemoteServerBillingSession(BillingSession):
         return True
 
     PAID_PLANS = [
+        RemoteZulipServer.PLAN_TYPE_BASIC,
         RemoteZulipServer.PLAN_TYPE_BUSINESS,
         RemoteZulipServer.PLAN_TYPE_ENTERPRISE,
     ]
@@ -3887,7 +3900,7 @@ def get_price_per_license(
     price_map: Dict[int, Dict[str, int]] = {
         CustomerPlan.TIER_CLOUD_STANDARD: {"Annual": 8000, "Monthly": 800},
         CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 16000, "Monthly": 1600},
-        # Placeholder self-hosted plan for development.
+        CustomerPlan.TIER_SELF_HOSTED_BASIC: {"Annual": 4200, "Monthly": 350},
         CustomerPlan.TIER_SELF_HOSTED_BUSINESS: {"Annual": 8000, "Monthly": 800},
         # To help with processing discount request on support page.
         CustomerPlan.TIER_SELF_HOSTED_LEGACY: {"Annual": 0, "Monthly": 0},
