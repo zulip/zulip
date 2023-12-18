@@ -36,6 +36,8 @@ EXCLUDED_URLS = [
     "https://giphy.com",
     "https://giphy.com/apps/giphycapture",
     "https://www.udemy.com/course/the-complete-react-native-and-redux-course/",
+    # Temporarily unavailable
+    "https://zulip.com/accounts/find/",
 ]
 
 VNU_IGNORE = [
