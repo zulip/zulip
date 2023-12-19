@@ -138,8 +138,10 @@ $(() => {
 
     if (window.location.pathname.endsWith("/plans/")) {
         const tabs = ["#cloud", "#self-hosted"];
-        // Default to showing the #cloud tab
-        let tab_to_show = "#cloud";
+        // Show the correct tab based on context.
+        let tab_to_show = $(".portico-pricing").hasClass("showing-self-hosted")
+            ? "#self-hosted"
+            : "#cloud";
         const target_hash = window.location.hash;
 
         // Capture self-hosted-based fragments, such as
