@@ -9,7 +9,12 @@ import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
-export function populate_realm_domains_table(realm_domains: string[]): void {
+type RealmDomain = {
+    domain: string;
+    allow_subdomains: boolean;
+};
+
+export function populate_realm_domains_table(realm_domains: RealmDomain[]): void {
     // Don't populate the table if the realm domains modal isn't open.
     if ($("#realm_domains_modal").length === 0) {
         return;
