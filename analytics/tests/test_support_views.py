@@ -32,19 +32,17 @@ if TYPE_CHECKING:
 
 import uuid
 
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 
 class TestRemoteServerSupportEndpoint(ZulipTestCase):
     @override
     def setUp(self) -> None:
         def add_sponsorship_request(
-            hostname: str, org_type: int, website: str, paid_users: str, plan: str
+            name: str, org_type: int, website: str, paid_users: str, plan: str
         ) -> None:
-            remote_server = RemoteZulipServer.objects.get(hostname=hostname)
-            customer = Customer.objects.create(
-                remote_server=remote_server, sponsorship_pending=True
-            )
+            remote_realm = RemoteRealm.objects.get(name=name)
+            customer = Customer.objects.create(remote_realm=remote_realm, sponsorship_pending=True)
             ZulipSponsorshipRequest.objects.create(
                 customer=customer,
                 org_type=org_type,
@@ -59,15 +57,28 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         super().setUp()
 
         # Set up some initial example data.
-        for i in range(20):
+        for i in range(4):
             hostname = f"zulip-{i}.example.com"
-            RemoteZulipServer.objects.create(
-                hostname=hostname, contact_email=f"admin@{hostname}", plan_type=1, uuid=uuid.uuid4()
+            remote_server = RemoteZulipServer.objects.create(
+                hostname=hostname, contact_email=f"admin@{hostname}", uuid=uuid.uuid4()
             )
+            # The first RemoteZulipServer has no RemoteRealm, as an
+            # example of a pre-8.0 release registered remote server.
+            if i != 0:
+                realm_name = f"realm-name-{i}"
+                realm_host = f"realm-host-{i}"
+                realm_uuid = uuid.uuid4()
+                RemoteRealm.objects.create(
+                    server=remote_server,
+                    uuid=realm_uuid,
+                    host=realm_host,
+                    name=realm_name,
+                    realm_date_created=timezone_now(),
+                )
 
         # Add example sponsorship request data
         add_sponsorship_request(
-            hostname="zulip-1.example.com",
+            name="realm-name-1",
             org_type=OrgTypeEnum.Community.value,
             website="",
             paid_users="None",
@@ -75,7 +86,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
 
         add_sponsorship_request(
-            hostname="zulip-2.example.com",
+            name="realm-name-2",
             org_type=OrgTypeEnum.OpenSource.value,
             website="example.org",
             paid_users="",
@@ -83,6 +94,82 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
 
     def test_search(self) -> None:
+        def assert_server_details_in_response(
+            html_response: "TestHttpResponse", hostname: str
+        ) -> None:
+            self.assert_in_success_response(
+                [
+                    f"<h3>{hostname}</h3>",
+                    f"<b>Contact email</b>: admin@{hostname}",
+                    "<b>Last updated</b>:",
+                    "<b>Zulip version</b>:",
+                    "<b>Plan type</b>: Self-managed<br />",
+                    "<b>Non-guest user count</b>: 0<br />",
+                    "<b>Guest user count</b>: 0<br />",
+                ],
+                html_response,
+            )
+
+        def assert_realm_details_in_response(
+            html_response: "TestHttpResponse", name: str, host: str
+        ) -> None:
+            self.assert_in_success_response(
+                [
+                    f"<h3>{name}</h3>",
+                    f"<b>Remote realm host:</b> {host}<br />",
+                    "<b>Date created</b>: ",
+                    "<b>Org type</b>: Unspecified<br />",
+                    "<b>Has remote realm(s)</b>: True<br />",
+                ],
+                html_response,
+            )
+            self.assert_not_in_success_response(["<h3>zulip-0.example.com</h3>"], result)
+
+        def check_remote_server_with_no_realms(result: "TestHttpResponse") -> None:
+            assert_server_details_in_response(result, "zulip-0.example.com")
+            self.assert_not_in_success_response(
+                ["<h3>zulip-1.example.com</h3>", "<b>Remote realm host:</b>"], result
+            )
+            self.assert_in_success_response(["<b>Has remote realm(s)</b>: False<br />"], result)
+
+        def check_sponsorship_request_no_website(result: "TestHttpResponse") -> None:
+            self.assert_in_success_response(
+                [
+                    "<li><b>Organization type</b>: Community</li>",
+                    "<li><b>Organization website</b>: No website submitted</li>",
+                    "<li><b>Paid users</b>: None</li>",
+                    "<li><b>Requested plan</b>: Business</li>",
+                    "<li><b>Organization description</b>: We help people.</li>",
+                    "<li><b>Estimated total users</b>: 20-35</li>",
+                    "<li><b>Description of paid users</b>: </li>",
+                ],
+                result,
+            )
+
+        def check_sponsorship_request_with_website(result: "TestHttpResponse") -> None:
+            self.assert_in_success_response(
+                [
+                    "<li><b>Organization type</b>: Open-source project</li>",
+                    "<li><b>Organization website</b>: example.org</li>",
+                    "<li><b>Paid users</b>: </li>",
+                    "<li><b>Requested plan</b>: Community</li>",
+                    "<li><b>Organization description</b>: We help people.</li>",
+                    "<li><b>Estimated total users</b>: 20-35</li>",
+                    "<li><b>Description of paid users</b>: </li>",
+                ],
+                result,
+            )
+
+        def check_no_sponsorship_request(result: "TestHttpResponse") -> None:
+            self.assert_not_in_success_response(
+                [
+                    "<li><b>Organization description</b>: We help people.</li>",
+                    "<li><b>Estimated total users</b>: 20-35</li>",
+                    "<li><b>Description of paid users</b>: </li>",
+                ],
+                result,
+            )
+
         self.login("cordelia")
 
         result = self.client_get("/activity/remote/support")
@@ -101,72 +188,46 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             result,
         )
 
-        with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
-            result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
-        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
-        self.assert_in_success_response(["<b>Max monthly messages</b>: 1000"], result)
-        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+        result = self.client_get("/activity/remote/support", {"q": "example.com"})
+        for server in range(4):
+            self.assert_in_success_response([f"<h3>zulip-{server}.example.com</h3>"], result)
 
-        # Sponsorship request information
-        self.assert_in_success_response(["<li><b>Organization type</b>: Community</li>"], result)
-        self.assert_in_success_response(
-            ["<li><b>Organization website</b>: No website submitted</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Paid users</b>: None</li>"], result)
-        self.assert_in_success_response(["<li><b>Requested plan</b>: Business</li>"], result)
-        self.assert_in_success_response(
-            ["<li><b>Organization description</b>: We help people.</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Estimated total users</b>: 20-35</li>"], result)
-        self.assert_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
+        server = 0
+        result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
+        check_remote_server_with_no_realms(result)
+
+        server = 1
+        with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
+            result = self.client_get(
+                "/activity/remote/support", {"q": f"zulip-{server}.example.com"}
+            )
+        self.assert_in_success_response(["<b>Max monthly messages</b>: 1000"], result)
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_sponsorship_request_no_website(result)
 
         with mock.patch(
             "analytics.views.support.compute_max_monthly_messages", side_effect=MissingDataError
         ):
             result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
-        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
         self.assert_in_success_response(
             ["<b>Max monthly messages</b>: Recent data missing"], result
         )
-        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_sponsorship_request_no_website(result)
 
-        result = self.client_get("/activity/remote/support", {"q": "example.com"})
-        for i in range(20):
-            self.assert_in_success_response([f"<h3>zulip-{i}.example.com</h3>"], result)
+        server = 2
+        result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_sponsorship_request_with_website(result)
 
-        result = self.client_get("/activity/remote/support", {"q": "admin@zulip-2.example.com"})
-        self.assert_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
-        self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-2.example.com"], result)
-        self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
-
-        # Sponsorship request information
-        self.assert_in_success_response(
-            ["<li><b>Organization type</b>: Open-source project</li>"], result
-        )
-        self.assert_in_success_response(
-            ["<li><b>Organization website</b>: example.org</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Paid users</b>: </li>"], result)
-        self.assert_in_success_response(["<li><b>Requested plan</b>: Community</li>"], result)
-        self.assert_in_success_response(
-            ["<li><b>Organization description</b>: We help people.</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Estimated total users</b>: 20-35</li>"], result)
-        self.assert_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
-
-        result = self.client_get("/activity/remote/support", {"q": "admin@zulip-3.example.com"})
-        self.assert_in_success_response(["<h3>zulip-3.example.com</h3>"], result)
-        self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-3.example.com"], result)
-        self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
-
-        # Sponsorship request information
-        self.assert_not_in_success_response(
-            ["<li><b>Organization description</b>: We help people.</li>"], result
-        )
-        self.assert_not_in_success_response(
-            ["<li><b>Estimated total users</b>: 20-35</li>"], result
-        )
-        self.assert_not_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
+        server = 3
+        result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_no_sponsorship_request(result)
 
 
 class TestSupportEndpoint(ZulipTestCase):
