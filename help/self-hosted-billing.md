@@ -418,7 +418,11 @@ eligibility prior to setting up a server, contact
 You can always use a credit card to pay. If you would like to pay by invoice,
 you will need to sign up for an annual plan.
 
-### What is the difference between automatic and manual billing?
+### How does automatic billing work?
+
+{!automatic-billing.md!}
+
+### How does manual billing work?
 
 {!manual-billing-intro.md!}
 
