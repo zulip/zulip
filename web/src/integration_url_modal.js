@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
+import render_integration_events from "../templates/settings/integration_events.hbs";
 
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
@@ -37,6 +38,7 @@ export function show_generate_integration_url_modal(api_key) {
         const $topic_input = $("#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
+        const $show_integration_events = $("#show-integration-events");
 
         $dialog_submit_button.prop("disabled", true);
 
@@ -53,11 +55,30 @@ export function show_generate_integration_url_modal(api_key) {
             $topic_input.parent().toggleClass("hide", !checked);
         });
 
+        $show_integration_events.on("change", () => {
+            $("#integrations-event-container").toggleClass(
+                "hide",
+                !$show_integration_events.prop("checked"),
+            );
+            update_url();
+        });
+        $(document).on("change", "#integrations-event-container .integration-event", () => {
+            update_url(true);
+        });
+        $("#integrations-event-container #add-all-integration-events").on("click", () => {
+            $(".integration-event").prop("checked", true);
+            update_url(true);
+        });
+        $("#integrations-event-container #remove-all-integration-events").on("click", () => {
+            $(".integration-event").prop("checked", false);
+            update_url(true);
+        });
+
         $("#generate-integration-url-modal .integration-url-parameter").on("change input", () => {
             update_url();
         });
 
-        function update_url() {
+        function update_url(update_events = false) {
             selected_integration = integration_input_dropdown_widget.value();
             if (selected_integration === default_integration_option.unique_id) {
                 $integration_url.text(default_url_message);
@@ -68,13 +89,51 @@ export function show_generate_integration_url_modal(api_key) {
             const stream_id = stream_input_dropdown_widget.value();
             const topic_name = $topic_input.val();
 
+            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
+                (bot) => bot.name === selected_integration,
+            );
+            const all_event_types = selected_integration_data.all_event_types;
+
+            if (
+                all_event_types !== null &&
+                !update_events &&
+                $show_integration_events.prop("checked")
+            ) {
+                const events_with_ids = all_event_types.map((event) => {
+                    const event_id = event.replaceAll(/\s+/g, "-");
+                    return {
+                        event,
+                        event_id,
+                    };
+                });
+
+                events_with_ids.sort((a, b) => a.event.localeCompare(b.event));
+
+                const events = render_integration_events({
+                    events: events_with_ids,
+                });
+                $("#integrations-event-options").empty().append(events);
+            } else if (!update_events && all_event_types === null) {
+                $("#integration-events-parameter").addClass("hide");
+                $("#integrations-event-container").addClass("hide");
+                $("#integrations-event-options").empty();
+                $("#integrations-event-container .integration-event").prop("checked", false);
+                $show_integration_events.prop("checked", false);
+            }
+
+            if (all_event_types !== null) {
+                $("#integration-events-parameter").removeClass("hide");
+            }
+
             const params = new URLSearchParams({api_key});
+
             if (stream_id !== -1) {
                 params.set("stream", stream_id);
                 if (topic_name !== "" && $override_topic.prop("checked")) {
                     params.set("topic", topic_name);
                 }
             }
+            set_events_param(params);
 
             const realm_url = realm.realm_uri;
             const base_url = `${realm_url}/api/v1/external/`;
@@ -165,6 +224,24 @@ export function show_generate_integration_url_modal(api_key) {
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
+        }
+
+        function set_events_param(params) {
+            if (!$show_integration_events.prop("checked")) {
+                return;
+            }
+            const $selected_integration_events = $(
+                "#integrations-event-container .integration-event:checked",
+            );
+
+            const selected_events = $selected_integration_events
+                .map(function () {
+                    return $(this).val();
+                })
+                .get();
+            if (selected_events.length > 0) {
+                params.set("only_events", JSON.stringify(selected_events));
+            }
         }
     }
 
