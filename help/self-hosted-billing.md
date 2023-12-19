@@ -370,6 +370,13 @@ sponsorship.
     - **Business plan**: $0.67 per user per month with annual billing
       ($0.80/month billed monthly).
 
+### Guest user discounts
+
+There is no automatic discount for guest users. However, organizations with a
+large number of guest users are very likely to be eligible for a discount. If
+this is your situation, please apply for a discount or email
+[sales@zulip.com](mailto:sales@zulip.com).
+
 ### Apply for a paid plan discount
 
 These instructions describe the paid plan discount application process for an
