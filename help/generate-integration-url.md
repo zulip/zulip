@@ -24,6 +24,9 @@ integration URL.
 1. _(optional)_ Select **Send all notifications to a single topic**, and
    enter the topic name.
 
+1. _(optional)_ Select **Filter events that will trigger notifications?**,
+   and select which supported events should trigger notifications.
+
 1. Click **Copy URL** to add the URL to your clipboard.
 
 !!! tip ""
@@ -49,6 +52,9 @@ integration URL.
 
 1. _(optional)_ Select **Send all notifications to a single topic**, and
    enter the topic name.
+
+1. _(optional)_ Select **Filter events that will trigger notifications?**,
+   and select which supported events should trigger notifications.
 
 1. Click **Copy URL** to add the URL to your clipboard.
 
