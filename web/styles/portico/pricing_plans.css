@@ -384,6 +384,11 @@
                     font-size: 15px;
                     line-height: 17px;
                 }
+
+                &.singular-billing-frequency {
+                    align-self: flex-end;
+                    margin-bottom: 5px;
+                }
             }
 
             .discount {
