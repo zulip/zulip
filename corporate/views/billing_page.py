@@ -158,7 +158,7 @@ def remote_server_billing_page(
     billing_session: RemoteServerBillingSession,
     *,
     success_message: str = "",
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     context: Dict[str, Any] = {
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
@@ -167,7 +167,9 @@ def remote_server_billing_page(
         "billing_base_url": billing_session.billing_base_url,
     }
 
-    if billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY:
+    if (
+        billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY
+    ):  # nocoverage
         return HttpResponseRedirect(
             reverse(
                 "remote_server_sponsorship_page",
@@ -189,7 +191,7 @@ def remote_server_billing_page(
                 )
             )
         # If the realm is on a paid plan, show the sponsorship pending message
-        context["sponsorship_pending"] = True
+        context["sponsorship_pending"] = True  # nocoverage
 
     if (
         customer is None
@@ -212,7 +214,7 @@ def remote_server_billing_page(
 
     try:
         main_context = billing_session.get_billing_page_context()
-    except MissingDataError:
+    except MissingDataError:  # nocoverage
         return billing_session.missing_data_error_page(request)
 
     if main_context:
@@ -292,7 +294,7 @@ def update_plan_for_remote_server(
         "licenses_at_next_renewal", json_validator=check_int, default=None
     ),
     schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,
         licenses=licenses,

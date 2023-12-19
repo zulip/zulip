@@ -147,7 +147,7 @@ def remote_server_upgrade(
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
     remote_server_plan_start_date: Optional[str] = REQ(default=None),
     tier: int = REQ(default=CustomerPlan.TIER_SELF_HOSTED_BUSINESS, json_validator=check_int),
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     try:
         upgrade_request = UpgradeRequest(
             billing_modality=billing_modality,
@@ -161,7 +161,7 @@ def remote_server_upgrade(
         )
         data = billing_session.do_upgrade(upgrade_request)
         return json_success(request, data)
-    except BillingError as e:
+    except BillingError as e:  # nocoverage
         billing_logger.warning(
             "BillingError during upgrade: %s. remote_server=%s (%s), billing_modality=%s, "
             "schedule=%s, license_management=%s, licenses=%s",
@@ -174,7 +174,7 @@ def remote_server_upgrade(
             licenses,
         )
         raise e
-    except Exception:
+    except Exception:  # nocoverage
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         error_description = "uncaught exception during upgrade"
@@ -244,7 +244,7 @@ def remote_server_upgrade_page(
     manual_license_management: Json[bool] = False,
     success_message: str = "",
     tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
         tier=int(tier),
@@ -252,10 +252,10 @@ def remote_server_upgrade_page(
     )
     try:
         redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
-    except MissingDataError:
+    except MissingDataError:  # nocoverage
         return billing_session.missing_data_error_page(request)
 
-    if redirect_url:
+    if redirect_url:  # nocoverage
         return HttpResponseRedirect(redirect_url)
 
     response = render(request, "corporate/upgrade.html", context=context)
