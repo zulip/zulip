@@ -1492,6 +1492,8 @@ strong {
    on :focus. */
 .typeahead-menu {
     & li {
+        word-break: break-word;
+
         & a {
             display: block;
             padding: 3px 20px;
