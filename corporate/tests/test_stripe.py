@@ -739,7 +739,7 @@ class StripeTestCase(ZulipTestCase):
     def client_billing_patch(self, url_suffix: str, info: Mapping[str, Any] = {}) -> Any:
         url = f"/json{self.billing_session.billing_base_url}" + url_suffix
         if self.billing_session.billing_base_url:
-            response = self.client_patch(url, info, subdomain="selfhosting")  # nocoverage
+            response = self.client_patch(url, info, subdomain="selfhosting")
         else:
             response = self.client_patch(url, info)
         return response

@@ -97,7 +97,7 @@ def start_card_update_stripe_session_for_remote_server_upgrade(
     *,
     manual_license_management: Json[bool] = False,
     tier: Json[int],
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     session_data = billing_session.create_card_update_session_for_upgrade(
         manual_license_management, tier
     )
