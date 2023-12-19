@@ -34,6 +34,11 @@ class Customer(models.Model):
     # they purchased.
     exempt_from_license_number_check = models.BooleanField(default=False)
 
+    # In cents.
+    flat_discount = models.IntegerField(default=2000)
+    # Number of months left in the flat discount period.
+    flat_discounted_months = models.IntegerField(default=0)
+
     class Meta:
         # Enforce that at least one of these is set.
         constraints = [
