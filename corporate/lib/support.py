@@ -155,7 +155,7 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
 def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
     if isinstance(billing_session, RemoteServerBillingSession):
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
-    else:  # nocoverage
+    else:
         assert isinstance(billing_session, RemoteRealmBillingSession)
         user_data = get_remote_realm_guest_and_non_guest_count(billing_session.remote_realm)
     plan_data = get_current_plan_data_for_support_view(billing_session)
