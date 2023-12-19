@@ -197,6 +197,7 @@ class WebhookIntegration(Integration):
         stream_name: Optional[str] = None,
         legacy: bool = False,
         config_options: Sequence[Tuple[str, str, OptionValidator]] = [],
+        dir_name: Optional[str] = None,
     ) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
@@ -229,8 +230,11 @@ class WebhookIntegration(Integration):
 
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name, ext="md")
-
         self.doc = doc
+
+        if dir_name is None:
+            dir_name = self.name
+        self.dir_name = dir_name
 
     @property
     def url_object(self) -> URLResolver:
@@ -266,7 +270,7 @@ def get_fixture_and_image_paths(
     integration: Integration, screenshot_config: BaseScreenshotConfig
 ) -> Tuple[str, str]:
     if isinstance(integration, WebhookIntegration):
-        fixture_dir = os.path.join("zerver", "webhooks", integration.name, "fixtures")
+        fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
     else:
         fixture_dir = os.path.join("zerver", "integration_fixtures", integration.name)
     fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
@@ -399,6 +403,16 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         display_name="GitHub",
         logo="images/integrations/logos/github.svg",
         function="zerver.webhooks.github.view.api_github_webhook",
+        stream_name="github",
+    ),
+    WebhookIntegration(
+        "githubsponsors",
+        ["financial"],
+        display_name="GitHub Sponsors",
+        logo="images/integrations/logos/github.svg",
+        dir_name="github",
+        function="zerver.webhooks.github.view.api_github_webhook",
+        doc="github/githubsponsors.md",
         stream_name="github",
     ),
     WebhookIntegration("gitlab", ["version-control"], display_name="GitLab"),
@@ -739,6 +753,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "gci": [ScreenshotConfig("task_abandoned_by_student.json")],
     "gitea": [ScreenshotConfig("pull_request__merged.json")],
     "github": [ScreenshotConfig("push__1_commit.json")],
+    "githubsponsors": [ScreenshotConfig("created.json")],
     "gitlab": [ScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
     "gocd": [ScreenshotConfig("pipeline.json")],
     "gogs": [ScreenshotConfig("pull_request__opened.json")],
@@ -836,8 +851,9 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
 
 def get_all_event_types_for_integration(integration: Integration) -> Optional[List[str]]:
     integration = INTEGRATIONS[integration.name]
-    if isinstance(integration, WebhookIntegration) and hasattr(
-        integration.function, "_all_event_types"
-    ):
-        return integration.function._all_event_types
+    if isinstance(integration, WebhookIntegration):
+        if integration.name == "githubsponsors":
+            return import_string("zerver.webhooks.github.view.SPONSORS_EVENT_TYPES")
+        if hasattr(integration.function, "_all_event_types"):
+            return integration.function._all_event_types
     return None
