@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from typing import Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
@@ -637,6 +638,82 @@ def get_ping_body(helper: Helper) -> str:
     return get_setup_webhook_message("GitHub", get_sender_name(payload))
 
 
+def get_cancelled_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} cancelled their {subscription} subscription."
+    return template.format(
+        user_name=get_sender_name(payload),
+        subscription=get_subscription(payload),
+    ).rstrip()
+
+
+def get_created_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} subscribed for {subscription}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        subscription=get_subscription(payload),
+    ).rstrip()
+
+
+def get_edited_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} changed who can see their sponsorship from {prior_privacy_level} to {privacy_level}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        prior_privacy_level=payload["changes"]["privacy_level"]["from"].tame(check_string),
+        privacy_level=payload["sponsorship"]["privacy_level"].tame(check_string),
+    ).rstrip()
+
+
+def get_pending_cancellation_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name}'s {subscription} subscription will be cancelled on {effective_date}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        subscription=get_subscription(payload),
+        effective_date=get_effective_date(payload),
+    ).rstrip()
+
+
+def get_pending_tier_change_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name}'s subscription will change from {prior_subscription} to {subscription} on {effective_date}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        prior_subscription=get_prior_subscription(payload),
+        subscription=get_subscription(payload),
+        effective_date=get_effective_date(payload),
+    ).rstrip()
+
+
+def get_tier_changed_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} changed their subscription from {prior_subscription} to {subscription}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        prior_subscription=get_prior_subscription(payload),
+        subscription=get_subscription(payload),
+    ).rstrip()
+
+
+def get_subscription(payload: WildValue) -> str:
+    return payload["sponsorship"]["tier"]["name"].tame(check_string)
+
+
+def get_effective_date(payload: WildValue) -> str:
+    effective_date = payload["effective_date"].tame(check_string)[:10]
+    return (
+        datetime.strptime(effective_date, "%Y-%m-%d")
+        .replace(tzinfo=timezone.utc)
+        .strftime("%B %d, %Y")
+    )
+
+
+def get_prior_subscription(payload: WildValue) -> str:
+    return payload["changes"]["tier"]["from"]["name"].tame(check_string)
+
+
 def get_repository_name(payload: WildValue) -> str:
     return payload["repository"]["name"].tame(check_string)
 
@@ -728,6 +805,8 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
             number=payload["discussion"]["number"].tame(check_int),
             title=payload["discussion"]["title"].tame(check_string),
         )
+    elif event in SPONSORS_EVENT_TYPES:
+        return "sponsors"
 
     return get_repository_name(payload)
 
@@ -770,7 +849,22 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "team": get_team_body,
     "team_add": get_add_team_body,
     "watch": get_watch_body,
+    "cancelled": get_cancelled_body,
+    "created": get_created_body,
+    "edited": get_edited_body,
+    "pending_cancellation": get_pending_cancellation_body,
+    "pending_tier_change": get_pending_tier_change_body,
+    "tier_changed": get_tier_changed_body,
 }
+
+SPONSORS_EVENT_TYPES = [
+    "cancelled",
+    "created",
+    "edited",
+    "pending_cancellation",
+    "pending_tier_change",
+    "tier_changed",
+]
 
 IGNORED_EVENTS = [
     "check_suite",
