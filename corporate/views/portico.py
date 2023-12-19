@@ -135,7 +135,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
 @authenticated_remote_realm_management_endpoint
 def remote_realm_plans_page(
     request: HttpRequest, billing_session: RemoteRealmBillingSession
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     customer = billing_session.get_customer()
     context = PlansPageContext(
         is_self_hosted_realm=True,
@@ -149,7 +149,7 @@ def remote_realm_plans_page(
     )
 
     context.on_free_tier = customer is None and not context.is_sponsored
-    if customer is not None:
+    if customer is not None:  # nocoverage
         context.sponsorship_pending = customer.sponsorship_pending
         context.customer_plan = get_current_plan_by_customer(customer)
         if context.customer_plan is None:
@@ -192,7 +192,7 @@ def remote_realm_plans_page(
 @authenticated_remote_server_management_endpoint
 def remote_server_plans_page(
     request: HttpRequest, billing_session: RemoteServerBillingSession
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     customer = billing_session.get_customer()
     context = PlansPageContext(
         is_self_hosted_realm=True,
@@ -206,7 +206,7 @@ def remote_server_plans_page(
     )
 
     context.on_free_tier = customer is None and not context.is_sponsored
-    if customer is not None:
+    if customer is not None:  # nocoverage
         context.sponsorship_pending = customer.sponsorship_pending
         context.customer_plan = get_current_plan_by_customer(customer)
         if context.customer_plan is None:

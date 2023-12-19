@@ -835,9 +835,7 @@ class BillingSession(ABC):
         assert plan.end_date is not None
         return plan.end_date.strftime("%B %d, %Y")
 
-    def get_legacy_remote_server_next_plan(
-        self, customer: Customer
-    ) -> Optional[CustomerPlan]:  # nocoverage
+    def get_legacy_remote_server_next_plan(self, customer: Customer) -> Optional[CustomerPlan]:
         legacy_plan = self.get_remote_server_legacy_plan(
             customer, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
@@ -852,9 +850,7 @@ class BillingSession(ABC):
             status=CustomerPlan.NEVER_STARTED,
         )
 
-    def get_legacy_remote_server_next_plan_name(
-        self, customer: Customer
-    ) -> Optional[str]:  # nocoverage
+    def get_legacy_remote_server_next_plan_name(self, customer: Customer) -> Optional[str]:
         next_plan = self.get_legacy_remote_server_next_plan(customer)
         if next_plan is None:
             return None
@@ -1123,9 +1119,7 @@ class BillingSession(ABC):
         )
         return stripe_payment_intent_id
 
-    def ensure_current_plan_is_upgradable(
-        self, customer: Customer, new_plan_tier: int
-    ) -> None:  # nocoverage
+    def ensure_current_plan_is_upgradable(self, customer: Customer, new_plan_tier: int) -> None:
         # Upgrade for customers with an existing plan is only supported for remote realm / server right now.
         if isinstance(self, RealmBillingSession):
             ensure_customer_does_not_have_active_plan(customer)
@@ -1137,7 +1131,7 @@ class BillingSession(ABC):
             return
 
         type_of_plan_change = self.get_type_of_plan_tier_change(plan.tier, new_plan_tier)
-        if type_of_plan_change != PlanTierChangeType.UPGRADE:
+        if type_of_plan_change != PlanTierChangeType.UPGRADE:  # nocoverage
             raise InvalidPlanUpgradeError(
                 f"Cannot upgrade from {plan.name} to {CustomerPlan.name_from_tier(new_plan_tier)}"
             )
@@ -1174,10 +1168,10 @@ class BillingSession(ABC):
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
         billing_cycle_anchor = None
 
-        if remote_server_legacy_plan is not None:  # nocoverage
+        if remote_server_legacy_plan is not None:
             # Legacy servers don't get an additional free trial.
             free_trial = False
-        if should_schedule_upgrade_for_legacy_remote_server:  # nocoverage
+        if should_schedule_upgrade_for_legacy_remote_server:
             assert remote_server_legacy_plan is not None
             billing_cycle_anchor = remote_server_legacy_plan.end_date
 
@@ -1230,7 +1224,7 @@ class BillingSession(ABC):
                         )
 
             event_time = billing_cycle_anchor
-            if should_schedule_upgrade_for_legacy_remote_server:  # nocoverage
+            if should_schedule_upgrade_for_legacy_remote_server:
                 # In this code path, we are currently on a legacy plan
                 # and are scheduling an upgrade to a non-legacy plan
                 # that should occur when the legacy plan expires.
@@ -1244,7 +1238,7 @@ class BillingSession(ABC):
                     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
                     if not stripe_customer_has_credit_card_as_default_payment_method(
                         stripe_customer
-                    ):
+                    ):  # nocoverage
                         raise BillingError(
                             "no payment method",
                             _("Please add a credit card to schedule upgrade."),
@@ -1486,7 +1480,7 @@ class BillingSession(ABC):
         ):
             assert plan.next_invoice_date is not None
             next_billing_cycle = plan.next_invoice_date
-        elif plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
+        elif plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
             assert plan.end_date is not None
             next_billing_cycle = plan.end_date
         else:
@@ -1656,7 +1650,7 @@ class BillingSession(ABC):
             return None, None
         return None, last_ledger_entry
 
-    def get_next_plan(self, plan: CustomerPlan) -> Optional[CustomerPlan]:  # nocoverage
+    def get_next_plan(self, plan: CustomerPlan) -> Optional[CustomerPlan]:
         if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
             assert plan.end_date is not None
             return CustomerPlan.objects.filter(
@@ -1811,7 +1805,7 @@ class BillingSession(ABC):
         context = self.get_billing_context_from_plan(customer, plan, last_ledger_entry, now)
 
         next_plan = self.get_next_plan(plan)
-        if next_plan is not None:  # nocoverage
+        if next_plan is not None:
             next_plan_context = self.get_billing_context_from_plan(
                 customer, next_plan, last_ledger_entry, now
             )
@@ -2009,7 +2003,7 @@ class BillingSession(ABC):
         if status is not None:
             if status == CustomerPlan.ACTIVE:
                 assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
-                with transaction.atomic():  # nocoverage
+                with transaction.atomic():
                     # Switch to a different plan was cancelled. We end the next plan
                     # and set the current one as active.
                     if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
@@ -2623,7 +2617,7 @@ class BillingSession(ABC):
         self,
         renewal_date: datetime,
         end_date: datetime,
-    ) -> None:  # nocoverage
+    ) -> None:
         assert not isinstance(self, RealmBillingSession)
         # Set stripe_customer_id to None to avoid customer being charged without a payment method.
         customer = self.update_or_create_customer(
@@ -2732,7 +2726,7 @@ class BillingSession(ABC):
 
     def get_last_ledger_for_automanaged_plan_if_exists(
         self,
-    ) -> Optional[LicenseLedger]:  # nocoverage
+    ) -> Optional[LicenseLedger]:
         customer = self.get_customer()
         if customer is None:
             return None
@@ -3153,28 +3147,32 @@ class RemoteRealmBillingSession(BillingSession):
         )
 
     @override
-    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:  # nocoverage
+    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
         if event_type is AuditLogEventType.STRIPE_CUSTOMER_CREATED:
             return RemoteRealmAuditLog.STRIPE_CUSTOMER_CREATED
         elif event_type is AuditLogEventType.STRIPE_CARD_CHANGED:
             return RemoteRealmAuditLog.STRIPE_CARD_CHANGED
         elif event_type is AuditLogEventType.CUSTOMER_PLAN_CREATED:
             return RemoteRealmAuditLog.CUSTOMER_PLAN_CREATED
-        elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
+        elif event_type is AuditLogEventType.DISCOUNT_CHANGED:  # nocoverage
             return RemoteRealmAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
-            return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
+            return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
-        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
+        elif (
+            event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+        ):  # nocoverage
             return RemoteRealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
-        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
+        elif (
+            event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+        ):  # nocoverage
             return RemoteRealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
-        else:
+        else:  # nocoverage
             raise BillingSessionAuditLogEventError(event_type)
 
     @override
@@ -3184,7 +3182,7 @@ class RemoteRealmBillingSession(BillingSession):
         event_time: datetime,
         *,
         extra_data: Optional[Dict[str, Any]] = None,
-    ) -> None:  # nocoverage
+    ) -> None:
         # These audit logs don't use all the fields of `RemoteRealmAuditLog`:
         #
         # * remote_id is None because this is not synced from a remote table.
@@ -3208,7 +3206,7 @@ class RemoteRealmBillingSession(BillingSession):
         RemoteRealmAuditLog.objects.create(**log_data)
 
     @override
-    def get_data_for_stripe_customer(self) -> StripeCustomerData:  # nocoverage
+    def get_data_for_stripe_customer(self) -> StripeCustomerData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
         metadata: Dict[str, Any] = {}
@@ -3224,7 +3222,7 @@ class RemoteRealmBillingSession(BillingSession):
     @override
     def update_data_for_checkout_session_and_payment_intent(
         self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:  # nocoverage
+    ) -> Dict[str, Any]:
         assert self.remote_billing_user is not None
         updated_metadata = dict(
             remote_realm_user_id=self.remote_billing_user.id,
@@ -3237,7 +3235,7 @@ class RemoteRealmBillingSession(BillingSession):
     @override
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
-    ) -> Customer:  # nocoverage
+    ) -> Customer:
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
             assert self.support_session is False
@@ -3521,9 +3519,7 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_billing_user.email
 
     @override
-    def current_count_for_billed_licenses(
-        self, event_time: datetime = timezone_now()
-    ) -> int:  # nocoverage
+    def current_count_for_billed_licenses(self, event_time: datetime = timezone_now()) -> int:
         if has_stale_audit_log(self.remote_server):
             raise MissingDataError
         remote_server_counts = get_remote_server_guest_and_non_guest_count(
@@ -3543,7 +3539,7 @@ class RemoteServerBillingSession(BillingSession):
         )
 
     @override
-    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:  # nocoverage
+    def get_audit_log_event(self, event_type: AuditLogEventType) -> int:
         if event_type is AuditLogEventType.STRIPE_CUSTOMER_CREATED:
             return RemoteZulipServerAuditLog.STRIPE_CUSTOMER_CREATED
         elif event_type is AuditLogEventType.STRIPE_CARD_CHANGED:
@@ -3551,20 +3547,24 @@ class RemoteServerBillingSession(BillingSession):
         elif event_type is AuditLogEventType.CUSTOMER_PLAN_CREATED:
             return RemoteZulipServerAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
+            return RemoteZulipServerAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
-            return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED
+            return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
-        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
+        elif (
+            event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
+        ):  # nocoverage
             return RemoteZulipServerAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
-        elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
+        elif (
+            event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
+        ):  # nocoverage
             return RemoteZulipServerAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
-        else:
+        else:  # nocoverage
             raise BillingSessionAuditLogEventError(event_type)
 
     @override
@@ -3574,7 +3574,7 @@ class RemoteServerBillingSession(BillingSession):
         event_time: datetime,
         *,
         extra_data: Optional[Dict[str, Any]] = None,
-    ) -> None:  # nocoverage
+    ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
         log_data = {
             "server": self.remote_server,
@@ -3592,7 +3592,7 @@ class RemoteServerBillingSession(BillingSession):
         RemoteZulipServerAuditLog.objects.create(**log_data)
 
     @override
-    def get_data_for_stripe_customer(self) -> StripeCustomerData:  # nocoverage
+    def get_data_for_stripe_customer(self) -> StripeCustomerData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
         metadata: Dict[str, Any] = {}
@@ -3608,7 +3608,7 @@ class RemoteServerBillingSession(BillingSession):
     @override
     def update_data_for_checkout_session_and_payment_intent(
         self, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:  # nocoverage
+    ) -> Dict[str, Any]:
         assert self.remote_billing_user is not None
         updated_metadata = dict(
             remote_server_user_id=self.remote_billing_user.id,
@@ -3621,7 +3621,7 @@ class RemoteServerBillingSession(BillingSession):
     @override
     def update_or_create_customer(
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
-    ) -> Customer:  # nocoverage
+    ) -> Customer:
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
             assert self.support_session is False
@@ -3638,9 +3638,7 @@ class RemoteServerBillingSession(BillingSession):
 
     @override
     @transaction.atomic
-    def do_change_plan_type(
-        self, *, tier: Optional[int], is_sponsored: bool = False
-    ) -> None:  # nocoverage
+    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
         # This function needs to translate between the different
         # formats of CustomerPlan.tier and RealmZulipServer.plan_type.
         if is_sponsored:
@@ -3833,7 +3831,7 @@ class RemoteServerBillingSession(BillingSession):
             self.remote_server.save(update_fields=["org_type"])
 
     @override
-    def sync_license_ledger_if_needed(self) -> None:  # nocoverage
+    def sync_license_ledger_if_needed(self) -> None:
         last_ledger = self.get_last_ledger_for_automanaged_plan_if_exists()
         if last_ledger is None:
             return
@@ -3854,7 +3852,7 @@ class RemoteServerBillingSession(BillingSession):
             end_of_cycle_plan = self.update_license_ledger_for_automanaged_plan(
                 current_plan, audit_log.event_time
             )
-            if end_of_cycle_plan is None:
+            if end_of_cycle_plan is None:  # nocoverage
                 return
             current_plan = end_of_cycle_plan
 
