@@ -603,6 +603,12 @@ class StripeTestCase(ZulipTestCase):
                 license_management="automatic",
             )
 
+        remote_server_plan_start_date = kwargs.get("remote_server_plan_start_date", None)
+        if remote_server_plan_start_date:
+            params.update(
+                remote_server_plan_start_date=remote_server_plan_start_date,
+            )
+
         params.update(kwargs)
         for key in del_args:
             if key in params:
@@ -618,7 +624,8 @@ class StripeTestCase(ZulipTestCase):
             return upgrade_json_response
 
         if invoice or not talk_to_stripe or is_free_trial_offer_enabled(False):
-            # Upgrade already happened for free trial or invoice realms.
+            # Upgrade already happened for free trial, invoice realms or schedule
+            # upgrade for legacy remote servers.
             return upgrade_json_response
 
         last_stripe_payment_intent = PaymentIntent.objects.last()
@@ -6091,3 +6098,94 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         # Check sponsorship approved banner.
         result = self.client_get(f"{billing_base_url}/sponsorship/", subdomain="selfhosting")
         self.assert_in_success_response(["Zulip is sponsoring a free", "Community"], result)
+
+    @responses.activate
+    @mock_stripe()
+    def test_upgrade_legacy_plan(self, *mocks: Mock) -> None:
+        # Upload data
+        with time_machine.travel(self.now, tick=False):
+            self.add_mock_response()
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Migrate server to legacy plan.
+        with time_machine.travel(self.now, tick=False):
+            start_date = timezone_now()
+            end_date = add_months(start_date, months=3)
+            self.billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+        customer_plan = get_current_plan_by_customer(customer)
+        assert customer_plan is not None
+        self.assertEqual(customer_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(customer_plan.status, CustomerPlan.ACTIVE)
+
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        billing_base_url = self.billing_session.billing_base_url
+
+        # Login
+        with time_machine.travel(self.now, tick=False):
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name, expect_tos=True, confirm_tos=True
+            )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{billing_base_url}/plans/")
+
+        # Visit '/upgrade'
+        with time_machine.travel(self.now, tick=False):
+            result = self.client_get(f"{billing_base_url}/upgrade/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Add card", "Schedule upgrade to Zulip Business"], result)
+
+        # Add card and schedule upgrade
+        with time_machine.travel(self.now, tick=False):
+            self.add_card_and_upgrade(
+                remote_server_plan_start_date="billing_cycle_end_date", talk_to_stripe=False
+            )
+        customer_plan.refresh_from_db()
+        self.assertEqual(customer_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        self.assertEqual(customer_plan.end_date, end_date)
+        new_customer_plan = self.billing_session.get_next_plan(customer_plan)
+        assert new_customer_plan is not None
+        self.assertEqual(new_customer_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(new_customer_plan.billing_cycle_anchor, end_date)
+
+        server_user_count = UserProfile.objects.filter(is_bot=False, is_active=True).count()
+
+        # Visit billing page
+        with time_machine.travel(self.now, tick=False):
+            response = self.client_get(f"{billing_base_url}/billing/", subdomain="selfhosting")
+        for substring in [
+            "(legacy plan)",
+            f"This is a legacy plan that ends on {end_date.strftime('%B %d, %Y')}",
+            f"Your plan will automatically upgrade to Zulip Business on {end_date.strftime('%B %d, %Y')}",
+            f"Expected charge: <strong>${80 * server_user_count:,.2f}</strong>",
+            "Visa ending in 4242",
+            "Update card",
+        ]:
+            self.assert_in_response(substring, response)
+
+        # Login again
+        result = self.execute_remote_billing_authentication_flow(
+            hamlet.delivery_email, hamlet.full_name, expect_tos=False, confirm_tos=False
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{billing_base_url}/billing/")
+
+        # Downgrade
+        with self.assertLogs("corporate.stripe", "INFO") as m:
+            with time_machine.travel(self.now + timedelta(days=7), tick=False):
+                response = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.ACTIVE},
+                )
+                self.assert_json_success(response)
+                self.assertEqual(
+                    m.output[0],
+                    f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {new_customer_plan.id}, status: {CustomerPlan.ENDED}",
+                )
+                self.assertEqual(
+                    m.output[1],
+                    f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {customer_plan.id}, status: {CustomerPlan.ACTIVE}",
+                )
