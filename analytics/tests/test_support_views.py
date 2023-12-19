@@ -15,7 +15,7 @@ from corporate.models import (
     LicenseLedger,
     SponsoredPlanTypes,
     ZulipSponsorshipRequest,
-    get_current_plan_by_realm,
+    get_current_plan_by_customer,
     get_customer_by_realm,
 )
 from zerver.actions.invites import do_create_multiuse_invite_link
@@ -170,6 +170,35 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
 
 
 class TestSupportEndpoint(ZulipTestCase):
+    def create_customer_and_plan(self, realm: Realm, monthly: bool = False) -> Customer:
+        now = datetime(2016, 1, 2, tzinfo=timezone.utc)
+        billing_schedule = CustomerPlan.BILLING_SCHEDULE_ANNUAL
+        price_per_license = 8000
+        months = 12
+
+        if monthly:
+            billing_schedule = CustomerPlan.BILLING_SCHEDULE_MONTHLY
+            price_per_license = 800
+            months = 1
+
+        customer = Customer.objects.create(realm=realm)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=now,
+            billing_schedule=billing_schedule,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            price_per_license=price_per_license,
+            next_invoice_date=add_months(now, months),
+        )
+        LicenseLedger.objects.create(
+            licenses=10,
+            licenses_at_next_renewal=10,
+            event_time=timezone_now(),
+            is_renewal=True,
+            plan=plan,
+        )
+        return customer
+
     def test_search(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
         lear_user = self.lear_user("king")
@@ -365,23 +394,7 @@ class TestSupportEndpoint(ZulipTestCase):
             acting_user=None,
         )
 
-        customer = Customer.objects.create(realm=lear_realm, stripe_customer_id="cus_123")
-        now = datetime(2016, 1, 2, tzinfo=timezone.utc)
-        plan = CustomerPlan.objects.create(
-            customer=customer,
-            billing_cycle_anchor=now,
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-            price_per_license=8000,
-            next_invoice_date=add_months(now, 12),
-        )
-        LicenseLedger.objects.create(
-            licenses=10,
-            licenses_at_next_renewal=10,
-            event_time=timezone_now(),
-            is_renewal=True,
-            plan=plan,
-        )
+        self.create_customer_and_plan(lear_realm)
 
         result = self.client_get("/activity/support")
         self.assert_in_success_response(
@@ -514,6 +527,8 @@ class TestSupportEndpoint(ZulipTestCase):
 
     def test_change_billing_modality(self) -> None:
         realm = get_realm("zulip")
+        customer = self.create_customer_and_plan(realm)
+
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
         result = self.client_post(
@@ -522,15 +537,6 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
-
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-        )
 
         iago = self.example_user("iago")
         self.login_user(iago)
@@ -542,7 +548,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(
             ["Billing collection method of zulip updated to charge automatically"], result
         )
-        plan = get_current_plan_by_realm(realm)
+        plan = get_current_plan_by_customer(customer)
         assert plan is not None
         self.assertEqual(plan.charge_automatically, True)
 
@@ -552,9 +558,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(
             ["Billing collection method of zulip updated to send invoice"], result
         )
-        realm.refresh_from_db()
-        plan = get_current_plan_by_realm(realm)
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertEqual(plan.charge_automatically, False)
 
     def test_change_realm_plan_type(self) -> None:
@@ -787,6 +791,8 @@ class TestSupportEndpoint(ZulipTestCase):
 
     def test_modify_plan_for_downgrade_at_end_of_billing_cycle(self) -> None:
         realm = get_realm("zulip")
+        customer = self.create_customer_and_plan(realm)
+
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
         result = self.client_post(
@@ -795,15 +801,6 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
-
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-        )
 
         iago = self.example_user("iago")
         self.login_user(iago)
@@ -819,7 +816,8 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 ["zulip marked for downgrade at the end of billing cycle"], result
             )
-            plan = get_current_plan_by_realm(realm)
+            customer.refresh_from_db()
+            plan = get_current_plan_by_customer(customer)
             assert plan is not None
             self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
             expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
@@ -827,6 +825,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
     def test_modify_plan_for_downgrade_now_without_additional_licenses(self) -> None:
         realm = get_realm("zulip")
+        customer = self.create_customer_and_plan(realm)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
         result = self.client_post(
@@ -835,15 +837,6 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
-
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        plan = CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-        )
 
         iago = self.example_user("iago")
         self.login_user(iago)
