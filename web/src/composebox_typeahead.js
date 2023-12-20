@@ -28,6 +28,7 @@ import * as typeahead_helper from "./typeahead_helper";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 import {user_settings} from "./user_settings";
+import * as util from "./util";
 
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
@@ -1235,6 +1236,6 @@ export function initialize({on_enter_send}) {
     $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();
         const recipients = typeahead_helper.get_cleaned_pm_recipients(val);
-        $(this).val(recipients.join(", "));
+        $(this).val(util.format_array_as_list(recipients));
     });
 }
