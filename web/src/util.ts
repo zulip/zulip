@@ -4,6 +4,7 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import type {MatchedMessage, Message, RawMessage} from "./message_store";
 import type {UpdateMessageEvent} from "./types";
+import {user_settings} from "./user_settings";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
@@ -488,4 +489,22 @@ export function is_valid_url(url: string, require_absolute: boolean = false): bo
         return false;
     }
     return true;
+}
+
+/**
+ * Formats an array of strings as a narrow list using the specified language.
+ *
+ * @param array - The array of strings to be formatted.
+ * @returns A formatted string representing the narrow list.
+ *
+ * @example
+ * // Input: ["Apple", "Banana", "Cherry"];
+ * // Output: "Apple, Banana, Cherry"
+ */
+export function format_array_as_list(array: string[]): string {
+    // Use Intl.ListFormat to format the array as a narrow list.
+    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style: "narrow"});
+
+    // Return the formatted string.
+    return list_formatter.format(array);
 }
