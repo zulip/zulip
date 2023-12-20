@@ -4,6 +4,7 @@
 
     .user-status-content-wrapper {
         display: flex;
+        justify-content: center;
         align-items: center;
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
@@ -30,26 +31,16 @@
                 width: 20px;
                 height: 20px;
                 cursor: pointer;
-                /*
-                    the following rule is not necessarily better than the one
-                    from a6bef5154197b15c20445526fd3f219b4f2e5379 but it works.
-                */
-                top: -2px;
             }
 
             /* For custom emojis and smiley icon to take full width. */
             & img.selected-emoji,
             .smiley-icon {
+                text-align: center;
                 min-width: 20px;
             }
 
             .smiley-icon {
-                display: block;
-                font-size: 18px;
-                position: relative;
-                top: -2px;
-                left: 2px;
-
                 &:hover {
                     text-decoration: none;
                 }
