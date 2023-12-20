@@ -19,7 +19,7 @@ export function initialize() {
         target: [
             // Ideally this would be `#compose_buttons .button`, but the
             // reply button's actual area is its containing span.
-            "#compose_buttons .compose_reply_button",
+            "#compose_buttons .compose-reply-button-wrapper",
             "#left_bar_compose_mobile_button_big",
             "#new_direct_message_button",
         ],

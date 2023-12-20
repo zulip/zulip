@@ -56,8 +56,13 @@
             line-height: var(--line-height-compose-buttons);
         }
 
-        #left_bar_compose_reply_button_big {
+        .compose-reply-button-wrapper {
             flex-grow: 1;
+            overflow: hidden;
+        }
+
+        #left_bar_compose_reply_button_big {
+            width: 100%;
             text-align: left;
             overflow: hidden;
             white-space: nowrap;
