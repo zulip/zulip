@@ -629,9 +629,9 @@ export function initialize() {
             "#stream_filters",
             "#left-sidebar-navigation-list",
             "#buddy-list-users-matching-view",
-        ].join(", ");
+        ];
 
-        $(sel).on("click", "a", function () {
+        $(util.format_array_as_list(sel)).on("click", "a", function () {
             this.blur();
         });
     }
