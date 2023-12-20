@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as message_viewport from "./message_viewport";
+import * as util from "./util";
 
 function get_bottom_whitespace_height() {
     return message_viewport.height() * 0.4;
@@ -145,7 +146,7 @@ export function resize_stream_subscribers_list() {
         ".subscription_settings .stream_setting_subsection_title",
     ];
     const $classes_above_subscribers_list = $subscriptions_info.find(
-        classes_above_subscribers_list.join(", "),
+        util.format_array_as_list(classes_above_subscribers_list),
     );
     let total_height_of_classes_above_subscribers_list = 0;
     $classes_above_subscribers_list.each(function () {
