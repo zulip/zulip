@@ -2,6 +2,7 @@ import generated_pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
 
 import {$t} from "./i18n";
+import * as util from "./util";
 
 type RealmPlayground = {
     id: number;
@@ -90,7 +91,7 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        language_labels.set(key, key + " (" + values.join(", ") + ")");
+        language_labels.set(key, key + " (" + util.format_array_as_list(values) + ")");
     }
 
     return language_labels;
