@@ -201,7 +201,20 @@ export function handle_member_edit_event(group_id, user_ids) {
     // or remove the group-row on the left panel accordingly.
     const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
     if (tab_key === "your-groups" && user_ids.includes(people.my_current_user_id())) {
-        redraw_user_group_list();
+        if (user_groups.is_user_in_group(group_id, people.my_current_user_id())) {
+            // We add the group row to list if the current user
+            // is added to it. The whole list is redrawed to
+            // maintain the sorted order of groups.
+            redraw_user_group_list();
+        } else if (!settings_data.can_edit_user_group(group_id)) {
+            // We remove the group row immediately only if the
+            // user cannot join the group again themselves.
+            const group_row = row_for_group_id(group_id);
+            if (group_row.length) {
+                group_row.remove();
+                update_empty_left_panel_message();
+            }
+        }
     }
 
     // update display of check-mark.
