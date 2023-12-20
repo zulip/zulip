@@ -13,11 +13,12 @@
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
             <div class="new_message_button reply_button_container">
-                <button type="button" class="button small compose_reply_button"
-                  id="left_bar_compose_reply_button_big"
-                  data-tooltip-template-id="compose_reply_message_button_tooltip_template">
-                    {{t 'Compose message' }}
-                </button>
+                <div class="compose-reply-button-wrapper" data-tooltip-template-id="compose_reply_message_button_tooltip_template">
+                    <button type="button" class="button small compose_reply_button"
+                      id="left_bar_compose_reply_button_big">
+                        {{t 'Compose message' }}
+                    </button>
+                </div>
                 <button type="button" class="button compose_new_conversation_button"
                   id="new_conversation_button"
                   data-tooltip-template-id="new_stream_message_button_tooltip_template">
