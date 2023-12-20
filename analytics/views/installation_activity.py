@@ -25,7 +25,8 @@ from analytics.views.activity_common import (
 from analytics.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
-from zerver.models import Realm, get_org_type_display_name
+from zerver.models import Realm
+from zerver.models.realms import get_org_type_display_name
 
 if settings.BILLING_ENABLED:
     from corporate.lib.analytics import (

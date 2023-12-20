@@ -64,15 +64,13 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
-    flush_alert_word,
-    get_client,
-    get_or_create_huddle,
-    get_realm,
-    get_stream,
-    get_user,
-    get_user_by_delivery_email,
-    get_user_profile_by_id,
 )
+from zerver.models.alert_words import flush_alert_word
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_huddle
+from zerver.models.streams import get_stream
+from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 from zilencer.models import RemoteRealm, RemoteZulipServer
 from zilencer.views import update_remote_realm_data_for_server
 

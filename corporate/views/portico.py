@@ -84,6 +84,10 @@ class PlansPageContext:
 
     billing_base_url: str = ""
 
+    tier_self_hosted_business: int = CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+
+    tier_cloud_standard: int = CustomerPlan.TIER_CLOUD_STANDARD
+
 
 @add_google_analytics
 def plans_view(request: HttpRequest) -> HttpResponse:
@@ -131,7 +135,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
 @authenticated_remote_realm_management_endpoint
 def remote_realm_plans_page(
     request: HttpRequest, billing_session: RemoteRealmBillingSession
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     customer = billing_session.get_customer()
     context = PlansPageContext(
         is_self_hosted_realm=True,
@@ -145,7 +149,7 @@ def remote_realm_plans_page(
     )
 
     context.on_free_tier = customer is None and not context.is_sponsored
-    if customer is not None:
+    if customer is not None:  # nocoverage
         context.sponsorship_pending = customer.sponsorship_pending
         context.customer_plan = get_current_plan_by_customer(customer)
         if context.customer_plan is None:
@@ -188,7 +192,7 @@ def remote_realm_plans_page(
 @authenticated_remote_server_management_endpoint
 def remote_server_plans_page(
     request: HttpRequest, billing_session: RemoteServerBillingSession
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     customer = billing_session.get_customer()
     context = PlansPageContext(
         is_self_hosted_realm=True,
@@ -202,7 +206,7 @@ def remote_server_plans_page(
     )
 
     context.on_free_tier = customer is None and not context.is_sponsored
-    if customer is not None:
+    if customer is not None:  # nocoverage
         context.sponsorship_pending = customer.sponsorship_pending
         context.customer_plan = get_current_plan_by_customer(customer)
         if context.customer_plan is None:
@@ -262,7 +266,9 @@ def team_view(request: HttpRequest) -> HttpResponse:
 
 @add_google_analytics
 def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
-    return TemplateResponse(request, template_name, latest_info_context())
+    context = latest_info_context()
+    context["billing_base_url"] = ""
+    return TemplateResponse(request, template_name, context)
 
 
 @add_google_analytics

@@ -32,15 +32,9 @@ from zerver.lib.user_groups import (
     is_user_in_group,
     user_groups_in_realm_serialized,
 )
-from zerver.models import (
-    GroupGroupMembership,
-    Realm,
-    SystemGroups,
-    UserGroup,
-    UserGroupMembership,
-    UserProfile,
-    get_realm,
-)
+from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 
 
 class UserGroupTestCase(ZulipTestCase):

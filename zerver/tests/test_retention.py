@@ -37,11 +37,11 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
-    get_client,
-    get_realm,
-    get_stream,
-    get_system_bot,
 )
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot
 
 # Class with helper functions useful for testing archiving of reactions:
 from zerver.tornado.django_api import send_event

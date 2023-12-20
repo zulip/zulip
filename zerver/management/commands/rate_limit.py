@@ -6,7 +6,8 @@ from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.rate_limiter import RateLimitedUser
-from zerver.models import UserProfile, get_user_profile_by_api_key
+from zerver.models import UserProfile
+from zerver.models.users import get_user_profile_by_api_key
 
 
 class Command(ZulipBaseCommand):

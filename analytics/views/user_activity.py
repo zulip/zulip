@@ -11,7 +11,8 @@ from analytics.views.activity_common import (
     make_table,
 )
 from zerver.decorator import require_server_admin
-from zerver.models import UserActivity, UserProfile, get_user_profile_by_id
+from zerver.models import UserActivity, UserProfile
+from zerver.models.users import get_user_profile_by_id
 
 if settings.BILLING_ENABLED:
     pass

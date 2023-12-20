@@ -35,16 +35,14 @@ from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
-from zerver.models import (
+from zerver.models import Realm, UserProfile
+from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    Realm,
-    UserProfile,
     get_realm,
-    get_user_by_delivery_email,
-    is_cross_realm_bot_email,
 )
+from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
 if settings.BILLING_ENABLED:

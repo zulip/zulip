@@ -20,7 +20,8 @@ from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import validate_login_email
-from zerver.models import Realm, UserProfile, get_realm
+from zerver.models import Realm, UserProfile
+from zerver.models.realms import get_realm
 from zerver.views.auth import get_safe_redirect_to
 from zerver.views.errors import config_error
 from zproject.backends import dev_auth_enabled

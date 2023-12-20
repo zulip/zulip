@@ -8,9 +8,9 @@
           "account_country": "US",
           "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
-          "amount_due": 960000,
+          "amount_due": 95840,
           "amount_paid": 0,
-          "amount_remaining": 960000,
+          "amount_remaining": 95840,
           "amount_shipping": 0,
           "application": null,
           "application_fee_amount": null,
@@ -23,7 +23,7 @@
           },
           "billing_reason": "manual",
           "charge": null,
-          "collection_method": "send_invoice",
+          "collection_method": "charge_automatically",
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
@@ -41,23 +41,23 @@
           "description": null,
           "discount": null,
           "discounts": [],
-          "due_date": 1000000000,
+          "due_date": null,
           "effective_at": 1000000000,
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpMSlFpamJ6ejdlcjJqM3BJRmNvcnloelVsaDVZLDkyMDM0ODcz0200jA0q3ZOP?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDZ5SkNwd1NMMVI1YW5pb0w2ZkQwZjJkOEYzMWV1LDkzNDQ2NDc202002fXv3npK?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpMSlFpamJ6ejdlcjJqM3BJRmNvcnloelVsaDVZLDkyMDM0ODcz0200jA0q3ZOP/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDZ5SkNwd1NMMVI1YW5pb0w2ZkQwZjJkOEYzMWV1LDkzNDQ2NDc202002fXv3npK/pdf?s=ap",
           "last_finalization_error": null,
           "latest_revision": null,
           "lines": {
             "data": [
               {
-                "amount": 960000,
-                "amount_excluding_tax": 960000,
+                "amount": 96000,
+                "amount_excluding_tax": 96000,
                 "currency": "usd",
-                "description": "Zulip Cloud Standard - renewal",
+                "description": "Zulip Cloud Plus - renewal",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -67,8 +67,8 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1420167845,
-                  "start": 1388631845
+                  "end": 1000000000,
+                  "start": 1000000000
                 },
                 "plan": null,
                 "price": {
@@ -89,19 +89,19 @@
                   "tiers_mode": null,
                   "transform_quantity": null,
                   "type": "one_time",
-                  "unit_amount": 8000,
-                  "unit_amount_decimal": "8000"
+                  "unit_amount": 16000,
+                  "unit_amount_decimal": "16000"
                 },
                 "proration": false,
                 "proration_details": {
                   "credited_items": null
                 },
-                "quantity": 120,
+                "quantity": 6,
                 "subscription": null,
                 "tax_amounts": [],
                 "tax_rates": [],
                 "type": "invoiceitem",
-                "unit_amount_excluding_tax": "8000"
+                "unit_amount_excluding_tax": "16000"
               }
             ],
             "has_more": false,
@@ -111,7 +111,7 @@
           },
           "livemode": false,
           "metadata": {},
-          "next_payment_attempt": null,
+          "next_payment_attempt": 1000000000,
           "number": "NORMALI-0001",
           "object": "invoice",
           "on_behalf_of": null,
@@ -138,8 +138,8 @@
           "rendering_options": null,
           "shipping_cost": null,
           "shipping_details": null,
-          "starting_balance": 0,
-          "statement_descriptor": "Zulip Cloud Standard",
+          "starting_balance": -160,
+          "statement_descriptor": "Zulip Cloud Plus",
           "status": "open",
           "status_transitions": {
             "finalized_at": 1000000000,
@@ -151,27 +151,27 @@
           "subscription_details": {
             "metadata": null
           },
-          "subtotal": 960000,
-          "subtotal_excluding_tax": 960000,
+          "subtotal": 96000,
+          "subtotal_excluding_tax": 96000,
           "tax": null,
           "test_clock": null,
-          "total": 960000,
+          "total": 96000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 960000,
+          "total_excluding_tax": 96000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
-      "id": "evt_1OIlXBDEQaroqDjsZj40mhUl",
+      "id": "evt_1OOgkyDEQaroqDjs42SyWcaA",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": null,
-        "idempotency_key": null
+        "id": "req_NORMALIZED0001",
+        "idempotency_key": "d0ae0dfa-765a-404a-ad4b-0eeb2fbfef0e"
       },
-      "type": "invoice.sent"
+      "type": "invoice.finalized"
     }
   ],
   "has_more": true,

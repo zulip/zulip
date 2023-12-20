@@ -26,16 +26,9 @@ from zerver.lib.digest import (
 from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    Message,
-    Realm,
-    RealmAuditLog,
-    Stream,
-    UserActivityInterval,
-    UserProfile,
-    get_realm,
-    get_stream,
-)
+from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class TestDigestEmailMessages(ZulipTestCase):

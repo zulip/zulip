@@ -67,7 +67,6 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
-    SystemGroups,
     UserActivity,
     UserActivityInterval,
     UserGroup,
@@ -77,11 +76,11 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    get_huddle_hash,
-    get_realm,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.recipients import get_huddle_hash
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 realm_tables = [
     ("zerver_realmauthenticationmethod", RealmAuthenticationMethod, "realmauthenticationmethod"),

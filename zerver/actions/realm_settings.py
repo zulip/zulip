@@ -31,12 +31,12 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserProfile,
-    active_user_ids,
-    get_realm,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:

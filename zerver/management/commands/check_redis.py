@@ -8,7 +8,7 @@ from returns.curry import partial
 from typing_extensions import override
 
 from zerver.lib.rate_limiter import RateLimitedUser, client
-from zerver.models import get_user_profile_by_id
+from zerver.models.users import get_user_profile_by_id
 
 
 class Command(BaseCommand):

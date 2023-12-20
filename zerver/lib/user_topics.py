@@ -13,7 +13,8 @@ from sqlalchemy.types import Integer
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
 from zerver.lib.types import UserTopicDict
-from zerver.models import UserProfile, UserTopic, get_stream
+from zerver.models import UserProfile, UserTopic
+from zerver.models.streams import get_stream
 
 
 

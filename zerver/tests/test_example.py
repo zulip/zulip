@@ -11,7 +11,10 @@ from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.users import is_administrator_role
-from zerver.models import UserProfile, UserStatus, get_realm, get_stream, get_user_by_delivery_email
+from zerver.models import UserProfile, UserStatus
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_user_by_delivery_email
 
 
 # Most Zulip tests use ZulipTestCase, which inherits from django.test.TestCase.

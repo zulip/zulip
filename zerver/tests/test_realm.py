@@ -49,16 +49,15 @@ from zerver.models import (
     RealmUserDefault,
     ScheduledEmail,
     Stream,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 
 class RealmTest(ZulipTestCase):

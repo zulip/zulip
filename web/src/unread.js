@@ -52,7 +52,7 @@ class Bucketer {
     reverse_lookup = new Map();
 
     constructor(options) {
-        this.key_to_bucket = new options.KeyDict();
+        this.key_to_bucket = options.key_to_bucket;
         this.make_bucket = options.make_bucket;
     }
 
@@ -107,7 +107,7 @@ class Bucketer {
 
 class UnreadDirectMessageCounter {
     bucketer = new Bucketer({
-        KeyDict: Map,
+        key_to_bucket: new Map(),
         make_bucket: () => new Set(),
     });
 
@@ -217,14 +217,14 @@ const unread_direct_message_counter = new UnreadDirectMessageCounter();
 
 function make_per_stream_bucketer() {
     return new Bucketer({
-        KeyDict: FoldDict, // bucket keys are topics
+        key_to_bucket: new FoldDict(), // bucket keys are topics
         make_bucket: () => new Set(),
     });
 }
 
 class UnreadTopicCounter {
     bucketer = new Bucketer({
-        KeyDict: Map, // bucket keys are stream_ids
+        key_to_bucket: new Map(), // bucket keys are stream_ids
         make_bucket: make_per_stream_bucketer,
     });
 
@@ -307,7 +307,7 @@ class UnreadTopicCounter {
                 // get_stream_count calculates both the number of
                 // unmuted unread as well as the number of muted
                 // unreads.
-                res.stream_count.set(stream_id, this.get_stream_count(stream_id));
+                res.stream_count.set(stream_id, this.get_stream_count_info(stream_id));
                 res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
                 res.followed_topic_unread_messages +=
                     res.stream_count.get(stream_id).followed_count;
@@ -358,7 +358,7 @@ class UnreadTopicCounter {
         return result;
     }
 
-    get_stream_count(stream_id) {
+    get_stream_count_info(stream_id) {
         const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
@@ -759,7 +759,7 @@ export function update_message_for_mention(message, content_edited = false) {
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);
         add_message_to_unread_mention_topics(message.id);
-        if (!message.stream_id) {
+        if (message.type === "private") {
             direct_message_with_mention_count.add(message.id);
         }
     } else {
@@ -806,17 +806,15 @@ export function declare_bankruptcy() {
 }
 
 export function get_unread_pm(include_per_bucket_latest_msg_id = false) {
-    const pm_res = unread_direct_message_counter.get_counts(include_per_bucket_latest_msg_id);
-    return pm_res;
+    return unread_direct_message_counter.get_counts(include_per_bucket_latest_msg_id);
 }
 
 export function get_unread_topics(include_per_topic_latest_msg_id = false) {
     const include_per_topic_count = true;
-    const topics_res = unread_topic_counter.get_counts(
+    return unread_topic_counter.get_counts(
         include_per_topic_count,
         include_per_topic_latest_msg_id,
     );
-    return topics_res;
 }
 
 export function get_counts() {
@@ -896,8 +894,8 @@ export function get_notifiable_count() {
     return calculate_notifiable_count(res);
 }
 
-export function num_unread_for_stream(stream_id) {
-    return unread_topic_counter.get_stream_count(stream_id);
+export function unread_count_info_for_stream(stream_id) {
+    return unread_topic_counter.get_stream_count_info(stream_id);
 }
 
 export function num_unread_for_topic(stream_id, topic_name) {

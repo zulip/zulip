@@ -5,13 +5,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_send import get_active_presence_idle_user_ids
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    Message,
-    UserPresence,
-    UserProfile,
-    bulk_get_huddle_user_ids,
-    get_huddle_user_ids,
-)
+from zerver.models import Message, UserPresence, UserProfile
+from zerver.models.recipients import bulk_get_huddle_user_ids, get_huddle_user_ids
 
 
 class MissedMessageTest(ZulipTestCase):

@@ -21,7 +21,9 @@ from zerver.lib.cache import (
     validate_cache_key,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserProfile, get_realm, get_system_bot, get_user, get_user_profile_by_id
+from zerver.models import UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot, get_user, get_user_profile_by_id
 
 
 class AppsTest(ZulipTestCase):

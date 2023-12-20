@@ -14,6 +14,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
     internal_send_stream_message,
 )
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.email_mirror_helpers import (
     ZulipEmailForwardError,
     ZulipEmailForwardUserError,
@@ -28,19 +29,10 @@ from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.string_validation import is_character_printable
 from zerver.lib.upload import upload_message_attachment
-from zerver.models import (
-    Message,
-    MissedMessageEmailAddress,
-    Realm,
-    Recipient,
-    Stream,
-    UserProfile,
-    get_client,
-    get_display_recipient,
-    get_stream_by_id_in_realm,
-    get_system_bot,
-    get_user_profile_by_id,
-)
+from zerver.models import Message, MissedMessageEmailAddress, Realm, Recipient, Stream, UserProfile
+from zerver.models.clients import get_client
+from zerver.models.streams import get_stream_by_id_in_realm
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active
 
 logger = logging.getLogger(__name__)

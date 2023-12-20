@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 
-from zerver.models import generate_email_token_for_stream
+from zerver.models.streams import generate_email_token_for_stream
 
 
 class Migration(migrations.Migration):

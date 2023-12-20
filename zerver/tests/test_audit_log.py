@@ -73,24 +73,21 @@ from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
-    EmojiInfo,
     Message,
     Realm,
     RealmAuditLog,
-    RealmDomainDict,
     RealmPlayground,
     Recipient,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserProfile,
-    get_all_custom_emoji_for_realm,
-    get_realm,
-    get_realm_domains,
-    get_realm_playgrounds,
-    get_stream,
-    linkifiers_for_realm,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.linkifiers import linkifiers_for_realm
+from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
+from zerver.models.realm_playgrounds import get_realm_playgrounds
+from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
+from zerver.models.streams import get_stream
 
 
 class TestRealmAuditLog(ZulipTestCase):

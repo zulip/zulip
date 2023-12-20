@@ -47,23 +47,22 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Message,
     Realm,
     RealmDomain,
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
-    get_or_create_huddle,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    get_user,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_huddle
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot, get_user
 from zerver.views.message_send import InvalidMirrorInputError
 
 

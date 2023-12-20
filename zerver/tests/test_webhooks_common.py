@@ -21,7 +21,9 @@ from zerver.lib.webhooks.common import (
     standardize_headers,
     validate_extract_webhook_http_header,
 )
-from zerver.models import UserProfile, get_realm, get_user
+from zerver.models import UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_user
 
 
 class WebhooksCommonTestCase(ZulipTestCase):

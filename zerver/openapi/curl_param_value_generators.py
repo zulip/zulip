@@ -20,7 +20,9 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.users import get_api_key
-from zerver.models import Client, Message, UserGroup, UserPresence, get_realm, get_user
+from zerver.models import Client, Message, UserGroup, UserPresence
+from zerver.models.realms import get_realm
+from zerver.models.users import get_user
 
 GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = {}
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()

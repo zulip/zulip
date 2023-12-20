@@ -138,21 +138,22 @@ $(() => {
 
     if (window.location.pathname.endsWith("/plans/")) {
         const tabs = ["#cloud", "#self-hosted"];
-        const target_hash =
-            window.location.hash === "#self-hosted-plan-comparison"
-                ? "#self-hosted"
-                : window.location.hash;
-        if (!tabs.includes(target_hash)) {
-            return;
-        }
-        const tab_to_show = target_hash;
+        // Default to showing the #cloud tab
+        let tab_to_show = "#cloud";
+        const target_hash = window.location.hash;
 
-        // Don't scroll to the target element
-        if (target_hash === "#self-hosted") {
+        // Capture self-hosted-based fragments, such as
+        // #self-hosted-plan-comparison, and show the
+        // #self-hosted tab
+        if (target_hash.startsWith("#self-hosted")) {
+            tab_to_show = "#self-hosted";
+        }
+
+        // Don't scroll to tab targets
+        if (tabs.includes(target_hash)) {
             window.scroll({top: 0});
         }
-        // Display the self-hosted tabs when the URL fragment is #self-hosted
-        // or #self-hosted-plan-comparison
+
         const $pricing_wrapper = $(".portico-pricing");
         $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
         $pricing_wrapper.addClass(`showing-${tab_to_show.slice(1)}`);

@@ -12,7 +12,8 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTransactionTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.user_groups import access_user_group_by_id
-from zerver.models import Realm, UserGroup, UserProfile, get_realm
+from zerver.models import Realm, UserGroup, UserProfile
+from zerver.models.realms import get_realm
 from zerver.views.user_groups import update_subgroups_of_user_group
 
 BARRIER: Optional[threading.Barrier] = None

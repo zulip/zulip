@@ -80,7 +80,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
-    NotificationTriggers,
     PushDeviceToken,
     Realm,
     RealmAuditLog,
@@ -90,10 +89,11 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_client,
-    get_realm,
-    get_stream,
 )
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.streams import get_stream
 from zilencer.models import RemoteZulipServerAuditLog
 from zilencer.views import DevicesToCleanUpDict
 
@@ -663,7 +663,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             remote=server,
         )
 
-    def test_send_notification_endpoint_on_self_managed_plan(self) -> None:
+    def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
         remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
         RemotePushDeviceToken.objects.create(
@@ -790,6 +790,39 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
         self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
+
+        # Check that sponsored realms are allowed to send push notifications.
+        remote_server.plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
+        remote_server.save()
+        with self.assertLogs("zilencer.views", level="INFO") as logger:
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        data = self.assert_json_success(result)
+        self.assertEqual(
+            {
+                "result": "success",
+                "msg": "",
+                "realm": None,
+                "total_android_devices": 1,
+                "total_apple_devices": 0,
+                "deleted_devices": {"android_devices": [], "apple_devices": []},
+            },
+            data,
+        )
+        self.assertIn(
+            "INFO:zilencer.views:"
+            f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
+            "1 via FCM devices, 0 via APNs devices",
+            logger.output,
+        )
+
+        # Reset the plan_type to test remaining cases.
+        remote_server.plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED
+        remote_server.save()
 
         human_counts = {
             str(UserProfile.ROLE_REALM_ADMINISTRATOR): 1,
@@ -2151,6 +2184,32 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     for realm in realms:
                         self.assertEqual(realm.push_notifications_enabled, False)
                         self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+
+        RemoteRealm.objects.filter(server=self.server).update(
+            plan_type=RemoteRealm.PLAN_TYPE_COMMUNITY
+        )
+
+        with mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+        ):
+            with mock.patch(
+                "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
+            ) as m:
+                with mock.patch(
+                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                    return_value=11,
+                ):
+                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                    m.assert_not_called()
+                    realms = Realm.objects.all()
+                    for realm in realms:
+                        self.assertEqual(realm.push_notifications_enabled, True)
+                        self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+
+        # Reset the plan type to test remaining cases.
+        RemoteRealm.objects.filter(server=self.server).update(
+            plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
+        )
 
         dummy_customer_plan = mock.MagicMock()
         dummy_customer_plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE

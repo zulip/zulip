@@ -1072,9 +1072,12 @@ def remote_server_post_analytics(
     for remote_realm in remote_realms:
         uuid = str(remote_realm.uuid)
         status = get_push_status_for_remote_request(server, remote_realm)
-        if remote_human_realm_count == 1:  # nocoverage
+        if remote_realm.is_system_bot_realm:
+            # Ignore system bot realms for computing log_data
+            pass
+        elif remote_human_realm_count == 1:  # nocoverage
             log_data["extra"] = f"[can_push={status.can_push}/{status.message}]"
-        elif not remote_realm.is_system_bot_realm:
+        else:
             can_push_values.add(status.can_push)
         remote_realm_dict[uuid] = {
             "can_push": status.can_push,

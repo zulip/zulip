@@ -13,7 +13,8 @@ from zerver.actions.create_user import notify_new_user
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Realm, Recipient, Stream, UserProfile, get_realm
+from zerver.models import Message, Realm, Recipient, Stream, UserProfile
+from zerver.models.realms import get_realm
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
 if sys.version_info < (3, 9):  # nocoverage

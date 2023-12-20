@@ -22,7 +22,8 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_event_on_commit
-from zerver.models import OrgTypeEnum, Realm, RealmAuditLog
+from zerver.models import Realm, RealmAuditLog
+from zerver.models.realms import OrgTypeEnum
 
 
 class PushBouncerSession(OutgoingSession):

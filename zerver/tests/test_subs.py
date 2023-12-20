@@ -38,6 +38,10 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.lib.attachments import (
+    validate_attachment_request,
+    validate_attachment_request_for_spectator_access,
+)
 from zerver.lib.default_streams import (
     get_default_stream_ids_for_realm,
     get_default_streams_for_realm_as_dicts,
@@ -104,15 +108,10 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
-    active_non_guest_user_ids,
-    get_default_stream_groups,
-    get_realm,
-    get_stream,
-    get_user,
-    get_user_profile_by_id_in_realm,
-    validate_attachment_request,
-    validate_attachment_request_for_spectator_access,
 )
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_default_stream_groups, get_stream
+from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
 from zerver.views.streams import compose_views
 
 if TYPE_CHECKING:

@@ -1,7 +1,8 @@
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Huddle, get_huddle_hash
+from zerver.models import Huddle
+from zerver.models.recipients import get_huddle_hash
 
 
 class TypingValidateOperatorTest(ZulipTestCase):
