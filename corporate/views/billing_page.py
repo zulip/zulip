@@ -267,7 +267,7 @@ def update_plan_for_remote_realm(
         "licenses_at_next_renewal", json_validator=check_int, default=None
     ),
     schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
-) -> HttpResponse:  # nocoverage
+) -> HttpResponse:
     update_plan_request = UpdatePlanRequest(
         status=status,
         licenses=licenses,

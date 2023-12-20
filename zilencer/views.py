@@ -822,7 +822,7 @@ def update_remote_realm_data_for_server(
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
-def get_human_user_realm_uuids(realms: List[RealmDataForAnalytics]) -> List[UUID]:  # nocoverage
+def get_human_user_realm_uuids(realms: List[RealmDataForAnalytics]) -> List[UUID]:
     billable_realm_uuids = []
     for realm in realms:
         # TODO: Remove the `zulipinternal` string_id check once no server is on 8.0-beta.
@@ -831,7 +831,7 @@ def get_human_user_realm_uuids(realms: List[RealmDataForAnalytics]) -> List[UUID
             or realm.deactivated
             or realm.host.startswith("zulipinternal.")
             or (settings.DEVELOPMENT and realm.host.startswith("analytics."))
-        ):
+        ):  # nocoverage
             continue
         billable_realm_uuids.append(realm.uuid)
 
