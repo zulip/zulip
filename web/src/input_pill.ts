@@ -9,6 +9,7 @@ import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
 import * as ui_util from "./ui_util";
+import * as util from "./util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
@@ -264,7 +265,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     !funcs.appendPill(pill),
             );
 
-            store.$input.text(drafts.join(", "));
+            store.$input.text(util.format_array_as_list(drafts));
             // when using the `text` insertion feature with jQuery the caret is
             // placed at the beginning of the input field, so this moves it to
             // the end.
