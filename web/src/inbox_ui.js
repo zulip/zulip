@@ -11,7 +11,6 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -38,12 +37,6 @@ let streams_dict = new Map();
 let update_triggered_by_user = false;
 let filters_dropdown_widget;
 
-const FILTERS = {
-    ALL_TOPICS: "all_topics",
-    UNMUTED_TOPICS: "unmuted_topics",
-    FOLLOWED_TOPICS: "followed_topics",
-};
-
 const COLUMNS = {
     COLLAPSE_BUTTON: 0,
     RECIPIENT: 1,
@@ -58,7 +51,7 @@ const ls_filter_key = "inbox-filters";
 const ls_collapsed_containers_key = "inbox_collapsed_containers";
 
 const ls = localstorage();
-let filters = new Set([FILTERS.UNMUTED_TOPICS]);
+let filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
 let collapsed_containers = new Set();
 
 let search_keyword = "";
@@ -133,11 +126,11 @@ function get_stream_header_row(stream_id) {
 
 function load_data_from_ls() {
     const saved_filters = new Set(ls.get(ls_filter_key));
-    const valid_filters = new Set(Object.values(FILTERS));
+    const valid_filters = new Set(Object.values(views_util.FILTERS));
     // If saved filters are not in the list of valid filters, we reset to default.
     const is_subset = [...saved_filters].every((filter) => valid_filters.has(filter));
     if (saved_filters.size === 0 || !is_subset) {
-        filters = new Set([FILTERS.UNMUTED_TOPICS]);
+        filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     } else {
         filters = saved_filters;
     }
@@ -460,7 +453,7 @@ function reset_data() {
     let has_topics_post_filter = false;
     if (unread_stream_msg_count) {
         for (const [stream_id, topic_dict] of unread_streams_dict) {
-            const stream_unread = unread.num_unread_for_stream(stream_id);
+            const stream_unread = unread.unread_count_info_for_stream(stream_id);
             const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
             const stream_key = get_stream_key(stream_id);
             if (stream_unread_count > 0) {
@@ -501,32 +494,6 @@ function show_empty_inbox_text(has_visible_unreads) {
         $(".inbox-empty-text").hide();
         $("#inbox-list").css("border-width", "1px");
     }
-}
-
-function filters_dropdown_options() {
-    return [
-        {
-            unique_id: FILTERS.ALL_TOPICS,
-            name: $t({defaultMessage: "All topics"}),
-            bold_current_selection:
-                filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === FILTERS.ALL_TOPICS,
-        },
-        {
-            unique_id: FILTERS.UNMUTED_TOPICS,
-            name: $t({defaultMessage: "Unmuted topics"}),
-            bold_current_selection:
-                filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === FILTERS.UNMUTED_TOPICS,
-        },
-        {
-            unique_id: FILTERS.FOLLOWED_TOPICS,
-            name: $t({defaultMessage: "Followed topics"}),
-            bold_current_selection:
-                filters_dropdown_widget &&
-                filters_dropdown_widget.current_value === FILTERS.FOLLOWED_TOPICS,
-        },
-    ];
 }
 
 function filter_click_handler(event, dropdown, widget) {
@@ -570,18 +537,11 @@ export function complete_rerender() {
     }, 0);
 
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         widget_name: "inbox-filter",
-        get_options: filters_dropdown_options,
         item_click_callback: filter_click_handler,
         $events_container: $("#inbox-main"),
-        tippy_props: {
-            placement: "bottom-start",
-            offset: [0, 2],
-        },
-        unique_id_type: dropdown_widget.DATA_TYPES.STRING,
         default_id: filters.values().next().value,
-        hide_search_box: true,
-        bold_current_selection: true,
     });
     filters_dropdown_widget.setup();
 }
@@ -617,14 +577,14 @@ function filter_should_hide_row({stream_id, topic, dm_key}) {
         }
 
         if (
-            filters.has(FILTERS.FOLLOWED_TOPICS) &&
+            filters.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
             !user_topics.is_topic_followed(stream_id, topic)
         ) {
             return true;
         }
 
         if (
-            filters.has(FILTERS.UNMUTED_TOPICS) &&
+            filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
             (user_topics.is_topic_muted(stream_id, topic) || stream_data.is_muted(stream_id)) &&
             !user_topics.is_topic_unmuted_or_followed(stream_id, topic)
         ) {
@@ -1059,7 +1019,7 @@ export function update() {
 
     let has_topics_post_filter = false;
     for (const [stream_id, topic_dict] of unread_streams_dict) {
-        const stream_unread = unread.num_unread_for_stream(stream_id);
+        const stream_unread = unread.unread_count_info_for_stream(stream_id);
         const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
         const stream_key = get_stream_key(stream_id);
         let stream_post_filter_unread_count = 0;

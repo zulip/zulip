@@ -1,8 +1,8 @@
-import datetime
 import sys
+from datetime import datetime, timedelta, timezone
 from typing import Sequence
-from unittest import mock
 
+import time_machine
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -13,7 +13,8 @@ from zerver.actions.create_user import notify_new_user
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Realm, Recipient, Stream, UserProfile, get_realm
+from zerver.models import Message, Realm, Recipient, Stream, UserProfile
+from zerver.models.realms import get_realm
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
 if sys.version_info < (3, 9):  # nocoverage
@@ -37,12 +38,12 @@ class SendLoginEmailTest(ZulipTestCase):
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
             # we don't use the self.login method since we spoof the user-agent
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
+            mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
 
             user = self.example_user("hamlet")
             user.timezone = "US/Pacific"
             user.twenty_four_hour_time = False
-            user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+            user.date_joined = mock_time - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
             user.save()
             password = initial_password(user.delivery_email)
             login_info = dict(
@@ -53,9 +54,9 @@ class SendLoginEmailTest(ZulipTestCase):
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             )
             user_tz = zoneinfo.ZoneInfo(user.timezone)
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
-            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M%p %Z")
-            with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+            mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
+            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M %p %Z")
+            with time_machine.travel(mock_time, tick=False):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
                 )
@@ -71,7 +72,7 @@ class SendLoginEmailTest(ZulipTestCase):
             self.logout()  # We just logged in, we'd be redirected without this
             user.twenty_four_hour_time = True
             user.save()
-            with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+            with time_machine.travel(mock_time, tick=False):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
                 )
@@ -108,21 +109,21 @@ class SendLoginEmailTest(ZulipTestCase):
     @override_settings(SEND_LOGIN_EMAILS=True)
     def test_enable_login_emails_user_setting(self) -> None:
         user = self.example_user("hamlet")
-        mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
+        mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
 
         user.timezone = "US/Pacific"
-        user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        user.date_joined = mock_time - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
         user.save()
 
         do_change_user_setting(user, "enable_login_emails", False, acting_user=None)
         self.assertFalse(user.enable_login_emails)
-        with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+        with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
         self.assert_length(mail.outbox, 0)
 
         do_change_user_setting(user, "enable_login_emails", True, acting_user=None)
         self.assertTrue(user.enable_login_emails)
-        with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
+        with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
         self.assert_length(mail.outbox, 1)
 

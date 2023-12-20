@@ -469,7 +469,7 @@ class StreamSidebarRow {
     }
 
     update_unread_count() {
-        const count = unread.num_unread_for_stream(this.sub.stream_id);
+        const count = unread.unread_count_info_for_stream(this.sub.stream_id);
         const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
             this.sub.stream_id,
         );
@@ -594,6 +594,12 @@ export function update_dom_with_unread_counts(counts) {
 }
 
 export function update_dom_unread_counts_visibility() {
+    const $streams_header = $("#streams_header");
+    if (settings_data.should_mask_unread_count()) {
+        $streams_header.addClass("hide_unread_counts");
+    } else {
+        $streams_header.removeClass("hide_unread_counts");
+    }
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 

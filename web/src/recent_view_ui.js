@@ -10,6 +10,7 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -39,6 +40,7 @@ import * as user_topics from "./user_topics";
 import * as views_util from "./views_util";
 
 let topics_widget;
+let filters_dropdown_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -81,20 +83,24 @@ const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
+const ls_dropdown_key = "recent_topic_dropdown_filters";
 const ls = localstorage();
 
 let filters = new Set();
+let dropdown_filters = new Set();
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
 export function clear_for_tests() {
     filters.clear();
+    dropdown_filters.clear();
     recent_view_data.conversations.clear();
     topics_widget = undefined;
 }
 
 export function save_filters() {
     ls.set(ls_key, [...filters]);
+    ls.set(ls_dropdown_key, [...dropdown_filters]);
 }
 
 export function is_in_focus() {
@@ -362,6 +368,11 @@ export function revive_current_focus() {
         return true;
     }
 
+    if ($current_focus_elem.hasClass("dropdown-widget-button")) {
+        $("#recent-view-filter_widget").trigger("focus");
+        return true;
+    }
+
     const filter_button = $current_focus_elem.data("filter");
     if (!filter_button) {
         set_default_focus();
@@ -593,6 +604,7 @@ function format_conversation(conversation_data) {
         .map((name) => _.escape(name))
         .join("<br />");
     context.last_msg_url = hash_util.by_conversation_and_time_url(last_msg);
+    context.is_spectator = page_params.is_spectator;
 
     return context;
 }
@@ -655,7 +667,7 @@ export function filters_should_hide_topic(topic_data) {
         return true;
     }
 
-    if (!filters.has("include_muted") && topic_data.type === "stream") {
+    if (dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) && topic_data.type === "stream") {
         // We want to show the unmuted or followed topics within muted
         // streams in Recent Conversations.
         const topic_unmuted_or_followed = Boolean(
@@ -678,6 +690,24 @@ export function filters_should_hide_topic(topic_data) {
         if (recipients.every((id) => muted_users.is_user_muted(id))) {
             return true;
         }
+    }
+
+    if (
+        dropdown_filters.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
+        topic_data.type === "stream" &&
+        !user_topics.is_topic_followed(msg.stream_id, msg.topic)
+    ) {
+        return true;
+    }
+
+    if (
+        dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
+        topic_data.type === "stream" &&
+        (user_topics.is_topic_muted(msg.stream_id, msg.topic) ||
+            stream_data.is_muted(msg.stream_id)) &&
+        !user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic)
+    ) {
+        return true;
     }
 
     const search_keyword = $("#recent_view_search").val();
@@ -769,11 +799,7 @@ export function set_filter(filter) {
         `[data-filter="${CSS.escape(filter)}"]`,
     );
 
-    // If user clicks `All`, we clear all filters.
-    if (filter === "all" && filters.size !== 0) {
-        filters = new Set();
-        // If the button was already selected, remove the filter.
-    } else if ($filter_elem.hasClass("btn-recent-selected")) {
+    if ($filter_elem.hasClass("btn-recent-selected")) {
         filters.delete(filter);
         // If the button was not selected, we add the filter.
     } else {
@@ -786,32 +812,40 @@ export function set_filter(filter) {
 function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
-    if (filters.size === 0) {
+    for (const filter of filters) {
         $("#recent_view_filter_buttons")
-            .find('[data-filter="all"]')
+            .find(`[data-filter="${CSS.escape(filter)}"]`)
             .addClass("btn-recent-selected")
             .attr("aria-checked", "true");
-    } else {
-        for (const filter of filters) {
-            $("#recent_view_filter_buttons")
-                .find(`[data-filter="${CSS.escape(filter)}"]`)
-                .addClass("btn-recent-selected")
-                .attr("aria-checked", "true");
-        }
     }
 }
 
-export function update_filters_view() {
-    const rendered_filters = render_recent_view_filters({
-        filter_participated: filters.has("participated"),
+function get_recent_view_filters_params() {
+    return {
         filter_unread: filters.has("unread"),
+        filter_participated: filters.has("participated"),
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
+    };
+}
+
+function setup_dropdown_filters_widget() {
+    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+        widget_name: "recent-view-filter",
+        item_click_callback: filter_click_handler,
+        $events_container: $("#recent_view_filter_buttons"),
+        default_id: dropdown_filters.values().next().value,
     });
+    filters_dropdown_widget.setup();
+}
+
+export function update_filters_view() {
+    const rendered_filters = render_recent_view_filters(get_recent_view_filters_params());
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
-
+    filters_dropdown_widget.render();
     topics_widget.hard_redraw();
 }
 
@@ -946,6 +980,25 @@ function callback_after_render() {
     setTimeout(revive_current_focus, 0);
 }
 
+function filter_click_handler(event, dropdown, widget) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (page_params.is_spectator) {
+        // Filter buttons are disabled for spectator.
+        return;
+    }
+
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    // We don't support multiple filters yet, so we clear existing and add the new filter.
+    dropdown_filters = new Set([filter_id]);
+    dropdown.hide();
+    widget.render();
+    save_filters();
+
+    topics_widget.hard_redraw();
+}
+
 export function complete_rerender() {
     if (!recent_view_util.is_visible()) {
         return;
@@ -960,12 +1013,8 @@ export function complete_rerender() {
     }
 
     const rendered_body = render_recent_view_body({
-        filter_participated: filters.has("participated"),
-        filter_unread: filters.has("unread"),
-        filter_muted: filters.has("include_muted"),
-        filter_pm: filters.has("include_private"),
         search_val: $("#recent_view_search").val() || "",
-        is_spectator: page_params.is_spectator,
+        ...get_recent_view_filters_params(),
     });
     $("#recent_view_table").html(rendered_body);
 
@@ -1007,6 +1056,7 @@ export function complete_rerender() {
         },
         get_min_load_count,
     });
+    setup_dropdown_filters_widget();
 }
 
 export function show() {
@@ -1228,7 +1278,7 @@ export function change_focused_element($elt, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("btn-recent-filters")) {
+    } else if ($elt.hasClass("btn-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -1340,19 +1390,31 @@ export function change_focused_element($elt, input_key) {
     return false;
 }
 
-export function initialize({
-    on_click_participant,
-    on_mark_pm_as_read,
-    on_mark_topic_as_read,
-    maybe_load_older_messages,
-}) {
+function load_filters() {
     // load filters from local storage.
     if (!page_params.is_spectator) {
         // A user may have a stored filter and can log out
         // to see web public view. This ensures no filters are
         // selected for spectators.
         filters = new Set(ls.get(ls_key));
+        dropdown_filters = new Set(ls.get(ls_dropdown_key));
     }
+    // Verify that the dropdown_filters are valid.
+    const valid_filters = new Set(Object.values(views_util.FILTERS));
+    // If saved filters are not in the list of valid filters, we reset to default.
+    const is_subset = [...dropdown_filters].every((filter) => valid_filters.has(filter));
+    if (dropdown_filters.size === 0 || !is_subset) {
+        dropdown_filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
+    }
+}
+
+export function initialize({
+    on_click_participant,
+    on_mark_pm_as_read,
+    on_mark_topic_as_read,
+    maybe_load_older_messages,
+}) {
+    load_filters();
 
     $("body").on("click", "#recent_view_table .recent_view_participant_avatar", function (e) {
         const participant_user_id = Number.parseInt($(this).parent().attr("data-user-id"), 10);
@@ -1454,6 +1516,15 @@ export function initialize({
         set_filter(e.currentTarget.dataset.filter);
         update_filters_view();
         revive_current_focus();
+    });
+
+    $("body").on("click", "#recent-view-filter_widget", (e) => {
+        if (page_params.is_spectator) {
+            // Filter buttons are disabled for spectator.
+            return;
+        }
+
+        change_focused_element($(e.currentTarget), "click");
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {

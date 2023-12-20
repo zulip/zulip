@@ -479,9 +479,12 @@ html {
 
     .alert {
         &:not(
+                #server-deactivate-error,
+                #server-login-error,
                 .alert-info,
                 .billing-page-success,
                 .upgrade-page-success,
+                .sponsorship-page-success,
                 #autopay-error
             ) {
             padding: 0;
@@ -922,9 +925,15 @@ button#register_auth_button_gitlab {
     }
 }
 
+#account-deactivated-success-page-details,
+#server-deactivate-details,
+#remote-billing-confirm-login-form,
+#remote-billing-confirm-email-form,
+#server-login-page-details,
 #upgrade-page-details,
 #billing-page-details,
 #sponsorship-form,
+#sponsorship-status-page-details,
 #registration,
 #new-realm-creation {
     width: auto;
@@ -974,6 +983,10 @@ button#register_auth_button_gitlab {
             }
         }
 
+        &.account-deactivated-success-page-field,
+        &.server-deactivate-form-field,
+        &.remote-billing-confirm-login-form-field,
+        &.server-login-form-field,
         &.upgrade-page-field,
         &.billing-page-field,
         &.support-form-field,
@@ -1131,6 +1144,23 @@ button#register_auth_button_gitlab {
         &.radio {
             margin: 0;
             padding: 0;
+        }
+    }
+
+    .remote-billing-confirm-email-subscription-form-field {
+        width: 450px;
+        margin-top: 15px;
+
+        .checkbox {
+            display: block;
+            /* Present a hanging indent on subscription copy
+               and checkboxes. */
+            text-indent: -26px;
+            margin: 0 0 10px 26px;
+        }
+
+        strong {
+            font-weight: 600;
         }
     }
 

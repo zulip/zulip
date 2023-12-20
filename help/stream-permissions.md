@@ -5,8 +5,9 @@ determine who receives a message. Zulip supports a few types of streams:
 
 * **Public** (<i class="zulip-icon zulip-icon-hashtag"></i>):
   Members can join and view the complete message history.
-  Public streams are visible to guest users only if they are
-  subscribed (exactly like private streams with shared history).
+  Public streams are visible to [guest users](/help/guest-users)
+  only if they are subscribed (exactly like private streams with
+  shared history).
 
 * **Private** (<i class="zulip-icon zulip-icon-lock"></i>):
   New subscribers must be added by an existing subscriber. Only subscribers

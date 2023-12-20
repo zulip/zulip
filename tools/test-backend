@@ -50,10 +50,14 @@ not_yet_fully_covered = [
     "analytics/lib/fixtures.py",
     # We have 100% coverage on the new stuff; need to refactor old stuff.
     "analytics/views/activity_common.py",
-    "analytics/views/realm_activity.py",
     "analytics/views/installation_activity.py",
+    "analytics/views/realm_activity.py",
     "analytics/views/stats.py",
     "analytics/views/support.py",
+    # TODO: This is a work in progress and therefore without
+    # tests yet.
+    "corporate/views/remote_billing_page.py",
+    "corporate/lib/remote_billing_util.py",
     # Major lib files should have 100% coverage
     "zerver/actions/presence.py",
     "zerver/lib/addressee.py",
@@ -127,6 +131,8 @@ not_yet_fully_covered = [
     "zerver/lib/migrate.py",
     # Branches in Django settings files are hard to test
     "zproject/computed_settings.py",
+    # Used to override settings
+    "zproject/custom_dev_settings.py",
     "zproject/dev_settings.py",
     "zproject/test_extra_settings.py",
     # Better tested in a full deployment

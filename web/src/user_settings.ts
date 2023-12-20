@@ -58,6 +58,8 @@ export type UserSettings = (StreamNotificationSettings &
     send_read_receipts: boolean;
     automatically_follow_topics_policy: number;
     automatically_unmute_topics_in_muted_streams_policy: number;
+    automatically_follow_topics_where_mentioned: boolean;
+    timezone: string;
 };
 
 export let user_settings: UserSettings;

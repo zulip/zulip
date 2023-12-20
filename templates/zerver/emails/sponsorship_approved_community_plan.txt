@@ -1,0 +1,5 @@
+{{ _("Your request for Zulip sponsorship has been approved! Your organization has been upgraded to the Zulip Community plan.") }}
+{{ plans_link }}
+
+{{ _("If you could list Zulip as a sponsor on your website, we would really appreciate it!") }}
+{{ link_to_zulip }}

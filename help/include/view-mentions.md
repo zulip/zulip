@@ -17,7 +17,7 @@
 {tab|mobile}
 
 1. Tap the **Mentions**
-   (<img src="/static/images/help/mobile-at-sign-icon.svg" alt="at-sign" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-at-sign-icon.svg" alt="at-sign" class="help-center-icon"/>)
    tab at the top of the app.
 
 1. Browse your mentions. You can tap on a message recipient bar to go

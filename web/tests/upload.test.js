@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
@@ -181,7 +181,7 @@ test("get_item", () => {
 });
 
 test("show_error_message", ({mock_template}) => {
-    $("#compose_banners .upload_banner .moving_bar").css = () => {};
+    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
 
     let banner_shown = false;
@@ -206,8 +206,8 @@ test("show_error_message", ({mock_template}) => {
 });
 
 test("upload_files", async ({mock_template, override_rewire}) => {
-    $("#compose_banners .upload_banner").remove = () => {};
-    $("#compose_banners .upload_banner .moving_bar").css = () => {};
+    $("#compose_banners .upload_banner").remove = noop;
+    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
 
     let files = [
@@ -502,9 +502,9 @@ test("copy_paste", ({override, override_rewire}) => {
 });
 
 test("uppy_events", ({override_rewire, mock_template}) => {
-    $("#compose_banners .upload_banner .moving_bar").css = () => {};
+    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
-    override_rewire(compose_ui, "smart_insert_inline", () => {});
+    override_rewire(compose_ui, "smart_insert_inline", noop);
 
     const callbacks = {};
     let state = {};
@@ -662,12 +662,12 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     };
 
     // dragover event test
-    const dragover_handler = $(".app-main").get_on_handler("dragover");
+    const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");
     dragover_handler(drag_event);
     assert.equal(prevent_default_counter, 1);
 
     // dragenter event test
-    const dragenter_handler = $(".app-main").get_on_handler("dragenter");
+    const dragenter_handler = $(".app, #navbar-fixed-container").get_on_handler("dragenter");
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
@@ -686,7 +686,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
 
     $(".message_edit_form form").last = () => ({length: 0});
 
-    const drop_handler = $(".app-main").get_on_handler("drop");
+    const drop_handler = $(".app, #navbar-fixed-container").get_on_handler("drop");
 
     // Test drop on compose box
     let upload_files_called = false;
@@ -764,11 +764,11 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
     const $drag_drop_container = $(`#zfilt${CSS.escape(40)} .message_edit_form`);
 
     // Dragover event test
-    const dragover_handler = $(".app-main").get_on_handler("dragover");
+    const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");
     dragover_handler(drag_event);
     assert.equal(prevent_default_counter, 1);
     // Dragenter event test
-    const dragenter_handler = $(".app-main").get_on_handler("dragenter");
+    const dragenter_handler = $(".app, #navbar-fixed-container").get_on_handler("dragenter");
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
@@ -784,7 +784,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
             },
         },
     };
-    const drop_handler = $(".app-main").get_on_handler("drop");
+    const drop_handler = $(".app, #navbar-fixed-container").get_on_handler("drop");
     let upload_files_called = false;
     let dropped_row_id = -1;
     override_rewire(upload, "upload_files", (_, config) => {

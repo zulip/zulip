@@ -7,6 +7,8 @@ export const page_params: {
     annual_price: number;
     monthly_price: number;
     seat_count: number;
+    billing_base_url: string;
+    tier: number;
 } = $("#page-params").data("params");
 
 if (!page_params) {

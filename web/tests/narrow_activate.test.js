@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 mock_esm("../src/resize", {
@@ -98,7 +98,7 @@ function test_helper({override}) {
     stub(compose_closed_ui, "update_buttons_for_stream_views");
     stub(compose_closed_ui, "update_buttons_for_private");
     // We don't test the css calls; we just skip over them.
-    $("#mark_read_on_scroll_state_banner").toggleClass = () => {};
+    $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     return {
         assert_events(expected_events) {

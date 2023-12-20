@@ -1,14 +1,15 @@
-import datetime
 import functools
 import heapq
 import logging
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Exists, OuterRef
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from typing_extensions import TypeAlias
 
 from confirmation.models import one_click_unsubscribe_link
@@ -28,8 +29,8 @@ from zerver.models import (
     Subscription,
     UserActivityInterval,
     UserProfile,
-    get_active_streams,
 )
+from zerver.models.streams import get_active_streams
 
 logger = logging.getLogger(__name__)
 log_to_file(logger, settings.DIGEST_LOG_PATH)
@@ -55,7 +56,7 @@ class DigestTopic:
         if len(self.sample_messages) < 2:
             self.sample_messages.append(message)
 
-        if message.sent_by_human():
+        if not message.sender.is_bot:
             self.human_senders.add(message.sender.full_name)
             self.num_human_messages += 1
 
@@ -87,13 +88,13 @@ class DigestTopic:
 
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
-def queue_digest_user_ids(user_ids: List[int], cutoff: datetime.datetime) -> None:
+def queue_digest_user_ids(user_ids: List[int], cutoff: datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
     queue_json_publish("digest_emails", event)
 
 
-def enqueue_emails(cutoff: datetime.datetime) -> None:
+def enqueue_emails(cutoff: datetime) -> None:
     if not settings.SEND_DIGEST_EMAILS:
         return
 
@@ -104,10 +105,10 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
         _enqueue_emails_for_realm(realm, cutoff)
 
 
-def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
+def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
     # This should only be called directly by tests.  Use enqueue_emails
     # to process all realms that are set up for processing on any given day.
-    twelve_hours_ago = timezone_now() - datetime.timedelta(hours=12)
+    twelve_hours_ago = timezone_now() - timedelta(hours=12)
 
     target_users = (
         UserProfile.objects.filter(
@@ -173,7 +174,7 @@ def maybe_clear_recent_topics_cache(realm_id: int, cutoff: float) -> None:
 def get_recent_topics(
     realm_id: int,
     stream_id: int,
-    cutoff_date: datetime.datetime,
+    cutoff_date: datetime,
 ) -> List[DigestTopic]:
     # Gather information about topic conversations, then
     # classify by:
@@ -194,12 +195,15 @@ def get_recent_topics(
         .select_related(
             "recipient",  # build_message_list looks up recipient.type
             "sender",  # we need the sender's full name
-            "sending_client",  # for Message.sent_by_human
         )
         .defer(
-            # This construction, to only fetch the sender's full_name,
+            # This construction, to only fetch the sender's full_name and is_bot,
             # is because `.only()` doesn't work with select_related tables.
-            *{f"sender__{f.name}" for f in UserProfile._meta.fields if f.name not in {"full_name"}}
+            *{
+                f"sender__{f.name}"
+                for f in UserProfile._meta.fields
+                if f.name not in {"full_name", "is_bot"}
+            }
         )
     )
 
@@ -236,7 +240,7 @@ def get_hot_topics(
     return hot_topics
 
 
-def get_recently_created_streams(realm: Realm, threshold: datetime.datetime) -> List[Stream]:
+def get_recently_created_streams(realm: Realm, threshold: datetime) -> List[Stream]:
     fields = ["id", "name", "is_web_public", "invite_only"]
     return list(get_active_streams(realm).filter(date_created__gt=threshold).only(*fields))
 
@@ -269,7 +273,7 @@ def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
 
-def get_user_stream_map(user_ids: List[int], cutoff_date: datetime.datetime) -> Dict[int, Set[int]]:
+def get_user_stream_map(user_ids: List[int], cutoff_date: datetime) -> Dict[int, Set[int]]:
     """Skipping streams where the user's subscription status has changed
     when constructing digests is critical to ensure correctness for
     streams without shared history, guest users, and long-term idle
@@ -336,7 +340,7 @@ def bulk_get_digest_context(
         assert user.realm_id == realm.id
 
     # Convert from epoch seconds to a datetime object.
-    cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
+    cutoff_date = datetime.fromtimestamp(int(cutoff), tz=timezone.utc)
 
     maybe_clear_recent_topics_cache(realm.id, cutoff)
 
@@ -379,7 +383,7 @@ def bulk_get_digest_context(
 
 
 def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
-    for _, context in bulk_get_digest_context([user], cutoff):
+    for ignored, context in bulk_get_digest_context([user], cutoff):
         return context
     raise AssertionError("Unreachable")
 
@@ -408,7 +412,7 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
             "zerver/emails/digest",
             user.realm,
             to_user_ids=[user.id],
-            from_name="Zulip Digest",
+            from_name=_("{service_name} digest").format(service_name=settings.INSTALLATION_NAME),
             from_address=FromAddress.no_reply_placeholder,
             context=context,
         )

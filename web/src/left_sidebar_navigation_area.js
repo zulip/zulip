@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import {localstorage} from "./localstorage";
+import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
@@ -7,6 +9,30 @@ import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 
 let last_mention_count = 0;
+const ls_key = "left_sidebar_views_state";
+const ls = localstorage();
+
+const STATES = {
+    EXPANDED: "expanded",
+    CONDENSED: "condensed",
+};
+
+function restore_views_state() {
+    if (page_params.is_spectator) {
+        // Spectators should always see the expanded view.
+        return;
+    }
+
+    const views_state = ls.get(ls_key);
+    // Expanded state is default, so we only need to toggle if the state is condensed.
+    if (views_state === STATES.CONDENSED) {
+        toggle_condensed_navigation_area();
+    }
+}
+
+function save_state(state) {
+    ls.set(ls_key, state);
+}
 
 export function update_starred_count(count) {
     const $starred_li = $(".top_left_starred_messages");
@@ -95,12 +121,14 @@ function toggle_condensed_navigation_area() {
         $views_label_container.removeClass("showing-expanded-navigation");
         $views_label_icon.addClass("fa-caret-right");
         $views_label_icon.removeClass("fa-caret-down");
+        save_state(STATES.CONDENSED);
     } else {
         // Toggle into the expanded state
         $views_label_container.addClass("showing-expanded-navigation");
         $views_label_container.removeClass("showing-condensed-navigation");
         $views_label_icon.addClass("fa-caret-down");
         $views_label_icon.removeClass("fa-caret-right");
+        save_state(STATES.EXPANDED);
     }
     resize.resize_stream_filters_container();
 }
@@ -161,8 +189,8 @@ export function highlight_all_messages_view() {
 function handle_home_view_order(home_view) {
     // Remove class and tabindex from current home view
     const $current_home_view = $(".selected-home-view");
-    $current_home_view.removeAttr("tabindex");
     $current_home_view.removeClass("selected-home-view");
+    $current_home_view.find("a").removeAttr("tabindex");
 
     const $all_messages_rows = $(".top_left_all_messages");
     const $recent_views_rows = $(".top_left_recent_view");
@@ -204,6 +232,7 @@ export function handle_home_view_changed(new_home_view) {
 
 export function initialize() {
     update_scheduled_messages_row();
+    restore_views_state();
 
     $("body").on(
         "click",

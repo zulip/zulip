@@ -28,16 +28,11 @@ from zerver.lib.test_helpers import (
     stub_event_queue_user_events,
 )
 from zerver.lib.users import get_api_key, get_users_for_api
-from zerver.models import (
-    CustomProfileField,
-    UserMessage,
-    UserPresence,
-    UserProfile,
-    get_client,
-    get_realm,
-    get_stream,
-    get_system_bot,
-)
+from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
@@ -1249,7 +1244,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        with self.assert_database_query_count(39):
+        with self.assert_database_query_count(40):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1259,10 +1254,10 @@ class FetchQueriesTest(ZulipTestCase):
             default_streams=1,
             default_stream_groups=1,
             drafts=1,
-            hotspots=0,
             message=1,
             muted_topics=1,
             muted_users=1,
+            onboarding_steps=1,
             presence=1,
             realm=1,
             realm_bot=1,

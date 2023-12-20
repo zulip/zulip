@@ -1,32 +1,32 @@
 <div class="compose-control-buttons-container order-1">
     <input type="file" class="file_input notvisible" multiple />
-    {{#if file_upload_enabled }}
-    <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Upload files' }}">
-        <a role="button" class="compose_control_button compose_upload_file fa fa-paperclip notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0></a>
-    </div>
-    {{/if}}
     <div class="compose_control_button_container" data-tippy-content="{{t 'Preview' }}">
-        <a role="button" class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0></a>
+        <a role="button" class="markdown_preview compose_control_button zulip-icon zulip-icon-preview" aria-label="{{t 'Preview' }}" tabindex=0></a>
     </div>
     <div class="compose_control_button_container" data-tippy-content="{{t 'Write' }}">
-        <a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;"></a>
+        <a role="button" class="undo_markdown_preview compose_control_button zulip-icon zulip-icon-compose-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;"></a>
     </div>
+    {{#if file_upload_enabled }}
+    <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Upload files' }}">
+        <a role="button" class="compose_control_button compose_upload_file zulip-icon zulip-icon-attachment notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0></a>
+    </div>
+    {{/if}}
     <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add video call' }}">
-        <a role="button" class="compose_control_button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0></a>
+        <a role="button" class="compose_control_button zulip-icon zulip-icon-video-call video_link" aria-label="{{t 'Add video call' }}" tabindex=0></a>
     </div>
     <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add voice call' }}">
-        <a role="button" class="compose_control_button fa fa-phone audio_link" aria-label="{{t 'Add voice call' }}" tabindex=0></a>
+        <a role="button" class="compose_control_button zulip-icon zulip-icon-voice-call audio_link" aria-label="{{t 'Add voice call' }}" tabindex=0></a>
     </div>
     <div class="divider">|</div>
     <div class="compose_control_button_container preview_mode_disabled" data-tippy-content="{{t 'Add emoji' }}">
-        <a role="button" class="compose_control_button fa fa-smile-o emoji_map" aria-label="{{t 'Add emoji' }}" tabindex=0></a>
+        <a role="button" class="compose_control_button zulip-icon zulip-icon-smile-bigger emoji_map" aria-label="{{t 'Add emoji' }}" tabindex=0></a>
     </div>
     <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-global-time-tooltip" data-tippy-maxWidth="none">
-        <a role="button" class="compose_control_button fa fa-clock-o time_pick" aria-label="{{t 'Add global time' }}" tabindex=0></a>
+        <a role="button" class="compose_control_button zulip-icon zulip-icon-time time_pick" aria-label="{{t 'Add global time' }}" tabindex=0></a>
     </div>
     {{#unless message_id}}
     <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-poll-tooltip" data-tippy-maxWidth="none">
-        <a role="button" class="compose_control_button fa fa-hand-paper-o add-poll" aria-label="{{t 'Add poll' }}" tabindex=0></a>
+        <a role="button" class="compose_control_button zulip-icon zulip-icon-poll add-poll" aria-label="{{t 'Add poll' }}" tabindex=0></a>
     </div>
     {{/unless}}
     <div class="compose_control_button_container {{#unless giphy_enabled }}hide{{/unless}} preview_mode_disabled" data-tippy-content="{{t 'Add GIF' }}">

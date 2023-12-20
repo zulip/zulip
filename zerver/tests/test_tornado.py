@@ -1,9 +1,9 @@
 import asyncio
 import socket
-import urllib.parse
 from functools import wraps
 from typing import Any, Awaitable, Callable, Dict, Optional, TypeVar
 from unittest import TestResult, mock
+from urllib.parse import urlencode
 
 import orjson
 from asgiref.sync import async_to_sync, sync_to_async
@@ -120,7 +120,7 @@ class EventsTestCase(TornadoWebTestCase):
             "last_event_id": -1,
         }
 
-        path = f"/json/events?{urllib.parse.urlencode(data)}"
+        path = f"/json/events?{urlencode(data)}"
 
         def process_events() -> None:
             users = [user_profile.id]

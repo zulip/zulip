@@ -84,6 +84,7 @@ EXEMPT_FILES = make_set(
         "web/src/copied_tooltip.ts",
         "web/src/copy_and_paste.js",
         "web/src/csrf.ts",
+        "web/src/css_variables.d.ts",
         "web/src/css_variables.js",
         "web/src/custom_profile_fields_ui.js",
         "web/src/dark_theme.ts",
@@ -154,6 +155,7 @@ EXEMPT_FILES = make_set(
         "web/src/navbar_help_menu.js",
         "web/src/navbar_menus.js",
         "web/src/navigate.js",
+        "web/src/onboarding_steps.js",
         "web/src/overlay_util.ts",
         "web/src/overlays.ts",
         "web/src/padded_widget.ts",
@@ -165,9 +167,10 @@ EXEMPT_FILES = make_set(
         "web/src/pm_list_dom.ts",
         "web/src/poll_modal.js",
         "web/src/poll_widget.ts",
-        "web/src/popover_menus.js",
+        "web/src/popover_menus.ts",
         "web/src/popover_menus_data.js",
         "web/src/popovers.ts",
+        "web/src/popperjs.d.ts",
         "web/src/read_receipts.js",
         "web/src/ready.ts",
         "web/src/realm_icon.ts",
@@ -214,7 +217,6 @@ EXEMPT_FILES = make_set(
         "web/src/settings_streams.js",
         "web/src/settings_toggle.js",
         "web/src/settings_ui.ts",
-        "web/src/settings_user_groups_legacy.js",
         "web/src/settings_user_topics.js",
         "web/src/settings_users.js",
         "web/src/setup.ts",
@@ -259,6 +261,7 @@ EXEMPT_FILES = make_set(
         "web/src/url-template.d.ts",
         "web/src/user_card_popover.js",
         "web/src/user_deactivation_ui.ts",
+        "web/src/user_group_components.js",
         "web/src/user_group_create.js",
         "web/src/user_group_create_members.js",
         "web/src/user_group_create_members_data.ts",
@@ -267,6 +270,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_group_popover.js",
         "web/src/user_group_ui_updates.js",
         "web/src/user_groups.ts",
+        "web/src/user_pill.ts",
         "web/src/user_profile.js",
         "web/src/user_settings.ts",
         "web/src/user_sort.ts",
@@ -284,6 +288,9 @@ EXEMPT_FILES = make_set(
         "web/tests/lib/real_jquery.js",
         "web/tests/lib/zjquery_element.js",
         "web/tests/lib/zpage_billing_params.js",
+        # There are some important functions which are not called right now but will
+        # be reused when we add tests for dropdown widget so it doesn't make sense to remove them.
+        "web/tests/recent_view.test.js",
     ]
 )
 

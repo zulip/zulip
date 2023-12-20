@@ -5,9 +5,6 @@ from typing import Any, Dict, List
 
 from zerver.lib.emoji_utils import emoji_to_hex_codepoint, hex_codepoint_to_emoji, unqualify_emoji
 
-# Emoji sets that we currently support.
-EMOJISETS = ["google", "twitter"]
-
 # Some image files in the old emoji farm had a different name than in the new emoji
 # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
 # emoji farm to their name in the new emoji farm.
@@ -82,7 +79,7 @@ def generate_emoji_catalog(
 
     for emoji_dict in emoji_data:
         emoji_code = get_emoji_code(emoji_dict)
-        if not emoji_is_universal(emoji_dict) or emoji_code not in emoji_name_maps:
+        if not emoji_is_supported(emoji_dict) or emoji_code not in emoji_name_maps:
             continue
         category = emoji_dict["category"]
         sort_order[emoji_code] = emoji_dict["sort_order"]
@@ -96,17 +93,17 @@ def generate_emoji_catalog(
     return dict(emoji_catalog)
 
 
-# Use only those names for which images are present in all
-# the emoji sets so that we can switch emoji sets seamlessly.
-def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
-    return all(emoji_dict["has_img_" + emoji_set] for emoji_set in EMOJISETS)
-
-
 def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
     codepoint_to_name: Dict[str, str] = {}
     for emoji_code, name_info in emoji_name_maps.items():
         codepoint_to_name[emoji_code] = name_info["canonical_name"]
     return codepoint_to_name
+
+
+# We support Google Modern, and fall back to Google Modern when emoji
+# aren't supported by the other styles we use.
+def emoji_is_supported(emoji_dict: Dict[str, Any]) -> bool:
+    return emoji_dict["has_img_google"]
 
 
 def generate_codepoint_to_names_map(

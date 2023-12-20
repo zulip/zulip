@@ -19,10 +19,11 @@ from zerver.lib.message import render_markdown
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import check_string_in, to_float
+from zerver.lib.validator import check_bool, check_string_in, to_float
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.models import Client, Message, RealmDomain, UserProfile, get_user_including_cross_realm
+from zerver.models import Client, Message, RealmDomain, UserProfile
+from zerver.models.users import get_user_including_cross_realm
 
 
 class InvalidMirrorInputError(Exception):
@@ -136,6 +137,7 @@ def send_message_backend(
     local_id: Optional[str] = REQ(default=None),
     queue_id: Optional[str] = REQ(default=None),
     time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
+    read_by_sender: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -221,6 +223,11 @@ def send_message_backend(
             raise JsonableError(_("Invalid mirrored message"))
         sender = user_profile
 
+    if read_by_sender is None:
+        # Legacy default: a message you sent from a non-API client is
+        # automatically marked as read for yourself.
+        read_by_sender = client.default_read_by_sender()
+
     data: Dict[str, int] = {}
     sent_message_result = check_send_message(
         sender,
@@ -236,6 +243,7 @@ def send_message_backend(
         local_id=local_id,
         sender_queue_id=queue_id,
         widget_content=widget_content,
+        read_by_sender=read_by_sender,
     )
     data["id"] = sent_message_result.message_id
     if sent_message_result.automatic_new_visibility_policy:

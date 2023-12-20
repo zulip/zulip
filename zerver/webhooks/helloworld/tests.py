@@ -1,7 +1,8 @@
 from django.conf import settings
 
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.models import get_realm, get_system_bot
+from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot
 
 
 class HelloWorldHookTests(WebhookTestCase):

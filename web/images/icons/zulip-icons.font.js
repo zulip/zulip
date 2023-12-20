@@ -12,4 +12,5 @@ module.exports = {
     baseSelector: ".zulip-icon",
     cssTemplate: "./template.hbs",
     ligature: false,
+    types: ["woff2"], // https://github.com/jeerbl/webfonts-loader/pull/219
 };

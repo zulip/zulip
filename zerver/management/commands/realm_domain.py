@@ -9,7 +9,8 @@ from typing_extensions import override
 
 from zerver.lib.domains import validate_domain
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import RealmDomain, get_realm_domains
+from zerver.models import RealmDomain
+from zerver.models.realms import get_realm_domains
 
 
 class Command(ZulipBaseCommand):

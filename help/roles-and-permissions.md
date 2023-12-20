@@ -20,9 +20,9 @@ There are several possible roles in a Zulip organization.
   who do not have those restrictions are called **full members**.
 
 * **Guest**: Can only view or access streams they've been added to.
-  Guest users interact with public streams as though they were private
-  streams with shared history.  Cannot create new streams or invite
-  other users.
+  [Guest users](/help/guest-users) interact with public streams as
+  though they were private streams with shared history.  Cannot
+  create new streams or invite other users.
 
 * **Billing administrator**: The user who upgrades the organization to
   a paid plan is, in addition to their normal role, a billing
@@ -46,3 +46,4 @@ this means "organization owners and administrators" can do that thing.
 * [Stream permissions](/help/stream-permissions)
 * [Inviting new users](/help/invite-new-users)
 * [Zulip Cloud billing](/help/zulip-cloud-billing)
+* [Guest users](/help/guest-users)

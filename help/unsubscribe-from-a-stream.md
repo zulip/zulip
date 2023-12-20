@@ -28,16 +28,18 @@ You can always unsubscribe from any stream in Zulip.
 
 {tab|desktop-web}
 
-{relative|stream|subscribed}
+{relative|gear|stream-settings}
 
-1. Click the green checkmark to the left of a stream to unsubscribe from it.
+1. Click the **checkmark**
+   (<img src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
+   icon to the left of a stream to unsubscribe from it.
 
 {tab|mobile}
 
 {!mobile-all-streams-view.md!}
 
 1. Tap the **checkmark**
-   (<img src="/static/images/help/mobile-check-icon.svg" alt="checkmark" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
    icon to the right of a stream to unsubscribe from it.
 
 !!! tip ""

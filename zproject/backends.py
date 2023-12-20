@@ -103,22 +103,26 @@ from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
-    DisposableEmailError,
-    DomainNotAllowedForRealmError,
-    EmailContainsPlusError,
-    PasswordTooWeakError,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
     UserGroup,
     UserGroupMembership,
     UserProfile,
-    custom_profile_fields_for_realm,
+)
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.realms import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
     get_realm,
+    supported_auth_backends,
+)
+from zerver.models.users import (
+    PasswordTooWeakError,
     get_user_by_delivery_email,
     get_user_profile_by_id,
     remote_user_to_email,
-    supported_auth_backends,
 )
 from zproject.settings_types import OIDCIdPConfigDict
 
@@ -1058,7 +1062,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if self.is_account_realm_access_forbidden(ldap_user, self._realm):
             raise ZulipLDAPError("User not allowed to access realm")
 
-        if ldap_should_sync_active_status():  # nocoverage
+        if ldap_should_sync_active_status():
             ldap_disabled = self.is_user_disabled_in_ldap(ldap_user)
             if ldap_disabled:
                 # Treat disabled users as deactivated in Zulip.

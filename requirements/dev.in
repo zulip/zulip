@@ -8,8 +8,8 @@
 # moto s3 mock
 moto[s3]
 
-# Needed for running tools/run-dev
-Twisted
+# For tools/run-dev
+aiohttp
 
 # Needed for documentation links test
 Scrapy

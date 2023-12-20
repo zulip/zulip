@@ -39,3 +39,4 @@ Organization administrators can always change any user's name.
 
 * [Change a user's role](/help/change-a-users-role)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Manage a user](/help/manage-a-user)

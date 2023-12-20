@@ -61,6 +61,7 @@
                   "billing_schedule": "1",
                   "license_management": "automatic",
                   "licenses": "6",
+                  "plan_tier": "1",
                   "price_per_license": "1200",
                   "realm_id": "1",
                   "realm_str": "zulip",
@@ -82,7 +83,7 @@
                 },
                 "paid": true,
                 "payment_intent": "pi_NORMALIZED00000000000001",
-                "payment_method": "pm_1ODZbrDEQaroqDjskigXZyia",
+                "payment_method": "pm_1OOgy1DEQaroqDjsPovw7cfu",
                 "payment_method_details": {
                   "card": {
                     "amount_authorized": 7200,
@@ -93,7 +94,7 @@
                       "cvc_check": "pass"
                     },
                     "country": "US",
-                    "exp_month": 11,
+                    "exp_month": 12,
                     "exp_year": 2024,
                     "extended_authorization": {
                       "status": "disabled"
@@ -124,7 +125,7 @@
                 },
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
-                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNi236oGMgZLhECvzRM6LBYsJNRLODsJSDBJeGkVl6-qT9lHjspeJ0IxSgujORyVZ0mCEfc6KC3njyfT",
+                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKPqUgawGMgZEDmwqloY6LBaOHpiSTrAoFmP9mBz74B_hzHtEI2O_Gl2W35cI-FkY2-0BLpcE6qn2C7sT",
                 "refunded": false,
                 "refunds": {
                   "data": [],
@@ -149,7 +150,7 @@
             "total_count": 1,
             "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_eEcskqSx0TpRGq2xx4S3jQfjE",
+          "client_secret": "pi_NORMALIZED00000000000001_secret_nTi2uv53oaIydyDHv3mdyBMWm",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
@@ -165,6 +166,7 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "plan_tier": "1",
             "price_per_license": "1200",
             "realm_id": "1",
             "realm_str": "zulip",
@@ -176,7 +178,7 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1ODZbrDEQaroqDjskigXZyia",
+          "payment_method": "pm_1OOgy1DEQaroqDjsPovw7cfu",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -202,13 +204,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3ODZbvDEQaroqDjs1tq9QfVM",
+      "id": "evt_3OOgy5DEQaroqDjs1NMI5y1K",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 2,
       "request": {
-        "id": "req_NORMALIZED0002",
-        "idempotency_key": "0ac0ca55-e728-4a70-a0e4-0af3358d334d"
+        "id": "req_NORMALIZED0006",
+        "idempotency_key": "c37824ac-ed1b-4442-a34d-23f9b9482db4"
       },
       "type": "payment_intent.succeeded"
     },
@@ -258,6 +260,7 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "plan_tier": "1",
             "price_per_license": "1200",
             "realm_id": "1",
             "realm_str": "zulip",
@@ -279,7 +282,7 @@
           },
           "paid": true,
           "payment_intent": "pi_NORMALIZED00000000000001",
-          "payment_method": "pm_1ODZbrDEQaroqDjskigXZyia",
+          "payment_method": "pm_1OOgy1DEQaroqDjsPovw7cfu",
           "payment_method_details": {
             "card": {
               "amount_authorized": 7200,
@@ -290,7 +293,7 @@
                 "cvc_check": "pass"
               },
               "country": "US",
-              "exp_month": 11,
+              "exp_month": 12,
               "exp_year": 2024,
               "extended_authorization": {
                 "status": "disabled"
@@ -321,7 +324,7 @@
           },
           "receipt_email": "hamlet@zulip.com",
           "receipt_number": null,
-          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNi236oGMgbSxzKAd6s6LBbAPq0vr1B4leqlRTD5gW-nTyic4VMvXjm9o3wiSF9om47ZJpnK_YPUynWs",
+          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKPmUgawGMgZzNEK8ZTA6LBYAnusLR5dgHmedVg-98AE-zzlMPBsy6egqoEfightLoDSci1yZpaZYb5T1",
           "refunded": false,
           "refunds": {
             "data": [],
@@ -341,13 +344,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3ODZbvDEQaroqDjs1KF32dZ0",
+      "id": "evt_3OOgy5DEQaroqDjs1Zmy1DdQ",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0002",
-        "idempotency_key": "0ac0ca55-e728-4a70-a0e4-0af3358d334d"
+        "id": "req_NORMALIZED0006",
+        "idempotency_key": "c37824ac-ed1b-4442-a34d-23f9b9482db4"
       },
       "type": "charge.succeeded"
     }

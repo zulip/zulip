@@ -23,8 +23,8 @@
             <p>Open-source team chat with enterprise-grade reliability and security.</p>
         </div>
         <div class="hero-buttons center">
-            <a href="#feature-pricing-self-hosting" class="button">
-                {{ _('Features & pricing') }}
+            <a href="#plans-and-pricing" class="button">
+                {{ _('Plans & pricing') }}
             </a>
             <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button">Install Zulip {{ latest_release_version }}</a>
             <a href="/for/business/" class="button">
@@ -262,7 +262,7 @@
                     </p>
                     <p>
                         We provide free, interactive support for the vast
-                        majority of questions about running a Zulip server. Stop by <a href="/developer-community/">our friendly
+                        majority of questions about running a Zulip server. Stop by <a href="/development-community/">our friendly
                         development community</a> to ask for help or suggest
                         improvements!
                     </p>
@@ -271,76 +271,9 @@
         </div>
     </div>
 
-
-    <div class="feature-end">
-        <div class="feature-pricing" id="feature-pricing-self-hosting">
-            <h1 class="center"> Self-hosting plans </h1>
-            <div class="pricing-model">
-                <div class="padded-content">
-                    <div class="pricing-container">
-                        <div class="price-box" tabindex="-1">
-                            <div class="text-content">
-                                <h2>Free</h2>
-                                <div class="description">
-                                    Retain full control over your data.
-                                </div>
-                                <hr />
-                                <ul class="feature-list">
-                                    <li>All Zulip Cloud features included</li>
-                                    <li>Friendly community support</li>
-                                    <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">SAML, OIDC, Google, social SSO</a></li>
-                                    <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP/Active Directory sync</a></li>
-                                    <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
-                                    <li>Easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a>
-                                        and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html">maintenance</a></li>
-                                </ul>
-                            </div>
-                            <div class="bottom">
-                                <div class="text-content">
-                                    <div class="pricing-details multi-line">
-                                        Zulip is 100% free and open
-                                        source, with no proprietary version. <br />
-                                    </div>
-                                    <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button green">
-                                        Install a Zulip server
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="price-box" tabindex="-1">
-                            <div class="text-content">
-                                <h2>Enterprise</h2>
-                                <div class="description">
-                                    For mission-critical installations.
-                                </div>
-                                <hr />
-                                <ul class="feature-list">
-                                    <li>All self service features included</li>
-                                    <li>Professional support with SLAs</li>
-                                    <li>High availability</li>
-                                    <li>Incident collaboration</li>
-                                    <li>Advanced compliance</li>
-                                    <li>Funds the Zulip open source project</li>
-                                </ul>
-                            </div>
-                            <div class="bottom">
-                                <div class="text-content">
-                                    <div class="pricing-details multi-line">
-                                        Affordable pricing depends on support required.
-                                    </div>
-                                    <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="no-action button green">
-                                        Contact sales
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="portico-pricing showing-self-hosted">
+        {% include "corporate/pricing_model.html" %}
     </div>
-
 
 </div>
 

@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import Any, Dict, Optional
 
 from django.conf import settings
@@ -19,14 +19,8 @@ from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.users import check_can_access_user
-from zerver.models import (
-    UserActivity,
-    UserPresence,
-    UserProfile,
-    UserStatus,
-    get_active_user,
-    get_active_user_profile_by_id_in_realm,
-)
+from zerver.models import UserActivity, UserPresence, UserProfile, UserStatus
+from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
 
 def get_presence_backend(
@@ -175,7 +169,7 @@ def update_active_status_backend(
                 user_profile=user_profile, query="get_events", client__name="zephyr_mirror"
             )
 
-            ret["zephyr_mirror_active"] = activity.last_visit > timezone_now() - datetime.timedelta(
+            ret["zephyr_mirror_active"] = activity.last_visit > timezone_now() - timedelta(
                 minutes=5
             )
         except UserActivity.DoesNotExist:

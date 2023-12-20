@@ -8,21 +8,22 @@
     "status": null
   },
   "billing_address_collection": null,
-  "cancel_url": "http://zulip.testserver/upgrade/",
+  "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
   "client_reference_id": null,
   "client_secret": null,
   "consent": null,
   "consent_collection": null,
-  "created": 1700592386,
+  "created": 1000000000,
   "currency": null,
   "currency_conversion": null,
   "custom_fields": [],
   "custom_text": {
+    "after_submit": null,
     "shipping_address": null,
     "submit": null,
     "terms_of_service_acceptance": null
   },
-  "customer": "cus_P358SWUcASaSWt",
+  "customer": "cus_NORMALIZED0001",
   "customer_creation": null,
   "customer_details": {
     "address": null,
@@ -33,8 +34,8 @@
     "tax_ids": null
   },
   "customer_email": null,
-  "expires_at": 1700678786,
-  "id": "cs_test_c1ZvqQVYBUdOipkuVfkGzD6LdP9SNLn8YX9QbZGA0v51kSZ6yrFlsQrr3k",
+  "expires_at": 1000000000,
+  "id": "cs_test_NORMALIZED02bLrbO1Y2EhQL4x0mHCTvoG8RRSh2TP6WA6o7mglJ4BcAGk",
   "invoice": null,
   "invoice_creation": null,
   "livemode": false,
@@ -58,7 +59,7 @@
     "enabled": false
   },
   "recovered_from": null,
-  "setup_intent": "seti_1OEyxqDEQaroqDjsJxHHiD8D",
+  "setup_intent": "seti_1OOhBJDEQaroqDjsh6ge3G4p",
   "shipping": null,
   "shipping_address_collection": null,
   "shipping_options": [],
@@ -69,5 +70,5 @@
   "success_url": "http://zulip.testserver/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
   "total_details": null,
   "ui_mode": "hosted",
-  "url": "https://checkout.stripe.com/c/pay/cs_test_c1ZvqQVYBUdOipkuVfkGzD6LdP9SNLn8YX9QbZGA0v51kSZ6yrFlsQrr3k#fidkdWxOYHwnPyd1blpxYHZxWl1UZjFOczZJXUE2PUpzUWNPV2ZpdlFzUCcpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBaZmppcGhrJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl"
+  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02bLrbO1Y2EhQL4x0mHCTvoG8RRSh2TP6WA6o7mglJ4BcAGk#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
 }

@@ -4,6 +4,8 @@
   popovers. (Tippy tooltips are defined in tooltips.css).
 */
 .tippy-box[data-theme="light-border"] {
+    background-color: var(--color-background-popover);
+
     .sp-input {
         /* Override incorrect color for text in dark theme. */
         color: var(--color-text-default) !important;
@@ -27,6 +29,38 @@
         /* Override bootstrap defaults */
         .nav-list > li > a {
             padding: 3px 15px;
+        }
+    }
+
+    &[data-placement^="top"] {
+        > .tippy-arrow {
+            &::before {
+                border-top-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="bottom"] {
+        > .tippy-arrow {
+            &::before {
+                border-bottom-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="left"] {
+        > .tippy-arrow {
+            &::before {
+                border-left-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="right"] {
+        > .tippy-arrow {
+            &::before {
+                border-right-color: var(--color-background-popover);
+            }
         }
     }
 }
@@ -192,10 +226,21 @@
 }
 
 .streams_popover {
-    .topic-name {
-        text-align: center;
-        margin-top: 5px;
-        margin-bottom: 5px;
+    width: min-content;
+
+    .stream-menu-item {
+        white-space: nowrap;
+    }
+
+    .stream-name {
+        align-items: baseline;
+        color: var(--color-text-sidebar-popover-menu);
+        display: flex;
+        gap: 3px;
+        font-weight: 700;
+        line-height: 1.1;
+        margin: 6px 0;
+        white-space: normal;
     }
 
     .colorpicker-container {
@@ -243,6 +288,23 @@
     }
 }
 
+.topics_popover {
+    min-width: var(--popover-menu-min-width);
+    width: min-content;
+
+    .topic-menu-item {
+        white-space: nowrap;
+    }
+
+    .topic-name {
+        color: var(--color-text-sidebar-popover-menu);
+        font-weight: 700;
+        line-height: 1.1;
+        margin: 6px 0;
+        white-space: normal;
+    }
+}
+
 ul {
     &.user-card-popover-actions i,
     &.actions_popover i,
@@ -273,18 +335,6 @@ ul {
                 font-size: 17px;
                 line-height: 1;
                 top: 1px;
-            }
-        }
-    }
-
-    &.topics_popover {
-        .topic-name {
-            text-align: center;
-            margin-top: 5px;
-            margin-bottom: 5px;
-
-            .fa-chevron-right {
-                font-size: 12px;
             }
         }
     }
@@ -352,15 +402,26 @@ ul {
         padding: 5px 0;
     }
 
-    .manage-group a {
-        text-align: center;
-    }
-
     .group-info {
-        text-align: center;
+        padding-left: 11px;
+        padding-right: 11px;
 
         .group-name {
             font-weight: bold;
+        }
+    }
+
+    .manage-group {
+        a {
+            display: flex;
+            align-items: center;
+            padding-left: 11px;
+
+            .zulip-icon {
+                position: relative;
+                top: -1px;
+                margin-right: 5px;
+            }
         }
     }
 
@@ -824,9 +885,13 @@ ul {
 }
 
 .user-group-popover-root {
-    & ul.nav {
+    .group-info-popover ul.nav {
         /* TODO: Clean this logic up after drop Bootstrap styling */
         margin: 0;
+
+        &.member-list {
+            padding-left: 6px;
+        }
     }
 
     & .tippy-box {
@@ -1052,6 +1117,7 @@ ul {
     .visibility_policy_option {
         padding: 2px 13px;
         border-radius: 4px;
+        cursor: pointer;
 
         .icon_and_text {
             display: flex;
@@ -1158,15 +1224,22 @@ ul {
     border: solid 1px var(--color-border-dropdown-menu);
     background-color: var(--color-background-dropdown-menu);
     max-height: 85vh;
-    min-width: 230px;
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
     box-shadow: var(--box-shadow-navbar-dropdown-menu);
 
     .simplebar-content {
+        min-width: var(--popover-menu-min-width);
+        /*  This is necessary to set the dropdown menu width equal to
+            the width of the longest menu item, thus letting the menu
+            items control the width of the menu. */
+        width: min-content;
+    }
+
+    .navbar-dropdown-menu-inner-list-item {
         /*  This is necessary to keep long menu items on a single line. */
-        min-width: max-content;
+        white-space: nowrap;
     }
 
     .text-item,
@@ -1282,7 +1355,7 @@ ul {
 
         & li {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             font-size: 15px;
             font-style: normal;
             font-weight: 400;
@@ -1294,9 +1367,8 @@ ul {
             }
 
             .navbar-dropdown-menu-link {
-                padding: 2px 0;
+                padding: 2px 10px;
                 flex-grow: 1;
-                text-align: center;
                 text-decoration: none;
 
                 &:hover {
@@ -1319,6 +1391,7 @@ ul {
 
         .org-url {
             margin-bottom: 7px;
+            padding: 0 10px;
         }
 
         .org-name,
@@ -1330,9 +1403,12 @@ ul {
             font-size: 17px;
             font-weight: 600;
             line-height: 22px;
+            padding: 0 10px;
+            /* We set white-space to normal for the menu items
+               where we want to explicitly wrap. */
+            white-space: normal;
         }
 
-        .org-plan,
         .org-upgrade {
             font-size: 14px;
         }

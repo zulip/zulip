@@ -4,7 +4,9 @@ import render_user_group_info_popover from "../templates/popovers/user_group_inf
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
@@ -82,6 +84,8 @@ export function toggle_user_group_info_popover(element, message_id) {
                     group_name: group.name,
                     group_description: group.description,
                     members: sort_group_members(fetch_group_members([...group.members])),
+                    group_edit_url: hash_util.group_edit_url(group),
+                    is_guest: page_params.is_guest,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },
@@ -113,15 +117,19 @@ export function register_click_handlers() {
 }
 
 function fetch_group_members(member_ids) {
-    return member_ids
-        .map((m) => people.maybe_get_user_by_id(m))
-        .filter((m) => m !== undefined)
-        .map((p) => ({
-            ...p,
-            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-            is_active: people.is_active_user_for_popover(p.user_id),
-            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-        }));
+    return (
+        member_ids
+            .map((m) => people.get_user_by_id_assert_valid(m))
+            // We need to include inaccessible users here separately, since
+            // we do not include them in active_user_dict, but we want to
+            // show them in the popover as "Unknown user".
+            .filter((m) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user)
+            .map((p) => ({
+                ...p,
+                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+            }))
+    );
 }
 
 function sort_group_members(members) {

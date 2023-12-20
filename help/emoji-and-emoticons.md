@@ -8,9 +8,19 @@
 
 ## Use an emoji in your message
 
-### Enter an emoji name
-
 {start_tabs}
+
+{tab|via-compose-box-buttons}
+
+{!start-composing.md!}
+
+1. Click the **smiley face** (<i class="zulip-icon zulip-icon-smile-bigger"></i>)
+   icon at the bottom of the compose box.
+
+1. Select an emoji. You can type to search, use the arrow keys, or click on
+   an emoji with your mouse.
+
+{tab|via-markdown}
 
 {!start-composing.md!}
 
@@ -21,26 +31,18 @@
 1. Type the full emoji name followed by `:`, or select an emoji from the list of
    suggestions.
 
+{tab|via-paste}
+
+{!start-composing.md!}
+
+1. Paste an emoji copied from outside of Zulip directly into the compose box.
+
 {end_tabs}
 
 !!! tip ""
 
     You can hover over an emoji in the emoji picker, a message, or an [emoji
     reaction](/help/emoji-reactions) to learn its name.
-
-### Select an emoji from the emoji picker
-
-{start_tabs}
-
-{!start-composing.md!}
-
-1. Click the **smiley face** (<i class="fa fa-smile-o"></i>) icon at the
-   bottom of the compose box.
-
-1. Select an emoji. You can type to search, use the arrow keys, or click on
-   an emoji with your mouse.
-
-{end_tabs}
 
 ### Use an emoticon
 
@@ -63,11 +65,6 @@ will be displayed as
 
 The list of supported emoticons is available
 [here](/help/configure-emoticon-translations).
-
-### Paste an emoji
-
-You can paste an emoji copied from outside of Zulip directly into the compose
-box.
 
 ## Examples
 

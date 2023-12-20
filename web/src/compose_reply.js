@@ -114,6 +114,7 @@ export function respond_to_message(opts) {
         topic,
         private_message_recipient: pm_recipient,
         trigger: opts.trigger,
+        is_reply: true,
     });
 }
 

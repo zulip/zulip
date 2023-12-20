@@ -6,13 +6,14 @@ import * as typeahead from "../shared/src/typeahead";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
+import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as timerender from "./timerender";
-import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./types";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -39,6 +40,7 @@ export type User = {
     avatar_version: number;
     profile_data: Record<number, ProfileData>;
     is_missing_server_data?: boolean; // used for fake user objects.
+    is_inaccessible_user?: boolean; // used for inaccessible user objects.
 } & (
     | {
           is_bot: false;
@@ -86,6 +88,8 @@ let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 
+export let INACCESSIBLE_USER_NAME: string;
+
 // We have an init() function so that our automated tests
 // can easily clear data.
 export function init(): void {
@@ -107,6 +111,8 @@ export function init(): void {
 
     // This maintains a set of ids of people with same full names.
     duplicate_full_name_data = new FoldDict();
+
+    INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -179,7 +185,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
         return undefined;
     }
 
-    return get_by_user_id(owner_id);
+    return get_user_by_id_assert_valid(owner_id);
 }
 
 export function can_admin_user(user: User): boolean {
@@ -236,13 +242,22 @@ export function get_user_id(email: string): number | undefined {
 
 export function is_known_user_id(user_id: number): boolean {
     /*
-    For certain low-stakes operations, such as emoji reactions,
-    we may get a user_id that we don't know about, because the
-    user may have been deactivated.  (We eventually want to track
-    deactivated users on the client, but until then, this is an
-    expedient thing we can check.)
+    We may get a user_id from mention syntax that we don't
+    know about if a user includes some random number in
+    the mention syntax by manually typing it instead of
+    selecting some user from typeahead.
     */
-    return people_by_user_id_dict.has(user_id);
+
+    /*
+    This function also returns false for inaccessible users
+    even though we have the user_id for them as we do not
+    want to show the mention pill for them.
+    */
+    const person = maybe_get_user_by_id(user_id, true);
+    if (person === undefined || person.is_inaccessible_user) {
+        return false;
+    }
+    return true;
 }
 
 export function is_known_user(user: User): boolean {
@@ -359,7 +374,7 @@ export function emails_to_full_names_string(emails: string[]): string {
             if (person !== undefined) {
                 return person.full_name;
             }
-            return email;
+            return INACCESSIBLE_USER_NAME;
         })
         .join(", ");
 }
@@ -369,11 +384,14 @@ export function get_user_time(user_id: number): string | undefined {
     if (user_timezone) {
         try {
             return new Date().toLocaleTimeString(user_settings.default_language, {
-                ...timerender.get_format_options_for_type("time"),
+                ...timerender.get_format_options_for_type(
+                    "time",
+                    user_settings.twenty_four_hour_time,
+                ),
                 timeZone: user_timezone,
             });
         } catch (error) {
-            blueslip.error(`Error formatting time in ${user_timezone}`, undefined, error);
+            blueslip.warn(`Error formatting time in ${user_timezone}: ${String(error)}`);
         }
     }
     return undefined;
@@ -412,11 +430,7 @@ export function get_full_names_for_poll_option(user_ids: number[]): string {
 }
 
 export function get_display_full_name(user_id: number): string {
-    const person = maybe_get_user_by_id(user_id);
-    if (!person) {
-        blueslip.error("Unknown user id", {user_id});
-        return "?";
-    }
+    const person = get_user_by_id_assert_valid(user_id);
 
     if (muted_users.is_user_muted(user_id)) {
         if (should_add_guest_user_indicator(user_id)) {
@@ -924,7 +938,7 @@ export function is_valid_email_for_compose(email: string): boolean {
     }
 
     const person = get_by_email(email);
-    if (!person) {
+    if (!person || person.is_inaccessible_user) {
         return false;
     }
 
@@ -983,6 +997,10 @@ export function is_current_user_only_owner(): boolean {
 export function filter_all_persons(pred: (person: User) => boolean): User[] {
     const ret = [];
     for (const person of people_by_user_id_dict.values()) {
+        if (person.is_inaccessible_user) {
+            continue;
+        }
+
         if (pred(person)) {
             ret.push(person);
         }
@@ -1158,7 +1176,7 @@ export function get_active_message_people(): User[] {
 export function get_people_for_search_bar(query: string): User[] {
     const pred = build_person_matcher(query);
 
-    const message_people = get_message_people();
+    const message_people = get_message_people().filter((user) => !user.is_inaccessible_user);
 
     const small_results = message_people.filter((item) => pred(item));
 
@@ -1234,9 +1252,19 @@ export function filter_people_by_search_terms(
 }
 
 export const is_valid_full_name_and_user_id = (full_name: string, user_id: number): boolean => {
+    /*
+        This function is currently only used for checking
+        the mention syntax during markdown parsing. Since
+        we do not want to parse inaccessible users as
+        mention pill, this function returns false for
+        inaccessible users. We would need to update this
+        if we would want to use this function for other
+        cases where we might want to display inaccessible
+        users as "Unknown user".
+    */
     const person = people_by_user_id_dict.get(user_id);
 
-    if (!person) {
+    if (!person || person.is_inaccessible_user) {
         return false;
     }
 
@@ -1275,9 +1303,18 @@ export function get_user_id_from_name(full_name: string): number | undefined {
         exactly what we do with mentions.
     */
 
+    /*
+        Since we do not want to parse inaccessible users as
+        mention pill, this function returns false for
+        inaccessible users. We would need to update this if
+        we would want to use this function for other cases
+        where we might want to display inaccessible users
+        as "Unknown user".
+    */
+
     const person = people_by_name_dict.get(full_name);
 
-    if (!person) {
+    if (!person || person.is_inaccessible_user) {
         return undefined;
     }
 
@@ -1400,6 +1437,16 @@ export function deactivate(person: User): void {
     non_active_user_dict.set(person.user_id, person);
 }
 
+export function remove_inaccessible_user(user_id: number): void {
+    // We do not track inaccessible users in active_user_dict.
+    active_user_dict.delete(user_id);
+
+    // Create unknown user object for the inaccessible user.
+    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
+    _add_user(unknown_user);
+}
+
 export function report_late_add(user_id: number, email: string): void {
     // If the events system is not running, then it is expected that
     // we will fetch messages from the server that were sent by users
@@ -1409,6 +1456,8 @@ export function report_late_add(user_id: number, email: string): void {
     // event queue in the first place.
     if (reload_state.is_in_progress() || page_params.is_spectator) {
         blueslip.log("Added user late", {user_id, email});
+    } else if (!settings_data.user_can_access_all_other_users()) {
+        blueslip.log("Message was sent by an inaccessible user", {user_id});
     } else {
         blueslip.error("Added user late", {user_id, email});
     }
@@ -1447,11 +1496,38 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         delivery_email: null,
         profile_data: {},
         bot_type: null,
+        // This may lead to cases where this field is set to
+        // true for an accessible user also and such user would
+        // not be shown in the right sidebar for some time till
+        // the user's correct data is received from the server.
+        is_inaccessible_user: !settings_data.user_can_access_all_other_users(),
 
         // This property allows us to distinguish actual server person
         // objects from fake person objects generated by this function.
         is_missing_server_data: true,
     };
+}
+
+export function add_inaccessible_user(user_id: number): User {
+    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
+    _add_user(unknown_user);
+    return unknown_user;
+}
+
+export function get_user_by_id_assert_valid(
+    user_id: number,
+    allow_missing_user: boolean = !settings_data.user_can_access_all_other_users(),
+): User {
+    if (!allow_missing_user) {
+        return get_by_user_id(user_id);
+    }
+
+    let person = maybe_get_user_by_id(user_id, true);
+    if (person === undefined) {
+        person = add_inaccessible_user(user_id);
+    }
+    return person;
 }
 
 function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {

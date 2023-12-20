@@ -104,7 +104,7 @@ export function initialize() {
 
     // message reaction tooltip showing who reacted.
     let observer;
-    message_list_tooltip(".message_reaction, .message_reactions .reaction_button", {
+    message_list_tooltip(".message_reaction", {
         delay: INTERACTIVE_HOVER_DELAY,
         placement: "bottom",
         onShow(instance) {
@@ -114,12 +114,10 @@ export function initialize() {
                 return false;
             }
             const $elem = $(instance.reference);
-            if (!instance.reference.classList.contains("reaction_button")) {
-                const local_id = $elem.attr("data-reaction-id");
-                const message_id = rows.get_message_id(instance.reference);
-                const title = reactions.get_reaction_title_data(message_id, local_id);
-                instance.setContent(title);
-            }
+            const local_id = $elem.attr("data-reaction-id");
+            const message_id = rows.get_message_id(instance.reference);
+            const title = reactions.get_reaction_title_data(message_id, local_id);
+            instance.setContent(title);
 
             const config = {attributes: false, childList: true, subtree: true};
             const target = $elem.parents(".message-list.focused-message-list").get(0);
@@ -136,6 +134,39 @@ export function initialize() {
             if (observer) {
                 observer.disconnect();
             }
+        },
+    });
+
+    message_list_tooltip(".message_reactions .reaction_button", {
+        delay: LONG_HOVER_DELAY,
+        placement: "bottom",
+        onShow(instance) {
+            if (!document.body.contains(instance.reference)) {
+                // It is possible for the single reaction necessary for
+                // displaying the reaction button to be removed before
+                // `onShow` is triggered, so we check if the element
+                // exists before proceeding.
+                return false;
+            }
+            const $elem = $(instance.reference);
+
+            if ($elem.hasClass("active-emoji-picker-reference")) {
+                // Don't show the tooltip when the emoji picker is open
+                return false;
+            }
+
+            const config = {attributes: false, childList: true, subtree: true};
+            const target = $elem.parents(".message-list.focused-message-list").get(0);
+            const nodes_to_check_for_removal = [
+                $elem.parents(".recipient_row").get(0),
+                $elem.parents(".message_reactions").get(0),
+                $elem.get(0),
+            ];
+            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+            return true;
+        },
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 

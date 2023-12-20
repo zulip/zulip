@@ -1,4 +1,4 @@
-import urllib
+from urllib.parse import urlencode
 
 from typing_extensions import override
 
@@ -15,7 +15,7 @@ class LibratoHookTests(WebhookTestCase):
     def get_body(self, fixture_name: str) -> str:
         if self.IS_ATTACHMENT:
             return self.webhook_fixture_data("librato", fixture_name, file_type="json")
-        return urllib.parse.urlencode(
+        return urlencode(
             {"payload": self.webhook_fixture_data("librato", fixture_name, file_type="json")}
         )
 

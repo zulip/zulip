@@ -1,6 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
-import datetime
 import logging
+from datetime import timedelta
 from typing import Any, Callable, Dict, Iterable, Tuple
 
 from django.conf import settings
@@ -24,7 +24,8 @@ from zerver.lib.cache import (
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
-from zerver.models import Client, UserProfile, get_client_cache_key
+from zerver.models import Client, UserProfile
+from zerver.models.clients import get_client_cache_key
 
 
 def user_cache_items(
@@ -64,7 +65,7 @@ def get_active_realm_ids() -> ValuesQuerySet[RealmCount, int]:
     worth of cache work (where N is the number of default streams for
     a new organization).
     """
-    date = timezone_now() - datetime.timedelta(days=2)
+    date = timezone_now() - timedelta(days=2)
     return (
         RealmCount.objects.filter(end_time__gte=date, property="1day_actives::day", value__gt=0)
         .distinct("realm_id")

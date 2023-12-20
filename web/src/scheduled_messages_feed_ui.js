@@ -33,6 +33,9 @@ function get_scheduled_messages_matching_narrow() {
                 return true;
             }
         } else if (scheduled_message.type === "stream") {
+            if (narrow_state.stream_sub() === undefined) {
+                return false;
+            }
             const narrow_dict = {
                 stream_id: narrow_state.stream_sub().stream_id,
                 topic: narrow_state.topic(),

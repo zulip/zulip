@@ -4,15 +4,13 @@ const {strict: assert} = require("assert");
 
 const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
 const stream_data = zrequire("stream_data");
-
-const noop = () => {};
 
 run_test("private_message_recipient", ({override}) => {
     let emails;

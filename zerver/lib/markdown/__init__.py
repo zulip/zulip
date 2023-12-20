@@ -1,16 +1,14 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
 import cgi
-import datetime
 import html
 import logging
 import mimetypes
 import re
 import time
-import urllib
-import urllib.parse
 from collections import deque
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from functools import lru_cache
 from typing import (
     Any,
@@ -28,7 +26,7 @@ from typing import (
     Union,
     cast,
 )
-from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
+from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -76,13 +74,9 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import (
-    EmojiInfo,
-    Message,
-    Realm,
-    get_name_keyed_dict_for_active_realm_emoji,
-    linkifiers_for_realm,
-)
+from zerver.models import Message, Realm
+from zerver.models.linkifiers import linkifiers_for_realm
+from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_realm_emoji
 
 ReturnT = TypeVar("ReturnT")
 
@@ -133,9 +127,6 @@ class MessageRenderingResult:
     links_for_preview: Set[str]
     user_ids_with_alert_words: Set[int]
     potential_attachment_path_ids: List[str]
-
-    def has_wildcard_mention(self) -> bool:
-        return self.mentions_stream_wildcard or self.mentions_topic_wildcard
 
 
 @dataclass
@@ -491,7 +482,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
 
 
 def get_tweet_id(url: str) -> Optional[str]:
-    parsed_url = urllib.parse.urlparse(url)
+    parsed_url = urlsplit(url)
     if not (parsed_url.netloc == "twitter.com" or parsed_url.netloc.endswith(".twitter.com")):
         return None
     to_match = parsed_url.path
@@ -720,13 +711,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview URLs to image URLs.
         # See https://github.com/zulip/zulip/issues/4658 for more information
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlsplit(url)
         if parsed_url.netloc == "github.com" or parsed_url.netloc.endswith(".github.com"):
             # https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png ->
             # https://raw.githubusercontent.com/zulip/zulip/main/static/images/logo/zulip-icon-128x128.png
             split_path = parsed_url.path.split("/")
             if len(split_path) > 3 and split_path[3] == "blob":
-                return urllib.parse.urljoin(
+                return urljoin(
                     "https://raw.githubusercontent.com", "/".join(split_path[0:3] + split_path[4:])
                 )
 
@@ -735,7 +726,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url: str) -> bool:
         if not self.zmd.image_preview_enabled:
             return False
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlsplit(url)
         # remove HTML URLs which end with image extensions that cannot be shorted
         if parsed_url.netloc == "pasteboard.co":
             return False
@@ -747,7 +738,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # wikipedia.org to point to the actual image URL.  It's
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlsplit(url)
         if parsed_url.netloc.lower().endswith(".wikipedia.org") and parsed_url.path.startswith(
             "/wiki/File:"
         ):
@@ -762,7 +753,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def dropbox_image(self, url: str) -> Optional[Dict[str, Any]]:
         # TODO: The returned Dict could possibly be a TypedDict in future.
-        parsed_url = urllib.parse.urlparse(url)
+        parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
             is_album = parsed_url.path.startswith("/sc/") or parsed_url.path.startswith("/photos/")
             # Only allow preview Dropbox shared links
@@ -914,7 +905,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     "type": "mention",
                     "start": match.start(),
                     "end": match.end(),
-                    "url": "https://twitter.com/" + urllib.parse.quote(screen_name),
+                    "url": "https://twitter.com/" + quote(screen_name),
                     "text": mention_string,
                 }
                 for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE)
@@ -1263,7 +1254,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # `/user_uploads` and beginning with `user_uploads`.
                 # This urllib construction converts the latter into
                 # the former.
-                parsed_url = urllib.parse.urlsplit(urllib.parse.urljoin("/", url))
+                parsed_url = urlsplit(urljoin("/", url))
                 host = parsed_url.netloc
 
                 if host != "" and (
@@ -1406,9 +1397,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
         except ValueError:
             try:
-                timestamp = datetime.datetime.fromtimestamp(
-                    float(time_input_string), tz=datetime.timezone.utc
-                )
+                timestamp = datetime.fromtimestamp(float(time_input_string), tz=timezone.utc)
             except ValueError:
                 timestamp = None
 
@@ -1423,9 +1412,9 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         # Use HTML5 <time> element for valid timestamps.
         time_element = Element("time")
         if timestamp.tzinfo:
-            timestamp = timestamp.astimezone(datetime.timezone.utc)
+            timestamp = timestamp.astimezone(timezone.utc)
         else:
-            timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
         time_element.set("datetime", timestamp.isoformat().replace("+00:00", "Z"))
         # Set text to initial input, so simple clients translating
         # HTML to text will at least display something.
@@ -1573,8 +1562,8 @@ def sanitize_url(url: str) -> Optional[str]:
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
     try:
-        parts = urllib.parse.urlparse(url.replace(" ", "%20"))
-        scheme, netloc, path, params, query, fragment = parts
+        parts = urlsplit(url.replace(" ", "%20"))
+        scheme, netloc, path, query, fragment = parts
     except ValueError:
         # Bad URL - so bad it couldn't be parsed.
         return ""
@@ -1585,10 +1574,10 @@ def sanitize_url(url: str) -> Optional[str]:
         scheme = "mailto"
     elif scheme == "" and netloc == "" and len(path) > 0 and path[0] == "/":
         # Allow domain-relative links
-        return urllib.parse.urlunparse(("", "", path, params, query, fragment))
-    elif (scheme, netloc, path, params, query) == ("", "", "", "", "") and len(fragment) > 0:
+        return urlunsplit(("", "", path, query, fragment))
+    elif (scheme, netloc, path, query) == ("", "", "", "") and len(fragment) > 0:
         # Allow fragment links
-        return urllib.parse.urlunparse(("", "", "", "", "", fragment))
+        return urlunsplit(("", "", "", "", fragment))
 
     # Zulip modification: If scheme is not specified, assume http://
     # We re-enter sanitize_url because netloc etc. need to be re-parsed.
@@ -1613,7 +1602,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # the colon check, which would also forbid a lot of legitimate URLs.
 
     # URL passes all tests. Return URL as-is.
-    return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
+    return urlunsplit((scheme, netloc, path, query, fragment))
 
 
 def url_to_a(
@@ -1824,25 +1813,7 @@ def prepare_linkifier_pattern(source: str) -> str:
     # We use an extended definition of 'whitespace' which is
     # equivalent to \p{White_Space} -- since \s in re2 only matches
     # ASCII spaces, and re2 does not support \p{White_Space}.
-    regex = rf"""
-        (?P<{BEFORE_CAPTURE_GROUP}>
-            ^  |
-            \s | {next_line} | \pZ |
-            ['"\(,:<]
-        )
-        (?P<{OUTER_CAPTURE_GROUP}>
-            {source}
-        )
-        (?P<{AFTER_CAPTURE_GROUP}>
-            $ |
-            [^\pL\pN]
-        )
-    """
-    # Strip out the spaces and newlines added to make the above
-    # legible -- re2 does not have the equivalent of the /x modifier
-    # that does this automatically.  Note that we are careful to not
-    # strip _whitespace_, which would strip the literal \u0085 out.
-    return regex.replace(" ", "").replace("\n", "")
+    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # Given a regular expression pattern, linkifies groups that match it
@@ -2662,7 +2633,10 @@ def do_convert(
 
         if mention_data is None:
             mention_backend = MentionBackend(message_realm.id)
-            mention_data = MentionData(mention_backend, content)
+            message_sender = None
+            if message is not None:
+                message_sender = message.sender
+            mention_data = MentionData(mention_backend, content, message_sender)
 
         stream_names = possible_linked_stream_names(content)
         stream_name_info = mention_data.get_stream_name_map(stream_names)

@@ -110,6 +110,14 @@ additionally:
   You can see a full list with `git grep development_only=True`, or
   add additional settings of this form if needed.
 
+- If you need to override a setting in your development environment,
+  you can do so by creating a `zproject/custom_dev_settings.py`
+  setting the values you'd like to override (the test suites ignore
+  this file). This optional file is processed just after
+  `dev_settings.py` in `configured_settings.py`, so
+  `zproject/computed_settings.py` will correctly use your custom
+  settings when calculating any computed settings that depend on them.
+
 - `zproject/test_settings.py` imports everything from
   `zproject/settings.py` and `zproject/test_extra_settings.py`.
 

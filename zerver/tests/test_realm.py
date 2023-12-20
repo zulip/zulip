@@ -1,12 +1,15 @@
-import datetime
+import json
 import os
+import random
 import re
-from datetime import timedelta
+import string
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -20,6 +23,7 @@ from zerver.actions.message_send import (
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_org_type,
+    do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_delete_all_realm_attachments,
@@ -45,16 +49,15 @@ from zerver.models import (
     RealmUserDefault,
     ScheduledEmail,
     Stream,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 
 class RealmTest(ZulipTestCase):
@@ -75,10 +78,14 @@ class RealmTest(ZulipTestCase):
                 ["INFO:root:Server not yet initialized. Creating the internal realm first."],
             )
 
-    def test_realm_creation_on_social_auth_subdomain_disallowed(self) -> None:
+    def test_realm_creation_on_special_subdomains_disallowed(self) -> None:
         with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
             with self.assertRaises(AssertionError):
                 do_create_realm("zulipauth", "Test Realm")
+
+        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
+            with self.assertRaises(AssertionError):
+                do_create_realm("zulipselfhosting", "Test Realm")
 
     def test_permission_for_education_non_profit_organization(self) -> None:
         realm = do_create_realm(
@@ -220,9 +227,7 @@ class RealmTest(ZulipTestCase):
         data = dict(string_id="lear")
         self.login("desdemona")
         realm = get_realm("zulip")
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + datetime.timedelta(
-            days=30
-        )
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
         realm.save()
         result = self.client_patch("/json/realm", data)
         self.assert_json_error(result, "Subdomain already in use. Please choose a different one.")
@@ -328,7 +333,7 @@ class RealmTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             user.realm,
             to_user_ids=[user.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_realm(user.realm, acting_user=None)
@@ -448,7 +453,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(outbox[0]),
-            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn("Reactivate your Zulip organization", outbox[0].subject)
         self.assertIn("Dear former administrators", outbox[0].body)
@@ -487,6 +492,15 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.notifications_stream, None)
 
         new_notif_stream_id = Stream.objects.get(name="Denmark").id
+        req = dict(notifications_stream_id=orjson.dumps(new_notif_stream_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.notifications_stream is not None
+        self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
+
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_notif_stream_id = self.make_stream("private_stream", invite_only=True).id
         req = dict(notifications_stream_id=orjson.dumps(new_notif_stream_id).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
@@ -553,6 +567,18 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.signup_notifications_stream, None)
 
         new_signup_notifications_stream_id = Stream.objects.get(name="Denmark").id
+        req = dict(
+            signup_notifications_stream_id=orjson.dumps(new_signup_notifications_stream_id).decode()
+        )
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.signup_notifications_stream is not None
+        self.assertEqual(realm.signup_notifications_stream.id, new_signup_notifications_stream_id)
+
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_signup_notifications_stream_id = self.make_stream("private_stream", invite_only=True).id
         req = dict(
             signup_notifications_stream_id=orjson.dumps(new_signup_notifications_stream_id).decode()
         )
@@ -774,6 +800,12 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, None)
 
+        members_system_group = UserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_system_group, acting_user=None
+        )
+        self.assertEqual(realm.can_access_all_users_group_id, members_system_group.id)
+
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -790,6 +822,8 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
+        everyone_system_group = UserGroup.objects.get(name=SystemGroups.EVERYONE, realm=realm)
+        self.assertEqual(realm.can_access_all_users_group_id, everyone_system_group.id)
 
         do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
@@ -814,6 +848,17 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
+
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_system_group, acting_user=None
+        )
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=iago)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, None)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
+        self.assertEqual(realm.can_access_all_users_group_id, everyone_system_group.id)
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=iago)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
@@ -883,6 +928,12 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
 
+        url_string = "".join(random.choices(string.ascii_lowercase, k=180))
+        long_url = "https://jitsi.example.com/" + url_string
+        req = dict(jitsi_server_url=orjson.dumps(long_url).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
         valid_url = "https://jitsi.example.com"
         req = dict(jitsi_server_url=orjson.dumps(valid_url).decode())
         result = self.client_patch("/json/realm", req)
@@ -906,7 +957,7 @@ class RealmTest(ZulipTestCase):
         self.assertTrue(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["unspecified"]["id"])
-        self.assertEqual(type(realm.date_created), datetime.datetime)
+        self.assertEqual(type(realm.date_created), datetime)
 
         self.assertTrue(
             RealmAuditLog.objects.filter(
@@ -933,7 +984,7 @@ class RealmTest(ZulipTestCase):
             )
 
     def test_do_create_realm_with_keyword_arguments(self) -> None:
-        date_created = timezone_now() - datetime.timedelta(days=100)
+        date_created = timezone_now() - timedelta(days=100)
         realm = do_create_realm(
             "realm_string_id",
             "realm name",
@@ -1035,6 +1086,42 @@ class RealmTest(ZulipTestCase):
             SystemGroups.NOBODY,
         ]
         self.assertEqual(sorted(user_group_names), sorted(expected_system_group_names))
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    def test_do_create_realm_notify_bouncer(self) -> None:
+        dummy_send_realms_only_response = {
+            "result": "success",
+            "msg": "",
+            "realms": {},
+        }
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer",
+        ) as m:
+            get_response = {
+                "last_realm_count_id": 0,
+                "last_installation_count_id": 0,
+                "last_realmauditlog_id": 0,
+            }
+
+            def mock_send_to_push_bouncer_response(method: str, *args: Any) -> Dict[str, Any]:
+                if method == "GET":
+                    return get_response
+                return dummy_send_realms_only_response
+
+            m.side_effect = mock_send_to_push_bouncer_response
+
+            with self.captureOnCommitCallbacks(execute=True):
+                realm = do_create_realm("realm_string_id", "realm name")
+
+        self.assertEqual(realm.string_id, "realm_string_id")
+        self.assertEqual(m.call_count, 2)
+
+        calls_args_for_assert = m.call_args_list[1][0]
+        self.assertEqual(calls_args_for_assert[0], "POST")
+        self.assertEqual(calls_args_for_assert[1], "server/analytics")
+        self.assertIn(
+            realm.id, [realm["id"] for realm in json.loads(m.call_args_list[1][0][2]["realms"])]
+        )
 
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")
@@ -1305,8 +1392,10 @@ class RealmAPITest(ZulipTestCase):
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
-            with self.subTest(property=prop):
-                self.do_test_realm_update_api(prop)
+            # push_notifications_enabled is maintained by the server, not via the API.
+            if prop != "push_notifications_enabled":
+                with self.subTest(property=prop):
+                    self.do_test_realm_update_api(prop)
 
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
@@ -1355,6 +1444,7 @@ class RealmAPITest(ZulipTestCase):
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
+            automatically_follow_topics_where_mentioned=[True, False],
         )
 
         vals = test_values.get(name)
@@ -1522,6 +1612,21 @@ class RealmAPITest(ZulipTestCase):
         req = {"enable_spectator_access": orjson.dumps(True).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
+
+    def test_changing_can_access_all_users_group_based_on_plan_type(self) -> None:
+        realm = get_realm("zulip")
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        self.login("iago")
+
+        members_group = UserGroup.objects.get(name="role:members", realm=realm)
+        req = {"can_access_all_users_group": orjson.dumps(members_group.id).decode()}
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Available on Zulip Cloud Plus. Upgrade to access.")
+
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        req = {"can_access_all_users_group": orjson.dumps(members_group.id).decode()}
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Available on Zulip Cloud Plus. Upgrade to access.")
 
 
 class ScrubRealmTest(ZulipTestCase):

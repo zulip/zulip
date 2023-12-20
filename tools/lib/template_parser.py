@@ -103,7 +103,12 @@ def tokenize(text: str, template_format: Optional[str] = None) -> List[Token]:
         return template_format == "django" and looking_at("{% ")
 
     def looking_at_django_else() -> bool:
-        return template_format == "django" and (looking_at("{% else") or looking_at("{% elif"))
+        return template_format == "django" and (
+            looking_at("{% else")
+            or looking_at("{% elif")
+            or looking_at("{%- else")
+            or looking_at("{%- elif")
+        )
 
     def looking_at_django_end() -> bool:
         return template_format == "django" and looking_at("{% end")

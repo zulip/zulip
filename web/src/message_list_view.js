@@ -1,4 +1,3 @@
-import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -34,6 +33,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
+import {is_same_day} from "./time_zone_util";
 import * as timerender from "./timerender";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -42,7 +42,11 @@ function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    return isSameDay(earlier_msg.msg.timestamp * 1000, later_msg.msg.timestamp * 1000);
+    return is_same_day(
+        earlier_msg.msg.timestamp * 1000,
+        later_msg.msg.timestamp * 1000,
+        timerender.display_time_zone,
+    );
 }
 
 function same_sender(a, b) {
@@ -417,7 +421,16 @@ export class MessageListView {
             // message didn't include a user mention, then it was a usergroup/wildcard
             // mention (which is the only other option for `mentioned` being true).
             if (message_container.msg.mentioned_me_directly && is_user_mention) {
-                message_container.mention_classname = "direct_mention";
+                // Highlight messages having personal mentions only in DMs and subscribed streams.
+                if (
+                    message_container.msg.type === "private" ||
+                    stream_data.is_user_subscribed(
+                        message_container.msg.stream_id,
+                        people.my_current_user_id(),
+                    )
+                ) {
+                    message_container.mention_classname = "direct_mention";
+                }
             } else {
                 message_container.mention_classname = "group_mention";
             }

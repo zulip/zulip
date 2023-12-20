@@ -1,11 +1,11 @@
 import calendar
-import datetime
-import urllib
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import TYPE_CHECKING, Any, Dict
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 import orjson
+import time_machine
 from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -23,17 +23,11 @@ from zerver.lib.home import (
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, queries_captured
-from zerver.models import (
-    DefaultStream,
-    Draft,
-    Realm,
-    UserActivity,
-    UserProfile,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    get_user,
-)
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot, get_user
 from zerver.worker.queue_processors import UserActivityWorker
 
 if TYPE_CHECKING:
@@ -72,7 +66,6 @@ class HomeTest(ZulipTestCase):
         "giphy_api_key",
         "giphy_rating_options",
         "has_zoom_token",
-        "hotspots",
         "insecure_desktop_app",
         "is_admin",
         "is_billing_admin",
@@ -100,6 +93,7 @@ class HomeTest(ZulipTestCase):
         "needs_tutorial",
         "never_subscribed",
         "no_event_queue",
+        "onboarding_steps",
         "password_min_guesses",
         "password_min_length",
         "presences",
@@ -177,6 +171,7 @@ class HomeTest(ZulipTestCase):
         "realm_presence_disabled",
         "realm_private_message_policy",
         "realm_push_notifications_enabled",
+        "realm_push_notifications_enabled_end_timestamp",
         "realm_send_welcome_emails",
         "realm_signup_notifications_stream_id",
         "realm_upload_quota_mib",
@@ -212,6 +207,7 @@ class HomeTest(ZulipTestCase):
         "settings_send_digest_emails",
         "show_billing",
         "show_plans",
+        "show_remote_billing",
         "show_webathena",
         "sponsorship_pending",
         "starred_messages",
@@ -255,7 +251,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(50):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -303,9 +299,7 @@ class HomeTest(ZulipTestCase):
         # We construct a scheduled deletion date that's definitely in
         # the future, regardless of how long ago the Zulip realm was
         # created.
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + datetime.timedelta(
-            days=1
-        )
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=1)
         realm.save()
         self.login("hamlet")
 
@@ -364,6 +358,7 @@ class HomeTest(ZulipTestCase):
             "server_sentry_dsn",
             "show_billing",
             "show_plans",
+            "show_remote_billing",
             "show_webathena",
             "sponsorship_pending",
             "test_suite",
@@ -443,7 +438,7 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(50):
+        with self.assert_database_query_count(51):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
@@ -474,7 +469,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(45):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -831,6 +826,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
         self.assertEqual(page_params["max_message_id"], -1)
 
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     def test_get_billing_info(self) -> None:
         user = self.example_user("desdemona")
         user.role = UserProfile.ROLE_REALM_OWNER
@@ -841,15 +837,16 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # realm owner, with inactive CustomerPlan and realm plan_type SELF_HOSTED -> show only billing link
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
         CustomerPlan.objects.create(
             customer=customer,
             billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.ANNUAL,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             next_invoice_date=timezone_now(),
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.ENDED,
         )
         with self.settings(CORPORATE_ENABLED=True):
@@ -857,6 +854,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
@@ -865,6 +863,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertTrue(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # Always false without CORPORATE_ENABLED
         with self.settings(CORPORATE_ENABLED=False):
@@ -872,6 +871,8 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        # show_remote_billing is independent of CORPORATE_ENABLED
+        self.assertTrue(billing_info.show_remote_billing)
 
         # Always false without a UserProfile
         with self.settings(CORPORATE_ENABLED=True):
@@ -879,6 +880,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # realm admin, with CustomerPlan and realm plan_type LIMITED -> don't show any links
         # Only billing admin and realm owner have access to billing.
@@ -889,6 +891,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
         user.role = UserProfile.ROLE_MEMBER
@@ -900,6 +903,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
@@ -909,6 +913,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
@@ -919,6 +924,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # guest, with CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_GUEST
@@ -929,6 +935,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # billing admin, but no CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_MEMBER
@@ -940,6 +947,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # billing admin, with sponsorship pending and realm plan_type SELF_HOSTED -> show only sponsorship pending link
         customer.sponsorship_pending = True
@@ -949,6 +957,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertTrue(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
 
         # billing admin, no customer object and realm plan_type SELF_HOSTED -> no links
         customer.delete()
@@ -957,6 +966,13 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertTrue(billing_info.show_remote_billing)
+
+        # If the server doesn't have the push bouncer configured,
+        # don't show remote billing.
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_remote_billing)
 
     def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")
@@ -988,7 +1004,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(result["Location"].endswith("/desktop_home/"))
         result = self.client_get("/desktop_home/")
         self.assertEqual(result.status_code, 302)
-        path = urllib.parse.urlparse(result["Location"]).path
+        path = urlsplit(result["Location"]).path
         self.assertEqual(path, "/")
 
     @override_settings(SERVER_UPGRADE_NAG_DEADLINE_DAYS=365)
@@ -996,18 +1012,18 @@ class HomeTest(ZulipTestCase):
         # Check when server_upgrade_nag_deadline > last_server_upgrade_time
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
-        now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=datetime.timezone.utc)
-        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=10)):
+        now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=timezone.utc)
+        with time_machine.travel((now + timedelta(days=10)), tick=False):
             self.assertEqual(is_outdated_server(iago), False)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)
 
-        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=397)):
+        with time_machine.travel((now + timedelta(days=397)), tick=False):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), True)
             self.assertEqual(is_outdated_server(None), True)
 
-        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=380)):
+        with time_machine.travel((now + timedelta(days=380)), tick=False):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)
@@ -1254,3 +1270,17 @@ class HomeTest(ZulipTestCase):
         # +2 for what's already in the test DB.
         for draft in page_params["drafts"]:
             self.assertNotEqual(draft["timestamp"], base_time)
+
+    def test_realm_push_notifications_enabled_end_timestamp(self) -> None:
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        end_timestamp = timezone_now() + timedelta(days=1)
+        realm.push_notifications_enabled_end_timestamp = end_timestamp
+        realm.save()
+
+        result = self._get_home_page(stream="Denmark")
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            page_params["realm_push_notifications_enabled_end_timestamp"],
+            datetime_to_timestamp(end_timestamp),
+        )

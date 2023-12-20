@@ -14,6 +14,7 @@ export function set_scroll_to_message_banner_message_id(val: number | null): voi
 export const WARNING = "warning";
 export const ERROR = "error";
 export const SUCCESS = "success";
+export const INFO = "info";
 
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
@@ -36,6 +37,7 @@ export const CLASSNAMES = {
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
     unscheduled_message: "unscheduled_message",
+    search_view: "search_view",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
@@ -121,6 +123,10 @@ export function clear_unmute_topic_notifications(): void {
     ).remove();
 }
 
+export function clear_search_view_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.search_view)}`).remove();
+}
+
 export function clear_all(): void {
     scroll_util.get_content_element($(`#compose_banners`)).empty();
 }
@@ -131,6 +137,12 @@ export function show_error_message(
     $container: JQuery,
     $bad_input?: JQuery,
 ): void {
+    // Important: This API intentionally does not support passing an
+    // HTML message; doing so creates unnecessary XSS risk. If you
+    // want HTML in your compose banner, use a partial subclassing
+    // compose_banner and the append_compose_banner_to_banner_list
+    // API; See, for example, automatic_new_visibility_policy_banner.
+    //
     // To prevent the same banner from appearing twice,
     // we remove the banner with a matched classname.
     $container.find(`.${CSS.escape(classname)}`).remove();

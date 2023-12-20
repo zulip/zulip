@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
@@ -40,6 +40,7 @@ const sample_message = {
 
 const channel = mock_esm("../src/channel");
 const message_store = mock_esm("../src/message_store");
+const settings_data = mock_esm("../src/settings_data");
 const spectators = mock_esm("../src/spectators", {
     login_to_access() {},
 });
@@ -106,7 +107,7 @@ function test(label, f) {
 
 test("basics", () => {
     const message = {...sample_message};
-
+    settings_data.user_can_access_all_other_users = () => true;
     const result = reactions.get_message_reactions(message);
     assert.ok(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
     assert.ok(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
@@ -198,6 +199,68 @@ test("basics", () => {
     assert.deepEqual(result, expected_result);
 });
 
+test("reactions from unknown users", () => {
+    settings_data.user_can_access_all_other_users = () => false;
+    people.add_inaccessible_user(10);
+    const message = {
+        id: 1001,
+        reactions: [
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "smile", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "frown", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f641"},
+
+            {emoji_name: "tada", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+            {emoji_name: "tada", user_id: 10, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+        ],
+    };
+
+    const result = reactions.get_message_reactions(message);
+    result.sort((a, b) => a.count - b.count);
+
+    const expected_result = [
+        {
+            emoji_name: "frown",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f641",
+            local_id: "unicode_emoji,1f641",
+            count: 1,
+            vote_text: "1",
+            user_ids: [9],
+            label: "translated: translated: Unknown user reacted with :frown:",
+            emoji_alt_code: false,
+            class: "message_reaction",
+            is_realm_emoji: false,
+        },
+        {
+            emoji_name: "smile",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f642",
+            local_id: "unicode_emoji,1f642",
+            count: 2,
+            vote_text: "2",
+            user_ids: [5, 9],
+            label: "translated: You (click to remove) and translated: Unknown user reacted with :smile:",
+            emoji_alt_code: false,
+            class: "message_reaction reacted",
+            is_realm_emoji: false,
+        },
+        {
+            emoji_name: "tada",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f389",
+            local_id: "unicode_emoji,1f389",
+            count: 2,
+            vote_text: "2",
+            user_ids: [6, 10],
+            label: "translated: Bob van Roberts and translated: Unknown user reacted with :tada:",
+            emoji_alt_code: false,
+            class: "message_reaction",
+            is_realm_emoji: false,
+        },
+    ];
+    assert.deepEqual(result, expected_result);
+});
+
 test("unknown realm emojis (add)", () => {
     assert.throws(
         () =>
@@ -246,8 +309,8 @@ test("sending", ({override, override_rewire}) => {
 
     let emoji_name = "smile"; // should be a current reaction
 
-    override_rewire(reactions, "add_reaction", () => {});
-    override_rewire(reactions, "remove_reaction", () => {});
+    override_rewire(reactions, "add_reaction", noop);
+    override_rewire(reactions, "remove_reaction", noop);
 
     {
         const stub = make_stub();
@@ -334,7 +397,7 @@ test("prevent_simultaneous_requests_updating_reaction", ({override, override_rew
         assert.equal(message_id, message.id);
         return message;
     });
-    override_rewire(reactions, "add_reaction", () => {});
+    override_rewire(reactions, "add_reaction", noop);
     const stub = make_stub();
     channel.post = stub.f;
 
@@ -422,8 +485,8 @@ test("update_vote_text_on_message", ({override_rewire}) => {
 
     user_settings.display_emoji_reaction_users = true;
 
-    override_rewire(reactions, "find_reaction", () => {});
-    override_rewire(reactions, "set_reaction_vote_text", () => {});
+    override_rewire(reactions, "find_reaction", noop);
+    override_rewire(reactions, "set_reaction_vote_text", noop);
 
     reactions.update_vote_text_on_message(message);
 
@@ -1105,7 +1168,7 @@ test("view.remove_reaction (last person)", () => {
 });
 
 test("error_handling", ({override, override_rewire}) => {
-    override(message_store, "get", () => {});
+    override(message_store, "get", noop);
 
     blueslip.expect("error", "reactions: Bad message id");
 
@@ -1145,7 +1208,7 @@ test("remove last user", ({override}) => {
     const message = {...sample_message};
 
     override(message_store, "get", () => message);
-    override(reactions.view, "remove_reaction", () => {});
+    override(reactions.view, "remove_reaction", noop);
 
     function assert_names(names) {
         assert.deepEqual(
@@ -1178,7 +1241,7 @@ test("local_reaction_id", () => {
 });
 
 test("process_reaction_click", ({override}) => {
-    override(reactions.view, "remove_reaction", () => {});
+    override(reactions.view, "remove_reaction", noop);
 
     const message = {...sample_message};
     override(message_store, "get", () => message);
@@ -1205,31 +1268,6 @@ test("process_reaction_click", ({override}) => {
     args = stub.get_args("args").args;
     assert.equal(args.url, "/json/messages/1001/reactions");
     assert.deepEqual(args.data, expected_reaction_info);
-});
-
-test("warnings", () => {
-    const message = {
-        id: 3001,
-        reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
-            // add some bogus user_ids
-            {
-                emoji_name: "octopus",
-                user_id: 8888,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f419",
-            },
-            {
-                emoji_name: "frown",
-                user_id: 9999,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f641",
-            },
-        ],
-    };
-    blueslip.expect("warn", "Unknown user_id 8888 in reaction for message 3001");
-    blueslip.expect("warn", "Unknown user_id 9999 in reaction for message 3001");
-    reactions.get_message_reactions(message);
 });
 
 test("code coverage", ({override}) => {

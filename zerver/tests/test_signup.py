@@ -1,10 +1,9 @@
-import datetime
 import re
 import time
-import urllib
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
 from unittest.mock import MagicMock, patch
-from urllib.parse import urlencode
+from urllib.parse import quote, quote_plus, urlencode, urlsplit
 
 import orjson
 from django.conf import settings
@@ -16,7 +15,6 @@ from django.http import HttpResponse, HttpResponseBase
 from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.utils import translation
-from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, one_click_unsubscribe_link
@@ -78,12 +76,10 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    get_user,
-    get_user_by_delivery_email,
 )
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.development.registration import confirmation_key
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult, email_auth_enabled
@@ -357,10 +353,10 @@ class PasswordResetTest(ZulipTestCase):
 
         [message] = outbox
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
-        # The email might be sent in different languages for i18n testing
         self.assertRegex(
             self.email_display_from(message),
-            rf'^{_("Zulip Account Security")} <{self.TOKENIZED_NOREPLY_REGEX}>\Z',
+            # The email might be sent in different languages for i18n testing
+            rf"^testserver .* <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
@@ -1097,7 +1093,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # An unknown message type "fake" produces an error.
         user_profile = self.example_user("hamlet")
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "fake")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
         self.assert_in_response("Unknown email unsubscribe request", result)
 
     def test_message_notification_emails_unsubscribe(self) -> None:
@@ -1111,7 +1107,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile.save()
 
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         self.assertEqual(result.status_code, 200)
 
@@ -1130,7 +1126,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
@@ -1168,7 +1164,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)
@@ -1189,7 +1185,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile.save()
 
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "login")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
 
         self.assertEqual(result.status_code, 200)
 
@@ -1206,7 +1202,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # Simulate unsubscribing from marketing e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urlsplit(unsubscribe_link).path)
         self.assertEqual(result.status_code, 200)
 
         # Circumvent user_profile caching.
@@ -1225,9 +1221,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Simulate unsubscribing from marketing e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
         client = Client(enforce_csrf_checks=True)
-        result = client.post(
-            urllib.parse.urlparse(unsubscribe_link).path, {"List-Unsubscribe": "One-Click"}
-        )
+        result = client.post(urlsplit(unsubscribe_link).path, {"List-Unsubscribe": "One-Click"})
         self.assertEqual(result.status_code, 200)
 
         # Circumvent user_profile caching.
@@ -1256,7 +1250,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(org_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(org_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1399,14 +1393,16 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
@@ -1445,7 +1441,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1494,7 +1490,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1554,7 +1550,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1599,7 +1595,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1650,7 +1646,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=35&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=35&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1707,7 +1703,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language={realm_language}&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language={realm_language}&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1756,7 +1752,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assert_length(messages, message_count)
             self.assertIn(text, messages[0].content)
 
-    @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)
+    @override_settings(OPEN_REALM_CREATION=True, CLOUD_FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:
         password = "test"
         string_id = "custom-test"
@@ -1773,13 +1769,15 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
@@ -1789,12 +1787,10 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assertEqual(
-            result["Location"], "http://custom-test.testserver/upgrade/?onboarding=true"
-        )
+        self.assertEqual(result["Location"], "http://custom-test.testserver/upgrade/")
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assert_in_success_response(["Not ready to start your trial?"], result)
+        self.assert_in_success_response(["Your card will not be charged", "free trial"], result)
 
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)
@@ -1829,12 +1825,14 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(first_realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={first_string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(first_realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={first_string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
-        first_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        first_confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 1)
 
         result = self.submit_realm_creation_form(
@@ -1843,12 +1841,14 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(second_realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={second_string_id}"
+                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(second_realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={second_string_id}"
             )
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
-        second_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        second_confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="Organization URL"
+        )
 
         self.assertNotEqual(first_confirmation_url, second_confirmation_url)
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 2)
@@ -2044,6 +2044,12 @@ class RealmCreationTest(ZulipTestCase):
                 ["Subdomain reserved. Please choose a different one."], result
             )
 
+        with self.settings(SELF_HOSTING_MANAGEMENT_SUBDOMAIN="zulipselfhosting"):
+            result = self.client_get("/json/realm/subdomain/zulipselfhosting")
+            self.assert_in_success_response(
+                ["Subdomain reserved. Please choose a different one."], result
+            )
+
         result = self.client_get("/json/realm/subdomain/hufflepuff")
         self.assert_in_success_response(["available"], result)
         self.assert_not_in_success_response(["already in use"], result)
@@ -2107,15 +2113,15 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/accounts/home/", {"email": email}, **client_kwargs)
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"], **client_kwargs)
         self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email, email_body_contains="You recently signed up for Zulip. Awesome!"
+        )
         result = self.client_get(confirmation_url, **client_kwargs)
         self.assertEqual(result.status_code, 200)
 
@@ -2248,9 +2254,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -2283,9 +2287,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -2321,9 +2323,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -2354,9 +2354,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -2459,9 +2457,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -2508,7 +2504,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/login/?email={urllib.parse.quote(email)}&already_registered=1"
+                f"/accounts/login/?email={quote(email)}&already_registered=1"
             )
         )
 
@@ -2777,9 +2773,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -2939,6 +2933,24 @@ class UserSignUpTest(ZulipTestCase):
             form.errors["email"][0],
         )
 
+    def test_signup_confirm_injection(self) -> None:
+        result = self.client_get("/accounts/send_confirm/?email=bogus@example.com")
+        self.assert_in_success_response(
+            [
+                'check your email account (<span class="user_email semi-bold">bogus@example.com</span>)'
+            ],
+            result,
+        )
+
+        result = self.client_get(
+            "/accounts/send_confirm/?email={quote(email)}",
+            {"email": "bogus@example.com for example"},
+        )
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response(
+            "The email address you are trying to sign up with is not valid", result
+        )
+
     def test_access_signup_page_in_root_domain_without_realm(self) -> None:
         result = self.client_get("/register", subdomain="", follow=True)
         self.assert_in_success_response(["Find your Zulip accounts"], result)
@@ -2961,9 +2973,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3049,9 +3059,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3133,9 +3141,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3210,9 +3216,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3286,9 +3290,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3436,9 +3438,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3491,9 +3491,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3617,9 +3615,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3662,9 +3658,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3824,9 +3818,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3857,9 +3849,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
@@ -3923,9 +3913,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-            )
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
         )
         result = self.client_get(result["Location"], subdomain="zephyr")
         self.assert_in_response("check your email", result)
@@ -4080,7 +4068,7 @@ class UserSignUpTest(ZulipTestCase):
             user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
 
-        expected_deletion_date = realm.date_created + datetime.timedelta(
+        expected_deletion_date = realm.date_created + timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)

@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.html import escape
@@ -51,16 +52,37 @@ from zerver.lib.validator import (
     check_string_in,
     check_timezone,
 )
-from zerver.models import (
-    EmailChangeStatus,
-    UserProfile,
-    avatar_changes_disabled,
-    name_changes_disabled,
-)
+from zerver.models import EmailChangeStatus, UserProfile
+from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
 AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
+
+
+def validate_email_change_request(user_profile: UserProfile, new_email: str) -> None:
+    if not user_profile.is_active:
+        # TODO: Make this into a user-facing error, not JSON
+        raise UserDeactivatedError
+
+    if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
+        raise JsonableError(_("Email address changes are disabled in this organization."))
+
+    error = validate_email_is_valid(
+        new_email,
+        get_realm_email_validator(user_profile.realm),
+    )
+    if error:
+        raise JsonableError(error)
+
+    try:
+        validate_email_not_already_in_realm(
+            user_profile.realm,
+            new_email,
+            verbose=False,
+        )
+    except ValidationError as e:
+        raise JsonableError(e.message)
 
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
@@ -74,20 +96,26 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     assert isinstance(email_change_object, EmailChangeStatus)
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
-    user_profile = email_change_object.user_profile
+    with transaction.atomic():
+        user_profile = UserProfile.objects.select_for_update().get(
+            id=email_change_object.user_profile_id
+        )
 
-    if user_profile.realm.deactivated:
-        return redirect_to_deactivation_notice()
+        if user_profile.delivery_email != old_email:
+            # This is not expected to be possible, since we deactivate
+            # any previous email changes when we create a new one, but
+            # double-check.
+            return render_confirmation_key_error(
+                request, ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
+            )  # nocoverage
 
-    if not user_profile.is_active:
-        # TODO: Make this into a user-facing error, not JSON
-        raise UserDeactivatedError
+        if user_profile.realm.deactivated:
+            return redirect_to_deactivation_notice()
 
-    if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
-        raise JsonableError(_("Email address changes are disabled in this organization."))
+        validate_email_change_request(user_profile, new_email)
+        do_change_user_delivery_email(user_profile, new_email)
 
-    do_change_user_delivery_email(user_profile, new_email)
-
+    user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)
     context = {"realm_name": user_profile.realm.name, "new_email": new_email}
     language = user_profile.default_language
 
@@ -268,6 +296,9 @@ def json_change_settings(
         json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
     ),
+    automatically_follow_topics_where_mentioned: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
     send_private_typing_notifications: Optional[bool] = REQ(
@@ -338,24 +369,7 @@ def json_change_settings(
     if email is not None:
         new_email = email.strip()
         if user_profile.delivery_email != new_email:
-            if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
-                raise JsonableError(_("Email address changes are disabled in this organization."))
-
-            error = validate_email_is_valid(
-                new_email,
-                get_realm_email_validator(user_profile.realm),
-            )
-            if error:
-                raise JsonableError(error)
-
-            try:
-                validate_email_not_already_in_realm(
-                    user_profile.realm,
-                    new_email,
-                    verbose=False,
-                )
-            except ValidationError as e:
-                raise JsonableError(e.message)
+            validate_email_change_request(user_profile, new_email)
 
             ratelimited, time_until_free = RateLimitedUser(
                 user_profile, domain="email_change_by_user"

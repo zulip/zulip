@@ -39,7 +39,7 @@ from django.test import override_settings
 from django.urls import URLResolver
 from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
-from typing_extensions import override
+from typing_extensions import ParamSpec, override
 
 from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.user_settings import do_change_user_setting
@@ -52,17 +52,10 @@ from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import (
-    Client,
-    Message,
-    RealmUserDefault,
-    Subscription,
-    UserMessage,
-    UserProfile,
-    get_client,
-    get_realm,
-    get_stream,
-)
+from zerver.models import Client, Message, RealmUserDefault, Subscription, UserMessage, UserProfile
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
 from zilencer.models import RemoteZulipServer
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
@@ -531,6 +524,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "scim/v2/ServiceProviderConfig",
             "scim/v2/Groups(?:/(?P<uuid>[^/]+))?",
             "scim/v2/Groups/.search",
+            # TODO: This endpoint and the rest of its system are a work in progress,
+            # we are not testing it yet.
+            "self-hosted-billing/",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
@@ -560,15 +556,15 @@ def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> E
     return data
 
 
-FuncT = TypeVar("FuncT", bound=Callable[..., None])
+P = ParamSpec("P")
 
 
-def use_s3_backend(method: FuncT) -> FuncT:
+def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)
-    def new_method(*args: Any, **kwargs: Any) -> Any:
+    def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
         with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
             return method(*args, **kwargs)
 
@@ -604,7 +600,7 @@ def use_db_models(
         Huddle = apps.get_model("zerver", "Huddle")
         Message = apps.get_model("zerver", "Message")
         MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
-        UserTopic = apps.get_model("zerver", "UserTopic")
+        OnboardingStep = apps.get_model("zerver", "OnboardingStep")
         PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
         PushDeviceToken = apps.get_model("zerver", "PushDeviceToken")
         Reaction = apps.get_model("zerver", "Reaction")
@@ -626,10 +622,10 @@ def use_db_models(
         UserActivityInterval = apps.get_model("zerver", "UserActivityInterval")
         UserGroup = apps.get_model("zerver", "UserGroup")
         UserGroupMembership = apps.get_model("zerver", "UserGroupMembership")
-        UserHotspot = apps.get_model("zerver", "UserHotspot")
         UserMessage = apps.get_model("zerver", "UserMessage")
         UserPresence = apps.get_model("zerver", "UserPresence")
         UserProfile = apps.get_model("zerver", "UserProfile")
+        UserTopic = apps.get_model("zerver", "UserTopic")
 
         zerver_models_patch = mock.patch.multiple(
             "zerver.models",
@@ -649,6 +645,7 @@ def use_db_models(
             Message=Message,
             MultiuseInvite=MultiuseInvite,
             UserTopic=UserTopic,
+            OnboardingStep=OnboardingStep,
             PreregistrationUser=PreregistrationUser,
             PushDeviceToken=PushDeviceToken,
             Reaction=Reaction,
@@ -667,7 +664,6 @@ def use_db_models(
             UserActivityInterval=UserActivityInterval,
             UserGroup=UserGroup,
             UserGroupMembership=UserGroupMembership,
-            UserHotspot=UserHotspot,
             UserMessage=UserMessage,
             UserPresence=UserPresence,
             UserProfile=UserProfile,

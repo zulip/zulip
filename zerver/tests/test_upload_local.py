@@ -1,8 +1,7 @@
 import os
 import re
-import urllib
 from io import BytesIO, StringIO
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from PIL import Image
@@ -23,7 +22,9 @@ from zerver.lib.upload import (
 )
 from zerver.lib.upload.base import DEFAULT_EMOJI_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.upload.local import write_local_file
-from zerver.models import Attachment, RealmEmoji, get_realm, get_system_bot
+from zerver.models import Attachment, RealmEmoji
+from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot
 
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
@@ -144,7 +145,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             # on-disk content, which nginx serves
             result = self.client_get(url)
             self.assertEqual(result.status_code, 200)
-            internal_redirect_path = urlparse(url).path.replace(
+            internal_redirect_path = urlsplit(url).path.replace(
                 "/user_avatars/", "/internal/local/user_avatars/"
             )
             self.assertEqual(result["X-Accel-Redirect"], internal_redirect_path)
@@ -258,5 +259,5 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             warn_log.output,
             ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
         )
-        path_id = urllib.parse.urlparse(url).path
+        path_id = urlsplit(url).path
         self.assertEqual(delete_export_tarball(path_id), path_id)

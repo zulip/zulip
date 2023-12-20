@@ -815,6 +815,12 @@ export function narrow_to_next_topic(opts = {}) {
     }
 
     if (!next_narrow) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text($t({defaultMessage: "You have no more unread topics."}));
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
         return;
     }
 
@@ -832,6 +838,12 @@ export function narrow_to_next_pm_string(opts = {}) {
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
 
     if (!next_direct_message) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text($t({defaultMessage: "You have no more unread direct messages."}));
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
         return;
     }
 
@@ -922,7 +934,6 @@ export function by_recipient(target_id, opts) {
     }
 }
 
-// Called by the narrow_to_compose_target hotkey.
 export function to_compose_target() {
     if (!compose_state.composing()) {
         return;
@@ -931,6 +942,8 @@ export function to_compose_target() {
     const opts = {
         trigger: "narrow_to_compose_target",
     };
+
+    compose_banner.clear_search_view_banner();
 
     if (compose_state.get_message_type() === "stream") {
         const stream_id = compose_state.stream_id();

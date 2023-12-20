@@ -5,12 +5,10 @@ const {strict: assert} = require("assert");
 const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, realm_user_settings_defaults, user_settings} = require("./lib/zpage_params");
-
-const noop = () => {};
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
@@ -63,7 +61,6 @@ const settings_realm_user_settings_defaults = mock_esm(
 );
 const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
-const settings_user_groups_legacy = mock_esm("../src/settings_user_groups_legacy");
 const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
@@ -171,7 +168,6 @@ run_test("attachments", ({override}) => {
 
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
-    override(settings_user_groups_legacy, "reload", noop);
     {
         const stub = make_stub();
         const user_group_settings_ui_stub = make_stub();
@@ -306,12 +302,12 @@ run_test("default_streams", ({override}) => {
     assert_same(args.realm_default_streams, event.default_streams);
 });
 
-run_test("hotspots", ({override}) => {
-    page_params.hotspots = [];
-    const event = event_fixtures.hotspots;
+run_test("onboarding_steps", ({override}) => {
+    page_params.onboarding_steps = [];
+    const event = event_fixtures.onboarding_steps;
     override(hotspots, "load_new", noop);
     dispatch(event);
-    assert_same(page_params.hotspots, event.hotspots);
+    assert_same(page_params.onboarding_steps, event.onboarding_steps);
 });
 
 run_test("invites_changed", ({override}) => {
@@ -419,6 +415,7 @@ run_test("scheduled_messages", ({override}) => {
 
 run_test("realm settings", ({override}) => {
     page_params.is_admin = true;
+    page_params.realm_date_created = new Date("2023-01-01Z");
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
@@ -594,7 +591,7 @@ run_test("realm_bot add", ({override}) => {
     const event = event_fixtures.realm_bot__add;
     const bot_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "render_bots", () => {});
+    override(settings_bots, "render_bots", noop);
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
@@ -606,7 +603,7 @@ run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
     override(bot_data, "del", bot_stub.f);
-    override(settings_bots, "render_bots", () => {});
+    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -618,7 +615,7 @@ run_test("realm_bot update", ({override}) => {
     const event = event_fixtures.realm_bot__update;
     const bot_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "render_bots", () => {});
+    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
 
@@ -737,6 +734,11 @@ run_test("realm_user", ({override}) => {
     assert.equal(update_bot_stub.num_calls, 1);
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");
     assert_same(args.update_user_id, event.person.user_id);
+
+    event = event_fixtures.realm_user__remove;
+    dispatch(event);
+    const removed_person = people.get_by_user_id(event.person.user_id);
+    assert.equal(removed_person.full_name, "translated: Unknown user");
 });
 
 run_test("restart", ({override}) => {
@@ -1164,7 +1166,7 @@ run_test("realm_export", ({override}) => {
     assert.equal(args.exports, event.exports);
 });
 
-run_test("server_event_dispatch_op_errors", ({override}) => {
+run_test("server_event_dispatch_op_errors", () => {
     blueslip.expect("error", "Unexpected event type subscription/other");
     server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
     blueslip.expect("error", "Unexpected event type reaction/other");
@@ -1189,7 +1191,6 @@ run_test("server_event_dispatch_op_errors", ({override}) => {
         sender: {user_id: 5},
         op: "other",
     });
-    override(settings_user_groups_legacy, "reload", noop);
     blueslip.expect("error", "Unexpected event type user_group/other");
     server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
 });

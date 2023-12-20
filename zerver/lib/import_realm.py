@@ -1,8 +1,8 @@
-import datetime
 import logging
 import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from datetime import datetime, timezone
 from mimetypes import guess_type
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -27,12 +27,15 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.push_notifications import sends_notifications_directly
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import upload_backend
 from zerver.lib.upload.base import BadImageError, sanitize_name
 from zerver.lib.upload.s3 import get_bucket
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
@@ -49,6 +52,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    OnboardingStep,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -63,22 +67,20 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
-    SystemGroups,
     UserActivity,
     UserActivityInterval,
     UserGroup,
     UserGroupMembership,
-    UserHotspot,
     UserMessage,
     UserPresence,
     UserProfile,
     UserStatus,
     UserTopic,
-    get_huddle_hash,
-    get_realm,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.recipients import get_huddle_hash
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 realm_tables = [
     ("zerver_realmauthenticationmethod", RealmAuthenticationMethod, "realmauthenticationmethod"),
@@ -109,6 +111,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "recipient": {},
     "subscription": {},
     "defaultstream": {},
+    "onboardingstep": {},
     "reaction": {},
     "realmauthenticationmethod": {},
     "realmemoji": {},
@@ -126,7 +129,6 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "attachment": {},
     "realmauditlog": {},
     "recipient_to_huddle_map": {},
-    "userhotspot": {},
     "usertopic": {},
     "muteduser": {},
     "service": {},
@@ -167,9 +169,7 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
             if item[field_name] is not None:
-                item[field_name] = datetime.datetime.fromtimestamp(
-                    item[field_name], tz=datetime.timezone.utc
-                )
+                item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 
 
 def fix_upload_links(data: TableData, message_table: TableName) -> None:
@@ -973,6 +973,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm_properties = dict(**data["zerver_realm"][0])
     realm_properties["deactivated"] = True
 
+    # Initialize whether we expect push notifications to work.
+    realm_properties["push_notifications_enabled"] = sends_notifications_directly()
+
     with transaction.atomic(durable=True):
         realm = Realm(**realm_properties)
         if "zerver_usergroup" not in data:
@@ -1186,11 +1189,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(AlertWord, data, "alertword")
         bulk_import_model(data, AlertWord)
 
-    if "zerver_userhotspot" in data:
-        fix_datetime_fields(data, "zerver_userhotspot")
-        re_map_foreign_keys(data, "zerver_userhotspot", "user", related_table="user_profile")
-        update_model_ids(UserHotspot, data, "userhotspot")
-        bulk_import_model(data, UserHotspot)
+    if "zerver_onboardingstep" in data:
+        fix_datetime_fields(data, "zerver_onboardingstep")
+        re_map_foreign_keys(data, "zerver_onboardingstep", "user", related_table="user_profile")
+        update_model_ids(OnboardingStep, data, "onboardingstep")
+        bulk_import_model(data, OnboardingStep)
 
     if "zerver_usertopic" in data:
         fix_datetime_fields(data, "zerver_usertopic")
@@ -1415,6 +1418,22 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Activate the realm
     realm.deactivated = data["zerver_realm"][0]["deactivated"]
     realm.save()
+
+    # This helps to have an accurate user count data for the billing
+    # system if someone tries to signup just after doing import.
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_IMPORTED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+        },
+    )
+
+    # Ask the push notifications service if this realm can send
+    # notifications, if we're using it. Needs to happen after the
+    # Realm object is reactivated.
+    maybe_enqueue_audit_log_upload(realm)
 
     return realm
 

@@ -4,7 +4,6 @@ from typing import Any, Dict, Literal, Optional, Tuple, Union
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
@@ -15,7 +14,8 @@ from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email_to_admins
-from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.sessions import delete_realm_user_sessions
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
@@ -33,17 +33,14 @@ from zerver.models import (
     Subscription,
     UserGroup,
     UserProfile,
-    active_user_ids,
-    get_realm,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import downgrade_now_without_creating_additional_invoices
-
-
-def active_humans_in_realm(realm: Realm) -> QuerySet[UserProfile]:
-    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
+    from corporate.lib.stripe import RealmBillingSession
 
 
 @transaction.atomic(savepoint=False)
@@ -59,6 +56,9 @@ def do_set_realm_property(
     ), f"Cannot update {name}: {value} is not an instance of {property_type}"
 
     old_value = getattr(realm, name)
+    if old_value == value:
+        return
+
     setattr(realm, name, value)
     realm.save(update_fields=[name])
 
@@ -102,7 +102,51 @@ def do_set_realm_property(
         update_users_in_full_members_system_group(realm, acting_user=acting_user)
 
 
-@transaction.atomic(durable=True)
+def do_set_push_notifications_enabled_end_timestamp(
+    realm: Realm, value: Optional[int], *, acting_user: Optional[UserProfile]
+) -> None:
+    # Variant of do_set_realm_property with a bit of extra complexity
+    # for the fact that we store a datetime object in the database but
+    # use an integer format timestamp in the API.
+    name = "push_notifications_enabled_end_timestamp"
+    old_timestamp = None
+    old_datetime = getattr(realm, name)
+    if old_datetime is not None:
+        old_timestamp = datetime_to_timestamp(old_datetime)
+
+    if old_timestamp == value:
+        return
+
+    with transaction.atomic():
+        new_datetime = None
+        if value is not None:
+            new_datetime = timestamp_to_datetime(value)
+        setattr(realm, name, new_datetime)
+        realm.save(update_fields=[name])
+
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_timestamp,
+                RealmAuditLog.NEW_VALUE: value,
+                "property": name,
+            },
+        )
+
+    event = dict(
+        type="realm",
+        op="update",
+        property=name,
+        value=value,
+    )
+    send_event(realm, event, active_user_ids(realm.id))
+
+
+@transaction.atomic(savepoint=False)
 def do_change_realm_permission_group_setting(
     realm: Realm, setting_name: str, user_group: UserGroup, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -305,38 +349,50 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     if realm.deactivated:
         return
 
-    realm.deactivated = True
-    realm.save(update_fields=["deactivated"])
+    with transaction.atomic():
+        realm.deactivated = True
+        realm.save(update_fields=["deactivated"])
 
-    if settings.BILLING_ENABLED:
-        downgrade_now_without_creating_additional_invoices(realm)
+        if settings.BILLING_ENABLED:
+            billing_session = RealmBillingSession(user=acting_user, realm=realm)
+            billing_session.downgrade_now_without_creating_additional_invoices()
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=realm,
-        event_type=RealmAuditLog.REALM_DEACTIVATED,
-        event_time=event_time,
-        acting_user=acting_user,
-        extra_data={
-            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-        },
-    )
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_DEACTIVATED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+            },
+        )
 
-    ScheduledEmail.objects.filter(realm=realm).delete()
-    for user in active_humans_in_realm(realm):
-        # Don't deactivate the users, but do delete their sessions so they get
-        # bumped to the login screen, where they'll get a realm deactivation
-        # notice when they try to log in.
-        delete_user_sessions(user)
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 
-    # This event will only ever be received by clients with an active
-    # longpoll connection, because by this point clients will be
-    # unable to authenticate again to their event queue (triggering an
-    # immediate reload into the page explaining the realm was
-    # deactivated). So the purpose of sending this is to flush all
-    # active longpoll connections for the realm.
-    event = dict(type="realm", op="deactivated", realm_id=realm.id)
-    send_event(realm, event, active_user_ids(realm.id))
+        maybe_enqueue_audit_log_upload(realm)
+
+        ScheduledEmail.objects.filter(realm=realm).delete()
+
+        # This event will only ever be received by clients with an active
+        # longpoll connection, because by this point clients will be
+        # unable to authenticate again to their event queue (triggering an
+        # immediate reload into the page explaining the realm was
+        # deactivated). So the purpose of sending this is to flush all
+        # active longpoll connections for the realm.
+        event = dict(type="realm", op="deactivated", realm_id=realm.id)
+        send_event_on_commit(realm, event, active_user_ids(realm.id))
+
+    # Don't deactivate the users, as that would lose a lot of state if
+    # the realm needs to be reactivated, but do delete their sessions
+    # so they get bumped to the login screen, where they'll get a
+    # realm deactivation notice when they try to log in.
+    #
+    # Note: This is intentionally outside the transaction because it
+    # is unsafe to modify sessions inside transactions with the
+    # cached_db session plugin we're using, and our session engine
+    # declared in zerver/lib/safe_session_cached_db.py enforces this.
+    delete_realm_user_sessions(realm)
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -361,6 +417,10 @@ def do_reactivate_realm(realm: Realm) -> None:
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
             },
         )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
 
 
 def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
@@ -389,7 +449,8 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
 
 def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     if settings.BILLING_ENABLED:
-        downgrade_now_without_creating_additional_invoices(realm)
+        billing_session = RealmBillingSession(user=acting_user, realm=realm)
+        billing_session.downgrade_now_without_creating_additional_invoices()
 
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
@@ -472,6 +533,21 @@ def do_change_realm_plan_type(
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         # We do not allow public access on limited plans.
         do_set_realm_property(realm, "enable_spectator_access", False, acting_user=acting_user)
+
+    if old_value in [Realm.PLAN_TYPE_PLUS, Realm.PLAN_TYPE_SELF_HOSTED] and plan_type not in [
+        Realm.PLAN_TYPE_PLUS,
+        Realm.PLAN_TYPE_SELF_HOSTED,
+    ]:
+        # If downgrading to a plan that no longer has access to change
+        # can_access_all_users_group, set it back to the default
+        # value.
+        everyone_system_group = UserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        if realm.can_access_all_users_group_id != everyone_system_group.id:
+            do_change_realm_permission_group_setting(
+                realm, "can_access_all_users_group", everyone_system_group, acting_user=acting_user
+            )
 
     realm.plan_type = plan_type
     realm.save(update_fields=["plan_type"])

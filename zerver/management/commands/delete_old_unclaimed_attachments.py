@@ -1,5 +1,5 @@
-import datetime
 from argparse import ArgumentParser
+from datetime import timedelta
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
@@ -7,8 +7,9 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
+from zerver.lib.attachments import get_old_unclaimed_attachments
 from zerver.lib.upload import all_message_attachments, delete_message_attachments
-from zerver.models import ArchivedAttachment, Attachment, get_old_unclaimed_attachments
+from zerver.models import ArchivedAttachment, Attachment
 
 
 class Command(BaseCommand):
@@ -70,7 +71,7 @@ class Command(BaseCommand):
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
     def clean_attachment_upload_backend(self, dry_run: bool = True) -> None:
-        cutoff = timezone_now() - datetime.timedelta(minutes=5)
+        cutoff = timezone_now() - timedelta(minutes=5)
         print(f"Removing extra files in storage black-end older than {cutoff.isoformat()}")
         to_delete = []
         for path_id, modified_at in all_message_attachments():

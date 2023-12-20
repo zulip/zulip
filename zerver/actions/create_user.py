@@ -1,5 +1,5 @@
-import datetime
 from collections import defaultdict
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 from django.conf import settings
@@ -21,6 +21,7 @@ from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
@@ -43,19 +44,17 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
-    active_user_ids,
-    bot_owner_user_ids,
-    get_system_bot,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed
+    from corporate.lib.stripe import RealmBillingSession
 
 
 MAX_NUM_ONBOARDING_MESSAGES = 1000
@@ -65,7 +64,7 @@ MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
 # feel like Zulip is buggy, but in low-traffic or bursty-traffic
 # organizations, it's reasonable for the most recent 20 messages to be
 # several weeks old and still be a good place to start.
-ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=12)
+ONBOARDING_RECENT_TIMEDELTA = timedelta(weeks=12)
 
 DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 
@@ -394,6 +393,7 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -
             type="realm_user",
             op="add",
             person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
+            inaccessible_user=True,
         )
         send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
 
@@ -494,6 +494,7 @@ def do_create_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
 
         if realm_creation:
             # If this user just created a realm, make sure they are
@@ -514,7 +515,8 @@ def do_create_user(
             event_time,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
         system_user_group = get_system_user_group_for_user(user_profile)
         UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
@@ -617,6 +619,7 @@ def do_activate_mirror_dummy_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
         do_increment_logging_stat(
             user_profile.realm,
             COUNT_STATS["active_users_log:is_bot:day"],
@@ -624,7 +627,8 @@ def do_activate_mirror_dummy_user(
             event_time,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
     notify_created_user(user_profile, [])
 
@@ -649,6 +653,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         },
     )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
 
     bot_owner_changed = False
     if (
@@ -676,7 +681,8 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         event_time,
     )
     if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(event_time)
 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)

@@ -1,12 +1,15 @@
 import logging
 from typing import Optional
 
-from django import forms
 from django.conf import settings
-from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from pydantic import Json
 
+from corporate.lib.decorator import (
+    authenticated_remote_realm_management_endpoint,
+    authenticated_remote_server_management_endpoint,
+)
 from corporate.lib.stripe import (
     VALID_BILLING_MODALITY_VALUES,
     VALID_BILLING_SCHEDULE_VALUES,
@@ -14,17 +17,18 @@ from corporate.lib.stripe import (
     BillingError,
     InitialUpgradeRequest,
     RealmBillingSession,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
     UpgradeRequest,
 )
-from corporate.lib.support import get_support_url
-from corporate.models import CustomerPlan, ZulipSponsorshipRequest
-from zerver.actions.users import do_change_is_billing_admin
+from corporate.models import CustomerPlan
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_bool, check_int, check_string_in
-from zerver.models import UserProfile, get_org_type_display_name
+from zerver.models import UserProfile
+from zilencer.lib.remote_counts import MissingDataError
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -38,11 +42,11 @@ def upgrade(
     schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
     signed_seat_count: str = REQ(),
     salt: str = REQ(),
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
     license_management: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
     ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+    tier: int = REQ(default=CustomerPlan.TIER_CLOUD_STANDARD, json_validator=check_int),
 ) -> HttpResponse:
     try:
         upgrade_request = UpgradeRequest(
@@ -50,9 +54,10 @@ def upgrade(
             schedule=schedule,
             signed_seat_count=signed_seat_count,
             salt=salt,
-            onboarding=onboarding,
             license_management=license_management,
             licenses=licenses,
+            tier=tier,
+            remote_server_plan_start_date=None,
         )
         billing_session = RealmBillingSession(user)
         data = billing_session.do_upgrade(upgrade_request)
@@ -78,12 +83,110 @@ def upgrade(
         raise BillingError(error_description, error_message)
 
 
+@authenticated_remote_realm_management_endpoint
+@has_request_variables
+def remote_realm_upgrade(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    billing_modality: str = REQ(str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)),
+    schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
+    signed_seat_count: str = REQ(),
+    salt: str = REQ(),
+    license_management: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
+    ),
+    licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+    remote_server_plan_start_date: Optional[str] = REQ(default=None),
+    tier: int = REQ(default=CustomerPlan.TIER_SELF_HOSTED_BUSINESS, json_validator=check_int),
+) -> HttpResponse:
+    try:
+        upgrade_request = UpgradeRequest(
+            billing_modality=billing_modality,
+            schedule=schedule,
+            signed_seat_count=signed_seat_count,
+            salt=salt,
+            license_management=license_management,
+            licenses=licenses,
+            tier=tier,
+            remote_server_plan_start_date=remote_server_plan_start_date,
+        )
+        data = billing_session.do_upgrade(upgrade_request)
+        return json_success(request, data)
+    except BillingError as e:  # nocoverage
+        billing_logger.warning(
+            "BillingError during upgrade: %s. remote_realm=%s (%s), billing_modality=%s, "
+            "schedule=%s, license_management=%s, licenses=%s",
+            e.error_description,
+            billing_session.remote_realm.id,
+            billing_session.remote_realm.host,
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+        )
+        raise e
+    except Exception:  # nocoverage
+        billing_logger.exception("Uncaught exception in billing:", stack_info=True)
+        error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
+        error_description = "uncaught exception during upgrade"
+        raise BillingError(error_description, error_message)
+
+
+@authenticated_remote_server_management_endpoint
+@has_request_variables
+def remote_server_upgrade(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    billing_modality: str = REQ(str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)),
+    schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
+    signed_seat_count: str = REQ(),
+    salt: str = REQ(),
+    license_management: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
+    ),
+    licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+    remote_server_plan_start_date: Optional[str] = REQ(default=None),
+    tier: int = REQ(default=CustomerPlan.TIER_SELF_HOSTED_BUSINESS, json_validator=check_int),
+) -> HttpResponse:
+    try:
+        upgrade_request = UpgradeRequest(
+            billing_modality=billing_modality,
+            schedule=schedule,
+            signed_seat_count=signed_seat_count,
+            salt=salt,
+            license_management=license_management,
+            licenses=licenses,
+            tier=tier,
+            remote_server_plan_start_date=remote_server_plan_start_date,
+        )
+        data = billing_session.do_upgrade(upgrade_request)
+        return json_success(request, data)
+    except BillingError as e:  # nocoverage
+        billing_logger.warning(
+            "BillingError during upgrade: %s. remote_server=%s (%s), billing_modality=%s, "
+            "schedule=%s, license_management=%s, licenses=%s",
+            e.error_description,
+            billing_session.remote_server.id,
+            billing_session.remote_server.hostname,
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+        )
+        raise e
+    except Exception:  # nocoverage
+        billing_logger.exception("Uncaught exception in billing:", stack_info=True)
+        error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
+        error_description = "uncaught exception during upgrade"
+        raise BillingError(error_description, error_message)
+
+
 @zulip_login_required
 @has_request_variables
-def initial_upgrade(
+def upgrade_page(
     request: HttpRequest,
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
     manual_license_management: bool = REQ(default=False, json_validator=check_bool),
+    tier: int = REQ(default=CustomerPlan.TIER_CLOUD_STANDARD, json_validator=check_int),
 ) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
@@ -92,9 +195,8 @@ def initial_upgrade(
         return render(request, "404.html", status=404)
 
     initial_upgrade_request = InitialUpgradeRequest(
-        onboarding=onboarding,
         manual_license_management=manual_license_management,
-        tier=CustomerPlan.STANDARD,
+        tier=tier,
     )
     billing_session = RealmBillingSession(user)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
@@ -106,91 +208,55 @@ def initial_upgrade(
     return response
 
 
-class SponsorshipRequestForm(forms.Form):
-    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False)
-    organization_type = forms.IntegerField()
-    description = forms.CharField(widget=forms.Textarea)
-    expected_total_users = forms.CharField(widget=forms.Textarea)
-    paid_users_count = forms.CharField(widget=forms.Textarea)
-    paid_users_description = forms.CharField(widget=forms.Textarea, required=False)
-
-
-@require_organization_member
-@has_request_variables
-def sponsorship(
+@authenticated_remote_realm_management_endpoint
+@typed_endpoint
+def remote_realm_upgrade_page(
     request: HttpRequest,
-    user: UserProfile,
-    organization_type: str = REQ("organization-type"),
-    website: str = REQ(),
-    description: str = REQ(),
-    expected_total_users: str = REQ(),
-    paid_users_count: str = REQ(),
-    paid_users_description: str = REQ(),
+    billing_session: RemoteRealmBillingSession,
+    *,
+    manual_license_management: Json[bool] = False,
+    success_message: str = "",
+    tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
 ) -> HttpResponse:
-    realm = user.realm
-    billing_session = RealmBillingSession(user)
+    initial_upgrade_request = InitialUpgradeRequest(
+        manual_license_management=manual_license_management,
+        tier=int(tier),
+        success_message=success_message,
+    )
+    try:
+        redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+    except MissingDataError:  # nocoverage
+        return billing_session.missing_data_error_page(request)
 
-    requested_by = user.full_name
-    user_role = user.get_role_name()
-    support_url = get_support_url(realm)
+    if redirect_url:  # nocoverage
+        return HttpResponseRedirect(redirect_url)
 
-    post_data = request.POST.copy()
-    # We need to do this because the field name in the template
-    # for organization type contains a hyphen and the form expects
-    # an underscore.
-    post_data.update(organization_type=organization_type)
-    form = SponsorshipRequestForm(post_data)
+    response = render(request, "corporate/upgrade.html", context=context)
+    return response
 
-    if form.is_valid():
-        with transaction.atomic():
-            sponsorship_request = ZulipSponsorshipRequest(
-                realm=realm,
-                requested_by=user,
-                org_website=form.cleaned_data["website"],
-                org_description=form.cleaned_data["description"],
-                org_type=form.cleaned_data["organization_type"],
-                expected_total_users=form.cleaned_data["expected_total_users"],
-                paid_users_count=form.cleaned_data["paid_users_count"],
-                paid_users_description=form.cleaned_data["paid_users_description"],
-            )
-            sponsorship_request.save()
 
-            org_type = form.cleaned_data["organization_type"]
-            if realm.org_type != org_type:
-                realm.org_type = org_type
-                realm.save(update_fields=["org_type"])
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def remote_server_upgrade_page(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    *,
+    manual_license_management: Json[bool] = False,
+    success_message: str = "",
+    tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
+) -> HttpResponse:
+    initial_upgrade_request = InitialUpgradeRequest(
+        manual_license_management=manual_license_management,
+        tier=int(tier),
+        success_message=success_message,
+    )
+    try:
+        redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+    except MissingDataError:  # nocoverage
+        return billing_session.missing_data_error_page(request)
 
-            billing_session.update_customer_sponsorship_status(True)
-            do_change_is_billing_admin(user, True)
+    if redirect_url:  # nocoverage
+        return HttpResponseRedirect(redirect_url)
 
-            org_type_display_name = get_org_type_display_name(org_type)
-
-        context = {
-            "requested_by": requested_by,
-            "user_role": user_role,
-            "string_id": realm.string_id,
-            "support_url": support_url,
-            "organization_type": org_type_display_name,
-            "website": website,
-            "description": description,
-            "expected_total_users": expected_total_users,
-            "paid_users_count": paid_users_count,
-            "paid_users_description": paid_users_description,
-        }
-        send_email(
-            "zerver/emails/sponsorship_request",
-            to_emails=[FromAddress.SUPPORT],
-            from_name="Zulip sponsorship",
-            from_address=FromAddress.tokenized_no_reply_address(),
-            reply_to_email=user.delivery_email,
-            context=context,
-        )
-
-        return json_success(request)
-    else:
-        message = " ".join(
-            error["message"]
-            for error_list in form.errors.get_json_data().values()
-            for error in error_list
-        )
-        raise BillingError("Form validation error", message=message)
+    response = render(request, "corporate/upgrade.html", context=context)
+    return response

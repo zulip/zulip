@@ -13,7 +13,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import ALL_COUNT_STATS, logger, process_count_stat
 from scripts.lib.zulip_tools import ENDC, WARNING
-from zerver.lib.remote_server import send_analytics_to_push_bouncer
+from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
@@ -96,7 +96,7 @@ class Command(BaseCommand):
             )
         logger.info("Finished updating analytics counts through %s", fill_to_time)
 
-        if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
+        if settings.PUSH_NOTIFICATION_BOUNCER_URL:
             # Skew 0-10 minutes based on a hash of settings.ZULIP_ORG_ID, so
             # that each server will report in at a somewhat consistent time.
             assert settings.ZULIP_ORG_ID
@@ -106,4 +106,4 @@ class Command(BaseCommand):
             logger.info("Sleeping %d seconds before reporting...", delay)
             time.sleep(delay)
 
-            send_analytics_to_push_bouncer()
+            send_server_data_to_push_bouncer(consider_usage_statistics=True)

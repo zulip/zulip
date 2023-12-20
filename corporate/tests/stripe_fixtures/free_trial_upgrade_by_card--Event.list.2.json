@@ -2,7 +2,7 @@
   "data": [
     {
       "api_version": "2020-08-27",
-      "created": 1010000006,
+      "created": 1010000005,
       "data": {
         "object": {
           "address": null,
@@ -19,7 +19,7 @@
           "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1ODZZDDEQaroqDjsy9N9L24T",
+            "default_payment_method": "pm_1OOgugDEQaroqDjs9XQDo08f",
             "footer": null,
             "rendering_options": null
           },
@@ -43,13 +43,13 @@
           }
         }
       },
-      "id": "evt_1ODZZFDEQaroqDjs9q7kqahP",
+      "id": "evt_1OOguiDEQaroqDjsY8lpBi20",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "fee1ffe0-8f58-4217-9047-8d1073e34013"
+        "idempotency_key": "78a3d6b3-a097-4100-aa75-68161f6baa8d"
       },
       "type": "customer.updated"
     }

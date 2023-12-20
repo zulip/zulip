@@ -1,7 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import base64
 import copy
-import datetime
 import email
 import email.policy
 import logging
@@ -11,9 +10,9 @@ import socket
 import tempfile
 import threading
 import time
-import urllib
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
+from datetime import timedelta
 from email.message import EmailMessage
 from functools import wraps
 from types import FrameType
@@ -31,6 +30,7 @@ from typing import (
     Type,
     TypeVar,
 )
+from urllib.parse import urlsplit
 
 import orjson
 import sentry_sdk
@@ -78,7 +78,10 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import SimpleQueueClient, retry_event
-from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.remote_server import (
+    PushNotificationBouncerRetryLaterError,
+    send_server_data_to_push_bouncer,
+)
 from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
@@ -101,12 +104,11 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
-    filter_to_valid_prereg_users,
-    get_bot_services,
-    get_client,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.bots import get_bot_services
+from zerver.models.clients import get_client
+from zerver.models.prereg_users import filter_to_valid_prereg_users
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 logger = logging.getLogger(__name__)
 
@@ -493,7 +495,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=email_language,
                 context=context,
-                delay=datetime.timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
+                delay=timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
             )
 
 
@@ -605,7 +607,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         user_profile_id: int = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
         batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
-        batch_duration = datetime.timedelta(seconds=batch_duration_seconds)
+        batch_duration = timedelta(seconds=batch_duration_seconds)
 
         try:
             pending_email = ScheduledMessageNotificationEmail.objects.filter(
@@ -1129,7 +1131,7 @@ class DeferredWorker(QueueProcessingWorker):
             assert public_url is not None
 
             # Update the extra_data field now that the export is complete.
-            extra_data["export_path"] = urllib.parse.urlparse(public_url).path
+            extra_data["export_path"] = urlsplit(public_url).path
             export_event.extra_data = extra_data
             export_event.save(update_fields=["extra_data"])
 
@@ -1167,6 +1169,11 @@ class DeferredWorker(QueueProcessingWorker):
             )
             user_profile = get_user_profile_by_id(event["user_profile_id"])
             reactivate_user_if_soft_deactivated(user_profile)
+        elif event["type"] == "push_bouncer_update_for_realm":
+            # In the future we may use the realm_id to send only that single realm's info.
+            realm_id = event["realm_id"]
+            logger.info("Updating push bouncer with metadata on behalf of realm %s", realm_id)
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         end = time.time()
         logger.info(

@@ -13,7 +13,8 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.models import Realm, UserProfile, get_user_by_delivery_email
+from zerver.models import Realm, UserProfile
+from zerver.models.users import get_user_by_delivery_email
 
 IGNORED_EVENTS = [
     "attachment_created",

@@ -52,11 +52,14 @@ export const page_params: {
         big_blue_button?: {name: string; id: number};
     };
     realm_avatar_changes_disabled: boolean;
+    realm_bot_domain: string;
+    realm_can_access_all_users_group: number;
     realm_create_multiuse_invite_group: number;
     realm_create_private_stream_policy: number;
     realm_create_public_stream_policy: number;
     realm_create_web_public_stream_policy: number;
     realm_delete_own_message_policy: number;
+    realm_description: string;
     realm_edit_topic_policy: number;
     realm_email_changes_disabled: boolean;
     realm_enable_spectator_access: boolean;

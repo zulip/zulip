@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import configparser
-import datetime
 import functools
 import hashlib
 import json
@@ -16,6 +15,7 @@ import subprocess
 import sys
 import time
 import uuid
+from datetime import datetime, timedelta
 from typing import IO, Any, Dict, List, Sequence, Set
 from urllib.parse import SplitResult
 
@@ -186,7 +186,7 @@ def su_to_zulip(save_suid: bool = False) -> None:
 
 
 def make_deploy_path() -> str:
-    timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)  # noqa: DTZ005
+    timestamp = datetime.now().strftime(TIMESTAMP_FORMAT)  # noqa: DTZ005
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 
@@ -302,9 +302,7 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
-    threshold_date = datetime.datetime.now() - datetime.timedelta(  # noqa: DTZ005
-        days=threshold_days
-    )
+    threshold_date = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
     for dir_name in os.listdir(DEPLOYMENTS_DIR):
         target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
         if not os.path.isdir(target_dir):
@@ -314,7 +312,7 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
             # Skip things like "lock" that aren't actually a deployment directory
             continue
         try:
-            date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)  # noqa: DTZ007
+            date = datetime.strptime(dir_name, TIMESTAMP_FORMAT)  # noqa: DTZ007
             if date >= threshold_date:
                 recent.add(target_dir)
         except ValueError:
@@ -331,7 +329,7 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
 def get_threshold_timestamp(threshold_days: int) -> int:
     # Given number of days, this function returns timestamp corresponding
     # to the time prior to given number of days.
-    threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)  # noqa: DTZ005
+    threshold = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
     threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
     return threshold_timestamp
 
@@ -343,7 +341,7 @@ def get_caches_to_be_purged(
     # and threshold days, this function return a list of caches
     # which can be purged. Remove the cache only if it is:
     # 1: Not in use by the current installation(in dev as well as in prod).
-    # 2: Not in use by a deployment not older than `threshold_days`(in prod).
+    # 2: Not in use by a deployment not older than `threshold_days` (in prod).
     # 3: Not in use by '/root/zulip'.
     # 4: Not older than `threshold_days`.
     caches_to_purge = set()

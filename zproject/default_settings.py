@@ -444,6 +444,9 @@ ROOT_SUBDOMAIN_ALIASES = ["www"]
 # Whether the root domain is a landing page or can host a realm.
 ROOT_DOMAIN_LANDING_PAGE = False
 
+# Subdomain for serving endpoints to users from self-hosted deployments.
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN: Optional[str] = None
+
 # If using the Zephyr mirroring supervisord configuration, the
 # hostname to connect to in order to transfer credentials from webathena.
 PERSONAL_ZMIRROR_SERVER: Optional[str] = None
@@ -482,6 +485,8 @@ WELCOME_EMAIL_SENDER: Optional[Dict[str, str]] = None
 
 # Whether to send periodic digests of activity.
 SEND_DIGEST_EMAILS = True
+# The variable part of email sender names to be used for outgoing emails.
+INSTALLATION_NAME = EXTERNAL_HOST
 
 # Used to change the Zulip logo in portico pages.
 CUSTOM_LOGO_URL: Optional[str] = None
@@ -541,7 +546,8 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 30
 # are available to all realms.
 BILLING_ENABLED = False
 
-FREE_TRIAL_DAYS: Optional[int] = int(get_secret("free_trial_days", "0"))
+CLOUD_FREE_TRIAL_DAYS: Optional[int] = int(get_secret("cloud_free_trial_days", "0"))
+SELF_HOSTING_FREE_TRIAL_DAYS: Optional[int] = int(get_secret("self_hosting_free_trial_days", "0"))
 
 # Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
 # making announcements.
@@ -587,15 +593,15 @@ MAX_DRAFTS_IN_REGISTER_RESPONSE = 1000
 # How long before a client should assume that another client sending
 # typing notifications has gone away and expire the active typing
 # indicator.
-TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS = 15000
+TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS = 45000
 
 # How long after a user has stopped interacting with the compose UI
 # that a client should send a stop notification to the server.
-TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 5000
+TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS = 12000
 
 # How often a client should send start notifications to the server to
 # indicate that the user is still interacting with the compose UI.
-TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 10000
+TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 30000
 
 # The maximum number of subscribers for a stream to have typing
 # notifications enabled. Default is set to avoid excessive Tornado
@@ -608,3 +614,7 @@ MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 # installations with thousands of users with many guests limited in
 # this way, pending further optimization of the relevant code paths.
 CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
+
+# General expiry time for signed tokens we may generate
+# in some places through the codebase.
+SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60

@@ -165,7 +165,7 @@
         .search_group {
             display: flex;
             flex-grow: 1;
-            margin: 0 0 10px;
+            margin: 0 -27px 10px 0;
         }
 
         #recent_view_search {
@@ -178,7 +178,7 @@
 
         .clear_search_button {
             /* Overrides app_components.css property. */
-            padding-top: 6px !important;
+            padding-top: 4px !important;
         }
 
         .btn-recent-filters {
@@ -542,4 +542,23 @@
 #recent_view {
     display: none;
     position: relative;
+}
+
+#recent-view-filter_widget {
+    display: inline-flex;
+    width: 150px;
+    margin: 0 5px 10px 0;
+
+    &:hover {
+        background-color: var(--color-background-inbox-search-hover);
+    }
+
+    &:focus {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
+.dropdown-widget-disabled-for-spectators #recent-view-filter_widget {
+    cursor: not-allowed;
+    opacity: 0.5;
 }

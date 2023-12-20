@@ -10,7 +10,7 @@ import * as compose_validate from "./compose_validate";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
-import {EXTRA_LONG_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
+import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -56,6 +56,16 @@ export function initialize() {
         // This ensures that the upload files tooltip
         // doesn't hide behind the left sidebar.
         appendTo: () => document.body,
+        // If the button is `.disabled-on-hover`, then we want to show the
+        // tooltip instantly, to make it clear to the user that the button
+        // is disabled, and why.
+        onTrigger(instance, event) {
+            if (event.currentTarget.classList.contains("disabled-on-hover")) {
+                instance.setProps({delay: INSTANT_HOVER_DELAY});
+            } else {
+                instance.setProps({delay: LONG_HOVER_DELAY});
+            }
+        },
     });
 
     delegate("body", {

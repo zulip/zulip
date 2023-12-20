@@ -24,7 +24,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
             return None
     from django.conf import settings
 
-    from zerver.models import get_user_profile_by_id
+    from zerver.models.users import get_user_profile_by_id
 
     with capture_internal_exceptions():
         # event.user is the user context, from Sentry, which is

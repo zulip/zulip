@@ -42,6 +42,7 @@
         "billing_schedule": "1",
         "license_management": "automatic",
         "licenses": "6",
+        "plan_tier": "1",
         "price_per_license": "1200",
         "realm_id": "1",
         "realm_str": "zulip",
@@ -63,7 +64,7 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1ODZbrDEQaroqDjskigXZyia",
+      "payment_method": "pm_1OOgy1DEQaroqDjsPovw7cfu",
       "payment_method_details": {
         "card": {
           "amount_authorized": 7200,
@@ -74,7 +75,7 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 11,
+          "exp_month": 12,
           "exp_year": 2024,
           "extended_authorization": {
             "status": "disabled"
@@ -105,7 +106,7 @@
       },
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKN2236oGMgb9kDIy5gQ6LBYzDvh-SG906rLxQE_yro-FRsYkoPjn-i_qJQdTIK-xEdHTCA_2CleF55FL",
+      "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKP6UgawGMgaOL5RXlKc6LBarBczvPL_SihsBzcchh06gDMOnxb_zui__m8_slBcY0vwnaOkAhp7iFBjY",
       "refunded": false,
       "refunds": {
         "data": [],

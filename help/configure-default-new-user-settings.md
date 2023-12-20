@@ -13,8 +13,11 @@ join. Administrators can customize defaults for all personal
 preference settings, including the following:
 
 * Privacy settings:
-    * [Displaying availability to other users](/help/status-and-availability)
-    * [Allowing others to see when the user has read messages](/help/read-receipts)
+    * Displaying [availability](/help/status-and-availability) to other users
+    * Allowing others to see when the user has [read
+      messages](/help/read-receipts)
+    * Allowing others to see when the user is [typing a
+      message](/help/typing-notifications)
 
 * Preferences:
     * [Language](/help/change-your-language)
@@ -27,8 +30,10 @@ preference settings, including the following:
       [All messages](/help/reading-strategies#all-messages))
 
 * Notification settings:
-    * [What types of messages trigger notifications][default-notifications]
-    * [Configurations for email notifications](/help/email-notifications)
+    * What types of messages [trigger notifications][default-notifications]
+    * Which topics users will [automatically follow](/help/follow-a-topic). This
+      minimizes the need to [mention](/help/mention-a-user-or-group) other users
+      to get their attention.
 
 [default-notifications]: /help/stream-notifications#configure-default-notifications-for-all-streams
 

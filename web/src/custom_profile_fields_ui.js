@@ -99,7 +99,7 @@ export function initialize_custom_user_type_fields(
                 const field_value = JSON.parse(field_value_raw);
                 if (field_value) {
                     for (const pill_user_id of field_value) {
-                        const user = people.get_by_user_id(pill_user_id);
+                        const user = people.get_user_by_id_assert_valid(pill_user_id);
                         user_pill.append_user(user, pills);
                     }
                 }

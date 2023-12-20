@@ -2,7 +2,7 @@ import json
 import os
 import re
 from typing import Callable, Iterator, List, Optional, Union
-from urllib.parse import urlparse, urlsplit
+from urllib.parse import urlsplit
 
 import scrapy
 from scrapy.http import Request, Response
@@ -36,6 +36,8 @@ EXCLUDED_URLS = [
     "https://giphy.com",
     "https://giphy.com/apps/giphycapture",
     "https://www.udemy.com/course/the-complete-react-native-and-redux-course/",
+    # Temporarily unavailable
+    "https://zulip.com/accounts/find/",
 ]
 
 VNU_IGNORE = [
@@ -233,7 +235,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             response = failure.value.response
             # Hack: The filtering above does not catch this URL,
             # likely due to a redirect.
-            if urlparse(response.url).netloc == "idmsa.apple.com":
+            if urlsplit(response.url).netloc == "idmsa.apple.com":
                 return None
             if response.status == 405 and response.request.method == "HEAD":
                 # Method 'HEAD' not allowed, repeat request with 'GET'

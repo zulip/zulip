@@ -207,9 +207,12 @@ export function restore_message(draft) {
             content: draft.content,
         };
     } else {
+        const recipient_emails = draft.private_message_recipient
+            .split(",")
+            .filter((email) => people.is_valid_email_for_compose(email));
         compose_args = {
             type: draft.type,
-            private_message_recipient: draft.private_message_recipient,
+            private_message_recipient: recipient_emails.join(","),
             content: draft.content,
         };
     }

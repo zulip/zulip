@@ -95,7 +95,7 @@ is already a function in `zerver.actions` with a name like
 `do_change_full_name` that updates that field and notifies clients
 correctly.
 
-For convenience, Zulip automatically imports `zerver/models.py`
+For convenience, Zulip automatically imports `zerver.models`
 into every management shell; if you need to
 access other functions, you'll need to import them yourself.
 

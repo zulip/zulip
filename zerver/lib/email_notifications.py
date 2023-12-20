@@ -21,12 +21,14 @@ from django.utils.translation import override as override_language
 from lxml.html import builder as e
 
 from confirmation.models import one_click_unsubscribe_link
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group_name
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.topic import get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     huddle_narrow_url,
@@ -34,18 +36,10 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
-from zerver.models import (
-    Message,
-    NotificationTriggers,
-    Realm,
-    Recipient,
-    Stream,
-    UserMessage,
-    UserProfile,
-    get_context_for_message,
-    get_display_recipient,
-    get_user_profile_by_id,
-)
+from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserProfile
+from zerver.models.messages import get_context_for_message
+from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.users import get_user_profile_by_id
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo
@@ -248,19 +242,7 @@ def build_message_list(
         relative_to_full_url(fragment, user.realm.uri)
         fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
-
-        # Selecting the <span> elements with class 'katex'
-        katex_spans = fragment.xpath("//span[@class='katex']")
-
-        # Iterate through 'katex_spans' and replace with a new <span> having LaTeX text.
-        for katex_span in katex_spans:
-            latex_text = katex_span.xpath(".//annotation[@encoding='application/x-tex']")[0].text
-            # We store 'tail' to insert them back as the replace operation removes it.
-            tail = katex_span.tail
-            latex_span = lxml.html.Element("span")
-            latex_span.text = f"$${latex_text}$$"
-            katex_span.getparent().replace(katex_span, latex_span)
-            latex_span.tail = tail
+        change_katex_to_raw_latex(fragment)
 
         html = lxml.html.tostring(fragment, encoding="unicode")
         if sender:
@@ -585,7 +567,9 @@ def do_send_missedmessage_events_reply_in_zulip(
     )
 
     with override_language(user_profile.default_language):
-        from_name: str = _("Zulip notifications")
+        from_name: str = _("{service_name} notifications").format(
+            service_name=settings.INSTALLATION_NAME
+        )
     from_address = FromAddress.NOREPLY
 
     email_dict = {

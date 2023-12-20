@@ -2,10 +2,7 @@
 // re-exports certain internal functions so they can be used by the
 // Puppeteer tests.  It should not be used in the code itself.
 
-export {
-    set_stream_wildcard_mention_large_stream_threshold,
-    stream_wildcard_mention_large_stream_threshold,
-} from "./compose_validate";
+export {set_wildcard_mention_threshold, wildcard_mention_threshold} from "./compose_validate";
 export {private_message_recipient} from "./compose_state";
 export {current as current_msg_list} from "./message_lists";
 export {get_stream_id, get_sub, get_subscriber_count} from "./stream_data";

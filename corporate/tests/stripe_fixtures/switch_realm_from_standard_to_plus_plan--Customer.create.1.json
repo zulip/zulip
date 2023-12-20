@@ -6,9 +6,9 @@
   "default_currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "lear (Lear & Co.)",
+  "description": "zulip (Zulip Dev)",
   "discount": null,
-  "email": "king@lear.org",
+  "email": "hamlet@zulip.com",
   "id": "cus_NORMALIZED0001",
   "invoice_prefix": "NORMA01",
   "invoice_settings": {
@@ -20,7 +20,7 @@
   "livemode": false,
   "metadata": {
     "realm_id": "1",
-    "realm_str": "lear"
+    "realm_str": "zulip"
   },
   "name": null,
   "next_invoice_sequence": 1,

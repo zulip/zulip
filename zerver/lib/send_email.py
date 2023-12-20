@@ -1,14 +1,14 @@
-import datetime
 import hashlib
 import logging
 import os
 import smtplib
 from contextlib import suppress
+from datetime import timedelta
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import backoff
 import css_inline
@@ -29,8 +29,13 @@ from django.utils.translation import override as override_language
 
 from confirmation.models import generate_key
 from zerver.lib.logging_util import log_to_file
-from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
+from zerver.models import Realm, ScheduledEmail, UserProfile
+from zerver.models.scheduled_jobs import EMAIL_TYPES
+from zerver.models.users import get_user_profile_by_id
 from zproject.email_backends import EmailLogBackEnd, get_forward_address
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 MAX_CONNECTION_TRIES = 3
 
@@ -70,7 +75,9 @@ class FromAddress:
             language = user_profile.default_language
 
         with override_language(language):
-            return _("Zulip Account Security")
+            return _("{service_name} account security").format(
+                service_name=settings.INSTALLATION_NAME
+            )
 
 
 def build_email(
@@ -193,7 +200,8 @@ def build_email(
     # have not implemented.
     if "unsubscribe_link" in context:
         extra_headers["List-Unsubscribe"] = f"<{context['unsubscribe_link']}>"
-        extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+        if not context.get("remote_server_email", False):
+            extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
     reply_to = None
     if reply_to_email is not None:
@@ -344,7 +352,7 @@ def send_future_email(
     from_address: Optional[str] = None,
     language: Optional[str] = None,
     context: Mapping[str, Any] = {},
-    delay: datetime.timedelta = datetime.timedelta(0),
+    delay: timedelta = timedelta(0),
 ) -> None:
     template_name = template_prefix.split("/")[-1]
     email_fields = {
@@ -505,25 +513,16 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     return str(option or header)
 
 
-def send_custom_email(
-    users: QuerySet[UserProfile],
-    *,
-    target_emails: Sequence[str] = [],
-    options: Dict[str, Any],
-    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
-) -> None:
-    """
-    Helper for `manage.py send_custom_email`.
-
-    Can be used directly with from a management shell with
-    send_custom_email(user_profile_list, dict(
-        markdown_template_path="/path/to/markdown/file.md",
-        subject="Email subject",
-        from_name="Sender Name")
-    )
-    """
-
-    with open(options["markdown_template_path"]) as f:
+def custom_email_sender(
+    markdown_template_path: str,
+    dry_run: bool,
+    subject: Optional[str] = None,
+    from_address: str = FromAddress.SUPPORT,
+    from_name: Optional[str] = None,
+    reply_to: Optional[str] = None,
+    **kwargs: Any,
+) -> Callable[..., None]:
+    with open(markdown_template_path) as f:
         text = f.read()
         parsed_email_template = Parser(policy=default).parsestr(text)
         email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
@@ -556,12 +555,46 @@ def send_custom_email(
             f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
-        f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))
+        f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))
 
-    # Finally, we send the actual emails.
+    def send_one_email(
+        context: Dict[str, Any], to_user_id: Optional[int] = None, to_email: Optional[str] = None
+    ) -> None:
+        assert to_user_id is not None or to_email is not None
+        with suppress(EmailNotDeliveredError):
+            send_email(
+                email_id,
+                to_user_ids=[to_user_id] if to_user_id is not None else None,
+                to_emails=[to_email] if to_email is not None else None,
+                from_address=from_address,
+                reply_to_email=reply_to,
+                from_name=get_header(from_name, parsed_email_template.get("from"), "from_name"),
+                context=context,
+                dry_run=dry_run,
+            )
+
+    return send_one_email
+
+
+def send_custom_email(
+    users: QuerySet[UserProfile],
+    *,
+    dry_run: bool,
+    options: Dict[str, str],
+    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
+) -> None:
+    """
+    Helper for `manage.py send_custom_email`.
+
+    Can be used directly with from a management shell with
+    send_custom_email(user_profile_list, dict(
+        markdown_template_path="/path/to/markdown/file.md",
+        subject="Email subject",
+        from_name="Sender Name")
+    )
+    """
+    email_sender = custom_email_sender(**options, dry_run=dry_run)
     for user_profile in users.select_related("realm").order_by("id"):
-        if options.get("admins_only") and not user_profile.is_realm_admin:
-            continue
         context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
@@ -570,38 +603,48 @@ def send_custom_email(
         }
         if add_context is not None:
             add_context(context, user_profile)
-        with suppress(EmailNotDeliveredError):
-            send_email(
-                email_id,
-                to_user_ids=[user_profile.id],
-                from_address=FromAddress.SUPPORT,
-                reply_to_email=options.get("reply_to"),
-                from_name=get_header(
-                    options.get("from_name"), parsed_email_template.get("from"), "from_name"
-                ),
-                context=context,
-                dry_run=options["dry_run"],
-            )
-
-        if options["dry_run"]:
-            break
-
-    # Now send emails to any recipients without a user account.
-    # This code path is intended for rare RemoteZulipServer emails.
-    for email_address in target_emails:
-        send_email(
-            email_id,
-            to_emails=[email_address],
-            from_address=FromAddress.SUPPORT,
-            reply_to_email=options.get("reply_to"),
-            from_name=get_header(
-                options.get("from_name"), parsed_email_template.get("from"), "from_name"
-            ),
-            context={"remote_server_email": True},
-            dry_run=options["dry_run"],
+        email_sender(
+            to_user_id=user_profile.id,
+            context=context,
         )
 
-        if options["dry_run"]:
+        if dry_run:
+            break
+
+
+def send_custom_server_email(
+    remote_servers: QuerySet["RemoteZulipServer"],
+    *,
+    dry_run: bool,
+    options: Dict[str, str],
+    add_context: Optional[Callable[[Dict[str, object], "RemoteZulipServer"], None]] = None,
+) -> None:
+    assert settings.CORPORATE_ENABLED
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
+    from corporate.views.remote_billing_page import (
+        generate_confirmation_link_for_server_deactivation,
+    )
+
+    email_sender = custom_email_sender(
+        **options, dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL
+    )
+
+    for server in remote_servers:
+        context = {
+            "remote_server_email": True,
+            "hostname": server.hostname,
+            "unsubscribe_link": generate_confirmation_link_for_server_deactivation(
+                server, 60 * 24 * 2
+            ),
+        }
+        if add_context is not None:
+            add_context(context, server)
+        email_sender(
+            to_email=server.contact_email,
+            context=context,
+        )
+
+        if dry_run:
             break
 
 

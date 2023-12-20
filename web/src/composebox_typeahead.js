@@ -19,6 +19,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -387,13 +388,15 @@ function get_wildcard_string(mention) {
 }
 
 export function broadcast_mentions() {
-    if (!compose_validate.wildcard_mention_allowed()) {
-        return [];
+    let wildcard_mention_array = [];
+    if (compose_state.get_message_type() === "private") {
+        wildcard_mention_array = ["all", "everyone"];
+    } else if (compose_validate.stream_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["all", "everyone", "stream", "topic"];
+    } else if (compose_validate.topic_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["topic"];
     }
-    const wildcard_mention_array = ["all", "everyone"];
-    if (compose_state.get_message_type() === "stream") {
-        wildcard_mention_array.push("stream", "topic");
-    }
+
     return wildcard_mention_array.map((mention, idx) => ({
         special_item_text: `${mention} (${get_wildcard_string(mention)})`,
         email: mention,
@@ -476,7 +479,7 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
         filter_pills: false,
-        filter_groups: !is_silent,
+        filter_groups_for_mention: !is_silent,
         ...opts,
     };
     return get_person_suggestions(query, opts);
@@ -488,6 +491,7 @@ export function get_pm_people(query) {
         filter_pills: true,
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
+        filter_groups_for_guests: true,
     };
     return get_person_suggestions(query, opts);
 }
@@ -514,8 +518,19 @@ export function get_person_suggestions(query, opts) {
     }
 
     let groups;
-    if (opts.filter_groups) {
+    if (opts.filter_groups_for_mention) {
         groups = user_groups.get_user_groups_allowed_to_mention();
+    } else if (opts.filter_groups_for_guests && !settings_data.user_can_access_all_other_users()) {
+        groups = user_groups.get_realm_user_groups().filter((group) => {
+            const group_members = group.members;
+            for (const user_id of group_members) {
+                const person = people.maybe_get_user_by_id(user_id, true);
+                if (person === undefined || person.is_inaccessible_user) {
+                    return false;
+                }
+            }
+            return true;
+        });
     } else {
         groups = user_groups.get_realm_user_groups();
     }
@@ -1191,10 +1206,15 @@ export function initialize({on_enter_send}) {
             if (user_groups.is_user_group(item)) {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);
-                    // filter out inserted users and current user from pill insertion
+                    // filter out inactive users, inserted users and current user
+                    // from pill insertion
                     const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
                     const current_user = people.is_current_user(user.email);
-                    if (!inserted_users.includes(user.user_id) && !current_user) {
+                    if (
+                        people.is_person_active(user_id) &&
+                        !inserted_users.includes(user.user_id) &&
+                        !current_user
+                    ) {
                         compose_pm_pill.set_from_typeahead(user);
                     }
                 }

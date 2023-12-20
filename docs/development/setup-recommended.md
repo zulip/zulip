@@ -373,42 +373,32 @@ Next, start the Zulip server:
 $ ./tools/run-dev
 ```
 
-You will see several lines of output starting with something like:
+You will see something like:
 
 ```console
-2016-05-04 22:20:33,895 INFO: process_fts_updates starting
-Recompiling templates
-2016-05-04 18:20:34,804 INFO: Not in recovery; listening for FTS updates
-done
-Validating Django models.py...
-System check identified no issues (0 silenced).
+Starting Zulip on:
 
-Django version 1.8
-Tornado server is running at http://localhost:9993/
-Quit the server with CTRL-C.
-2016-05-04 18:20:40,716 INFO     Tornado loaded 0 event queues in 0.001s
-2016-05-04 18:20:40,722 INFO     Tornado  95.5% busy over the past  0.0 seconds
-Performing system checks...
-```
+        http://localhost:9991/
 
-And ending with something similar to:
+Internal ports:
+   9991: Development server proxy (connect here)
+   9992: Django
+   9993: Tornado
+   9994: webpack
 
-```console
-http://localhost:9994/webpack-dev-server/
-webpack result is served from http://localhost:9991/webpack/
-content is served from /srv/zulip
+Tornado server (re)started on port 9993
 
-webpack: bundle is now VALID.
-2016-05-06 21:43:29,553 INFO     Tornado  31.6% busy over the past 10.6 seconds
-2016-05-06 21:43:35,007 INFO     Tornado  23.9% busy over the past 16.0 seconds
+2023-12-15 20:57:14.206 INFO [process_queue] 13 queue worker threads were launched
+frontend:
+  frontend (webpack 5.89.0) compiled successfully in 8054 ms
 ```
 
 Now the Zulip server should be running and accessible. Verify this by
-navigating to <http://localhost:9991/> in the browser on your main machine.
+navigating to <http://localhost:9991/devlogin> in the browser on your main machine.
 
 You should see something like this:
 
-![Image of Zulip development environment](../images/zulip-dev.png)
+![Image of Zulip devlogin](../images/zulip-devlogin.png)
 
 The Zulip server will continue to run and send output to the terminal window.
 When you navigate to Zulip in your browser, check your terminal and you

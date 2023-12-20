@@ -8,7 +8,7 @@ import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
-import * as sub_store from "./sub_store";
+import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 
 export function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
@@ -39,7 +39,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         compose_args = {
             type: "stream",
             stream_id: scheduled_msg.to,
-            stream: sub_store.maybe_get_stream_name(scheduled_msg.to),
+            stream: stream_data.get_stream_name_from_id(scheduled_msg.to),
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
         };
@@ -47,7 +47,10 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         const recipient_emails = [];
         if (scheduled_msg.to) {
             for (const recipient_id of scheduled_msg.to) {
-                recipient_emails.push(people.get_by_user_id(recipient_id).email);
+                const recipient_user = people.get_by_user_id(recipient_id);
+                if (!recipient_user.is_inaccessible_user) {
+                    recipient_emails.push(recipient_user.email);
+                }
             }
         }
         compose_args = {

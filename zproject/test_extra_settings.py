@@ -82,7 +82,6 @@ AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch(
     "ou=users,dc=zulip,dc=com", ldap.SCOPE_ONELEVEL, "(mail=%(email)s)"
 )
 
-TEST_SUITE = True
 RATE_LIMITING = False
 RATE_LIMITING_AUTHENTICATE = False
 # Don't use RabbitMQ from the test suite -- the user_profile_ids for
@@ -205,6 +204,7 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
+DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
 
 # Logging the emails while running the tests adds them
 # to /emails page.
@@ -258,7 +258,7 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "password_reset_form_by_email": [],
 }
 
-FREE_TRIAL_DAYS: Optional[int] = None
+CLOUD_FREE_TRIAL_DAYS: Optional[int] = None
 
 SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
     "zulip": {

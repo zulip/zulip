@@ -10,7 +10,8 @@ from typing_extensions import override
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.scim import ZulipSCIMUser
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserProfile, get_realm
+from zerver.models import UserProfile
+from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse

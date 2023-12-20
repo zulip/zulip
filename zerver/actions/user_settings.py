@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import Iterable, Optional, Union
 
 from django.conf import settings
@@ -7,6 +7,7 @@ from django.db.models import F
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.settings import STATUS_REVOKED
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -38,10 +39,9 @@ from zerver.models import (
     ScheduledMessageNotificationEmail,
     UserPresence,
     UserProfile,
-    bot_owner_user_ids,
-    get_client,
-    get_user_profile_by_id,
 )
+from zerver.models.clients import get_client
+from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
@@ -154,6 +154,11 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         user_profile=user_profile,
         realm=user_profile.realm,
     )
+
+    # Deactivate existing email change requests
+    EmailChangeStatus.objects.filter(realm=user_profile.realm, user_profile=user_profile).exclude(
+        id=obj.id,
+    ).update(status=STATUS_REVOKED)
 
     activation_url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
     from zerver.context_processors import common_context
@@ -398,9 +403,9 @@ def update_scheduled_email_notifications_time(
         user_profile=user_profile
     )
 
-    scheduled_timestamp_change = datetime.timedelta(
-        seconds=new_batching_period
-    ) - datetime.timedelta(seconds=old_batching_period)
+    scheduled_timestamp_change = timedelta(seconds=new_batching_period) - timedelta(
+        seconds=old_batching_period
+    )
 
     existing_scheduled_emails.update(
         scheduled_timestamp=F("scheduled_timestamp") + scheduled_timestamp_change
@@ -560,7 +565,7 @@ def do_change_user_setting(
             # We add a small additional offset as a fudge factor in
             # case of clock skew.
             status = UserPresence.LEGACY_STATUS_IDLE_INT
-            presence_time = timezone_now() - datetime.timedelta(
+            presence_time = timezone_now() - timedelta(
                 seconds=settings.OFFLINE_THRESHOLD_SECS + 120
             )
 

@@ -10,7 +10,7 @@ from requests.models import Response
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand, check_config
-from zerver.lib.remote_server import PushBouncerSession
+from zerver.lib.remote_server import PushBouncerSession, send_server_data_to_push_bouncer
 
 if settings.DEVELOPMENT:
     SECRETS_FILENAME = "zproject/dev-secrets.conf"
@@ -67,33 +67,43 @@ class Command(ZulipBaseCommand):
         if options["rotate_key"]:
             request["new_org_key"] = get_random_string(64)
 
-        self._log_params(request)
+        print(
+            "This command registers your server for the Mobile Push Notifications Service.\n"
+            "Doing so will share basic metadata with the service's maintainers:\n\n"
+            f"* This server's configured hostname: {request['hostname']}\n"
+            f"* This server's configured contact email address: {request['contact_email']}\n"
+            "* Metadata about each organization hosted by the server; see:\n\n"
+            "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata>\n\n"
+            "Use of this service is governed by the Zulip Terms of Service:\n\n"
+            "    <https://zulip.com/policies/terms>\n"
+        )
 
         if not options["agree_to_terms_of_service"] and not options["rotate_key"]:
-            print(
-                "To register, you must agree to the Zulipchat Terms of Service: "
-                "https://zulip.com/policies/terms"
+            tos_prompt = input(
+                "Do you want to agree to the Zulip Terms of Service and proceed? [Y/n] "
             )
-            tos_prompt = input("Do you agree to the Terms of Service? [Y/n] ")
             print("")
             if not (
                 tos_prompt.lower() == "y" or tos_prompt.lower() == "" or tos_prompt.lower() == "yes"
             ):
-                raise CommandError("Aborting, since Terms of Service have not been accepted.")
+                # Exit without registering; no need to print anything
+                # special, as the "n" reply to the query is clear
+                # enough about what happened.
+                return
 
         response = self._request_push_notification_bouncer_url(
             "/api/v1/remotes/server/register", request
         )
 
+        # Makes sure that we have a current state of user count when first
+        # logging in after the RemoteRealm flow.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
         if response.json()["created"]:
             print(
-                "You've successfully registered for the Mobile Push Notification Service!\n"
-                "To finish setup for sending push notifications:"
+                "Your server is now registered for the Mobile Push Notification Service!\n"
+                "Return to the documentation for next steps."
             )
-            print(
-                "- Restart the server, using /home/zulip/deployments/current/scripts/restart-server"
-            )
-            print("- Return to the documentation to learn how to test push notifications")
         else:
             if options["rotate_key"]:
                 print(f"Success! Updating {SECRETS_FILENAME} with the new key...")
@@ -114,7 +124,7 @@ class Command(ZulipBaseCommand):
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
         session = PushBouncerSession()
         try:
-            response = session.post(registration_url, params=params)
+            response = session.post(registration_url, data=params)
         except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
@@ -132,9 +142,3 @@ class Command(ZulipBaseCommand):
             raise CommandError("Error: " + content_dict["msg"])
 
         return response
-
-    def _log_params(self, params: Dict[str, Any]) -> None:
-        print("The following data will be submitted to the push notification service:")
-        for key in sorted(params.keys()):
-            print(f"  {key}: {params[key]}")
-        print("")

@@ -36,9 +36,15 @@ function get_potential_members() {
     return people.filter_all_users(is_potential_member);
 }
 
-export function update_member_list_widget(group_id, member_ids) {
-    assert(group_id === current_group_id, "Unexpected group rerendering members list");
-    const users = people.get_users_from_ids(member_ids);
+function get_user_group_members(group) {
+    const member_ids = [...group.members];
+    const active_member_ids = member_ids.filter((user_id) => people.is_person_active(user_id));
+    return people.get_users_from_ids(active_member_ids);
+}
+
+export function update_member_list_widget(group) {
+    assert(group.id === current_group_id, "Unexpected group rerendering members list");
+    const users = get_user_group_members(group);
     people.sort_but_pin_current_user_on_top(users);
     member_list_widget.replace_list_data(users);
 }
@@ -50,11 +56,11 @@ function format_member_list_elem(person) {
         is_current_user: person.user_id === page_params.user_id,
         email: person.delivery_email,
         can_remove_subscribers: settings_data.can_edit_user_group(current_group_id),
+        for_user_group_members: true,
     });
 }
 
-function make_list_widget({$parent_container, name, user_ids}) {
-    const users = people.get_users_from_ids(user_ids);
+function make_list_widget({$parent_container, name, users}) {
     people.sort_but_pin_current_user_on_top(users);
 
     const $list_container = $parent_container.find(".member_table");
@@ -103,7 +109,7 @@ export function enable_member_management({group, $parent_container}) {
     member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",
-        user_ids: [...group.members],
+        users: get_user_group_members(group),
     });
 }
 
@@ -131,7 +137,7 @@ function show_user_group_membership_request_result({
     }
 }
 
-function edit_user_group_membership({group, added = [], removed = [], success, error}) {
+export function edit_user_group_membership({group, added = [], removed = [], success, error}) {
     channel.post({
         url: "/json/user_groups/" + group.id + "/members",
         data: {

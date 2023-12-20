@@ -4,7 +4,7 @@ from io import BytesIO
 from typing import Any, Dict, Iterator, List, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlsplit
 
 import orjson
 import responses
@@ -48,7 +48,8 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
-from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
+from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.realms import get_realm
 
 
 def remove_folder(path: str) -> None:
@@ -76,7 +77,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
     if request.url == "https://slack.com/api/users.list":
         return (200, {}, orjson.dumps({"ok": True, "members": "user_data"}))
 
-    query_from_url = str(urlparse(request.url).query)
+    query_from_url = str(urlsplit(request.url).query)
     qs = parse_qs(query_from_url)
     if request.url and "https://slack.com/api/users.info" in request.url:
         user2team_dict = {
@@ -1336,6 +1337,7 @@ class SlackImporter(ZulipTestCase):
                 RealmAuditLog.SUBSCRIPTION_CREATED,
                 RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
                 RealmAuditLog.REALM_CREATED,
+                RealmAuditLog.REALM_IMPORTED,
                 RealmAuditLog.USER_GROUP_CREATED,
                 RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,

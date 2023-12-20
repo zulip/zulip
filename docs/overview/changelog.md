@@ -3,11 +3,23 @@
 This page contains the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
+## Zulip 9.x series
+
+### 9.0 -- unreleased
+
+This section is an incomplete draft of the release notes for the next
+major release, and is only updated occasionally. See the [commit
+log][commit-log] for an up-to-date list of all changes.
+
+#### Upgrade notes for 9.0
+
+- None yet.
+
 ## Zulip Server 8.x series
 
-### Zulip Server 8.0-beta1
+### Zulip Server 8.0
 
-_Released 2023-11-16_
+_Released 2023-12-15_
 
 #### Highlights
 
@@ -17,8 +29,9 @@ _Released 2023-11-16_
 - Added support for following a topic, with configurable notification
   settings for followed topics and flexible configuration options to
   automatically follow topics when sending a message or otherwise
-  interacting with it. New `Shift + N` keyboard shortcut navigates to
-  the next unread followed topic.
+  interacting with it, or when mentioned. New `Shift + N` keyboard
+  shortcut navigates to the next unread followed topic.
+- Added support for limiting user list access for guests.
 - New @topic mentions support mentioning only users who have
   participated in a topic by sending a message or emoji reaction.
 - Typing notifications now support streams with 100 or fewer
@@ -42,10 +55,10 @@ _Released 2023-11-16_
   supported this for videos hosted by third-party platforms that
   provide an embedded player, like YouTube and Vimeo.
 - The compose area was redesigned, with new formatting buttons for
-  bulleted and numbered lists. Improved pasting URLs with text
-  selected. Topic typeahead now indicates whether one would be
-  creating a new topic, and user typeahead now shows pronouns if a
-  pronoun custom profile field is configured.
+  most message formatting features, including polls. Improved pasting
+  URLs with text selected. Topic typeahead now indicates whether one
+  would be creating a new topic, and user typeahead now shows pronouns
+  if a pronoun custom profile field is configured.
 
 #### Full feature changelog
 
@@ -53,6 +66,9 @@ _Released 2023-11-16_
 - Redesigned file upload, including a cancel button, better
   drag-and-drop support, better message-edit handling, and many bug
   fixes.
+- Redesigned managing groups to use a side-by-side panel UI similar to
+  stream settings. This is an important step towards our upcoming
+  support for groups-based permissions.
 - Redesigned how very tall messages are condensed.
 - Redesigned email confirmation page.
 - Redesigned various settings panels to remove clutter and simplify
@@ -64,7 +80,9 @@ _Released 2023-11-16_
 - Added support for printing a message feed as a lightweight
   conversation export experience.
 - Added support for muting bot users.
-- Added support for multi-character emoji sequences.
+- Added support for multi-character emoji sequences and other modern
+  emoji; Twitter emojiset now backfills missing emoji from the Google
+  emojiset just like the Google blobs emojiset does.
 - Added user profile tab for administrators to edit the profile.
 - Added support for subscribing users in user profile streams tab.
 - Added new permissions setting for who can create reusable invitation
@@ -102,13 +120,21 @@ _Released 2023-11-16_
 - The organization creation form now explicitly asks the user to
   choose a default language for the organization.
 - Improved design for /todo widgets.
+- Improved defaults for which portion of a topic to move when moving
+  messages.
 - Improved semantics and explanations of reactivating previously
   deactivated bot users.
 - Improved over 100 help center articles, adding mobile documentation
   for many common workflows and a new indexing system for message
   formatting documentation.
+- Improved onboarding hints for steps one might want to take before
+  inviting users.
+- Improved display for uploaded images that had been deleted.
 - Improved content and styling for many tooltips across the web
   application, including several new "Copied!" tooltips.
+- Improved configurability of outgoing email sender names.
+- Improved the ability of a self-hosted server to tell the mobile apps
+  whether mobile push notifications are working.
 - Improved integrations: CircleCI, Gitea, GitHub, GitLab,
   Sentry. Regenerated integration screenshots to show the current
   visual design.
@@ -125,9 +151,11 @@ _Released 2023-11-16_
 - Fixed email notifications incorrectly containing extra context
   messages when subscribed to email notifications for a stream.
 - Fixed several longstanding performance issues both in the web
-  application and the server.
+  application and the server, and a small memory leak.
 - Fixed several subtle bugs in error reporting internals.
 - Fixed multiple subtle deadlocks in database locking code.
+- Fixed several subtle bugs in the compose box.
+- Fixed LaTeX being misrendered in desktop, email and push notifications.
 - Fixed several subtle internationalization bugs.
 - Fixed multiple subtle linkification bugs.
 - Fixed many subtle bugs in settings.
@@ -147,6 +175,13 @@ _Released 2023-11-16_
 
 #### Upgrade notes for 8.0
 
+- Installations using the [Mobile Push Notifications
+  Service][mobile-push] now regularly upload [basic
+  metadata][mobile-push-metadata] about the organizations hosted by
+  the installation to the Mobile Push Notifications
+  Service. Previously, basic metadata was uploaded only when uploading
+  usage statistics was also enabled via the `SUBMIT_USAGE_STATISTICS`
+  setting.
 - This release contains several expensive migrations, most notably
   `0472_add_message_realm_id_indexes.py`,
   `0485_alter_usermessage_flags_and_add_index.py`, and
@@ -165,6 +200,8 @@ _Released 2023-11-16_
   authentication but not explicitly configured with advanced access
   controls. This behavior was removed to simplify hosting multiple
   organizations with different LDAP configuration preferences.
+
+[mobile-push-metadata]: ../production/mobile-push-notifications.md#uploading-usage-statistics
 
 ## Zulip Server 7.x series
 
@@ -3679,7 +3716,8 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 8.0](#upgrade-notes-for-80)
+- [Draft upgrade notes for 9.0](#upgrade-notes-for-90)
+- [Upgrade notes for 8.0](#upgrade-notes-for-80)
 - [Upgrade notes for 7.0](#upgrade-notes-for-70)
 - [Upgrade notes for 6.0](#upgrade-notes-for-60)
 - [Upgrade notes for 5.0](#upgrade-notes-for-50)

@@ -22,6 +22,28 @@ export const stripe_session_url_schema = z.object({
     stripe_session_url: z.string(),
 });
 
+const cloud_discount_details: DiscountDetails = {
+    opensource: "Zulip Cloud Standard is free for open-source projects.",
+    research: "Zulip Cloud Standard is free for academic research.",
+    nonprofit: "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
+    event: "Zulip Cloud Standard is free for academic conferences and most non-profit events.",
+    education: "Zulip Cloud Standard is discounted 85% for education.",
+    education_nonprofit:
+        "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
+};
+
+const remote_discount_details: DiscountDetails = {
+    opensource: "The Community plan is free for open-source projects.",
+    research: "The Community plan is free for academic research.",
+    nonprofit:
+        "The Community plan is free for registered non-profits with up to 100 users. The Business plan is discounted 85+% with a purchase of 100+ licenses.",
+    event: "The Community plan is free for academic conferences and most non-profit events.",
+    education:
+        "The Community plan is free for education organizations with up to 100 users. The Business plan is discounted 85% with a purchase of 100+ licenses.",
+    education_nonprofit:
+        "The Community plan is free for education non-profits with up to 100 users. The Business plan is discounted 90% with online purchase of 100+ licenses.",
+};
+
 export function create_ajax_request(
     url: string,
     form_name: string,
@@ -37,9 +59,6 @@ export function create_ajax_request(
     const form_error = `#${CSS.escape(form_name)}-error`;
     const form_loading = `#${CSS.escape(form_name)}-loading`;
 
-    const zulip_limited_section = "#zulip-limited-section";
-    const free_trial_alert_message = "#free-trial-alert-message";
-
     loading.make_indicator($(form_loading_indicator), {
         text: "Processing ...",
         abs_positioned: true,
@@ -47,8 +66,6 @@ export function create_ajax_request(
     $(form_input_section).hide();
     $(form_error).hide();
     $(form_loading).show();
-    $(zulip_limited_section).hide();
-    $(free_trial_alert_message).hide();
 
     const data: FormDataObject = {};
 
@@ -82,8 +99,6 @@ export function create_ajax_request(
                 $(form_error).show().text(xhr.responseJSON.msg);
             }
             $(form_input_section).show();
-            $(zulip_limited_section).show();
-            $(free_trial_alert_message).show();
             error_callback(xhr);
         },
     });
@@ -105,22 +120,19 @@ export function format_money(cents: number): string {
     }).format(Number.parseFloat((cents / 100).toFixed(precision)));
 }
 
-export function update_discount_details(organization_type: string): void {
-    let discount_notice =
-        "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
-    const discount_details: DiscountDetails = {
-        opensource: "Zulip Cloud Standard is free for open-source projects.",
-        research: "Zulip Cloud Standard is free for academic research.",
-        nonprofit: "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
-        event: "Zulip Cloud Standard is free for academic conferences and most non-profit events.",
-        education: "Zulip Cloud Standard is discounted 85% for education.",
-        education_nonprofit:
-            "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
-    };
+export function update_discount_details(
+    organization_type: string,
+    is_remotely_hosted: boolean,
+): void {
+    let discount_notice = is_remotely_hosted
+        ? "Your organization may be eligible for a free Community plan, or a discounted Business plan."
+        : "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
 
     try {
         const parsed_organization_type = organization_type_schema.parse(organization_type);
-        discount_notice = discount_details[parsed_organization_type];
+        discount_notice = is_remotely_hosted
+            ? remote_discount_details[parsed_organization_type]
+            : cloud_discount_details[parsed_organization_type];
     } catch {
         // This will likely fail if organization_type is not in organization_type_schema or
         // parsed_organization_type is not preset in discount_details. In either case, we will
@@ -158,4 +170,27 @@ export function set_tab(page: string): void {
 
 export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
     return elem[0].checkValidity();
+}
+
+export function redirect_to_billing_with_successful_upgrade(billing_base_url: string): void {
+    window.location.replace(
+        billing_base_url +
+            "/billing/?success_message=" +
+            encodeURIComponent("Your organization has been upgraded to PLAN_NAME."),
+    );
+}
+
+export function get_upgrade_page_url(
+    is_manual_license_management_upgrade_session: boolean | undefined,
+    tier: number,
+    billing_base_url: string,
+): string {
+    const base_url = billing_base_url + "/upgrade/";
+    let params = `tier=${String(tier)}`;
+    if (is_manual_license_management_upgrade_session !== undefined) {
+        params += `&manual_license_management=${String(
+            is_manual_license_management_upgrade_session,
+        )}`;
+    }
+    return base_url + "?" + params;
 }

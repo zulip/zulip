@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 from unittest import mock
@@ -50,15 +50,17 @@ from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     Account,
     access_user_by_id,
+    access_user_by_id_including_cross_realm,
     get_accounts_for_email,
     get_cross_realm_dicts,
+    get_inaccessible_user_ids,
     user_ids_to_users,
 )
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
-    InvalidFakeEmailDomainError,
     Message,
+    OnboardingStep,
     PreregistrationUser,
     RealmAuditLog,
     RealmDomain,
@@ -67,18 +69,18 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroupMembership,
-    UserHotspot,
     UserProfile,
     UserTopic,
-    check_valid_user_ids,
-    filter_to_valid_prereg_users,
-    get_client,
-    get_fake_email_domain,
-    get_realm,
+)
+from zerver.models.clients import get_client
+from zerver.models.custom_profile_fields import check_valid_user_ids
+from zerver.models.groups import SystemGroups
+from zerver.models.prereg_users import filter_to_valid_prereg_users
+from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import (
     get_source_profile,
-    get_stream,
     get_system_bot,
     get_user,
     get_user_by_delivery_email,
@@ -428,18 +430,41 @@ class PermissionTest(ZulipTestCase):
 
     def test_access_user_by_id(self) -> None:
         iago = self.example_user("iago")
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
 
         # Must be a valid user ID in the realm
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, 1234, for_admin=False)
         with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, 1234, for_admin=False)
+        with self.assertRaises(JsonableError):
             access_user_by_id(iago, self.mit_user("sipbtest").id, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(
+                iago, self.mit_user("sipbtest").id, for_admin=False
+            )
 
         # Can only access bot users if allow_bots is passed
         bot = self.example_user("default_bot")
         access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
+        access_user_by_id_including_cross_realm(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, bot.id, for_admin=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, bot.id, for_admin=True)
+
+        # Only the including_cross_realm variant works for system bots.
+        system_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=False)
+        access_user_by_id_including_cross_realm(
+            iago, system_bot.id, allow_bots=True, for_admin=False
+        )
+        # And even then, only if `allow_bots` was passed.
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, system_bot.id, for_admin=False)
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
@@ -447,16 +472,32 @@ class PermissionTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=False)
         with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=False)
+
+        with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=True)
         access_user_by_id(iago, hamlet.id, allow_deactivated=True, for_admin=True)
+        access_user_by_id_including_cross_realm(
+            iago, hamlet.id, allow_deactivated=True, for_admin=True
+        )
 
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
             access_user_by_id(
                 self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
             )
+        with self.assertRaises(JsonableError):
+            access_user_by_id_including_cross_realm(
+                self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
+            )
+
         # But does have read-only access to it.
         access_user_by_id(
+            self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
+        )
+        access_user_by_id_including_cross_realm(
             self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
         )
 
@@ -1230,11 +1271,11 @@ class UserProfileTest(ZulipTestCase):
         with get_test_image_file("img.png") as image_file:
             upload_avatar_image(image_file, cordelia, cordelia)
 
-        UserHotspot.objects.filter(user=cordelia).delete()
-        UserHotspot.objects.filter(user=iago).delete()
+        OnboardingStep.objects.filter(user=cordelia).delete()
+        OnboardingStep.objects.filter(user=iago).delete()
         hotspots_completed = {"intro_streams", "intro_topics"}
         for hotspot in hotspots_completed:
-            UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
+            OnboardingStep.objects.create(user=cordelia, onboarding_step=hotspot)
 
         # Check that we didn't send an realm_user update events to
         # users; this work is happening before the user account is
@@ -1276,7 +1317,9 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.enter_sends, False)
         self.assertEqual(hamlet.enter_sends, True)
 
-        hotspots = set(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
+        hotspots = set(
+            OnboardingStep.objects.filter(user=iago).values_list("onboarding_step", flat=True)
+        )
         self.assertEqual(hotspots, hotspots_completed)
 
     def test_copy_default_settings_from_realm_user_default(self) -> None:
@@ -1763,7 +1806,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             user.realm,
             to_user_ids=[user.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user, acting_user=None)
@@ -1776,7 +1819,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(
             ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1
@@ -1792,7 +1835,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         clear_scheduled_emails(hamlet.id)
@@ -1807,7 +1850,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
@@ -1833,7 +1876,7 @@ class ActivateTest(ZulipTestCase):
             "zerver/emails/onboarding_zulip_topics",
             iago.realm,
             to_user_ids=to_user_ids,
-            delay=datetime.timedelta(hours=1),
+            delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
@@ -2631,6 +2674,36 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
+    def test_get_inaccessible_user_ids(self) -> None:
+        polonius = self.example_user("polonius")
+        bot = self.example_user("default_bot")
+        othello = self.example_user("othello")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        prospero = self.example_user("prospero")
+
+        inaccessible_user_ids = get_inaccessible_user_ids(
+            [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
+        )
+        self.assert_length(inaccessible_user_ids, 0)
+
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id], polonius)
+        self.assert_length(inaccessible_user_ids, 0)
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id], polonius)
+        self.assert_length(inaccessible_user_ids, 0)
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
+        self.assertEqual(inaccessible_user_ids, {othello.id})
+
+        inaccessible_user_ids = get_inaccessible_user_ids(
+            [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
+        )
+        self.assertEqual(inaccessible_user_ids, {othello.id})
+
 
 class DeleteUserTest(ZulipTestCase):
     def test_do_delete_user(self) -> None:
@@ -2780,27 +2853,27 @@ class DeleteUserTest(ZulipTestCase):
 class FakeEmailDomainTest(ZulipTestCase):
     def test_get_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual("zulip.testserver", get_fake_email_domain(realm))
+        self.assertEqual("zulip.testserver", get_fake_email_domain(realm.host))
 
         with self.settings(EXTERNAL_HOST="example.com"):
-            self.assertEqual("zulip.example.com", get_fake_email_domain(realm))
+            self.assertEqual("zulip.example.com", get_fake_email_domain(realm.host))
 
     @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_get_fake_email_domain_realm_host_is_ip_addr(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual("fakedomain.com", get_fake_email_domain(realm))
+        self.assertEqual("fakedomain.com", get_fake_email_domain(realm.host))
 
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
         with self.assertRaises(InvalidFakeEmailDomainError):
-            get_fake_email_domain(realm)
+            get_fake_email_domain(realm.host)
 
     @override_settings(FAKE_EMAIL_DOMAIN="127.0.0.1", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain_ip(self) -> None:
         with self.assertRaises(InvalidFakeEmailDomainError):
             realm = get_realm("zulip")
-            get_fake_email_domain(realm)
+            get_fake_email_domain(realm.host)
 
 
 class TestBulkRegenerateAPIKey(ZulipTestCase):

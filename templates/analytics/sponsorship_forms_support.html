@@ -1,0 +1,53 @@
+<form method="POST" class="remote-form">
+    <b>Sponsorship pending</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <select name="sponsorship_pending">
+        <option value="true" {% if sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
+        <option value="false" {% if not sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+
+{% if sponsorship_data.sponsorship_pending %}
+<form method="POST" class="">
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="hidden" name="approve_sponsorship" value="true" />
+    <button class="btn btn-default sea-green small approve-sponsorship-button">
+        Approve full sponsorship
+    </button>
+</form>
+{% endif %}
+
+<form method="POST" class="remote-form">
+    <b>Discount</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    {% if has_fixed_price %}
+    <input type="number" name="discount" value="{{ sponsorship_data.default_discount }}" disabled />
+    <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
+    {% else %}
+    <input type="number" name="discount" value="{{ sponsorship_data.default_discount }}" required />
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+    {% endif %}
+</form>
+
+{% if sponsorship_data.sponsorship_pending %}
+<div class="">
+    <h4>Sponsorship request information:</h4>
+    {% if sponsorship_data.latest_sponsorship_request %}
+    <ul>
+        <li><b>Organization type</b>: {{ sponsorship_data.latest_sponsorship_request.org_type }}</li>
+        <li><b>Organization website</b>: {{ sponsorship_data.latest_sponsorship_request.org_website }}</li>
+        <li><b>Organization description</b>: {{ sponsorship_data.latest_sponsorship_request.org_description }}</li>
+        <li><b>Estimated total users</b>: {{ sponsorship_data.latest_sponsorship_request.total_users }}</li>
+        <li><b>Paid users</b>: {{ sponsorship_data.latest_sponsorship_request.paid_users }}</li>
+        <li><b>Description of paid users</b>: {{ sponsorship_data.latest_sponsorship_request.paid_users_description }}</li>
+        <li><b>Requested plan</b>: {{ sponsorship_data.latest_sponsorship_request.requested_plan }}</li>
+    </ul>
+    {% else %}
+    <b>No sponsorship requests have been submitted.</b><br /><br />
+    {% endif %}
+</div>
+{% endif %}

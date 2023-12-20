@@ -17,6 +17,7 @@ from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS
 from tools.setup.emoji.emoji_setup_utils import (
     EMOTICON_CONVERSIONS,
     REMAPPED_EMOJIS,
+    emoji_is_supported,
     emoji_names_for_picker,
     generate_codepoint_to_name_map,
     generate_codepoint_to_names_map,
@@ -75,11 +76,11 @@ EMOJI_POS_INFO_TEMPLATE = """\
 }}
 """
 
-EMOJI_POS_INFO_OVERRIDE_TEMPLATE = """\
+EMOJI_OVERRIDE_TEMPLATE = """\
 .emoji-{codepoint} {{
-    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
-    background-size: {background_size} !important;
-    background-position: {pos_x} {pos_y};
+    background-image: url(../../../static/generated/emoji/images-google-64/{codepoint}.png) !important;
+    background-position: 0% 0% !important;
+    background-size: contain !important;
 }}
 """
 
@@ -178,13 +179,7 @@ def generate_sprite_css_files(
 
     emoji_positions = ""
     for emoji in emoji_data:
-        if emoji["has_img_google"]:
-            # Why is the test here has_img_google and not
-            # emoji_is_universal?  Because we briefly supported all
-            # Google emoji (not just the universal ones), we need to
-            # ensure the spritesheet is set up to correctly display
-            # those Google emoji (in case anyone used them).
-
+        if emoji_is_supported(emoji):
             """
             For background-position we need to use percentages.
             Absolute pixel values won't work, because the size
@@ -243,19 +238,35 @@ def generate_sprite_css_files(
     # fallback to Google Modern for any emoji not covered by Google Classic.
     if emojiset == "google-blob":
         extra_emoji_positions = ""
-        n = get_square_size(fallback_emoji_data)
-        background_size = percent(n)
         covered_emoji_codes = [
             get_emoji_code(emoji) for emoji in emoji_data if emoji["has_img_google"]
         ]
         for emoji in fallback_emoji_data:
             code = get_emoji_code(emoji)
             if emoji["has_img_google"] and code not in covered_emoji_codes:
-                extra_emoji_positions += EMOJI_POS_INFO_OVERRIDE_TEMPLATE.format(
+                extra_emoji_positions += EMOJI_OVERRIDE_TEMPLATE.format(
                     codepoint=code,
-                    pos_x=percent(emoji["sheet_x"] / (n - 1)),
-                    pos_y=percent(emoji["sheet_y"] / (n - 1)),
-                    background_size=background_size,
+                )
+        with open(SPRITE_CSS_PATH, "a") as f:
+            f.write(extra_emoji_positions)
+
+    # The Twitter emoji team was laid off in 2022, so new emoji aren't supported.
+    # https://github.com/twitter/twemoji/issues/570#issuecomment-1303422143.
+    # The "twitter" sprite sheet we’re using does have images in those locations,
+    # but they’re fallback images that emoji-datasource fills in from the Apple
+    # sprite sheet, which has unclear licensing implications.
+    # To be able to support newer emoji, we fallback to Google Modern for any emoji
+    # not covered by Twemoji.
+    if emojiset == "twitter":
+        extra_emoji_positions = ""
+        twitter_covered_emoji_codes = {
+            get_emoji_code(emoji) for emoji in emoji_data if emoji["has_img_twitter"]
+        }
+        for emoji in emoji_data:
+            code = get_emoji_code(emoji)
+            if emoji["has_img_google"] and code not in twitter_covered_emoji_codes:
+                extra_emoji_positions += EMOJI_OVERRIDE_TEMPLATE.format(
+                    codepoint=code,
                 )
         with open(SPRITE_CSS_PATH, "a") as f:
             f.write(extra_emoji_positions)

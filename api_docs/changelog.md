@@ -18,7 +18,102 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 9.0
+
+Feature levels 238-239 are reserved for future use in 8.x maintenance
+releases.
+
 ## Changes in Zulip 8.0
+
+**Feature level 237**
+
+No changes; feature level used for Zulip 8.0 release.
+
+**Feature level 236**
+
+* [`POST /messages`](/api/send-message), [`POST
+  /scheduled_messages`](/api/create-scheduled-message): The new
+  `read_by_sender` parameter lets the client override the heuristic
+  that determines whether the new message will be initially marked
+  read by its sender.
+
+**Feature level 235**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added a new user setting, `automatically_follow_topics_where_mentioned`,
+  that allows the user to automatically follow topics where the user is mentioned.
+
+**Feature level 234**
+
+* Mobile push notifications now include a `realm_name` field.
+* [`POST /mobile_push/test_notification`](/api/test-notify) now sends
+  a test notification with `test` rather than `test-by-device-token`
+  in the `event` field.
+
+**Feature level 233**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Renamed the event type `hotspots` and the `hotspots` array field in it
+  to `onboarding_steps` as this event is sent to clients with remaining
+  onboarding steps data that includes hotspots and one-time notices to display.
+  Earlier, we had hotspots only. Added a `type` field to the objects in
+  the renamed `onboarding_steps` array to distinguish between the two type
+  of onboarding steps.
+
+* `POST /users/me/onboarding_steps`: Added a new endpoint that
+  deprecates the `/users/me/hotspots` endpoint. Added support for
+  displaying one-time notices in addition to existing hotspots.
+  This is now used as a common endpoint to mark both types of
+  onboarding steps, i.e., 'hotspot' and 'one_time_notice'.
+  There is no compatibility support for `/users/me/hotspots` as
+  no client other than web app has this feature currently.
+
+**Feature level 232**
+
+* [`POST /register`](/api/register-queue): Added a new
+  `user_list_incomplete` [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controlling whether `realm_users` contains "Unknown user"
+  placeholder objects for users that the current user cannot access
+  due to a `can_access_all_users_group` policy.
+
+* [`GET /events`](/api/get-events): The new `user_list_incomplete`
+  [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controls whether to send `realm_user` events with `op: "add"`
+  containing "Unknown user" placeholder objects to clients when a new
+  user is created that the client does not have access to due to a
+  `can_access_all_users_group` policy.
+
+**Feature level 231**
+
+* [`POST /register`](/api/register-queue):
+  `realm_push_notifications_enabled` now represents more accurately
+  whether push notifications are actually enabled via the mobile push
+  notifications service. Added
+  `realm_push_notifications_enabled_end_timestamp` field to realm
+  data.
+
+* [`GET /events`](/api/get-events): A `realm` update event is now sent
+  whenever `push_notifications_enabled` or
+  `push_notifications_enabled_end_timestamp` changes.
+
+**Feature level 230**
+
+* [`GET /events`](/api/get-events): Added `has_trigger` field in
+  hotspots events to identify if a hotspot will activate only when
+  some specific event occurs.
+
+**Feature level 229**
+
+* [`PATCH /messages/{message_id}`](/api/update-message), [`POST
+  /messages`](/api/send-message): Topic wildcard mentions involving
+  large numbers of participants are now restricted by
+  `wildcard_mention_policy`. The server now uses the
+  `STREAM_WILDCARD_MENTION_NOT_ALLOWED` and
+  `TOPIC_WILDCARD_MENTION_NOT_ALLOWED` error codes when a message is
+  rejected because of `wildcard_mention_policy`.
 
 **Feature level 228**
 

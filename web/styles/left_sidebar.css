@@ -63,7 +63,6 @@ $before_unread_count_padding: 3px;
 }
 
 .sidebar-topic-check,
-.topic-name,
 .topic-markers-and-controls {
     cursor: pointer;
 }
@@ -416,6 +415,11 @@ li.show-more-topics {
     }
 }
 
+#login-link-container .login_button {
+    display: flex;
+    align-items: center;
+}
+
 ul.filters {
     list-style-type: none;
     margin-left: 0;
@@ -449,6 +453,10 @@ ul.filters {
        be explicit and because the design may change in the future. */
     .more_topic_unreads_muted_only .unread_count {
         opacity: 0.5;
+    }
+
+    .zulip-icon-follow {
+        opacity: 0.6;
     }
 
     & li.muted_topic,
@@ -910,6 +918,29 @@ li.top_left_scheduled_messages {
     grid-template-columns:
         25px $topic_resolve_width minmax(0, 1fr) minmax(0, max-content)
         30px 0;
+
+    .topic-name {
+        cursor: pointer;
+        grid-area: row-content;
+        padding: 1px $before_unread_count_padding 1px 0;
+
+        /* TODO: We should figure out how to remove this without changing the spacing */
+        line-height: 1.1;
+
+        /* TODO: Consolidate these styles with conversation partners and stream name
+            once grid rewrite is complete on all sidebar rows.
+
+            Also: note that these styles will be moot for topic names once we allow
+            for multiline topics. If we hold multiline topics to a certain number
+            of lines, we'll likely need a JavaScript-based solution like Clamp.js
+            to display an ellipsis on the final visible line. */
+        white-space: nowrap;
+        /* Both `hidden` and `clip` are shown for the sake
+            of older browsers that do not support `clip`. */
+        overflow-x: hidden;
+        overflow-x: clip;
+        text-overflow: ellipsis;
+    }
 }
 
 .topic-box .zero_count {
@@ -920,28 +951,6 @@ li.top_left_scheduled_messages {
     grid-area: starting-anchor-element;
     font-size: 15px;
     height: 20px;
-}
-
-.topic-name {
-    grid-area: row-content;
-    padding: 1px $before_unread_count_padding 1px 0;
-
-    /* TODO: We should figure out how to remove this without changing the spacing */
-    line-height: 1.1;
-
-    /* TODO: Consolidate these styles with conversation partners and stream name
-       once grid rewrite is complete on all sidebar rows.
-
-       Also: note that these styles will be moot for topic names once we allow
-       for multiline topics. If we hold multiline topics to a certain number
-       of lines, we'll likely need a JavaScript-based solution like Clamp.js
-       to display an ellipsis on the final visible line. */
-    white-space: nowrap;
-    /* Both `hidden` and `clip` are shown for the sake
-       of older browsers that do not support `clip`. */
-    overflow-x: hidden;
-    overflow-x: clip;
-    text-overflow: ellipsis;
 }
 
 .stream-markers-and-controls,
@@ -1084,7 +1093,7 @@ li.topic-list-item {
 .dm-box {
     grid-template-columns: 7px 22px minmax(0, 1fr) minmax(0, max-content) 30px 0;
     /* This padding maintains a 22px height on DM rows. */
-    padding: 2.25px 0;
+    padding: 2px 0;
 
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
@@ -1267,6 +1276,55 @@ li.topic-list-item {
                to make a generous clickable area. */
             padding: 0;
         }
+    }
+
+    &.hide_unread_counts {
+        .unread_count,
+        .unread_count.hide,
+        .masked_unread_count {
+            display: none;
+        }
+
+        /* When an empty unread count is hidden,
+           hide the masked unread count, too. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
+        .masked_unread_count {
+            display: block;
+            /* Hold space enough so single-digit
+               unreads don't shift on hover. */
+            margin: 0 3px;
+        }
+
+        &:hover {
+            .unread_count {
+                display: block;
+            }
+
+            .hide,
+            .masked_unread_count {
+                display: none;
+            }
+        }
+    }
+}
+
+/* Prepare an adjusted grid for the logged-out state,
+   one that reassigns the vdots space to markers and
+   controls. */
+.spectator-view #streams_header {
+    grid-template-columns: 0 0 minmax(0, 1fr) minmax(30px, max-content) 0 12px;
+
+    /* With markers and controls now sized the same
+       as the ordinary vdots area (but allowed to grow,
+       care of `minmax(30px, max-content)`, should
+       additional logged-out icons be added in the
+       future), let's center the icon in that area,
+       just like vdots would be. */
+    .heading-markers-and-controls {
+        justify-content: center;
     }
 }
 

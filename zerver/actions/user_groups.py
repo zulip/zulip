@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
 import django.db.utils
@@ -15,19 +15,19 @@ from zerver.models import (
     GroupGroupMembership,
     Realm,
     RealmAuditLog,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
-    active_user_ids,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 class MemberGroupUserDict(TypedDict):
     id: int
     role: int
-    date_joined: datetime.datetime
+    date_joined: datetime
 
 
 @transaction.atomic

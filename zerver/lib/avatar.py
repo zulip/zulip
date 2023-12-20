@@ -1,5 +1,5 @@
-import urllib
 from typing import Any, Dict, Optional
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -135,7 +135,7 @@ def absolute_avatar_url(user_profile: UserProfile) -> str:
     avatar = avatar_url(user_profile)
     # avatar_url can return None if client_gravatar=True, however here we use the default value of False
     assert avatar is not None
-    return urllib.parse.urljoin(user_profile.realm.uri, avatar)
+    return urljoin(user_profile.realm.uri, avatar)
 
 
 def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:

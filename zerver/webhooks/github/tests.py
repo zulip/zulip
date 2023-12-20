@@ -12,7 +12,7 @@ TOPIC_DEPLOYMENT = "public-repo / Deployment on production"
 TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / wiki pages"
-TOPIC_DISCUSSION = "public-repo discussion #90: Welcome to discussions!"
+TOPIC_DISCUSSION = "testing-gh discussion #20: Lets discuss"
 
 
 class GitHubWebhookTest(WebhookTestCase):
@@ -160,14 +160,14 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issues", expected_topic, expected_message)
 
     def test_issue_assigned(self) -> None:
-        expected_message = "sbansal1999 assigned [issue #7](https://github.com/sbansal1999/testing-gh/issues/7) to sbansal1999."
-        expected_topic = "testing-gh / issue #7 Sample Issue testing something"
+        expected_message = "sbansal1999 assigned sbansal1999 to [issue #7](https://github.com/sbansal1999/testing-gh/issues/7)."
+        expected_topic = "testing-gh / issue #7 Testing when issue assigned!"
         self.check_webhook("issues__assigned", expected_topic, expected_message)
 
     def test_issue_assigned_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "sbansal1999 assigned [issue #7 Sample Issue testing something](https://github.com/sbansal1999/testing-gh/issues/7) to sbansal1999."
+        expected_message = "sbansal1999 assigned sbansal1999 to [issue #7 Testing when issue assigned!](https://github.com/sbansal1999/testing-gh/issues/7)"
         self.check_webhook("issues__assigned", expected_topic, expected_message)
 
     def test_issue_unassigned(self) -> None:
@@ -375,13 +375,13 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__synchronized_with_body", TOPIC_PR, expected_message)
 
     def test_pull_request_assigned_msg(self) -> None:
-        expected_message = "baxterthehacker assigned [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker."
+        expected_message = "baxterthehacker assigned baxterthehacker to [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__assigned", TOPIC_PR, expected_message)
 
     def test_pull_request_assigned_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "baxterthehacker assigned [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker."
+        expected_message = "baxterthehacker assigned baxterthehacker to [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__assigned", expected_topic, expected_message)
 
     def test_pull_request_unassigned_msg(self) -> None:
@@ -435,9 +435,9 @@ Check [randscape](http://github.com/github/hello-world/runs/4) completed (succes
         expected_topic = "team Testing"
         expected_message = """\
 **Hypro999** changed the team description to:
-```quote
+\n~~~ quote
 A temporary team so that I can get some webhook fixtures!
-```"""
+~~~"""
         self.check_webhook("team__edited_description", expected_topic, expected_message)
 
     def test_team_edited_name(self) -> None:
@@ -575,9 +575,19 @@ A temporary team so that I can get some webhook fixtures!
         self.assertTrue(stack_info)
 
     def test_discussion_msg(self) -> None:
-        expected_message = "Codertocat created [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90) in General:\n```quote\n### Welcome to discussions!\nWe're glad to have you here!\n```"
+        expected_message = "sbansal1999 created [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20) in General:\n\n~~~ quote\n### Lets discuss\nSome random text about which no one cares.\r\n\n~~~"
         self.check_webhook("discussion", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_comment_msg(self) -> None:
-        expected_message = "Codertocat [commented](https://github.com/baxterthehacker/public-repo/discussions/90#discussioncomment-544078) on [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90):\n```quote\nI have so many questions to ask you!\n```"
+        expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment\n~~~"
         self.check_webhook("discussion_comment", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_comment_msg_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20 Lets discuss](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment\n~~~"
+        self.check_webhook("discussion_comment", expected_topic, expected_message)
+
+    def test_discussion_comment_edited_msg(self) -> None:
+        expected_message = "sbansal1999 edited a [comment](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment edited\n~~~"
+        self.check_webhook("discussion_comment__edited", TOPIC_DISCUSSION, expected_message)

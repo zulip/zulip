@@ -332,25 +332,29 @@ def check_heartbeat(
     _check_heartbeat(var_name, event)
 
 
-_hotspot = DictType(
+_onboarding_steps = DictType(
     required_keys=[
+        ("type", str),
         ("name", str),
+    ],
+    optional_keys=[
         ("title", str),
         ("description", str),
         ("delay", NumberType()),
-    ]
+        ("has_trigger", bool),
+    ],
 )
 
-hotspots_event = event_dict_type(
+onboarding_steps_event = event_dict_type(
     required_keys=[
-        ("type", Equals("hotspots")),
+        ("type", Equals("onboarding_steps")),
         (
-            "hotspots",
-            ListType(_hotspot),
+            "onboarding_steps",
+            ListType(_onboarding_steps),
         ),
     ]
 )
-check_hotspots = make_checker(hotspots_event)
+check_onboarding_steps = make_checker(onboarding_steps_event)
 
 invites_changed_event = event_dict_type(
     required_keys=[

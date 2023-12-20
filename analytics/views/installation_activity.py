@@ -13,16 +13,20 @@ from psycopg2.sql import SQL
 from analytics.lib.counts import COUNT_STATS
 from analytics.views.activity_common import (
     dictfetchall,
-    get_page,
+    fix_rows,
+    format_date_for_activity_reports,
+    get_query_data,
+    make_table,
     realm_activity_link,
     realm_stats_link,
     realm_support_link,
     realm_url_link,
 )
-from analytics.views.support import get_plan_name
+from analytics.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
-from zerver.models import Realm, get_org_type_display_name
+from zerver.models import Realm
+from zerver.models.realms import get_org_type_display_name
 
 if settings.BILLING_ENABLED:
     from corporate.lib.analytics import (
@@ -201,7 +205,7 @@ def realm_summary_table() -> str:
         realms_with_default_discount = get_realms_with_default_discount_dict()
 
         for row in rows:
-            row["plan_type_string"] = get_plan_name(row["plan_type"])
+            row["plan_type_string"] = get_plan_type_string(row["plan_type"])
 
             string_id = row["string_id"]
 
@@ -327,14 +331,20 @@ def get_integrations_activity(request: HttpRequest) -> HttpResponse:
         "Last time",
     ]
 
-    integrations_activity = get_page(query, cols, title)
+    rows = get_query_data(query)
+    for i, col in enumerate(cols):
+        if col == "Realm":
+            fix_rows(rows, i, realm_activity_link)
+        elif col == "Last time":
+            fix_rows(rows, i, format_date_for_activity_reports)
 
+    content = make_table(title, cols, rows)
     return render(
         request,
         "analytics/activity_details_template.html",
         context=dict(
-            data=integrations_activity["content"],
-            title=integrations_activity["title"],
+            data=content,
+            title=title,
             is_home=False,
         ),
     )

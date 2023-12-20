@@ -230,7 +230,7 @@ class Command(makemessages.Command):
 
         # After calling super().handle(), default_locale_path gets set on self
         # so that we can reuse it here.
-        default_locale_path = self.default_locale_path  # type: ignore[attr-defined] # not in stubs
+        default_locale_path = self.default_locale_path
         paths = glob.glob(f"{default_locale_path}/*")
         all_locales = [os.path.basename(path) for path in paths if os.path.isdir(path)]
 

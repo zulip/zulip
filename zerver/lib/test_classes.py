@@ -4,7 +4,6 @@ import re
 import shutil
 import subprocess
 import tempfile
-import urllib
 from contextlib import contextmanager
 from datetime import timedelta
 from typing import (
@@ -24,10 +23,12 @@ from typing import (
     Union,
     cast,
 )
-from unittest import TestResult, mock
+from unittest import TestResult, mock, skipUnless
+from urllib.parse import parse_qs, quote, urlencode
 
 import lxml.html
 import orjson
+import responses
 from django.apps import apps
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -36,6 +37,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
+from django.http.response import ResponseHeaders
 from django.test import SimpleTestCase, TestCase, TransactionTestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
@@ -44,6 +46,7 @@ from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
+from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
 from typing_extensions import override
 
@@ -92,31 +95,28 @@ from zerver.lib.webhooks.common import (
 from zerver.models import (
     Client,
     Message,
+    PushDeviceToken,
     Reaction,
     Realm,
     RealmEmoji,
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
     UserStatus,
-    clear_supported_auth_backends_cache,
-    get_realm,
-    get_realm_stream,
-    get_stream,
-    get_system_bot,
-    get_user,
-    get_user_by_delivery_email,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
+from zerver.models.streams import get_realm_stream, get_stream
+from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import get_remote_server_by_uuid
+    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -274,7 +274,7 @@ Output:
         url_split = url.split("?")
         data = {}
         if len(url_split) == 2:
-            data = urllib.parse.parse_qs(url_split[1])
+            data = parse_qs(url_split[1])
         url = url_split[0]
         url = url.replace("/json/", "/").replace("/api/v1/", "/")
         return (url, data)
@@ -338,7 +338,7 @@ Output:
         """
         We need to urlencode, since Django's function won't do it for us.
         """
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -430,7 +430,7 @@ Output:
         headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -473,7 +473,7 @@ Output:
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
+        encoded = urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
@@ -598,7 +598,6 @@ Output:
         desdemona="desdemona@zulip.com",
         shiva="shiva@zulip.com",
         webhook_bot="webhook-bot@zulip.com",
-        welcome_bot="welcome-bot@zulip.com",
         outgoing_webhook_bot="outgoing-webhook@zulip.com",
         default_bot="default-bot@zulip.com",
     )
@@ -803,9 +802,7 @@ Output:
     def register(self, email: str, password: str, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
         response = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response["Location"], f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
-        )
+        self.assertEqual(response["Location"], f"/accounts/send_confirm/?email={quote(email)}")
         response = self.submit_reg_form_for_user(email, password, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], f"http://{Realm.host_for_subdomain(subdomain)}/")
@@ -1074,10 +1071,11 @@ Output:
         from_user: UserProfile,
         to_user: UserProfile,
         content: str = "test content",
-        sending_client_name: str = "test suite",
+        *,
+        read_by_sender: bool = True,
     ) -> int:
         recipient_list = [to_user.id]
-        (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         sent_message_result = check_send_message(
             from_user,
@@ -1086,6 +1084,7 @@ Output:
             recipient_list,
             None,
             content,
+            read_by_sender=read_by_sender,
         )
         return sent_message_result.message_id
 
@@ -1094,12 +1093,13 @@ Output:
         from_user: UserProfile,
         to_users: List[UserProfile],
         content: str = "test content",
-        sending_client_name: str = "test suite",
+        *,
+        read_by_sender: bool = True,
     ) -> int:
         to_user_ids = [u.id for u in to_users]
         assert len(to_user_ids) >= 2
 
-        (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         sent_message_result = check_send_message(
             from_user,
@@ -1108,6 +1108,7 @@ Output:
             to_user_ids,
             None,
             content,
+            read_by_sender=read_by_sender,
         )
         return sent_message_result.message_id
 
@@ -1118,10 +1119,11 @@ Output:
         content: str = "test content",
         topic_name: str = "test",
         recipient_realm: Optional[Realm] = None,
-        sending_client_name: str = "test suite",
+        *,
         allow_unsubscribed_sender: bool = False,
+        read_by_sender: bool = True,
     ) -> int:
-        (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         message_id = check_send_stream_message(
             sender=sender,
@@ -1130,6 +1132,7 @@ Output:
             topic=topic_name,
             body=content,
             realm=recipient_realm,
+            read_by_sender=read_by_sender,
         )
         if (
             not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists()
@@ -1705,7 +1708,7 @@ Output:
 
         def set_age(user_name: str, age: int) -> None:
             user = self.example_user(user_name)
-            user.date_joined = timezone_now() - timedelta(age)
+            user.date_joined = timezone_now() - timedelta(days=age)
             user.save()
 
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
@@ -1792,7 +1795,7 @@ Output:
             automanage_licenses=False,
             billing_cycle_anchor=timezone_now(),
             billing_schedule=billing_schedule,
-            tier=CustomerPlan.STANDARD,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
         )
         ledger = LicenseLedger.objects.create(
             plan=plan,
@@ -1809,7 +1812,7 @@ Output:
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int
     ) -> Tuple[CustomerPlan, LicenseLedger]:
         return self.subscribe_realm_to_manual_license_management_plan(
-            realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
+            realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
 
     def create_user_notifications_data_object(
@@ -2375,3 +2378,60 @@ def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: st
         message__recipient=stream.recipient,
     ).order_by("id")
     return [um.message for um in filter_by_topic_name_via_message(query, topic_name)]
+
+
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+class BouncerTestCase(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        # Set a deterministic uuid and a nice hostname for convenience.
+        self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
+        self.server = RemoteZulipServer.objects.all().latest("id")
+
+        self.server.uuid = self.server_uuid
+        self.server.hostname = "demo.example.com"
+        self.server.save()
+
+        super().setUp()
+
+    @override
+    def tearDown(self) -> None:
+        RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
+        super().tearDown()
+
+    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
+        kwargs = {}
+        if isinstance(request.body, bytes):
+            # send_json_to_push_bouncer sends the body as bytes containing json.
+            data = orjson.loads(request.body)
+            kwargs = dict(content_type="application/json")
+        else:
+            assert isinstance(request.body, str) or request.body is None
+            params: Dict[str, List[str]] = parse_qs(request.body)
+            # In Python 3, the values of the dict from `parse_qs` are
+            # in a list, because there might be multiple values.
+            # But since we are sending values with no same keys, hence
+            # we can safely pick the first value.
+            data = {k: v[0] for k, v in params.items()}
+        assert request.url is not None  # allow mypy to infer url is present.
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+        local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
+        if request.method == "POST":
+            result = self.uuid_post(self.server_uuid, local_url, data, subdomain="", **kwargs)
+        elif request.method == "GET":
+            result = self.uuid_get(self.server_uuid, local_url, data, subdomain="")
+        return (result.status_code, result.headers, result.content)
+
+    def add_mock_response(self) -> None:
+        # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + ".*")
+        responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
+        responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
+
+    def get_generic_payload(self, method: str = "register") -> Dict[str, Any]:
+        user_id = 10
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+
+        return {"user_id": user_id, "token": token, "token_kind": token_kind}

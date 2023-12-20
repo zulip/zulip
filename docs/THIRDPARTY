@@ -242,11 +242,6 @@ Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
-Files: web/shared/icons/power.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
 Files: web/images/empty-view-illustrations/inbox-done.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -257,6 +252,11 @@ Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_
 Copyright: Google, Inc.
 License: Apache-2.0
 Comment: Material volume up icon (rounded)
+
+Files: web/styles/pygments.css
+Copyright: 2022, Quansight Labs
+License: BSD-3-Clause
+Comment: GitHub theme (light and dark); Selectors have been modified for use with Zulip
 
 Files: web/third/bootstrap/css/bootstrap.css
 Copyright: 2012 Twitter, Inc.

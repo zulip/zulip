@@ -18,19 +18,18 @@ follows:
    outgoing HTTP proxy](deployment.md#customizing-the-outgoing-http-proxy)
    first.
 
-1. Decide whether to upload basic usage statistics. Systems using the Mobile
-   Push Notifications Service will, by default, submit basic usage statistics
-   (e.g. Zulip version, number of users, number of messages sent) to the service.
-   These statistics help Zulip's maintainers understand how many people are
-   self-hosting Zulip in order to allocate resources towards supporting
-   self-hosted installations.
+1. Decide whether to share usage statistics with the Zulip team.
 
-   Our use of these statistics is governed by the same [Terms of
-   Service](https://zulip.com/policies/terms) and [Privacy
-   Policy](https://zulip.com/policies/privacy) that covers the Mobile Push
-   Notifications Service itself. If your organization does not want to submit these
-   statistics, you can disable this feature during setup or at any time by setting
+   By default, Zulip installations using the Mobile Push Notifications
+   Service submit additional usage statistics that help Zulip's
+   maintainers allocate resources towards supporting self-hosted
+   installations ([details](#uploading-usage-statistics)). You can
+   disable submitting usage statistics now or at any time by setting
    `SUBMIT_USAGE_STATISTICS=False` in `/etc/zulip/settings.py`.
+
+   Note that all systems using the service upload [basic
+   metadata](#uploading-basic-metadata) about the organizations hosted
+   by the installation.
 
 1. Uncomment the
    `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line
@@ -65,6 +64,53 @@ Congratulations! You've successfully set up the service. You can now test mobile
 push notifications by following [these
 instructions](https://zulip.com/help/mobile-notifications#testing-mobile-notifications).
 
+## Plan management for a Zulip organization
+
+On a self-hosted Zulip server running Zulip 8.0+, [organization
+owners](https://zulip.com/help/roles-and-permissions) and billing administrators
+can conveniently access plan management from the Zulip app. See [help center
+documentation](https://zulip.com/help/self-hosted-billing) for detailed
+instructions.
+
+You can add billing administrators using the `change_user_role` [management
+command][management-commands], passing [the organization's
+`string_id`][accessing-string-id], and the email address of the Zulip user who
+should be added as a billing administrator.
+
+```
+/home/zulip/deployments/current/manage.py change_user_role -r '' username@example.com is_billing_admin
+```
+
+You can remove a user's billing administrator permissions with the `--revoke`
+option:
+
+```
+/home/zulip/deployments/current/manage.py change_user_role --revoke -r '' username@example.com is_billing_admin
+```
+
+[management-commands]: ../production/management-commands.md
+[accessing-string-id]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#accessing-an-organization-s-string-id
+
+## Plan management for an entire Zulip server
+
+Servers running Zulip releases older than Zulip 8.0 can start the plan
+management log in process at
+<https://selfhosting.zulip.com/serverlogin>. This option is also
+available for Zulip 8.0+ servers, and makes it possible to use a
+single plan for multiple organizations on one installation. See [help
+center documentation](https://zulip.com/help/self-hosted-billing) for
+detailed log in instructions.
+
+You will use your server's `zulip_org_id` and `zulip_org_key` as the username
+and password to access plan management. You can obtain these from
+`/etc/zulip/zulip-secrets.conf` on your Zulip server, or via the following
+commands:
+
+```
+/home/zulip/deployments/current/scripts/get-django-setting ZULIP_ORG_ID
+/home/zulip/deployments/current/scripts/get-django-setting ZULIP_ORG_KEY
+```
+
 ## Why a push notification service is necessary
 
 Both Google's and Apple's push notification services have a security
@@ -96,8 +142,8 @@ and privacy in mind:
   avoid any message content being stored or logged by the service,
   even in error cases.
 - The Push Notification Service only stores the necessary metadata for
-  delivering the notifications to the appropriate devices, and nothing
-  else:
+  delivering the notifications to the appropriate devices and
+  otherwise operating the service:
   - The APNS/FCM tokens needed to securely send mobile push
     notifications to iOS and Android devices, one per device
     registered to be notified by your Zulip server.
@@ -105,6 +151,10 @@ and privacy in mind:
     a given notification to the appropriate set of mobile devices.
     These user ID numbers are opaque to the Push Notification
     Service and Kandra Labs.
+  - [Basic organization metadata](#uploading-basic-metadata),
+    [optional usage statistics](#uploading-usage-statistics), and
+    aggregate statistics about how many push notifications are sent by
+    each customer.
 - The Push Notification Service receives (but does not store) the
   contents of individual mobile push notifications:
 
@@ -135,10 +185,79 @@ and privacy in mind:
   source and available as part of the
   [Zulip server project on GitHub](https://github.com/zulip/zulip).
 - The push notification forwarding servers are professionally managed
-  by a small team of security expert engineers.
+  by a small team of security-sensitive engineers.
 
 If you have any questions about the security model, [contact Zulip
 support](https://zulip.com/help/contact-support).
+
+### Uploading basic metadata
+
+All Zulip installations running Zulip 8.0 or greater that are
+registered for the Mobile Push Notifications Service regularly upload
+to the service basic metadata about the organizations hosted by the
+installation. (Older Zulip servers upload these metadata only if
+[uploading usage statistics](#uploading-usage-statistics) is enabled).
+
+Uploaded metadata consists of, for each organization hosted by the
+installation:
+
+- A subset of the basic metadata returned by the unauthenticated [`GET
+/server_settings` API
+  endpoint](https://zulip.com/api/get-server-settings).
+
+  The purpose of that API endpoint is to serve the minimal data
+  needed by the Zulip mobile apps in order to:
+
+  - Verify that a given URL is indeed a valid Zulip server URL
+  - Present a correct login form, offering only the supported features
+    and authentication methods for that organization and Zulip server
+    version.
+
+  Most of the metadata it returns is necessarily displayed to anyone
+  with network access to the Zulip server on the login and signup
+  pages for your Zulip organization as well.
+
+  (Some fields returned by this endpoint, like the organization icon
+  and description, are not included in uploaded metadata.)
+
+- The [organization type](https://zulip.com/help/organization-type)
+  and creation date.
+- The number of user accounts with each role.
+
+Our use of uploaded metadata is governed by the same [Terms of
+Service](https://zulip.com/policies/terms) and [Privacy
+Policy](https://zulip.com/policies/privacy) that covers the Mobile
+Push Notifications Service itself.
+
+### Uploading usage statistics
+
+By default, Zulip installations that register for the Mobile Push
+Notifications Service upload the following usage statistics. You can
+disable these uploads any time by setting
+`SUBMIT_USAGE_STATISTICS=False` in `/etc/zulip/settings.py`.
+
+- Totals for messages sent and read with subtotals for various
+  combinations of clients and integrations.
+- Totals for active users under a few definitions (1day, 7day, 15day)
+  and related statistics.
+
+Some of the graphs on your server's [usage statistics
+page](https://zulip.com/help/analytics) can be generated from these
+statistics.
+
+When enabled, usage statistics are submitted via an hourly cron
+job. If you'd like to access plan management immediately after
+enabling `SUBMIT_USAGE_STATISTICS=True` on a pre-8.0 Zulip server, you
+can run the analytics job manually via:
+
+```
+/home/zulip/deployments/current/manage.py update_analytics_counts
+```
+
+Our use of uploaded usage statistics is governed by the same [Terms of
+Service](https://zulip.com/policies/terms) and [Privacy
+Policy](https://zulip.com/policies/privacy) that covers the Mobile
+Push Notifications Service itself.
 
 ## Rate limits
 

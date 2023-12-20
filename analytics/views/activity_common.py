@@ -48,46 +48,22 @@ def make_table(
     return content
 
 
-def get_page(
-    query: Composable, cols: Sequence[str], title: str, totals_columns: Sequence[int] = []
-) -> Dict[str, str]:
+def fix_rows(
+    rows: List[List[Any]],
+    i: int,
+    fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str]],
+) -> None:
+    for row in rows:
+        row[i] = fixup_func(row[i])
+
+
+def get_query_data(query: Composable) -> List[List[Any]]:
     cursor = connection.cursor()
     cursor.execute(query)
     rows = cursor.fetchall()
     rows = list(map(list, rows))
     cursor.close()
-
-    def fix_rows(
-        i: int, fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str]]
-    ) -> None:
-        for row in rows:
-            row[i] = fixup_func(row[i])
-
-    total_row = []
-    for i, col in enumerate(cols):
-        if col == "Realm":
-            fix_rows(i, realm_activity_link)
-        elif col in ["Last time", "Last visit"]:
-            fix_rows(i, format_date_for_activity_reports)
-        elif col == "Hostname":
-            for row in rows:
-                row[i] = remote_installation_stats_link(row[0], row[i])
-        if len(totals_columns) > 0:
-            if i == 0:
-                total_row.append("Total")
-            elif i in totals_columns:
-                total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
-            else:
-                total_row.append("")
-    if len(totals_columns) > 0:
-        rows.insert(0, total_row)
-
-    content = make_table(title, cols, rows)
-
-    return dict(
-        content=content,
-        title=title,
-    )
+    return rows
 
 
 def dictfetchall(cursor: CursorWrapper) -> List[Dict[str, Any]]:
@@ -128,7 +104,7 @@ def realm_support_link(realm_str: str) -> Markup:
     support_url = reverse("support")
     query = urlencode({"q": realm_str})
     url = append_url_query_string(support_url, query)
-    return Markup('<a href="{url}">{realm_str}</a>').format(url=url, realm_str=realm_str)
+    return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
 def realm_url_link(realm_str: str) -> Markup:
@@ -137,13 +113,18 @@ def realm_url_link(realm_str: str) -> Markup:
     return Markup('<a href="{url}"><i class="fa fa-home"></i></a>').format(url=url)
 
 
-def remote_installation_stats_link(server_id: int, hostname: str) -> Markup:
+def remote_installation_stats_link(server_id: int) -> Markup:
     from analytics.views.stats import stats_for_remote_installation
 
     url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
-    return Markup('<a href="{url}"><i class="fa fa-pie-chart"></i></a> {hostname}').format(
-        url=url, hostname=hostname
-    )
+    return Markup('<a href="{url}"><i class="fa fa-pie-chart"></i></a>').format(url=url)
+
+
+def remote_installation_support_link(hostname: str) -> Markup:
+    support_url = reverse("remote_servers_support")
+    query = urlencode({"q": hostname})
+    url = append_url_query_string(support_url, query)
+    return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
 def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, Any]:

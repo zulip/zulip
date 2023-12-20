@@ -1,20 +1,35 @@
 import re
 from typing import Optional
 
-from django.http import HttpRequest, HttpResponse
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.utils.translation import gettext as _
 
-from zerver.decorator import human_users_only
-from zerver.lib.exceptions import JsonableError
+from zerver.decorator import human_users_only, zulip_login_required
+from zerver.lib.exceptions import (
+    JsonableError,
+    MissingRemoteRealmError,
+    OrganizationOwnerRequiredError,
+    RemoteRealmServerMismatchError,
+)
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
     add_push_device_token,
     b64_to_hex,
     remove_push_device_token,
     send_test_push_notification,
+    uses_notification_bouncer,
+)
+from zerver.lib.remote_server import (
+    UserDataForRemoteBilling,
+    get_realms_info_for_push_bouncer,
+    send_server_data_to_push_bouncer,
+    send_to_push_bouncer,
 )
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_string
 from zerver.models import PushDeviceToken, UserProfile
 
@@ -101,3 +116,60 @@ def send_test_push_notification_api(
     send_test_push_notification(user_profile, devices)
 
     return json_success(request)
+
+
+@zulip_login_required
+@typed_endpoint
+def self_hosting_auth_redirect(
+    request: HttpRequest,
+    *,
+    next_page: Optional[str] = None,
+) -> HttpResponse:  # nocoverage
+    if not uses_notification_bouncer():
+        return render(request, "404.html", status=404)
+
+    user = request.user
+    assert user.is_authenticated
+    assert isinstance(user, UserProfile)
+    if not user.has_billing_access:
+        # We may want to replace this with an html error page at some point,
+        # but this endpoint shouldn't be accessible via the UI to an unauthorized
+        # user - and they need to directly enter the URL in their browser. So a json
+        # error may be sufficient.
+        raise OrganizationOwnerRequiredError
+
+    realm_info = get_realms_info_for_push_bouncer(user.realm_id)[0]
+
+    user_info = UserDataForRemoteBilling(
+        uuid=user.uuid,
+        email=user.delivery_email,
+        full_name=user.full_name,
+    )
+
+    post_data = {
+        "user": user_info.model_dump_json(),
+        "realm": realm_info.model_dump_json(),
+        # The uri_scheme is necessary for the bouncer to know the correct URL
+        # to redirect the user to for re-authing in case the session expires.
+        # Otherwise, the bouncer would know only the realm.host but be missing
+        # the knowledge of whether to use http or https.
+        "uri_scheme": settings.EXTERNAL_URI_SCHEME,
+    }
+    if next_page is not None:
+        post_data["next_page"] = next_page
+
+    try:
+        result = send_to_push_bouncer("POST", "server/billing", post_data)
+    except MissingRemoteRealmError:
+        # Upload realm info and re-try. It should work now.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        result = send_to_push_bouncer("POST", "server/billing", post_data)
+    except RemoteRealmServerMismatchError:
+        return render(request, "zilencer/remote_realm_server_mismatch_error.html", status=403)
+
+    if result["result"] != "success":
+        raise JsonableError(_("Error returned by the bouncer: {result}").format(result=result))
+
+    redirect_url = result["billing_access_url"]
+    assert isinstance(redirect_url, str)
+    return HttpResponseRedirect(redirect_url)

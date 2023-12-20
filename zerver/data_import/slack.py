@@ -1,4 +1,3 @@
-import datetime
 import logging
 import os
 import posixpath
@@ -7,6 +6,7 @@ import secrets
 import shutil
 import zipfile
 from collections import defaultdict
+from datetime import datetime, timezone
 from email.headerregistry import Address
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
 from urllib.parse import urlsplit
@@ -972,9 +972,7 @@ def channel_message_to_zerver_message(
         # a counter among topics on that day.
         topic_name = "imported from Slack"
         if convert_slack_threads and "thread_ts" in message:
-            thread_ts = datetime.datetime.fromtimestamp(
-                float(message["thread_ts"]), tz=datetime.timezone.utc
-            )
+            thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
             # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
             # threads with the same date.

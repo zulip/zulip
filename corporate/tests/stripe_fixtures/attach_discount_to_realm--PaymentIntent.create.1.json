@@ -55,6 +55,7 @@
           "billing_schedule": "1",
           "license_management": "automatic",
           "licenses": "6",
+          "plan_tier": "1",
           "price_per_license": "1200",
           "realm_id": "1",
           "realm_str": "zulip",
@@ -76,7 +77,7 @@
         },
         "paid": true,
         "payment_intent": "pi_NORMALIZED00000000000001",
-        "payment_method": "pm_1ODZbrDEQaroqDjskigXZyia",
+        "payment_method": "pm_1OOgy1DEQaroqDjsPovw7cfu",
         "payment_method_details": {
           "card": {
             "amount_authorized": 7200,
@@ -87,7 +88,7 @@
               "cvc_check": "pass"
             },
             "country": "US",
-            "exp_month": 11,
+            "exp_month": 12,
             "exp_year": 2024,
             "extended_authorization": {
               "status": "disabled"
@@ -118,7 +119,7 @@
         },
         "receipt_email": "hamlet@zulip.com",
         "receipt_number": null,
-        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNi236oGMgYSbL4UQx06LBYNKoREIpelmHkF5IANdnuSUHLVwxtzJP92-ZeqtRDXtpTdoXXm0T4Q9dL1",
+        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKPmUgawGMgZVgWqUFe06LBY-ljUKnsficto6QSdSAOo26stH64xtSjWgraoDdK3sLQzG8060GSBMv3St",
         "refunded": false,
         "refunds": {
           "data": [],
@@ -143,7 +144,7 @@
     "total_count": 1,
     "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000001_secret_eEcskqSx0TpRGq2xx4S3jQfjE",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_nTi2uv53oaIydyDHv3mdyBMWm",
   "confirmation_method": "automatic",
   "created": 1000000000,
   "currency": "usd",
@@ -159,6 +160,7 @@
     "billing_schedule": "1",
     "license_management": "automatic",
     "licenses": "6",
+    "plan_tier": "1",
     "price_per_license": "1200",
     "realm_id": "1",
     "realm_str": "zulip",
@@ -170,7 +172,7 @@
   "next_action": null,
   "object": "payment_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_1ODZbrDEQaroqDjskigXZyia",
+  "payment_method": "pm_1OOgy1DEQaroqDjsPovw7cfu",
   "payment_method_configuration_details": null,
   "payment_method_options": {
     "card": {

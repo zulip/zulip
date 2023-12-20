@@ -20,6 +20,12 @@ body {
     color: hsl(0deg 0% 100%);
 }
 
+body :target {
+    /* Keep elements targeted by URL fragments visible below the
+    floating top menu; coordinate the value here with the menu's height. */
+    scroll-margin-top: 60px;
+}
+
 a {
     text-decoration: none;
     color: inherit;
@@ -581,8 +587,11 @@ ul {
         display: flex;
         justify-content: center;
         margin-bottom: 24px;
+        gap: 50px;
+        flex-wrap: wrap;
     }
 
+    .screen-5__badge-getapp img,
     .screen-5__badge-capterra img {
         opacity: 0.8;
         height: 128px;

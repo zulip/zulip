@@ -295,7 +295,6 @@ export function initialize() {
     $("body").on("click", ".move_message_button", function (e) {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         const message_id = rows.id($row);
-        message_lists.current.select_id(message_id);
         const message = message_lists.current.get(message_id);
         stream_popover.build_move_topic_to_stream_popover(
             message.stream_id,

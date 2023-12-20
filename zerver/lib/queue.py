@@ -217,7 +217,8 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
                             callback(events)
                             channel.basic_ack(max_processed, multiple=True)
                         except BaseException:
-                            channel.basic_nack(max_processed, multiple=True)
+                            if channel.is_open:
+                                channel.basic_nack(max_processed, multiple=True)
                             raise
                         events = []
                     last_process = now

@@ -32,13 +32,13 @@ from zerver.lib.user_groups import access_user_group_for_setting
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
+    check_capped_url,
     check_dict,
     check_int,
     check_int_in,
     check_string_in,
     check_string_or_int,
     check_union,
-    check_url,
     to_non_negative_int,
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
@@ -52,6 +52,9 @@ def parse_jitsi_server_url(
         return special_values_map[value]
 
     return value
+
+
+JITSI_SERVER_URL_MAX_LENGTH = 200
 
 
 @require_realm_admin
@@ -104,6 +107,8 @@ def update_realm(
     authentication_methods: Optional[Dict[str, Any]] = REQ(
         json_validator=check_dict([]), default=None
     ),
+    # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
+    # are not offered here as it is maintained by the server, not via the API.
     notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
@@ -145,7 +150,10 @@ def update_realm(
     jitsi_server_url_raw: Optional[str] = REQ(
         "jitsi_server_url",
         json_validator=check_union(
-            [check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())), check_url]
+            [
+                check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())),
+                check_capped_url(JITSI_SERVER_URL_MAX_LENGTH),
+            ]
         ),
         default=None,
     ),
@@ -231,6 +239,9 @@ def update_realm(
 
     if enable_spectator_access:
         realm.ensure_not_on_limited_plan()
+
+    if can_access_all_users_group_id is not None:
+        realm.can_enable_restricted_user_access_for_guests()
 
     data: Dict[str, Any] = {}
 
@@ -383,7 +394,7 @@ def update_realm(
         new_notifications_stream = None
         if notifications_stream_id >= 0:
             (new_notifications_stream, sub) = access_stream_by_id(
-                user_profile, notifications_stream_id
+                user_profile, notifications_stream_id, allow_realm_admin=True
             )
         do_set_realm_notifications_stream(
             realm, new_notifications_stream, notifications_stream_id, acting_user=user_profile
@@ -397,7 +408,7 @@ def update_realm(
         new_signup_notifications_stream = None
         if signup_notifications_stream_id >= 0:
             (new_signup_notifications_stream, sub) = access_stream_by_id(
-                user_profile, signup_notifications_stream_id
+                user_profile, signup_notifications_stream_id, allow_realm_admin=True
             )
         do_set_realm_signup_notifications_stream(
             realm,
@@ -565,6 +576,9 @@ def update_realm_user_settings_defaults(
     automatically_unmute_topics_in_muted_streams_policy: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         default=None,
+    ),
+    automatically_follow_topics_where_mentioned: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
     ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),

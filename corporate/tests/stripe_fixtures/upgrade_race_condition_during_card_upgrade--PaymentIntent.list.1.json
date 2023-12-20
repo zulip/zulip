@@ -57,6 +57,7 @@
               "billing_schedule": "1",
               "license_management": "automatic",
               "licenses": "6",
+              "plan_tier": "1",
               "price_per_license": "8000",
               "realm_id": "1",
               "realm_str": "zulip",
@@ -78,7 +79,7 @@
             },
             "paid": true,
             "payment_intent": "pi_NORMALIZED00000000000001",
-            "payment_method": "pm_1ODh2sDEQaroqDjsmfEsctj6",
+            "payment_method": "pm_1OOgxLDEQaroqDjsjl7ObYvT",
             "payment_method_details": {
               "card": {
                 "amount_authorized": 48000,
@@ -89,7 +90,7 @@
                   "cvc_check": "pass"
                 },
                 "country": "US",
-                "exp_month": 11,
+                "exp_month": 12,
                 "exp_year": 2024,
                 "extended_authorization": {
                   "status": "disabled"
@@ -120,7 +121,7 @@
             },
             "receipt_email": "hamlet@zulip.com",
             "receipt_number": null,
-            "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKP6V4aoGMgZ81fLzrtg6LBbZmWJlrP_Ec_caqksN3jvIogaSZe2GoOvR69FJ2uu2XX0RCOS7Sjxau5Sm",
+            "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNCUgawGMgaHGZFKsNY6LBarB8OhsKTcNFljrbZsoQVH5cIovxYBkqoyuTejKDNpiEVmvWq8Ud_aFd7C",
             "refunded": false,
             "refunds": {
               "data": [],
@@ -145,7 +146,7 @@
         "total_count": 1,
         "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
       },
-      "client_secret": "pi_NORMALIZED00000000000001_secret_n2PA9bGK10UW1r3fUdXEln5Zl",
+      "client_secret": "pi_NORMALIZED00000000000001_secret_Qbm75F2SS2b2nyTGzImQbKAJJ",
       "confirmation_method": "automatic",
       "created": 1000000000,
       "currency": "usd",
@@ -161,6 +162,7 @@
         "billing_schedule": "1",
         "license_management": "automatic",
         "licenses": "6",
+        "plan_tier": "1",
         "price_per_license": "8000",
         "realm_id": "1",
         "realm_str": "zulip",
@@ -172,7 +174,7 @@
       "next_action": null,
       "object": "payment_intent",
       "on_behalf_of": null,
-      "payment_method": "pm_1ODh2sDEQaroqDjsmfEsctj6",
+      "payment_method": "pm_1OOgxLDEQaroqDjsjl7ObYvT",
       "payment_method_configuration_details": null,
       "payment_method_options": {
         "card": {

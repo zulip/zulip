@@ -42,7 +42,8 @@ from zerver.lib.response import (
 )
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_agent import parse_user_agent
-from zerver.models import Realm, get_realm
+from zerver.models import Realm
+from zerver.models.realms import get_realm
 
 ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
@@ -549,8 +550,11 @@ class HostDomainMiddleware(MiddlewareMixin):
             return None
 
         subdomain = get_subdomain(request)
-        if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
-            # Realms are not supposed to exist on SOCIAL_AUTH_SUBDOMAIN.
+        if subdomain in [
+            settings.SOCIAL_AUTH_SUBDOMAIN,
+            settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN,
+        ]:
+            # Realms are not supposed to exist on these subdomains.
             return None
 
         request_notes = RequestNotes.get_notes(request)

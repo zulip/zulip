@@ -2,6 +2,8 @@ import $ from "jquery";
 
 import * as helpers from "./helpers";
 
+const is_remotely_hosted = $("#sponsorship-form").attr("data-is-remotely-hosted") === "True";
+
 function show_submit_loading_indicator(): void {
     $("#sponsorship-button .sponsorship-button-loader").css("display", "inline-block");
     $("#sponsorship-button").prop("disabled", true);
@@ -53,9 +55,10 @@ function create_ajax_request(): void {
         return;
     }
 
+    const billing_base_url = $form.attr("data-billing-base-url") ?? "";
     void $.ajax({
         type: "post",
-        url: "/json/billing/sponsorship",
+        url: `/json${billing_base_url}/billing/sponsorship`,
         data,
         success() {
             window.location.reload();
@@ -87,7 +90,7 @@ export function initialize(): void {
             $<HTMLSelectElement>("#organization-type")
                 .find(":selected")
                 .attr("data-string-value") ?? "";
-        helpers.update_discount_details(selected_org_type);
+        helpers.update_discount_details(selected_org_type, is_remotely_hosted);
     }
 
     update_discount_details();

@@ -16,6 +16,7 @@ import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
 
+let drag_drop_img = null;
 export let compose_upload_object;
 export const upload_objects_by_message_edit_row = new Map();
 
@@ -437,14 +438,27 @@ export function initialize() {
         mode: "compose",
     });
 
-    // Allow the main panel to receive drag/drop events.
-    $(".app-main").on("dragover", (event) => event.preventDefault());
+    $(".app, #navbar-fixed-container").on("dragstart", (event) => {
+        if (event.target.nodeName === "IMG") {
+            drag_drop_img = event.target;
+        } else {
+            drag_drop_img = null;
+        }
+    });
+
+    // Allow the app panel to receive drag/drop events.
+    $(".app, #navbar-fixed-container").on("dragover", (event) => event.preventDefault());
 
     // TODO: Do something visual to hint that drag/drop will work.
-    $(".app-main").on("dragenter", (event) => event.preventDefault());
+    $(".app, #navbar-fixed-container").on("dragenter", (event) => event.preventDefault());
 
-    $(".app-main").on("drop", (event) => {
+    $(".app, #navbar-fixed-container").on("drop", (event) => {
         event.preventDefault();
+
+        if (event.target.nodeName === "IMG" && event.target === drag_drop_img) {
+            drag_drop_img = null;
+            return;
+        }
 
         const $drag_drop_edit_containers = $(".message_edit_form form");
         const files = event.originalEvent.dataTransfer.files;

@@ -586,6 +586,9 @@ export const notification_settings_labels = {
     automatically_unmute_topics_in_muted_streams_policy: $t({
         defaultMessage: "Automatically unmute topics in muted streams",
     }),
+    automatically_follow_topics_where_mentioned: $t({
+        defaultMessage: "Automatically follow topics where I'm mentioned",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -756,6 +759,7 @@ const other_notification_settings = [
     "notification_sound",
     "automatically_follow_topics_policy",
     "automatically_unmute_topics_in_muted_streams_policy",
+    "automatically_follow_topics_where_mentioned",
 ];
 
 export const all_notification_settings = [
@@ -771,6 +775,7 @@ type NotificationSettingCheckbox = {
     setting_name: string;
     is_disabled: boolean;
     is_checked: boolean;
+    is_mobile_checkbox: boolean;
 };
 
 export function get_notifications_table_row_data(
@@ -784,6 +789,7 @@ export function get_notifications_table_row_data(
                 setting_name: "",
                 is_disabled: true,
                 is_checked: false,
+                is_mobile_checkbox: false,
             };
         }
 
@@ -796,9 +802,11 @@ export function get_notifications_table_row_data(
             setting_name,
             is_disabled: false,
             is_checked: checked,
+            is_mobile_checkbox: false,
         };
         if (column === "mobile") {
             checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+            checkbox.is_mobile_checkbox = true;
         }
         return checkbox;
     });
@@ -998,7 +1006,7 @@ export const stream_privacy_policy_values = {
 
 export const stream_post_policy_values = {
     // These strings should match the strings in the
-    // Stream.POST_POLICIES object in zerver/models.py.
+    // Stream.POST_POLICIES object in zerver/models/streams.py.
     everyone: {
         code: StreamPostPolicy.EVERYONE,
         description: $t({defaultMessage: "Everyone"}),
