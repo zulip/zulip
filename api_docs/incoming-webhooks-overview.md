@@ -1,7 +1,7 @@
 # Incoming webhook integrations
 
 An incoming webhook allows a third-party service to push data to Zulip when
-something happens.  There's several ways to do an incoming webhook in
+something happens. There are several ways to set up an incoming webhook in
 Zulip:
 
 * Use our [REST API](/api/rest) endpoint for [sending
@@ -11,9 +11,9 @@ Zulip:
 * Use one of our supported [integration
   frameworks](/integrations/meta-integration), such as the
   [Slack-compatible incoming webhook](/integrations/doc/slack_incoming),
-  [Zapier integration](/integrations/docs/zapier), or
+  [Zapier integration](/integrations/doc/zapier), or
   [IFTTT integration](/integrations/doc/ifttt).
-* Adding an incoming webhook integration (detailed on this page),
+* Implementing an incoming webhook integration (detailed on this page),
   where all the logic for formatting the Zulip messages lives in the
   Zulip server.  This is how most of [Zulip's official
   integrations](/integrations/) work, because they enable Zulip to
@@ -22,7 +22,7 @@ Zulip:
   Zulip).
 
 In an incoming webhook integration, the third-party service's
-"outgoing webhook" feature sends an `HTTP POST`s to a special URL when
+"outgoing webhook" feature sends an `HTTP POST` to a special URL when
 it has something for you, and then the Zulip "incoming webhook"
 integration handles that incoming data to format and send a message in
 Zulip.
@@ -40,18 +40,18 @@ process.
   <https://webhook.site/>, or a similar site to capture an example
   webhook payload from the third-party service. Create a
   `zerver/webhooks/<mywebhook>/fixtures/` directory, and add the
-  captured payload as a test fixture.
+  captured JSON payload as a test fixture.
 
-* Create an `Integration` object, and add it to `WEBHOOK_INTEGRATIONS` in
-  `zerver/lib/integrations.py`. Search for `webhook` in that file to find an
-  existing one to copy.
+* Create an `Integration` object, and add it to the `WEBHOOK_INTEGRATIONS`
+  list in `zerver/lib/integrations.py`. Search for `WebhookIntegration` in that
+  file to find an existing one to copy.
 
-* Write a draft webhook handler under `zerver/webhooks/`. There are a lot of
-  examples in that directory that you can copy. We recommend templating off
-  a short one, like `zendesk`.
+* Write a draft webhook handler in `zerver/webhooks/<mywebhook>/view.py`. There
+  are a lot of examples in the `zerver/webhooks/` directory that you can copy.
+  We recommend templating from a short one, like `zendesk`.
 
-* Add a test for your fixture at `zerver/webhooks/<mywebhook>/tests.py`.
-  Run the tests for your integration like this:
+* Write a test for your fixture in `zerver/webhooks/<mywebhook>/tests.py`.
+  Run the test for your integration like this:
 
     ```
     tools/test-backend zerver/webhooks/<mywebhook>/
@@ -64,10 +64,10 @@ process.
   service will make, and add tests for them; usually this part of the
   process is pretty fast.
 
-* Document the integration (required for getting it merged into Zulip). You
-  can template off an existing guide, like
-  [this one](https://raw.githubusercontent.com/zulip/zulip/main/zerver/webhooks/github/doc.md).
-  This should not take more than 15 minutes, even if you don't speak English
+* Document the integration in `zerver/webhooks/<mywebhook>/doc.md`(required for
+  getting it merged into Zulip). You can use existing documentation, like
+  [this one](https://raw.githubusercontent.com/zulip/zulip/main/zerver/webhooks/github/doc.md),
+  as a template. This should not take more than 15 minutes, even if you don't speak English
   as a first language (we'll clean up the text before merging).
 
 ## Hello world walkthrough
@@ -84,9 +84,9 @@ below are for a webhook named `MyWebHook`.
 
 * `zerver/webhooks/mywebhook/__init__.py`: Empty file that is an obligatory
    part of every python package.  Remember to `git add` it.
-* `zerver/webhooks/mywebhook/view.py`: The main webhook integration function
-  as well as any needed helper functions.
-* `zerver/webhooks/mywebhook/fixtures/messagetype.json`: Sample json payload data
+* `zerver/webhooks/mywebhook/view.py`: The main webhook integration function,
+  called `api_mywebhook_webhook`, along with any necessary helper functions.
+* `zerver/webhooks/mywebhook/fixtures/message_type.json`: Sample JSON payload data
   used by tests. Add one fixture file per type of message supported by your
   integration.
 * `zerver/webhooks/mywebhook/tests.py`: Tests for your webhook.
@@ -95,7 +95,7 @@ below are for a webhook named `MyWebHook`.
 * `static/images/integrations/logos/mywebhook.svg`: A square logo for the
   platform/server/product you are integrating. Used on the documentation
   pages as well as the sender's avatar for messages sent by the integration.
-* `static/images/integrations/mywebhook/001.svg`: A screenshot of a message
+* `static/images/integrations/mywebhook/001.png`: A screenshot of a message
   sent by the integration, used on the documentation page. This can be
   generated by running `tools/generate-integration-docs-screenshot --integration mywebhook`.
 * `static/images/integrations/bot_avatars/mywebhook.png`: A square logo for the
@@ -125,8 +125,8 @@ below are for a webhook named `MyWebHook`.
 ## General advice
 
 * Consider using our Zulip markup to make the output from your
-  integration especially attractive or useful (e.g.  emoji, Markdown
-  emphasis or @-mentions).
+  integration especially attractive or useful (e.g. emoji, Markdown
+  emphasis, or @-mentions).
 
 * Use topics effectively to ensure sequential messages about the same
   thing are threaded together; this makes for much better consumption

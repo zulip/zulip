@@ -69,7 +69,7 @@ integration uses.
 ## Step 1: Initialize your webhook python package
 
 In the `zerver/webhooks/` directory, create new subdirectory that will
-contain all of corresponding code.  In our example it will be
+contain all of the corresponding code.  In our example it will be
 `helloworld`. The new directory will be a python package, so you have
 to create an empty `__init__.py` file in that directory via e.g.
 `touch zerver/webhooks/helloworld/__init__.py`.
@@ -82,25 +82,24 @@ python file, `zerver/webhooks/mywebhook/view.py`.
 The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 
 ```python
-from typing import Any, Dict, Sequence
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
 @webhook_view("HelloWorld")
-@has_request_variables
+@typed_endpoint
 def api_helloworld_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
+    *,
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-
     # construct the body of the message
     body = "Hello! I am happy to be here! :smile:"
 
@@ -108,7 +107,10 @@ def api_helloworld_webhook(
     body_template = (
         "\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**"
     )
-    body += body_template.format(**payload)
+    body += body_template.format(
+        featured_title=payload["featured_title"].tame(check_string),
+        featured_url=payload["featured_url"].tame(check_string),
+    )
 
     topic = "Hello World"
 
@@ -120,9 +122,8 @@ def api_helloworld_webhook(
 
 The above code imports the required functions and defines the main webhook
 function `api_helloworld_webhook`, decorating it with `webhook_view` and
-`has_request_variables`. The `has_request_variables` decorator allows you to
-access request variables with `REQ()`. You can find more about `REQ` and request
-variables in [Writing views](
+`typed_endpoint`. The `typed_endpoint` decorator allows you to
+access request variables with `JsonBodyPayload()`. You can find more about `JsonBodyPayload` and request variables in [Writing views](
 https://zulip.readthedocs.io/en/latest/tutorials/writing-views.html#request-variables).
 
 You must pass the name of your integration to the
@@ -191,7 +192,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
 And you'll find the entry for Hello World:
 
 ```python
-  WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
+  WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
 ```
 
 This tells the Zulip API to call the `api_helloworld_webhook` function in
@@ -199,7 +200,7 @@ This tells the Zulip API to call the `api_helloworld_webhook` function in
 `/api/v1/external/helloworld`.
 
 This line also tells Zulip to generate an entry for Hello World on the Zulip
-integrations page using `static/images/integrations/logos/helloworld.png` as its
+integrations page using `static/images/integrations/logos/helloworld.svg` as its
 icon. The second positional argument defines a list of categories for the
 integration.
 
@@ -323,19 +324,23 @@ class `HelloWorldHookTests`:
 
 ```python
 class HelloWorldHookTests(WebhookTestCase):
-    STREAM_NAME = 'test'
-    URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
-    WEBHOOK_DIR_NAME = 'helloworld'
+    STREAM_NAME = "test"
+    URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
+    DIRECT_MESSAGE_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
+    WEBHOOK_DIR_NAME = "helloworld"
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
-        expected_topic = "Hello World";
-        expected_message = "Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
+        expected_topic = "Hello World"
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
         # use fixture named helloworld_hello
-        self.check_webhook('hello', expected_topic, expected_message,
-                           content_type="application/x-www-form-urlencoded")
-
+        self.check_webhook(
+            "hello",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 ```
 
 In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `WEBHOOK_DIR_NAME` refer
@@ -363,12 +368,16 @@ class called something like `test_goodbye_message`:
 
 ```python
     def test_goodbye_message(self) -> None:
-        expected_topic = "Hello World";
-        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**";
+        expected_topic = "Hello World"
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
         # use fixture named helloworld_goodbye
-        self.check_webhook('goodbye', expected_topic, expected_message,
-                           content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "goodbye",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 ```
 
 As well as a new fixture `goodbye.json` in
@@ -491,7 +500,7 @@ request:
 5. Submit a pull request to zulip/zulip.
 
 If you would like feedback on your integration as you go, feel free to post a
-message on the [public Zulip instance](https://chat.zulip.org/#narrow/stream/bots).
+message on the [public Zulip instance](https://chat.zulip.org/#narrow/stream/integrations).
 You can also create a [draft pull request](
 https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) while you
 are still working on your integration. See the
