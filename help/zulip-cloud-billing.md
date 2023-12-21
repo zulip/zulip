@@ -111,7 +111,7 @@ you will need to sign up for an annual plan.
 
 #### Manually manage licenses
 
-If you organization is on a manual billing plan, you can manage the number of
+If your organization is on a manual billing plan, you can manage the number of
 licenses on your organization's billing page.
 
 {start_tabs}
