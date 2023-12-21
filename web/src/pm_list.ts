@@ -18,6 +18,9 @@ let prior_dom: vdom.Tag<PMNode> | undefined;
 
 let private_messages_collapsed = false;
 
+// This holds the value for private message view activation.
+let is_private_messages_in_view = false;
+
 // The direct messages section can be zoomed in to view more messages.
 // This keeps track of if we're zoomed in or not.
 let zoomed = false;
@@ -83,7 +86,7 @@ export function update_private_messages(): void {
         const conversations = pm_list_data.get_conversations();
         const active_conversation = conversations.find((conversation) => conversation.is_active);
 
-        if (active_conversation) {
+        if (active_conversation && is_private_messages_in_view) {
             const node = [pm_list_dom.keyed_pm_li(active_conversation)];
             const new_dom = pm_list_dom.pm_ul(node);
             set_dom_to(new_dom);
@@ -124,6 +127,15 @@ export function highlight_all_private_messages_view(): void {
     $(".direct-messages-container").addClass("active_private_messages_section");
 }
 
+function unhighlight_dm_list_item(): void {
+    $("ul.dm-list li.active-sub-filter").removeClass("active-sub-filter");
+}
+
+function highlight_dm_list_item(dm_list_item: JQuery): void {
+    /* Highlighting is mainly done in template rendering. */
+    $(dm_list_item).addClass("active-sub-filter");
+}
+
 function unhighlight_all_private_messages_view(): void {
     $(".direct-messages-container").removeClass("active_private_messages_section");
 }
@@ -144,6 +156,18 @@ function scroll_all_private_into_view(): void {
 
 export function handle_narrow_activated(filter: Filter): void {
     const active_filter = filter;
+    is_private_messages_in_view = active_filter.has_operator("dm");
+    unhighlight_dm_list_item();
+    if (!is_private_messages_in_view) {
+        /*
+            Since handle_narrow_activated is called within
+            narrow.activate, and narrow.activate is responsible
+            for building narrows, this is the most efficient place
+            to handle user navigation away from a DM view.
+        */
+        close();
+        return;
+    }
     const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), ["is-dm"]);
     const narrow_to_private_messages_section = active_filter.operands("dm").length !== 0;
 
@@ -163,6 +187,7 @@ export function handle_narrow_activated(filter: Filter): void {
             const $active_filter_li = $(
                 `li[data-user-ids-string='${CSS.escape(current_user_ids_string)}']`,
             );
+            highlight_dm_list_item($active_filter_li);
             scroll_pm_into_view($active_filter_li);
         }
         update_private_messages();
@@ -170,10 +195,12 @@ export function handle_narrow_activated(filter: Filter): void {
 }
 
 export function handle_message_view_deactivated(): void {
+    is_private_messages_in_view = false;
     // Since one can renarrow via the keyboard shortcut or similar, we
     // avoid disturbing the zoomed state here.
     unhighlight_all_private_messages_view();
-    update_private_messages();
+    unhighlight_dm_list_item();
+    close();
 }
 
 export function is_private_messages_collapsed(): boolean {
