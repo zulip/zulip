@@ -34,6 +34,11 @@ class Customer(models.Model):
     # they purchased.
     exempt_from_license_number_check = models.BooleanField(default=False)
 
+    # In cents.
+    flat_discount = models.IntegerField(default=2000)
+    # Number of months left in the flat discount period.
+    flat_discounted_months = models.IntegerField(default=0)
+
     class Meta:
         # Enforce that at least one of these is set.
         constraints = [
@@ -270,8 +275,8 @@ class CustomerPlan(models.Model):
     TIER_SELF_HOSTED_BASE = 100
     TIER_SELF_HOSTED_LEGACY = 101
     TIER_SELF_HOSTED_COMMUNITY = 102
-    TIER_SELF_HOSTED_BUSINESS = 103
-    TIER_SELF_HOSTED_PLUS = 104
+    TIER_SELF_HOSTED_BASIC = 103
+    TIER_SELF_HOSTED_BUSINESS = 104
     TIER_SELF_HOSTED_ENTERPRISE = 105
     tier = models.SmallIntegerField()
 
@@ -307,6 +312,7 @@ class CustomerPlan(models.Model):
             CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
             CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Self-managed (legacy plan)",
+            CustomerPlan.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
             CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
         }[tier]
@@ -398,6 +404,7 @@ class SponsoredPlanTypes(Enum):
     # unspecified used for cloud sponsorship requests
     UNSPECIFIED = ""
     COMMUNITY = "Community"
+    BASIC = "Basic"
     BUSINESS = "Business"
 
 
