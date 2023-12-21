@@ -45,7 +45,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
         url: "/json/messages/matches_narrow",
         data: {
             msg_ids: JSON.stringify(ids),
-            narrow: JSON.stringify(narrow_state.public_operators()),
+            narrow: JSON.stringify(narrow_state.public_search_terms()),
         },
         timeout: 5000,
         success(data) {
@@ -421,12 +421,12 @@ export function update_messages(events) {
                 //       with data fetched from the server (which is already updated)
                 //       when we move to new narrow and what data is locally available.
                 if (changed_narrow) {
-                    const operators = new_filter.operators();
+                    const terms = new_filter.terms();
                     const opts = {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
                     };
-                    narrow.activate(operators, opts);
+                    narrow.activate(terms, opts);
                 }
             }
 

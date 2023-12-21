@@ -15,7 +15,7 @@ function _save_narrow_state(): void {
     // We don't want to save state in the middle of a narrow change
     // to the wrong hash.
     const current_filter = message_lists.current.data.filter;
-    if (hash_util.operators_to_hash(current_filter.operators()) !== window.location.hash) {
+    if (hash_util.search_terms_to_hash(current_filter.terms()) !== window.location.hash) {
         return;
     }
 

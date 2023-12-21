@@ -56,7 +56,7 @@ export function respond_to_message(opts) {
                 return;
             }
             const current_filter = narrow_state.filter();
-            const first_term = current_filter.operators()[0];
+            const first_term = current_filter.terms()[0];
             const first_operator = first_term.operator;
             const first_operand = first_term.operand;
 

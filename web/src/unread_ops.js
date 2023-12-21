@@ -178,7 +178,7 @@ export function mark_as_unread_from_here(
     narrow,
 ) {
     if (narrow === undefined) {
-        narrow = JSON.stringify(message_lists.current.data.filter.operators());
+        narrow = JSON.stringify(message_lists.current.data.filter.terms());
     }
     message_lists.current.prevent_reading();
     const opts = {

@@ -34,16 +34,16 @@ const hashchange = zrequire("hashchange");
 const narrow = zrequire("../src/narrow");
 const stream_data = zrequire("stream_data");
 
-run_test("operators_round_trip", () => {
-    let operators;
+run_test("terms_round_trip", () => {
+    let terms;
     let hash;
     let narrow;
 
-    operators = [
+    terms = [
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "algol"},
     ];
-    hash = hash_util.operators_to_hash(operators);
+    hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/stream/devel/topic/algol");
 
     narrow = hash_util.parse_narrow(hash.split("/"));
@@ -52,11 +52,11 @@ run_test("operators_round_trip", () => {
         {operator: "topic", operand: "algol", negated: false},
     ]);
 
-    operators = [
+    terms = [
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "visual c++", negated: true},
     ];
-    hash = hash_util.operators_to_hash(operators);
+    hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/stream/devel/-topic/visual.20c.2B.2B");
 
     narrow = hash_util.parse_narrow(hash.split("/"));
@@ -71,14 +71,14 @@ run_test("operators_round_trip", () => {
         stream_id: 987,
     };
     stream_data.add_sub(florida_stream);
-    operators = [{operator: "stream", operand: "Florida, USA"}];
-    hash = hash_util.operators_to_hash(operators);
+    terms = [{operator: "stream", operand: "Florida, USA"}];
+    hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/stream/987-Florida.2C-USA");
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "stream", operand: "Florida, USA", negated: false}]);
 });
 
-run_test("operators_trailing_slash", () => {
+run_test("terms_trailing_slash", () => {
     const hash = "#narrow/stream/devel/topic/algol/";
     const narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [
@@ -88,7 +88,7 @@ run_test("operators_trailing_slash", () => {
 });
 
 run_test("people_slugs", () => {
-    let operators;
+    let terms;
     let hash;
     let narrow;
 
@@ -99,22 +99,22 @@ run_test("people_slugs", () => {
     };
 
     people.add_active_user(alice);
-    operators = [{operator: "sender", operand: "alice@example.com"}];
-    hash = hash_util.operators_to_hash(operators);
+    terms = [{operator: "sender", operand: "alice@example.com"}];
+    hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/sender/42-Alice-Smith");
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "sender", operand: "alice@example.com", negated: false}]);
 
-    operators = [{operator: "dm", operand: "alice@example.com"}];
-    hash = hash_util.operators_to_hash(operators);
+    terms = [{operator: "dm", operand: "alice@example.com"}];
+    hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/dm/42-Alice-Smith");
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "dm", operand: "alice@example.com", negated: false}]);
 
     // Even though we renamed "pm-with" to "dm", preexisting
     // links/URLs with "pm-with" operator are handled correctly.
-    operators = [{operator: "pm-with", operand: "alice@example.com"}];
-    hash = hash_util.operators_to_hash(operators);
+    terms = [{operator: "pm-with", operand: "alice@example.com"}];
+    hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/pm-with/42-Alice-Smith");
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "pm-with", operand: "alice@example.com", negated: false}]);
@@ -334,10 +334,10 @@ run_test("hash_interactions", ({override, override_rewire}) => {
 run_test("save_narrow", ({override, override_rewire}) => {
     const helper = test_helper({override, override_rewire});
 
-    let operators = [{operator: "is", operand: "dm"}];
+    let terms = [{operator: "is", operand: "dm"}];
 
     blueslip.expect("error", "browser does not support pushState");
-    narrow.save_narrow(operators);
+    narrow.save_narrow(terms);
 
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(window.location.hash, "#narrow/is/dm");
@@ -347,10 +347,10 @@ run_test("save_narrow", ({override, override_rewire}) => {
         url_pushed = url;
     });
 
-    operators = [{operator: "is", operand: "starred"}];
+    terms = [{operator: "is", operand: "starred"}];
 
     helper.clear_events();
-    narrow.save_narrow(operators);
+    narrow.save_narrow(terms);
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 });

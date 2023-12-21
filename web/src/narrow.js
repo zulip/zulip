@@ -78,15 +78,15 @@ export function changehash(newhash) {
     browser_history.set_hash(newhash);
 }
 
-export function save_narrow(operators) {
+export function save_narrow(terms) {
     if (browser_history.state.changing_hash) {
         return;
     }
-    const new_hash = hash_util.operators_to_hash(operators);
+    const new_hash = hash_util.search_terms_to_hash(terms);
     changehash(new_hash);
 }
 
-export function activate(raw_operators, opts) {
+export function activate(raw_terms, opts) {
     /* Main entry point for switching to a new view / message list.
        Note that for historical reasons related to the current
        client-side caching structure, the "All messages"/message_lists.home
@@ -95,7 +95,7 @@ export function activate(raw_operators, opts) {
        The name is based on "narrowing to a subset of the user's
        messages.".  Supported parameters:
 
-       raw_operators: Narrowing/search operators; used to construct
+       raw_terms: Narrowing/search terms; used to construct
        a Filter object that decides which messages belong in the
        view.  Required (See the above note on how `message_lists.home` works)
 
@@ -129,10 +129,9 @@ export function activate(raw_operators, opts) {
     // we need to check if the narrow is allowed for spectator here too.
     if (
         page_params.is_spectator &&
-        raw_operators.length &&
-        raw_operators.some(
-            (raw_operator) =>
-                !hash_parser.allowed_web_public_narrows.includes(raw_operator.operator),
+        raw_terms.length &&
+        raw_terms.some(
+            (raw_term) => !hash_parser.allowed_web_public_narrows.includes(raw_term.operator),
         )
     ) {
         spectators.login_to_access();
@@ -143,9 +142,9 @@ export function activate(raw_operators, opts) {
     const coming_from_inbox = inbox_util.is_visible();
 
     // The empty narrow is the home view; so deactivate any narrow if
-    // no operators were specified. Take us to all messages when this
+    // no terms were specified. Take us to all messages when this
     // happens from Recent Conversations view.
-    if (raw_operators.length === 0) {
+    if (raw_terms.length === 0) {
         browser_history.go_to_location("#all_messages");
         return;
     }
@@ -162,7 +161,7 @@ export function activate(raw_operators, opts) {
     const span_data = {
         op: "function",
         description: "narrow",
-        data: {was_narrowed_already, raw_operators, trigger: opts.trigger},
+        data: {was_narrowed_already, raw_terms, trigger: opts.trigger},
     };
     let span;
     if (!existing_span) {
@@ -181,8 +180,8 @@ export function activate(raw_operators, opts) {
             final_select_id: undefined,
         };
 
-        const filter = new Filter(raw_operators);
-        const operators = filter.operators();
+        const filter = new Filter(raw_terms);
+        const terms = filter.terms();
 
         // These two narrowing operators specify what message should be
         // selected and should be the center of the narrow.
@@ -206,36 +205,36 @@ export function activate(raw_operators, opts) {
         if (id_info.target_id && filter.has_operator("stream") && filter.has_operator("topic")) {
             const target_message = message_store.get(id_info.target_id);
 
-            function adjusted_operators_if_moved(operators, message) {
-                const adjusted_operators = [];
-                let operators_changed = false;
+            function adjusted_terms_if_moved(terms, message) {
+                const adjusted_terms = [];
+                let terms_changed = false;
 
-                for (const operator of operators) {
-                    const adjusted_operator = {...operator};
+                for (const term of terms) {
+                    const adjusted_term = {...term};
                     if (
-                        operator.operator === "stream" &&
-                        !util.lower_same(operator.operand, message.display_recipient)
+                        term.operator === "stream" &&
+                        !util.lower_same(term.operand, message.display_recipient)
                     ) {
-                        adjusted_operator.operand = message.display_recipient;
-                        operators_changed = true;
+                        adjusted_term.operand = message.display_recipient;
+                        terms_changed = true;
                     }
 
                     if (
-                        operator.operator === "topic" &&
-                        !util.lower_same(operator.operand, message.topic)
+                        term.operator === "topic" &&
+                        !util.lower_same(term.operand, message.topic)
                     ) {
-                        adjusted_operator.operand = message.topic;
-                        operators_changed = true;
+                        adjusted_term.operand = message.topic;
+                        terms_changed = true;
                     }
 
-                    adjusted_operators.push(adjusted_operator);
+                    adjusted_terms.push(adjusted_term);
                 }
 
-                if (!operators_changed) {
+                if (!terms_changed) {
                     return null;
                 }
 
-                return adjusted_operators;
+                return adjusted_terms;
             }
 
             if (target_message) {
@@ -251,17 +250,14 @@ export function activate(raw_operators, opts) {
                     // The id of the target message is correct but the stream name is
                     // incorrect in the URL. We reconstruct the narrow with the correct
                     // stream name and narrow.
-                    const adjusted_operators = adjusted_operators_if_moved(
-                        raw_operators,
-                        target_message,
-                    );
+                    const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
 
-                    if (adjusted_operators === null) {
-                        blueslip.error("adjusted_operators impossibly null");
+                    if (adjusted_terms === null) {
+                        blueslip.error("adjusted_terms impossibly null");
                         return;
                     }
 
-                    activate(adjusted_operators, {
+                    activate(adjusted_terms, {
                         ...opts,
                         // Update the URL fragment to reflect the redirect.
                         change_hash: true,
@@ -291,12 +287,9 @@ export function activate(raw_operators, opts) {
                     !narrow_matches_target_message &&
                     (narrow_exists_in_edit_history || !page_params.realm_allow_edit_history)
                 ) {
-                    const adjusted_operators = adjusted_operators_if_moved(
-                        raw_operators,
-                        target_message,
-                    );
-                    if (adjusted_operators !== null) {
-                        activate(adjusted_operators, {
+                    const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
+                    if (adjusted_terms !== null) {
+                        activate(adjusted_terms, {
                             ...opts,
                             // Update the URL fragment to reflect the redirect.
                             change_hash: true,
@@ -316,7 +309,7 @@ export function activate(raw_operators, opts) {
                         // narrow.activate recursively, setting a flag to
                         // indicate we've already done this.
                         message_helper.process_new_message(data.message);
-                        activate(raw_operators, {
+                        activate(raw_terms, {
                             ...opts,
                             fetched_target_message: true,
                         });
@@ -328,7 +321,7 @@ export function activate(raw_operators, opts) {
                         // `stream:foo topic:bar near:1` into the search
                         // box. No special rewriting is required, so call
                         // narrow.activate recursively.
-                        activate(raw_operators, {
+                        activate(raw_terms, {
                             fetched_target_message: true,
                             ...opts,
                         });
@@ -368,7 +361,7 @@ export function activate(raw_operators, opts) {
         $(".tooltip").hide();
 
         blueslip.debug("Narrowed", {
-            operators: operators.map((e) => e.operator),
+            operators: terms.map((e) => e.operator),
             trigger: opts ? opts.trigger : undefined,
             previous_id: message_lists.current.selected_id(),
         });
@@ -493,11 +486,11 @@ export function activate(raw_operators, opts) {
             });
         }
 
-        // Put the narrow operators in the URL fragment.
+        // Put the narrow terms in the URL fragment.
         // Disabled when the URL fragment was the source
         // of this narrow.
         if (opts.change_hash) {
-            save_narrow(operators);
+            save_narrow(terms);
         }
 
         handle_post_view_change(msg_list);
@@ -956,12 +949,12 @@ export function to_compose_target() {
         const stream_name = stream_data.get_sub_by_id(stream_id).name;
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
-        const operators = [{operator: "stream", operand: stream_name}];
+        const terms = [{operator: "stream", operand: stream_name}];
         const topic = compose_state.topic();
         if (topic !== "") {
-            operators.push({operator: "topic", operand: topic});
+            terms.push({operator: "topic", operand: topic});
         }
-        activate(operators, opts);
+        activate(terms, opts);
         return;
     }
 

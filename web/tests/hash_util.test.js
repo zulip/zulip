@@ -184,24 +184,24 @@ run_test("test_by_conversation_and_time_url", () => {
 });
 
 run_test("test_search_public_streams_notice_url", () => {
-    function get_operators(url) {
+    function get_terms(url) {
         return hash_util.parse_narrow(url.split("/"));
     }
 
     assert.equal(
-        hash_util.search_public_streams_notice_url(get_operators("#narrow/search/abc")),
+        hash_util.search_public_streams_notice_url(get_terms("#narrow/search/abc")),
         "#narrow/streams/public/search/abc",
     );
 
     assert.equal(
         hash_util.search_public_streams_notice_url(
-            get_operators("#narrow/has/link/has/image/has/attachment"),
+            get_terms("#narrow/has/link/has/image/has/attachment"),
         ),
         "#narrow/streams/public/has/link/has/image/has/attachment",
     );
 
     assert.equal(
-        hash_util.search_public_streams_notice_url(get_operators("#narrow/sender/15")),
+        hash_util.search_public_streams_notice_url(get_terms("#narrow/sender/15")),
         "#narrow/streams/public/sender/15-Hamlet",
     );
 });
