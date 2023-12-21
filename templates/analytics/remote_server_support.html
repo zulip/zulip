@@ -86,6 +86,17 @@
             {% endwith %}
             {% endif %}
 
+            {% if remote_servers_support_data[remote_server.id].plan_data.next_plan %}
+            <div class="remote-server-information">
+                {% with %}
+                    {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
+                    {% set format_discount = format_discount %}
+                    {% set dollar_amount = dollar_amount %}
+                    {% include 'analytics/next_plan_details.html' %}
+                {% endwith %}
+            </div>
+            {% endif %}
+
             {% for remote_realm in remote_realms[remote_server.id] %}
             <hr />
             <div>
