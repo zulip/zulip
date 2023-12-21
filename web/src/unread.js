@@ -310,7 +310,12 @@ class UnreadTopicCounter {
         const per_stream_bucketer = this.bucketer.get(stream_id);
 
         if (!per_stream_bucketer) {
-            return 0;
+            return {
+                unmuted_count: 0,
+                muted_count: 0,
+                followed_count: 0,
+                stream_is_muted: false,
+            };
         }
 
         const sub = sub_store.get(stream_id);
