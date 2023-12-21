@@ -43,7 +43,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     });
 
     search_suggestion.max_num_of_search_results = 999;
-    let operators;
+    let terms;
 
     $search_query_box.typeahead = (opts) => {
         assert.equal(opts.items, 999);
@@ -182,11 +182,11 @@ run_test("initialize", ({override_rewire, mock_template}) => {
                 $search_query_box.val(search_box_val);
                 Filter.parse = (search_string) => {
                     assert.equal(search_string, search_box_val);
-                    return operators;
+                    return terms;
                 };
             };
 
-            operators = [
+            terms = [
                 {
                     negated: false,
                     operator: "search",
@@ -197,7 +197,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
             assert.equal(opts.updater("ver"), "ver");
             assert.ok(is_blurred);
 
-            operators = [
+            terms = [
                 {
                     negated: false,
                     operator: "stream",
@@ -219,8 +219,8 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     };
 
     search.initialize({
-        on_narrow_search(raw_operators, options) {
-            assert.deepEqual(raw_operators, operators);
+        on_narrow_search(raw_terms, options) {
+            assert.deepEqual(raw_terms, terms);
             assert.deepEqual(options, {trigger: "search"});
         },
     });
@@ -268,11 +268,11 @@ run_test("initialize", ({override_rewire, mock_template}) => {
         $search_query_box.val(search_box_val);
         Filter.parse = (search_string) => {
             assert.equal(search_string, search_box_val);
-            return operators;
+            return terms;
         };
     };
 
-    operators = [
+    terms = [
         {
             negated: false,
             operator: "search",

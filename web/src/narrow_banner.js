@@ -92,12 +92,12 @@ function pick_empty_narrow_banner() {
         return default_banner;
     }
 
-    const first_term = current_filter.operators()[0];
+    const first_term = current_filter.terms()[0];
     const first_operator = first_term.operator;
     const first_operand = first_term.operand;
-    const num_operators = current_filter.operators().length;
+    const num_terms = current_filter.terms().length;
 
-    if (num_operators !== 1) {
+    if (num_terms !== 1) {
         // For invalid-multi-operator narrows, we display an invalid narrow message
         const streams = current_filter.operands("stream");
         const topics = current_filter.operands("topic");
@@ -152,7 +152,7 @@ function pick_empty_narrow_banner() {
         }
 
         // A stream > topic that doesn't exist yet.
-        if (num_operators === 2 && streams.length === 1 && topics.length === 1) {
+        if (num_terms === 2 && streams.length === 1 && topics.length === 1) {
             return default_banner;
         }
 

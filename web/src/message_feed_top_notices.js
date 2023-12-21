@@ -25,8 +25,8 @@ function show_end_of_results_notice() {
 
     // Set the link to point to this search with streams:public added.
     // Note that element we adjust is not visible to spectators.
-    const operators = narrow_state.filter().operators();
-    const update_hash = hash_util.search_public_streams_notice_url(operators);
+    const terms = narrow_state.filter().terms();
+    const update_hash = hash_util.search_public_streams_notice_url(terms);
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 }
 
