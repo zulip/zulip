@@ -10,12 +10,12 @@ const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const narrow_state = zrequire("narrow_state");
 
-function set_filter(operators) {
-    operators = operators.map((op) => ({
+function set_filter(raw_terms) {
+    const terms = raw_terms.map((op) => ({
         operator: op[0],
         operand: op[1],
     }));
-    narrow_state.set_current_filter(new Filter(operators));
+    narrow_state.set_current_filter(new Filter(terms));
 }
 
 function test(label, f) {
@@ -27,7 +27,7 @@ function test(label, f) {
 }
 
 test("stream", () => {
-    assert.equal(narrow_state.public_operators(), undefined);
+    assert.equal(narrow_state.public_search_terms(), undefined);
     assert.ok(!narrow_state.active());
     assert.equal(narrow_state.stream_id(), undefined);
 
@@ -49,14 +49,14 @@ test("stream", () => {
     assert.equal(narrow_state.topic(), "Bar");
     assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
 
-    const expected_operators = [
+    const expected_terms = [
         {negated: false, operator: "stream", operand: "Test"},
         {negated: false, operator: "topic", operand: "Bar"},
         {negated: false, operator: "search", operand: "yo"},
     ];
 
-    const public_operators = narrow_state.public_operators();
-    assert.deepEqual(public_operators, expected_operators);
+    const public_terms = narrow_state.public_search_terms();
+    assert.deepEqual(public_terms, expected_terms);
     assert.equal(narrow_state.search_string(), "stream:Test topic:Bar yo");
 });
 
@@ -125,13 +125,13 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_to_starred());
 });
 
-test("operators", () => {
+test("terms", () => {
     set_filter([
         ["stream", "Foo"],
         ["topic", "Bar"],
         ["search", "Yo"],
     ]);
-    let result = narrow_state.operators();
+    let result = narrow_state.search_terms();
     assert.equal(result.length, 3);
     assert.equal(result[0].operator, "stream");
     assert.equal(result[0].operand, "Foo");
@@ -143,7 +143,7 @@ test("operators", () => {
     assert.equal(result[2].operand, "yo");
 
     narrow_state.reset_current_filter();
-    result = narrow_state.operators();
+    result = narrow_state.search_terms();
     assert.equal(result.length, 0);
 });
 

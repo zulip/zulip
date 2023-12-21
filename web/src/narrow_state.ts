@@ -31,11 +31,11 @@ export function filter(): Filter | undefined {
     return current_filter;
 }
 
-export function operators(): Term[] {
+export function search_terms(): Term[] {
     if (current_filter === undefined) {
-        return new Filter(page_params.narrow).operators();
+        return new Filter(page_params.narrow).terms();
     }
-    return current_filter.operators();
+    return current_filter.terms();
 }
 
 export function is_message_feed_visible(): boolean {
@@ -48,30 +48,30 @@ export function update_email(user_id: number, new_email: string): void {
     }
 }
 
-/* Operators we should send to the server. */
-export function public_operators(): Term[] | undefined {
+/* Search terms we should send to the server. */
+export function public_search_terms(): Term[] | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
-    return current_filter.public_operators();
+    return current_filter.public_terms();
 }
 
 export function search_string(): string {
-    return Filter.unparse(operators());
+    return Filter.unparse(search_terms());
 }
 
-// Collect operators which appear only once into an object,
+// Collect terms which appear only once into an object,
 // and discard those which appear more than once.
-function collect_single(operators: Term[]): Map<string, string> {
+function collect_single(terms: Term[]): Map<string, string> {
     const seen = new Map();
     const result = new Map();
 
-    for (const elem of operators) {
-        const key = elem.operator;
+    for (const term of terms) {
+        const key = term.operator;
         if (seen.has(key)) {
             result.delete(key);
         } else {
-            result.set(key, elem.operand);
+            result.set(key, term.operand);
             seen.set(key, true);
         }
     }
@@ -84,14 +84,14 @@ function collect_single(operators: Term[]): Map<string, string> {
 //
 // This logic is here and not in the 'compose' module because
 // it will get more complicated as we add things to the narrow
-// operator language.
+// search term language.
 export function set_compose_defaults(): {
     stream_id?: number;
     topic?: string;
     private_message_recipient?: string;
 } {
     const opts: {stream_id?: number; topic?: string; private_message_recipient?: string} = {};
-    const single = collect_single(operators());
+    const single = collect_single(search_terms());
 
     // Set the stream, topic, and/or direct message recipient
     // if they are uniquely specified in the narrow view.
@@ -318,17 +318,17 @@ export function narrowed_by_pm_reply(): boolean {
     if (current_filter === undefined) {
         return false;
     }
-    const operators = current_filter.operators();
-    return operators.length === 1 && current_filter.has_operator("dm");
+    const terms = current_filter.terms();
+    return terms.length === 1 && current_filter.has_operator("dm");
 }
 
 export function narrowed_by_topic_reply(): boolean {
     if (current_filter === undefined) {
         return false;
     }
-    const operators = current_filter.operators();
+    const terms = current_filter.terms();
     return (
-        operators.length === 2 &&
+        terms.length === 2 &&
         current_filter.operands("stream").length === 1 &&
         current_filter.operands("topic").length === 1
     );
@@ -345,8 +345,8 @@ export function narrowed_by_stream_reply(): boolean {
     if (current_filter === undefined) {
         return false;
     }
-    const operators = current_filter.operators();
-    return operators.length === 1 && current_filter.operands("stream").length === 1;
+    const terms = current_filter.terms();
+    return terms.length === 1 && current_filter.operands("stream").length === 1;
 }
 
 export function narrowed_to_topic(): boolean {

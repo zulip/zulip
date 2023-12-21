@@ -24,14 +24,14 @@ export function narrow_or_search_for_term(search_string, {on_narrow_search}) {
         return $search_query_box.val();
     }
 
-    const operators = Filter.parse(search_string);
-    on_narrow_search(operators, {trigger: "search"});
+    const terms = Filter.parse(search_string);
+    on_narrow_search(terms, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to
     // blur the search box, because it means that Esc won't
     // unnarrow, it'll leave the searchbox.
 
-    // Narrowing will have already put some operators in the search box,
+    // Narrowing will have already put some terms in the search box,
     // so leave the current text in.
     $search_query_box.trigger("blur");
     return $search_query_box.val();
@@ -125,7 +125,7 @@ export function initialize({on_narrow_search}) {
                 // We just pressed Enter and the box had focus, which
                 // means we didn't use the typeahead at all.  In that
                 // case, we should act as though we're searching by
-                // operators.  (The reason the other actions don't call
+                // terms.  (The reason the other actions don't call
                 // this codepath is that they first all blur the box to
                 // indicate that they've done what they need to do)
 
@@ -231,7 +231,7 @@ function exit_search(opts) {
 
 export function open_search_bar_and_close_narrow_description() {
     // Preserve user input if they've already started typing, but
-    // otherwise fill the input field with the text operators for
+    // otherwise fill the input field with the text terms for
     // the current narrow.
     if ($("#search_query").val() === "") {
         reset_searchbox_text();

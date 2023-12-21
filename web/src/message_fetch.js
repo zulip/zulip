@@ -241,7 +241,7 @@ export function load_messages(opts, attempt = 1) {
     }
 
     // This block is a hack; structurally, we want to set
-    //   data.narrow = opts.msg_list.data.filter.public_operators()
+    //   data.narrow = opts.msg_list.data.filter.public_terms()
     //
     // But support for the all_messages_data sharing of data with
     // message_lists.home and the (hacky) page_params.narrow feature
@@ -256,11 +256,11 @@ export function load_messages(opts, attempt = 1) {
         // streams and topics even though message_lists.home's in:home
         // operators will filter those.
     } else {
-        let operators = msg_list_data.filter.public_operators();
+        let terms = msg_list_data.filter.public_terms();
         if (page_params.narrow !== undefined) {
-            operators = [...operators, ...page_params.narrow];
+            terms = [...terms, ...page_params.narrow];
         }
-        data.narrow = JSON.stringify(operators);
+        data.narrow = JSON.stringify(terms);
     }
 
     let update_loading_indicator = opts.msg_list === message_lists.current;

@@ -38,12 +38,12 @@ function empty_narrow_html(title, html, search_data) {
     return require("../templates/empty_feed_notice.hbs")(opts);
 }
 
-function set_filter(operators) {
-    operators = operators.map((op) => ({
+function set_filter(terms) {
+    terms = terms.map((op) => ({
         operator: op[0],
         operand: op[1],
     }));
-    narrow_state.set_current_filter(new Filter(operators));
+    narrow_state.set_current_filter(new Filter(terms));
 }
 
 const me = {
@@ -671,8 +671,8 @@ run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
 
 run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     const args = {called: false};
-    override_rewire(narrow, "activate", (operators, opts) => {
-        args.operators = operators;
+    override_rewire(narrow, "activate", (terms, opts) => {
+        args.terms = terms;
         args.opts = opts;
         args.called = true;
     });
@@ -687,7 +687,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.equal(args.opts.trigger, "narrow_to_compose_target");
-    assert.deepEqual(args.operators, [
+    assert.deepEqual(args.terms, [
         {operator: "stream", operand: "ROME"},
         {operator: "topic", operand: "one"},
     ]);
@@ -697,7 +697,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
+    assert.deepEqual(args.terms, [
         {operator: "stream", operand: "ROME"},
         {operator: "topic", operand: "four"},
     ]);
@@ -707,20 +707,20 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
 
     // Test with no topic
     compose_state.topic(undefined);
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
     const args = {called: false};
-    override_rewire(narrow, "activate", (operators, opts) => {
-        args.operators = operators;
+    override_rewire(narrow, "activate", (terms, opts) => {
+        args.terms = terms;
         args.opts = opts;
         args.called = true;
     });
@@ -738,37 +738,35 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "dm", operand: "alice@example.com"}]);
+    assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com"}]);
 
     // Test with valid persons
     emails = "alice@example.com,ray@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [
-        {operator: "dm", operand: "alice@example.com,ray@example.com"},
-    ]);
+    assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com,ray@example.com"}]);
 
     // Test with some invalid persons
     emails = "alice@example.com,random,ray@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
+    assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with all invalid persons
     emails = "alice,random,ray";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
+    assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with no persons
     emails = "";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
+    assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 });
 
 run_test("narrow_compute_title", () => {

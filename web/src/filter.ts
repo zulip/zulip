@@ -240,18 +240,18 @@ export type Term = {
 };
 
 export class Filter {
-    _operators: Term[];
+    _terms: Term[];
     _sub?: StreamSubscription;
     _sorted_term_types?: string[] = undefined;
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
 
-    constructor(operators?: Term[]) {
-        if (operators === undefined) {
-            this._operators = [];
+    constructor(terms?: Term[]) {
+        if (terms === undefined) {
+            this._terms = [];
             this._sub = undefined;
         } else {
-            this._operators = this.fix_operators(operators);
+            this._terms = this.fix_terms(terms);
             if (this.has_operator("stream")) {
                 this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
             }
@@ -361,9 +361,9 @@ export class Filter {
         return util.robust_url_decode(encoded).trim();
     }
 
-    // Parse a string into a list of operators (see below).
+    // Parse a string into a list of terms (see below).
     static parse(str: string): Term[] {
-        const operators: Term[] = [];
+        const terms: Term[] = [];
         let search_term: string[] = [];
         let negated;
         let operator;
@@ -375,7 +375,7 @@ export class Filter {
                 operator = "search";
                 const _operand = search_term.join(" ");
                 term = {operator, operand: _operand, negated: false};
-                operators.push(term);
+                terms.push(term);
                 search_term = [];
             }
         }
@@ -387,7 +387,7 @@ export class Filter {
         // parser with `.split`.
         const matches = str.match(/([^\s:]+: ?)?("[^"]+"?|\S+)/g);
         if (matches === null) {
-            return operators;
+            return terms;
         }
 
         for (const token of matches) {
@@ -419,16 +419,16 @@ export class Filter {
                 }
                 // If any search query was present and it is followed by some other filters
                 // then we must add that search filter in its current position in the
-                // operators list. This is done so that the last active filter is correctly
+                // terms list. This is done so that the last active filter is correctly
                 // detected by the `get_search_result` function (in search_suggestions.js).
                 maybe_add_search_terms();
                 term = {negated, operator, operand};
-                operators.push(term);
+                terms.push(term);
             }
         }
 
         maybe_add_search_terms();
-        return operators;
+        return terms;
     }
 
     /* Convert a list of search terms to a string.
@@ -440,20 +440,20 @@ export class Filter {
    might need to support multiple terms of the same type.
 */
     static unparse(search_terms: Term[]): string {
-        const parts = search_terms.map((elem) => {
-            if (elem.operator === "search") {
+        const term_strings = search_terms.map((term) => {
+            if (term.operator === "search") {
                 // Search terms are the catch-all case.
                 // All tokens that don't start with a known operator and
                 // a colon are glued together to form a search term.
-                return elem.operand;
+                return term.operand;
             }
-            const sign = elem.negated ? "-" : "";
-            if (elem.operator === "") {
-                return elem.operand;
+            const sign = term.negated ? "-" : "";
+            if (term.operator === "") {
+                return term.operand;
             }
-            return sign + elem.operator + ":" + Filter.encodeOperand(elem.operand.toString());
+            return sign + term.operator + ":" + Filter.encodeOperand(term.operand.toString());
         });
-        return parts.join(" ");
+        return term_strings.join(" ");
     }
 
     static term_type(term: Term): string {
@@ -560,36 +560,36 @@ export class Filter {
         return "";
     }
 
-    // Convert a list of operators to a human-readable description.
-    static parts_for_describe(operators: Term[]): Part[] {
+    // Convert a list of terms to a human-readable description.
+    static parts_for_describe(terms: Term[]): Part[] {
         const parts: Part[] = [];
 
-        if (operators.length === 0) {
+        if (terms.length === 0) {
             parts.push({type: "plain_text", content: "all messages"});
             return parts;
         }
 
-        if (operators.length >= 2) {
+        if (terms.length >= 2) {
             const is = (term: Term, expected: string): boolean =>
                 term.operator === expected && !term.negated;
 
-            if (is(operators[0], "stream") && is(operators[1], "topic")) {
-                const stream = operators[0].operand;
-                const topic = operators[1].operand;
+            if (is(terms[0], "stream") && is(terms[1], "topic")) {
+                const stream = terms[0].operand;
+                const topic = terms[1].operand;
                 parts.push({
                     type: "stream_topic",
                     stream,
                     topic,
                 });
-                operators = operators.slice(2);
+                terms = terms.slice(2);
             }
         }
 
-        const more_parts = operators.map((elem): Part => {
-            const operand = elem.operand;
-            const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
+        const more_parts = terms.map((term): Part => {
+            const operand = term.operand;
+            const canonicalized_operator = Filter.canonicalize_operator(term.operator);
             if (canonicalized_operator === "is") {
-                const verb = elem.negated ? "exclude " : "";
+                const verb = term.negated ? "exclude " : "";
                 return {
                     type: "is_operator",
                     verb,
@@ -616,7 +616,7 @@ export class Filter {
             }
             const prefix_for_operator = Filter.operator_to_prefix(
                 canonicalized_operator,
-                elem.negated,
+                term.negated,
             );
             if (prefix_for_operator !== "") {
                 return {
@@ -633,18 +633,18 @@ export class Filter {
         return [...parts, ...more_parts];
     }
 
-    static search_description_as_html(operators: Term[]): string {
+    static search_description_as_html(terms: Term[]): string {
         return render_search_description({
-            parts: Filter.parts_for_describe(operators),
+            parts: Filter.parts_for_describe(terms),
         });
     }
 
-    static is_spectator_compatible(ops: Term[]): boolean {
-        for (const op of ops) {
-            if (op.operand === undefined) {
+    static is_spectator_compatible(terms: Term[]): boolean {
+        for (const term of terms) {
+            if (term.operand === undefined) {
                 return false;
             }
-            if (!hash_parser.allowed_web_public_narrows.includes(op.operator)) {
+            if (!hash_parser.allowed_web_public_narrows.includes(term.operator)) {
                 return false;
             }
         }
@@ -658,47 +658,47 @@ export class Filter {
         return this._predicate;
     }
 
-    operators(): Term[] {
-        return this._operators;
+    terms(): Term[] {
+        return this._terms;
     }
 
-    public_operators(): Term[] {
-        const safe_to_return = this._operators.filter(
+    public_terms(): Term[] {
+        const safe_to_return = this._terms.filter(
             // Filter out the embedded narrow (if any).
-            (value) =>
+            (term) =>
                 !(
                     page_params.narrow_stream !== undefined &&
-                    value.operator === "stream" &&
-                    value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
+                    term.operator === "stream" &&
+                    term.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
                 ),
         );
         return safe_to_return;
     }
 
     operands(operator: string): string[] {
-        return this._operators
-            .filter((elem) => !elem.negated && elem.operator === operator)
-            .map((elem) => elem.operand);
+        return this._terms
+            .filter((term) => !term.negated && term.operator === operator)
+            .map((term) => term.operand);
     }
 
     has_negated_operand(operator: string, operand: string): boolean {
-        return this._operators.some(
-            (elem) => elem.negated && elem.operator === operator && elem.operand === operand,
+        return this._terms.some(
+            (term) => term.negated && term.operator === operator && term.operand === operand,
         );
     }
 
     has_operand(operator: string, operand: string): boolean {
-        return this._operators.some(
-            (elem) => !elem.negated && elem.operator === operator && elem.operand === operand,
+        return this._terms.some(
+            (term) => !term.negated && term.operator === operator && term.operand === operand,
         );
     }
 
     has_operator(operator: string): boolean {
-        return this._operators.some((elem) => {
-            if (elem.negated && !["search", "has"].includes(elem.operator)) {
+        return this._terms.some((term) => {
+            if (term.negated && !["search", "has"].includes(term.operator)) {
                 return false;
             }
-            return elem.operator === operator;
+            return term.operator === operator;
         });
     }
 
@@ -1089,10 +1089,10 @@ export class Filter {
         return true;
     }
 
-    fix_operators(operators: Term[]): Term[] {
-        operators = this._canonicalize_operators(operators);
-        operators = this._fix_redundant_is_private(operators);
-        return operators;
+    fix_terms(terms: Term[]): Term[] {
+        terms = this._canonicalize_terms(terms);
+        terms = this._fix_redundant_is_private(terms);
+        return terms;
     }
 
     _fix_redundant_is_private(terms: Term[]): Term[] {
@@ -1103,12 +1103,12 @@ export class Filter {
         return terms.filter((term) => Filter.term_type(term) !== "is-dm");
     }
 
-    _canonicalize_operators(operators_mixed_case: Term[]): Term[] {
-        return operators_mixed_case.map((tuple: Term) => Filter.canonicalize_term(tuple));
+    _canonicalize_terms(terms_mixed_case: Term[]): Term[] {
+        return terms_mixed_case.map((term: Term) => Filter.canonicalize_term(term));
     }
 
     filter_with_new_params(params: Term): Filter {
-        const terms = this._operators.map((term) => {
+        const terms = this._terms.map((term) => {
             const new_term = {...term};
             if (new_term.operator === params.operator && !new_term.negated) {
                 new_term.operand = params.operand;
@@ -1130,7 +1130,7 @@ export class Filter {
     }
 
     _build_sorted_term_types(): string[] {
-        const terms = this._operators;
+        const terms = this._terms;
         const term_types = terms.map((term) => Filter.term_type(term));
         const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
@@ -1170,7 +1170,7 @@ export class Filter {
     }
 
     update_email(user_id: number, new_email: string): void {
-        for (const term of this._operators) {
+        for (const term of this._terms) {
             switch (term.operator) {
                 case "dm-including":
                 case "group-pm-with":
@@ -1189,7 +1189,7 @@ export class Filter {
 
     // Build a filter function from a list of operators.
     _build_predicate(): (message: Message) => boolean {
-        const operators = this._operators;
+        const terms = this._terms;
 
         if (!this.can_apply_locally()) {
             return () => true;
@@ -1200,7 +1200,7 @@ export class Filter {
         // build JavaScript code in a string and then eval() it.
 
         return (message: Message) =>
-            operators.every((term) => {
+            terms.every((term) => {
                 let ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {
                     ok = !ok;

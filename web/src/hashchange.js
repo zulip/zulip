@@ -117,10 +117,10 @@ function do_hashchange_normal(from_reload) {
 
     switch (hash[0]) {
         case "#narrow": {
-            let operators;
+            let terms;
             try {
                 // TODO: Show possible valid URLs to the user.
-                operators = hash_util.parse_narrow(hash);
+                terms = hash_util.parse_narrow(hash);
             } catch {
                 ui_report.error(
                     $t_html({defaultMessage: "Invalid URL"}),
@@ -129,7 +129,7 @@ function do_hashchange_normal(from_reload) {
                     2000,
                 );
             }
-            if (operators === undefined) {
+            if (terms === undefined) {
                 // If the narrow URL didn't parse,
                 // send them to web_home_view.
                 // We cannot clear hash here since
@@ -156,7 +156,7 @@ function do_hashchange_normal(from_reload) {
                 narrow_opts.then_select_id = location_data_for_hash.narrow_pointer;
                 narrow_opts.then_select_offset = location_data_for_hash.narrow_offset;
             }
-            narrow.activate(operators, narrow_opts);
+            narrow.activate(terms, narrow_opts);
             return true;
         }
         case "":

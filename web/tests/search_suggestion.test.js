@@ -333,7 +333,7 @@ test("group_suggestions", ({mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    // Test multiple operators
+    // Test multiple terms
     query = "is:starred has:link dm:bob@zulip.com,Smit";
     suggestions = get_suggestions(query);
     expected = [
