@@ -32,7 +32,7 @@ Options:
       Sets the PostgreSQL database name.
   --postgresql-database-user=zulip
       Sets the PostgreSQL database user.
-  --postgresql-version=15
+  --postgresql-version=16
       Sets the version of PostgreSQL that will be installed.
   --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
@@ -152,7 +152,7 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
-POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-15}"
+POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-16}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
