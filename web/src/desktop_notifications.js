@@ -8,10 +8,10 @@ export function set_notification_api(n) {
     NotificationAPI = n;
 }
 
-if (window.electron_bridge && window.electron_bridge.new_notification) {
-    class ElectronBridgeNotification extends EventTarget {
-        constructor(title, options) {
-            super();
+class ElectronBridgeNotification extends EventTarget {
+    constructor(title, options) {
+        super();
+        if (window.electron_bridge && window.electron_bridge.new_notification) {
             Object.assign(
                 this,
                 window.electron_bridge.new_notification(title, options, (type, eventInit) =>
@@ -19,19 +19,21 @@ if (window.electron_bridge && window.electron_bridge.new_notification) {
                 ),
             );
         }
-
-        static get permission() {
-            return Notification.permission;
-        }
-
-        static async requestPermission(callback) {
-            if (callback) {
-                callback(await Promise.resolve(Notification.permission));
-            }
-            return Notification.permission;
-        }
     }
 
+    static get permission() {
+        return Notification.permission;
+    }
+
+    static async requestPermission(callback) {
+        if (callback) {
+            callback(await Promise.resolve(Notification.permission));
+        }
+        return Notification.permission;
+    }
+}
+
+if (window.electron_bridge && window.electron_bridge.new_notification) {
     NotificationAPI = ElectronBridgeNotification;
 } else if (window.Notification) {
     NotificationAPI = window.Notification;
