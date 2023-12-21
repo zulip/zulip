@@ -48,13 +48,13 @@ export class FoldDict<V> {
         }
     }
 
-    *values(): Iterator<V> {
+    *values(): IterableIterator<V> {
         for (const {v} of this._items.values()) {
             yield v;
         }
     }
 
-    *[Symbol.iterator](): Iterator<[string, V]> {
+    *[Symbol.iterator](): IterableIterator<[string, V]> {
         for (const {k, v} of this._items.values()) {
             yield [k, v];
         }
