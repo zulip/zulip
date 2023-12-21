@@ -47,72 +47,14 @@ const unread_messages = new Set();
 // for how we can refresh it efficiently.
 export const unread_mention_topics = new Map();
 
-class Bucketer {
-    // Maps item_id => bucket_key for items present in a bucket.
-    reverse_lookup = new Map();
-
-    constructor(options) {
-        this.key_to_bucket = options.key_to_bucket;
-        this.make_bucket = options.make_bucket;
-    }
-
-    clear() {
-        this.key_to_bucket.clear();
-        this.reverse_lookup.clear();
-    }
-
-    add(opts) {
-        const bucket_key = opts.bucket_key;
-        const item_id = opts.item_id;
-        const add_callback = opts.add_callback;
-
-        let bucket = this.key_to_bucket.get(bucket_key);
-        if (!bucket) {
-            bucket = this.make_bucket();
-            this.key_to_bucket.set(bucket_key, bucket);
-        }
-        if (add_callback) {
-            add_callback(bucket, item_id);
-        } else {
-            bucket.add(item_id);
-        }
-        this.reverse_lookup.set(item_id, bucket_key);
-    }
-
-    delete(item_id) {
-        const bucket_key = this.reverse_lookup.get(item_id);
-        if (bucket_key) {
-            const bucket = this.get_bucket(bucket_key);
-            bucket.delete(item_id);
-            this.reverse_lookup.delete(item_id);
-        }
-    }
-
-    get_bucket(bucket_key) {
-        return this.key_to_bucket.get(bucket_key);
-    }
-
-    keys() {
-        return this.key_to_bucket.keys();
-    }
-
-    values() {
-        return this.key_to_bucket.values();
-    }
-
-    [Symbol.iterator]() {
-        return this.key_to_bucket[Symbol.iterator]();
-    }
-}
-
 class UnreadDirectMessageCounter {
-    bucketer = new Bucketer({
-        key_to_bucket: new Map(),
-        make_bucket: () => new Set(),
-    });
+    bucketer = new Map();
+    // Maps direct message id to the user id string that's the key for bucketer
+    reverse_lookup = new Map();
 
     clear() {
         this.bucketer.clear();
+        this.reverse_lookup.clear();
     }
 
     set_pms(pms) {
@@ -130,25 +72,30 @@ class UnreadDirectMessageCounter {
     }
 
     set_message_ids(user_ids_string, unread_message_ids) {
-        for (const msg_id of unread_message_ids) {
-            this.bucketer.add({
-                bucket_key: user_ids_string,
-                item_id: msg_id,
-            });
+        for (const message_id of unread_message_ids) {
+            this.add({message_id, user_ids_string});
         }
     }
 
     add({message_id, user_ids_string}) {
         if (user_ids_string) {
-            this.bucketer.add({
-                bucket_key: user_ids_string,
-                item_id: message_id,
-            });
+            let bucket = this.bucketer.get(user_ids_string);
+            if (bucket === undefined) {
+                bucket = new Set();
+                this.bucketer.set(user_ids_string, bucket);
+            }
+            bucket.add(message_id);
+            this.reverse_lookup.set(message_id, user_ids_string);
         }
     }
 
     delete(message_id) {
-        this.bucketer.delete(message_id);
+        const user_ids_string = this.reverse_lookup.get(message_id);
+        if (user_ids_string === undefined) {
+            return;
+        }
+        this.bucketer.get(user_ids_string)?.delete(message_id);
+        this.reverse_lookup.delete(message_id);
     }
 
     get_counts(include_latest_msg_id = false) {
@@ -178,7 +125,7 @@ class UnreadDirectMessageCounter {
             return 0;
         }
 
-        const bucket = this.bucketer.get_bucket(user_ids_string);
+        const bucket = this.bucketer.get(user_ids_string);
 
         if (!bucket) {
             return 0;
@@ -203,7 +150,7 @@ class UnreadDirectMessageCounter {
             return [];
         }
 
-        const bucket = this.bucketer.get_bucket(user_ids_string);
+        const bucket = this.bucketer.get(user_ids_string);
 
         if (!bucket) {
             return [];
@@ -215,21 +162,14 @@ class UnreadDirectMessageCounter {
 }
 const unread_direct_message_counter = new UnreadDirectMessageCounter();
 
-function make_per_stream_bucketer() {
-    return new Bucketer({
-        key_to_bucket: new FoldDict(), // bucket keys are topics
-        make_bucket: () => new Set(),
-    });
-}
-
 class UnreadTopicCounter {
-    bucketer = new Bucketer({
-        key_to_bucket: new Map(), // bucket keys are stream_ids
-        make_bucket: make_per_stream_bucketer,
-    });
+    bucketer = new Map();
+    // Maps the message id to the (stream, topic) we stored it under in the bucketer.
+    reverse_lookup = new Map();
 
     clear() {
         this.bucketer.clear();
+        this.reverse_lookup.clear();
     }
 
     set_streams(objs) {
@@ -245,20 +185,28 @@ class UnreadTopicCounter {
     }
 
     add({message_id, stream_id, topic}) {
-        this.bucketer.add({
-            bucket_key: stream_id,
-            item_id: message_id,
-            add_callback(per_stream_bucketer) {
-                per_stream_bucketer.add({
-                    bucket_key: topic,
-                    item_id: message_id,
-                });
-            },
-        });
+        let per_stream_bucketer = this.bucketer.get(stream_id);
+        if (per_stream_bucketer === undefined) {
+            per_stream_bucketer = new FoldDict();
+            this.bucketer.set(stream_id, per_stream_bucketer);
+        }
+        let bucket = per_stream_bucketer.get(topic);
+        if (bucket === undefined) {
+            bucket = new Set();
+            per_stream_bucketer.set(topic, bucket);
+        }
+        this.reverse_lookup.set(message_id, {stream_id, topic});
+        bucket.add(message_id);
     }
 
-    delete(msg_id) {
-        this.bucketer.delete(msg_id);
+    delete(message_id) {
+        const stream_topic = this.reverse_lookup.get(message_id);
+        if (stream_topic === undefined) {
+            return;
+        }
+        const {stream_id, topic} = stream_topic;
+        this.bucketer.get(stream_id)?.get(topic)?.delete(message_id);
+        this.reverse_lookup.delete(message_id);
     }
 
     get_counts(include_per_topic_count = false, include_per_topic_latest_msg_id = false) {
@@ -330,7 +278,7 @@ class UnreadTopicCounter {
         const stream_id = opts.stream_id;
         const topic_dict = opts.topic_dict;
 
-        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get(stream_id);
         if (!per_stream_bucketer) {
             return [];
         }
@@ -340,14 +288,14 @@ class UnreadTopicCounter {
         /* Include topics that have at least one unread. It would likely
          * be better design for buckets to be deleted when emptied. */
         topic_names = topic_names.filter((topic_name) => {
-            const messages = [...per_stream_bucketer.get_bucket(topic_name)];
+            const messages = [...per_stream_bucketer.get(topic_name)];
             return messages.length > 0;
         });
         /* And aren't already present in topic_dict. */
         topic_names = topic_names.filter((topic_name) => !topic_dict.has(topic_name));
 
         const result = topic_names.map((topic_name) => {
-            const msgs = per_stream_bucketer.get_bucket(topic_name);
+            const msgs = per_stream_bucketer.get(topic_name);
 
             return {
                 pretty_name: topic_name,
@@ -359,7 +307,7 @@ class UnreadTopicCounter {
     }
 
     get_stream_count_info(stream_id) {
-        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get(stream_id);
 
         if (!per_stream_bucketer) {
             return 0;
@@ -396,12 +344,12 @@ class UnreadTopicCounter {
     }
 
     get(stream_id, topic) {
-        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get(stream_id);
         if (!per_stream_bucketer) {
             return 0;
         }
 
-        const topic_bucket = per_stream_bucketer.get_bucket(topic);
+        const topic_bucket = per_stream_bucketer.get(topic);
         if (!topic_bucket) {
             return 0;
         }
@@ -410,7 +358,7 @@ class UnreadTopicCounter {
     }
 
     get_msg_ids_for_stream(stream_id) {
-        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get(stream_id);
 
         if (!per_stream_bucketer) {
             return [];
@@ -430,12 +378,12 @@ class UnreadTopicCounter {
     }
 
     get_msg_ids_for_topic(stream_id, topic) {
-        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get(stream_id);
         if (!per_stream_bucketer) {
             return [];
         }
 
-        const topic_bucket = per_stream_bucketer.get_bucket(topic);
+        const topic_bucket = per_stream_bucketer.get(topic);
         if (!topic_bucket) {
             return [];
         }
@@ -454,7 +402,7 @@ class UnreadTopicCounter {
         const streams_with_mentions = new Set();
 
         for (const message_id of unread_mentions_counter) {
-            const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            const stream_id = this.reverse_lookup.get(message_id)?.stream_id;
             if (stream_id === undefined) {
                 // This is a direct message containing a mention.
                 continue;
@@ -471,14 +419,13 @@ class UnreadTopicCounter {
         // muted stream.
         const streams_with_unmuted_mentions = new Set();
         for (const message_id of unread_mentions_counter) {
-            const stream_id = this.bucketer.reverse_lookup.get(message_id);
-            if (stream_id === undefined) {
+            const stream_topic = this.reverse_lookup.get(message_id);
+            if (stream_topic === undefined) {
                 // This is a direct message containing a mention.
                 continue;
             }
+            const {stream_id, topic} = stream_topic;
 
-            const stream_bucketer = this.bucketer.get_bucket(stream_id);
-            const topic = stream_bucketer.reverse_lookup.get(message_id);
             const stream_is_muted = sub_store.get(stream_id)?.is_muted;
             if (stream_is_muted) {
                 if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
@@ -496,14 +443,13 @@ class UnreadTopicCounter {
     get_followed_topic_unread_mentions() {
         let followed_topic_unread_mentions = 0;
         for (const message_id of unread_mentions_counter) {
-            const stream_id = this.bucketer.reverse_lookup.get(message_id);
-            if (stream_id === undefined) {
+            const stream_topic = this.reverse_lookup.get(message_id);
+            if (stream_topic === undefined) {
                 // This is a direct message containing a mention.
                 continue;
             }
+            const {stream_id, topic} = stream_topic;
 
-            const stream_bucketer = this.bucketer.get_bucket(stream_id);
-            const topic = stream_bucketer.reverse_lookup.get(message_id);
             if (user_topics.is_topic_followed(stream_id, topic)) {
                 followed_topic_unread_mentions += 1;
             }
@@ -512,13 +458,13 @@ class UnreadTopicCounter {
     }
 
     topic_has_any_unread(stream_id, topic) {
-        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get(stream_id);
 
         if (!per_stream_bucketer) {
             return false;
         }
 
-        const id_set = per_stream_bucketer.get_bucket(topic);
+        const id_set = per_stream_bucketer.get(topic);
         if (!id_set) {
             return false;
         }
@@ -530,7 +476,7 @@ class UnreadTopicCounter {
         // Returns the set of lower cased topics with unread mentions
         // in the given stream.
         const result = new Set();
-        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+        const per_stream_bucketer = this.bucketer.get(stream_id);
 
         if (!per_stream_bucketer) {
             return result;
@@ -541,11 +487,11 @@ class UnreadTopicCounter {
             // we can just directly use reverse_lookup to find the
             // topic in this stream containing a given unread message
             // ID. If it's not in this stream, we'll get undefined.
-            const topic_match = per_stream_bucketer.reverse_lookup.get(message_id);
-            if (topic_match !== undefined) {
+            const stream_topic = this.reverse_lookup.get(message_id);
+            if (stream_topic !== undefined && stream_topic.stream_id === stream_id) {
                 // Important: We lower-case topics here before adding them
                 // to this set, to support case-insensitive checks.
-                result.add(topic_match.toLowerCase());
+                result.add(stream_topic.topic.toLowerCase());
             }
         }
 
@@ -567,20 +513,13 @@ function add_message_to_unread_mention_topics(message_id) {
 }
 
 function remove_message_from_unread_mention_topics(message_id) {
-    const stream_id = unread_topic_counter.bucketer.reverse_lookup.get(message_id);
-    if (!stream_id) {
+    const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
+    if (!stream_topic) {
         // Direct messages and messages that were already not unread
         // exit here.
         return;
     }
-
-    const per_stream_bucketer = unread_topic_counter.bucketer.get_bucket(stream_id);
-    if (!per_stream_bucketer) {
-        blueslip.error("Could not find per_stream_bucketer", {message_id});
-        return;
-    }
-
-    const topic = per_stream_bucketer.reverse_lookup.get(message_id);
+    const {stream_id, topic} = stream_topic;
     const topic_key = recent_view_util.get_topic_key(stream_id, topic);
     if (unread_mention_topics.has(topic_key)) {
         unread_mention_topics.get(topic_key).delete(message_id);
@@ -603,12 +542,14 @@ export function clear_and_populate_unread_mention_topics() {
     unread_mention_topics.clear();
 
     for (const message_id of unread_mentions_counter) {
-        const stream_id = unread_topic_counter.bucketer.reverse_lookup.get(message_id);
-        if (!stream_id) {
+        const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
+        if (!stream_topic) {
+            // Direct messages and messages that were already not unread
+            // exit here.
             continue;
         }
-        const per_stream_bucketer = unread_topic_counter.bucketer.get_bucket(stream_id);
-        const topic = per_stream_bucketer.reverse_lookup.get(message_id);
+        const {stream_id, topic} = stream_topic;
+
         const topic_key = recent_view_util.get_topic_key(stream_id, topic);
         if (unread_mention_topics.has(topic_key)) {
             unread_mention_topics.get(topic_key).add(message_id);
