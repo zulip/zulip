@@ -219,8 +219,8 @@ export function set_info(
 
         const raw: RawPresence = {
             server_timestamp,
-            active_timestamp: info.active_timestamp || undefined,
-            idle_timestamp: info.idle_timestamp || undefined,
+            active_timestamp: info.active_timestamp,
+            idle_timestamp: info.idle_timestamp,
         };
 
         raw_info.set(user_id, raw);
