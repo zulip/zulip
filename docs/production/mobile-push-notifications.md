@@ -183,7 +183,8 @@ and privacy in mind:
   SSL/TLS.
 - The code for the push notification forwarding service is 100% open
   source and available as part of the
-  [Zulip server project on GitHub](https://github.com/zulip/zulip).
+  [Zulip server project on GitHub](https://github.com/zulip/zulip)
+  (specifically, [here](https://github.com/zulip/zulip/tree/main/zilencer)).
 - The push notification forwarding servers are professionally managed
   by a small team of security-sensitive engineers.
 
