@@ -50,7 +50,9 @@ export function create_ajax_request(
     ignored_inputs: string[] = [],
     type = "POST",
     success_callback: (response: unknown) => void,
-    error_callback: (xhr: JQuery.jqXHR) => void = () => {},
+    error_callback: (xhr: JQuery.jqXHR) => void = () => {
+        // Ignore errors by default
+    },
 ): void {
     const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
