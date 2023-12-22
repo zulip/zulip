@@ -238,13 +238,13 @@ export function get_pm_recent_senders(user_ids_string) {
         return max_id2 - max_id1;
     }
 
-    pm_senders_info.non_participants = user_ids.filter((user_id) => {
+    for (const user_id of user_ids) {
         if (sender_dict.get(user_id)) {
             pm_senders_info.participants.push(user_id);
-            return false;
+        } else {
+            pm_senders_info.non_participants.push(user_id);
         }
-        return true;
-    });
+    }
     pm_senders_info.participants.sort(compare_pm_user_ids_by_recency);
     return pm_senders_info;
 }
