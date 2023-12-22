@@ -130,7 +130,7 @@ export function populate_emoji(): void {
                     name: item.name,
                     display_name: item.name.replaceAll("_", " "),
                     source_url: item.source_url,
-                    author: item.author || "",
+                    author: item.author ?? "",
                     can_delete_emoji: can_delete_emoji(item),
                 },
             });

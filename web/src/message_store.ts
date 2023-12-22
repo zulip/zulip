@@ -194,7 +194,7 @@ export function get_pm_full_names(message: Message): string {
 }
 
 export function set_message_booleans(message: Message): void {
-    const flags = message.flags || [];
+    const flags = message.flags ?? [];
 
     function convert_flag(flag_name: string): boolean {
         return flags.includes(flag_name);

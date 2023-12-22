@@ -89,7 +89,7 @@ export function warn(msg: string, more_info?: unknown): void {
 export function error(msg: string, more_info?: object | undefined, original_error?: unknown): void {
     // Log the Sentry error before the console warning, so we don't
     // end up with a doubled message in the Sentry logs.
-    Sentry.setContext("more_info", more_info === undefined ? null : more_info);
+    Sentry.setContext("more_info", more_info ?? null);
 
     // Note that original_error could be of any type, because you can "raise"
     // any type -- something we do see in practice with the error

@@ -104,7 +104,7 @@ export function stream_id(): number | undefined {
 export function stream_name(): string {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
-        return sub_store.maybe_get_stream_name(stream_id) || "";
+        return sub_store.maybe_get_stream_name(stream_id) ?? "";
     }
     return "";
 }
