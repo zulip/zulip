@@ -289,7 +289,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         self.add_mock_response()
 
         user = self.example_user("cordelia")
-        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        server = self.server
 
         token = "111222"
         token_kind = PushDeviceToken.GCM
@@ -605,7 +605,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_send_notification_endpoint(self) -> None:
         hamlet = self.example_user("hamlet")
-        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        server = self.server
         token = "aaaa"
         android_tokens = []
         uuid_android_tokens = []
@@ -713,7 +713,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_send_notification_endpoint_on_self_managed_plan(self) -> None:
         hamlet = self.example_user("hamlet")
-        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        remote_server = self.server
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.GCM,
             token=hex_to_b64("aaaaaa"),
@@ -888,7 +888,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             kind=RemotePushDeviceToken.GCM,
             token=hex_to_b64("aaaaaa"),
             user_id=hamlet.id,
-            server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            server=self.server,
         )
 
         time_sent = now().replace(microsecond=234000)
@@ -1090,7 +1090,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.add_mock_response()
         user = self.example_user("cordelia")
         self.login_user(user)
-        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        server = self.server
 
         endpoints: List[Tuple[str, str, int, Mapping[str, str]]] = [
             (
@@ -1363,7 +1363,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         self.add_mock_response()
         # Send any existing data over, so that we can start the test with a "clean" slate
-        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        remote_server = self.server
         assert remote_server is not None
         assert remote_server.last_version is None
 
@@ -1374,7 +1374,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         assert audit_log is not None
         audit_log_max_id = audit_log.id
 
-        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        remote_server.refresh_from_db()
         assert remote_server.last_version == ZULIP_VERSION
 
         remote_audit_log_count = RemoteRealmAuditLog.objects.count()
@@ -2435,14 +2435,14 @@ class PushNotificationTest(BouncerTestCase):
                 token=hex_to_b64(id_token),
                 ios_app_id=appid,
                 user_id=self.user_profile.id,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
                 token=hex_to_b64(uuid_token),
                 ios_app_id=appid,
                 user_uuid=self.user_profile.uuid,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
 
     def setup_gcm_tokens(self) -> None:
@@ -2461,13 +2461,13 @@ class PushNotificationTest(BouncerTestCase):
                 kind=RemotePushDeviceToken.GCM,
                 token=hex_to_b64(id_token),
                 user_id=self.user_profile.id,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
                 token=hex_to_b64(uuid_token),
                 user_uuid=self.user_profile.uuid,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
 
 
@@ -3465,7 +3465,7 @@ class TestAPNs(PushNotificationTest):
             token="1234",
             ios_app_id=None,
             user_id=self.user_profile.id,
-            server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            server=self.server,
         )
         with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
