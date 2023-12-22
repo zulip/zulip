@@ -56,7 +56,9 @@ const animate = {
             return;
         }
 
-        setTimeout(() => animate.maybe_close(), 100);
+        setTimeout(() => {
+            animate.maybe_close();
+        }, 100);
     },
     fadeOut() {
         if (!meta.opened) {
@@ -86,7 +88,9 @@ const animate = {
         if (meta.$container) {
             meta.$container.addClass("show-feedback-container");
             meta.opened = true;
-            setTimeout(() => animate.maybe_close(), 100);
+            setTimeout(() => {
+                animate.maybe_close();
+            }, 100);
         }
     },
 };

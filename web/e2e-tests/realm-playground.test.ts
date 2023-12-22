@@ -20,7 +20,9 @@ async function _add_playground_and_return_status(page: Page, payload: Playground
     await common.fill_form(page, "form.admin-playground-form", payload);
     // Not sure why, but page.click() doesn't seem to always click the submit button.
     // So we resort to using eval with the button ID instead.
-    await page.$eval("button#submit_playground_button", (el) => el.click());
+    await page.$eval("button#submit_playground_button", (el) => {
+        el.click();
+    });
 
     // We return the success/failure status message back to the caller.
     await page.waitForSelector(admin_playground_status_selector, {visible: true});

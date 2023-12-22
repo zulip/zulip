@@ -269,7 +269,9 @@ export async function log_in(
         password: credentials.password,
     };
     await fill_form(page, "form#login_form", params);
-    await page.$eval("form#login_form", (form) => form.submit());
+    await page.$eval("form#login_form", (form) => {
+        form.submit();
+    });
 
     await page.waitForSelector("#inbox-main", {visible: true});
 }
