@@ -210,7 +210,7 @@ export function patch(
 }
 
 export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {
-    if (xhr.status.toString().charAt(0) === "4" && xhr.responseJSON?.msg) {
+    if (xhr.status >= 400 && xhr.status < 500 && xhr.responseJSON?.msg) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
         const server_response_html = _.escape(xhr.responseJSON.msg);
