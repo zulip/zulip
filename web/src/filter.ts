@@ -233,7 +233,7 @@ function message_matches_search_term(message: Message, operator: string, operand
     return true; // unknown operators return true (effectively ignored)
 }
 
-type Term = {
+export type Term = {
     negated?: boolean;
     operator: string;
     operand: string;
