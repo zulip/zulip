@@ -1,5 +1,9 @@
+import assert from "minimalistic-assert";
+
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
+import type {Filter} from "./filter";
+import type {Message} from "./message_store";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as unread from "./unread";
@@ -7,6 +11,16 @@ import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 export class MessageListData {
+    filter: Filter;
+    fetch_status: FetchStatus;
+    _all_items: Message[];
+    _items: Message[];
+    _hash: Map<number, Message>;
+    excludes_muted_topics: boolean;
+    _local_only: Set<number>;
+    _selected_id: number;
+    predicate?: (message: Message) => boolean;
+
     // MessageListData is a core data structure for keeping track of a
     // contiguous block of messages matching a given narrow that can
     // be displayed in a Zulip message feed.
@@ -14,7 +28,7 @@ export class MessageListData {
     // See also MessageList and MessageListView, which are important
     // to actually display a message list.
 
-    constructor({excludes_muted_topics, filter}) {
+    constructor({excludes_muted_topics, filter}: {excludes_muted_topics: boolean; filter: Filter}) {
         // The Filter object defines which messages match the narrow,
         // and defines most of the configuration for the MessageListData.
         this.filter = filter;
@@ -54,41 +68,41 @@ export class MessageListData {
         this._selected_id = -1;
     }
 
-    all_messages() {
+    all_messages(): Message[] {
         return this._items;
     }
 
-    num_items() {
+    num_items(): number {
         return this._items.length;
     }
 
     // The message list is completely empty.
-    empty() {
+    empty(): boolean {
         return this._all_items.length === 0;
     }
 
     // The message list appears empty, but might contain messages that hidden by muting.
-    visibly_empty() {
+    visibly_empty(): boolean {
         return this._items.length === 0;
     }
 
-    first() {
+    first(): Message {
         return this._items[0];
     }
 
-    first_including_muted() {
+    first_including_muted(): Message {
         return this._all_items[0];
     }
 
-    last() {
+    last(): Message | undefined {
         return this._items.at(-1);
     }
 
-    last_including_muted() {
+    last_including_muted(): Message | undefined {
         return this._all_items.at(-1);
     }
 
-    ids_greater_or_equal_than(my_id) {
+    ids_greater_or_equal_than(my_id: number): number[] {
         const result = [];
 
         for (let i = this._items.length - 1; i >= 0; i -= 1) {
@@ -103,7 +117,7 @@ export class MessageListData {
         return result;
     }
 
-    select_idx() {
+    select_idx(): number | undefined {
         if (this._selected_id === -1) {
             return undefined;
         }
@@ -116,7 +130,7 @@ export class MessageListData {
         return i;
     }
 
-    prev() {
+    prev(): number | undefined {
         const i = this.select_idx();
 
         if (i === undefined) {
@@ -130,7 +144,7 @@ export class MessageListData {
         return this._items[i - 1].id;
     }
 
-    next() {
+    next(): number | undefined {
         const i = this.select_idx();
 
         if (i === undefined) {
@@ -144,7 +158,7 @@ export class MessageListData {
         return this._items[i + 1].id;
     }
 
-    is_at_end() {
+    is_at_end(): boolean {
         if (this._selected_id === -1) {
             return false;
         }
@@ -160,7 +174,7 @@ export class MessageListData {
         return last_msg.id === this._selected_id;
     }
 
-    nth_most_recent_id(n) {
+    nth_most_recent_id(n: number): number {
         const i = this._items.length - n;
         if (i < 0) {
             return -1;
@@ -168,47 +182,48 @@ export class MessageListData {
         return this._items[i].id;
     }
 
-    clear() {
+    clear(): void {
         this._all_items = [];
         this._items = [];
         this._hash.clear();
     }
 
-    get(id) {
-        id = Number.parseFloat(id);
-        if (Number.isNaN(id)) {
+    // TODO(typescript): Ideally this should only take a number.
+    get(id: number | string): Message | undefined {
+        const number_id = typeof id === "number" ? id : Number.parseFloat(id);
+        if (Number.isNaN(number_id)) {
             return undefined;
         }
-        return this._hash.get(id);
+        return this._hash.get(number_id);
     }
 
-    clear_selected_id() {
+    clear_selected_id(): void {
         this._selected_id = -1;
     }
 
-    selected_id() {
+    selected_id(): number {
         return this._selected_id;
     }
 
-    set_selected_id(id) {
+    set_selected_id(id: number): void {
         this._selected_id = id;
     }
 
-    selected_idx() {
+    selected_idx(): number {
         return this._lower_bound(this._selected_id);
     }
 
-    reset_select_to_closest() {
+    reset_select_to_closest(): void {
         this._selected_id = this.closest_id(this._selected_id);
     }
 
-    is_keyword_search() {
+    is_keyword_search(): boolean {
         return this.filter.is_keyword_search();
     }
-    can_mark_messages_read() {
+    can_mark_messages_read(): boolean {
         return this.filter.can_mark_messages_read();
     }
-    _get_predicate() {
+    _get_predicate(): (message: Message) => boolean {
         // We cache this.
         if (!this.predicate) {
             this.predicate = this.filter.predicate();
@@ -216,12 +231,12 @@ export class MessageListData {
         return this.predicate;
     }
 
-    valid_non_duplicated_messages(messages) {
+    valid_non_duplicated_messages(messages: Message[]): Message[] {
         const predicate = this._get_predicate();
         return messages.filter((msg) => this.get(msg.id) === undefined && predicate(msg));
     }
 
-    messages_filtered_for_topic_mutes(messages) {
+    messages_filtered_for_topic_mutes(messages: Message[]): Message[] {
         if (!this.excludes_muted_topics) {
             return [...messages];
         }
@@ -236,7 +251,7 @@ export class MessageListData {
         });
     }
 
-    messages_filtered_for_user_mutes(messages) {
+    messages_filtered_for_user_mutes(messages: Message[]): Message[] {
         if (this.filter.is_non_huddle_pm()) {
             // We are in a 1:1 direct message narrow, so do not do any filtering.
             return [...messages];
@@ -260,17 +275,17 @@ export class MessageListData {
         });
     }
 
-    unmuted_messages(messages) {
+    unmuted_messages(messages: Message[]): Message[] {
         return this.messages_filtered_for_topic_mutes(
             this.messages_filtered_for_user_mutes(messages),
         );
     }
 
-    update_items_for_muting() {
+    update_items_for_muting(): void {
         this._items = this.unmuted_messages(this._all_items);
     }
 
-    first_unread_message_id() {
+    first_unread_message_id(): number {
         const first_unread = this._items.find((message) => unread.message_unread(message));
 
         if (first_unread) {
@@ -278,14 +293,20 @@ export class MessageListData {
         }
 
         // if no unread, return the bottom message
-        return this.last().id;
+        const last = this.last();
+        assert(last !== undefined);
+        return last.id;
     }
 
-    has_unread_messages() {
+    has_unread_messages(): boolean {
         return this._items.some((message) => unread.message_unread(message));
     }
 
-    add_messages(messages) {
+    add_messages(messages: Message[]): {
+        top_messages: Message[];
+        bottom_messages: Message[];
+        interior_messages: Message[];
+    } {
         let top_messages = [];
         let bottom_messages = [];
         let interior_messages = [];
@@ -300,7 +321,8 @@ export class MessageListData {
             // is a (1) sorted, and (2) consecutive block of
             // messages that belong in this message list; those
             // facts should be ensured by the caller.
-            if (this.empty() || msg.id > this.last_including_muted().id) {
+            const last = this.last_including_muted();
+            if (last === undefined || msg.id > last.id) {
                 bottom_messages.push(msg);
             } else if (msg.id < this.first_including_muted().id) {
                 top_messages.push(msg);
@@ -330,7 +352,7 @@ export class MessageListData {
         return info;
     }
 
-    add_anywhere(messages) {
+    add_anywhere(messages: Message[]): Message[] {
         // Caller should have already filtered messages.
         // This should be used internally when we have
         // "interior" messages to add and can't optimize
@@ -348,7 +370,7 @@ export class MessageListData {
         return viewable_messages;
     }
 
-    append(messages) {
+    append(messages: Message[]): Message[] {
         // Caller should have already filtered
         const viewable_messages = this.unmuted_messages(messages);
 
@@ -359,7 +381,7 @@ export class MessageListData {
         return viewable_messages;
     }
 
-    prepend(messages) {
+    prepend(messages: Message[]): Message[] {
         // Caller should have already filtered
         const viewable_messages = this.unmuted_messages(messages);
 
@@ -370,7 +392,7 @@ export class MessageListData {
         return viewable_messages;
     }
 
-    remove(message_ids) {
+    remove(message_ids: number[]): void {
         const msg_ids_to_remove = new Set(message_ids);
         for (const id of msg_ids_to_remove) {
             this._hash.delete(id);
@@ -382,7 +404,7 @@ export class MessageListData {
     }
 
     // Returns messages from the given message list in the specified range, inclusive
-    message_range(start, end) {
+    message_range(start: number, end: number): Message[] {
         if (start === -1) {
             blueslip.error("message_range given a start of -1");
         }
@@ -396,8 +418,8 @@ export class MessageListData {
     // into the message list, without disrupting the sort order
     // This takes into account the potentially-unsorted
     // nature of local message IDs in the message list
-    _lower_bound(id) {
-        const less_func = (msg, ref_id, a_idx) => {
+    _lower_bound(id: number): number {
+        const less_func = (msg: Message, ref_id: number, a_idx: number): boolean => {
             if (this._is_localonly_id(msg.id)) {
                 // First non-local message before this one
                 const effective = this._next_nonlocal_message(this._items, a_idx, (idx) => idx - 1);
@@ -414,7 +436,7 @@ export class MessageListData {
         return util.lower_bound(this._items, id, less_func);
     }
 
-    closest_id(id) {
+    closest_id(id: number): number {
         // We directly keep track of local-only messages,
         // so if we're asked for one that we know we have,
         // just return it directly
@@ -475,7 +497,7 @@ export class MessageListData {
         return items[closest].id;
     }
 
-    advance_past_messages(msg_ids) {
+    advance_past_messages(msg_ids: number[]): void {
         // Start with the current pointer, but then keep advancing the
         // pointer while the next message's id is in msg_ids.  See trac #1555
         // for more context, but basically we are skipping over contiguous
@@ -499,12 +521,9 @@ export class MessageListData {
         }
     }
 
-    _add_to_hash(messages) {
+    _add_to_hash(messages: Message[]): void {
         for (const elem of messages) {
-            const id = Number.parseFloat(elem.id);
-            if (Number.isNaN(id)) {
-                throw new TypeError("Bad message id");
-            }
+            const id = elem.id;
             if (this._is_localonly_id(id)) {
                 this._local_only.add(id);
             }
@@ -516,11 +535,15 @@ export class MessageListData {
         }
     }
 
-    _is_localonly_id(id) {
+    _is_localonly_id(id: number): boolean {
         return id % 1 !== 0;
     }
 
-    _next_nonlocal_message(item_list, start_index, op) {
+    _next_nonlocal_message(
+        item_list: Message[],
+        start_index: number,
+        op: (idx: number) => number,
+    ): Message {
         let cur_idx = start_index;
         do {
             cur_idx = op(cur_idx);
@@ -528,10 +551,10 @@ export class MessageListData {
         return item_list[cur_idx];
     }
 
-    change_message_id(old_id, new_id) {
+    change_message_id(old_id: number, new_id: number): boolean {
         // Update our local cache that uses the old id to the new id
-        if (this._hash.has(old_id)) {
-            const msg = this._hash.get(old_id);
+        const msg = this._hash.get(old_id);
+        if (msg !== undefined) {
             this._hash.delete(old_id);
             this._hash.set(new_id, msg);
         } else {
@@ -552,10 +575,13 @@ export class MessageListData {
         return this.reorder_messages(new_id);
     }
 
-    reorder_messages(new_id) {
-        const message_sort_func = (a, b) => a.id - b.id;
+    reorder_messages(new_id: number): boolean {
+        const message_sort_func = (a: Message, b: Message): number => a.id - b.id;
         // If this message is now out of order, re-order and re-render
         const current_message = this._hash.get(new_id);
+        if (current_message === undefined) {
+            return false;
+        }
         const index = this._items.indexOf(current_message);
 
         const next = this._next_nonlocal_message(this._items, index, (idx) => idx + 1);
@@ -574,7 +600,7 @@ export class MessageListData {
         return false;
     }
 
-    get_messages_sent_by_user(user_id) {
+    get_messages_sent_by_user(user_id: number): Message[] {
         const msgs = this._items.filter((msg) => msg.sender_id === user_id);
         if (msgs.length === 0) {
             return [];
@@ -582,7 +608,7 @@ export class MessageListData {
         return msgs;
     }
 
-    get_last_message_sent_by_me() {
+    get_last_message_sent_by_me(): Message | undefined {
         const msg_index = this._items.findLastIndex((msg) => msg.sender_id === page_params.user_id);
         if (msg_index === -1) {
             return undefined;
