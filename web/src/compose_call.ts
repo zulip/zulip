@@ -35,7 +35,7 @@ export function compute_show_audio_chat_button(): boolean {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (
         (available_providers.jitsi_meet &&
-            get_jitsi_server_url() &&
+            get_jitsi_server_url() !== null &&
             page_params.realm_video_chat_provider === available_providers.jitsi_meet.id) ||
         (available_providers.zoom &&
             page_params.realm_video_chat_provider === available_providers.zoom.id)
