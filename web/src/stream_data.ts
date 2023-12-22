@@ -517,7 +517,7 @@ export function can_access_topic_history(sub: StreamSubscription): boolean {
 }
 
 export function can_preview(sub: StreamSubscription): boolean {
-    return sub.subscribed || !sub.invite_only || sub.previously_subscribed === true;
+    return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
 }
 
 export function can_change_permissions(sub: StreamSubscription): boolean {
@@ -762,7 +762,7 @@ export function create_sub_from_server_data(
     delete attrs.subscribers;
 
     sub = {
-        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
+        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
         desktop_notifications: null,
