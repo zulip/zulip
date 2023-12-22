@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import type {Term} from "./filter";
 import type {GroupPermissionSetting} from "./types";
 
 const t1 = performance.now();
@@ -42,6 +43,7 @@ export const page_params: {
     max_logo_file_size_mib: number;
     muted_users: {id: number; timestamp: number}[];
     narrow_stream?: string;
+    narrow: Term[];
     needs_tutorial: boolean;
     page_load_time: number;
     promote_sponsoring_zulip: boolean;
