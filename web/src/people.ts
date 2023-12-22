@@ -1517,7 +1517,7 @@ export function add_inaccessible_user(user_id: number): User {
 
 export function get_user_by_id_assert_valid(
     user_id: number,
-    allow_missing_user: boolean = !settings_data.user_can_access_all_other_users(),
+    allow_missing_user = !settings_data.user_can_access_all_other_users(),
 ): User {
     if (!allow_missing_user) {
         return get_by_user_id(user_id);
