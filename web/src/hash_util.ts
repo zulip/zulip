@@ -11,7 +11,7 @@ type Operator = {operator: string; operand: string; negated?: boolean};
 
 export function build_reload_url(): string {
     let hash = window.location.hash;
-    if (hash.length !== 0 && hash[0] === "#") {
+    if (hash.length !== 0 && hash.startsWith("#")) {
         hash = hash.slice(1);
     }
     return "+oldhash=" + encodeURIComponent(hash);
@@ -177,7 +177,7 @@ export function parse_narrow(hash: string): Operator[] | undefined {
         }
 
         let negated = false;
-        if (operator[0] === "-") {
+        if (operator.startsWith("-")) {
             negated = true;
             operator = operator.slice(1);
         }

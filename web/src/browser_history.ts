@@ -107,7 +107,7 @@ export function return_to_web_public_hash(): void {
 export function get_full_url(hash: string): string {
     const location = window.location;
 
-    if (hash.charAt(0) !== "#" && hash !== "") {
+    if (!hash.startsWith("#") && hash !== "") {
         hash = "#" + hash;
     }
 
@@ -115,7 +115,7 @@ export function get_full_url(hash: string): string {
     let pathname = location.pathname;
     if (pathname === undefined) {
         pathname = "/";
-    } else if (pathname === "" || pathname.charAt(0) !== "/") {
+    } else if (pathname === "" || !pathname.startsWith("/")) {
         pathname = "/" + pathname;
     }
 
