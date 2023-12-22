@@ -836,7 +836,7 @@ export function get_unread_topics(include_per_topic_latest_msg_id = false): Unre
     );
 }
 
-type FullUnreadCountsData = {
+export type FullUnreadCountsData = {
     direct_message_count: number;
     mentioned_message_count: number;
     direct_message_with_mention_count: number;
