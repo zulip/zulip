@@ -20,10 +20,10 @@ export function random_int(min: number, max: number): number {
 // for some i and false otherwise.
 //
 // Usage: lower_bound(array, value, less)
-export function lower_bound<T>(
-    array: T[],
-    value: T,
-    less: (item: T, value: T, middle: number) => boolean,
+export function lower_bound<T1, T2>(
+    array: T1[],
+    value: T2,
+    less: (item: T1, value: T2, middle: number) => boolean,
 ): number {
     let first = 0;
     const last = array.length;
