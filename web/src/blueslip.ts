@@ -31,7 +31,7 @@ function make_logger_func(name: "debug" | "log" | "info" | "warn" | "error") {
         }
 
         if (console[name] !== undefined) {
-            return console[name](...args);
+            console[name](...args);
         }
     };
 }

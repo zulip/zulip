@@ -26,7 +26,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
     };
 
     if (!page_params.is_admin) {
-        return undefined;
+        return;
     }
 
     if (logo_source === "D") {
@@ -45,7 +45,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         });
     });
 
-    return upload_widget.build_direct_upload_widget(
+    upload_widget.build_direct_upload_widget(
         get_file_input,
         $file_input_error_elem.expectOne(),
         $upload_button_elem.expectOne(),

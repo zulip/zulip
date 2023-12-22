@@ -288,7 +288,9 @@ function show_modal(): void {
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Override default emoji?"}),
                     html_body,
-                    on_click: () => submit_custom_emoji_request(formData),
+                    on_click() {
+                        submit_custom_emoji_request(formData);
+                    },
                 });
             });
         } else {
@@ -335,7 +337,9 @@ export function set_up(): void {
             html_heading: $t_html({defaultMessage: "Deactivate custom emoji?"}),
             html_body,
             id: "confirm_deactivate_custom_emoji_modal",
-            on_click: () => dialog_widget.submit_api_request(channel.del, url, {}, opts),
+            on_click() {
+                dialog_widget.submit_api_request(channel.del, url, {}, opts);
+            },
             loading_spinner: true,
         });
     });

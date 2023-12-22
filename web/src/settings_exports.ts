@@ -155,7 +155,9 @@ export function set_up(): void {
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete data export?"}),
             html_body,
-            on_click: () => dialog_widget.submit_api_request(channel.del, url),
+            on_click() {
+                dialog_widget.submit_api_request(channel.del, url);
+            },
             loading_spinner: true,
         });
     });

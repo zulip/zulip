@@ -17,9 +17,9 @@ async function open_set_user_status_modal(page: Page): Promise<void> {
     });
     await page.waitForSelector(".user_popover_email", {visible: true});
     // We are using evaluate to click because it is very hard to detect if the user info popover has opened.
-    await page.evaluate(() =>
-        document.querySelector<HTMLAnchorElement>(".update_status_text")!.click(),
-    );
+    await page.evaluate(() => {
+        document.querySelector<HTMLAnchorElement>(".update_status_text")!.click();
+    });
 
     // Wait for the modal to completely open.
     await common.wait_for_micromodal_to_open(page);
