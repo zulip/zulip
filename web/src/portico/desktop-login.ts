@@ -42,10 +42,9 @@ void (async () => {
     // key and a promise; as soon as something encrypted to that key is copied
     // to the clipboard, the app decrypts it and resolves the promise to the
     // plaintext.  This lets us skip the manual paste step.
-    const {key, pasted} =
-        window.electron_bridge && window.electron_bridge.decrypt_clipboard
-            ? window.electron_bridge.decrypt_clipboard(1)
-            : await decrypt_manual();
+    const {key, pasted} = window.electron_bridge?.decrypt_clipboard
+        ? window.electron_bridge.decrypt_clipboard(1)
+        : await decrypt_manual();
 
     const keyHex = [...key].map((b) => b.toString(16).padStart(2, "0")).join("");
     window.open(

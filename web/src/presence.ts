@@ -271,7 +271,7 @@ export function update_info_for_small_realm(): void {
 export function last_active_date(user_id: number): Date | undefined {
     const info = presence_info.get(user_id);
 
-    if (!info || !info.last_active) {
+    if (!info?.last_active) {
         return undefined;
     }
 
