@@ -40,7 +40,7 @@ export type InviteStreamData = {
     default_stream: boolean;
 };
 
-const DEFAULT_COLOR = "#c2c2c2";
+export const DEFAULT_COLOR = "#c2c2c2";
 
 // Expose get_subscriber_count for our automated puppeteer tests.
 export const get_subscriber_count = peer_data.get_subscriber_count;
