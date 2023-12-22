@@ -82,6 +82,7 @@ export function update(new_hash: string): void {
 export function exit_overlay(): void {
     if (hash_parser.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const new_hash = state.hash_before_overlay || `#${user_settings.web_home_view}`;
         update(new_hash);
     }
