@@ -555,6 +555,54 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, "Empty or invalid length token")
 
+    def test_send_notification_endpoint_sets_remote_realm_for_devices(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = self.server
+
+        remote_realm = RemoteRealm.objects.get(server=server, uuid=hamlet.realm.uuid)
+
+        android_token = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64("aaaa"),
+            user_uuid=hamlet.uuid,
+            server=server,
+        )
+        apple_token = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=hex_to_b64("bbbb"),
+            user_uuid=hamlet.uuid,
+            server=server,
+        )
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "realm_uuid": str(hamlet.realm.uuid),
+            "gcm_payload": {},
+            "apns_payload": {},
+            "gcm_options": {},
+        }
+        with mock.patch(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
+        ), self.assertLogs(
+            "zilencer.views", level="INFO"
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        self.assert_json_success(result)
+
+        android_token.refresh_from_db()
+        apple_token.refresh_from_db()
+
+        self.assertEqual(android_token.remote_realm, remote_realm)
+        self.assertEqual(apple_token.remote_realm, remote_realm)
+
     def test_send_notification_endpoint(self) -> None:
         hamlet = self.example_user("hamlet")
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
