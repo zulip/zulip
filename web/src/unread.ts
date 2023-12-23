@@ -326,25 +326,22 @@ class UnreadTopicCounter {
             return [];
         }
 
-        let topic_names = [...per_stream_bucketer.keys()];
+        let topics_and_message_ids = [...per_stream_bucketer];
 
         /* Include topics that have at least one unread. It would likely
          * be better design for buckets to be deleted when emptied. */
-        topic_names = topic_names.filter((topic_name) => {
-            const messages = per_stream_bucketer.get(topic_name);
-            return messages !== undefined && messages.size > 0;
-        });
+        topics_and_message_ids = topics_and_message_ids.filter(
+            ([_, message_ids]) => message_ids.size > 0,
+        );
         /* And aren't already present in topic_dict. */
-        topic_names = topic_names.filter((topic_name) => !topic_dict.has(topic_name));
+        topics_and_message_ids = topics_and_message_ids.filter(
+            ([topic_name, _]) => !topic_dict.has(topic_name),
+        );
 
-        const result = topic_names.map((topic_name) => {
-            const msgs = per_stream_bucketer.get(topic_name)!;
-
-            return {
-                pretty_name: topic_name,
-                message_id: Math.max(...msgs),
-            };
-        });
+        const result = topics_and_message_ids.map(([topic_name, message_ids]) => ({
+            pretty_name: topic_name,
+            message_id: Math.max(...message_ids),
+        }));
 
         return result;
     }
