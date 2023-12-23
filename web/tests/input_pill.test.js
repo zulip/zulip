@@ -420,7 +420,7 @@ run_test("insert_remove", ({mock_template}) => {
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 
-    assert.equal($pill_input.text(), "chartreuse, mauve");
+    assert.equal($pill_input.text(), "chartreuse and mauve");
 
     assert.equal(widget.is_pending(), true);
     widget.clear_text();
