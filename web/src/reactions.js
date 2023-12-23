@@ -11,7 +11,6 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as spectators from "./spectators";
 import {user_settings} from "./user_settings";
-import * as util from "./util";
 
 export const view = {
     waiting_for_server_request_ids: new Set(),
@@ -172,7 +171,7 @@ function generate_title(emoji_name, user_ids) {
         );
     }
 
-    context.comma_separated_usernames = util.format_array_as_list(usernames.slice(0, -1));
+    context.comma_separated_usernames = usernames.slice(0, -1).join(", ");
     context.last_username = usernames.at(-1);
     if (current_user_reacted) {
         return $t(
@@ -558,7 +557,7 @@ function comma_separated_usernames(user_list) {
             defaultMessage: "You",
         });
     }
-    const comma_separated_usernames = util.format_array_as_list(usernames);
+    const comma_separated_usernames = usernames.join(", ");
     return comma_separated_usernames;
 }
 
