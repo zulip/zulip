@@ -3817,7 +3817,7 @@ class UserDisplayActionTest(BaseAction):
         user_settings_object = True
         num_events = 1
 
-        legacy_setting = setting_name in UserProfile.display_settings_legacy
+        legacy_setting = setting_name in UserProfile.preferences_legacy
         if legacy_setting:
             # Two events:`update_display_settings` and `user_settings`.
             # `update_display_settings` is only sent for settings added
