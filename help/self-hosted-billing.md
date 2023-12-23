@@ -6,25 +6,25 @@ questions about plans and billing for self-hosted organizations. Please refer to
 details.  If you have any questions not answered here, please don't hesitate to
 reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
-## Business plan details and upgrades
-
-The Business plan is appropriate for most business organizations. It includes
-unlimited access to the Mobile Push Notification Service and commercial support
-for dozens of features and integrations that help businesses take full advantage
-of their Zulip implementation.
+## Paid plan details and upgrades
 
 For businesses with up to 10 Zulip users, the Self-managed plan is a good
-option, and includes free access to the Mobile Push Notification service. For
-commercial support with your installation, sign up for the Business plan, with a
-minimum purchase of 10 licenses.
+option, and includes free access to the Mobile Push Notification Service.
 
-If you organization requires hands-on support, such as real-time support during
+For businesses with more than 10 Zulip users, both the Basic and Business plans
+include unlimited access to the Mobile Push Notification Service.
+
+The Business plan also includes commercial support for dozens of features and
+integrations that help businesses take full advantage of their Zulip
+implementation. The minimum purchase is 25 licenses.
+
+If your organization requires hands-on support, such as real-time support during
 installation and upgrades, support for advanced deployment options, custom
 feature development or integrations, etc., should contact
 [sales@zulip.com](mailto:sales@zulip.com) to discuss pricing.
 
-Business plan discounts are available in a variety of situations; see
-[below](#business-plan-discounts) for details.
+Paid plan discounts are available in a variety of situations; see
+[below](#paid-plan-discounts) for details.
 
 ### Upgrades for legacy customers
 
@@ -35,9 +35,9 @@ customers can continue using the notification service for free (no action
 required) until February 15, 2024.
 
 To continue using the service after that date, organizations with more than 10
-users must upgrade to the Business, Community or Enterprise plan. When you
-upgrade to the Business plan, you can start the plan right away (if you‘d like
-your technical support to start immediately), or schedule a February 15 start date.
+users must upgrade to a paid plan or the Community plan. When you upgrade to a
+paid plan, you can start the plan right away (if you‘d like your technical
+support to start immediately), or schedule a February 15 start date.
 
 #### Do I have to upgrade my server first?
 
@@ -63,7 +63,7 @@ transfer your plan to an organization on your server. If your server has one
 organization on it, this will happen automatically. Otherwise, contact
 [support@zulip.com](mailto:support@zulip.com) for help.
 
-#### Upgrading to Zulip Business
+#### Upgrading to a paid plan
 
 {!self-hosted-billing-multiple-organizations.md!}
 
@@ -75,9 +75,8 @@ organization on it, this will happen automatically. Otherwise, contact
 
 {!self-hosted-log-in.md!}
 
-1. You will be logged in to Zulip's [Plans and pricing
-   page](https://zulip.com/plans/). Under the **Business** pricing plan on the
-   **Self-hosted** tab, click **Upgrade to Business**.
+1. On the page listing Zulip's self-hosted plans, click the button at the bottom
+   of the plan you would like to purchase.
 
 1. Select your preferred option from the **Payment schedule** dropdown.
 
@@ -85,8 +84,8 @@ organization on it, this will happen automatically. Otherwise, contact
 
 1. Click **Add card** to enter your payment details.
 
-1. Click **Purchase Zulip Business** to upgrade immediately, or **Schedule
-   upgrade to Zulip Business** to schedule an upgrade for February 15.
+1. Click the **Purchase** or **Schedule upgrade** button to complete your
+   purchase.
 
 !!! warn ""
 
@@ -106,20 +105,22 @@ organization on it, this will happen automatically. Otherwise, contact
 
 1. Click **Add card** to enter your payment details.
 
-1. Click **Purchase Zulip Business** to upgrade immediately, or **Schedule
-   upgrade to Zulip Business** to schedule an upgrade for February 15.
+1. Click the **Purchase** or **Schedule upgrade** button to complete your
+   purchase.
 
 {end_tabs}
 
 ### Upgrades for new customers
 
-**New customers** are eligible for a free 30-day trial of Zulip Business. An
+#### Upgrade to Zulip Basic
+
+**New customers** are eligible for a free 30-day trial of Zulip Basic. An
 organization is considered to be a new customer if:
 
 - It was not registered for Zulip's [Mobile Push Notification
   Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
   prior to December 12, 2023, and
-- It has never previously signed up for a self-hosted Zulip plan (Business,
+- It has never previously signed up for a self-hosted Zulip plan (Basic, Business,
   Community or Enterprise).
 
 {!self-hosted-billing-multiple-organizations.md!}
@@ -132,17 +133,60 @@ organization is considered to be a new customer if:
 
 {!self-hosted-log-in.md!}
 
-1. Under the **Business** pricing plan on the **Self-hosted** tab, click
-   **Start 30-day trial**.
+1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
+   trial** button at the bottom of the **Basic** plan.
 
-2. Click **Add card** to enter your payment details.
+1. Click **Add card** to enter your payment details.
 
-3. Click **Start 30-day trial** to start your free trial.
+1. Click **Start 30-day trial** to start your free trial.
 
 !!! tip ""
 
     Once you start the trial, you can switch between monthly and annual billing
     on your organization's billing page.
+
+{tab|older-versions}
+
+{!legacy-log-in-intro.md!}
+
+{!register-server-legacy.md!}
+
+{!legacy-log-in.md!}
+
+1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
+   trial** button at the bottom of the **Basic** plan.
+
+1. Click **Add card** to enter your payment details.
+
+1. Click **Start 30-day trial** to start your free trial.
+
+!!! tip ""
+
+    Once you start the trial, you can switch between monthly and annual billing
+    on your organization's billing page.
+
+{end_tabs}
+
+#### Upgrade to Zulip Business
+
+{!self-hosted-billing-multiple-organizations.md!}
+
+{start_tabs}
+
+{tab|v8}
+
+{!register-server.md!}
+
+{!self-hosted-log-in.md!}
+
+1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
+   at the bottom of the **Business** plan.
+
+1. Select your preferred option from the **Payment schedule** dropdown.
+
+1. Click **Add card** to enter your payment details.
+
+1. Click the **Purchase** button to complete your purchase.
 
 !!! warn ""
 
@@ -158,12 +202,14 @@ organization is considered to be a new customer if:
 
 {!legacy-log-in.md!}
 
-1. Under the **Business** pricing plan on the **Self-hosted** tab, click
-   **Start 30-day trial**.
+1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
+   at the bottom of the **Business** plan.
+
+1. Select your preferred option from the **Payment schedule** dropdown.
 
 1. Click **Add card** to enter your payment details.
 
-1. Click **Start 30-day trial** to start your free trial.
+1. Click the **Purchase** button to complete your purchase.
 
 !!! tip ""
 
@@ -171,6 +217,7 @@ organization is considered to be a new customer if:
     on your organization's billing page.
 
 {end_tabs}
+
 
 ## Manage billing
 
@@ -262,8 +309,8 @@ eligibility prior to setting up a server, contact
 
 {!self-hosted-log-in.md!}
 
-1. Under the **Community** pricing plan on the **Self-hosted** tab, click
-   **Apply to upgrade**.
+1. On the page listing Zulip's self-hosted plans, scroll down to the
+   **Sponsorship and discounts** area, and click **Request sponsorship**.
 
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for Community plan eligibility.
@@ -276,8 +323,8 @@ eligibility prior to setting up a server, contact
 
 {!legacy-log-in.md!}
 
-1. Under the **Community** pricing plan on the **Self-hosted** tab, click
-   **Apply to upgrade**.
+1. On the page listing Zulip's self-hosted plans, scroll down to the
+   **Sponsorship and discounts** area, and click **Request sponsorship**.
 
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for Community plan eligibility.
@@ -289,24 +336,12 @@ eligibility prior to setting up a server, contact
 
 {end_tabs}
 
-## Business plan discounts
+## Paid plan discounts
 
 The following types of organizations are generally eligible for significant
-discounts on the Zulip Business plan. You can also contact
+discounts on paid plans. You can also contact
 [sales@zulip.com](mailto:sales@zulip.com) to discuss bulk discount pricing for a
 large organization.
-
-- **Education pricing** is available with a minimum purchase of 100 licenses.
-  Organizations with up to 100 users are eligible for free Community plan
-  sponsorship.
-
-    - **For-profit education pricing**: $1 per user per month with annual billing
-      ($1.20/month billed monthly).
-
-    - **Non-profit education pricing**: $0.67 per user per month with annual billing
-      ($0.80/month billed monthly). The non-profit discount applies to
-      online purchases only (no additional legal agreements) for use at registered
-      non-profit institutions (e.g. colleges and universities).
 
 - **Non-profit** discounts of 85+% are available with a minimum purchase of 100
   licenses. Organizations with up to 100 users are eligible for free Community plan
@@ -314,12 +349,38 @@ large organization.
 
 - Discounts are available for organizations based in the **developing world**.
 
-- Any organization where many users are **not paid staff** is likely eligible for a discount.
+- Any organization where many users are **not paid staff** is likely eligible
+  for a discount.
 
-### Apply for Business plan discount
+### Education pricing
 
-These instructions describe the Business plan discount application process for an
-existing Zulip server. If you would like to inquire about Business plan discount
+**Education pricing** is available with a minimum purchase of 100 licenses.
+Organizations with up to 100 users are eligible for free Community plan
+sponsorship.
+
+- **For-profit education pricing**:
+    - **Basic plan**: $0.50 per user per month
+    - **Business plan**: $1 per user per month with annual billing
+    ($1.20/month billed monthly).
+
+- **Non-profit education pricing**: The non-profit discount applies to
+  online purchases only (no additional legal agreements) for use at registered
+  non-profit institutions (e.g., colleges and universities).
+    - **Basic plan**: $0.35 per user per month
+    - **Business plan**: $0.67 per user per month with annual billing
+      ($0.80/month billed monthly).
+
+### Guest user discounts
+
+There is no automatic discount for guest users. However, organizations with a
+large number of guest users are very likely to be eligible for a discount. If
+this is your situation, please apply for a discount or email
+[sales@zulip.com](mailto:sales@zulip.com).
+
+### Apply for a paid plan discount
+
+These instructions describe the paid plan discount application process for an
+existing Zulip server. If you would like to inquire about paid plan discount
 eligibility prior to setting up a server, contact
 [sales@zulip.com](mailto:sales@zulip.com).
 
@@ -331,10 +392,10 @@ eligibility prior to setting up a server, contact
 
 {!self-hosted-log-in.md!}
 
-1. Under **Sponsorship and discounts** on the **Self-hosted** tab, click
-   **Request sponsorship**.
+1. On the page listing Zulip's self-hosted plans, scroll down to the
+   **Sponsorship and discounts** area, and click **Request sponsorship**.
 
-1. Under **Plan**, select **Business**.
+1. Select your preferred option from the **Plan** dropdown.
 
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for discount eligibility.
@@ -347,10 +408,10 @@ eligibility prior to setting up a server, contact
 
 {!legacy-log-in.md!}
 
-1. Under **Sponsorship and discounts** on the **Self-hosted** tab, click
-   **Request sponsorship**.
+1. On the page listing Zulip's self-hosted plans, scroll down to the
+   **Sponsorship and discounts** area, and click **Request sponsorship**.
 
-1. Under **Plan**, select **Business**.
+1. Select your preferred option from the **Plan** dropdown.
 
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for discount eligibility.
@@ -364,7 +425,11 @@ eligibility prior to setting up a server, contact
 You can always use a credit card to pay. If you would like to pay by invoice,
 you will need to sign up for an annual plan.
 
-### What is the difference between automatic and manual billing?
+### How does automatic billing work?
+
+{!automatic-billing.md!}
+
+### How does manual billing work?
 
 {!manual-billing-intro.md!}
 
@@ -398,7 +463,7 @@ you will need to sign up for an annual plan.
 
 {end_tabs}
 
-## Self-managed installations
+## Self-hosting Zulip for free
 
 Zulip is 100% open-source. Organizations that do not require support with their
 installation can always use Zulip for free with no limitations. Additionally,

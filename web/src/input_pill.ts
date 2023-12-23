@@ -291,7 +291,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         createPillonPaste() {
             if (store.createPillonPaste !== undefined) {
-                return store.createPillonPaste();
+                store.createPillonPaste();
+                return undefined;
             }
             return true;
         },

@@ -36,12 +36,12 @@ const remote_discount_details: DiscountDetails = {
     opensource: "The Community plan is free for open-source projects.",
     research: "The Community plan is free for academic research.",
     nonprofit:
-        "The Community plan is free for registered non-profits with up to 100 users. The Business plan is discounted 85+% with a purchase of 100+ licenses.",
+        "The Community plan is free for registered non-profits with up to 100 users. For larger organizations, paid plans are discounted by 85+%.",
     event: "The Community plan is free for academic conferences and most non-profit events.",
     education:
-        "The Community plan is free for education organizations with up to 100 users. The Business plan is discounted 85% with a purchase of 100+ licenses.",
+        "The Community plan is free for education organizations with up to 100 users. For larger organizations, paid plans are discounted by 85%.",
     education_nonprofit:
-        "The Community plan is free for education non-profits with up to 100 users. The Business plan is discounted 90% with online purchase of 100+ licenses.",
+        "The Community plan is free for education non-profits with up to 100 users. For larger organizations, paid plans are discounted by 90% with online purchase.",
 };
 
 export function create_ajax_request(
