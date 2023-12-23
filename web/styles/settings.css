@@ -1107,7 +1107,7 @@ input[type="checkbox"] {
     padding: 0 10px;
 }
 
-label.display-settings-radio-choice-label {
+label.preferences-radio-choice-labeld {
     border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
     padding: 8px 0 10px;
     display: flex;
