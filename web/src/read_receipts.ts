@@ -1,5 +1,7 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
+import {z} from "zod";
 
 import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
@@ -12,12 +14,18 @@ import * as modals from "./modals";
 import * as people from "./people";
 import * as ui_report from "./ui_report";
 
-export function show_user_list(message_id) {
+const read_receipts_api_response_schema = z.object({
+    user_ids: z.array(z.number()),
+});
+
+export function show_user_list(message_id: number): void {
     $("body").append(render_read_receipts_modal());
     modals.open("read_receipts_modal", {
         autoremove: true,
         on_show() {
             const message = message_store.get(message_id);
+            assert(message !== undefined, "message is undefined");
+
             if (message.sender_email === "notification-bot@zulip.com") {
                 $("#read_receipts_modal .read_receipts_info").text(
                     $t({
@@ -28,18 +36,23 @@ export function show_user_list(message_id) {
                 $("#read_receipts_modal .modal__content").addClass("compact");
             } else {
                 loading.make_indicator($("#read_receipts_modal .loading_indicator"));
-                channel.get({
+                void channel.get({
                     url: `/json/messages/${message_id}/read_receipts`,
-                    success(data) {
+                    success(raw_data) {
+                        const data = read_receipts_api_response_schema.parse(raw_data);
                         const users = data.user_ids.map((id) => {
                             const user = people.get_user_by_id_assert_valid(id);
-                            return {
+                            return user;
+                        });
+                        users.sort(people.compare_by_name);
+
+                        const context = {
+                            users: users.map((user) => ({
                                 user_id: user.user_id,
                                 full_name: user.full_name,
                                 avatar_url: people.small_avatar_url_for_person(user),
-                            };
-                        });
-                        users.sort(people.compare_by_name);
+                            })),
+                        };
 
                         loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
                         if (users.length === 0) {
@@ -66,7 +79,7 @@ export function show_user_list(message_id) {
                                 "showing_read_receipts_list",
                             );
                             $("#read_receipts_modal .modal__content").append(
-                                render_read_receipts({users}),
+                                render_read_receipts(context),
                             );
                             new SimpleBar($("#read_receipts_modal .modal__content")[0]);
                         }
