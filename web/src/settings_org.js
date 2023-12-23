@@ -371,7 +371,9 @@ export function populate_realm_domains_label(realm_domains) {
     const domains_list = realm_domains.map((realm_domain) =>
         realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain,
     );
-    let domains = util.format_array_as_list(domains_list);
+
+    let domains = util.format_array_as_list(domains_list, "long", "conjunction");
+
     if (domains.length === 0) {
         domains = $t({defaultMessage: "None"});
     }
