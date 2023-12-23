@@ -1236,6 +1236,7 @@ export function initialize({on_enter_send}) {
     $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();
         const recipients = typeahead_helper.get_cleaned_pm_recipients(val);
-        $(this).val(util.format_array_as_list(recipients));
+
+        $(this).val(util.format_array_as_list(recipients, "long", "conjunction"));
     });
 }
