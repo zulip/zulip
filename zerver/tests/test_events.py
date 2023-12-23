@@ -184,7 +184,7 @@ from zerver.lib.event_schema import (
     check_subscription_update,
     check_typing_start,
     check_typing_stop,
-    check_update_display_settings,
+    check_update_preferences,
     check_update_global_notifications,
     check_update_message,
     check_update_message_flags_add,
@@ -3870,7 +3870,7 @@ class UserDisplayActionTest(BaseAction):
                 # Only settings added before feature level 89
                 # generate this event.
                 self.assert_length(events, 2)
-                check_update_display_settings("events[1]", events[1])
+                check_update_preferences("events[1]", events[1])
 
     def test_change_user_settings(self) -> None:
         for prop in UserProfile.property_types:
@@ -3896,7 +3896,7 @@ class UserDisplayActionTest(BaseAction):
             )
 
             check_user_settings_update("events[0]", events[0])
-            check_update_display_settings("events[1]", events[1])
+            check_update_preferences("events[1]", events[1])
             check_realm_user_update("events[2]", events[2], "timezone")
 
     def test_delivery_email_events_on_changing_email_address_visibility(self) -> None:
