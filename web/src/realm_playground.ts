@@ -91,7 +91,10 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        language_labels.set(key, key + " (" + util.format_array_as_list(values) + ")");
+        language_labels.set(
+            key,
+            key + " (" + util.format_array_as_list(values, "long", "conjunction") + ")",
+        );
     }
 
     return language_labels;
