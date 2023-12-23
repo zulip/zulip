@@ -498,7 +498,7 @@ export function format_array_as_list(
     type: Intl.ListFormatType,
 ): string {
     // If Intl.ListFormat is not supported
-    if (!Intl.ListFormat) {
+    if (!Intl) {
         return array.join(", ");
     }
 
