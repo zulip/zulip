@@ -51,7 +51,7 @@ import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
-import * as settings_display from "./settings_display";
+import * as settings_preferences from "./settings_preferences";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
 import * as settings_invites from "./settings_invites";
@@ -716,7 +716,7 @@ export function dispatch_normal_event(event) {
                 // a reload is fundamentally required because we
                 // cannot rerender with the new language the strings
                 // present in the backend/Jinja2 templates.
-                settings_display.set_default_language_name(event.language_name);
+                settings_preferences.set_default_language_name(event.language_name);
             }
             if (event.property === "web_home_view") {
                 left_sidebar_navigation_area.handle_home_view_changed(event.value);
@@ -750,8 +750,8 @@ export function dispatch_normal_event(event) {
                 stream_list.update_dom_unread_counts_visibility();
             }
             if (event.property === "user_list_style") {
-                settings_display.report_user_list_style_change(
-                    settings_display.user_settings_panel,
+                settings_preferences.report_user_list_style_change(
+                    settings_preferences.user_settings_panel,
                 );
                 activity_ui.build_user_sidebar();
             }
@@ -791,7 +791,7 @@ export function dispatch_normal_event(event) {
                 // reload.
             }
             if (event.property === "emojiset") {
-                settings_display.report_emojiset_change(settings_display.user_settings_panel);
+                settings_preferences.report_emojiset_change(settings_preferences.user_settings_panel);
 
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
@@ -824,7 +824,7 @@ export function dispatch_normal_event(event) {
                 $("#user_email_address_visibility").val(event.value);
                 break;
             }
-            settings_display.update_page(event.property);
+            settings_preferences.update_page(event.property);
             break;
         }
 
