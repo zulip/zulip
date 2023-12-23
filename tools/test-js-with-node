@@ -171,7 +171,7 @@ EXEMPT_FILES = make_set(
         "web/src/popover_menus_data.js",
         "web/src/popovers.ts",
         "web/src/popperjs.d.ts",
-        "web/src/read_receipts.js",
+        "web/src/read_receipts.ts",
         "web/src/ready.ts",
         "web/src/realm_icon.ts",
         "web/src/realm_logo.ts",
