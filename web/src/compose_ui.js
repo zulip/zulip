@@ -259,7 +259,7 @@ export function compute_placeholder_text(opts) {
             }
             return user.full_name;
         });
-        const recipient_names = util.format_array_as_list(recipient_parts);
+        const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
