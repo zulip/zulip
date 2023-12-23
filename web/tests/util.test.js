@@ -340,17 +340,14 @@ run_test("is_valid_url", () => {
 });
 
 run_test("format_array_as_list", () => {
-    const array = ['apple', 'banana', 'orange'];
+    const array = ["apple", "banana", "orange"];
     // when Intl exist
     assert.equal(
-        util.format_array_as_list(array,"long","conjunction"),
+        util.format_array_as_list(array, "long", "conjunction"),
         "apple, banana, and orange",
     );
 
-    // when Intl does not exist 
+    // when Intl does not exist
     global.Intl = undefined;
-    assert.equal(
-        util.format_array_as_list(array,"long","conjunction"),
-        "apple, banana, orange",
-    );
+    assert.equal(util.format_array_as_list(array, "long", "conjunction"), "apple, banana, orange");
 });
