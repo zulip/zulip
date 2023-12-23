@@ -240,10 +240,10 @@ class ClientDescriptor:
             # client_capability is enabled, for backwards compatibility.
             return self.stream_typing_notifications
         if self.user_settings_object and event["type"] in [
-            "update_display_settings",
+            "update_preferences",
             "update_global_notifications",
         ]:
-            # 'update_display_settings' and 'update_global_notifications'
+            # 'update_preferences' and 'update_global_notifications'
             # events are sent only if user_settings_object is False,
             # otherwise only 'user_settings' event is sent.
             return False

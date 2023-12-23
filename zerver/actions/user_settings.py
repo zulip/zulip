@@ -485,7 +485,7 @@ def do_change_user_setting(
         # clients that don't support the new user_settings event type.
         # We only send this for settings added before Feature level 89.
         legacy_event = {
-            "type": "update_display_settings",
+            "type": "update_preferences",
             "user": user_profile.email,
             "setting_name": setting_name,
             "setting": setting_value,

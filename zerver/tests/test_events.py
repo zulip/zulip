@@ -3819,8 +3819,8 @@ class UserDisplayActionTest(BaseAction):
 
         legacy_setting = setting_name in UserProfile.preferences_legacy
         if legacy_setting:
-            # Two events:`update_display_settings` and `user_settings`.
-            # `update_display_settings` is only sent for settings added
+            # Two events:`update_preferences` and `user_settings`.
+            # `update_preferences` is only sent for settings added
             # before feature level 89 which introduced `user_settings`.
             # We send both events so that older clients that do not
             # rely on `user_settings` don't break.

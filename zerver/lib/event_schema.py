@@ -1508,7 +1508,7 @@ check_typing_stop = make_checker(typing_stop_event)
 
 update_display_settings_event = event_dict_type(
     required_keys=[
-        ("type", Equals("update_display_settings")),
+        ("type", Equals("update_preferences")),
         ("setting_name", str),
         ("setting", value_type),
         ("user", str),

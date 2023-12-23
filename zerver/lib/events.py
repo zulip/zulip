@@ -640,7 +640,7 @@ def fetch_initial_state_data(
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
 
-    if want("update_display_settings") and not user_settings_object:
+    if want("update_preferences") and not user_settings_object:
         for prop in UserProfile.preferences_legacy:
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
@@ -1405,7 +1405,7 @@ def apply_event(
             state["realm_linkifiers"] = event["realm_linkifiers"]
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
-    elif event["type"] == "update_display_settings":
+    elif event["type"] == "update_preferences":
         if event["setting_name"] != "timezone":
             assert event["setting_name"] in UserProfile.preferences_legacy
         state[event["setting_name"]] = event["setting"]
