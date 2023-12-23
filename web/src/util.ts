@@ -491,19 +491,19 @@ export function is_valid_url(url: string, require_absolute: boolean = false): bo
     return true;
 }
 
-/**
- * Formats an array of strings as a narrow list using the specified language.
- *
- * @param array - The array of strings to be formatted.
- * @returns A formatted string representing the narrow list.
- *
- * @example
- * // Input: ["Apple", "Banana", "Cherry"];
- * // Output: "Apple, Banana, Cherry"
- */
-export function format_array_as_list(array: string[]): string {
-    // Use Intl.ListFormat to format the array as a narrow list.
-    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style: "narrow"});
+// Formats an array of strings as a Internationalized list using the specified language.
+export function format_array_as_list(
+    array: string[],
+    style: Intl.ListFormatStyle,
+    type: Intl.ListFormatType,
+): string {
+    // If Intl.ListFormat is not supported
+    if (!Intl.ListFormat) {
+        return array.join(", ");
+    }
+
+    // Use Intl.ListFormat to format the array as a Internationalized list.
+    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style, type});
 
     // Return the formatted string.
     return list_formatter.format(array);
