@@ -1506,7 +1506,7 @@ typing_stop_event = event_dict_type(
 )
 check_typing_stop = make_checker(typing_stop_event)
 
-update_display_settings_event = event_dict_type(
+update_preferences_event = event_dict_type(
     required_keys=[
         ("type", Equals("update_preferences")),
         ("setting_name", str),
@@ -1517,7 +1517,7 @@ update_display_settings_event = event_dict_type(
         ("language_name", str),
     ],
 )
-_check_update_preferences = make_checker(update_display_settings_event)
+_check_update_preferences = make_checker(update_preferences_event)
 
 user_settings_update_event = event_dict_type(
     required_keys=[
