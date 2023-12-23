@@ -479,7 +479,7 @@ test_people("get_recipients", () => {
     assert.equal(people.get_recipients("30,32"), "Isaac Newton");
 
     muted_users.add_muted_user(304);
-    assert.equal(people.get_recipients("304,32"), "Isaac Newton, translated: Muted user");
+    assert.equal(people.get_recipients("304,32"), "Isaac Newton and translated: Muted user");
 });
 
 test_people("get_full_name", () => {
@@ -803,7 +803,7 @@ test_people("emails_to_full_names_string", () => {
     people.add_active_user(maria);
     assert.equal(
         people.emails_to_full_names_string([charles.email, maria.email]),
-        `${charles.full_name}, ${maria.full_name}`,
+        `${charles.full_name} and ${maria.full_name}`,
     );
 
     assert.equal(
@@ -812,7 +812,7 @@ test_people("emails_to_full_names_string", () => {
             "unknown-email@example.com",
             maria.email,
         ]),
-        `${charles.full_name}, translated: Unknown user, ${maria.full_name}`,
+        `${charles.full_name}, translated: Unknown user, and ${maria.full_name}`,
     );
 });
 

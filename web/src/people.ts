@@ -367,16 +367,16 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
 }
 
 export function emails_to_full_names_string(emails: string[]): string {
-    return util.format_array_as_list(
-        emails.map((email) => {
-            email = email.trim();
-            const person = get_by_email(email);
-            if (person !== undefined) {
-                return person.full_name;
-            }
-            return INACCESSIBLE_USER_NAME;
-        }),
-    );
+    const full_names = emails.map((email) => {
+        email = email.trim();
+        const person = get_by_email(email);
+        if (person !== undefined) {
+            return person.full_name;
+        }
+        return INACCESSIBLE_USER_NAME;
+    });
+
+    return util.format_array_as_list(full_names, "long", "conjunction");
 }
 
 export function get_user_time(user_id: number): string | undefined {
@@ -426,7 +426,7 @@ export function email_list_to_user_ids_string(emails: string[]): string | undefi
 }
 
 export function get_full_names_for_poll_option(user_ids: number[]): string {
-    return util.format_array_as_list(get_display_full_names(user_ids));
+    return get_display_full_names(user_ids).join(", ");
 }
 
 export function get_display_full_name(user_id: number): string {
@@ -476,7 +476,8 @@ export function get_recipients(user_ids_string: string): string {
     }
 
     const names = get_display_full_names(other_ids).sort();
-    return util.format_array_as_list(names);
+
+    return util.format_array_as_list(names, "long", "conjunction");
 }
 
 export function pm_reply_user_string(message: Message): string | undefined {
