@@ -717,10 +717,10 @@ export class Filter {
                 return person.full_name;
             });
 
-            // We use join to handle the addition of a comma and space after every name
+            // We use format_array_as_list to handle the addition of a comma and space after every name
             // and also to ensure that we return a string and not an array so that we
             // can have the same return type as other cases.
-            return util.format_array_as_list(names);
+            return util.format_array_as_list(names, "long", "conjunction");
         }
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
             const email = this.operands("sender")[0];
