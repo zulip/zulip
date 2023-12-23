@@ -682,7 +682,7 @@ export function dispatch_normal_event(event) {
                 break;
             }
 
-            const user_display_settings = [
+            const user_preferences = [
                 "color_scheme",
                 "default_language",
                 "web_home_view",
@@ -706,7 +706,7 @@ export function dispatch_normal_event(event) {
             ];
 
             const original_home_view = user_settings.web_home_view;
-            if (user_display_settings.includes(event.property)) {
+            if (user_preferences.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
             if (event.property === "default_language") {

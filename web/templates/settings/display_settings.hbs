@@ -155,7 +155,7 @@
             </select>
         </div>
 
-        {{#each display_settings.settings.user_display_settings}}
+        {{#each display_settings.settings.user_preferences}}
             {{> settings_checkbox
               setting_name=this
               is_checked=(lookup ../settings_object this)
