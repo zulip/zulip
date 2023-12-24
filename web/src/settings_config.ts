@@ -139,7 +139,7 @@ export type DisplaySettings = {
 };
 
 /* istanbul ignore next */
-export const get_all_display_settings = (): DisplaySettings => ({
+export const get_all_preferences = (): DisplaySettings => ({
     settings: {
         user_display_settings: [
             "dense_mode",
