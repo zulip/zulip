@@ -2354,6 +2354,9 @@ class StripeTest(StripeTestCase):
             .first(),
             (20, 20),
         )
+        realm_audit_log = RealmAuditLog.objects.latest("id")
+        self.assertEqual(realm_audit_log.event_type, RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
+        self.assertEqual(realm_audit_log.acting_user, None)
 
         # Verify that we don't write LicenseLedger rows once we've downgraded
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=40):
