@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as inbox_util from "./inbox_util";
+import type {MessageListData} from "./message_list_data";
 import type {Message} from "./message_store";
 import * as recent_view_util from "./recent_view_util";
 import * as ui_util from "./ui_util";
@@ -24,6 +25,7 @@ type MessageList = {
     all_messages: () => Message[];
     get: (id: number) => Message | undefined;
     pre_narrow_offset?: number;
+    data: MessageListData;
 };
 
 export let home: MessageList | undefined;
