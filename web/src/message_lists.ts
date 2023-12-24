@@ -26,6 +26,8 @@ type MessageList = {
     get: (id: number) => Message | undefined;
     pre_narrow_offset?: number;
     data: MessageListData;
+    select_id: (message_id: number) => void;
+    get_row: (message_id: number) => JQuery;
 };
 
 export let home: MessageList | undefined;
