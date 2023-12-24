@@ -73,11 +73,7 @@ export function get_topic_visibility_policy(stream_id: number, topic: string): n
         return false;
     }
     const sub_dict = all_user_topics.get(stream_id);
-    if (sub_dict && sub_dict.get(topic)) {
-        return sub_dict.get(topic)!.visibility_policy;
-    }
-
-    return all_visibility_policies.INHERIT;
+    return sub_dict?.get(topic)?.visibility_policy ?? all_visibility_policies.INHERIT;
 }
 
 export function is_topic_followed(stream_id: number, topic: string): boolean {

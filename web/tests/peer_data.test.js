@@ -152,7 +152,7 @@ test("subscribers", () => {
     // verify that checking subscription with undefined user id
 
     blueslip.expect("warn", "Undefined user_id passed to function is_user_subscribed");
-    assert.equal(stream_data.is_user_subscribed(stream_id, undefined), undefined);
+    assert.ok(!stream_data.is_user_subscribed(stream_id, undefined));
     blueslip.reset();
 
     // Verify noop for bad stream when removing subscriber
@@ -193,9 +193,9 @@ test("subscribers", () => {
         2,
     );
     sub.invite_only = true;
-    assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), undefined);
+    assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
     peer_data.remove_subscriber(stream_id, brutus.user_id);
-    assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), undefined);
+    assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
     blueslip.reset();
 
     // Verify that we don't crash for a bad stream.

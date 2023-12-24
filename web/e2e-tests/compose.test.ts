@@ -112,10 +112,9 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
     const you_and_cordelia_selector =
         '*[data-tippy-content="Go to direct messages with Cordelia, Lear\'s daughter"]';
     // For some unknown reason page.click() isn't working here.
-    await page.evaluate(
-        (selector: string) => document.querySelector<HTMLElement>(selector)!.click(),
-        you_and_cordelia_selector,
-    );
+    await page.evaluate((selector: string) => {
+        document.querySelector<HTMLElement>(selector)!.click();
+    }, you_and_cordelia_selector);
     const cordelia_user_id = await common.get_user_id_from_name(page, "Cordelia, Lear's daughter");
     const pm_list_selector = `li[data-user-ids-string="${cordelia_user_id}"].dm-list-item.active-sub-filter`;
     await page.waitForSelector(pm_list_selector, {visible: true});

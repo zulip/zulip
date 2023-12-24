@@ -90,6 +90,7 @@ from corporate.models import (
     get_customer_by_realm,
 )
 from corporate.tests.test_remote_billing import RemoteRealmBillingTestCase, RemoteServerTestCase
+from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
@@ -6446,3 +6447,53 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Update card",
         ]:
             self.assert_in_response(substring, response)
+
+    def test_deactivate_registration_with_push_notification_service(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        billing_base_url = self.billing_session.billing_base_url
+
+        # Get server deactivation confirmation link
+        with self.settings(EXTERNAL_HOST="zulipdev.com:9991"):
+            confirmation_link = generate_confirmation_link_for_server_deactivation(
+                self.remote_server, 10
+            )
+
+        # confirmation link takes user to login page
+        result = self.client_get(confirmation_link, subdomain="selfhosting")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Log in to deactivate registration for"], result)
+
+        # Login redirects to '/deactivate'
+        result = self.client_post(
+            confirmation_link,
+            {"full_name": hamlet.full_name, "tos_consent": "true"},
+            subdomain="selfhosting",
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{billing_base_url}/deactivate/")
+
+        # Deactivate via UI
+        result = self.client_get(f"{billing_base_url}/deactivate/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            ["Deactivate registration for", "Deactivate registration"], result
+        )
+
+        result = self.client_post(
+            f"{billing_base_url}/deactivate/", {"confirmed": "true"}, subdomain="selfhosting"
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            ["Registration deactivated for", "Your server's registration has been deactivated."],
+            result,
+        )
+
+        # Verify login fails
+        payload = {
+            "zulip_org_id": self.remote_server.uuid,
+            "zulip_org_key": self.remote_server.api_key,
+        }
+        result = self.client_post("/serverlogin/", payload, subdomain="selfhosting")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Your server registration has been deactivated."], result)

@@ -258,7 +258,12 @@ test("muting", () => {
     // we still find the message id here (muting is ignored)
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
-    assert.equal(unread.unread_count_info_for_stream(unknown_stream_id), 0);
+    assert.deepEqual(unread.unread_count_info_for_stream(unknown_stream_id), {
+        unmuted_count: 0,
+        muted_count: 0,
+        followed_count: 0,
+        stream_is_muted: false,
+    });
 });
 
 test("num_unread_for_topic", () => {

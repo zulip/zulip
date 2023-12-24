@@ -76,10 +76,7 @@ export function compute_active_status(): ActivityState {
     //
     // The check for `get_idle_on_system === undefined` is feature
     // detection; older desktop app releases never set that property.
-    if (
-        window.electron_bridge !== undefined &&
-        window.electron_bridge.get_idle_on_system !== undefined
-    ) {
+    if (window.electron_bridge?.get_idle_on_system !== undefined) {
         if (window.electron_bridge.get_idle_on_system()) {
             return ActivityState.IDLE;
         }

@@ -1,8 +1,8 @@
 # PostgreSQL database details
 
 Starting with Zulip 3.0, Zulip supports a range of PostgreSQL
-versions. PostgreSQL 15 is the current default for new installations;
-PostgreSQL 12, 13, 14, and 15 are all supported.
+versions. PostgreSQL 16 is the current default for new installations;
+PostgreSQL 12, 13, 14, 15, and 16 are all supported.
 
 Previous versions of Zulip used whatever version of PostgreSQL was
 included with the base operating system (E.g. PostgreSQL 12 on Ubuntu

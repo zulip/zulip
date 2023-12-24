@@ -75,8 +75,8 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     /* Mark users as offline after this many seconds since their last checkin, */
     const offline_threshold_secs = page_params.server_presence_offline_threshold_seconds;
 
-    function age(timestamp?: number): number {
-        return raw.server_timestamp - (timestamp || 0);
+    function age(timestamp = 0): number {
+        return raw.server_timestamp - timestamp;
     }
 
     const active_timestamp = raw.active_timestamp;
@@ -84,7 +84,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
 
     let last_active: number | undefined;
     if (active_timestamp !== undefined || idle_timestamp !== undefined) {
-        last_active = Math.max(active_timestamp || 0, idle_timestamp || 0);
+        last_active = Math.max(active_timestamp ?? 0, idle_timestamp ?? 0);
     }
 
     /*
@@ -141,18 +141,18 @@ export function update_info_from_event(
             server_timestamp: 1585745140
         }
     */
-    const raw = raw_info.get(user_id) || {
+    const raw = raw_info.get(user_id) ?? {
         server_timestamp: 0,
     };
 
     raw.server_timestamp = server_timestamp;
 
     for (const rec of Object.values(info)) {
-        if (rec.status === "active" && rec.timestamp > (raw.active_timestamp || 0)) {
+        if (rec.status === "active" && rec.timestamp > (raw.active_timestamp ?? 0)) {
             raw.active_timestamp = rec.timestamp;
         }
 
-        if (rec.status === "idle" && rec.timestamp > (raw.idle_timestamp || 0)) {
+        if (rec.status === "idle" && rec.timestamp > (raw.idle_timestamp ?? 0)) {
             raw.idle_timestamp = rec.timestamp;
         }
     }
@@ -219,8 +219,8 @@ export function set_info(
 
         const raw: RawPresence = {
             server_timestamp,
-            active_timestamp: info.active_timestamp || undefined,
-            idle_timestamp: info.idle_timestamp || undefined,
+            active_timestamp: info.active_timestamp,
+            idle_timestamp: info.idle_timestamp,
         };
 
         raw_info.set(user_id, raw);
@@ -271,7 +271,7 @@ export function update_info_for_small_realm(): void {
 export function last_active_date(user_id: number): Date | undefined {
     const info = presence_info.get(user_id);
 
-    if (!info || !info.last_active) {
+    if (!info?.last_active) {
         return undefined;
     }
 

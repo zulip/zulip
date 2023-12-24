@@ -190,7 +190,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
 
 export function can_admin_user(user: User): boolean {
     return (
-        (user.is_bot && user.bot_owner_id && user.bot_owner_id === page_params.user_id) ||
+        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === page_params.user_id) ||
         is_my_user_id(user.user_id)
     );
 }
@@ -1517,7 +1517,7 @@ export function add_inaccessible_user(user_id: number): User {
 
 export function get_user_by_id_assert_valid(
     user_id: number,
-    allow_missing_user: boolean = !settings_data.user_can_access_all_other_users(),
+    allow_missing_user = !settings_data.user_can_access_all_other_users(),
 ): User {
     if (!allow_missing_user) {
         return get_by_user_id(user_id);

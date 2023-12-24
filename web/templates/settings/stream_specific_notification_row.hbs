@@ -15,6 +15,7 @@
           prefix=(lookup ../stream "stream_id")
           is_checked=(lookup ../stream this)
           is_disabled=(lookup ../is_disabled this)
+          is_mobile_checkbox=(eq this "push_notifications")
           }}
     {{/each}}
 </tr>

@@ -75,7 +75,11 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
 
     // Wrap the error handlers to reload the page if we get a CSRF error
     // (What probably happened is that the user logged out in another tab).
-    const orig_error = args.error ?? (() => {});
+    const orig_error =
+        args.error ??
+        (() => {
+            // Ignore errors by default
+        });
     args.error = function wrapped_error(xhr, error_type, xhn) {
         if (span !== undefined) {
             span.setHttpStatus(xhr.status);
@@ -136,7 +140,11 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
         orig_error(xhr, error_type, xhn);
     };
 
-    const orig_success = args.success ?? (() => {});
+    const orig_success =
+        args.success ??
+        (() => {
+            // Do nothing by default
+        });
     args.success = function wrapped_success(data, textStatus, jqXHR) {
         if (span !== undefined) {
             span.setHttpStatus(jqXHR.status);
@@ -202,7 +210,7 @@ export function patch(
 }
 
 export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {
-    if (xhr.status.toString().charAt(0) === "4" && xhr.responseJSON?.msg) {
+    if (xhr.status >= 400 && xhr.status < 500 && xhr.responseJSON?.msg) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
         const server_response_html = _.escape(xhr.responseJSON.msg);

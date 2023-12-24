@@ -81,7 +81,7 @@ export function open_overlay(opts: OverlayOptions): void {
         return;
     }
 
-    if (active_overlay || open_overlay_name) {
+    if (active_overlay !== undefined || open_overlay_name) {
         blueslip.error("Programming error - trying to open overlay before closing other", {
             name: opts.name,
             open_overlay_name,
