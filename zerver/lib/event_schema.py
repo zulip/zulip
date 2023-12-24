@@ -1517,7 +1517,7 @@ update_display_settings_event = event_dict_type(
         ("language_name", str),
     ],
 )
-_check_update_display_settings = make_checker(update_display_settings_event)
+_check_update_preferences = make_checker(update_display_settings_event)
 
 user_settings_update_event = event_dict_type(
     required_keys=[
@@ -1543,7 +1543,7 @@ def check_update_display_settings(
     is more specifically typed according to the
     UserProfile.property_types dictionary.
     """
-    _check_update_display_settings(var_name, event)
+    _check_update_preferences(var_name, event)
     setting_name = event["setting_name"]
     setting = event["setting"]
 
