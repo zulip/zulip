@@ -72,8 +72,8 @@ follows:
   providers
 - The password like `email_password = abcd1234` in `/etc/zulip/zulip-secrets.conf`.
 
-Note that this assumes your provider is using explicit SSL/TLS via 
-STARTTLS. See the [Advanced Troubleshooting section](#advanced-troubleshooting) if your provider uses 
+Note that this assumes your provider is using explicit SSL/TLS via
+STARTTLS. See the [Advanced Troubleshooting section](#advanced-troubleshooting) if your provider uses
 implicit SSL/TLS on Port 465.
 
 ### Using system email
