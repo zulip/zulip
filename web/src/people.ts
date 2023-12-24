@@ -376,7 +376,7 @@ export function emails_to_full_names_string(emails: string[]): string {
         return INACCESSIBLE_USER_NAME;
     });
 
-    return util.format_array_as_list(full_names, "long", "conjunction");
+    return full_names.join(", ");
 }
 
 export function get_user_time(user_id: number): string | undefined {

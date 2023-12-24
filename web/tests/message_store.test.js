@@ -111,7 +111,7 @@ test("process_new_message", () => {
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
     assert.equal(message.to_user_ids, "103,104");
-    assert.equal(message.display_reply_to, "Bob, Cindy");
+    assert.equal(message.display_reply_to, "Bob and Cindy");
     assert.equal(message.alerted, true);
     assert.equal(message.is_me_message, false);
 
@@ -132,7 +132,7 @@ test("process_new_message", () => {
 
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
     assert.equal(message.to_user_ids, "103,104");
-    assert.equal(message.display_reply_to, "Bob, Cindy");
+    assert.equal(message.display_reply_to, "Bob and Cindy");
     assert.equal(util.get_match_topic(message), "topic foo");
     assert.equal(message.match_content, "bar content");
 

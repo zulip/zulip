@@ -803,7 +803,7 @@ test_people("emails_to_full_names_string", () => {
     people.add_active_user(maria);
     assert.equal(
         people.emails_to_full_names_string([charles.email, maria.email]),
-        `${charles.full_name} and ${maria.full_name}`,
+        `${charles.full_name}, ${maria.full_name}`,
     );
 
     assert.equal(
@@ -812,7 +812,7 @@ test_people("emails_to_full_names_string", () => {
             "unknown-email@example.com",
             maria.email,
         ]),
-        `${charles.full_name}, translated: Unknown user, and ${maria.full_name}`,
+        `${charles.full_name}, translated: Unknown user, ${maria.full_name}`,
     );
 });
 
