@@ -24,11 +24,11 @@ import * as util from "./util";
 export const max_size_before_shrinking = 600;
 
 let is_searching_users = false;
-export function set_is_searching_users(val) {
+export function set_is_searching_users(val: boolean): void {
     is_searching_users = val;
 }
 
-const fade_config = {
+const fade_config: compose_fade_users.UserFadeConfig<BuddyUserInfo> = {
     get_user_id(item) {
         return item.user_id;
     },
@@ -40,7 +40,7 @@ const fade_config = {
     },
 };
 
-export function get_user_circle_class(user_id) {
+export function get_user_circle_class(user_id: number): string {
     const status = presence.get_status(user_id);
 
     switch (status) {
@@ -53,7 +53,7 @@ export function get_user_circle_class(user_id) {
     }
 }
 
-export function level(user_id) {
+export function level(user_id: number): number {
     // Put current user at the top, unless we're in a user search view.
     if (people.is_my_user_id(user_id) && !is_searching_users) {
         return 0;
@@ -71,7 +71,7 @@ export function level(user_id) {
     }
 }
 
-export function compare_function(a, b) {
+export function compare_function(a: number, b: number): number {
     const level_a = level(a);
     const level_b = level(b);
     const diff = level_a - level_b;
@@ -89,17 +89,17 @@ export function compare_function(a, b) {
     return util.strcmp(full_name_a, full_name_b);
 }
 
-export function sort_users(user_ids) {
+export function sort_users(user_ids: number[]): number[] {
     // TODO sort by unread count first, once we support that
     user_ids.sort(compare_function);
     return user_ids;
 }
 
-function get_num_unread(user_id) {
+function get_num_unread(user_id: number): number {
     return unread.num_unread_for_user_ids_string(user_id.toString());
 }
 
-export function user_last_seen_time_status(user_id) {
+export function user_last_seen_time_status(user_id: number): string {
     const status = presence.get_status(user_id);
     if (status === "active") {
         return $t({defaultMessage: "Active now"});
@@ -129,7 +129,25 @@ export function user_last_seen_time_status(user_id) {
     return timerender.last_seen_status_from_date(last_active_date);
 }
 
-export function info_for(user_id) {
+export type BuddyUserInfo = {
+    href: string;
+    name: string;
+    user_id: number;
+    status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
+    is_current_user: boolean;
+    num_unread: number;
+    user_circle_class: string;
+    status_text: string | undefined;
+    user_list_style: {
+        COMPACT: boolean;
+        WITH_STATUS: boolean;
+        WITH_AVATAR: boolean;
+    };
+    should_add_guest_user_indicator: boolean;
+    faded?: boolean;
+};
+
+export function info_for(user_id: number): BuddyUserInfo {
     const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
 
@@ -156,8 +174,16 @@ export function info_for(user_id) {
     };
 }
 
-export function get_title_data(user_ids_string, is_group) {
-    if (is_group === true) {
+export function get_title_data(
+    user_ids_string: string,
+    is_group: boolean,
+): {
+    first_line: string;
+    second_line?: string;
+    third_line: string;
+    show_you?: boolean;
+} {
+    if (is_group) {
         // For groups, just return a string with recipient names.
         return {
             first_line: people.get_recipients(user_ids_string),
@@ -218,24 +244,24 @@ export function get_title_data(user_ids_string, is_group) {
     };
 }
 
-export function get_item(user_id) {
+export function get_item(user_id: number): BuddyUserInfo {
     const info = info_for(user_id);
     compose_fade_users.update_user_info([info], fade_config);
     return info;
 }
 
-export function get_items_for_users(user_ids) {
+export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     const user_info = user_ids.map((user_id) => info_for(user_id));
     compose_fade_users.update_user_info(user_info, fade_config);
     return user_info;
 }
 
-function user_is_recently_active(user_id) {
+function user_is_recently_active(user_id: number): boolean {
     // return true if the user has a green/orange circle
     return level(user_id) <= 2;
 }
 
-function maybe_shrink_list(user_ids, user_filter_text) {
+function maybe_shrink_list(user_ids: number[], user_filter_text: string): number[] {
     if (user_ids.length <= max_size_before_shrinking) {
         return user_ids;
     }
@@ -255,7 +281,7 @@ function maybe_shrink_list(user_ids, user_filter_text) {
     return user_ids;
 }
 
-function filter_user_ids(user_filter_text, user_ids) {
+function filter_user_ids(user_filter_text: string, user_ids: number[]): number[] {
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
     user_ids = user_ids.filter((user_id) => {
@@ -296,7 +322,7 @@ function filter_user_ids(user_filter_text, user_ids) {
     return [...user_id_dict.keys()];
 }
 
-function get_filtered_user_id_list(user_filter_text) {
+function get_filtered_user_id_list(user_filter_text: string): number[] {
     let base_user_id_list;
 
     if (user_filter_text) {
@@ -320,14 +346,14 @@ function get_filtered_user_id_list(user_filter_text) {
     return user_ids;
 }
 
-export function get_filtered_and_sorted_user_ids(user_filter_text) {
+export function get_filtered_and_sorted_user_ids(user_filter_text: string): number[] {
     let user_ids;
     user_ids = get_filtered_user_id_list(user_filter_text);
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
     return sort_users(user_ids);
 }
 
-export function matches_filter(user_filter_text, user_id) {
+export function matches_filter(user_filter_text: string, user_id: number): boolean {
     // This is a roundabout way of checking a user if you look
     // too hard at it, but it should be fine for now.
     return filter_user_ids(user_filter_text, [user_id]).length === 1;
