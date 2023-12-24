@@ -25,6 +25,8 @@ type MessageList = {
     all_messages: () => Message[];
     get: (id: number) => Message | undefined;
     pre_narrow_offset?: number;
+    can_mark_messages_read_without_setting: () => boolean;
+    resume_reading: () => void;
     data: MessageListData;
 };
 
