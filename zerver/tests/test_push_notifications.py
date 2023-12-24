@@ -80,7 +80,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
-    NotificationTriggers,
     PushDeviceToken,
     Realm,
     RealmAuditLog,
@@ -90,10 +89,11 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_client,
-    get_realm,
-    get_stream,
 )
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.streams import get_stream
 from zilencer.models import RemoteZulipServerAuditLog
 from zilencer.views import DevicesToCleanUpDict
 
@@ -289,7 +289,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         self.add_mock_response()
 
         user = self.example_user("cordelia")
-        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        server = self.server
 
         token = "111222"
         token_kind = PushDeviceToken.GCM
@@ -555,9 +555,57 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, "Empty or invalid length token")
 
+    def test_send_notification_endpoint_sets_remote_realm_for_devices(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = self.server
+
+        remote_realm = RemoteRealm.objects.get(server=server, uuid=hamlet.realm.uuid)
+
+        android_token = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.GCM,
+            token=hex_to_b64("aaaa"),
+            user_uuid=hamlet.uuid,
+            server=server,
+        )
+        apple_token = RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=hex_to_b64("bbbb"),
+            user_uuid=hamlet.uuid,
+            server=server,
+        )
+        payload = {
+            "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
+            "realm_uuid": str(hamlet.realm.uuid),
+            "gcm_payload": {},
+            "apns_payload": {},
+            "gcm_options": {},
+        }
+        with mock.patch(
+            "zilencer.views.send_android_push_notification", return_value=1
+        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
+        ), self.assertLogs(
+            "zilencer.views", level="INFO"
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        self.assert_json_success(result)
+
+        android_token.refresh_from_db()
+        apple_token.refresh_from_db()
+
+        self.assertEqual(android_token.remote_realm, remote_realm)
+        self.assertEqual(apple_token.remote_realm, remote_realm)
+
     def test_send_notification_endpoint(self) -> None:
         hamlet = self.example_user("hamlet")
-        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        server = self.server
         token = "aaaa"
         android_tokens = []
         uuid_android_tokens = []
@@ -663,9 +711,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
             remote=server,
         )
 
-    def test_send_notification_endpoint_on_self_managed_plan(self) -> None:
+    def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
-        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        remote_server = self.server
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.GCM,
             token=hex_to_b64("aaaaaa"),
@@ -791,6 +839,39 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
         self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
 
+        # Check that sponsored realms are allowed to send push notifications.
+        remote_server.plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
+        remote_server.save()
+        with self.assertLogs("zilencer.views", level="INFO") as logger:
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        data = self.assert_json_success(result)
+        self.assertEqual(
+            {
+                "result": "success",
+                "msg": "",
+                "realm": None,
+                "total_android_devices": 1,
+                "total_apple_devices": 0,
+                "deleted_devices": {"android_devices": [], "apple_devices": []},
+            },
+            data,
+        )
+        self.assertIn(
+            "INFO:zilencer.views:"
+            f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
+            "1 via FCM devices, 0 via APNs devices",
+            logger.output,
+        )
+
+        # Reset the plan_type to test remaining cases.
+        remote_server.plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED
+        remote_server.save()
+
         human_counts = {
             str(UserProfile.ROLE_REALM_ADMINISTRATOR): 1,
             str(UserProfile.ROLE_REALM_OWNER): 1,
@@ -840,7 +921,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             kind=RemotePushDeviceToken.GCM,
             token=hex_to_b64("aaaaaa"),
             user_id=hamlet.id,
-            server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            server=self.server,
         )
 
         time_sent = now().replace(microsecond=234000)
@@ -1042,7 +1123,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.add_mock_response()
         user = self.example_user("cordelia")
         self.login_user(user)
-        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        server = self.server
 
         endpoints: List[Tuple[str, str, int, Mapping[str, str]]] = [
             (
@@ -1315,7 +1396,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         self.add_mock_response()
         # Send any existing data over, so that we can start the test with a "clean" slate
-        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        remote_server = self.server
         assert remote_server is not None
         assert remote_server.last_version is None
 
@@ -1326,7 +1407,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         assert audit_log is not None
         audit_log_max_id = audit_log.id
 
-        remote_server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        remote_server.refresh_from_db()
         assert remote_server.last_version == ZULIP_VERSION
 
         remote_audit_log_count = RemoteRealmAuditLog.objects.count()
@@ -2152,6 +2233,32 @@ class AnalyticsBouncerTest(BouncerTestCase):
                         self.assertEqual(realm.push_notifications_enabled, False)
                         self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
+        RemoteRealm.objects.filter(server=self.server).update(
+            plan_type=RemoteRealm.PLAN_TYPE_COMMUNITY
+        )
+
+        with mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
+        ):
+            with mock.patch(
+                "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
+            ) as m:
+                with mock.patch(
+                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                    return_value=11,
+                ):
+                    send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                    m.assert_not_called()
+                    realms = Realm.objects.all()
+                    for realm in realms:
+                        self.assertEqual(realm.push_notifications_enabled, True)
+                        self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+
+        # Reset the plan type to test remaining cases.
+        RemoteRealm.objects.filter(server=self.server).update(
+            plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
+        )
+
         dummy_customer_plan = mock.MagicMock()
         dummy_customer_plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         dummy_date = datetime(year=2023, month=12, day=3, tzinfo=timezone.utc)
@@ -2387,14 +2494,14 @@ class PushNotificationTest(BouncerTestCase):
                 token=hex_to_b64(id_token),
                 ios_app_id=appid,
                 user_id=self.user_profile.id,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
                 token=hex_to_b64(uuid_token),
                 ios_app_id=appid,
                 user_uuid=self.user_profile.uuid,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
 
     def setup_gcm_tokens(self) -> None:
@@ -2413,13 +2520,13 @@ class PushNotificationTest(BouncerTestCase):
                 kind=RemotePushDeviceToken.GCM,
                 token=hex_to_b64(id_token),
                 user_id=self.user_profile.id,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
                 token=hex_to_b64(uuid_token),
                 user_uuid=self.user_profile.uuid,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+                server=self.server,
             )
 
 
@@ -3417,7 +3524,7 @@ class TestAPNs(PushNotificationTest):
             token="1234",
             ios_app_id=None,
             user_id=self.user_profile.id,
-            server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            server=self.server,
         )
         with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"

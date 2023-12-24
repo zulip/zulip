@@ -21,6 +21,7 @@ from django.utils.translation import override as override_language
 from lxml.html import builder as e
 
 from confirmation.models import one_click_unsubscribe_link
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group_name
@@ -35,18 +36,10 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
-from zerver.models import (
-    Message,
-    NotificationTriggers,
-    Realm,
-    Recipient,
-    Stream,
-    UserMessage,
-    UserProfile,
-    get_context_for_message,
-    get_display_recipient,
-    get_user_profile_by_id,
-)
+from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserProfile
+from zerver.models.messages import get_context_for_message
+from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.users import get_user_profile_by_id
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo

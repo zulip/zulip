@@ -34,6 +34,11 @@ class Customer(models.Model):
     # they purchased.
     exempt_from_license_number_check = models.BooleanField(default=False)
 
+    # In cents.
+    flat_discount = models.IntegerField(default=2000)
+    # Number of months left in the flat discount period.
+    flat_discounted_months = models.IntegerField(default=0)
+
     class Meta:
         # Enforce that at least one of these is set.
         constraints = [
@@ -119,6 +124,9 @@ class Session(models.Model):
     # Did the user opt to manually manage licenses before clicking on update button?
     is_manual_license_management_upgrade_session = models.BooleanField(default=False)
 
+    # CustomerPlan tier that the user is upgrading to.
+    tier = models.SmallIntegerField(null=True)
+
     def get_status_as_string(self) -> str:
         return {Session.CREATED: "created", Session.COMPLETED: "completed"}[self.status]
 
@@ -136,6 +144,7 @@ class Session(models.Model):
         session_dict[
             "is_manual_license_management_upgrade_session"
         ] = self.is_manual_license_management_upgrade_session
+        session_dict["tier"] = self.tier
         event = self.get_last_associated_event()
         if event is not None:
             session_dict["event_handler"] = event.get_event_handler_details_as_dict()
@@ -266,8 +275,8 @@ class CustomerPlan(models.Model):
     TIER_SELF_HOSTED_BASE = 100
     TIER_SELF_HOSTED_LEGACY = 101
     TIER_SELF_HOSTED_COMMUNITY = 102
-    TIER_SELF_HOSTED_BUSINESS = 103
-    TIER_SELF_HOSTED_PLUS = 104
+    TIER_SELF_HOSTED_BASIC = 103
+    TIER_SELF_HOSTED_BUSINESS = 104
     TIER_SELF_HOSTED_ENTERPRISE = 105
     tier = models.SmallIntegerField()
 
@@ -303,6 +312,7 @@ class CustomerPlan(models.Model):
             CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
             CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Self-managed (legacy plan)",
+            CustomerPlan.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
             CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
         }[tier]
@@ -314,12 +324,12 @@ class CustomerPlan(models.Model):
     def get_plan_status_as_text(self) -> str:
         return {
             self.ACTIVE: "Active",
-            self.DOWNGRADE_AT_END_OF_CYCLE: "Scheduled for downgrade at end of cycle",
+            self.DOWNGRADE_AT_END_OF_CYCLE: "Downgrade end of cycle",
             self.FREE_TRIAL: "Free trial",
-            self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled for switch to annual at end of cycle",
-            self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled for switch to monthly at end of cycle",
-            self.DOWNGRADE_AT_END_OF_FREE_TRIAL: "Scheduled for downgrade at end of free trial",
-            self.SWITCH_PLAN_TIER_AT_PLAN_END: "Scheduled for switch to new plan at the end of plan",
+            self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled switch to annual",
+            self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled switch to monthly",
+            self.DOWNGRADE_AT_END_OF_FREE_TRIAL: "Downgrade end of free trial",
+            self.SWITCH_PLAN_TIER_AT_PLAN_END: "New plan scheduled",
             self.ENDED: "Ended",
             self.NEVER_STARTED: "Never started",
         }[self.status]
@@ -394,6 +404,7 @@ class SponsoredPlanTypes(Enum):
     # unspecified used for cloud sponsorship requests
     UNSPECIFIED = ""
     COMMUNITY = "Community"
+    BASIC = "Basic"
     BUSINESS = "Business"
 
 

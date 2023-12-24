@@ -11,6 +11,7 @@ from analytics.views.activity_common import (
     remote_installation_support_link,
 )
 from corporate.lib.analytics import get_plan_data_by_remote_server
+from corporate.lib.stripe import cents_to_dollar_string
 from zerver.decorator import require_server_admin
 from zilencer.models import get_remote_server_guest_and_non_guest_count
 
@@ -105,9 +106,10 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             row.append("---")
             row.append("---")
         else:
+            revenue = cents_to_dollar_string(server_plan_data.annual_revenue)
             row.append(server_plan_data.current_plan_name)
             row.append(server_plan_data.current_status)
-            row.append(server_plan_data.annual_revenue)
+            row.append(f"${revenue}")
         # Add user counts
         remote_server_counts = get_remote_server_guest_and_non_guest_count(row[0])
         row.append(remote_server_counts.non_guest_user_count)

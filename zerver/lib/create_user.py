@@ -18,8 +18,8 @@ from zerver.models import (
     Subscription,
     UserBaseSettings,
     UserProfile,
-    get_fake_email_domain,
 )
+from zerver.models.realms import get_fake_email_domain
 
 
 def copy_default_settings(

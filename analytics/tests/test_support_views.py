@@ -15,7 +15,7 @@ from corporate.models import (
     LicenseLedger,
     SponsoredPlanTypes,
     ZulipSponsorshipRequest,
-    get_current_plan_by_realm,
+    get_current_plan_by_customer,
     get_customer_by_realm,
 )
 from zerver.actions.invites import do_create_multiuse_invite_link
@@ -23,16 +23,8 @@ from zerver.actions.realm_settings import do_change_realm_org_type, do_send_real
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-from zerver.models import (
-    MultiuseInvite,
-    OrgTypeEnum,
-    PreregistrationUser,
-    Realm,
-    UserMessage,
-    UserProfile,
-    get_org_type_display_name,
-    get_realm,
-)
+from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserMessage, UserProfile
+from zerver.models.realms import OrgTypeEnum, get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
 
 if TYPE_CHECKING:
@@ -40,19 +32,17 @@ if TYPE_CHECKING:
 
 import uuid
 
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 
 class TestRemoteServerSupportEndpoint(ZulipTestCase):
     @override
     def setUp(self) -> None:
         def add_sponsorship_request(
-            hostname: str, org_type: int, website: str, paid_users: str, plan: str
+            name: str, org_type: int, website: str, paid_users: str, plan: str
         ) -> None:
-            remote_server = RemoteZulipServer.objects.get(hostname=hostname)
-            customer = Customer.objects.create(
-                remote_server=remote_server, sponsorship_pending=True
-            )
+            remote_realm = RemoteRealm.objects.get(name=name)
+            customer = Customer.objects.create(remote_realm=remote_realm, sponsorship_pending=True)
             ZulipSponsorshipRequest.objects.create(
                 customer=customer,
                 org_type=org_type,
@@ -67,15 +57,28 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         super().setUp()
 
         # Set up some initial example data.
-        for i in range(20):
+        for i in range(4):
             hostname = f"zulip-{i}.example.com"
-            RemoteZulipServer.objects.create(
-                hostname=hostname, contact_email=f"admin@{hostname}", plan_type=1, uuid=uuid.uuid4()
+            remote_server = RemoteZulipServer.objects.create(
+                hostname=hostname, contact_email=f"admin@{hostname}", uuid=uuid.uuid4()
             )
+            # The first RemoteZulipServer has no RemoteRealm, as an
+            # example of a pre-8.0 release registered remote server.
+            if i != 0:
+                realm_name = f"realm-name-{i}"
+                realm_host = f"realm-host-{i}"
+                realm_uuid = uuid.uuid4()
+                RemoteRealm.objects.create(
+                    server=remote_server,
+                    uuid=realm_uuid,
+                    host=realm_host,
+                    name=realm_name,
+                    realm_date_created=timezone_now(),
+                )
 
         # Add example sponsorship request data
         add_sponsorship_request(
-            hostname="zulip-1.example.com",
+            name="realm-name-1",
             org_type=OrgTypeEnum.Community.value,
             website="",
             paid_users="None",
@@ -83,7 +86,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
 
         add_sponsorship_request(
-            hostname="zulip-2.example.com",
+            name="realm-name-2",
             org_type=OrgTypeEnum.OpenSource.value,
             website="example.org",
             paid_users="",
@@ -91,6 +94,82 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
 
     def test_search(self) -> None:
+        def assert_server_details_in_response(
+            html_response: "TestHttpResponse", hostname: str
+        ) -> None:
+            self.assert_in_success_response(
+                [
+                    f"<h3>{hostname}</h3>",
+                    f"<b>Contact email</b>: admin@{hostname}",
+                    "<b>Last updated</b>:",
+                    "<b>Zulip version</b>:",
+                    "<b>Plan type</b>: Self-managed<br />",
+                    "<b>Non-guest user count</b>: 0<br />",
+                    "<b>Guest user count</b>: 0<br />",
+                ],
+                html_response,
+            )
+
+        def assert_realm_details_in_response(
+            html_response: "TestHttpResponse", name: str, host: str
+        ) -> None:
+            self.assert_in_success_response(
+                [
+                    f"<h3>{name}</h3>",
+                    f"<b>Remote realm host:</b> {host}<br />",
+                    "<b>Date created</b>: ",
+                    "<b>Org type</b>: Unspecified<br />",
+                    "<b>Has remote realm(s)</b>: True<br />",
+                ],
+                html_response,
+            )
+            self.assert_not_in_success_response(["<h3>zulip-0.example.com</h3>"], result)
+
+        def check_remote_server_with_no_realms(result: "TestHttpResponse") -> None:
+            assert_server_details_in_response(result, "zulip-0.example.com")
+            self.assert_not_in_success_response(
+                ["<h3>zulip-1.example.com</h3>", "<b>Remote realm host:</b>"], result
+            )
+            self.assert_in_success_response(["<b>Has remote realm(s)</b>: False<br />"], result)
+
+        def check_sponsorship_request_no_website(result: "TestHttpResponse") -> None:
+            self.assert_in_success_response(
+                [
+                    "<li><b>Organization type</b>: Community</li>",
+                    "<li><b>Organization website</b>: No website submitted</li>",
+                    "<li><b>Paid users</b>: None</li>",
+                    "<li><b>Requested plan</b>: Business</li>",
+                    "<li><b>Organization description</b>: We help people.</li>",
+                    "<li><b>Estimated total users</b>: 20-35</li>",
+                    "<li><b>Description of paid users</b>: </li>",
+                ],
+                result,
+            )
+
+        def check_sponsorship_request_with_website(result: "TestHttpResponse") -> None:
+            self.assert_in_success_response(
+                [
+                    "<li><b>Organization type</b>: Open-source project</li>",
+                    "<li><b>Organization website</b>: example.org</li>",
+                    "<li><b>Paid users</b>: </li>",
+                    "<li><b>Requested plan</b>: Community</li>",
+                    "<li><b>Organization description</b>: We help people.</li>",
+                    "<li><b>Estimated total users</b>: 20-35</li>",
+                    "<li><b>Description of paid users</b>: </li>",
+                ],
+                result,
+            )
+
+        def check_no_sponsorship_request(result: "TestHttpResponse") -> None:
+            self.assert_not_in_success_response(
+                [
+                    "<li><b>Organization description</b>: We help people.</li>",
+                    "<li><b>Estimated total users</b>: 20-35</li>",
+                    "<li><b>Description of paid users</b>: </li>",
+                ],
+                result,
+            )
+
         self.login("cordelia")
 
         result = self.client_get("/activity/remote/support")
@@ -109,75 +188,78 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             result,
         )
 
-        with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
-            result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
-        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
-        self.assert_in_success_response(["<b>Max monthly messages</b>: 1000"], result)
-        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+        result = self.client_get("/activity/remote/support", {"q": "example.com"})
+        for server in range(4):
+            self.assert_in_success_response([f"<h3>zulip-{server}.example.com</h3>"], result)
 
-        # Sponsorship request information
-        self.assert_in_success_response(["<li><b>Organization type</b>: Community</li>"], result)
-        self.assert_in_success_response(
-            ["<li><b>Organization website</b>: No website submitted</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Paid users</b>: None</li>"], result)
-        self.assert_in_success_response(["<li><b>Requested plan</b>: Business</li>"], result)
-        self.assert_in_success_response(
-            ["<li><b>Organization description</b>: We help people.</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Estimated total users</b>: 20-35</li>"], result)
-        self.assert_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
+        server = 0
+        result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
+        check_remote_server_with_no_realms(result)
+
+        server = 1
+        with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
+            result = self.client_get(
+                "/activity/remote/support", {"q": f"zulip-{server}.example.com"}
+            )
+        self.assert_in_success_response(["<b>Max monthly messages</b>: 1000"], result)
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_sponsorship_request_no_website(result)
 
         with mock.patch(
             "analytics.views.support.compute_max_monthly_messages", side_effect=MissingDataError
         ):
             result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
-        self.assert_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
         self.assert_in_success_response(
             ["<b>Max monthly messages</b>: Recent data missing"], result
         )
-        self.assert_not_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_sponsorship_request_no_website(result)
 
-        result = self.client_get("/activity/remote/support", {"q": "example.com"})
-        for i in range(20):
-            self.assert_in_success_response([f"<h3>zulip-{i}.example.com</h3>"], result)
+        server = 2
+        result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_sponsorship_request_with_website(result)
 
-        result = self.client_get("/activity/remote/support", {"q": "admin@zulip-2.example.com"})
-        self.assert_in_success_response(["<h3>zulip-2.example.com</h3>"], result)
-        self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-2.example.com"], result)
-        self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
-
-        # Sponsorship request information
-        self.assert_in_success_response(
-            ["<li><b>Organization type</b>: Open-source project</li>"], result
-        )
-        self.assert_in_success_response(
-            ["<li><b>Organization website</b>: example.org</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Paid users</b>: </li>"], result)
-        self.assert_in_success_response(["<li><b>Requested plan</b>: Community</li>"], result)
-        self.assert_in_success_response(
-            ["<li><b>Organization description</b>: We help people.</li>"], result
-        )
-        self.assert_in_success_response(["<li><b>Estimated total users</b>: 20-35</li>"], result)
-        self.assert_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
-
-        result = self.client_get("/activity/remote/support", {"q": "admin@zulip-3.example.com"})
-        self.assert_in_success_response(["<h3>zulip-3.example.com</h3>"], result)
-        self.assert_in_success_response(["<b>Contact email</b>: admin@zulip-3.example.com"], result)
-        self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
-
-        # Sponsorship request information
-        self.assert_not_in_success_response(
-            ["<li><b>Organization description</b>: We help people.</li>"], result
-        )
-        self.assert_not_in_success_response(
-            ["<li><b>Estimated total users</b>: 20-35</li>"], result
-        )
-        self.assert_not_in_success_response(["<li><b>Description of paid users</b>: </li>"], result)
+        server = 3
+        result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_no_sponsorship_request(result)
 
 
 class TestSupportEndpoint(ZulipTestCase):
+    def create_customer_and_plan(self, realm: Realm, monthly: bool = False) -> Customer:
+        now = datetime(2016, 1, 2, tzinfo=timezone.utc)
+        billing_schedule = CustomerPlan.BILLING_SCHEDULE_ANNUAL
+        price_per_license = 8000
+        months = 12
+
+        if monthly:
+            billing_schedule = CustomerPlan.BILLING_SCHEDULE_MONTHLY
+            price_per_license = 800
+            months = 1
+
+        customer = Customer.objects.create(realm=realm)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=now,
+            billing_schedule=billing_schedule,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            price_per_license=price_per_license,
+            next_invoice_date=add_months(now, months),
+        )
+        LicenseLedger.objects.create(
+            licenses=10,
+            licenses_at_next_renewal=10,
+            event_time=timezone_now(),
+            is_renewal=True,
+            plan=plan,
+        )
+        return customer
+
     def test_search(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
         lear_user = self.lear_user("king")
@@ -282,7 +364,8 @@ class TestSupportEndpoint(ZulipTestCase):
                     "<b>Status</b>: Active",
                     "<b>Billing schedule</b>: Annual",
                     "<b>Licenses</b>: 2/10 (Manual)",
-                    "<b>Price per license</b>: $80.0",
+                    "<b>Price per license</b>: $80.00",
+                    "<b>Annual recurring revenue</b>: $800.00",
                     "<b>Next invoice date</b>: 02 January 2017",
                     '<option value="send_invoice" selected>',
                     '<option value="charge_automatically" >',
@@ -373,23 +456,7 @@ class TestSupportEndpoint(ZulipTestCase):
             acting_user=None,
         )
 
-        customer = Customer.objects.create(realm=lear_realm, stripe_customer_id="cus_123")
-        now = datetime(2016, 1, 2, tzinfo=timezone.utc)
-        plan = CustomerPlan.objects.create(
-            customer=customer,
-            billing_cycle_anchor=now,
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-            price_per_license=8000,
-            next_invoice_date=add_months(now, 12),
-        )
-        LicenseLedger.objects.create(
-            licenses=10,
-            licenses_at_next_renewal=10,
-            event_time=timezone_now(),
-            is_renewal=True,
-            plan=plan,
-        )
+        self.create_customer_and_plan(lear_realm)
 
         result = self.client_get("/activity/support")
         self.assert_in_success_response(
@@ -522,6 +589,8 @@ class TestSupportEndpoint(ZulipTestCase):
 
     def test_change_billing_modality(self) -> None:
         realm = get_realm("zulip")
+        customer = self.create_customer_and_plan(realm)
+
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
         result = self.client_post(
@@ -530,15 +599,6 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
-
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-        )
 
         iago = self.example_user("iago")
         self.login_user(iago)
@@ -550,7 +610,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(
             ["Billing collection method of zulip updated to charge automatically"], result
         )
-        plan = get_current_plan_by_realm(realm)
+        plan = get_current_plan_by_customer(customer)
         assert plan is not None
         self.assertEqual(plan.charge_automatically, True)
 
@@ -560,9 +620,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(
             ["Billing collection method of zulip updated to send invoice"], result
         )
-        realm.refresh_from_db()
-        plan = get_current_plan_by_realm(realm)
-        assert plan is not None
+        plan.refresh_from_db()
         self.assertEqual(plan.charge_automatically, False)
 
     def test_change_realm_plan_type(self) -> None:
@@ -619,10 +677,11 @@ class TestSupportEndpoint(ZulipTestCase):
             )
 
     def test_attach_discount(self) -> None:
-        cordelia = self.example_user("cordelia")
         lear_realm = get_realm("lear")
-        self.login_user(cordelia)
+        customer = self.create_customer_and_plan(lear_realm, True)
 
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
         )
@@ -636,9 +695,27 @@ class TestSupportEndpoint(ZulipTestCase):
             "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
         )
         self.assert_in_success_response(["Discount for lear changed to 25% from 0%"], result)
-        customer = get_customer_by_realm(lear_realm)
-        assert customer is not None
+
+        customer.refresh_from_db()
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
         self.assertEqual(customer.default_discount, Decimal(25))
+        self.assertEqual(plan.discount, Decimal(25))
+
+        result = self.client_get("/activity/support", {"q": "lear"})
+        self.assert_in_success_response(
+            [
+                "<b>Plan name</b>: Zulip Cloud Standard",
+                "<b>Status</b>: Active",
+                "<b>Discount</b>: 25%",
+                "<b>Billing schedule</b>: Monthly",
+                "<b>Licenses</b>: 2/10 (Manual)",
+                "<b>Price per license</b>: $6.00",
+                "<b>Annual recurring revenue</b>: $720.00",
+                "<b>Next invoice date</b>: 02 February 2016",
+            ],
+            result,
+        )
 
     def test_change_sponsorship_status(self) -> None:
         lear_realm = get_realm("lear")
@@ -795,6 +872,8 @@ class TestSupportEndpoint(ZulipTestCase):
 
     def test_modify_plan_for_downgrade_at_end_of_billing_cycle(self) -> None:
         realm = get_realm("zulip")
+        customer = self.create_customer_and_plan(realm)
+
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
         result = self.client_post(
@@ -803,15 +882,6 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
-
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-        )
 
         iago = self.example_user("iago")
         self.login_user(iago)
@@ -827,7 +897,8 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 ["zulip marked for downgrade at the end of billing cycle"], result
             )
-            plan = get_current_plan_by_realm(realm)
+            customer.refresh_from_db()
+            plan = get_current_plan_by_customer(customer)
             assert plan is not None
             self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
             expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
@@ -835,6 +906,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
     def test_modify_plan_for_downgrade_now_without_additional_licenses(self) -> None:
         realm = get_realm("zulip")
+        customer = self.create_customer_and_plan(realm)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
         result = self.client_post(
@@ -843,15 +918,6 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
-
-        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
-        plan = CustomerPlan.objects.create(
-            customer=customer,
-            status=CustomerPlan.ACTIVE,
-            billing_cycle_anchor=timezone_now(),
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            tier=CustomerPlan.TIER_CLOUD_STANDARD,
-        )
 
         iago = self.example_user("iago")
         self.login_user(iago)

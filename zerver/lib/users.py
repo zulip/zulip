@@ -34,12 +34,14 @@ from zerver.models import (
     Recipient,
     Service,
     Subscription,
-    SystemGroups,
     UserMessage,
     UserProfile,
+)
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_fake_email_domain
+from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
-    get_fake_email_domain,
     get_realm_user_dicts,
     get_user,
     get_user_by_id_in_realm_including_cross_realm,

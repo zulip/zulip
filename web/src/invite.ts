@@ -200,7 +200,9 @@ function generate_multiuse_invite(): void {
                 const tippy_timeout_in_ms = 800;
                 show_copied_confirmation(
                     $("#copy_generated_invite_link")[0],
-                    () => {},
+                    () => {
+                        // Do nothing on hide
+                    },
                     tippy_timeout_in_ms,
                 );
             });

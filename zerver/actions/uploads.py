@@ -1,17 +1,10 @@
 import logging
 from typing import Any, Dict, List, Union
 
+from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.upload import claim_attachment, delete_message_attachment
-from zerver.models import (
-    Attachment,
-    Message,
-    ScheduledMessage,
-    Stream,
-    UserProfile,
-    get_old_unclaimed_attachments,
-    validate_attachment_request,
-)
+from zerver.models import Attachment, Message, ScheduledMessage, Stream, UserProfile
 from zerver.tornado.django_api import send_event
 
 

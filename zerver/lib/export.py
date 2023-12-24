@@ -69,10 +69,9 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    get_realm,
-    get_system_bot,
-    get_user_profile_by_id,
 )
+from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 # Custom mypy types follow:
 Record: TypeAlias = Dict[str, Any]
@@ -307,7 +306,7 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
 
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
-    # configuration for every table declared in the `models.py` files.
+    # configuration for every table declared in the `models` modules.
     target_models = [
         *apps.get_app_config("analytics").get_models(include_auto_created=True),
         *apps.get_app_config("django_otp").get_models(include_auto_created=True),

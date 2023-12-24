@@ -21,6 +21,7 @@ from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
@@ -39,17 +40,9 @@ from zerver.lib.upload.base import BadImageError, ZulipUploadBackend, resize_emo
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
-from zerver.models import (
-    Attachment,
-    Message,
-    Realm,
-    RealmDomain,
-    UserProfile,
-    get_realm,
-    get_system_bot,
-    get_user_by_delivery_email,
-    validate_attachment_request,
-)
+from zerver.models import Attachment, Message, Realm, RealmDomain, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):

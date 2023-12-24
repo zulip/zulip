@@ -26,7 +26,8 @@ from zerver.actions.streams import bulk_add_subscriptions
 from zerver.apps import flush_cache
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.streams import create_stream_if_needed
-from zerver.models import Realm, UserProfile, get_realm
+from zerver.models import Realm, UserProfile
+from zerver.models.realms import get_realm
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmBillingUser,
@@ -163,7 +164,7 @@ class Command(BaseCommand):
                 unique_id="legacy-server-upgrade-scheduled",
                 tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
                 status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END,
-                new_plan_tier=CustomerPlan.TIER_SELF_HOSTED_PLUS,
+                new_plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
                 is_remote_server=True,
             ),
             CustomerProfile(
@@ -440,7 +441,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
             # This attaches stripe_customer_id to customer.
             customer = billing_session.update_or_create_stripe_customer()
             add_card_to_customer(customer)
-            seat_count = 10
+            seat_count = 30
             signed_seat_count, salt = sign_string(str(seat_count))
             upgrade_request = UpgradeRequest(
                 billing_modality="charge_automatically",

@@ -42,6 +42,7 @@
                     <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}" />
                     <input type="hidden" name="salt" value="{{ salt }}" />
                     <input type="hidden" name="billing_modality" value="charge_automatically" />
+                    <input type="hidden" name="tier" value="{{ page_params.tier }}" />
 
                     <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if free_trial_days %}
@@ -124,7 +125,12 @@
                             </span>
                         </label>
                         <div id="due-today" class="not-editable-realm-field">
-                            $<span class="due-today-unit-price"></span> x
+                            {% if not manual_license_management and using_min_licenses_for_plan %}
+                            <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
+                            <br />
+                            {% endif %}
+                            $<span id="pre-discount-renewal-cents"></span>
+                            ($<span class="due-today-unit-price"></span> x
                             {% if not manual_license_management %}
                                 {{ seat_count }}
                             {% else %}
@@ -133,14 +139,14 @@
                             <span class="due-today-license-count-user-plural">
                                 {{ 'user' if seat_count == 1 else 'users' }}
                             </span> x
-                            <span class="due-today-duration"></span>
+                            <span class="due-today-duration"></span>)
                             {% if discount_percent %}
                             <br/>
                             <i class="billing-page-discount">Includes: {{ discount_percent }}% discount</i>
                             {% endif %}
-                            {% if not manual_license_management and using_min_licenses_for_plan %}
-                            <br />
-                            <i>Minimum purchase for this plan: 10 licenses</i>
+                            {% if page_params.flat_discounted_months > 0 %}
+                            <br/>
+                            Discount: $<span class="flat-discounted-price"></span>/month off <i class="billing-page-discount">({{ page_params.flat_discounted_months }} {{ "month" if discounted_months_left == 1 else "months" }} remaining)</i>
                             {% endif %}
                             <h1>$<span class="due-today-price"></span></h1>
                             {% if free_trial_days %}
@@ -156,7 +162,7 @@
                         <p class="not-editable-realm-field">
                             Your subscription will renew automatically. Your bill will vary based on the number
                             of active users in your organization. You can also
-                            <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true">purchase a fixed number of licenses</a> instead. See
+                            <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}">purchase a fixed number of licenses</a> instead. See
                             <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
                         </p>
                         <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
@@ -166,7 +172,7 @@
                         <p class="not-editable-realm-field">
                             Your subscription will renew automatically. You will be able to manage the number of licenses on
                             your organization's billing page. You can also
-                            <a href="{{ page_params.billing_base_url }}/upgrade/">choose automatic license management</a> instead. See
+                            <a href="{{ page_params.billing_base_url }}/upgrade/?tier={{ page_params.tier }}">choose automatic license management</a> instead. See
                             <a href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
                         </p>
                     </div>
@@ -218,11 +224,12 @@
                         <div id="autopay-error" class="alert alert-danger upgrade-page-error hide"></div>
                     </div>
                 </form>
-                {% if manual_license_management %}
                 <form id="upgrade-cardchange-form">
+                    {% if manual_license_management %}
                     <input type="hidden" name="manual_license_management" value="true" />
+                    {% endif %}
+                    <input type="hidden" name="tier" value="{{ page_params.tier }}" />
                 </form>
-                {% endif %}
                 <div class="input-box upgrade-page-field">
                     <div class="support-link not-editable-realm-field">
                         To pay by invoice or for any other questions, contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>.

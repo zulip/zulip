@@ -76,7 +76,6 @@ from zerver.models import (
     ScheduledMessage,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
@@ -84,14 +83,13 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    get_active_streams,
-    get_client,
-    get_huddle_hash,
-    get_realm,
-    get_stream,
-    get_system_bot,
-    get_user_by_delivery_email,
 )
+from zerver.models.clients import get_client
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
+from zerver.models.recipients import get_huddle_hash
+from zerver.models.streams import get_active_streams, get_stream
+from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 
 def make_datetime(val: float) -> datetime:

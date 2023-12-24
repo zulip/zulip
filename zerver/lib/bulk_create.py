@@ -13,11 +13,11 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 
 
 def bulk_create_users(

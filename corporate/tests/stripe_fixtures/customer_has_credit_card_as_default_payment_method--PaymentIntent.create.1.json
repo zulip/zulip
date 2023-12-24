@@ -77,7 +77,7 @@
         },
         "paid": true,
         "payment_intent": "pi_NORMALIZED00000000000001",
-        "payment_method": "pm_1OIlYcDEQaroqDjsaErHQmA2",
+        "payment_method": "pm_1OOgu3DEQaroqDjsqK4wQbku",
         "payment_method_details": {
           "card": {
             "amount_authorized": 48000,
@@ -120,7 +120,7 @@
         "radar_options": {},
         "receipt_email": "iago@zulip.com",
         "receipt_number": null,
-        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJf7qqsGMgZon60y6Go6LBYP3psdkk3c3LqFeed3oQoe1slzgJ_34uLbPRQF3584QRPm0pWhUub4ZLOY",
+        "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKISTgawGMgZvCzOusl46LBZpXO9IXKZzI4APT0eDYvWkjvVxl_pdxEbSZuWL-nH7jGi25jhSm_anP9Hp",
         "refunded": false,
         "refunds": {
           "data": [],
@@ -145,7 +145,7 @@
     "total_count": 1,
     "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000001_secret_lPtBm9Fq4P50TTE425LSOE6t6",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_Gxs40MGPhgJfzXnP6jagA4FYg",
   "confirmation_method": "automatic",
   "created": 1000000000,
   "currency": "usd",
@@ -173,7 +173,7 @@
   "next_action": null,
   "object": "payment_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_1OIlYcDEQaroqDjsaErHQmA2",
+  "payment_method": "pm_1OOgu3DEQaroqDjsqK4wQbku",
   "payment_method_configuration_details": null,
   "payment_method_options": {
     "card": {

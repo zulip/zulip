@@ -8,7 +8,8 @@ from zerver.lib.cache import (
     realm_alert_words_automaton_cache_key,
     realm_alert_words_cache_key,
 )
-from zerver.models import AlertWord, Realm, UserProfile, flush_realm_alert_words
+from zerver.models import AlertWord, Realm, UserProfile
+from zerver.models.alert_words import flush_realm_alert_words
 
 
 @cache_with_key(lambda realm: realm_alert_words_cache_key(realm.id), timeout=3600 * 24)

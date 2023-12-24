@@ -36,12 +36,12 @@ const remote_discount_details: DiscountDetails = {
     opensource: "The Community plan is free for open-source projects.",
     research: "The Community plan is free for academic research.",
     nonprofit:
-        "The Community plan is free for registered non-profits with up to 100 users. The Business plan is discounted 85+% with a purchase of 100+ licenses.",
+        "The Community plan is free for registered non-profits with up to 100 users. For larger organizations, paid plans are discounted by 85+%.",
     event: "The Community plan is free for academic conferences and most non-profit events.",
     education:
-        "The Community plan is free for education organizations with up to 100 users. The Business plan is discounted 85% with a purchase of 100+ licenses.",
+        "The Community plan is free for education organizations with up to 100 users. For larger organizations, paid plans are discounted by 85%.",
     education_nonprofit:
-        "The Community plan is free for education non-profits with up to 100 users. The Business plan is discounted 90% with online purchase of 100+ licenses.",
+        "The Community plan is free for education non-profits with up to 100 users. For larger organizations, paid plans are discounted by 90% with online purchase.",
 };
 
 export function create_ajax_request(
@@ -50,7 +50,9 @@ export function create_ajax_request(
     ignored_inputs: string[] = [],
     type = "POST",
     success_callback: (response: unknown) => void,
-    error_callback: (xhr: JQuery.jqXHR) => void = () => {},
+    error_callback: (xhr: JQuery.jqXHR) => void = () => {
+        // Ignore errors by default
+    },
 ): void {
     const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
@@ -182,11 +184,15 @@ export function redirect_to_billing_with_successful_upgrade(billing_base_url: st
 
 export function get_upgrade_page_url(
     is_manual_license_management_upgrade_session: boolean | undefined,
+    tier: number,
     billing_base_url: string,
 ): string {
-    let redirect_to = "/upgrade";
-    if (is_manual_license_management_upgrade_session) {
-        redirect_to += "/?manual_license_management=true";
+    const base_url = billing_base_url + "/upgrade/";
+    let params = `tier=${String(tier)}`;
+    if (is_manual_license_management_upgrade_session !== undefined) {
+        params += `&manual_license_management=${String(
+            is_manual_license_management_upgrade_session,
+        )}`;
     }
-    return billing_base_url + redirect_to;
+    return base_url + "?" + params;
 }

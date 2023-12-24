@@ -112,11 +112,11 @@
                     <label for="automatic-license-count" class="inline-block label-title">
                         Number of licenses
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                        <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-billing-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
-                        <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/zulip-cloud-billing#how-does-automatic-billing-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% endif %}
@@ -132,11 +132,11 @@
                     <label for="current-manual-license-count" class="inline-block label-title">
                         Number of licenses for current billing period
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                        <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-billing-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
-                        <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/zulip-cloud-billing#how-does-manual-billing-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% endif %}
@@ -158,7 +158,7 @@
                 <div class="input-box billing-page-field no-validation input-box-number">
                     <label for="next-manual-license-count" class="inline-block label-title">
                         Number of licenses for next billing period
-                        <a href="/help/zulip-cloud-billing#what-is-the-difference-between-automatic-and-manual-billing" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/zulip-cloud-billing#how-does-manual-billing-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                     </label>
@@ -237,25 +237,34 @@
                             Your next invoice is due on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
                             <br />
-                            Expected charge: <strong>${{ renewal_amount }}</strong>
-                            {% if not fixed_price %}
-                                (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
-                                {% if switch_to_annual_at_end_of_cycle %}
-                                    12 months
-                                {%- elif switch_to_monthly_at_end_of_cycle %}
-                                    1 month
-                                {%- else %}
-                                    {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
-                                {%- endif -%})
-                                {% if discount_percent %}
-                                <br />
-                                <i class="billing-page-discount">Includes: {{ discount_percent }}% discount</i>
+                            <div class="input-box billing-page-field">
+                                <label for="expected-charge">Expected next charge</label>
+                                {% if not fixed_price %}
+                                <div class="not-editable-realm-field">
+                                    {% if using_min_licenses_for_plan %}
+                                    <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
+                                    <br />
+                                    {% endif %}
+                                    ${{ pre_discount_renewal_cents }} (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
+                                    {% if switch_to_annual_at_end_of_cycle %}
+                                        12 months
+                                    {%- elif switch_to_monthly_at_end_of_cycle %}
+                                        1 month
+                                    {%- else %}
+                                        {{ "1 month" if billing_frequency == "Monthly" else "12 months" }}
+                                    {%- endif -%})
+                                    {% if discounted_months_left != 0 %}
+                                    <br />
+                                    Discount: ${{ flat_discount }}/month off <i class="billing-page-discount">({{ discounted_months_left }} {{ "month" if discounted_months_left == 1 else "months" }} remaining)</i>
+                                    {% endif %}
+                                    {% if discount_percent %}
+                                    <br />
+                                    <i class="billing-page-discount">Includes: {{ discount_percent }}% discount</i>
+                                    {% endif %}
+                                </div>
                                 {% endif %}
-                                {% if using_min_licenses_for_plan %}
-                                <br />
-                                <i>Minimum purchase for this plan: 10 licenses</i>
-                                {% endif %}
-                            {% endif %}
+                            </div>
+                            <h1>${{ renewal_amount }}</h1>
                             {% endif %}
                         {% else %}
                             Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
@@ -498,12 +507,12 @@
             </header>
             <main class="modal__content">
                 <p>
-                    Your organization will be not be upgraded to <strong>Zulip Business</strong>
+                    Your organization will be not be upgraded to <strong>{{ legacy_remote_server_next_plan_name }}</strong>
                     on {{ remote_server_legacy_plan_end_date }}. If your organization has more than
                     10 users at that time, you will lose access to the
                     <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
                     You will also not receive the <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">other benefits</a>
-                    of the Zulip Business plan. Are you sure you want to continue?
+                    of the {{ legacy_remote_server_next_plan_name }} plan. Are you sure you want to continue?
                 </p>
             </main>
             <footer class="modal__footer">

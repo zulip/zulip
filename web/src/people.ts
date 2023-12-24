@@ -6,6 +6,7 @@ import * as typeahead from "../shared/src/typeahead";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
+import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
@@ -13,7 +14,6 @@ import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as timerender from "./timerender";
-import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./types";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -190,7 +190,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
 
 export function can_admin_user(user: User): boolean {
     return (
-        (user.is_bot && user.bot_owner_id && user.bot_owner_id === page_params.user_id) ||
+        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === page_params.user_id) ||
         is_my_user_id(user.user_id)
     );
 }
@@ -1517,7 +1517,7 @@ export function add_inaccessible_user(user_id: number): User {
 
 export function get_user_by_id_assert_valid(
     user_id: number,
-    allow_missing_user: boolean = !settings_data.user_can_access_all_other_users(),
+    allow_missing_user = !settings_data.user_can_access_all_other_users(),
 ): User {
     if (!allow_missing_user) {
         return get_by_user_id(user_id);

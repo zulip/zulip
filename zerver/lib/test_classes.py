@@ -102,20 +102,16 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
     UserStatus,
-    clear_supported_auth_backends_cache,
-    get_realm,
-    get_realm_stream,
-    get_stream,
-    get_system_bot,
-    get_user,
-    get_user_by_delivery_email,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
+from zerver.models.streams import get_realm_stream, get_stream
+from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 

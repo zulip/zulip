@@ -365,7 +365,7 @@ You can look at the [full list of fields][models-py] in the Zulip user
 model; search for `class UserProfile`, but the above should cover all
 the fields that would be useful to sync from your LDAP databases.
 
-[models-py]: https://github.com/zulip/zulip/blob/main/zerver/models.py
+[models-py]: https://github.com/zulip/zulip/blob/main/zerver/models/users.py
 [django-auth-booleans]: https://django-auth-ldap.readthedocs.io/en/latest/users.html#easy-attributes
 
 ### Multiple LDAP searches

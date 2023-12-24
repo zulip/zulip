@@ -8,14 +8,9 @@ from zerver.lib.default_streams import (
     get_default_streams_for_realm_as_dicts,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.models import (
-    DefaultStream,
-    DefaultStreamGroup,
-    Realm,
-    Stream,
-    active_non_guest_user_ids,
-    get_default_stream_groups,
-)
+from zerver.models import DefaultStream, DefaultStreamGroup, Realm, Stream
+from zerver.models.streams import get_default_stream_groups
+from zerver.models.users import active_non_guest_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 

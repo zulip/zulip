@@ -73,10 +73,6 @@ from zerver.lib.validator import (
 )
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
-    MAX_LANGUAGE_ID_LENGTH,
-    DisposableEmailError,
-    DomainNotAllowedForRealmError,
-    EmailContainsPlusError,
     MultiuseInvite,
     PreregistrationRealm,
     PreregistrationUser,
@@ -84,13 +80,18 @@ from zerver.models import (
     RealmUserDefault,
     Stream,
     UserProfile,
-    get_default_stream_groups,
+)
+from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.realms import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
     get_org_type_display_name,
     get_realm,
-    get_source_profile,
-    get_user_by_delivery_email,
     name_changes_disabled,
 )
+from zerver.models.streams import get_default_stream_groups
+from zerver.models.users import get_source_profile, get_user_by_delivery_email
 from zerver.views.auth import (
     create_preregistration_realm,
     create_preregistration_user,

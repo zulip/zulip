@@ -4,7 +4,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.validator import wrap_wild_value
-from zerver.models import get_client
+from zerver.models.clients import get_client
 from zerver.webhooks.bitbucket2.view import get_user_info
 
 TOPIC = "Repository name"

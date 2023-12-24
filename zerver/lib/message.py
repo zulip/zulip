@@ -37,11 +37,12 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import bulk_fetch_display_recipients
+from zerver.lib.display_recipient import bulk_fetch_display_recipients, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
+from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
@@ -63,7 +64,6 @@ from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Message,
     Reaction,
     Realm,
@@ -75,11 +75,10 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_display_recipient_by_id,
-    get_fake_email_domain,
-    get_usermessage_by_message_id,
-    query_for_ids,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.messages import get_usermessage_by_message_id
+from zerver.models.realms import get_fake_email_domain
 
 
 class MessageDetailsDict(TypedDict, total=False):

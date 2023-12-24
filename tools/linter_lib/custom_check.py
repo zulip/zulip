@@ -119,7 +119,12 @@ js_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude": {"web/src/types.ts", "web/src/util.ts", "web/tests/"},
+            "exclude": {
+                "web/src/message_store.ts",
+                "web/src/types.ts",
+                "web/src/util.ts",
+                "web/tests/",
+            },
             "exclude_pattern": "emails",
             "description": "avoid subject in JS code",
             "good_lines": ["topic_name"],
@@ -409,7 +414,7 @@ python_rules = RuleList(
         },
         {
             "pattern": r": *(?!Optional)[^\n ].*= models[.].*null=True",
-            "include_only": {"zerver/models.py"},
+            "include_only": {"zerver/models/"},
             "description": "Model variable with null=true not annotated as Optional.",
             "good_lines": [
                 "desc: Optional[Text] = models.TextField(null=True)",
@@ -425,7 +430,7 @@ python_rules = RuleList(
         {
             "pattern": r": *Optional.*= models[.].*\)",
             "exclude_pattern": "null=True",
-            "include_only": {"zerver/models.py"},
+            "include_only": {"zerver/models/"},
             "description": "Model variable annotated with Optional but variable does not have null=true.",
             "good_lines": [
                 "desc: Optional[Text] = models.TextField(null=True)",
@@ -568,7 +573,11 @@ html_rules: List["Rule"] = [
         "good_lines": ['<a href="{{variable}}">'],
         "bad_lines": ["<a href={{variable}}>"],
         # Exclude the use of URL templates from this check.
-        "exclude_pattern": "={code}",
+        # Exclude the use GET parameters in URLs from this check.
+        "exclude_pattern": "={code}|\\?[a-z]+={|\\&[a-z]+={",
+        "exclude": {
+            "templates/corporate/pricing_model.html",
+        },
     },
     {
         "pattern": " '}}",

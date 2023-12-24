@@ -184,11 +184,12 @@ export function initialize(): void {
             "planchange",
             [],
             "PATCH",
-            () =>
+            () => {
                 window.location.replace(
                     `${billing_base_url}/upgrade/?success_message=` +
                         encodeURIComponent("Your plan is no longer scheduled for an upgrade."),
-                ),
+                );
+            },
         );
         e.preventDefault();
     });
@@ -216,11 +217,12 @@ export function initialize(): void {
             "planchange",
             [],
             "PATCH",
-            () =>
+            () => {
                 window.location.replace(
                     `${billing_base_url}/billing/?success_message=` +
                         encodeURIComponent("Your plan has been canceled and will not renew."),
-                ),
+                );
+            },
         );
         e.preventDefault();
     });
@@ -231,13 +233,14 @@ export function initialize(): void {
             "planchange",
             [],
             "PATCH",
-            () =>
+            () => {
                 window.location.replace(
                     `${billing_base_url}/billing/?success_message=` +
                         encodeURIComponent(
                             "Your plan has been reactivated and will renew automatically.",
                         ),
-                ),
+                );
+            },
         );
         e.preventDefault();
     });
@@ -248,13 +251,14 @@ export function initialize(): void {
             "planchange",
             [],
             "PATCH",
-            () =>
+            () => {
                 window.location.replace(
                     `${billing_base_url}/billing/?success_message=` +
                         encodeURIComponent(
                             "Your plan will be canceled at the end of the trial. Your card will not be charged.",
                         ),
-                ),
+                );
+            },
         );
         e.preventDefault();
     });

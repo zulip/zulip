@@ -22,7 +22,8 @@ from zerver.lib.send_email import (
     send_custom_server_email,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Realm, ScheduledEmail, UserProfile, get_realm
+from zerver.models import Realm, ScheduledEmail, UserProfile
+from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
 
 

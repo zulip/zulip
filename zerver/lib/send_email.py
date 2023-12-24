@@ -29,7 +29,9 @@ from django.utils.translation import override as override_language
 
 from confirmation.models import generate_key
 from zerver.lib.logging_util import log_to_file
-from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
+from zerver.models import Realm, ScheduledEmail, UserProfile
+from zerver.models.scheduled_jobs import EMAIL_TYPES
+from zerver.models.users import get_user_profile_by_id
 from zproject.email_backends import EmailLogBackEnd, get_forward_address
 
 if settings.ZILENCER_ENABLED:

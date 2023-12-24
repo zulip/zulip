@@ -15,7 +15,8 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.cache import cache_delete, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
-from zerver.models import Recipient, Subscription, UserProfile, UserTopic, get_stream
+from zerver.models import Recipient, Subscription, UserProfile, UserTopic
+from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
     access_client_descriptor,

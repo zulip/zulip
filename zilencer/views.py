@@ -494,6 +494,9 @@ def remote_server_notify_push(
         increment=len(android_devices) + len(apple_devices),
     )
     if remote_realm is not None:
+        ensure_devices_set_remote_realm(
+            android_devices=android_devices, apple_devices=apple_devices, remote_realm=remote_realm
+        )
         do_increment_logging_stat(
             remote_realm,
             COUNT_STATS["mobile_pushes_received::day"],
@@ -669,6 +672,20 @@ def batch_create_table_data(
             server.hostname,
             server.uuid,
         )
+
+
+def ensure_devices_set_remote_realm(
+    android_devices: List[RemotePushDeviceToken],
+    apple_devices: List[RemotePushDeviceToken],
+    remote_realm: RemoteRealm,
+) -> None:
+    devices_to_update = []
+    for device in android_devices + apple_devices:
+        if device.remote_realm_id is None:
+            device.remote_realm = remote_realm
+            devices_to_update.append(device)
+
+    RemotePushDeviceToken.objects.bulk_update(devices_to_update, ["remote_realm"])
 
 
 def update_remote_realm_data_for_server(
@@ -1072,9 +1089,12 @@ def remote_server_post_analytics(
     for remote_realm in remote_realms:
         uuid = str(remote_realm.uuid)
         status = get_push_status_for_remote_request(server, remote_realm)
-        if remote_human_realm_count == 1:  # nocoverage
+        if remote_realm.is_system_bot_realm:
+            # Ignore system bot realms for computing log_data
+            pass
+        elif remote_human_realm_count == 1:  # nocoverage
             log_data["extra"] = f"[can_push={status.can_push}/{status.message}]"
-        elif not remote_realm.is_system_bot_realm:
+        else:
             can_push_values.add(status.can_push)
         remote_realm_dict[uuid] = {
             "can_push": status.can_push,

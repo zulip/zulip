@@ -32,10 +32,10 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 
 
 class Command(BaseCommand):

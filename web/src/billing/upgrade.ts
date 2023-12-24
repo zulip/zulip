@@ -39,9 +39,14 @@ function update_due_today(schedule: string): void {
     }
     $("#due-today .due-today-duration").text(num_months === 1 ? "1 month" : "12 months");
     const schedule_typed = helpers.schedule_schema.parse(schedule);
-    $(".due-today-price").text(
-        helpers.format_money(current_license_count * prices[schedule_typed]),
-    );
+    const pre_flat_discount_price = prices[schedule_typed] * current_license_count;
+    $("#pre-discount-renewal-cents").text(helpers.format_money(pre_flat_discount_price));
+    const flat_discounted_months = Math.min(num_months, page_params.flat_discounted_months);
+    const total_flat_discount = page_params.flat_discount * flat_discounted_months;
+    const due_today = Math.max(0, pre_flat_discount_price - total_flat_discount);
+    $(".flat-discounted-price").text(helpers.format_money(page_params.flat_discount));
+    $(".due-today-price").text(helpers.format_money(due_today));
+
     const unit_price = prices[schedule_typed] / num_months;
     $("#due-today .due-today-unit-price").text(helpers.format_money(unit_price));
 }

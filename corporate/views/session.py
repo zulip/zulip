@@ -59,9 +59,12 @@ def start_card_update_stripe_session_for_realm_upgrade(
     user: UserProfile,
     *,
     manual_license_management: Json[bool] = False,
+    tier: Json[int],
 ) -> HttpResponse:
     billing_session = RealmBillingSession(user)
-    session_data = billing_session.create_card_update_session_for_upgrade(manual_license_management)
+    session_data = billing_session.create_card_update_session_for_upgrade(
+        manual_license_management, tier
+    )
     return json_success(
         request,
         data=session_data,
@@ -75,8 +78,11 @@ def start_card_update_stripe_session_for_remote_realm_upgrade(
     billing_session: RemoteRealmBillingSession,
     *,
     manual_license_management: Json[bool] = False,
+    tier: Json[int],
 ) -> HttpResponse:
-    session_data = billing_session.create_card_update_session_for_upgrade(manual_license_management)
+    session_data = billing_session.create_card_update_session_for_upgrade(
+        manual_license_management, tier
+    )
     return json_success(
         request,
         data=session_data,
@@ -90,8 +96,11 @@ def start_card_update_stripe_session_for_remote_server_upgrade(
     billing_session: RemoteServerBillingSession,
     *,
     manual_license_management: Json[bool] = False,
-) -> HttpResponse:  # nocoverage
-    session_data = billing_session.create_card_update_session_for_upgrade(manual_license_management)
+    tier: Json[int],
+) -> HttpResponse:
+    session_data = billing_session.create_card_update_session_for_upgrade(
+        manual_license_management, tier
+    )
     return json_success(
         request,
         data=session_data,

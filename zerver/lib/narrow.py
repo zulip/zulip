@@ -75,14 +75,9 @@ from zerver.lib.validator import (
     check_string_or_int,
     check_string_or_int_list,
 )
-from zerver.models import (
-    Realm,
-    Recipient,
-    Stream,
-    Subscription,
-    UserMessage,
-    UserProfile,
-    get_active_streams,
+from zerver.models import Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
+from zerver.models.streams import get_active_streams
+from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
 )

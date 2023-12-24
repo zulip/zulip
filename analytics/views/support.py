@@ -40,10 +40,9 @@ from zerver.models import (
     Realm,
     RealmReactivationStatus,
     UserProfile,
-    get_org_type_display_name,
-    get_realm,
-    get_user_profile_by_id,
 )
+from zerver.models.realms import get_org_type_display_name, get_realm
+from zerver.models.users import get_user_profile_by_id
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.ZILENCER_ENABLED:
@@ -57,6 +56,8 @@ if settings.BILLING_ENABLED:
         RemoteServerBillingSession,
         SupportType,
         SupportViewRequest,
+        cents_to_dollar_string,
+        format_discount_percentage,
     )
     from corporate.lib.support import (
         PlanData,
@@ -80,6 +81,7 @@ def get_plan_type_string(plan_type: int) -> str:
             CustomerPlan.TIER_SELF_HOSTED_LEGACY
         ),
         RemoteZulipServer.PLAN_TYPE_COMMUNITY: "Community",
+        RemoteZulipServer.PLAN_TYPE_BASIC: "Basic",
         RemoteZulipServer.PLAN_TYPE_BUSINESS: "Business",
         RemoteZulipServer.PLAN_TYPE_ENTERPRISE: "Enterprise",
     }[plan_type]
@@ -365,6 +367,8 @@ def support(
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
     context["get_discount"] = get_customer_discount_for_support_view
     context["get_org_type_display_name"] = get_org_type_display_name
+    context["format_discount"] = format_discount_percentage
+    context["dollar_amount"] = cents_to_dollar_string
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     context["sorted_realm_types"] = sorted(
@@ -514,6 +518,8 @@ def remote_servers_support(
     context["remote_realms_support_data"] = realm_support_data
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
+    context["format_discount"] = format_discount_percentage
+    context["dollar_amount"] = cents_to_dollar_string
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
 
     return render(

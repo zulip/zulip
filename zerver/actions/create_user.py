@@ -44,15 +44,13 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
-    active_user_ids,
-    bot_owner_user_ids,
-    get_system_bot,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:

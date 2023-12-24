@@ -13,7 +13,7 @@ page_params.is_admin = false;
 page_params.realm_users = [];
 
 // We use this with override.
-let num_unread_for_stream;
+let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
 mock_esm("../src/narrow_state", {
@@ -25,8 +25,8 @@ const scroll_util = mock_esm("../src/scroll_util", {
     get_scroll_element: ($element) => $element,
 });
 mock_esm("../src/unread", {
-    num_unread_for_stream: () => ({
-        unmuted_count: num_unread_for_stream,
+    unread_count_info_for_stream: () => ({
+        unmuted_count: unread_unmuted_count,
         stream_is_muted: false,
         muted_count: 0,
     }),
@@ -75,7 +75,7 @@ function create_devel_sidebar_row({mock_template}) {
         return "<devel-sidebar-row-stub>";
     });
 
-    num_unread_for_stream = 42;
+    unread_unmuted_count = 42;
     stream_has_any_unread_mentions = false;
     stream_list.create_sidebar_row(devel);
     assert.equal($devel_count.text(), "42");
@@ -98,7 +98,7 @@ function create_social_sidebar_row({mock_template}) {
         return "<social-sidebar-row-stub>";
     });
 
-    num_unread_for_stream = 99;
+    unread_unmuted_count = 99;
     stream_has_any_unread_mentions = true;
     stream_list.create_sidebar_row(social);
     assert.equal($social_count.text(), "99");

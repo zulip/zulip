@@ -6,7 +6,8 @@ from django.core.exceptions import ValidationError
 from typing_extensions import override
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmAuditLog, RealmFilter, url_template_validator
+from zerver.models import RealmAuditLog, RealmFilter
+from zerver.models.linkifiers import url_template_validator
 
 
 class RealmFilterTest(ZulipTestCase):

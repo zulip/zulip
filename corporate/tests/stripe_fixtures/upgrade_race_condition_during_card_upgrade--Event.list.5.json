@@ -46,9 +46,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpiSWhCU25qMFlweUF2WEZPUVYyWHE3SEJZSnZuLDkyMDM1MTgz0200gmkwvCzo?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdCbldwMHM0QWNUdWh2SlFiSTBnQkJ2VDY4TDE1LDkzNDQ3MjUz0200dJKnFDOY?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpiSWhCU25qMFlweUF2WEZPUVYyWHE3SEJZSnZuLDkyMDM1MTgz0200gmkwvCzo/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdCbldwMHM0QWNUdWh2SlFiSTBnQkJ2VDY4TDE1LDkzNDQ3MjUz0200dJKnFDOY/pdf?s=ap",
           "last_finalization_error": null,
           "latest_revision": null,
           "lines": {
@@ -162,7 +162,7 @@
           "livemode": false,
           "metadata": {},
           "next_payment_attempt": null,
-          "number": "NORMALI-0002",
+          "number": "NORMALI-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": true,
@@ -213,15 +213,15 @@
           "webhooks_delivered_at": null
         }
       },
-      "id": "evt_1OIlcBDEQaroqDjsUGTOk3x8",
+      "id": "evt_1OOgxVDEQaroqDjs1vJm6LVe",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "53c5a32c-32e3-4962-8d55-ca97146ec82b"
+        "id": "req_NORMALIZED0006",
+        "idempotency_key": "edc836c5-461c-4a2f-a5c9-a05c57637f31"
       },
-      "type": "invoice.paid"
+      "type": "invoice.finalized"
     },
     {
       "api_version": "2020-08-27",
@@ -269,9 +269,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpiSWhCU25qMFlweUF2WEZPUVYyWHE3SEJZSnZuLDkyMDM1MTgz0200gmkwvCzo?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdCbldwMHM0QWNUdWh2SlFiSTBnQkJ2VDY4TDE1LDkzNDQ3MjUz0200dJKnFDOY?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QNnpiSWhCU25qMFlweUF2WEZPUVYyWHE3SEJZSnZuLDkyMDM1MTgz0200gmkwvCzo/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdCbldwMHM0QWNUdWh2SlFiSTBnQkJ2VDY4TDE1LDkzNDQ3MjUz0200dJKnFDOY/pdf?s=ap",
           "last_finalization_error": null,
           "latest_revision": null,
           "lines": {
@@ -385,7 +385,7 @@
           "livemode": false,
           "metadata": {},
           "next_payment_attempt": null,
-          "number": "NORMALI-0002",
+          "number": "NORMALI-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": true,
@@ -434,17 +434,38 @@
           "total_tax_amounts": [],
           "transfer_data": null,
           "webhooks_delivered_at": null
+        },
+        "previous_attributes": {
+          "attempted": false,
+          "auto_advance": true,
+          "effective_at": null,
+          "ending_balance": null,
+          "hosted_invoice_url": null,
+          "invoice_pdf": null,
+          "next_payment_attempt": 1000000000,
+          "number": null,
+          "paid": false,
+          "rendering": {
+            "pdf": {
+              "page_size": "auto"
+            }
+          },
+          "status": "draft",
+          "status_transitions": {
+            "finalized_at": null,
+            "paid_at": null
+          }
         }
       },
-      "id": "evt_1OIlcBDEQaroqDjsGFKR0LKA",
+      "id": "evt_1OOgxVDEQaroqDjsgfekQXAz",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "53c5a32c-32e3-4962-8d55-ca97146ec82b"
+        "id": "req_NORMALIZED0006",
+        "idempotency_key": "edc836c5-461c-4a2f-a5c9-a05c57637f31"
       },
-      "type": "invoice.finalized"
+      "type": "invoice.updated"
     }
   ],
   "has_more": false,

@@ -1,8 +1,8 @@
 import assert from "minimalistic-assert";
 
+import type {Message} from "./message_store";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
-import type {Message} from "./types";
 import type {Recipient} from "./util";
 import * as util from "./util";
 
@@ -20,7 +20,7 @@ export function set_focused_recipient(recipient?: Recipient): void {
     focused_recipient = recipient;
 }
 
-export function would_receive_message(user_id: number): boolean | undefined {
+export function would_receive_message(user_id: number): boolean {
     assert(focused_recipient !== undefined);
     if (focused_recipient.type === "stream") {
         const sub = sub_store.get(focused_recipient.stream_id);

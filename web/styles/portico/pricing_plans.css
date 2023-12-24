@@ -18,6 +18,8 @@
     --icon-right-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M16 16H0V0c0 8.837 7.163 16 16 16Z'/%3e%3c/svg%3e");
     --icon-question-header-swoosh: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='33' height='56' fill='none' viewBox='0 0 33 56'%3e%3cpath fill='%23E2EBF4' d='M33 37 1 56C1 35-3.5 0 33 0 7.5 3 7.776 37 33 37Z'/%3e%3c/svg%3e");
     --icon-current-plan-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='none' viewBox='0 0 22 22'%3e%3cg fill='%230F8544'%3e%3cpath d='M14.396 9.813a.914.914 0 1 0-1.293-1.293l-3.02 3.02-1.186-1.186a.914.914 0 1 0-1.294 1.293l1.834 1.833a.914.914 0 0 0 1.293 0l3.666-3.667Z'/%3e%3cpath fill-rule='evenodd' d='M11 .923a4.58 4.58 0 0 0-3.495 1.62 4.581 4.581 0 0 0-4.961 4.949 4.58 4.58 0 0 0 0 7.016 4.58 4.58 0 0 0 4.96 4.949 4.583 4.583 0 0 0 7.003-.001 4.582 4.582 0 0 0 4.95-4.96 4.583 4.583 0 0 0 0-6.991 4.58 4.58 0 0 0-4.962-4.962A4.581 4.581 0 0 0 11 .923ZM9.678 3.09a2.752 2.752 0 0 1 3.64.932.914.914 0 0 0 .972.4 2.752 2.752 0 0 1 3.289 3.288.914.914 0 0 0 .4.971 2.753 2.753 0 0 1 0 4.638.914.914 0 0 0-.4.97 2.752 2.752 0 0 1-3.283 3.29.914.914 0 0 0-.97.401 2.75 2.75 0 0 1-4.644 0 .914.914 0 0 0-.971-.401 2.752 2.752 0 0 1-3.29-3.283.914.914 0 0 0-.403-.97 2.753 2.753 0 0 1 0-4.652.914.914 0 0 0 .404-.97A2.752 2.752 0 0 1 7.71 4.42a.914.914 0 0 0 .97-.4c.25-.389.592-.709.997-.93Z' clip-rule='evenodd'/%3e%3c/g%3e%3c/svg%3e");
+    --width-price-box-min: 285px;
+    --width-price-box-max: 355px;
 
     padding: 102px 0 58px;
     background: linear-gradient(
@@ -155,6 +157,12 @@
             minmax(0, 420px) 1fr 56px;
         column-gap: 2px;
         margin: 50px auto 38px;
+        /* We use the plan count on the respective `.showing-` class
+           to determine a maximum width, beyond which the plans will
+           grow no wider. */
+        max-width: calc(
+            (var(--count-plans) * var(--width-price-box-max)) + 40px
+        );
 
         @media screen and (width <= 700px) {
             grid-template-columns:
@@ -177,20 +185,8 @@
         grid-area: cloud-title;
     }
 
-    .cloud-plan-pricing {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        grid-template-rows: auto;
-    }
-
     .self-hosted-plan-title {
         grid-area: self-hosted-title;
-    }
-
-    .self-hosted-plan-pricing {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        grid-template-rows: auto;
     }
 
     .pricing-tab,
@@ -261,16 +257,20 @@
     }
 
     .pricing-pane {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(var(--width-price-box-min), 1fr)
+        );
+        grid-template-rows: auto;
+        /* We use the plan count on the respective `.showing-` class
+           to determine a minimum width, at which point the plans scroll. */
+        min-width: calc(var(--count-plans) * var(--width-price-box-min));
         padding: 20px;
         border-radius: 16px;
         color: var(--color-box-copy);
         background: var(--color-background-box);
-        min-width: 1040px;
         margin: 0 16px;
-
-        &.self-hosted-plan-pricing {
-            min-width: 1220px;
-        }
 
         @media screen and (width <= 700px) {
             margin: 0 8px;
@@ -351,6 +351,9 @@
 
         .standard-price-box {
             display: flex;
+            /* Handle a discount line, when
+               needed. */
+            flex-wrap: wrap;
             align-items: flex-start;
             gap: 4px;
             min-height: 56px;
@@ -360,16 +363,43 @@
                 font-size: 38px;
                 line-height: 1;
                 letter-spacing: -1px;
+
+                &.no-discount {
+                    /* Pad prices that do not have
+                       a discount (e.g., Free, or a
+                       customer's current plan). */
+                    padding-bottom: 25px;
+                }
             }
 
             .currency-symbol {
                 opacity: 0.5;
             }
 
-            .details p {
-                margin: 2px 0 0;
-                font-size: 15px;
-                line-height: 17px;
+            .details {
+                flex: 1 0 0;
+
+                p {
+                    margin: 2px 0 0;
+                    font-size: 15px;
+                    line-height: 17px;
+                }
+
+                &.singular-billing-frequency {
+                    align-self: flex-end;
+                    margin-bottom: 5px;
+                }
+            }
+
+            .discount {
+                /* Keep the discount to its own
+                   line in the wrapping flexbox. */
+                flex: 0 0 100%;
+                text-align: center;
+                padding: 1px 0 6px;
+                margin-bottom: -5px;
+                border-radius: 4px 4px 0 0;
+                background-color: hsl(0deg 0% 85%);
             }
         }
     }
@@ -438,6 +468,10 @@
             background: var(--color-background-box);
             padding: 20px 32px;
             border-radius: 16px;
+
+            b {
+                font-weight: 600;
+            }
         }
 
         h3 {
@@ -500,6 +534,9 @@
         letter-spacing: 0.06ch;
         padding: 8px 10px;
         border-radius: 4px;
+        /* Position relatively for discount tab */
+        position: relative;
+        z-index: 5;
     }
 
     .button-placeholder {
@@ -575,9 +612,7 @@
     }
 
     &.showing-cloud {
-        .pricing-container {
-            max-width: 1100px;
-        }
+        --count-plans: 3;
 
         .self-hosted-scroll,
         .self-hosted-plan-pricing,
@@ -625,9 +660,7 @@
     }
 
     &.showing-self-hosted {
-        .pricing-container {
-            max-width: 1400px;
-        }
+        --count-plans: 4;
 
         .cloud-scroll,
         .cloud-plan-pricing,

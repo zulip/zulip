@@ -1,6 +1,6 @@
 # Using Zulip via email
 
-With Zulip, it is possible for some members of you organization to participate
+With Zulip, it is possible for some members of your organization to participate
 from their email client, without opening the Zulip app after the initial
 setup is complete.
 

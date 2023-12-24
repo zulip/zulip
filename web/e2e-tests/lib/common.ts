@@ -269,7 +269,9 @@ export async function log_in(
         password: credentials.password,
     };
     await fill_form(page, "form#login_form", params);
-    await page.$eval("form#login_form", (form) => form.submit());
+    await page.$eval("form#login_form", (form) => {
+        form.submit();
+    });
 
     await page.waitForSelector("#inbox-main", {visible: true});
 }
@@ -300,7 +302,7 @@ export async function ensure_enter_does_not_send(page: Page): Promise<void> {
     await page.waitForSelector("#send_later_popover");
     const enter_sends = await page.$eval(
         ".enter_sends_choice input[value='true']",
-        (el) => el.checked === true,
+        (el) => el.checked,
     );
 
     if (enter_sends) {

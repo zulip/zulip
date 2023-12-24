@@ -16,14 +16,8 @@ from typing_extensions import override
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
-from zerver.models import (
-    Attachment,
-    Message,
-    Recipient,
-    Stream,
-    UserProfile,
-    get_user_by_delivery_email,
-)
+from zerver.models import Attachment, Message, Recipient, Stream, UserProfile
+from zerver.models.users import get_user_by_delivery_email
 
 
 def write_attachment(base_path: str, attachment: Attachment) -> None:

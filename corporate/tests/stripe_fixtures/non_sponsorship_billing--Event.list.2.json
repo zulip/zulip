@@ -2,15 +2,15 @@
   "data": [
     {
       "api_version": "2020-08-27",
-      "created": 1702576341,
+      "created": 1000000000,
       "data": {
         "object": {
-          "amount": 80000,
+          "amount": 176000,
           "amount_capturable": 0,
           "amount_details": {
             "tip": {}
           },
-          "amount_received": 80000,
+          "amount_received": 176000,
           "application": null,
           "application_fee_amount": null,
           "automatic_payment_methods": null,
@@ -20,13 +20,13 @@
           "charges": {
             "data": [
               {
-                "amount": 80000,
-                "amount_captured": 80000,
+                "amount": 176000,
+                "amount_captured": 176000,
                 "amount_refunded": 0,
                 "application": null,
                 "application_fee": null,
                 "application_fee_amount": null,
-                "balance_transaction": "txn_3ONJ56DEQaroqDjs0M2f9IAT",
+                "balance_transaction": "txn_NORMALIZED00000000000001",
                 "billing_details": {
                   "address": {
                     "city": null,
@@ -42,10 +42,10 @@
                 },
                 "calculated_statement_descriptor": "ZULIP BUSINESS",
                 "captured": true,
-                "created": 1702576341,
+                "created": 1000000000,
                 "currency": "usd",
-                "customer": "cus_PBgRA4C5R3pi4D",
-                "description": "Upgrade to Zulip Business, $80.0 x 10",
+                "customer": "cus_NORMALIZED0001",
+                "description": "Upgrade to Zulip Business, $80.0 x 25 - $20.0 x 12",
                 "destination": null,
                 "dispute": null,
                 "disputed": false,
@@ -53,20 +53,20 @@
                 "failure_code": null,
                 "failure_message": null,
                 "fraud_details": {},
-                "id": "ch_3ONJ56DEQaroqDjs0BpPKMXi",
+                "id": "ch_NORMALIZED00000000000001",
                 "invoice": null,
                 "livemode": false,
                 "metadata": {
                   "billing_modality": "charge_automatically",
                   "billing_schedule": "1",
                   "license_management": "automatic",
-                  "licenses": "10",
-                  "plan_tier": "103",
+                  "licenses": "25",
+                  "plan_tier": "104",
                   "price_per_license": "8000",
-                  "remote_realm_host": "zulip.testserver",
-                  "remote_realm_user_email": "hamlet@zulip.com",
-                  "remote_realm_user_id": "1",
-                  "seat_count": "10",
+                  "remote_server_host": "demo.example.com",
+                  "remote_server_user_email": "hamlet@zulip.com",
+                  "remote_server_user_id": "1",
+                  "seat_count": "25",
                   "type": "upgrade"
                 },
                 "object": "charge",
@@ -76,16 +76,16 @@
                   "network_status": "approved_by_network",
                   "reason": null,
                   "risk_level": "normal",
-                  "risk_score": 42,
+                  "risk_score": 0,
                   "seller_message": "Payment complete.",
                   "type": "authorized"
                 },
                 "paid": true,
-                "payment_intent": "pi_3ONJ56DEQaroqDjs0GqTybKR",
-                "payment_method": "pm_1ONJ51DEQaroqDjs55u0UX9G",
+                "payment_intent": "pi_NORMALIZED00000000000001",
+                "payment_method": "pm_1OPIudDEQaroqDjsC28eJ38G",
                 "payment_method_details": {
                   "card": {
-                    "amount_authorized": 80000,
+                    "amount_authorized": 176000,
                     "brand": "visa",
                     "checks": {
                       "address_line1_check": null,
@@ -98,7 +98,7 @@
                     "extended_authorization": {
                       "status": "disabled"
                     },
-                    "fingerprint": "9XKsMixKBi6kIIzd",
+                    "fingerprint": "NORMALIZED000001",
                     "funding": "credit",
                     "incremental_authorization": {
                       "status": "unavailable"
@@ -114,7 +114,7 @@
                       "used": false
                     },
                     "overcapture": {
-                      "maximum_amount_capturable": 80000,
+                      "maximum_amount_capturable": 176000,
                       "status": "unavailable"
                     },
                     "three_d_secure": null,
@@ -122,16 +122,17 @@
                   },
                   "type": "card"
                 },
+                "radar_options": {},
                 "receipt_email": "hamlet@zulip.com",
                 "receipt_number": null,
-                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNaB7asGMgb_lG0CwDA6LBZCJioPOi6vvS1_5Jah85xVXTVBIwa3Q40b6QRKTkL8y6vv7b6n9LHk73Xx",
+                "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKMCIiqwGMgYkMZ-O9146LBZnlesDtrpQEz8bsICAtIKI-9SMdQtIgYnHHJD3ppYFPTtlhfln7HJ5_IzG",
                 "refunded": false,
                 "refunds": {
                   "data": [],
                   "has_more": false,
                   "object": "list",
                   "total_count": 0,
-                  "url": "/v1/charges/ch_3ONJ56DEQaroqDjs0BpPKMXi/refunds"
+                  "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
                 },
                 "review": null,
                 "shipping": null,
@@ -147,36 +148,36 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/charges?payment_intent=pi_3ONJ56DEQaroqDjs0GqTybKR"
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
           },
-          "client_secret": "pi_3ONJ56DEQaroqDjs0GqTybKR_secret_fPt0ZuASHDpKHmov3pUovneYg",
+          "client_secret": "pi_NORMALIZED00000000000001_secret_qlDeEAQkvumd5xvwrwoW24sN8",
           "confirmation_method": "automatic",
-          "created": 1702576340,
+          "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_PBgRA4C5R3pi4D",
-          "description": "Upgrade to Zulip Business, $80.0 x 10",
-          "id": "pi_3ONJ56DEQaroqDjs0GqTybKR",
+          "customer": "cus_NORMALIZED0001",
+          "description": "Upgrade to Zulip Business, $80.0 x 25 - $20.0 x 12",
+          "id": "pi_NORMALIZED00000000000001",
           "invoice": null,
           "last_payment_error": null,
-          "latest_charge": "ch_3ONJ56DEQaroqDjs0BpPKMXi",
+          "latest_charge": "ch_NORMALIZED00000000000001",
           "livemode": false,
           "metadata": {
             "billing_modality": "charge_automatically",
             "billing_schedule": "1",
             "license_management": "automatic",
-            "licenses": "10",
-            "plan_tier": "103",
+            "licenses": "25",
+            "plan_tier": "104",
             "price_per_license": "8000",
-            "remote_realm_host": "zulip.testserver",
-            "remote_realm_user_email": "hamlet@zulip.com",
-            "remote_realm_user_id": "1",
-            "seat_count": "10",
+            "remote_server_host": "demo.example.com",
+            "remote_server_user_email": "hamlet@zulip.com",
+            "remote_server_user_id": "1",
+            "seat_count": "25",
             "type": "upgrade"
           },
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1ONJ51DEQaroqDjs55u0UX9G",
+          "payment_method": "pm_1OPIudDEQaroqDjsC28eJ38G",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -202,28 +203,28 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3ONJ56DEQaroqDjs0F79v5g4",
+      "id": "evt_3OPIuhDEQaroqDjs133IuPti",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
-        "id": "req_8V6izeXwNoDWNV",
-        "idempotency_key": "1cdc58e7-dec7-4356-9b72-61b61a9ed3ed"
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "d7eb5d8a-4f28-40c7-8bf4-497b73cdaba9"
       },
       "type": "payment_intent.succeeded"
     },
     {
       "api_version": "2020-08-27",
-      "created": 1702576341,
+      "created": 1000000000,
       "data": {
         "object": {
-          "amount": 80000,
-          "amount_captured": 80000,
+          "amount": 176000,
+          "amount_captured": 176000,
           "amount_refunded": 0,
           "application": null,
           "application_fee": null,
           "application_fee_amount": null,
-          "balance_transaction": "txn_3ONJ56DEQaroqDjs0M2f9IAT",
+          "balance_transaction": "txn_NORMALIZED00000000000001",
           "billing_details": {
             "address": {
               "city": null,
@@ -239,10 +240,10 @@
           },
           "calculated_statement_descriptor": "ZULIP BUSINESS",
           "captured": true,
-          "created": 1702576341,
+          "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_PBgRA4C5R3pi4D",
-          "description": "Upgrade to Zulip Business, $80.0 x 10",
+          "customer": "cus_NORMALIZED0001",
+          "description": "Upgrade to Zulip Business, $80.0 x 25 - $20.0 x 12",
           "destination": null,
           "dispute": null,
           "disputed": false,
@@ -250,20 +251,20 @@
           "failure_code": null,
           "failure_message": null,
           "fraud_details": {},
-          "id": "ch_3ONJ56DEQaroqDjs0BpPKMXi",
+          "id": "ch_NORMALIZED00000000000001",
           "invoice": null,
           "livemode": false,
           "metadata": {
             "billing_modality": "charge_automatically",
             "billing_schedule": "1",
             "license_management": "automatic",
-            "licenses": "10",
-            "plan_tier": "103",
+            "licenses": "25",
+            "plan_tier": "104",
             "price_per_license": "8000",
-            "remote_realm_host": "zulip.testserver",
-            "remote_realm_user_email": "hamlet@zulip.com",
-            "remote_realm_user_id": "1",
-            "seat_count": "10",
+            "remote_server_host": "demo.example.com",
+            "remote_server_user_email": "hamlet@zulip.com",
+            "remote_server_user_id": "1",
+            "seat_count": "25",
             "type": "upgrade"
           },
           "object": "charge",
@@ -273,16 +274,16 @@
             "network_status": "approved_by_network",
             "reason": null,
             "risk_level": "normal",
-            "risk_score": 42,
+            "risk_score": 0,
             "seller_message": "Payment complete.",
             "type": "authorized"
           },
           "paid": true,
-          "payment_intent": "pi_3ONJ56DEQaroqDjs0GqTybKR",
-          "payment_method": "pm_1ONJ51DEQaroqDjs55u0UX9G",
+          "payment_intent": "pi_NORMALIZED00000000000001",
+          "payment_method": "pm_1OPIudDEQaroqDjsC28eJ38G",
           "payment_method_details": {
             "card": {
-              "amount_authorized": 80000,
+              "amount_authorized": 176000,
               "brand": "visa",
               "checks": {
                 "address_line1_check": null,
@@ -295,7 +296,7 @@
               "extended_authorization": {
                 "status": "disabled"
               },
-              "fingerprint": "9XKsMixKBi6kIIzd",
+              "fingerprint": "NORMALIZED000001",
               "funding": "credit",
               "incremental_authorization": {
                 "status": "unavailable"
@@ -311,7 +312,7 @@
                 "used": false
               },
               "overcapture": {
-                "maximum_amount_capturable": 80000,
+                "maximum_amount_capturable": 176000,
                 "status": "unavailable"
               },
               "three_d_secure": null,
@@ -319,16 +320,17 @@
             },
             "type": "card"
           },
+          "radar_options": {},
           "receipt_email": "hamlet@zulip.com",
           "receipt_number": null,
-          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNWB7asGMgZoVpKVI9Y6LBYFiEbfwSeeDRJVYhm1dXIiKeS-mvibLUviHCmDavwS0pBbUflfN5Ei_gW4",
+          "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKMCIiqwGMgZwKg6dkhg6LBa2x5jF_ok1ahX2URDLlp4l1sCYbItcsHkhoY3Pl1RbG59rX8rCszZuncby",
           "refunded": false,
           "refunds": {
             "data": [],
             "has_more": false,
             "object": "list",
             "total_count": 0,
-            "url": "/v1/charges/ch_3ONJ56DEQaroqDjs0BpPKMXi/refunds"
+            "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
           },
           "review": null,
           "shipping": null,
@@ -341,102 +343,15 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3ONJ56DEQaroqDjs0h4RMitN",
+      "id": "evt_3OPIuhDEQaroqDjs1caGbymn",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_8V6izeXwNoDWNV",
-        "idempotency_key": "1cdc58e7-dec7-4356-9b72-61b61a9ed3ed"
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "d7eb5d8a-4f28-40c7-8bf4-497b73cdaba9"
       },
       "type": "charge.succeeded"
-    },
-    {
-      "api_version": "2020-08-27",
-      "created": 1702576340,
-      "data": {
-        "object": {
-          "amount": 80000,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
-          },
-          "amount_received": 0,
-          "application": null,
-          "application_fee_amount": null,
-          "automatic_payment_methods": null,
-          "canceled_at": null,
-          "cancellation_reason": null,
-          "capture_method": "automatic",
-          "charges": {
-            "data": [],
-            "has_more": false,
-            "object": "list",
-            "total_count": 0,
-            "url": "/v1/charges?payment_intent=pi_3ONJ56DEQaroqDjs0GqTybKR"
-          },
-          "client_secret": "pi_3ONJ56DEQaroqDjs0GqTybKR_secret_fPt0ZuASHDpKHmov3pUovneYg",
-          "confirmation_method": "automatic",
-          "created": 1702576340,
-          "currency": "usd",
-          "customer": "cus_PBgRA4C5R3pi4D",
-          "description": "Upgrade to Zulip Business, $80.0 x 10",
-          "id": "pi_3ONJ56DEQaroqDjs0GqTybKR",
-          "invoice": null,
-          "last_payment_error": null,
-          "latest_charge": null,
-          "livemode": false,
-          "metadata": {
-            "billing_modality": "charge_automatically",
-            "billing_schedule": "1",
-            "license_management": "automatic",
-            "licenses": "10",
-            "plan_tier": "103",
-            "price_per_license": "8000",
-            "remote_realm_host": "zulip.testserver",
-            "remote_realm_user_email": "hamlet@zulip.com",
-            "remote_realm_user_id": "1",
-            "seat_count": "10",
-            "type": "upgrade"
-          },
-          "next_action": null,
-          "object": "payment_intent",
-          "on_behalf_of": null,
-          "payment_method": null,
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "installments": null,
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
-          },
-          "payment_method_types": [
-            "card"
-          ],
-          "processing": null,
-          "receipt_email": "hamlet@zulip.com",
-          "review": null,
-          "setup_future_usage": null,
-          "shipping": null,
-          "source": null,
-          "statement_descriptor": "Zulip Business",
-          "statement_descriptor_suffix": null,
-          "status": "requires_payment_method",
-          "transfer_data": null,
-          "transfer_group": null
-        }
-      },
-      "id": "evt_3ONJ56DEQaroqDjs07vmQzRX",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 2,
-      "request": {
-        "id": "req_8V6izeXwNoDWNV",
-        "idempotency_key": "1cdc58e7-dec7-4356-9b72-61b61a9ed3ed"
-      },
-      "type": "payment_intent.created"
     }
   ],
   "has_more": false,

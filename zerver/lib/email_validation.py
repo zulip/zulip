@@ -8,15 +8,13 @@ from django.utils.translation import gettext as _
 from zerver.lib.name_restrictions import is_disposable_domain
 
 # TODO: Move DisposableEmailError, etc. into here.
-from zerver.models import (
+from zerver.models import Realm, RealmDomain
+from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    Realm,
-    RealmDomain,
-    get_users_by_delivery_email,
-    is_cross_realm_bot_email,
 )
+from zerver.models.users import get_users_by_delivery_email, is_cross_realm_bot_email
 
 
 def validate_disposable(email: str) -> None:

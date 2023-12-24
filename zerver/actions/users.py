@@ -41,12 +41,14 @@ from zerver.models import (
     Subscription,
     UserGroupMembership,
     UserProfile,
+)
+from zerver.models.bots import get_bot_services
+from zerver.models.realms import get_fake_email_domain
+from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
     bot_owner_user_ids,
     get_bot_dicts_in_realm,
-    get_bot_services,
-    get_fake_email_domain,
     get_user_profile_by_id,
 )
 from zerver.tornado.django_api import send_event, send_event_on_commit

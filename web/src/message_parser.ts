@@ -1,11 +1,7 @@
 // We only use jquery for parsing.
 import $ from "jquery";
 
-// TODO: Move this to message_store when it is
-// converted to TypeScript.
-type Message = {
-    content: string;
-};
+import type {Message} from "./message_store";
 
 // We need to check if the message content contains the specified HTML
 // elements.  We wrap the message.content in a <div>; this is

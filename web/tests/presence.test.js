@@ -206,46 +206,36 @@ test("set_presence_info", () => {
     assert.equal(presence.get_status(jane.user_id), "idle");
 });
 
-test("falsy values", () => {
+test("missing values", () => {
     /*
         When a user does not have a relevant active timestamp,
         the server just leaves off the `active_timestamp` field
         to save bandwidth, which looks like `undefined` to us
         if we try to dereference it.
-
-        Our code should just treat all falsy values the same way,
-        though, to defend against bugs where we say the person
-        was last online in 1970 or silly things like that.
     */
     const now = 2000000;
     const a_bit_ago = now - 5;
     const presences = {};
 
-    for (const falsy_value of [undefined, 0, null]) {
-        presences[zoe.user_id.toString()] = {
-            active_timestamp: falsy_value,
-            idle_timestamp: a_bit_ago,
-        };
+    presences[zoe.user_id.toString()] = {
+        idle_timestamp: a_bit_ago,
+    };
 
-        presence.set_info(presences, now);
+    presence.set_info(presences, now);
 
-        assert.deepEqual(presence.presence_info.get(zoe.user_id), {
-            status: "idle",
-            last_active: a_bit_ago,
-        });
+    assert.deepEqual(presence.presence_info.get(zoe.user_id), {
+        status: "idle",
+        last_active: a_bit_ago,
+    });
 
-        presences[zoe.user_id.toString()] = {
-            active_timestamp: falsy_value,
-            idle_timestamp: falsy_value,
-        };
+    presences[zoe.user_id.toString()] = {};
 
-        presence.set_info(presences, now);
+    presence.set_info(presences, now);
 
-        assert.deepEqual(presence.presence_info.get(zoe.user_id), {
-            status: "offline",
-            last_active: undefined,
-        });
-    }
+    assert.deepEqual(presence.presence_info.get(zoe.user_id), {
+        status: "offline",
+        last_active: undefined,
+    });
 });
 
 test("big realms", ({override_rewire}) => {

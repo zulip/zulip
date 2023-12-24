@@ -64,13 +64,11 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserProfile,
-    active_non_guest_user_ids,
-    active_user_ids,
-    get_system_bot,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 

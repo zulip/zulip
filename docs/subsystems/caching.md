@@ -131,7 +131,7 @@ you configure some code to run every time Django does something (for
 `post_save`, right after any write to the database using Django's
 `.save()`).
 
-There's a handful of lines in `zerver/models.py` like these that
+There's a handful of lines in `zerver/models/*.py` like these that
 configure this:
 
 ```python

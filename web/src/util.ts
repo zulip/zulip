@@ -2,7 +2,8 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
-import type {MatchedMessage, Message, RawMessage, UpdateMessageEvent} from "./types";
+import type {MatchedMessage, Message, RawMessage} from "./message_store";
+import type {UpdateMessageEvent} from "./types";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
@@ -471,7 +472,7 @@ export function try_parse_as_truthy<T>(val: (T | undefined)[]): T[] | undefined 
     return result;
 }
 
-export function is_valid_url(url: string, require_absolute: boolean = false): boolean {
+export function is_valid_url(url: string, require_absolute = false): boolean {
     try {
         let base_url;
         if (!require_absolute) {

@@ -68,7 +68,6 @@ from zerver.lib.users import (
     max_message_id_for_user,
 )
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Draft,
@@ -80,13 +79,14 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    custom_profile_fields_for_realm,
-    get_all_custom_emoji_for_realm,
-    get_default_stream_groups,
-    get_realm_domains,
-    get_realm_playgrounds,
-    linkifiers_for_realm,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.linkifiers import linkifiers_for_realm
+from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
+from zerver.models.realm_playgrounds import get_realm_playgrounds
+from zerver.models.realms import get_realm_domains
+from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
@@ -453,7 +453,7 @@ def fetch_initial_state_data(
         assert spectator_requested_language is not None
         # When UserProfile=None, we want to serve the values for various
         # settings as the defaults.  Instead of copying the default values
-        # from models.py here, we access these default values from a
+        # from models/users.py here, we access these default values from a
         # temporary UserProfile object that will not be saved to the database.
         #
         # We also can set various fields to avoid duplicating code

@@ -28,7 +28,9 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Reaction, Recipient, UserProfile, get_realm, get_user
+from zerver.models import Message, Reaction, Recipient, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_user
 
 
 class MatterMostImporter(ZulipTestCase):

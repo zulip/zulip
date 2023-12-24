@@ -11,7 +11,7 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
     };
 
     if (!page_params.is_admin) {
-        return undefined;
+        return;
     }
     if (page_params.realm_icon_source === "G") {
         $("#realm-icon-upload-widget .image-delete-button").hide();
@@ -26,7 +26,7 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         });
     });
 
-    return upload_widget.build_direct_upload_widget(
+    upload_widget.build_direct_upload_widget(
         get_file_input,
         $("#realm-icon-upload-widget .image_file_input_error").expectOne(),
         $("#realm-icon-upload-widget .image_upload_button").expectOne(),

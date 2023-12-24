@@ -453,7 +453,7 @@ function reset_data() {
     let has_topics_post_filter = false;
     if (unread_stream_msg_count) {
         for (const [stream_id, topic_dict] of unread_streams_dict) {
-            const stream_unread = unread.num_unread_for_stream(stream_id);
+            const stream_unread = unread.unread_count_info_for_stream(stream_id);
             const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
             const stream_key = get_stream_key(stream_id);
             if (stream_unread_count > 0) {
@@ -1019,7 +1019,7 @@ export function update() {
 
     let has_topics_post_filter = false;
     for (const [stream_id, topic_dict] of unread_streams_dict) {
-        const stream_unread = unread.num_unread_for_stream(stream_id);
+        const stream_unread = unread.unread_count_info_for_stream(stream_id);
         const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
         const stream_key = get_stream_key(stream_id);
         let stream_post_filter_unread_count = 0;

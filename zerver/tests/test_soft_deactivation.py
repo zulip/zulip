@@ -27,9 +27,9 @@ from zerver.models import (
     UserActivity,
     UserMessage,
     UserProfile,
-    get_realm,
-    get_stream,
 )
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 logger_string = "zulip.soft_deactivation"
 

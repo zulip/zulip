@@ -26,15 +26,15 @@ from zerver.lib.send_email import EmailNotDeliveredError, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import (
-    NotificationTriggers,
     PreregistrationUser,
     ScheduledMessageNotificationEmail,
     UserActivity,
     UserProfile,
-    get_client,
-    get_realm,
-    get_stream,
 )
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (

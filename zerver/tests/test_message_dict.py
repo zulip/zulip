@@ -4,6 +4,7 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
 from zerver.lib.per_request_cache import flush_per_request_caches
@@ -11,18 +12,9 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
-from zerver.models import (
-    Message,
-    Reaction,
-    Realm,
-    RealmFilter,
-    Recipient,
-    Stream,
-    UserProfile,
-    get_display_recipient,
-    get_realm,
-    get_stream,
-)
+from zerver.models import Message, Reaction, Realm, RealmFilter, Recipient, Stream, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class MessageDictTest(ZulipTestCase):
