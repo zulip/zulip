@@ -24,6 +24,7 @@ export const page_params: {
     }[];
     delivery_email: string;
     development_environment: boolean;
+    furthest_read_time: number | null;
     is_admin: boolean;
     is_billing_admin: boolean;
     is_bot: boolean;
