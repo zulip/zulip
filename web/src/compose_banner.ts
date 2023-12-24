@@ -66,14 +66,14 @@ export function get_compose_banner_container($textarea: JQuery): JQuery {
 // to a banner container. The function accepts a container element
 // as a parameter, to which a banner should be appended.
 export function append_compose_banner_to_banner_list(
-    banner: HTMLElement | JQuery.htmlString,
+    banner: JQuery | JQuery.htmlString,
     $list_container: JQuery,
 ): void {
     scroll_util.get_content_element($list_container).append(banner);
 }
 
 export function update_or_append_banner(
-    banner: HTMLElement | JQuery.htmlString,
+    banner: JQuery | JQuery.htmlString,
     banner_classname: string,
     $list_container: JQuery,
 ): void {
