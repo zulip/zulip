@@ -66,12 +66,12 @@ export function initialize() {
 
     $("#main_div").on("mouseover", ".sender_info_hover", function () {
         const $row = $(this).closest(".message_row");
-        $row.addClass("sender_name_hovered");
+        $row.addClass("sender_info_hovered");
     });
 
     $("#main_div").on("mouseout", ".sender_info_hover", function () {
         const $row = $(this).closest(".message_row");
-        $row.removeClass("sender_name_hovered");
+        $row.removeClass("sender_info_hovered");
     });
 
     function handle_video_preview_mouseenter($elem) {

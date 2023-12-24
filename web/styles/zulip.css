@@ -2102,9 +2102,14 @@ td.pointer {
     }
 }
 
-.sender_name_hovered {
+.sender_info_hovered {
     .sender_name {
+        cursor: pointer;
         color: hsl(200deg 100% 40%);
+    }
+
+    .message-avatar {
+        cursor: pointer;
     }
 }
 
