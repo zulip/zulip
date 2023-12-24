@@ -52,10 +52,7 @@ def billing_page(
     user = request.user
     assert user.is_authenticated
 
-    # BUG: This should pass the acting_user; this is just working
-    # around that make_end_of_cycle_updates_if_needed doesn't do audit
-    # logging not using the session user properly.
-    billing_session = RealmBillingSession(user=None, realm=user.realm)
+    billing_session = RealmBillingSession(user=user, realm=user.realm)
 
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
