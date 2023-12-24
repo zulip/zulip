@@ -259,7 +259,7 @@ class UserBaseSettings(models.Model):
 
     EMAIL_ADDRESS_VISIBILITY_TYPES = list(EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.keys())
 
-    display_settings_legacy = dict(
+    preferences_legacy = dict(
         # Don't add anything new to this legacy dict.
         # Instead, see `modern_settings` below.
         color_scheme=int,
@@ -335,7 +335,7 @@ class UserBaseSettings(models.Model):
 
     # Define the types of the various automatically managed properties
     property_types = {
-        **display_settings_legacy,
+        **preferences_legacy,
         **notification_setting_types,
         **modern_settings,
     }

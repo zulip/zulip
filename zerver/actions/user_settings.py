@@ -480,7 +480,7 @@ def do_change_user_setting(
         }
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
-    if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
+    if setting_name in UserProfile.preferences_legacy or setting_name == "timezone":
         # This legacy event format is for backwards-compatibility with
         # clients that don't support the new user_settings event type.
         # We only send this for settings added before Feature level 89.
