@@ -7,8 +7,8 @@ import * as narrow_state from "./narrow_state";
 // Saves the selected message of the narrow in the browser
 // history, so that we are able to restore it if the user
 // navigates back to this page.
-function _save_narrow_state() {
-    if (!narrow_state.active()) {
+function _save_narrow_state(): void {
+    if (!narrow_state.active() || message_lists.current === undefined) {
         return;
     }
 
@@ -19,17 +19,19 @@ function _save_narrow_state() {
         return;
     }
 
-    const narrow_data = {};
     const narrow_pointer = message_lists.current.selected_id();
     if (narrow_pointer === -1) {
         return;
     }
-    narrow_data.narrow_pointer = narrow_pointer;
     const $narrow_row = message_lists.current.selected_row();
     if ($narrow_row.length === 0) {
         return;
     }
-    narrow_data.narrow_offset = $narrow_row.get_offset_to_window().top;
+    const narrow_offset = $narrow_row.get_offset_to_window().top;
+    const narrow_data = {
+        narrow_pointer,
+        narrow_offset,
+    };
     history.replaceState(narrow_data, "", window.location.href);
 }
 
@@ -37,7 +39,7 @@ function _save_narrow_state() {
 export const save_narrow_state = _.throttle(_save_narrow_state, 500);
 
 // This causes the save to happen right away.
-export function save_narrow_state_and_flush() {
+export function save_narrow_state_and_flush(): void {
     save_narrow_state();
     save_narrow_state.flush();
 }
