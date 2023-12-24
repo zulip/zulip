@@ -692,6 +692,7 @@ class BillingSession(ABC):
         event_type: AuditLogEventType,
         event_time: datetime,
         *,
+        background_update: bool = False,
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
@@ -745,11 +746,13 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+    def do_change_plan_type(
+        self, *, tier: Optional[int], is_sponsored: bool = False, background_update: bool = False
+    ) -> None:
         pass
 
     @abstractmethod
-    def process_downgrade(self, plan: CustomerPlan) -> None:
+    def process_downgrade(self, plan: CustomerPlan, background_update: bool = False) -> None:
         pass
 
     @abstractmethod
@@ -1576,7 +1579,7 @@ class BillingSession(ABC):
                 )
                 new_plan.status = CustomerPlan.ACTIVE
                 new_plan.save(update_fields=["status"])
-                self.do_change_plan_type(tier=new_plan.tier)
+                self.do_change_plan_type(tier=new_plan.tier, background_update=True)
                 return None, LicenseLedger.objects.create(
                     plan=new_plan,
                     is_renewal=True,
@@ -1630,6 +1633,7 @@ class BillingSession(ABC):
                         "monthly_plan_id": plan.id,
                         "annual_plan_id": new_plan.id,
                     },
+                    background_update=True,
                 )
                 return new_plan, new_plan_ledger_entry
 
@@ -1678,14 +1682,17 @@ class BillingSession(ABC):
                         "annual_plan_id": plan.id,
                         "monthly_plan_id": new_plan.id,
                     },
+                    background_update=True,
                 )
                 return new_plan, new_plan_ledger_entry
 
             if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL:
-                self.downgrade_now_without_creating_additional_invoices(plan)
+                self.downgrade_now_without_creating_additional_invoices(
+                    plan, background_update=True
+                )
 
             if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
-                self.process_downgrade(plan)
+                self.process_downgrade(plan, background_update=True)
 
             return None, None
         return None, last_ledger_entry
@@ -2047,6 +2054,7 @@ class BillingSession(ABC):
     def downgrade_now_without_creating_additional_invoices(
         self,
         plan: Optional[CustomerPlan] = None,
+        background_update: bool = False,
     ) -> None:
         if plan is None:
             customer = self.get_customer()
@@ -2056,7 +2064,7 @@ class BillingSession(ABC):
             if plan is None:
                 return  # nocoverage
 
-        self.process_downgrade(plan)
+        self.process_downgrade(plan, background_update=background_update)
         plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by("id").last()
         plan.next_invoice_date = next_invoice_date(plan)
         plan.save(update_fields=["invoiced_through", "next_invoice_date"])
@@ -2912,6 +2920,7 @@ class RealmBillingSession(BillingSession):
         event_type: AuditLogEventType,
         event_time: datetime,
         *,
+        background_update: bool = False,
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
@@ -2924,7 +2933,7 @@ class RealmBillingSession(BillingSession):
         if extra_data:
             audit_log_data["extra_data"] = extra_data
 
-        if self.user is not None:
+        if self.user is not None and not background_update:
             audit_log_data["acting_user"] = self.user
 
         RealmAuditLog.objects.create(**audit_log_data)
@@ -2980,7 +2989,9 @@ class RealmBillingSession(BillingSession):
             return customer
 
     @override
-    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+    def do_change_plan_type(
+        self, *, tier: Optional[int], is_sponsored: bool = False, background_update: bool = False
+    ) -> None:
         from zerver.actions.realm_settings import do_change_realm_plan_type
 
         # This function needs to translate between the different
@@ -2996,14 +3007,25 @@ class RealmBillingSession(BillingSession):
             plan_type = Realm.PLAN_TYPE_PLUS
         else:
             raise AssertionError("Unexpected tier")
-        do_change_realm_plan_type(self.realm, plan_type, acting_user=self.user)
+
+        acting_user = None
+        if not background_update:
+            acting_user = self.user
+
+        do_change_realm_plan_type(self.realm, plan_type, acting_user=acting_user)
 
     @override
-    def process_downgrade(self, plan: CustomerPlan) -> None:
+    def process_downgrade(self, plan: CustomerPlan, background_update: bool = False) -> None:
         from zerver.actions.realm_settings import do_change_realm_plan_type
 
+        acting_user = None
+        if not background_update:
+            acting_user = self.user
+
         assert plan.customer.realm is not None
-        do_change_realm_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(
+            plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=acting_user
+        )
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
 
@@ -3260,6 +3282,7 @@ class RemoteRealmBillingSession(BillingSession):
         event_type: AuditLogEventType,
         event_time: datetime,
         *,
+        background_update: bool = False,
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         # These audit logs don't use all the fields of `RemoteRealmAuditLog`:
@@ -3273,11 +3296,17 @@ class RemoteRealmBillingSession(BillingSession):
             "remote_realm": self.remote_realm,
             "event_type": audit_log_event,
             "event_time": event_time,
-            # At most one of these should be set, but we may
-            # not want an assert for that yet:
-            "acting_support_user": self.support_staff,
-            "acting_remote_user": self.remote_billing_user,
         }
+
+        if not background_update:
+            log_data.update(
+                {
+                    # At most one of these should be set, but we may
+                    # not want an assert for that yet:
+                    "acting_support_user": self.support_staff,
+                    "acting_remote_user": self.remote_billing_user,
+                }
+            )
 
         if extra_data:
             log_data["extra_data"] = extra_data
@@ -3336,7 +3365,7 @@ class RemoteRealmBillingSession(BillingSession):
     @override
     @transaction.atomic
     def do_change_plan_type(
-        self, *, tier: Optional[int], is_sponsored: bool = False
+        self, *, tier: Optional[int], is_sponsored: bool = False, background_update: bool = False
     ) -> None:  # nocoverage
         if is_sponsored:
             plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
@@ -3357,6 +3386,7 @@ class RemoteRealmBillingSession(BillingSession):
             event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
             event_time=timezone_now(),
             extra_data={"old_value": old_plan_type, "new_value": plan_type},
+            background_update=background_update,
         )
 
     @override
@@ -3431,7 +3461,9 @@ class RemoteRealmBillingSession(BillingSession):
         )
 
     @override
-    def process_downgrade(self, plan: CustomerPlan) -> None:  # nocoverage
+    def process_downgrade(
+        self, plan: CustomerPlan, background_update: bool = False
+    ) -> None:  # nocoverage
         with transaction.atomic():
             old_plan_type = self.remote_realm.plan_type
             new_plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED
@@ -3441,6 +3473,7 @@ class RemoteRealmBillingSession(BillingSession):
                 event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
                 event_time=timezone_now(),
                 extra_data={"old_value": old_plan_type, "new_value": new_plan_type},
+                background_update=background_update,
             )
 
         plan.status = CustomerPlan.ENDED
@@ -3659,6 +3692,7 @@ class RemoteServerBillingSession(BillingSession):
         event_type: AuditLogEventType,
         event_time: datetime,
         *,
+        background_update: bool = False,
         extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         audit_log_event = self.get_audit_log_event(event_type)
@@ -3666,11 +3700,17 @@ class RemoteServerBillingSession(BillingSession):
             "server": self.remote_server,
             "event_type": audit_log_event,
             "event_time": event_time,
-            # At most one of these should be set, but we may
-            # not want an assert for that yet:
-            "acting_support_user": self.support_staff,
-            "acting_remote_user": self.remote_billing_user,
         }
+
+        if not background_update:
+            log_data.update(
+                {
+                    # At most one of these should be set, but we may
+                    # not want an assert for that yet:
+                    "acting_support_user": self.support_staff,
+                    "acting_remote_user": self.remote_billing_user,
+                }
+            )
 
         if extra_data:
             log_data["extra_data"] = extra_data
@@ -3728,7 +3768,9 @@ class RemoteServerBillingSession(BillingSession):
 
     @override
     @transaction.atomic
-    def do_change_plan_type(self, *, tier: Optional[int], is_sponsored: bool = False) -> None:
+    def do_change_plan_type(
+        self, *, tier: Optional[int], is_sponsored: bool = False, background_update: bool = False
+    ) -> None:
         # This function needs to translate between the different
         # formats of CustomerPlan.tier and RealmZulipServer.plan_type.
         if is_sponsored:
@@ -3750,6 +3792,7 @@ class RemoteServerBillingSession(BillingSession):
             event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
             event_time=timezone_now(),
             extra_data={"old_value": old_plan_type, "new_value": plan_type},
+            background_update=background_update,
         )
 
     @override
@@ -3797,7 +3840,9 @@ class RemoteServerBillingSession(BillingSession):
         return f"Sponsorship approved for {self.billing_entity_display_name}"
 
     @override
-    def process_downgrade(self, plan: CustomerPlan) -> None:  # nocoverage
+    def process_downgrade(
+        self, plan: CustomerPlan, background_update: bool = False
+    ) -> None:  # nocoverage
         with transaction.atomic():
             old_plan_type = self.remote_server.plan_type
             new_plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
@@ -3807,6 +3852,7 @@ class RemoteServerBillingSession(BillingSession):
                 event_type=AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED,
                 event_time=timezone_now(),
                 extra_data={"old_value": old_plan_type, "new_value": new_plan_type},
+                background_update=background_update,
             )
 
         plan.status = CustomerPlan.ENDED
