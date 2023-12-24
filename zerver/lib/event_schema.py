@@ -1534,7 +1534,7 @@ user_settings_update_event = event_dict_type(
 _check_user_settings_update = make_checker(user_settings_update_event)
 
 
-def check_update_display_settings(
+def check_update_preferences(
     var_name: str,
     event: Dict[str, object],
 ) -> None:
