@@ -28,6 +28,8 @@ type MessageList = {
     can_mark_messages_read_without_setting: () => boolean;
     resume_reading: () => void;
     data: MessageListData;
+    select_id: (message_id: number) => void;
+    get_row: (message_id: number) => JQuery;
 };
 
 export let home: MessageList | undefined;
