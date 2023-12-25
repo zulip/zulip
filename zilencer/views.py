@@ -238,9 +238,12 @@ def unregister_remote_push_device(
     token_kind: int = REQ(json_validator=check_int),
     user_id: Optional[int] = REQ(json_validator=check_int, default=None),
     user_uuid: Optional[str] = REQ(default=None),
+    realm_uuid: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
+
+    update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
 
     (num_deleted, ignored) = RemotePushDeviceToken.objects.filter(
         user_identity.filter_q(), token=token, kind=token_kind, server=server
@@ -257,11 +260,28 @@ def unregister_all_remote_push_devices(
     server: RemoteZulipServer,
     user_id: Optional[int] = REQ(json_validator=check_int, default=None),
     user_uuid: Optional[str] = REQ(default=None),
+    realm_uuid: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
+    update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
+
     RemotePushDeviceToken.objects.filter(user_identity.filter_q(), server=server).delete()
     return json_success(request)
+
+
+def update_remote_realm_last_request_datetime_helper(
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    realm_uuid: Optional[str],
+    user_uuid: Optional[str],
+) -> None:
+    if realm_uuid is not None:
+        assert user_uuid is not None
+        remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+        if remote_realm is not None:
+            remote_realm.last_request_datetime = timezone_now()
+            remote_realm.save(update_fields=["last_request_datetime"])
 
 
 def delete_duplicate_registrations(
@@ -327,6 +347,7 @@ class TestNotificationPayload(BaseModel):
     token_kind: int
     user_id: int
     user_uuid: str
+    realm_uuid: Optional[str] = None
     base_payload: Dict[str, Any]
 
     model_config = ConfigDict(extra="forbid")
@@ -344,6 +365,7 @@ def remote_server_send_test_notification(
 
     user_id = payload.user_id
     user_uuid = payload.user_uuid
+    realm_uuid = payload.realm_uuid
 
     # The remote server only sends the base payload with basic user and server info,
     # and the actual format of the test notification is defined on the bouncer, as that
@@ -354,6 +376,8 @@ def remote_server_send_test_notification(
     # This is a new endpoint, so it can assume it will only be used by newer
     # servers that will send user both UUID and ID.
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
+
+    update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
 
     try:
         device = RemotePushDeviceToken.objects.get(
