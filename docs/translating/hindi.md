@@ -43,11 +43,19 @@ Zulip friendly and usable.
 - Filter - **छानना**: as used with narrowing (see below).
 - Home - **मुख पृष्ठ**: we never use the term "घर" (literally home) in Hindi.
 - Emoji - **इमोजी**
+- Member - **सदस्य**
+- Settings - **समायोजन**
+- Switch - **बदलना**
+- Log in - **लॉग इन करें**
+- Log out - **लॉग आउट करें**
+- Full screen -**फुल स्क्रीन करे**
+- New - **नया**
+- New Group -**नया ग्रुप बनाये**
 
 ## Phrases (वाक्यांशों)
 
 - Subscribe/Unsubscribe to a stream - **एक धारा में सदस्यता लें/सदस्यता समाप्त करें**
-- Narrow to - **अकेले फ़िल्टर करें**: this is _filter only_, because there's no other
+- Narrow to - **सीमित करे**
   word that's common enough in Hindi for _to narrow_.
 - Mute/Unmute - **शांत/अशांत**
 - Deactivate/Reactivate - **निष्क्रिय करें / पुन: सक्रिय करें**
@@ -61,6 +69,8 @@ Zulip friendly and usable.
 - Person/People - **व्यक्ति/लोग**: "लोग" is the correct plural for
   "व्यक्ति", but when talking of _लोग_ referring to it as a crowd, we use
   "भीड़" instead.
+- Set your status - **स्टेटस लगायें**
+- Invisible mode -  **अदृष्य रूप**
 
 ## Others(अन्य)
 
