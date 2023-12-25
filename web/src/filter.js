@@ -20,7 +20,7 @@ function zephyr_stream_name_match(message, operand) {
     // TODO: hoist the regex compiling out of the closure
     const m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(operand);
     let base_stream_name = operand;
-    if (m !== null && m[1] !== undefined) {
+    if (m?.[1] !== undefined) {
         base_stream_name = m[1];
     }
     const related_regexp = new RegExp(
@@ -336,14 +336,14 @@ export class Filter {
         for (const token of matches) {
             let operator;
             const parts = token.split(":");
-            if (token[0] === '"' || parts.length === 1) {
+            if (token.startsWith('"') || parts.length === 1) {
                 // Looks like a normal search term.
                 search_term.push(token);
             } else {
                 // Looks like an operator.
                 negated = false;
                 operator = parts.shift();
-                if (operator[0] === "-") {
+                if (operator.startsWith("-")) {
                     negated = true;
                     operator = operator.slice(1);
                 }
