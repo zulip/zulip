@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.crypto import constant_time_compare
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from typing_extensions import Concatenate, ParamSpec, override
@@ -120,6 +121,10 @@ def authenticated_remote_server_view(
             raise UnauthorizedError(e.msg)
 
         rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
+
+        remote_server.last_request_datetime = timezone_now()
+        remote_server.save(update_fields=["last_request_datetime"])
+
         return view_func(request, remote_server, *args, **kwargs)
 
     return _wrapped_view_func
