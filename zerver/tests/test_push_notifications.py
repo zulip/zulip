@@ -606,6 +606,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
     def test_send_notification_endpoint(self) -> None:
         hamlet = self.example_user("hamlet")
         server = self.server
+        remote_realm = RemoteRealm.objects.get(server=server, uuid=hamlet.realm.uuid)
+
         token = "aaaa"
         android_tokens = []
         uuid_android_tokens = []
@@ -649,6 +651,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             },
             "gcm_options": {},
         }
+
+        time_sent = now()
         with mock.patch(
             "zilencer.views.send_android_push_notification", return_value=2
         ) as android_push, mock.patch(
@@ -656,6 +660,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
         ) as apple_push, mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
+        ), time_machine.travel(
+            time_sent, tick=False
         ), self.assertLogs(
             "zilencer.views", level="INFO"
         ) as logger:
@@ -710,6 +716,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             {},
             remote=server,
         )
+
+        remote_realm.refresh_from_db()
+        server.refresh_from_db()
+        self.assertEqual(remote_realm.last_request_datetime, time_sent)
+        self.assertEqual(server.last_request_datetime, time_sent)
 
     def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1221,12 +1232,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
             # normal setup.
             update_remote_realm_data_for_server(self.server, get_realms_info_for_push_bouncer())
 
-            # Test that we can push more times
-            result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
-            self.assert_json_success(result)
+            time_sent = now()
+            with time_machine.travel(time_sent, tick=False):
+                result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
+                self.assert_json_success(result)
 
-            result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
-            self.assert_json_success(result)
+                # Test that we can push more times
+                result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
+                self.assert_json_success(result)
 
             tokens = list(
                 RemotePushDeviceToken.objects.filter(
@@ -1237,8 +1250,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assertEqual(tokens[0].kind, kind)
             # These new registrations have .remote_realm set properly.
             assert tokens[0].remote_realm is not None
-            self.assertEqual(tokens[0].remote_realm.uuid, user.realm.uuid)
+            remote_realm = tokens[0].remote_realm
+            self.assertEqual(remote_realm.uuid, user.realm.uuid)
             self.assertEqual(tokens[0].ios_app_id, appid.get("appid"))
+
+            # Both RemoteRealm and RemoteZulipServer should have last_request_datetime
+            # updated.
+            self.assertEqual(remote_realm.last_request_datetime, time_sent)
+            server.refresh_from_db()
+            self.assertEqual(server.last_request_datetime, time_sent)
 
         # User should have tokens for both devices now.
         tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
@@ -4748,11 +4768,16 @@ class PushBouncerSignupTest(ZulipTestCase):
             hostname="example.com",
             contact_email="server-admin@example.com",
         )
-        result = self.client_post("/api/v1/remotes/server/register", request)
+
+        time_sent = now()
+
+        with time_machine.travel(time_sent, tick=False):
+            result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_success(result)
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         self.assertEqual(server.hostname, "example.com")
         self.assertEqual(server.contact_email, "server-admin@example.com")
+        self.assertEqual(server.last_request_datetime, time_sent)
 
         # Update our hostname
         request = dict(
@@ -4761,11 +4786,14 @@ class PushBouncerSignupTest(ZulipTestCase):
             hostname="zulip.example.com",
             contact_email="server-admin@example.com",
         )
-        result = self.client_post("/api/v1/remotes/server/register", request)
+
+        with time_machine.travel(time_sent + timedelta(minutes=1), tick=False):
+            result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_success(result)
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         self.assertEqual(server.hostname, "zulip.example.com")
         self.assertEqual(server.contact_email, "server-admin@example.com")
+        self.assertEqual(server.last_request_datetime, time_sent + timedelta(minutes=1))
 
         # Now test rotating our key
         request = dict(
@@ -4783,7 +4811,7 @@ class PushBouncerSignupTest(ZulipTestCase):
         zulip_org_key = request["new_org_key"]
         self.assertEqual(server.api_key, zulip_org_key)
 
-        # Update our hostname
+        # Update contact_email
         request = dict(
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,

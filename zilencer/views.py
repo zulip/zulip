@@ -144,6 +144,7 @@ def register_remote_server(
                 "hostname": hostname,
                 "contact_email": contact_email,
                 "api_key": zulip_org_key,
+                "last_request_datetime": timezone_now(),
             },
         )
         if created:
@@ -163,6 +164,8 @@ def register_remote_server(
             remote_server.contact_email = contact_email
             if new_org_key is not None:
                 remote_server.api_key = new_org_key
+
+            remote_server.last_request_datetime = timezone_now()
             remote_server.save()
 
     return json_success(request, data={"created": created})
@@ -206,6 +209,9 @@ def register_remote_push_device(
         if remote_realm is not None:
             # We want to associate the RemotePushDeviceToken with the RemoteRealm.
             kwargs["remote_realm_id"] = remote_realm.id
+
+            remote_realm.last_request_datetime = timezone_now()
+            remote_realm.save(update_fields=["last_request_datetime"])
 
     try:
         with transaction.atomic():
@@ -504,6 +510,9 @@ def remote_server_notify_push(
             timezone_now(),
             increment=len(android_devices) + len(apple_devices),
         )
+
+        remote_realm.last_request_datetime = timezone_now()
+        remote_realm.save(update_fields=["last_request_datetime"])
 
     # Truncate incoming pushes to 200, due to APNs maximum message
     # sizes; see handle_remove_push_notification for the version of
