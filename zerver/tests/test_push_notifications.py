@@ -125,6 +125,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
         # What response the server receives when it makes a request to the bouncer
         # to the /test_notification endpoint:
         payload = {
+            "realm_uuid": str(user.realm.uuid),
             "user_uuid": str(user.uuid),
             "user_id": user.id,
             "token": "invalid",
@@ -290,6 +291,7 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
 
         user = self.example_user("cordelia")
         server = self.server
+        remote_realm = RemoteRealm.objects.get(server=server, uuid=user.realm.uuid)
 
         token = "111222"
         token_kind = PushDeviceToken.GCM
@@ -323,6 +325,9 @@ class SendTestPushNotificationEndpointTest(BouncerTestCase):
             remote=server,
         )
         self.assert_json_success(result)
+
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.last_request_datetime, time_now)
 
 
 class PushBouncerNotificationTest(BouncerTestCase):
@@ -1265,8 +1270,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assert_length(tokens, 2)
 
         # Remove tokens
+        time_sent = time_sent + timedelta(minutes=1)
         for endpoint, token, kind, appid in endpoints:
-            result = self.client_delete(endpoint, {"token": token}, subdomain="zulip")
+            with time_machine.travel(time_sent, tick=False):
+                result = self.client_delete(endpoint, {"token": token}, subdomain="zulip")
             self.assert_json_success(result)
             tokens = list(
                 RemotePushDeviceToken.objects.filter(
@@ -1274,6 +1281,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 )
             )
             self.assert_length(tokens, 0)
+
+            remote_realm.refresh_from_db()
+            self.assertEqual(remote_realm.last_request_datetime, time_sent)
 
         # Re-add copies of those tokens
         for endpoint, token, kind, appid in endpoints:
@@ -1296,9 +1306,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_length(tokens, 2)
 
         # Now we successfully remove them:
-        do_regenerate_api_key(user, user)
+        time_sent = time_sent + timedelta(minutes=1)
+        with time_machine.travel(time_sent, tick=False):
+            do_regenerate_api_key(user, user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
         self.assert_length(tokens, 0)
+
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.last_request_datetime, time_sent)
 
 
 class AnalyticsBouncerTest(BouncerTestCase):

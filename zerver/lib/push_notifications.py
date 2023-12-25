@@ -744,6 +744,7 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
         # TODO: Make this a remove item
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
+            "realm_uuid": str(user_profile.realm.uuid),
             # We don't know here if the token was registered with uuid
             # or using the legacy id format, so we need to send both.
             "user_uuid": str(user_profile.uuid),
@@ -758,9 +759,11 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
 def clear_push_device_tokens(user_profile_id: int) -> None:
     # Deletes all of a user's PushDeviceTokens.
     if uses_notification_bouncer():
-        user_uuid = str(get_user_profile_by_id(user_profile_id).uuid)
+        user_profile = get_user_profile_by_id(user_profile_id)
+        user_uuid = str(user_profile.uuid)
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
+            "realm_uuid": str(user_profile.realm.uuid),
             # We want to clear all registered token, and they may have
             # been registered with either uuid or id.
             "user_uuid": user_uuid,
@@ -1457,6 +1460,7 @@ def send_test_push_notification(user_profile: UserProfile, devices: List[PushDev
     if uses_notification_bouncer():
         for device in devices:
             post_data = {
+                "realm_uuid": str(user_profile.realm.uuid),
                 "user_uuid": str(user_profile.uuid),
                 "user_id": user_profile.id,
                 "token": device.token,
