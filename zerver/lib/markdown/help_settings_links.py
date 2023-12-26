@@ -58,11 +58,15 @@ link_mapping = {
         "Authentication methods",
         "/#organization/auth-methods",
     ],
-    "user-list-admin": ["Organization settings", "Users", "/#organization/user-list-admin"],
+    "user-list-admin": [
+        "Organization settings",
+        "Users",
+        "/#organization/user-list-admin/active-users-admin",
+    ],
     "deactivated-users-admin": [
         "Organization settings",
         "Deactivated users",
-        "/#organization/deactivated-users-admin",
+        "/#organization/user-list-admin/deactivated-users-admin",
     ],
     "bot-list-admin": [
         "Organization settings",
@@ -92,7 +96,7 @@ link_mapping = {
     "invites-list-admin": [
         "Organization settings",
         "Invitations",
-        "/#organization/invites-list-admin",
+        "/#organization/user-list-admin/invites-list-admin",
     ],
     "data-exports-admin": [
         "Organization settings",

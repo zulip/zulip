@@ -80,11 +80,16 @@ function insert_tip_box() {
         is_admin: current_user.is_admin,
     });
     $(".organization-box")
+        .find(".user-settings-section")
+        .not("#admin-invites-list")
+        .prepend(tip_box_html);
+
+    $(".organization-box")
         .find(".settings-section")
         .not("#emoji-settings")
         .not("#organization-auth-settings")
         .not("#admin-bot-list")
-        .not("#admin-invites-list")
+        .not("#admin-user-list")
         .prepend($(tip_box_html));
 }
 

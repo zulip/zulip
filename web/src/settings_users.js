@@ -5,6 +5,7 @@ import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as components from "./components";
 import * as dialog_widget from "./dialog_widget";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -14,6 +15,8 @@ import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
+import * as setting_invites from "./settings_invites";
+import * as settings_panel_menu from "./settings_panel_menu";
 import {current_user} from "./state_data";
 import * as timerender from "./timerender";
 import * as user_deactivation_ui from "./user_deactivation_ui";
@@ -256,7 +259,7 @@ section.active.create_table = (active_users) => {
             filterer: people.filter_for_user_settings_search,
             onupdate: reset_scrollbar($users_table),
         },
-        $parent_container: $("#admin-user-list").expectOne(),
+        $parent_container: $("#admin-active-users-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
             email: user_sort.sort_email,
@@ -265,7 +268,7 @@ section.active.create_table = (active_users) => {
             id: user_sort.sort_user_id,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
-        $simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-active-users-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
@@ -465,6 +468,23 @@ export function set_up_humans() {
     start_data_load();
     section.active.handle_events();
     section.deactivated.handle_events();
+    setting_invites.set_up();
+
+    const userToggler = components.toggle({
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "Users"}), key: "active-users-admin"},
+            {label: $t({defaultMessage: "Deactivated users"}), key: "deactivated-users-admin"},
+            {label: $t({defaultMessage: "Invitations"}), key: "invites-list-admin"},
+        ],
+        callback(_name, key) {
+            browser_history.update(`#organization/user-list-admin/${key}`);
+            settings_panel_menu.org_settings.curr_right_section = key;
+            $(".user-settings-section").hide();
+            $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
+        },
+    });
+    $("#admin-user-list .tab-container").append(userToggler.get());
 }
 
 export function set_up_bots() {
