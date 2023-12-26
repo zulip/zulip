@@ -155,12 +155,12 @@
             </select>
         </div>
 
-        {{#each display_settings.settings.user_display_settings}}
+        {{#each preferences.settings.user_display_settings}}
             {{> settings_checkbox
               setting_name=this
               is_checked=(lookup ../settings_object this)
               label=(lookup ../settings_label this)
-              render_only=(lookup ../display_settings.render_only this)
+              render_only=(lookup ../preferences.render_only this)
               prefix=../prefix}}
         {{/each}}
 
