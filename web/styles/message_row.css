@@ -392,6 +392,14 @@ $time_column_min_width: 42px; /* + padding */
                   overall height of the message box. */
                 margin: $distance_of_non_text_elements_from_message_box 0;
             }
+            .message-avatar {
+                cursor: pointer;
+
+            }
+            .sender_name:hover{
+                cursor:pointer;
+
+            }
 
             .status-message {
                 font-weight: normal;
