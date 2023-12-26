@@ -1,7 +1,7 @@
 import * as message_feed_loading from "./message_feed_loading";
-import type {RawMessage} from "./message_store";
+import type {Message, RawMessage} from "./message_store";
 
-function max_id_for_messages(messages: RawMessage[]): number {
+function max_id_for_messages(messages: (Message | RawMessage)[]): number {
     let max_id = 0;
     for (const msg of messages) {
         max_id = Math.max(max_id, msg.id);
@@ -135,7 +135,7 @@ export class FetchStatus {
         return this._found_newest;
     }
 
-    update_expected_max_message_id(messages: RawMessage[]): void {
+    update_expected_max_message_id(messages: Message[]): void {
         this._expected_max_message_id = Math.max(
             this._expected_max_message_id,
             max_id_for_messages(messages),

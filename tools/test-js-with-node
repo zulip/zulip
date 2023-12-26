@@ -142,7 +142,7 @@ EXEMPT_FILES = make_set(
         "web/src/message_notifications.js",
         "web/src/message_scroll.js",
         "web/src/message_scroll_state.ts",
-        "web/src/message_util.js",
+        "web/src/message_util.ts",
         "web/src/message_view_header.js",
         "web/src/message_viewport.js",
         "web/src/messages_overlay_ui.ts",
