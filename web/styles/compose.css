@@ -1,3 +1,8 @@
+:root {
+    --compose-default-z-index: 4;
+    --compose-active-z-index: 10001;
+}
+
 #compose_buttons {
     text-align: right;
     display: flex;
@@ -323,7 +328,15 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 4;
+    transition: z-index 400ms;
+}
+
+.compose-default-state {
+    z-index: var(--compose-default-z-index);
+}
+
+.compose-active-state {
+    z-index: var(--compose-active-z-index);
 }
 
 #compose-container {
