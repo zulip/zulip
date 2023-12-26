@@ -308,6 +308,10 @@ input::placeholder {
     }
 }
 
+#admin-user-list .tab-switcher .ind-tab {
+    width: 110px;
+}
+
 /* -- unified overlay design component -- */
 div.overlay {
     position: fixed;

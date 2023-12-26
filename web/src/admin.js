@@ -77,11 +77,16 @@ function insert_tip_box() {
     }
     const tip_box = render_settings_organization_settings_tip({is_admin: current_user.is_admin});
     $(".organization-box")
+        .find(".user-settings-section")
+        .not("#admin-invites-list")
+        .prepend(tip_box);
+
+    $(".organization-box")
         .find(".settings-section")
         .not("#emoji-settings")
         .not("#organization-auth-settings")
         .not("#admin-bot-list")
-        .not("#admin-invites-list")
+        .not("#admin-user-list")
         .prepend(tip_box);
 }
 
@@ -268,10 +273,10 @@ export function build_page() {
     }
 }
 
-export function launch(section) {
+export function launch(section, right_section) {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
-    settings_panel_menu.org_settings.activate_section_or_default(section);
+    settings_panel_menu.org_settings.activate_section_or_default(section, right_section);
     settings_toggle.highlight_toggle("organization");
 }

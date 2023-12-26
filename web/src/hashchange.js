@@ -71,6 +71,20 @@ function is_somebody_else_profile_open() {
     );
 }
 
+function handle_invalid_users_section_url(right_section) {
+    const valid_right_side_tab_values = new Set([
+        "active-users-admin",
+        "deactivated-users-admin",
+        "invites-list-admin",
+    ]);
+    if (!valid_right_side_tab_values.has(right_section)) {
+        const valid_users_section_url = "#organization/user-list-admin/active-users-admin";
+        history.replaceState({}, "", valid_users_section_url);
+        return "active-users-admin";
+    }
+    return right_section;
+}
+
 export function set_hash_to_home_view() {
     let home_view_hash = `#${user_settings.web_home_view}`;
     if (home_view_hash === "#recent_topics") {
@@ -303,7 +317,12 @@ function do_hashchange_overlay(old_hash) {
                 // hand-typed a hash.
                 blueslip.warn("missing section for organization");
             }
-            settings_panel_menu.org_settings.activate_section_or_default(section);
+            let right_section;
+            if (section === "user-list-admin") {
+                const current_right_section = hash_parser.get_current_nth_hash_section(2);
+                right_section = handle_invalid_users_section_url(current_right_section);
+            }
+            settings_panel_menu.org_settings.activate_section_or_default(section, right_section);
             return;
         }
 
@@ -323,7 +342,12 @@ function do_hashchange_overlay(old_hash) {
         if (base === "settings") {
             settings_panel_menu.normal_settings.activate_section_or_default(section);
         } else {
-            settings_panel_menu.org_settings.activate_section_or_default(section);
+            let right_section;
+            if (section === "user-list-admin") {
+                const current_right_section = hash_parser.get_current_nth_hash_section(2);
+                right_section = handle_invalid_users_section_url(current_right_section);
+            }
+            settings_panel_menu.org_settings.activate_section_or_default(section, right_section);
         }
         settings_toggle.highlight_toggle(base);
         return;
@@ -391,7 +415,12 @@ function do_hashchange_overlay(old_hash) {
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section);
+        let right_section;
+        if (section === "user-list-admin") {
+            const right_side_tab = hash_parser.get_current_nth_hash_section(2);
+            right_section = handle_invalid_users_section_url(right_side_tab);
+        }
+        admin.launch(section, right_section);
         return;
     }
 
