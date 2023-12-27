@@ -1218,6 +1218,11 @@ input.new-organization-button {
     }
 }
 
+@media (width <= 270px) {
+    .top-links .find-account-link {
+        display:none;
+    }
+}
 .emoji {
     height: 25px;
     width: 25px;
