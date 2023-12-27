@@ -64,10 +64,12 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    Topic,
     UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.streams import get_stream_by_id_in_realm
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
@@ -1660,3 +1662,25 @@ def do_change_stream_group_based_setting(
         name=stream.name,
     )
     send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+
+def do_pin_realm_stream_topic(realm: Realm, stream_id: int, topic_name: str, setting: int) -> None:
+    if setting == 1:
+        stream_topic, created = Topic.objects.get_or_create(
+            realm=realm,
+            stream=get_stream_by_id_in_realm(stream_id, realm),
+            name=topic_name,
+            pinned=True,
+        )
+        stream_topic.delete()
+        event = dict(type="realm_topic_pins", value=[stream_id, topic_name], setting=setting)
+    else:
+        Topic.objects.create(
+            realm=realm,
+            stream=get_stream_by_id_in_realm(stream_id, realm),
+            name=topic_name,
+            pinned=True,
+        )
+        event = dict(type="realm_topic_pins", value=[stream_id, topic_name], setting=setting)
+
+    send_event(realm, event, active_user_ids(realm.id))

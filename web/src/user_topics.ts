@@ -9,6 +9,7 @@ import * as feedback_widget from "./feedback_widget";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as settings_ui from "./settings_ui";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
@@ -47,6 +48,11 @@ export const all_visibility_policies = {
     MUTED: 1,
     UNMUTED: 2,
     FOLLOWED: 3,
+};
+
+export const stream_topic_settings = {
+    PIN: 0,
+    UNPIN: 1,
 };
 
 export function update_user_topics(
@@ -90,6 +96,16 @@ export function is_topic_muted(stream_id: number, topic: string): boolean {
 
 export function is_topic_unmuted_or_followed(stream_id: number, topic: string): boolean {
     return is_topic_unmuted(stream_id, topic) || is_topic_followed(stream_id, topic);
+}
+
+export function is_topic_pinned(stream_id: number, topic: string): boolean {
+    const topic_pin = [stream_id, topic];
+    for (const topic_object of page_params.pin_realm_stream_topics) {
+        if (topic_object[0] === topic_pin[0] && topic_object[1] === topic_pin[1]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export function get_user_topics_for_visibility_policy(visibility_policy: number): UserTopic[] {
@@ -190,6 +206,29 @@ export function set_user_topic_visibility_policy(
             }
         },
     });
+}
+
+export function update_stream_topic_setting(
+    stream_id: number,
+    topic_name: string,
+    stream_topic_setting: number,
+): void {
+    const data = {
+        stream_id,
+        topic_name,
+        stream_topic_setting,
+    };
+    void channel.post({
+        url: "/json/stream_topics",
+        data,
+    });
+}
+
+export function toggle_stream_topic_pin_setting(stream_id: number, topic: string): number {
+    if (is_topic_pinned(stream_id, topic)) {
+        return stream_topic_settings.UNPIN;
+    }
+    return stream_topic_settings.PIN;
 }
 
 export function set_visibility_policy_for_element($elt: JQuery, visibility_policy: number): void {

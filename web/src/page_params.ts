@@ -65,6 +65,7 @@ export const page_params: {
     realm_description: string;
     realm_domains: {domain: string; allow_subdomains: boolean}[];
     realm_edit_topic_policy: number;
+    pin_realm_stream_topics: [[stream_id: number, topic_name: string]];
     realm_email_changes_disabled: boolean;
     realm_enable_guest_user_indicator: boolean;
     realm_enable_spectator_access: boolean;

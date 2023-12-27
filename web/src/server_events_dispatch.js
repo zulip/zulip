@@ -193,6 +193,21 @@ export function dispatch_normal_event(event) {
             }
             break;
 
+        case "realm_topic_pins":
+            if (event.setting === 0) {
+                page_params.pin_realm_stream_topics.push(event.value);
+            } else if (event.setting === 1) {
+                for (const item of page_params.pin_realm_stream_topics) {
+                    if (item[0] === event.value[0] && item[1] === event.value[1]) {
+                        const index = page_params.pin_realm_stream_topics.indexOf(item);
+                        page_params.pin_realm_stream_topics.splice(index, 1);
+                        break;
+                    }
+                }
+            }
+            stream_list.update_streams_sidebar();
+            break;
+
         case "realm": {
             const realm_settings = {
                 add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,

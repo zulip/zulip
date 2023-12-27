@@ -138,6 +138,15 @@ export function initialize() {
                     instance.hide();
                 });
 
+                $popper.one("click", ".sidebar-popover-pin-topic-messages", () => {
+                    const updated_setting = user_topics.toggle_stream_topic_pin_setting(
+                        stream_id,
+                        topic_name,
+                    );
+                    user_topics.update_stream_topic_setting(stream_id, topic_name, updated_setting);
+                    instance.hide();
+                });
+
                 $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
                     message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
                         message_edit.toggle_resolve_topic(message_id, topic_name, true);
