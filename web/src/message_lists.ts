@@ -14,6 +14,7 @@ type MessageListView = {
     update_recipient_bar_background_color: () => void;
     _render_win_start: number;
     _render_win_end: number;
+    sticky_recipient_message_id: number | undefined;
 };
 
 type MessageList = {
