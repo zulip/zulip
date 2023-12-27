@@ -563,7 +563,7 @@ export function get(name: string): ListWidget | false {
     return DEFAULTS.instances.get(name) ?? false;
 }
 
-export function handle_sort($th: JQuery, list: ListWidget): void {
+export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>): void {
     /*
         one would specify sort parameters like this:
             - name => sort alphabetic.
