@@ -5,6 +5,8 @@ import * as blueslip from "./blueslip";
 export type Node = {
     key: unknown;
     render: () => string;
+    // TODO: This is hiding type errors due to bivariance.
+    // eslint-disable-next-line @typescript-eslint/method-signature-style
     eq(other: Node): boolean;
 };
 

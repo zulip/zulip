@@ -56,29 +56,32 @@ type ListWidgetOpts<Key, Item = Key> = {
 };
 
 type BaseListWidget = {
-    clear_event_handlers(): void;
+    clear_event_handlers: () => void;
 };
 
 type ListWidget<Key, Item = Key> = BaseListWidget & {
-    get_current_list(): Item[];
-    filter_and_sort(): void;
-    retain_selected_items(): void;
-    all_rendered(): boolean;
-    render(how_many?: number): void;
-    render_item(item: Item): void;
-    clear(): void;
-    set_filter_value(value: string): void;
-    set_reverse_mode(reverse_mode: boolean): void;
-    set_sorting_function(sorting_function: string | SortingFunction<Item>): void;
-    set_up_event_handlers(): void;
-    increase_rendered_offset(): void;
-    reduce_rendered_offset(): void;
-    remove_rendered_row(row: JQuery): void;
-    clean_redraw(): void;
-    hard_redraw(): void;
-    insert_rendered_row(item: Item, get_insert_index: (list: Item[], item: Item) => number): void;
-    sort(sorting_function: string, prop?: string): void;
-    replace_list_data(list: Key[]): void;
+    get_current_list: () => Item[];
+    filter_and_sort: () => void;
+    retain_selected_items: () => void;
+    all_rendered: () => boolean;
+    render: (how_many?: number) => void;
+    render_item: (item: Item) => void;
+    clear: () => void;
+    set_filter_value: (value: string) => void;
+    set_reverse_mode: (reverse_mode: boolean) => void;
+    set_sorting_function: (sorting_function: string | SortingFunction<Item>) => void;
+    set_up_event_handlers: () => void;
+    increase_rendered_offset: () => void;
+    reduce_rendered_offset: () => void;
+    remove_rendered_row: (row: JQuery) => void;
+    clean_redraw: () => void;
+    hard_redraw: () => void;
+    insert_rendered_row: (
+        item: Item,
+        get_insert_index: (list: Item[], item: Item) => number,
+    ) => void;
+    sort: (sorting_function: string, prop?: string) => void;
+    replace_list_data: (list: Key[]) => void;
 };
 
 const DEFAULTS = {
