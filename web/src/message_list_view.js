@@ -989,7 +989,7 @@ export class MessageListView {
 
             const get_element = (message_group) => {
                 // We don't have a MessageGroup class, but we can at least hide the messy details
-                // of rows.js from compose_fade.  We provide a callback function to be lazy--
+                // of rows.ts from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
                 const $message_row = this.get_row(message_group.message_containers[0].msg.id);
