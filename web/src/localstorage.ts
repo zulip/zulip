@@ -15,20 +15,20 @@ const formDataSchema = z
 type FormData = z.infer<typeof formDataSchema>;
 
 export type LocalStorage = {
-    setExpiry(expires: number, isGlobal: boolean): LocalStorage;
-    get(name: string): unknown;
-    set(name: string, data: unknown): boolean;
-    remove(name: string): void;
-    removeDataRegexWithCondition(
+    setExpiry: (expires: number, isGlobal: boolean) => LocalStorage;
+    get: (name: string) => unknown;
+    set: (name: string, data: unknown) => boolean;
+    remove: (name: string) => void;
+    removeDataRegexWithCondition: (
         name: string,
         condition_checker: (value: string | null | undefined) => boolean,
-    ): void;
-    migrate<T = unknown>(
+    ) => void;
+    migrate: <T = unknown>(
         name: string,
         v1: number,
         v2: number,
         callback: (data: unknown) => T,
-    ): T | undefined;
+    ) => T | undefined;
 };
 
 const ls = {

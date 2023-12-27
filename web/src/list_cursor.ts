@@ -5,10 +5,10 @@ import * as scroll_util from "./scroll_util";
 
 type List<Key> = {
     scroll_container_selector: string;
-    find_li(opts: {key: Key; force_render: boolean}): JQuery;
-    first_key(): Key | undefined;
-    prev_key(key: Key): Key | undefined;
-    next_key(key: Key): Key | undefined;
+    find_li: (opts: {key: Key; force_render: boolean}) => JQuery;
+    first_key: () => Key | undefined;
+    prev_key: (key: Key) => Key | undefined;
+    next_key: (key: Key) => Key | undefined;
 };
 
 export class ListCursor<Key> {
@@ -36,7 +36,7 @@ export class ListCursor<Key> {
         return this.curr_key;
     }
 
-    get_row(key: Key | undefined): {highlight(): void; clear(): void} | undefined {
+    get_row(key: Key | undefined): {highlight: () => void; clear: () => void} | undefined {
         // TODO: The list class should probably do more of the work
         //       here, so we're not so coupled to jQuery, and
         //       so we instead just get back a widget we can say

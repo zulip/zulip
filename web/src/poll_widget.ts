@@ -28,7 +28,7 @@ type ExtraData =
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface JQuery {
-        handle_events(events: Event[]): void;
+        handle_events: (events: Event[]) => void;
     }
 }
 
