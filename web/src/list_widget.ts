@@ -559,10 +559,6 @@ export function create<Key = unknown, Item = Key>(
     return widget;
 }
 
-export function get(name: string): ListWidget | false {
-    return DEFAULTS.instances.get(name) ?? false;
-}
-
 export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>): void {
     /*
         one would specify sort parameters like this:

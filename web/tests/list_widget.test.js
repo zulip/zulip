@@ -506,7 +506,7 @@ run_test("custom sort", () => {
         return a.x * a.y - b.x * b.y;
     }
 
-    ListWidget.create($container, list, {
+    const widget = ListWidget.create($container, list, {
         name: "custom-sort-list",
         modifier_html: (n) => "(" + n.x + ", " + n.y + ")",
         get_item: (item) => item,
@@ -519,8 +519,6 @@ run_test("custom sort", () => {
     });
 
     assert.deepEqual($container.$appended_data.html(), "(6, 7)(1, 43)(4, 11)");
-
-    const widget = ListWidget.get("custom-sort-list");
 
     widget.sort("x_value");
     assert.deepEqual($container.$appended_data.html(), "(1, 43)(4, 11)(6, 7)");
@@ -597,7 +595,7 @@ run_test("replace_list_data w/filter update", () => {
     const list = [1, 2, 3, 4];
     let num_updates = 0;
 
-    ListWidget.create($container, list, {
+    const widget = ListWidget.create($container, list, {
         name: "replace-list",
         modifier_html: (n) => "(" + n.toString() + ")",
         get_item: (item) => item,
@@ -614,7 +612,6 @@ run_test("replace_list_data w/filter update", () => {
 
     assert.deepEqual($container.$appended_data.html(), "(2)(4)");
 
-    const widget = ListWidget.get("replace-list");
     widget.replace_list_data([5, 6, 7, 8]);
 
     assert.equal(num_updates, 1);
