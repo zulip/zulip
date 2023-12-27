@@ -9,7 +9,7 @@ import * as scroll_util from "./scroll_util";
 
 type SortingFunction<T> = (a: T, b: T) => number;
 
-type ListWidgetMeta<Key = unknown, Item = Key> = {
+type ListWidgetMeta<Key, Item = Key> = {
     sorting_function: SortingFunction<Item> | null;
     sorting_functions: Map<string, SortingFunction<Item>>;
     filter_value: string;
@@ -21,7 +21,7 @@ type ListWidgetMeta<Key = unknown, Item = Key> = {
 };
 
 // This type ensures the mutually exclusive nature of the predicate and filterer options.
-type ListWidgetFilterOpts<Item = unknown> = {
+type ListWidgetFilterOpts<Item> = {
     $element?: JQuery<HTMLInputElement>;
     onupdate?: () => void;
 } & (
@@ -35,7 +35,7 @@ type ListWidgetFilterOpts<Item = unknown> = {
       }
 );
 
-type ListWidgetOpts<Key = unknown, Item = Key> = {
+type ListWidgetOpts<Key, Item = Key> = {
     name?: string;
     get_item: (key: Key) => Item;
     modifier_html: (item: Item, filter_value: string) => string;
@@ -55,7 +55,11 @@ type ListWidgetOpts<Key = unknown, Item = Key> = {
     $parent_container?: JQuery;
 };
 
-type ListWidget<Key = unknown, Item = Key> = {
+type BaseListWidget = {
+    clear_event_handlers(): void;
+};
+
+type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list(): Item[];
     filter_and_sort(): void;
     retain_selected_items(): void;
@@ -67,7 +71,6 @@ type ListWidget<Key = unknown, Item = Key> = {
     set_reverse_mode(reverse_mode: boolean): void;
     set_sorting_function(sorting_function: string | SortingFunction<Item>): void;
     set_up_event_handlers(): void;
-    clear_event_handlers(): void;
     increase_rendered_offset(): void;
     reduce_rendered_offset(): void;
     remove_rendered_row(row: JQuery): void;
@@ -81,7 +84,7 @@ type ListWidget<Key = unknown, Item = Key> = {
 const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
-    instances: new Map<string, ListWidget>(),
+    instances: new Map<string, BaseListWidget>(),
 };
 
 // ----------------------------------------------------
@@ -244,7 +247,7 @@ export function render_empty_list_message_if_needed(
 // $container: jQuery object to append to.
 // list: The list of items to progressively append.
 // opts: An object of random preferences.
-export function create<Key = unknown, Item = Key>(
+export function create<Key, Item = Key>(
     $container: JQuery,
     list: Key[],
     opts: ListWidgetOpts<Key, Item>,
@@ -594,4 +597,4 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
     list.sort(sort_type, prop_name);
 }
 
-export const default_get_item = <T = unknown>(item: T): T => item;
+export const default_get_item = <T>(item: T): T => item;
