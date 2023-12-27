@@ -11867,6 +11867,18 @@ paths:
                           array will be empty if `enable_drafts_synchronization` is set to `false`.
                         items:
                           $ref: "#/components/schemas/Draft"
+                      pin_realm_stream_topics:
+                        type: array
+                        description: |
+                          An array of stream_id, and topic_name of various topics which are
+                          pinned by an administrator in a realm. This array is fetched
+                          initially, so that the UI of the user could be rendered accordingly.
+                        items:
+                          type: array
+                          items:
+                            oneOf:
+                              - type: integer
+                              - type: string
                       onboarding_steps:
                         type: array
                         description: |
@@ -17236,6 +17248,71 @@ paths:
                           Will be `false` if the request successfully marked
                           some, but not all, messages as read.
                     example: {"msg": "", "result": "success", "complete": true}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be an organization administrator",
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to delete topics in this organization:
+  /stream_topics:
+    post:
+      operationId: pin-topic
+      summary: Pin a topic
+      tags: ["streams"]
+      description: |
+        Used for updating global configuration of a topic.
+      x-requires-administrator: true
+      parameters:
+        - name: stream_id
+          in: query
+          description: |
+            The name of the stream containing topic to pin.
+          schema:
+            type: integer
+            example: 10
+          required: true
+        - name: topic_name
+          in: query
+          description: |
+            The name of the topic to delete.
+          schema:
+            type: string
+          example: hello world
+          required: true
+        - name: stream_topic_setting
+          in: query
+          description: |
+            Which topic setting to update
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"result": "success", "msg": ""}
         "400":
           description: Bad request.
           content:

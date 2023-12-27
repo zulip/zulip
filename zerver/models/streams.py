@@ -385,3 +385,19 @@ class DefaultStreamGroup(models.Model):
 
 def get_default_stream_groups(realm: Realm) -> QuerySet[DefaultStreamGroup]:
     return DefaultStreamGroup.objects.filter(realm=realm)
+
+
+class StreamTopic(models.Model):
+    MAX_NAME_LENGTH = 60
+
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    stream_id = models.ForeignKey(Stream, db_index=True, on_delete=CASCADE)
+    topic_name = models.CharField(max_length=MAX_NAME_LENGTH)
+    pinned = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("stream_id", "topic_name")
+
+
+def get_topic_pins(realm: Realm) -> QuerySet[StreamTopic]:
+    return StreamTopic.objects.filter(realm=realm, pinned=True)

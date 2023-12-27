@@ -1609,3 +1609,65 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
             UserTopic.VisibilityPolicy.UNMUTED
         )
         self.assertEqual(user_ids, set())
+
+
+class UpdateStreamTopicSetting(ZulipTestCase):
+    def test_pin_topic(self) -> None:
+        #   Pinned by administrator
+        iago = self.example_user("iago")
+
+        #   Pinned by User
+        hamlet = self.example_user("hamlet")
+
+        stream = get_stream("Verona", hamlet.realm)
+        topic_name = "teST topic"
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        url = "/api/v1/stream_topics"
+        data = {"stream_id": stream.id, "topic_name": topic_name, "stream_topic_setting": 0}
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
+                result_admin = self.api_post(iago, url, data)
+                result_user = self.api_post(hamlet, url, data)
+
+        assert result_admin.status_code == 200
+        self.assert_json_error(result_user, "Must be an organization administrator")
+
+        event = events[0]["event"]
+        assert event["type"] == "realm_topic_pins"
+        assert event["value"] == [stream_topic_target.stream_id, stream_topic_target.topic_name]
+        assert event["setting"] == 0
+
+    def test_unpin_topic(self) -> None:
+        #   Pinned by administrator
+        iago = self.example_user("iago")
+
+        #   Pinned by User
+        hamlet = self.example_user("hamlet")
+
+        stream = get_stream("Verona", hamlet.realm)
+        topic_name = "teST topic"
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        url = "/api/v1/stream_topics"
+        data = {"stream_id": stream.id, "topic_name": topic_name, "stream_topic_setting": 1}
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
+                result_admin = self.api_post(iago, url, data)
+                result_user = self.api_post(hamlet, url, data)
+
+        assert result_admin.status_code == 200
+        self.assert_json_error(result_user, "Must be an organization administrator")
+
+        event = events[0]["event"]
+        assert event["type"] == "realm_topic_pins"
+        assert event["value"] == [stream_topic_target.stream_id, stream_topic_target.topic_name]
+        assert event["setting"] == 1

@@ -4,6 +4,7 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from unittest import skip
 from unittest.mock import patch
 
 from django.db.migrations.state import StateApps
@@ -24,6 +25,7 @@ from zerver.lib.test_classes import MigrationsTestCase
 #   "zerver_subscription" because it has pending trigger events
 
 
+@skip("Cannot be run because there is a non-atomic migration that has been merged after it")
 class RenameUserHotspot(MigrationsTestCase):
     migrate_from = "0492_realm_push_notifications_enabled_and_more"
     migrate_to = "0493_rename_userhotspot_to_onboardingstep"

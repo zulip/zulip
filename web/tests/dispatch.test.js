@@ -330,6 +330,22 @@ run_test("muted_topics", ({override}) => {
     assert_same(args.user_topic, event);
 });
 
+run_test("pin_topics", ({override}) => {
+    page_params.pin_realm_stream_topics = [];
+    const event = event_fixtures.pin_topics;
+    override(stream_list, "update_streams_sidebar", noop);
+    dispatch(event);
+    assert.deepEqual(page_params.pin_realm_stream_topics, [[12, "demo_topic"]]);
+});
+
+run_test("unpin_topics", ({override}) => {
+    page_params.pin_realm_stream_topics = [[12, "demo_topic"]];
+    const event = event_fixtures.unpin_topics;
+    override(stream_list, "update_streams_sidebar", noop);
+    dispatch(event);
+    assert.deepEqual(page_params.pin_realm_stream_topics, []);
+});
+
 run_test("muted_users", ({override}) => {
     const event = event_fixtures.muted_users;
 

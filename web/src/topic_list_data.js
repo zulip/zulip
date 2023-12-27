@@ -12,6 +12,7 @@ const max_topics = 8;
 const max_topics_with_unread = 12;
 
 function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
+    const pinned_topics = [];
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
@@ -21,6 +22,7 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
             stream_id,
             topic_name,
         );
+        const is_topic_pinned = user_topics.is_topic_pinned(stream_id, topic_name);
         const [topic_resolved_prefix, topic_display_name] =
             resolved_topic.display_parts(topic_name);
         // Important: Topics are lower-case in this set.
@@ -49,6 +51,10 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
                 // messages.
                 if (is_topic_muted) {
                     return false;
+                }
+
+                if (is_topic_pinned) {
+                    return true;
                 }
 
                 // We include the most recent max_topics topics,
@@ -100,12 +106,18 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
             is_followed: is_topic_followed,
             is_unmuted_or_followed: is_topic_unmuted_or_followed,
             is_active_topic,
+            is_topic_pinned,
             url: hash_util.by_stream_topic_url(stream_id, topic_name),
             contains_unread_mention,
         };
 
-        topic_choice_state.items.push(topic_info);
+        if (is_topic_pinned) {
+            pinned_topics.push(topic_info);
+        } else {
+            topic_choice_state.items.push(topic_info);
+        }
     }
+    topic_choice_state.items = [...pinned_topics, ...topic_choice_state.items];
 }
 
 export function get_list_info(stream_id, zoomed, search_term) {
