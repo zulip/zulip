@@ -2,9 +2,9 @@ import * as compose_fade_helper from "./compose_fade_helper";
 import * as people from "./people";
 
 export type UserFadeConfig = {
-    get_user_id($li: JQuery): number;
-    fade($li: JQuery): void;
-    unfade($li: JQuery): void;
+    get_user_id: ($li: JQuery) => number;
+    fade: ($li: JQuery) => void;
+    unfade: ($li: JQuery) => void;
 };
 
 function update_user_row_when_fading($li: JQuery, conf: UserFadeConfig): void {
