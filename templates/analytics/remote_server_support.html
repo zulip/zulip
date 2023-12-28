@@ -49,7 +49,7 @@
                     <i class="fa fa-copy"></i>
                 </a>
                 <br />
-                <b>Last updated</b>: {{ remote_server.last_updated|timesince }} ago<br />
+                <b>Date created</b>: {{ remote_servers_support_data[remote_server.id].date_created.strftime('%d %B %Y') }}<br />
                 <b>Zulip version</b>: {{ remote_server.last_version }}<br />
                 <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
                 <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
