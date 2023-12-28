@@ -129,17 +129,17 @@ page can be easily identified in it's respective JavaScript file. -->
                             </button>
                         </form>
 
-                        {% if page_params.external_authentication_methods|length > 0 %}
+                        {% if external_authentication_methods|length > 0 %}
                         <div class="or"><span>{{ _('OR') }}</span></div>
                         {% endif %}
 
                     {% endif %} <!-- if password_auth_enabled -->
 
-                    {% for backend in page_params.external_authentication_methods %}
+                    {% for backend in external_authentication_methods %}
                     <div class="login-social">
                         <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
                             <input type="hidden" name="next" value="{{ next }}" />
-                            <button id="login_{{ backend.button_id_suffix }}" class="login-social-button"
+                            <button id="login_auth_button_{{ backend.name }}" class="login-social-button"
                               {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}> {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                             </button>
                         </form>

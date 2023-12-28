@@ -263,15 +263,6 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     context["external_authentication_methods"] = get_external_method_dicts(realm)
     context["no_auth_enabled"] = no_auth_enabled
 
-    # Include another copy of external_authentication_methods in page_params for use
-    # by the desktop client. We expand it with IDs of the <button> elements corresponding
-    # to the authentication methods.
-    context["page_params"] = dict(
-        external_authentication_methods=get_external_method_dicts(realm),
-    )
-    for auth_dict in context["page_params"]["external_authentication_methods"]:
-        auth_dict["button_id_suffix"] = "auth_button_{}".format(auth_dict["name"])
-
     return context
 
 
