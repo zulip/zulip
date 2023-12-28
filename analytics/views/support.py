@@ -384,8 +384,10 @@ def get_remote_servers_for_support(
     if not email_to_search and not hostname_to_search:
         return []
 
-    remote_servers_query = RemoteZulipServer.objects.order_by("id").prefetch_related(
-        "remoterealm_set"
+    remote_servers_query = (
+        RemoteZulipServer.objects.order_by("id")
+        .exclude(deactivated=True)
+        .prefetch_related("remoterealm_set")
     )
     if email_to_search:
         remote_servers_query = remote_servers_query.filter(contact_email__iexact=email_to_search)
