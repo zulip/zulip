@@ -168,6 +168,7 @@ h4.user_group_setting_subsection_title {
             }
 
             .subscriber_list_remove {
+                padding-right: 16px;
                 display: inline-block;
             }
 
