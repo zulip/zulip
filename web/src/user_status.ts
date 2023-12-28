@@ -46,7 +46,7 @@ const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
 export function server_update_status(opts: {
     status_text: string;
     emoji_name: string;
-    emoji_code: string | number;
+    emoji_code: string;
     reaction_type?: string;
     success?: () => void;
 }): void {
