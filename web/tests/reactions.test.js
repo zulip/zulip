@@ -1181,7 +1181,7 @@ test("remove_reaction_from_view (last person)", () => {
     assert.ok(removed);
 });
 
-test("error_handling", ({override, override_rewire}) => {
+test("error_handling", ({override}) => {
     override(message_store, "get", noop);
 
     blueslip.expect("error", "reactions: Bad message id");
@@ -1193,7 +1193,6 @@ test("error_handling", ({override, override_rewire}) => {
         emoji_code: "991",
         user_id: 99,
     };
-    override_rewire(reactions, "current_user_has_reacted_to_emoji", () => true);
     reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
 
     reactions.add_reaction(bogus_event);
