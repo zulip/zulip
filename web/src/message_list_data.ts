@@ -1,5 +1,3 @@
-import assert from "minimalistic-assert";
-
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
 import type {Filter} from "./filter";
@@ -285,7 +283,7 @@ export class MessageListData {
         this._items = this.unmuted_messages(this._all_items);
     }
 
-    first_unread_message_id(): number {
+    first_unread_message_id(): number | undefined {
         const first_unread = this._items.find((message) => unread.message_unread(message));
 
         if (first_unread) {
@@ -293,9 +291,7 @@ export class MessageListData {
         }
 
         // if no unread, return the bottom message
-        const last = this.last();
-        assert(last !== undefined);
-        return last.id;
+        return this.last()?.id;
     }
 
     has_unread_messages(): boolean {
