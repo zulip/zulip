@@ -1083,11 +1083,14 @@ export function save_message_row_edit($row) {
                     );
 
                     if (xhr.responseJSON?.code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
-                        const new_row = render_wildcard_mention_not_allowed_error({
+                        const new_row_html = render_wildcard_mention_not_allowed_error({
                             banner_type: compose_banner.ERROR,
                             classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
                         });
-                        compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+                        compose_banner.append_compose_banner_to_banner_list(
+                            $(new_row_html),
+                            $container,
+                        );
                         return;
                     }
 

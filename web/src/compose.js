@@ -192,11 +192,14 @@ export function send_message(request = create_message_object()) {
             if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
                 // The topic wildcard mention permission code path has
                 // a special error.
-                const new_row = render_wildcard_mention_not_allowed_error({
+                const new_row_html = render_wildcard_mention_not_allowed_error({
                     banner_type: compose_banner.ERROR,
                     classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
                 });
-                compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
+                compose_banner.append_compose_banner_to_banner_list(
+                    $(new_row_html),
+                    $("#compose_banners"),
+                );
             } else {
                 compose_banner.show_error_message(
                     response,
@@ -386,12 +389,12 @@ function schedule_message_to_custom_date() {
     const success = function (data) {
         drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
         clear_compose_box();
-        const new_row = render_success_message_scheduled_banner({
+        const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
             deliver_at,
         });
         compose_banner.clear_message_sent_banners();
-        compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
     };
 
     const error = function (xhr) {
