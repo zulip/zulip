@@ -146,14 +146,14 @@ function add_upload_banner(
     file_id,
     is_upload_process_tracker = false,
 ) {
-    const new_banner = render_upload_banner({
+    const new_banner_html = render_upload_banner({
         banner_type,
         is_upload_process_tracker,
         banner_text,
         file_id,
     });
     compose_banner.append_compose_banner_to_banner_list(
-        new_banner,
+        $(new_banner_html),
         get_item("banner_container", config),
     );
 }

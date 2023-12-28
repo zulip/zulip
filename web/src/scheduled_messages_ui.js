@@ -73,7 +73,7 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
         new Date(scheduled_delivery_timestamp * 1000),
         "time",
     );
-    const unscheduled_banner = render_compose_banner({
+    const unscheduled_banner_html = render_compose_banner({
         banner_type: compose_banner.WARNING,
         banner_text: $t({
             defaultMessage: "This message is no longer scheduled to be sent.",
@@ -81,7 +81,10 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
         button_text: $t({defaultMessage: "Schedule for {deliver_at}"}, {deliver_at}),
         classname: compose_banner.CLASSNAMES.unscheduled_message,
     });
-    compose_banner.append_compose_banner_to_banner_list(unscheduled_banner, $("#compose_banners"));
+    compose_banner.append_compose_banner_to_banner_list(
+        $(unscheduled_banner_html),
+        $("#compose_banners"),
+    );
 }
 
 export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
