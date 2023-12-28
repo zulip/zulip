@@ -1226,7 +1226,8 @@
     }
 
     #settings_page,
-    #stream_settings {
+    #stream_settings,
+    #user_group_settings {
         .save-button-controls .discard-button {
             color: hsl(0deg 0% 80%);
 
