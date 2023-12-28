@@ -92,14 +92,14 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         super().setUp()
 
         # Set up some initial example data.
-        for i in range(4):
+        for i in range(5):
             hostname = f"zulip-{i}.example.com"
             remote_server = RemoteZulipServer.objects.create(
                 hostname=hostname, contact_email=f"admin@{hostname}", uuid=uuid.uuid4()
             )
-            # The first RemoteZulipServer has no RemoteRealm, as an
-            # example of a pre-8.0 release registered remote server.
-            if i != 0:
+            # We want at least one RemoteZulipServer that has no RemoteRealm
+            # as an example of a pre-8.0 release registered remote server.
+            if i > 1:
                 realm_name = f"realm-name-{i}"
                 realm_host = f"realm-host-{i}"
                 realm_uuid = uuid.uuid4()
@@ -111,9 +111,14 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     realm_date_created=timezone_now(),
                 )
 
+        # Add a deactivated server, which should be excluded from search results.
+        server = RemoteZulipServer.objects.get(hostname="zulip-0.example.com")
+        server.deactivated = True
+        server.save(update_fields=["deactivated"])
+
         # Add example sponsorship request data
         add_sponsorship_request(
-            name="realm-name-1",
+            name="realm-name-2",
             org_type=OrgTypeEnum.Community.value,
             website="",
             paid_users="None",
@@ -121,7 +126,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
 
         add_sponsorship_request(
-            name="realm-name-2",
+            name="realm-name-3",
             org_type=OrgTypeEnum.OpenSource.value,
             website="example.org",
             paid_users="",
@@ -129,7 +134,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
 
         # Add expected legacy customer and plan data
-        add_legacy_plan_and_upgrade(name="realm-name-3")
+        add_legacy_plan_and_upgrade(name="realm-name-4")
 
     def test_search(self) -> None:
         def assert_server_details_in_response(
@@ -147,6 +152,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 ],
                 html_response,
             )
+            self.assert_not_in_success_response(["<h3>zulip-0.example.com</h3>"], result)
 
         def assert_realm_details_in_response(
             html_response: "TestHttpResponse", name: str, host: str
@@ -161,12 +167,12 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 ],
                 html_response,
             )
-            self.assert_not_in_success_response(["<h3>zulip-0.example.com</h3>"], result)
+            self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
 
         def check_remote_server_with_no_realms(result: "TestHttpResponse") -> None:
-            assert_server_details_in_response(result, "zulip-0.example.com")
+            assert_server_details_in_response(result, "zulip-1.example.com")
             self.assert_not_in_success_response(
-                ["<h3>zulip-1.example.com</h3>", "<b>Remote realm host:</b>"], result
+                ["<h3>zulip-2.example.com</h3>", "<b>Remote realm host:</b>"], result
             )
             self.assert_in_success_response(["<b>Has remote realm(s)</b>: False<br />"], result)
 
@@ -245,15 +251,18 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             result,
         )
 
-        result = self.client_get("/activity/remote/support", {"q": "example.com"})
-        for server in range(4):
-            self.assert_in_success_response([f"<h3>zulip-{server}.example.com</h3>"], result)
-
         server = 0
+        result = self.client_get("/activity/remote/support", {"q": "example.com"})
+        self.assert_not_in_success_response([f"<h3>zulip-{server}.example.com</h3>"], result)
+        for i in range(5):
+            if i != server:
+                self.assert_in_success_response([f"<h3>zulip-{i}.example.com</h3>"], result)
+
+        server = 1
         result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
         check_remote_server_with_no_realms(result)
 
-        server = 1
+        server = 2
         with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
             result = self.client_get(
                 "/activity/remote/support", {"q": f"zulip-{server}.example.com"}
@@ -266,7 +275,9 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         with mock.patch(
             "analytics.views.support.compute_max_monthly_messages", side_effect=MissingDataError
         ):
-            result = self.client_get("/activity/remote/support", {"q": "zulip-1.example.com"})
+            result = self.client_get(
+                "/activity/remote/support", {"q": f"zulip-{server}.example.com"}
+            )
         self.assert_in_success_response(
             ["<b>Max monthly messages</b>: Recent data missing"], result
         )
@@ -274,13 +285,13 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
         check_sponsorship_request_no_website(result)
 
-        server = 2
+        server = 3
         result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
         assert_server_details_in_response(result, f"zulip-{server}.example.com")
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
         check_sponsorship_request_with_website(result)
 
-        server = 3
+        server = 4
         result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
         assert_server_details_in_response(result, f"zulip-{server}.example.com")
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
