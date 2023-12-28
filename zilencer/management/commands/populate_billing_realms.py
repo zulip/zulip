@@ -33,6 +33,7 @@ from zilencer.models import (
     RemoteRealmBillingUser,
     RemoteServerBillingUser,
     RemoteZulipServer,
+    RemoteZulipServerAuditLog,
 )
 from zilencer.views import update_remote_realm_data_for_server
 from zproject.config import get_secret
@@ -419,6 +420,12 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
         plan_type=plan_type,
         # TODO: Save property audit log data for server.
         last_audit_log_update=timezone_now(),
+    )
+
+    RemoteZulipServerAuditLog.objects.create(
+        event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+        server=remote_server,
+        event_time=remote_server.last_updated,
     )
 
     billing_user = RemoteServerBillingUser.objects.create(
