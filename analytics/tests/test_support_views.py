@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 import uuid
 
-from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer, RemoteZulipServerAuditLog
 
 
 class TestRemoteServerSupportEndpoint(ZulipTestCase):
@@ -97,6 +97,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             remote_server = RemoteZulipServer.objects.create(
                 hostname=hostname, contact_email=f"admin@{hostname}", uuid=uuid.uuid4()
             )
+            RemoteZulipServerAuditLog.objects.create(
+                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                server=remote_server,
+                event_time=remote_server.last_updated,
+            )
             # We want at least one RemoteZulipServer that has no RemoteRealm
             # as an example of a pre-8.0 release registered remote server.
             if i > 1:
@@ -108,7 +113,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     uuid=realm_uuid,
                     host=realm_host,
                     name=realm_name,
-                    realm_date_created=timezone_now(),
+                    realm_date_created=datetime(2023, 12, 1, tzinfo=timezone.utc),
                 )
 
         # Add a deactivated server, which should be excluded from search results.
@@ -144,7 +149,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 [
                     f"<h3>{hostname}</h3>",
                     f"<b>Contact email</b>: admin@{hostname}",
-                    "<b>Last updated</b>:",
+                    "<b>Date created</b>:",
                     "<b>Zulip version</b>:",
                     "<b>Plan type</b>: Self-managed<br />",
                     "<b>Non-guest user count</b>: 0<br />",
@@ -161,7 +166,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 [
                     f"<h3>{name}</h3>",
                     f"<b>Remote realm host:</b> {host}<br />",
-                    "<b>Date created</b>: ",
+                    "<b>Date created</b>: 01 December 2023",
                     "<b>Org type</b>: Unspecified<br />",
                     "<b>Has remote realm(s)</b>: True<br />",
                 ],

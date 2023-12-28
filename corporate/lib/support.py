@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional, TypedDict
 from urllib.parse import urlencode, urljoin, urlunsplit
@@ -23,6 +24,7 @@ from zerver.models.realms import get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteCustomerUserCount,
+    RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
     get_remote_server_guest_and_non_guest_count,
 )
@@ -61,6 +63,7 @@ class PlanData:
 
 @dataclass
 class SupportData:
+    date_created: datetime
     plan_data: PlanData
     sponsorship_data: SponsorshipData
     user_data: RemoteCustomerUserCount
@@ -182,9 +185,14 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
 def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
     if isinstance(billing_session, RemoteServerBillingSession):
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
+        date_created = RemoteZulipServerAuditLog.objects.get(
+            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+            server__id=billing_session.remote_server.id,
+        ).event_time
     else:
         assert isinstance(billing_session, RemoteRealmBillingSession)
         user_data = get_remote_realm_guest_and_non_guest_count(billing_session.remote_realm)
+        date_created = billing_session.remote_realm.realm_date_created
     plan_data = get_current_plan_data_for_support_view(billing_session)
     customer = billing_session.get_customer()
     if customer is not None:
@@ -193,6 +201,7 @@ def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
         sponsorship_data = SponsorshipData()
 
     return SupportData(
+        date_created=date_created,
         plan_data=plan_data,
         sponsorship_data=sponsorship_data,
         user_data=user_data,
