@@ -189,6 +189,7 @@ test("show_error_message", ({mock_template}) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "Error message");
         banner_shown = true;
+        return "<banner-stub>";
     });
 
     $("#compose-send-button").prop("disabled", true);
@@ -201,6 +202,7 @@ test("show_error_message", ({mock_template}) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "translated: An unknown error occurred.");
         banner_shown = true;
+        return "<banner-stub>";
     });
     upload.show_error_message({mode: "compose"});
 });
@@ -249,6 +251,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
             "translated: File and image uploads have been disabled for this organization.",
         );
         banner_shown = true;
+        return "<banner-stub>";
     });
     page_params.max_file_upload_size_mib = 0;
     $("#compose_banners .upload_banner .upload_msg").text("");
@@ -284,6 +287,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, () => {
         banner_shown = true;
+        return "<banner-stub>";
     });
     await upload.upload_files(uppy, config, files);
     assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
@@ -575,6 +579,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "Some error message");
+        return "<banner-stub>";
     });
     state = {
         type: "error",

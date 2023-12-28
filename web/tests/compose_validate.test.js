@@ -130,6 +130,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.stream_does_not_exist);
         assert.equal(data.stream_name, "Frontend");
         stream_does_not_exist_rendered = true;
+        return "<banner-stub>";
     });
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "Frontend");
@@ -143,6 +144,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         assert.equal(data.classname, "subscription_error");
         assert.equal(data.banner_text, $t({defaultMessage: "Error checking subscription."}));
         subscription_error_rendered = true;
+        return "<banner-stub>";
     });
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "social");
@@ -195,6 +197,7 @@ test_ui("validate", ({mock_template}) => {
             $t({defaultMessage: "Please specify at least one valid recipient."}),
         );
         pm_recipient_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
@@ -215,6 +218,7 @@ test_ui("validate", ({mock_template}) => {
             $t({defaultMessage: "You cannot send messages to deactivated users."}),
         );
         deactivated_user_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
@@ -240,6 +244,7 @@ test_ui("validate", ({mock_template}) => {
             );
             zephyr_error_rendered = true;
         }
+        return "<banner-stub>";
     });
     initialize_pm_pill();
     compose_state.private_message_recipient("welcome-bot@example.com");
@@ -274,6 +279,7 @@ test_ui("validate", ({mock_template}) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
         assert.equal(data.banner_text, $t({defaultMessage: "Please specify a stream."}));
         empty_stream_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(empty_stream_error_rendered);
@@ -294,6 +300,7 @@ test_ui("validate", ({mock_template}) => {
             $t({defaultMessage: "Topics are required in this organization."}),
         );
         missing_topic_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(missing_topic_error_rendered);
@@ -418,6 +425,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
         stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
+        return "<banner-stub>";
     });
 
     override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
@@ -431,6 +439,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
         assert.equal(data.stream_wildcard_mention, "all");
         wildcards_not_allowed_rendered = true;
+        return "<banner-stub>";
     });
     override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => false);
     assert.ok(!compose_validate.validate());
@@ -465,6 +474,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
@@ -509,6 +519,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
@@ -544,6 +555,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
@@ -565,6 +577,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
 
     // Indicator should show red colored text
@@ -658,7 +671,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
         assert.equal(data.stream_name, "Denmark");
         banner_rendered = true;
-        return "private_stream_warning_stub";
+        return "<banner-stub>";
     });
 
     function test_noop_case(invite_only) {
@@ -708,6 +721,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         assert.equal(data.stream_id, 111);
         assert.equal(data.name, "Foo Barson");
         new_banner_rendered = true;
+        return "<banner-stub>";
     });
 
     function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
@@ -795,7 +809,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
             }),
         );
         error_shown = true;
-        return "topic_resolved_warning_stub";
+        return "<banner-stub>";
     });
 
     const sub = {
