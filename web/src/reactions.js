@@ -248,7 +248,8 @@ export function add_reaction(event) {
 
     if (clean_reaction_object) {
         clean_reaction_object.user_ids.push(user_id);
-        update_user_fields(clean_reaction_object, message.clean_reactions);
+        const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+        update_user_fields(clean_reaction_object, should_display_reactors);
         update_existing_reaction(clean_reaction_object, message, user_id);
     } else {
         clean_reaction_object = make_clean_reaction({
@@ -260,7 +261,8 @@ export function add_reaction(event) {
         });
 
         message.clean_reactions.set(local_id, clean_reaction_object);
-        update_user_fields(clean_reaction_object, message.clean_reactions);
+        const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+        update_user_fields(clean_reaction_object, should_display_reactors);
         insert_new_reaction(clean_reaction_object, message, user_id);
     }
 }
