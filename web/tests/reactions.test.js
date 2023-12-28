@@ -269,7 +269,7 @@ test("reactions from unknown users", () => {
 test("unknown realm emojis (add)", () => {
     assert.throws(
         () =>
-            reactions.view.insert_new_reaction(
+            reactions.insert_new_reaction(
                 {
                     reaction_type: "realm_emoji",
                     emoji_name: "false_emoji",
@@ -288,7 +288,7 @@ test("unknown realm emojis (add)", () => {
 test("unknown realm emojis (insert)", () => {
     assert.throws(
         () =>
-            reactions.view.insert_new_reaction(
+            reactions.insert_new_reaction(
                 {
                     reaction_type: "realm_emoji",
                     emoji_name: "fake_emoji",
@@ -560,10 +560,7 @@ test("emoji_reaction_title", ({override}) => {
     );
 });
 
-test("add_reaction/remove_reaction", ({override}) => {
-    // This function tests reaction events by mocking out calls to
-    // the view.
-
+test("add_reaction/remove_reaction", ({override, override_rewire}) => {
     const message = {
         id: 2001,
         reactions: [],
@@ -573,21 +570,21 @@ test("add_reaction/remove_reaction", ({override}) => {
 
     override(message_store, "get", () => message);
 
-    let view_calls = [];
+    let function_calls = [];
 
-    override(reactions.view, "insert_new_reaction", (clean_reaction_object, message, user_id) => {
-        view_calls.push({
+    override_rewire(reactions, "insert_new_reaction", (clean_reaction_object, message, user_id) => {
+        function_calls.push({
             name: "insert_new_reaction",
             clean_reaction_object,
             message,
             user_id,
         });
     });
-    override(
-        reactions.view,
+    override_rewire(
+        reactions,
         "update_existing_reaction",
         (clean_reaction_object, message, user_id) => {
-            view_calls.push({
+            function_calls.push({
                 name: "update_existing_reaction",
                 clean_reaction_object,
                 message,
@@ -595,16 +592,25 @@ test("add_reaction/remove_reaction", ({override}) => {
             });
         },
     );
-    override(reactions.view, "remove_reaction", (clean_reaction_object, message, user_id) => {
-        view_calls.push({name: "remove_reaction", clean_reaction_object, message, user_id});
-    });
+    override_rewire(
+        reactions,
+        "remove_reaction_from_view",
+        (clean_reaction_object, message, user_id) => {
+            function_calls.push({
+                name: "remove_reaction_from_view",
+                clean_reaction_object,
+                message,
+                user_id,
+            });
+        },
+    );
 
-    function test_view_calls(test_params) {
-        view_calls = [];
+    function test_function_calls(test_params) {
+        function_calls = [];
 
         test_params.run_code();
 
-        assert.deepEqual(view_calls, test_params.expected_view_calls);
+        assert.deepEqual(function_calls, test_params.expected_function_calls);
         assert.deepEqual(
             new Set(reactions.get_emojis_used_by_user_for_message_id(message.message_id)),
             new Set(test_params.alice_emojis),
@@ -648,11 +654,11 @@ test("add_reaction/remove_reaction", ({override}) => {
         user_ids: [alice.user_id],
         vote_text: "translated: You",
     };
-    test_view_calls({
+    test_function_calls({
         run_code() {
             reactions.add_reaction(alice_8ball_event);
         },
-        expected_view_calls: [
+        expected_function_calls: [
             {
                 name: "insert_new_reaction",
                 clean_reaction_object: clean_reaction_object_alice,
@@ -671,11 +677,11 @@ test("add_reaction/remove_reaction", ({override}) => {
     });
 
     // Add redundant reaction.
-    test_view_calls({
+    test_function_calls({
         run_code() {
             reactions.add_reaction(alice_8ball_event);
         },
-        expected_view_calls: [],
+        expected_function_calls: [],
         alice_emojis: ["8ball"],
     });
 
@@ -692,11 +698,11 @@ test("add_reaction/remove_reaction", ({override}) => {
         user_ids: [alice.user_id, bob.user_id],
         vote_text: "translated: You, Bob van Roberts",
     };
-    test_view_calls({
+    test_function_calls({
         run_code() {
             reactions.add_reaction(bob_8ball_event);
         },
-        expected_view_calls: [
+        expected_function_calls: [
             {
                 name: "update_existing_reaction",
                 clean_reaction_object: clean_reaction_object_bob,
@@ -727,11 +733,11 @@ test("add_reaction/remove_reaction", ({override}) => {
         user_ids: [cali.user_id],
         vote_text: "Cali",
     };
-    test_view_calls({
+    test_function_calls({
         run_code() {
             reactions.add_reaction(cali_airplane_event);
         },
-        expected_view_calls: [
+        expected_function_calls: [
             {
                 name: "insert_new_reaction",
                 clean_reaction_object: clean_reaction_object_cali,
@@ -750,13 +756,13 @@ test("add_reaction/remove_reaction", ({override}) => {
         alice_emojis: ["8ball"],
     });
 
-    test_view_calls({
+    test_function_calls({
         run_code() {
             reactions.remove_reaction(bob_8ball_event);
         },
-        expected_view_calls: [
+        expected_function_calls: [
             {
-                name: "remove_reaction",
+                name: "remove_reaction_from_view",
                 clean_reaction_object: clean_reaction_object_alice,
                 message: {
                     clean_reactions: new Map(
@@ -773,13 +779,13 @@ test("add_reaction/remove_reaction", ({override}) => {
         alice_emojis: ["8ball"],
     });
 
-    test_view_calls({
+    test_function_calls({
         run_code() {
             reactions.remove_reaction(alice_8ball_event);
         },
-        expected_view_calls: [
+        expected_function_calls: [
             {
-                name: "remove_reaction",
+                name: "remove_reaction_from_view",
                 clean_reaction_object: {
                     count: 0,
                     class: "message_reaction",
@@ -808,16 +814,16 @@ test("add_reaction/remove_reaction", ({override}) => {
     });
 
     // Test redundant remove.
-    test_view_calls({
+    test_function_calls({
         run_code() {
             reactions.remove_reaction(alice_8ball_event);
         },
-        expected_view_calls: [],
+        expected_function_calls: [],
         alice_emojis: [],
     });
 });
 
-test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
+test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
     const clean_reaction_object = {
         class: "message_reaction",
         count: 1,
@@ -863,7 +869,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
         insert_called = true;
     };
 
-    reactions.view.insert_new_reaction(
+    reactions.insert_new_reaction(
         clean_reaction_object,
         {
             id: message_id,
@@ -881,7 +887,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
     assert.ok(insert_called);
 });
 
-test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
+test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
     const clean_reaction_object = {
         class: "message_reaction",
         count: 1,
@@ -929,7 +935,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
         insert_called = true;
     };
 
-    reactions.view.insert_new_reaction(
+    reactions.insert_new_reaction(
         clean_reaction_object,
         {
             id: message_id,
@@ -947,7 +953,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
     assert.ok(insert_called);
 });
 
-test("view.update_existing_reaction (me)", () => {
+test("update_existing_reaction (me)", () => {
     const clean_reaction_object = {
         class: "message_reaction",
         count: 2,
@@ -965,7 +971,7 @@ test("view.update_existing_reaction (me)", () => {
     const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
-    reactions.view.update_existing_reaction(
+    reactions.update_existing_reaction(
         clean_reaction_object,
         {
             id: message_id,
@@ -994,7 +1000,7 @@ test("view.update_existing_reaction (me)", () => {
     );
 });
 
-test("view.update_existing_reaction (them)", () => {
+test("update_existing_reaction (them)", () => {
     const clean_reaction_object = {
         class: "message_reaction",
         count: 4,
@@ -1012,7 +1018,7 @@ test("view.update_existing_reaction (them)", () => {
     const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
-    reactions.view.update_existing_reaction(
+    reactions.update_existing_reaction(
         clean_reaction_object,
         {
             id: message_id,
@@ -1053,7 +1059,7 @@ test("view.update_existing_reaction (them)", () => {
     );
 });
 
-test("view.remove_reaction (me)", () => {
+test("remove_reaction_from_view (me)", () => {
     const clean_reaction_object = {
         class: "message_reaction",
         count: 2,
@@ -1072,7 +1078,7 @@ test("view.remove_reaction (me)", () => {
     const $reaction_button = $.create("reaction-button-stub");
     $message_reactions.find = () => $reaction_button;
 
-    reactions.view.remove_reaction(
+    reactions.remove_reaction_from_view(
         clean_reaction_object,
         {
             id: message_id,
@@ -1101,7 +1107,7 @@ test("view.remove_reaction (me)", () => {
     );
 });
 
-test("view.remove_reaction (them)", () => {
+test("remove_reaction_from_view (them)", () => {
     const clean_reaction_object = {
         class: "message_reaction",
         count: 1,
@@ -1120,7 +1126,7 @@ test("view.remove_reaction (them)", () => {
     const $reaction_button = $.create("reaction-button-stub");
     $message_reactions.find = () => $reaction_button;
 
-    reactions.view.remove_reaction(
+    reactions.remove_reaction_from_view(
         clean_reaction_object,
         {
             id: message_id,
@@ -1143,7 +1149,7 @@ test("view.remove_reaction (them)", () => {
     );
 });
 
-test("view.remove_reaction (last person)", () => {
+test("remove_reaction_from_view (last person)", () => {
     const clean_reaction_object = {
         class: "message_reaction",
         count: 1,
@@ -1163,7 +1169,7 @@ test("view.remove_reaction (last person)", () => {
     $our_reaction.remove = () => {
         removed = true;
     };
-    reactions.view.remove_reaction(
+    reactions.remove_reaction_from_view(
         clean_reaction_object,
         {id: message_id, reactions: []},
         bob.user_id,
@@ -1208,11 +1214,11 @@ test("remove spurious user", ({override}) => {
     reactions.remove_reaction(event);
 });
 
-test("remove last user", ({override}) => {
+test("remove last user", ({override, override_rewire}) => {
     const message = {...sample_message};
 
     override(message_store, "get", () => message);
-    override(reactions.view, "remove_reaction", noop);
+    override_rewire(reactions, "remove_reaction_from_view", noop);
 
     function assert_names(names) {
         assert.deepEqual(
@@ -1244,8 +1250,8 @@ test("local_reaction_id", () => {
     assert.equal(local_id, "unicode_emoji,1f44d");
 });
 
-test("process_reaction_click", ({override}) => {
-    override(reactions.view, "remove_reaction", noop);
+test("process_reaction_click", ({override, override_rewire}) => {
+    override_rewire(reactions, "remove_reaction_from_view", noop);
 
     const message = {...sample_message};
     override(message_store, "get", () => message);
