@@ -150,6 +150,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     f"<h3>{hostname}</h3>",
                     f"<b>Contact email</b>: admin@{hostname}",
                     "<b>Date created</b>:",
+                    "<b>UUID</b>:",
                     "<b>Zulip version</b>:",
                     "<b>Plan type</b>: Self-managed<br />",
                     "<b>Non-guest user count</b>: 0<br />",
@@ -168,7 +169,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     f"<b>Remote realm host:</b> {host}<br />",
                     "<b>Date created</b>: 01 December 2023",
                     "<b>Org type</b>: Unspecified<br />",
-                    "<b>Has remote realm(s)</b>: True<br />",
+                    "<b>Has remote realms</b>: True<br />",
                 ],
                 html_response,
             )
@@ -179,7 +180,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             self.assert_not_in_success_response(
                 ["<h3>zulip-2.example.com</h3>", "<b>Remote realm host:</b>"], result
             )
-            self.assert_in_success_response(["<b>Has remote realm(s)</b>: False<br />"], result)
+            self.assert_in_success_response(["<b>Has remote realms</b>: False<br />"], result)
 
         def check_sponsorship_request_no_website(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(

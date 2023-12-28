@@ -42,18 +42,20 @@
                     <h4>On 100% sponsored Zulip Community plan 🎉</h4>
                 {% endif %}
                 {% if remote_servers_support_data[remote_server.id].sponsorship_data.default_discount %}
-                    <h4>Has a discount 🟢</h4>
+                    <h4>Has a discount 💸</h4>
                 {% endif %}
                 <b>Contact email</b>: {{ remote_server.contact_email }}
                 <a title="Copy email" class="copy-button" data-copytext="{{ remote_server.contact_email }}">
                     <i class="fa fa-copy"></i>
                 </a>
                 <br />
+                <b>UUID</b>: {{ remote_server.uuid }}<br />
                 <b>Date created</b>: {{ remote_servers_support_data[remote_server.id].date_created.strftime('%d %B %Y') }}<br />
                 <b>Zulip version</b>: {{ remote_server.last_version }}<br />
+                <b>Has remote realms</b>: {{ remote_realms[remote_server.id] != [] }}<br />
+                <br />
                 <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
                 <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
-                <b>Has remote realm(s)</b>: {{ remote_realms[remote_server.id] != [] }}<br />
                 <b>Non-guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.non_guest_user_count }}<br />
                 <b>Guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.guest_user_count }}<br />
             </div>
