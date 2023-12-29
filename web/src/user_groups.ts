@@ -96,17 +96,10 @@ export function get_realm_user_groups(): UserGroup[] {
 }
 
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
-    if (page_params.user_id === undefined) {
-        return [];
-    }
-
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
         const can_mention_group_id = group.can_mention_group;
-        return (
-            page_params.user_id !== undefined &&
-            is_user_in_group(can_mention_group_id, page_params.user_id)
-        );
+        return is_user_in_group(can_mention_group_id, page_params.user_id);
     });
 }
 
