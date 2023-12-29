@@ -5,6 +5,8 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as util from "./util";
 
+export let page_load_time: number | undefined;
+
 // Miscellaneous early setup.
 $(() => {
     if (util.is_mobile()) {
@@ -12,7 +14,7 @@ $(() => {
         page_params.needs_tutorial = false;
     }
 
-    page_params.page_load_time = Date.now();
+    page_load_time = Date.now();
 
     // Display loading indicator.  This disappears after the first
     // get_events completes.

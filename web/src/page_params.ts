@@ -47,7 +47,6 @@ export const page_params: {
     narrow_stream?: string;
     narrow: Term[];
     needs_tutorial: boolean;
-    page_load_time: number;
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
     realm_available_video_chat_providers: {
