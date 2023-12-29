@@ -589,6 +589,12 @@ export function emoji_select_tab($elt) {
         currently_selected = section_head_offsets.at(-1).section;
     }
     // Handles the corner case of the scrolling back to top.
+
+    if(scrolltop === 0)
+    {
+        currently_selected = "Popular";
+    }
+
     if (scrolltop === 0 && section_head_offsets.length()) {
         currently_selected = section_head_offsets[0].section;
     }
