@@ -13,7 +13,9 @@ This section deals with developing and testing the billing system.
   `corporate/lib/stripe.py`. You can upgrade to a higher version from
   the Stripe dashboard.
 - Set the private API key.
-  - Go to <https://dashboard.stripe.com/account/apikeys>
+  - Go to <https://dashboard.stripe.com/test/apikeys>
+  - Double-check that you're viewing test API keys (not live keys) to avoid
+    actual charges while testing code.
   - Add `stripe_secret_key` to `zproject/dev-secrets.conf`.
 
 ## Manual testing
