@@ -27,7 +27,6 @@ export const page_params: {
     furthest_read_time: number | null;
     is_admin: boolean;
     is_billing_admin: boolean;
-    is_bot: boolean;
     is_guest: boolean;
     is_moderator: boolean;
     is_owner: boolean;

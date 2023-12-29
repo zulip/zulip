@@ -978,16 +978,12 @@ export function is_active_user_for_popover(user_id: number): boolean {
 }
 
 export function is_current_user_only_owner(): boolean {
-    if (!page_params.is_owner || page_params.is_bot) {
+    if (!page_params.is_owner) {
         return false;
     }
 
-    let active_owners = 0;
     for (const person of active_user_dict.values()) {
-        if (person.is_owner && !person.is_bot) {
-            active_owners += 1;
-        }
-        if (active_owners > 1) {
+        if (person.is_owner && !person.is_bot && person.user_id !== my_user_id) {
             return false;
         }
     }
