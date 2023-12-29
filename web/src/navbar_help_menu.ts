@@ -6,7 +6,7 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import {parse_html} from "./ui_util";
 
-export function initialize() {
+export function initialize(): void {
     popover_menus.register_popover_menu("#help-menu", {
         theme: "navbar-dropdown-menu",
         placement: "bottom",
@@ -39,12 +39,12 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.help_menu = undefined;
+            popover_menus.popover_instances.help_menu = null;
         },
     });
 }
 
-export function toggle() {
+export function toggle(): void {
     // NOTE: Since to open help menu, you need to click on help navbar icon (which calls
     // tippyjs.hideAll()), or go via gear menu if using hotkeys, we don't need to
     // call tippyjs.hideAll() for it.
