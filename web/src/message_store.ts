@@ -109,6 +109,8 @@ export type Message = (
     // Added in `reactions.set_clean_reactions`.
     clean_reactions: Map<string, MessageCleanReaction>;
 
+    locally_echoed?: boolean;
+
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;
     reply_to: string;
