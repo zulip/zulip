@@ -25,6 +25,8 @@ let get_events_timeout;
 let get_events_failures = 0;
 const get_events_params = {};
 
+let event_queue_expired = false;
+
 function get_events_success(events) {
     let messages = [];
     const update_message_events = [];
@@ -208,7 +210,7 @@ function get_events({dont_block = false} = {}) {
                 // If we're old enough that our message queue has been
                 // garbage collected, immediately reload.
                 if (xhr.status === 400 && xhr.responseJSON?.code === "BAD_EVENT_QUEUE_ID") {
-                    page_params.event_queue_expired = true;
+                    event_queue_expired = true;
                     reload.initiate({
                         immediate: true,
                         save_pointer: false,
@@ -276,12 +278,12 @@ export function initialize() {
 
 function cleanup_event_queue() {
     // Submit a request to the server to clean up our event queue
-    if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
+    if (event_queue_expired || page_params.no_event_queue) {
         return;
     }
     blueslip.log("Cleaning up our event queue");
     // Set expired because in a reload we may be called twice.
-    page_params.event_queue_expired = true;
+    event_queue_expired = true;
     channel.del({
         url: "/json/events",
         data: {queue_id: page_params.queue_id},
