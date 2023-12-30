@@ -10,7 +10,7 @@ import * as compose_validate from "./compose_validate";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
-import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
+import {EXTRA_LONG_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -64,39 +64,6 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-        },
-    });
-
-    delegate("body", {
-        // Only display Tippy content on classes accompanied by a `data-` attribute.
-        target: `
-        .compose_control_button[data-tooltip-template-id],
-        .compose_control_button[data-tippy-content],
-        .compose_control_button_container
-        `,
-        // Add some additional delay when they open
-        // so that regular users don't have to see
-        // them unless they want to.
-        delay: LONG_HOVER_DELAY,
-        // By default, tippyjs uses a trigger value of "mouseenter focus",
-        // which means the tooltips can appear either when the element is
-        // hovered over or when it receives focus (e.g. by being clicked).
-        // However, we only want the tooltips to appear on hover, not on click.
-        // Therefore, we need to remove the "focus" trigger from the buttons,
-        // so that the tooltips don't appear when the buttons are clicked.
-        trigger: "mouseenter",
-        // This ensures that the upload files tooltip
-        // doesn't hide behind the left sidebar.
-        appendTo: () => document.body,
-        // If the button is `.disabled-on-hover`, then we want to show the
-        // tooltip instantly, to make it clear to the user that the button
-        // is disabled, and why.
-        onTrigger(instance, event) {
-            if (event.currentTarget.classList.contains("disabled-on-hover")) {
-                instance.setProps({delay: INSTANT_HOVER_DELAY});
-            } else {
-                instance.setProps({delay: LONG_HOVER_DELAY});
-            }
         },
     });
 
