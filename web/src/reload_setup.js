@@ -3,8 +3,8 @@ import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import {localstorage} from "./localstorage";
+import * as message_fetch from "./message_fetch";
 import * as narrow from "./narrow";
-import {page_params} from "./page_params";
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
@@ -68,23 +68,15 @@ export function initialize() {
     }
 
     const pointer = Number.parseInt(vars.pointer, 10);
-
-    if (pointer) {
-        page_params.initial_pointer = pointer;
-    }
     const offset = Number.parseInt(vars.offset, 10);
-    if (offset) {
-        page_params.initial_offset = offset;
-    }
-
     const narrow_pointer = Number.parseInt(vars.narrow_pointer, 10);
-    if (narrow_pointer) {
-        page_params.initial_narrow_pointer = narrow_pointer;
-    }
     const narrow_offset = Number.parseInt(vars.narrow_offset, 10);
-    if (narrow_offset) {
-        page_params.initial_narrow_offset = narrow_offset;
-    }
+    message_fetch.set_initial_pointer_and_offset({
+        pointer: Number.isNaN(pointer) ? undefined : pointer,
+        offset: Number.isNaN(offset) ? undefined : offset,
+        narrow_pointer: Number.isNaN(narrow_pointer) ? undefined : narrow_pointer,
+        narrow_offset: Number.isNaN(narrow_offset) ? undefined : narrow_offset,
+    });
 
     activity.set_new_user_input(false);
     narrow.changehash(vars.oldhash);
