@@ -103,7 +103,7 @@ run_test("is_topic_editable", ({override}) => {
     message.failed_request = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
-    page_params.sent_by_me = false;
+    message.sent_by_me = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);
@@ -157,7 +157,7 @@ run_test("is_stream_editable", ({override}) => {
     message.failed_request = false;
     assert.equal(message_edit.is_stream_editable(message), true);
 
-    page_params.sent_by_me = false;
+    message.sent_by_me = false;
     assert.equal(message_edit.is_stream_editable(message), true);
 
     override(settings_data, "user_can_move_messages_between_streams", () => false);
