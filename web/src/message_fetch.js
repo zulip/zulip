@@ -19,6 +19,11 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
 
+export let initial_pointer;
+export let initial_offset;
+export let initial_narrow_pointer;
+export let initial_narrow_offset;
+
 let is_all_messages_data_loaded = false;
 
 const consts = {
@@ -512,6 +517,13 @@ export function start_backfilling_messages() {
     });
 }
 
+export function set_initial_pointer_and_offset({pointer, offset, narrow_pointer, narrow_offset}) {
+    initial_pointer = pointer;
+    initial_offset = offset;
+    initial_narrow_pointer = narrow_pointer;
+    initial_narrow_offset = narrow_offset;
+}
+
 export function initialize(home_view_loaded) {
     // get the initial message list
     function load_more(data) {
@@ -524,7 +536,7 @@ export function initialize(home_view_loaded) {
             message_lists.home.select_id(data.anchor, {
                 then_scroll: true,
                 use_closest: true,
-                target_scroll_offset: page_params.initial_offset,
+                target_scroll_offset: initial_offset,
             });
         }
 
@@ -564,10 +576,10 @@ export function initialize(home_view_loaded) {
     }
 
     let anchor;
-    if (page_params.initial_pointer) {
+    if (initial_pointer !== undefined) {
         // If we're doing a server-initiated reload, similar to a
         // near: narrow query, we want to select a specific message.
-        anchor = page_params.initial_pointer;
+        anchor = initial_pointer;
     } else {
         // Otherwise, we should just use the first unread message in
         // the user's unmuted history as our anchor.
