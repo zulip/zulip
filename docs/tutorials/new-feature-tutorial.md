@@ -549,7 +549,7 @@ Then add the new form control in `web/src/admin.js`.
          full_name: page_params.full_name,
          realm_name: page_params.realm_name,
          // ...
-+        realm_mandatory_topics: page_params.mandatory_topics,
++        realm_mandatory_topics: page_params.realm_mandatory_topics,
          // ...
 ```
 
