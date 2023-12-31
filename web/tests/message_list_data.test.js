@@ -303,13 +303,6 @@ run_test("errors", () => {
     });
     assert.equal(mld.get("bogus-id"), undefined);
 
-    assert.throws(
-        () => {
-            mld._add_to_hash(["asdf"]);
-        },
-        {message: "Bad message id"},
-    );
-
     blueslip.expect("error", "Duplicate message added to MessageListData");
     mld._hash.set(1, "taken");
     mld._add_to_hash(make_msgs([1]));

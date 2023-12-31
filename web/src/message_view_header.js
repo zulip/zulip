@@ -12,7 +12,6 @@ import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
 
 function get_message_view_header_context(filter) {
-    const context = {};
     if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
@@ -31,9 +30,10 @@ function get_message_view_header_context(filter) {
             zulip_icon: "all-messages",
         };
     }
-    context.title = filter.get_title();
-    context.is_spectator = page_params.is_spectator;
-    filter.add_icon_data(context);
+    const context = filter.add_icon_data({
+        title: filter.get_title(),
+        is_spectator: page_params.is_spectator,
+    });
     if (filter.has_operator("stream") && !filter._sub) {
         context.sub_count = "0";
         context.formatted_sub_count = "0";

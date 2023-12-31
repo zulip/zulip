@@ -1,8 +1,8 @@
 import * as message_store from "./message_store";
 
-export const starred_ids = new Set();
+export const starred_ids = new Set<number>();
 
-export function initialize(starred_messages_params) {
+export function initialize(starred_messages_params: {starred_messages: number[]}): void {
     starred_ids.clear();
 
     for (const id of starred_messages_params.starred_messages) {
@@ -10,27 +10,27 @@ export function initialize(starred_messages_params) {
     }
 }
 
-export function add(ids) {
+export function add(ids: number[]): void {
     for (const id of ids) {
         starred_ids.add(id);
     }
 }
 
-export function remove(ids) {
+export function remove(ids: number[]): void {
     for (const id of ids) {
         starred_ids.delete(id);
     }
 }
 
-export function get_count() {
+export function get_count(): number {
     return starred_ids.size;
 }
 
-export function get_starred_msg_ids() {
+export function get_starred_msg_ids(): number[] {
     return [...starred_ids];
 }
 
-export function get_count_in_topic(stream_id, topic) {
+export function get_count_in_topic(stream_id?: number, topic?: string): number {
     if (stream_id === undefined || topic === undefined) {
         return 0;
     }

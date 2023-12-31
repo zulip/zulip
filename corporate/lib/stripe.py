@@ -1064,9 +1064,15 @@ class BillingSession(ABC):
             event_time=timezone_now(),
             extra_data={"old_discount": old_discount, "new_discount": new_discount},
         )
-        if old_discount is None:
-            old_discount = Decimal(0)
-        return f"Discount for {self.billing_entity_display_name} changed to {new_discount}% from {old_discount}%."
+        new_discount_string = (
+            format_discount_percentage(new_discount) if (new_discount != Decimal(0)) else "0"
+        )
+        old_discount_string = (
+            format_discount_percentage(old_discount)
+            if (old_discount is not None and old_discount != Decimal(0))
+            else "0"
+        )
+        return f"Discount for {self.billing_entity_display_name} changed to {new_discount_string}% from {old_discount_string}%."
 
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()

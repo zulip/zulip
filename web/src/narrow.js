@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
@@ -730,6 +731,8 @@ export function update_selection(opts) {
     if (msg_id === undefined) {
         msg_id = message_lists.current.first_unread_message_id();
     }
+    // There should be something since it's not visibly empty.
+    assert(msg_id !== undefined);
 
     const preserve_pre_narrowing_screen_position =
         message_lists.current.get(msg_id) !== undefined && select_offset !== undefined;
@@ -1122,6 +1125,7 @@ export function deactivate() {
                 }
                 message_id_to_select = message_lists.current.selected_id();
             }
+            assert(message_id_to_select !== undefined);
             message_lists.current.select_id(message_id_to_select, select_opts);
         }
 

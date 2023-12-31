@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
@@ -9,12 +10,13 @@ import * as compose_banner from "./compose_banner";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import type {Message} from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as user_topics from "./user_topics";
 
-export function notify_unmute(muted_narrow, stream_id, topic_name) {
+export function notify_unmute(muted_narrow: string, stream_id: number, topic_name: string): void {
     const $unmute_notification = $(
         render_unmute_topic_banner({
             muted_narrow,
@@ -33,12 +35,12 @@ export function notify_unmute(muted_narrow, stream_id, topic_name) {
 }
 
 export function notify_above_composebox(
-    banner_text,
-    classname,
-    above_composebox_narrow_url,
-    link_msg_id,
-    link_text,
-) {
+    banner_text: string,
+    classname: string,
+    above_composebox_narrow_url: string | null,
+    link_msg_id: number,
+    link_text: string,
+): void {
     const $notification = $(
         render_message_sent_banner({
             banner_text,
@@ -54,7 +56,10 @@ export function notify_above_composebox(
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
 }
 
-export function notify_automatic_new_visibility_policy(message, data) {
+export function notify_automatic_new_visibility_policy(
+    message: Message,
+    data: {automatic_new_visibility_policy: number; id: number},
+): void {
     const followed =
         data.automatic_new_visibility_policy === user_topics.all_visibility_policies.FOLLOWED;
     const stream_topic = get_message_header(message);
@@ -75,7 +80,7 @@ export function notify_automatic_new_visibility_policy(message, data) {
 
 // Note that this returns values that are not HTML-escaped, for use in
 // Handlebars templates that will do further escaping.
-function get_message_header(message) {
+function get_message_header(message: Message): string {
     if (message.type === "stream") {
         const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
         return `#${stream_name} > ${message.topic}`;
@@ -95,7 +100,7 @@ function get_message_header(message) {
     );
 }
 
-export function get_muted_narrow(message) {
+export function get_muted_narrow(message: Message): string | undefined {
     if (
         message.type === "stream" &&
         stream_data.is_muted(message.stream_id) &&
@@ -109,7 +114,8 @@ export function get_muted_narrow(message) {
     return undefined;
 }
 
-export function get_local_notify_mix_reason(message) {
+export function get_local_notify_mix_reason(message: Message): string | undefined {
+    assert(message_lists.current !== undefined);
     const $row = message_lists.current.get_row(message.id);
     if ($row.length > 0) {
         // If our message is in the current message list, we do
@@ -132,7 +138,7 @@ export function get_local_notify_mix_reason(message) {
     return undefined;
 }
 
-export function notify_local_mixes(messages, need_user_to_scroll) {
+export function notify_local_mixes(messages: Message[], need_user_to_scroll: boolean): void {
     /*
         This code should only be called when we are displaying
         messages sent by current client. It notifies users that
@@ -200,7 +206,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
     }
 }
 
-function get_above_composebox_narrow_url(message) {
+function get_above_composebox_narrow_url(message: Message): string {
     let above_composebox_narrow_url;
     if (message.type === "stream") {
         above_composebox_narrow_url = hash_util.by_stream_topic_url(
@@ -215,7 +221,7 @@ function get_above_composebox_narrow_url(message) {
 
 // for callback when we have to check with the server if a message should be in
 // the message_lists.current (!can_apply_locally; a.k.a. "a search").
-export function notify_messages_outside_current_search(messages) {
+export function notify_messages_outside_current_search(messages: Message[]): void {
     for (const message of messages) {
         if (!people.is_current_user(message.sender_email)) {
             continue;
@@ -235,7 +241,7 @@ export function notify_messages_outside_current_search(messages) {
     }
 }
 
-export function reify_message_id(opts) {
+export function reify_message_id(opts: {old_id: number; new_id: number}): void {
     const old_id = opts.old_id;
     const new_id = opts.new_id;
 
@@ -252,7 +258,11 @@ export function reify_message_id(opts) {
     }
 }
 
-export function initialize({on_click_scroll_to_selected, on_narrow_to_recipient}) {
+export function initialize(opts: {
+    on_click_scroll_to_selected: () => void;
+    on_narrow_to_recipient: (message_id: number) => void;
+}): void {
+    const {on_click_scroll_to_selected, on_narrow_to_recipient} = opts;
     $("#compose_banners").on(
         "click",
         ".narrow_to_recipient .above_compose_banner_action_link, .automatic_new_visibility_policy .above_compose_banner_action_link",
@@ -267,6 +277,7 @@ export function initialize({on_click_scroll_to_selected, on_narrow_to_recipient}
         "click",
         ".sent_scroll_to_view .above_compose_banner_action_link",
         (e) => {
+            assert(message_lists.current !== undefined);
             const message_id = $(e.currentTarget).data("message-id");
             message_lists.current.select_id(message_id);
             on_click_scroll_to_selected();

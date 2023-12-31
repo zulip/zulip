@@ -78,7 +78,7 @@ once the `nss` tools are installed, the command to trust the
 certificate is:
 
 ```
-certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n zulip \
+certutil -d sql:$HOME/.pki/nssdb -A -t "P,," -n zulip \
   -i path/to/certificate.pem
 ```
 

@@ -163,13 +163,13 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
         return;
     }
 
-    const new_row = render_private_stream_warning({
+    const new_row_html = render_private_stream_warning({
         banner_type: compose_banner.WARNING,
         stream_name: linked_stream.name,
         classname: compose_banner.CLASSNAMES.private_stream_warning,
     });
     const $container = compose_banner.get_compose_banner_container($textarea);
-    compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
@@ -216,9 +216,9 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
                 should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             };
 
-            const new_row = render_not_subscribed_warning(context);
+            const new_row_html = render_not_subscribed_warning(context);
             const $container = compose_banner.get_compose_banner_container($textarea);
-            compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+            compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
         }
     }
 }
@@ -277,8 +277,8 @@ export function warn_if_topic_resolved(topic_changed) {
             classname: compose_banner.CLASSNAMES.topic_resolved,
         };
 
-        const new_row = render_compose_banner(context);
-        compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
+        const new_row_html = render_compose_banner(context);
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
         compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
         clear_topic_resolved_warning();
@@ -297,8 +297,8 @@ export function warn_if_in_search_view() {
             classname: compose_banner.CLASSNAMES.search_view,
         };
 
-        const new_row = render_compose_banner(context);
-        compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
+        const new_row_html = render_compose_banner(context);
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     }
 }
 
@@ -316,7 +316,7 @@ function show_stream_wildcard_warnings(opts) {
         button_text = $t({defaultMessage: "Yes, save"});
     }
 
-    const stream_wildcard_template = render_stream_wildcard_warning({
+    const stream_wildcard_html = render_stream_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
         stream_name,
@@ -330,13 +330,13 @@ function show_stream_wildcard_warnings(opts) {
     // only show one error for any number of @all or @everyone mentions
     if (opts.$banner_container.find(`.${CSS.escape(classname)}`).length === 0) {
         compose_banner.append_compose_banner_to_banner_list(
-            stream_wildcard_template,
+            $(stream_wildcard_html),
             opts.$banner_container,
         );
     } else {
         // if there is already a banner, replace it with the new one
         compose_banner.update_or_append_banner(
-            stream_wildcard_template,
+            $(stream_wildcard_html),
             classname,
             opts.$banner_container,
         );
@@ -517,12 +517,15 @@ export function validate_stream_message_mentions(opts) {
     // if they haven't acknowledged the wildcard warning yet.
     if (opts.stream_wildcard_mention !== null && subscriber_count > wildcard_mention_threshold) {
         if (!wildcard_mention_policy_authorizes_user()) {
-            const new_row = render_wildcard_mention_not_allowed_error({
+            const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
                 stream_wildcard_mention: opts.stream_wildcard_mention,
             });
-            compose_banner.append_compose_banner_to_banner_list(new_row, opts.$banner_container);
+            compose_banner.append_compose_banner_to_banner_list(
+                $(new_row_html),
+                opts.$banner_container,
+            );
             return false;
         }
 
@@ -565,7 +568,7 @@ export function validation_error(error_type, stream_name) {
                 return false;
             }
             const sub = stream_data.get_sub(stream_name);
-            const new_row = render_compose_banner({
+            const new_row_html = render_compose_banner({
                 banner_type: compose_banner.ERROR,
                 banner_text: $t({
                     defaultMessage:
@@ -579,7 +582,7 @@ export function validation_error(error_type, stream_name) {
                 // closing the banner would be more confusing than helpful.
                 hide_close_button: true,
             });
-            compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+            compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
             return false;
         }
     }

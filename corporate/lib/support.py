@@ -49,12 +49,14 @@ class SponsorshipData:
 class PlanData:
     customer: Optional["Customer"] = None
     current_plan: Optional["CustomerPlan"] = None
+    next_plan: Optional["CustomerPlan"] = None
     licenses: Optional[int] = None
     licenses_used: Optional[int] = None
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
     warning: Optional[str] = None
     annual_recurring_revenue: Optional[int] = None
+    estimated_next_plan_revenue: Optional[int] = None
 
 
 @dataclass
@@ -115,6 +117,13 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
     )
 
 
+def get_annual_invoice_count(billing_schedule: int) -> int:
+    if billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+        return 12
+    else:
+        return 1
+
+
 def get_current_plan_data_for_support_view(billing_session: BillingSession) -> PlanData:
     customer = billing_session.get_customer()
     plan = None
@@ -136,18 +145,36 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
                 plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
             except MissingDataError:  # nocoverage
                 plan_data.warning = "Recent data missing: No information for used licenses"
+
         assert plan_data.current_plan is not None  # for mypy
+
+        plan_data.next_plan = billing_session.get_next_plan(plan_data.current_plan)
+
+        if plan_data.next_plan is not None:
+            if plan_data.next_plan.fixed_price is not None:  # nocoverage
+                plan_data.estimated_next_plan_revenue = plan_data.next_plan.fixed_price
+            elif plan_data.current_plan.licenses_at_next_renewal() is not None:
+                next_plan_licenses = plan_data.current_plan.licenses_at_next_renewal()
+                assert next_plan_licenses is not None
+                assert plan_data.next_plan.price_per_license is not None
+                invoice_count = get_annual_invoice_count(plan_data.next_plan.billing_schedule)
+                plan_data.estimated_next_plan_revenue = (
+                    plan_data.next_plan.price_per_license * next_plan_licenses * invoice_count
+                )
+            else:
+                plan_data.estimated_next_plan_revenue = 0  # nocoverage
+
         plan_data.is_legacy_plan = (
             plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         )
         plan_data.has_fixed_price = plan_data.current_plan.fixed_price is not None
-        plan_revenue = billing_session.get_customer_plan_renewal_amount(
-            plan_data.current_plan, timezone_now(), last_ledger_entry
+        annual_invoice_count = get_annual_invoice_count(plan_data.current_plan.billing_schedule)
+        plan_data.annual_recurring_revenue = (
+            billing_session.get_customer_plan_renewal_amount(
+                plan_data.current_plan, timezone_now(), last_ledger_entry
+            )
+            * annual_invoice_count
         )
-        if plan_data.current_plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            plan_data.annual_recurring_revenue = plan_revenue * 12
-        else:
-            plan_data.annual_recurring_revenue = plan_revenue
 
     return plan_data
 

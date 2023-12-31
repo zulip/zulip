@@ -1,8 +1,8 @@
 import {$t} from "./i18n";
 
 export type UploadWidget = {
-    clear(): void;
-    close(): void;
+    clear: () => void;
+    close: () => void;
 };
 
 export type UploadFunction = (

@@ -1,16 +1,20 @@
+import assert from "minimalistic-assert";
+
 import * as favicon from "./favicon";
+import type {Filter} from "./filter";
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
 import * as unread from "./unread";
+import type {FullUnreadCountsData} from "./unread";
 
 export let unread_count = 0;
 let pm_count = 0;
 export let narrow_title = "home";
 
-export function compute_narrow_title(filter) {
+export function compute_narrow_title(filter?: Filter): string {
     if (filter === undefined) {
         // "All messages" and "Recent conversations" views have
         // an `undefined` filter.
@@ -18,9 +22,8 @@ export function compute_narrow_title(filter) {
             return $t({defaultMessage: "Recent conversations"});
         }
 
-        if (inbox_util.is_visible()) {
-            return $t({defaultMessage: "Inbox"});
-        }
+        assert(inbox_util.is_visible());
+        return $t({defaultMessage: "Inbox"});
     }
 
     const filter_title = filter.get_title();
@@ -76,7 +79,7 @@ export function compute_narrow_title(filter) {
     return filter_title;
 }
 
-export function redraw_title() {
+export function redraw_title(): void {
     // Update window title to reflect unread messages in current view
     const new_title =
         (unread_count ? "(" + unread_count + ") " : "") +
@@ -89,7 +92,7 @@ export function redraw_title() {
     document.title = new_title;
 }
 
-export function update_unread_counts(counts) {
+export function update_unread_counts(counts: FullUnreadCountsData): void {
     const new_unread_count = unread.calculate_notifiable_count(counts);
     const new_pm_count = counts.direct_message_count;
     if (new_unread_count === unread_count && new_pm_count === pm_count) {
@@ -111,7 +114,7 @@ export function update_unread_counts(counts) {
     redraw_title();
 }
 
-export function update_narrow_title(filter) {
+export function update_narrow_title(filter: Filter): void {
     narrow_title = compute_narrow_title(filter);
     redraw_title();
 }

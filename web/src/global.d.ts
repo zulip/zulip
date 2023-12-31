@@ -33,21 +33,20 @@ declare namespace JQueryValidation {
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 interface JQuery {
-    expectOne(): this;
-    get_offset_to_window(): DOMRect;
-    tab(action?: string): this; // From web/third/bootstrap
+    expectOne: () => this;
+    get_offset_to_window: () => DOMRect;
+    tab: (action?: string) => this; // From web/third/bootstrap
 
     // Types for jquery-caret-plugin
-    caret(): number;
-    caret(arg: number | string): this;
-    range(): JQueryCaretRange;
-    range(start: number, end?: number): this;
-    range(text: string): this;
-    selectAll(): this;
-    deselectAll(): this;
+    caret: (() => number) & ((arg: number | string) => this);
+    range: (() => JQueryCaretRange) &
+        ((start: number, end?: number) => this) &
+        ((text: string) => this);
+    selectAll: () => this;
+    deselectAll: () => this;
 
     // Types for jquery-idle plugin
-    idle(opts: JQueryIdleOptions): {
+    idle: (opts: JQueryIdleOptions) => {
         cancel: () => void;
         reset: () => void;
     };
