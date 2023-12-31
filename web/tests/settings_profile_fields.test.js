@@ -45,8 +45,6 @@ const custom_profile_field_types = {
     },
 };
 
-page_params.custom_profile_field_types = custom_profile_field_types;
-
 mock_esm("sortablejs", {Sortable: {create() {}}});
 
 const settings_profile_fields = zrequire("settings_profile_fields");
@@ -54,6 +52,7 @@ const settings_profile_fields = zrequire("settings_profile_fields");
 function test_populate(opts, template_data) {
     const fields_data = opts.fields_data;
 
+    page_params.custom_profile_field_types = custom_profile_field_types;
     page_params.is_admin = opts.is_admin;
     const $table = $("#admin_profile_fields_table");
     const $rows = $.create("rows");
