@@ -16,13 +16,6 @@ import {user_settings} from "./user_settings";
 // when we are typing.  For the inbound side see typing_events.js.
 // See docs/subsystems/typing-indicators.md for more details.
 
-// How frequently 'start' notifications are sent to extend
-// the expiry of active typing indicators.
-const typing_started_wait_period = page_params.server_typing_started_wait_period_milliseconds;
-// How long after someone stops editing in the compose box
-// do we send a 'stop' notification.
-const typing_stopped_wait_period = page_params.server_typing_stopped_wait_period_milliseconds;
-
 function send_typing_notification_ajax(data) {
     channel.post({
         url: "/json/typing",
@@ -121,14 +114,19 @@ export function initialize() {
         typing_status.update(
             worker,
             new_recipient,
-            typing_started_wait_period,
-            typing_stopped_wait_period,
+            page_params.server_typing_started_wait_period_milliseconds,
+            page_params.server_typing_stopped_wait_period_milliseconds,
         );
     });
 
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
     $(document).on("compose_canceled.zulip compose_finished.zulip", () => {
-        typing_status.update(worker, null, typing_started_wait_period, typing_stopped_wait_period);
+        typing_status.update(
+            worker,
+            null,
+            page_params.server_typing_started_wait_period_milliseconds,
+            page_params.server_typing_stopped_wait_period_milliseconds,
+        );
     });
 }
