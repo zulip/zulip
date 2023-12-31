@@ -117,9 +117,7 @@ class StreamNameError {
 const stream_name_error = new StreamNameError();
 
 // Stores the previous state of the stream creation checkbox.
-let stream_announce_previous_value =
-    settings_data.user_can_create_public_streams() ||
-    settings_data.user_can_create_web_public_streams();
+let stream_announce_previous_value;
 
 // Within the new stream modal...
 function update_announce_stream_state() {
@@ -383,6 +381,10 @@ export function show_new_stream_modal() {
 }
 
 export function set_up_handlers() {
+    stream_announce_previous_value =
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams();
+
     const $people_to_add_holder = $("#people_to_add").expectOne();
     stream_create_subscribers.create_handlers($people_to_add_holder);
 
