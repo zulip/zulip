@@ -15,7 +15,8 @@ can schedule a message for next morning to avoid disturbing others.
 1. Write a message.
 
 1. Click on the **ellipsis** (<i class="zulip-icon
-   zulip-icon-more-vertical"></i>) next to the **Send** button.
+   zulip-icon-more-vertical"></i>) next to the **Send**
+   (<i class="zulip-icon zulip-icon-send"></i>) button.
 
 1. Click **Schedule message**.
 
@@ -42,7 +43,8 @@ can schedule a message for next morning to avoid disturbing others.
 1. *(optional)* Edit the message.
 
 1. Click the **ellipsis** (<i class="zulip-icon
-   zulip-icon-more-vertical"></i>) next to the **Send** button.
+   zulip-icon-more-vertical"></i>) next to the **Send**
+   (<i class="zulip-icon zulip-icon-send"></i>) button.
 
 1. Select the previously scheduled time, or click **Schedule message** to pick a
    new time.
@@ -67,7 +69,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 1. *(optional)* Edit the message.
 
-1. Click **Send**.
+1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button.
 
 !!! keyboard_tip ""
 
@@ -104,8 +106,9 @@ can schedule a message for next morning to avoid disturbing others.
 
 !!! tip ""
 
-    You can also view scheduled messages by clicking on the **ellipsis** (<i class="zulip-icon
-    zulip-icon-more-vertical"></i>) next to the **Send** button in the compose
+    You can also view scheduled messages by clicking on the **ellipsis**
+    (<i class="zulip-icon zulip-icon-more-vertical"></i>) next to the **Send**
+    (<i class="zulip-icon zulip-icon-send"></i>) button in the compose
     box, and selecting **View scheduled messages**.
 
 {end_tabs}

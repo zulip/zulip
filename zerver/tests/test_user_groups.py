@@ -3,6 +3,7 @@ from typing import Iterable, Optional
 from unittest import mock
 
 import orjson
+import time_machine
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -31,15 +32,9 @@ from zerver.lib.user_groups import (
     is_user_in_group,
     user_groups_in_realm_serialized,
 )
-from zerver.models import (
-    GroupGroupMembership,
-    Realm,
-    SystemGroups,
-    UserGroup,
-    UserGroupMembership,
-    UserProfile,
-    get_realm,
-)
+from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 
 
 class UserGroupTestCase(ZulipTestCase):
@@ -1189,9 +1184,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         current_time = timezone_now()
-        with mock.patch(
-            "zerver.actions.user_groups.timezone_now", return_value=current_time + timedelta(days=3)
-        ):
+        with time_machine.travel((current_time + timedelta(days=3)), tick=False):
             promote_new_full_members()
 
         self.assertTrue(

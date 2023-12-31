@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 /*
@@ -106,11 +106,11 @@ run_test("unread_ops", ({override}) => {
     override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
-    override(message_lists.current.view, "show_message_as_read", () => {});
-    override(message_lists.home.view, "show_message_as_read", () => {});
-    override(desktop_notifications, "close_notification", () => {});
-    override(unread_ui, "update_unread_counts", () => {});
-    override(unread_ui, "notify_messages_remain_unread", () => {});
+    override(message_lists.current.view, "show_message_as_read", noop);
+    override(message_lists.home.view, "show_message_as_read", noop);
+    override(desktop_notifications, "close_notification", noop);
+    override(unread_ui, "update_unread_counts", noop);
+    override(unread_ui, "notify_messages_remain_unread", noop);
 
     // Set up a way to capture the options passed in to channel.post.
     let channel_post_opts;

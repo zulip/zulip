@@ -1,10 +1,10 @@
 import logging
 import os
 import secrets
-import urllib
 from datetime import datetime
 from mimetypes import guess_type
 from typing import IO, Any, BinaryIO, Callable, Iterator, List, Literal, Optional, Tuple
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import boto3
 import botocore
@@ -188,10 +188,10 @@ class S3UploadBackend(ZulipUploadBackend):
             },
             ExpiresIn=0,
         )
-        split_url = urllib.parse.urlsplit(foo_url)
+        split_url = urlsplit(foo_url)
         assert split_url.path.endswith(f"/{DUMMY_KEY}")
 
-        return urllib.parse.urlunsplit(
+        return urlunsplit(
             (split_url.scheme, split_url.netloc, split_url.path[: -len(DUMMY_KEY)], "", "")
         )
 
@@ -204,7 +204,7 @@ class S3UploadBackend(ZulipUploadBackend):
         key: str,
     ) -> str:
         assert not key.startswith("/")
-        return urllib.parse.urljoin(self.public_upload_url_base, key)
+        return urljoin(self.public_upload_url_base, key)
 
     @override
     def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:

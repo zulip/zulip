@@ -15,6 +15,7 @@ export function version_display_string(): string {
         // forked from, and that it was modified.
         const display_version = page_params.zulip_merge_base
             .replace(/\+git.*/, "")
+            .replace(/(-beta\d+).*/, "$1")
             .replace(/-dev.*/, "-dev");
         return $t({defaultMessage: "Zulip Server {display_version} (modified)"}, {display_version});
     }

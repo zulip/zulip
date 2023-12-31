@@ -6,7 +6,8 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.models import MAX_TOPIC_NAME_LENGTH, UserProfile
+from zerver.models import UserProfile
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 MESSAGE_TEMPLATE = """
 Splunk alert from saved search:

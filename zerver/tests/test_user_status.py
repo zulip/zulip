@@ -1,14 +1,17 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_status import UserInfoDict, get_user_status_dict, update_user_status
-from zerver.models import UserProfile, UserStatus, get_client
+from zerver.models import UserProfile, UserStatus
+from zerver.models.clients import get_client
 
 
-def user_status_info(user: UserProfile) -> UserInfoDict:
-    user_dict = get_user_status_dict(user.realm_id)
+def user_status_info(user: UserProfile, acting_user: Optional[UserProfile] = None) -> UserInfoDict:
+    if acting_user is None:
+        acting_user = user
+    user_dict = get_user_status_dict(user.realm, acting_user)
     return user_dict.get(str(user.id), {})
 
 
@@ -115,6 +118,26 @@ class UserStatusTest(ZulipTestCase):
             dict(status_text="in a meeting"),
         )
 
+        # Test user status for inaccessible users.
+        self.set_up_db_for_testing_user_access()
+        cordelia = self.example_user("cordelia")
+        update_user_status(
+            user_profile_id=cordelia.id,
+            status_text="on vacation",
+            emoji_name=None,
+            emoji_code=None,
+            reaction_type=None,
+            client_id=client2.id,
+        )
+        self.assertEqual(
+            user_status_info(hamlet, self.example_user("polonius")),
+            dict(status_text="in a meeting"),
+        )
+        self.assertEqual(
+            user_status_info(cordelia, self.example_user("polonius")),
+            {},
+        )
+
     def update_status_and_assert_event(
         self, payload: Dict[str, Any], expected_event: Dict[str, Any], num_events: int = 1
     ) -> None:
@@ -125,7 +148,7 @@ class UserStatusTest(ZulipTestCase):
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
-        realm_id = hamlet.realm_id
+        realm = hamlet.realm
 
         self.login_user(hamlet)
 
@@ -263,7 +286,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(type="user_status", user_id=hamlet.id, status_text=""),
         )
         self.assertEqual(
-            get_user_status_dict(realm_id=realm_id),
+            get_user_status_dict(realm=realm, user_profile=hamlet),
             {},
         )
 

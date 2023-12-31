@@ -62,38 +62,6 @@
             </div>
         </div>
 
-        <div id="org-user-identity" class="settings-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "User identity" }}</h3>
-                {{> settings_save_discard_widget section_name="user-identity" }}
-            </div>
-            <div class="inline-block organization-permissions-parent">
-                {{> settings_checkbox
-                  setting_name="realm_name_changes_disabled"
-                  prefix="id_"
-                  is_checked=realm_name_changes_disabled
-                  label=admin_settings_label.realm_name_changes_disabled}}
-
-                {{> settings_checkbox
-                  setting_name="realm_email_changes_disabled"
-                  prefix="id_"
-                  is_checked=realm_email_changes_disabled
-                  label=admin_settings_label.realm_email_changes_disabled}}
-
-                {{> settings_checkbox
-                  setting_name="realm_avatar_changes_disabled"
-                  prefix="id_"
-                  is_checked=realm_avatar_changes_disabled
-                  label=admin_settings_label.realm_avatar_changes_disabled}}
-
-                {{> settings_checkbox
-                  setting_name="realm_enable_guest_user_indicator"
-                  prefix="id_"
-                  is_checked=realm_enable_guest_user_indicator
-                  label=admin_settings_label.realm_enable_guest_user_indicator}}
-            </div>
-        </div>
-
         <div id="org-stream-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Stream permissions" }}</h3>
@@ -133,7 +101,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="realm_wildcard_mention_policy" class="dropdown-title">{{t "Who can use @all/@everyone mentions in large streams" }}
+                    <label for="realm_wildcard_mention_policy" class="dropdown-title">{{t "Who can notify a large number of users with a wildcard mention" }}
                         {{> ../help_link_widget link="/help/restrict-wildcard-mentions" }}
                     </label>
                     <select name="realm_wildcard_mention_policy" id="id_realm_wildcard_mention_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
@@ -284,6 +252,54 @@
                           value="{{ realm_message_content_delete_limit_minutes }}"/>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div id="org-user-identity" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "User identity" }}</h3>
+                {{> settings_save_discard_widget section_name="user-identity" }}
+            </div>
+            <div class="inline-block organization-permissions-parent">
+                {{> settings_checkbox
+                  setting_name="realm_name_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_name_changes_disabled
+                  label=admin_settings_label.realm_name_changes_disabled}}
+
+                {{> settings_checkbox
+                  setting_name="realm_email_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_email_changes_disabled
+                  label=admin_settings_label.realm_email_changes_disabled}}
+
+                {{> settings_checkbox
+                  setting_name="realm_avatar_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_avatar_changes_disabled
+                  label=admin_settings_label.realm_avatar_changes_disabled}}
+
+            </div>
+        </div>
+
+        <div id="org-guest-settings" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Guests" }}</h3>
+                {{> settings_save_discard_widget section_name="guest-settings" }}
+            </div>
+
+            <div class="inline-block organization-permissions-parent">
+                {{> settings_checkbox
+                  setting_name="realm_enable_guest_user_indicator"
+                  prefix="id_"
+                  is_checked=realm_enable_guest_user_indicator
+                  label=admin_settings_label.realm_enable_guest_user_indicator}}
+
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_access_all_users_group"
+                  label=(t 'Who can view all other users in the organization')
+                  value_type="number"
+                  help_link="/help/guest-users#configure-whether-guests-can-see-all-other-users"}}
             </div>
         </div>
 

@@ -4,7 +4,8 @@ import * as resolved_topic from "../shared/src/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
-import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
+import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
 import * as channel from "./channel";
@@ -13,18 +14,56 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
+import * as message_store from "./message_store";
+import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as reactions from "./reactions";
+import * as recent_senders from "./recent_senders";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
 
-let user_acknowledged_wildcard = false;
+let user_acknowledged_stream_wildcard = false;
+let upload_in_progress = false;
+let message_too_long = false;
+let recipient_disallowed = false;
 
-export let wildcard_mention_large_stream_threshold = 15;
+export let wildcard_mention_threshold = 15;
+
+export function set_upload_in_progress(status) {
+    upload_in_progress = status;
+    update_send_button_status();
+}
+
+function set_message_too_long(status) {
+    message_too_long = status;
+    update_send_button_status();
+}
+
+export function set_recipient_disallowed(status) {
+    recipient_disallowed = status;
+    update_send_button_status();
+}
+
+function update_send_button_status() {
+    $(".message-send-controls").toggleClass(
+        "disabled-message-send-controls",
+        message_too_long || upload_in_progress || recipient_disallowed,
+    );
+}
+
+export function get_disabled_send_tooltip() {
+    if (message_too_long) {
+        return $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."});
+    } else if (upload_in_progress) {
+        return $t({defaultMessage: "Cannot send message while files are being uploaded."});
+    }
+    return "";
+}
 
 export function needs_subscribe_warning(user_id, stream_id) {
     // This returns true if all of these conditions are met:
@@ -124,13 +163,13 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
         return;
     }
 
-    const new_row = render_private_stream_warning({
+    const new_row_html = render_private_stream_warning({
         banner_type: compose_banner.WARNING,
         stream_name: linked_stream.name,
         classname: compose_banner.CLASSNAMES.private_stream_warning,
     });
     const $container = compose_banner.get_compose_banner_container($textarea);
-    compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
@@ -177,9 +216,9 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
                 should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             };
 
-            const new_row = render_not_subscribed_warning(context);
+            const new_row_html = render_not_subscribed_warning(context);
             const $container = compose_banner.get_compose_banner_container($textarea);
-            compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+            compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
         }
     }
 }
@@ -238,15 +277,32 @@ export function warn_if_topic_resolved(topic_changed) {
             classname: compose_banner.CLASSNAMES.topic_resolved,
         };
 
-        const new_row = render_compose_banner(context);
-        compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
+        const new_row_html = render_compose_banner(context);
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
         compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
         clear_topic_resolved_warning();
     }
 }
 
-function show_wildcard_warnings(opts) {
+export function warn_if_in_search_view() {
+    if (narrow_state.filter() && !narrow_state.filter().supports_collapsing_recipients()) {
+        const context = {
+            banner_type: compose_banner.WARNING,
+            banner_text: $t({
+                defaultMessage:
+                    "This conversation may have additional messages not shown in this view.",
+            }),
+            button_text: $t({defaultMessage: "Go to conversation"}),
+            classname: compose_banner.CLASSNAMES.search_view,
+        };
+
+        const new_row_html = render_compose_banner(context);
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+    }
+}
+
+function show_stream_wildcard_warnings(opts) {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
     const stream_name = sub_store.maybe_get_stream_name(opts.stream_id);
     const is_edit_container = opts.$banner_container.closest(".edit_form_banners").length > 0;
@@ -260,11 +316,11 @@ function show_wildcard_warnings(opts) {
         button_text = $t({defaultMessage: "Yes, save"});
     }
 
-    const wildcard_template = render_wildcard_warning({
+    const stream_wildcard_html = render_stream_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
         stream_name,
-        wildcard_mention: opts.wildcard_mention,
+        stream_wildcard_mention: opts.stream_wildcard_mention,
         button_text,
         hide_close_button: true,
         classname,
@@ -274,28 +330,28 @@ function show_wildcard_warnings(opts) {
     // only show one error for any number of @all or @everyone mentions
     if (opts.$banner_container.find(`.${CSS.escape(classname)}`).length === 0) {
         compose_banner.append_compose_banner_to_banner_list(
-            wildcard_template,
+            $(stream_wildcard_html),
             opts.$banner_container,
         );
     } else {
         // if there is already a banner, replace it with the new one
         compose_banner.update_or_append_banner(
-            wildcard_template,
+            $(stream_wildcard_html),
             classname,
             opts.$banner_container,
         );
     }
 
-    user_acknowledged_wildcard = false;
+    user_acknowledged_stream_wildcard = false;
 }
 
-export function clear_wildcard_warnings($banner_container) {
+export function clear_stream_wildcard_warnings($banner_container) {
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
     $banner_container.find(`.${CSS.escape(classname)}`).remove();
 }
 
-export function set_user_acknowledged_wildcard_flag(value) {
-    user_acknowledged_wildcard = value;
+export function set_user_acknowledged_stream_wildcard_flag(value) {
+    user_acknowledged_stream_wildcard = value;
 }
 
 export function get_invalid_recipient_emails() {
@@ -344,12 +400,60 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
 function is_recipient_large_stream() {
     return (
         compose_state.stream_id() &&
-        peer_data.get_subscriber_count(compose_state.stream_id()) >
-            wildcard_mention_large_stream_threshold
+        peer_data.get_subscriber_count(compose_state.stream_id()) > wildcard_mention_threshold
     );
 }
 
-function wildcard_mention_allowed_in_large_stream() {
+export function topic_participant_count_more_than_threshold(stream_id, topic) {
+    // Topic participants:
+    // Users who either sent or reacted to the messages in the topic.
+    const participant_ids = new Set();
+
+    const sender_ids = recent_senders.get_topic_recent_senders(stream_id, topic);
+    for (const id of sender_ids) {
+        participant_ids.add(id);
+    }
+
+    // If senders count is greater than threshold, no need to calculate reactors.
+    if (participant_ids.size > wildcard_mention_threshold) {
+        return true;
+    }
+
+    for (const sender_id of sender_ids) {
+        const message_ids = recent_senders.get_topic_message_ids_for_sender(
+            stream_id,
+            topic,
+            sender_id,
+        );
+        for (const message_id of message_ids) {
+            const message = message_store.get(message_id);
+            if (message) {
+                const message_reactions = reactions.get_message_reactions(message);
+                const reactor_ids = message_reactions.flatMap((obj) => obj.user_ids);
+                for (const id of reactor_ids) {
+                    participant_ids.add(id);
+                }
+                if (participant_ids.size > wildcard_mention_threshold) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+function is_recipient_large_topic() {
+    return (
+        compose_state.stream_id() &&
+        topic_participant_count_more_than_threshold(
+            compose_state.stream_id(),
+            compose_state.topic(),
+        )
+    );
+}
+
+function wildcard_mention_policy_authorizes_user() {
     if (
         page_params.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
@@ -393,12 +497,16 @@ function wildcard_mention_allowed_in_large_stream() {
     return !page_params.is_guest;
 }
 
-export function wildcard_mention_allowed() {
-    return !is_recipient_large_stream() || wildcard_mention_allowed_in_large_stream();
+export function stream_wildcard_mention_allowed() {
+    return !is_recipient_large_stream() || wildcard_mention_policy_authorizes_user();
 }
 
-export function set_wildcard_mention_large_stream_threshold(value) {
-    wildcard_mention_large_stream_threshold = value;
+export function topic_wildcard_mention_allowed() {
+    return !is_recipient_large_topic() || wildcard_mention_policy_authorizes_user();
+}
+
+export function set_wildcard_mention_threshold(value) {
+    wildcard_mention_threshold = value;
 }
 
 export function validate_stream_message_mentions(opts) {
@@ -407,24 +515,22 @@ export function validate_stream_message_mentions(opts) {
     // If the user is attempting to do a wildcard mention in a large
     // stream, check if they permission to do so. If yes, warn them
     // if they haven't acknowledged the wildcard warning yet.
-    if (
-        opts.wildcard_mention !== null &&
-        subscriber_count > wildcard_mention_large_stream_threshold
-    ) {
-        if (!wildcard_mention_allowed_in_large_stream()) {
-            compose_banner.show_error_message(
-                $t({
-                    defaultMessage:
-                        "You do not have permission to use wildcard mentions in this stream.",
-                }),
-                compose_banner.CLASSNAMES.wildcards_not_allowed,
+    if (opts.stream_wildcard_mention !== null && subscriber_count > wildcard_mention_threshold) {
+        if (!wildcard_mention_policy_authorizes_user()) {
+            const new_row_html = render_wildcard_mention_not_allowed_error({
+                banner_type: compose_banner.ERROR,
+                classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                stream_wildcard_mention: opts.stream_wildcard_mention,
+            });
+            compose_banner.append_compose_banner_to_banner_list(
+                $(new_row_html),
                 opts.$banner_container,
             );
             return false;
         }
 
-        if (!user_acknowledged_wildcard) {
-            show_wildcard_warnings(opts);
+        if (!user_acknowledged_stream_wildcard) {
+            show_stream_wildcard_warnings(opts);
 
             $("#compose-send-button").prop("disabled", false);
             compose_ui.hide_compose_spinner();
@@ -432,10 +538,10 @@ export function validate_stream_message_mentions(opts) {
         }
     } else {
         // the message no longer contains @all or @everyone
-        clear_wildcard_warnings(opts.$banner_container);
+        clear_stream_wildcard_warnings(opts.$banner_container);
     }
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
-    user_acknowledged_wildcard = false;
+    user_acknowledged_stream_wildcard = false;
 
     return true;
 }
@@ -462,7 +568,7 @@ export function validation_error(error_type, stream_name) {
                 return false;
             }
             const sub = stream_data.get_sub(stream_name);
-            const new_row = render_compose_banner({
+            const new_row_html = render_compose_banner({
                 banner_type: compose_banner.ERROR,
                 banner_text: $t({
                     defaultMessage:
@@ -476,7 +582,7 @@ export function validation_error(error_type, stream_name) {
                 // closing the banner would be more confusing than helpful.
                 hide_close_button: true,
             });
-            compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+            compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
             return false;
         }
     }
@@ -536,14 +642,16 @@ function validate_stream_message(scheduling_message) {
         return false;
     }
 
-    const wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
+    const stream_wildcard_mention = util.find_stream_wildcard_mentions(
+        compose_state.message_content(),
+    );
 
     if (
         !validate_stream_message_address_info(sub.name) ||
         !validate_stream_message_mentions({
             stream_id: sub.stream_id,
             $banner_container,
-            wildcard_mention,
+            stream_wildcard_mention,
             scheduling_message,
         })
     ) {
@@ -655,7 +763,7 @@ export function check_overflow_text() {
             compose_banner.CLASSNAMES.message_too_long,
             $("#compose_banners"),
         );
-        $("#compose-send-button").prop("disabled", true);
+        set_message_too_long(true);
     } else if (text.length > 0.9 * max_length) {
         $indicator.removeClass("over_limit");
         $("textarea#compose-textarea").removeClass("over_limit");
@@ -665,13 +773,13 @@ export function check_overflow_text() {
                 max_length,
             }),
         );
-        $("#compose-send-button").prop("disabled", false);
+        set_message_too_long(false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {
         $indicator.text("");
         $("textarea#compose-textarea").removeClass("over_limit");
 
-        $("#compose-send-button").prop("disabled", false);
+        set_message_too_long(false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     }
 

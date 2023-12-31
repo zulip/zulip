@@ -4,11 +4,11 @@ import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
 type List<Key> = {
-    scroll_container_sel: string;
-    find_li(opts: {key: Key; force_render: boolean}): JQuery;
-    first_key(): Key | undefined;
-    prev_key(key: Key): Key | undefined;
-    next_key(key: Key): Key | undefined;
+    scroll_container_selector: string;
+    find_li: (opts: {key: Key; force_render: boolean}) => JQuery;
+    first_key: () => Key | undefined;
+    prev_key: (key: Key) => Key | undefined;
+    next_key: (key: Key) => Key | undefined;
 };
 
 export class ListCursor<Key> {
@@ -36,7 +36,7 @@ export class ListCursor<Key> {
         return this.curr_key;
     }
 
-    get_row(key: Key | undefined): {highlight(): void; clear(): void} | undefined {
+    get_row(key: Key | undefined): {highlight: () => void; clear: () => void} | undefined {
         // TODO: The list class should probably do more of the work
         //       here, so we're not so coupled to jQuery, and
         //       so we instead just get back a widget we can say
@@ -69,7 +69,7 @@ export class ListCursor<Key> {
     }
 
     adjust_scroll($li: JQuery): void {
-        const $scroll_container = $(this.list.scroll_container_sel);
+        const $scroll_container = $(this.list.scroll_container_selector);
         scroll_util.scroll_element_into_container($li, $scroll_container);
     }
 

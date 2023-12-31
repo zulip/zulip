@@ -25,7 +25,7 @@
 {tab|mobile}
 
 1. Tap the **Direct messages**
-   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="mobile-icon"/> )
+   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="help-center-icon"/> )
    tab at the bottom of the app.
 
 1. Tap the **New group DM** button at the top of the app.
@@ -35,11 +35,11 @@
    adding as many message recipients as you like.
 
 1. Approve by tapping the **checkmark**
-   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="help-center-icon"/>)
    button in the bottom right corner of the app.
 
 1. Compose your message, and tap the **send**
-   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="help-center-icon"/>)
    button in the bottom right corner of the app.
 
 {end_tabs}

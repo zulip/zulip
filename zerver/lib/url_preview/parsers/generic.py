@@ -1,5 +1,5 @@
 from typing import Optional
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 from bs4.element import Tag
 from typing_extensions import override
@@ -53,9 +53,9 @@ class GenericParser(BaseParser):
             if isinstance(first_image, Tag) and first_image["src"] != "":
                 assert isinstance(first_image["src"], str)
                 try:
-                    # We use urlparse and not URLValidator because we
+                    # We use urlsplit and not URLValidator because we
                     # need to support relative URLs.
-                    urlparse(first_image["src"])
+                    urlsplit(first_image["src"])
                 except ValueError:
                     return None
                 return first_image["src"]

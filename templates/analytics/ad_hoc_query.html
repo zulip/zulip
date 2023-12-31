@@ -1,9 +1,13 @@
 <h3>{{ data.title }}</h3>
 
-{{ data.rows|length}} rows
-<table class="table sortable table-striped table-bordered analytics_table">
+{% if data.title == "Remote servers" %}
+{% include "analytics/remote_activity_key.html" %}
+{% endif %}
 
-    <thead class="activity_head">
+{{ data.rows|length}} rows
+<table class="table sortable table-striped table-bordered analytics-table">
+
+    <thead class="activity-head">
         <tr>
             {% for col in data.cols %}
             <th>{{ col }}</th>

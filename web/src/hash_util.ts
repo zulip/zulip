@@ -1,17 +1,17 @@
 import * as internal_url from "../shared/src/internal_url";
 
+import type {Message} from "./message_store";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
-import type {Message} from "./types";
 import type {UserGroup} from "./user_groups";
 
 type Operator = {operator: string; operand: string; negated?: boolean};
 
 export function build_reload_url(): string {
     let hash = window.location.hash;
-    if (hash.length !== 0 && hash[0] === "#") {
+    if (hash.length !== 0 && hash.startsWith("#")) {
         hash = hash.slice(1);
     }
     return "+oldhash=" + encodeURIComponent(hash);
@@ -140,9 +140,10 @@ export function by_conversation_and_time_url(message: Message): string {
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_url(sub: StreamSubscription): string {
-    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}`;
-    return hash;
+export function stream_edit_url(sub: StreamSubscription, right_side_tab: string): string {
+    return `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(
+        sub.name,
+    )}/${right_side_tab}`;
 }
 
 export function group_edit_url(group: UserGroup): string {
@@ -176,7 +177,7 @@ export function parse_narrow(hash: string): Operator[] | undefined {
         }
 
         let negated = false;
-        if (operator[0] === "-") {
+        if (operator.startsWith("-")) {
             negated = true;
             operator = operator.slice(1);
         }

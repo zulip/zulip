@@ -4,12 +4,10 @@ const {strict: assert} = require("assert");
 
 const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
-
-const noop = () => {};
 
 const realm_icon = mock_esm("../src/realm_icon");
 
@@ -30,7 +28,7 @@ const dropdown_widget = zrequire("dropdown_widget");
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#realm-icon-upload-widget .upload-spinner-background").css = () => {};
+        $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
         page_params.is_admin = false;
         page_params.realm_domains = [
             {domain: "example.com", allow_subdomains: true},

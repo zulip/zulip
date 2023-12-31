@@ -13,7 +13,7 @@ from zerver.lib.i18n import get_browser_language_code
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.management.commands import makemessages
-from zerver.models import get_realm_stream
+from zerver.models.streams import get_realm_stream
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse

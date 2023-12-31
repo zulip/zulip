@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 
 from django.db import connection
 from django.utils.timezone import now as timezone_now
@@ -24,7 +24,7 @@ def compute_max_monthly_messages(remote_server: RemoteZulipServer) -> int:
     if not RemoteInstallationCount.objects.filter(
         server=remote_server,
         property="active_users_audit:is_bot:day",
-        end_time__lte=timezone_now() - datetime.timedelta(days=3),
+        end_time__lte=timezone_now() - timedelta(days=3),
     ).exists():
         raise MissingDataError
 

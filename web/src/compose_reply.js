@@ -42,7 +42,8 @@ export function respond_to_message(opts) {
         }
         message = message_opts.message;
     } else {
-        message = message_lists.current.selected_message();
+        message =
+            message_lists.current.get(opts.message_id) || message_lists.current.selected_message();
 
         if (message === undefined) {
             // empty narrow implementation
@@ -113,6 +114,7 @@ export function respond_to_message(opts) {
         topic,
         private_message_recipient: pm_recipient,
         trigger: opts.trigger,
+        is_reply: true,
     });
 }
 
@@ -124,13 +126,19 @@ export function reply_with_mention(opts) {
 }
 
 export function quote_and_reply(opts) {
-    const $textarea = $("textarea#compose-textarea");
-    const message_id = message_lists.current.selected_id();
-    const message = message_lists.current.selected_message();
+    const message_id = opts.message_id || message_lists.current.selected_id();
+    const message = message_lists.current.get(message_id);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
-    if (!compose_state.has_message_content()) {
+    // If the last compose type textarea focused on is still in the DOM, we add
+    // the quote in that textarea, else we default to the compose box.
+    const $textarea = compose_state.get_last_focused_compose_type_input()?.isConnected
+        ? $(compose_state.get_last_focused_compose_type_input())
+        : $("textarea#compose-textarea");
+
+    if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
         // The user has not started typing a message,
+        // but is quoting into the compose box,
         // so we will re-open the compose box.
         // (If you did re-open the compose box, you
         // are prone to glitches where you select the
@@ -159,7 +167,7 @@ export function quote_and_reply(opts) {
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
 
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
-        compose_ui.autosize_textarea($("textarea#compose-textarea"));
+        compose_ui.autosize_textarea($textarea);
     }
 
     if (message && message.raw_content) {

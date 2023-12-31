@@ -71,7 +71,7 @@ export function send_message(request, on_success, error) {
                 }
 
                 const response = channel.xhr_error_message("Error sending message", xhr);
-                error(response);
+                error(response, xhr.responseJSON?.code);
             },
         });
     } finally {
@@ -97,7 +97,7 @@ export function reply_message(opts) {
         //       already handles things like reporting times to the server.)
     }
 
-    function error() {
+    function error(_response, _server_error_code) {
         // TODO: In our current use case, which is widgets, to meaningfully
         //       handle errors, we would want the widget to provide some
         //       kind of callback to us so it can do some appropriate UI.

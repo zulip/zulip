@@ -7,6 +7,9 @@ from zproject.settings_types import SCIMConfigDict
 
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
+# Initiatize TEST_SUITE early, so other code can rely on the setting.
+TEST_SUITE = os.getenv("ZULIP_TEST_SUITE") == "true"
+
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
 # chdir without having problems accessing it.  Unfortunately, this
 # means we need a duplicate definition of DEPLOY_ROOT with the one in
@@ -203,3 +206,7 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
         "name_formatted_included": True,
     }
 }
+
+SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
+DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
+PUSH_NOTIFICATION_BOUNCER_URL = f"http://push.{EXTERNAL_HOST}"

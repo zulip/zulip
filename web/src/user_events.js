@@ -145,7 +145,7 @@ export const update_person = function update(person) {
             people.deactivate(person_obj);
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);
             settings_users.update_view_on_deactivate(person.user_id);
-            buddy_list.maybe_remove_key({key: person.user_id});
+            buddy_list.maybe_remove_user_id({user_id: person.user_id});
         }
         settings_account.maybe_update_deactivate_account_button();
         if (people.user_is_bot(person.user_id)) {

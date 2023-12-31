@@ -17,18 +17,11 @@ from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
-from zerver.models import (
-    Realm,
-    RealmUserDefault,
-    Service,
-    Subscription,
-    UserProfile,
-    get_bot_services,
-    get_realm,
-    get_stream,
-    get_user,
-    is_cross_realm_bot_email,
-)
+from zerver.models import Realm, RealmUserDefault, Service, Subscription, UserProfile
+from zerver.models.bots import get_bot_services
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_user, is_cross_realm_bot_email
 
 
 # A test validator

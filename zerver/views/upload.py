@@ -3,8 +3,8 @@ import binascii
 import os
 from datetime import timedelta
 from mimetypes import guess_type
-from typing import Optional, Union
-from urllib.parse import quote, urlparse
+from typing import List, Optional, Union
+from urllib.parse import quote, urlsplit
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -20,13 +20,16 @@ from django.http import (
 )
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils.cache import patch_cache_control
+from django.utils.cache import patch_cache_control, patch_vary_headers
 from django.utils.http import content_disposition_header
 from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
+from zerver.decorator import zulip_redirect_to_login
+from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
+from zerver.lib.storage import static_path
 from zerver.lib.upload import (
     check_upload_within_quota,
     get_public_upload_root_url,
@@ -35,11 +38,11 @@ from zerver.lib.upload import (
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
-from zerver.models import UserProfile, validate_attachment_request
+from zerver.models import UserProfile
 
 
 def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
-    filename = os.path.basename(urlparse(url).path)
+    filename = os.path.basename(urlsplit(url).path)
     content_disposition = content_disposition_header(is_attachment, filename)
 
     if content_disposition is not None:
@@ -82,7 +85,7 @@ def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -
 
     # We over-escape the path, to work around it being impossible to
     # get the _unescaped_ new internal request URI in nginx.
-    parsed_url = urlparse(url)
+    parsed_url = urlsplit(url)
     assert parsed_url.hostname is not None
     assert parsed_url.path is not None
     assert parsed_url.query is not None
@@ -167,6 +170,23 @@ def serve_file_url_backend(
     return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
 
 
+def preferred_accept(request: HttpRequest, served_types: List[str]) -> Optional[str]:
+    # Returns the first of the served_types which the browser will
+    # accept, based on the browser's stated quality preferences.
+    # Returns None if none of the served_types are accepted by the
+    # browser.
+    accepted_types = sorted(
+        request.accepted_types,
+        key=lambda e: float(e.params.get("q", "1.0")),
+        reverse=True,
+    )
+    for potential_type in accepted_types:
+        for served_type in served_types:
+            if potential_type.match(served_type):
+                return served_type
+    return None
+
+
 def serve_file(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
@@ -179,10 +199,30 @@ def serve_file(
     realm = get_valid_realm_from_request(request)
     is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
 
+    def serve_image_error(status: int, image_path: str) -> HttpResponseBase:
+        # We cannot use X-Accel-Redirect to offload the serving of
+        # this image to nginx, because it does not preserve the status
+        # code of this response, nor the Vary: header.
+        return FileResponse(open(static_path(image_path), "rb"), status=status)  # noqa: SIM115
+
     if is_authorized is None:
-        return HttpResponseNotFound(_("<p>This file does not exist or has been deleted.</p>"))
+        if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
+            response = serve_image_error(404, "images/errors/image-not-exist.png")
+        else:
+            response = HttpResponseNotFound(
+                _("<p>This file does not exist or has been deleted.</p>")
+            )
+        patch_vary_headers(response, ("Accept",))
+        return response
     if not is_authorized:
-        return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
+        if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
+            response = serve_image_error(403, "images/errors/image-no-auth.png")
+        elif isinstance(maybe_user_profile, AnonymousUser):
+            response = zulip_redirect_to_login(request)
+        else:
+            response = HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
+        patch_vary_headers(response, ("Accept",))
+        return response
     if url_only:
         url = generate_unauthed_file_access_url(path_id)
         return json_success(request, data=dict(url=url))
@@ -208,7 +248,9 @@ def get_file_path_id_from_token(token: str) -> Optional[str]:
     signer = TimestampSigner(salt=USER_UPLOADS_ACCESS_TOKEN_SALT)
     try:
         signed_data = base64.b16decode(token).decode()
-        path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
+        path_id = signer.unsign(
+            signed_data, max_age=timedelta(seconds=settings.SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS)
+        )
     except (BadSignature, binascii.Error):
         return None
 

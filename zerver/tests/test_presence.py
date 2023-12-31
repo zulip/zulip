@@ -1,8 +1,8 @@
-import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, Dict
 from unittest import mock
 
+import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -18,8 +18,8 @@ from zerver.models import (
     UserActivityInterval,
     UserPresence,
     UserProfile,
-    get_realm,
 )
+from zerver.models.realms import get_realm
 
 
 class TestClientModel(ZulipTestCase):
@@ -37,7 +37,7 @@ class UserPresenceModelTests(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         email = user_profile.email
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
 
         self.login_user(user_profile)
@@ -45,38 +45,38 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         slim_presence = False
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm, slim_presence)
         self.assert_length(presence_dct, 1)
         self.assertEqual(presence_dct[email]["website"]["status"], "active")
 
         slim_presence = True
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm, slim_presence)
         self.assert_length(presence_dct, 1)
         info = presence_dct[str(user_profile.id)]
         self.assertEqual(set(info.keys()), {"active_timestamp", "idle_timestamp"})
 
         def back_date(num_weeks: int) -> None:
             user_presence = UserPresence.objects.get(user_profile=user_profile)
-            backdated_timestamp = timezone_now() - datetime.timedelta(weeks=num_weeks)
+            backdated_timestamp = timezone_now() - timedelta(weeks=num_weeks)
             user_presence.last_active_time = backdated_timestamp
             user_presence.last_connected_time = backdated_timestamp
             user_presence.save()
 
         # Simulate the presence being a week old first.  Nothing should change.
         back_date(num_weeks=1)
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 1)
 
         # If the UserPresence row is three weeks old, we ignore it.
         back_date(num_weeks=3)
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
 
         # If the values are set to "never", ignore it just like for sufficiently old presence rows.
         UserPresence.objects.filter(id=user_profile.id).update(
             last_active_time=None, last_connected_time=None
         )
-        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm)
         self.assert_length(presence_dct, 0)
 
     def test_pushable_always_false(self) -> None:
@@ -92,7 +92,7 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         def pushable() -> bool:
-            presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
+            presence_dct = get_presence_dict_by_realm(user_profile.realm)
             self.assert_length(presence_dct, 1)
             return presence_dct[email]["website"]["pushable"]
 
@@ -238,7 +238,7 @@ class UserPresenceTests(ZulipTestCase):
         self.login("hamlet")
         self.assertEqual(UserActivityInterval.objects.filter(user_profile=user_profile).count(), 0)
         time_zero = timezone_now().replace(microsecond=0)
-        with mock.patch("zerver.views.presence.timezone_now", return_value=time_zero):
+        with time_machine.travel(time_zero, tick=False):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "active", "new_user_input": "true"}
             )
@@ -250,7 +250,7 @@ class UserPresenceTests(ZulipTestCase):
 
         second_time = time_zero + timedelta(seconds=600)
         # Extent the interval
-        with mock.patch("zerver.views.presence.timezone_now", return_value=second_time):
+        with time_machine.travel(second_time, tick=False):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "active", "new_user_input": "true"}
             )
@@ -261,7 +261,7 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(interval.end, second_time + UserActivityInterval.MIN_INTERVAL_LENGTH)
 
         third_time = time_zero + timedelta(seconds=6000)
-        with mock.patch("zerver.views.presence.timezone_now", return_value=third_time):
+        with time_machine.travel(third_time, tick=False):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "active", "new_user_input": "true"}
             )
@@ -491,6 +491,17 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get(f"/json/users/{othello.id}/presence", subdomain="zephyr")
         self.assert_json_error(result, "No such user")
 
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            result = self.client_get(f"/json/users/{othello.id}/presence")
+        self.assert_json_error(result, "Insufficient permission")
+
+        result = self.client_get(f"/json/users/{othello.id}/presence")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
+
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
@@ -515,25 +526,24 @@ class SingleUserPresenceTests(ZulipTestCase):
 
 class UserPresenceAggregationTests(ZulipTestCase):
     def _send_presence_for_aggregated_tests(
-        self, user: UserProfile, status: str, validate_time: datetime.datetime
+        self, user: UserProfile, status: str, validate_time: datetime
     ) -> Dict[str, Dict[str, Any]]:
         self.login_user(user)
-        timezone_util = "zerver.views.presence.timezone_now"
         # First create some initial, old presence to avoid the details of the edge case of initial
         # presence creation messing with the intended setup.
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(days=365)):
+        with time_machine.travel((validate_time - timedelta(days=365)), tick=False):
             self.client_post("/json/users/me/presence", {"status": status})
 
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):
+        with time_machine.travel((validate_time - timedelta(seconds=5)), tick=False):
             self.client_post("/json/users/me/presence", {"status": status})
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=2)):
+        with time_machine.travel((validate_time - timedelta(seconds=2)), tick=False):
             self.api_post(
                 user,
                 "/api/v1/users/me/presence",
                 {"status": status},
                 HTTP_USER_AGENT="ZulipAndroid/1.0",
             )
-        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=7)):
+        with time_machine.travel((validate_time - timedelta(seconds=7)), tick=False):
             latest_result = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -545,7 +555,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             latest_result_dict["presences"][user.email]["aggregated"],
             {
                 "status": status,
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
                 # We no longer store the client information, but keep the field in these dicts,
                 # with the value 'website' for backwards compatibility.
                 "client": "website",
@@ -557,13 +567,10 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
     def test_aggregated_info(self) -> None:
         user = self.example_user("othello")
-        offset = datetime.timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 1)
+        offset = timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 1)
         validate_time = timezone_now() - offset
         self._send_presence_for_aggregated_tests(user, "active", validate_time)
-        with mock.patch(
-            "zerver.views.presence.timezone_now",
-            return_value=validate_time + offset,
-        ):
+        with time_machine.travel((validate_time + offset), tick=False):
             result = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -588,7 +595,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict["presence"]["aggregated"],
             {
                 "status": "active",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
             },
         )
 
@@ -600,7 +607,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict["presence"]["aggregated"],
             {
                 "status": "idle",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
             },
         )
 
@@ -609,10 +616,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         self.login_user(user)
         validate_time = timezone_now()
         self._send_presence_for_aggregated_tests(user, "idle", validate_time)
-        with mock.patch(
-            "zerver.views.presence.timezone_now",
-            return_value=validate_time - datetime.timedelta(seconds=3),
-        ):
+        with time_machine.travel((validate_time - timedelta(seconds=3)), tick=False):
             result_dict = self.api_post(
                 user,
                 "/api/v1/users/me/presence",
@@ -625,7 +629,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             {
                 "client": "website",
                 "status": "active",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=3)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=3)),
             },
         )
 
@@ -635,9 +639,9 @@ class UserPresenceAggregationTests(ZulipTestCase):
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(user, "idle", validate_time)
 
-        with mock.patch(
-            "zerver.views.presence.timezone_now",
-            return_value=validate_time + datetime.timedelta(settings.OFFLINE_THRESHOLD_SECS + 1),
+        with time_machine.travel(
+            (validate_time + timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1)),
+            tick=False,
         ):
             # After settings.OFFLINE_THRESHOLD_SECS + 1 this generated, recent presence data
             # will count as offline.
@@ -648,7 +652,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             result_dict["presence"]["aggregated"],
             {
                 "status": "offline",
-                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=5)),
+                "timestamp": datetime_to_timestamp(validate_time - timedelta(seconds=5)),
             },
         )
 
@@ -658,6 +662,7 @@ class GetRealmStatusesTest(ZulipTestCase):
         # Set up the test by simulating users reporting their presence data.
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
+        self.example_user("cordelia")
 
         result = self.api_post(
             othello,
@@ -688,6 +693,40 @@ class GetRealmStatusesTest(ZulipTestCase):
         result = self.api_get(self.example_user("default_bot"), "/api/v1/realm/presence")
         json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
+
+        # Check that polonius cannot fetch presence data for inaccessible user Othello
+        # if CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is set to True.
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            result = self.api_get(polonius, "/api/v1/realm/presence")
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {hamlet.email})
+
+        result = self.api_get(polonius, "/api/v1/realm/presence")
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
+
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            result = self.api_post(
+                polonius,
+                "/api/v1/users/me/presence",
+                dict(status="idle"),
+                HTTP_USER_AGENT="ZulipDesktop/1.0",
+            )
+        json = self.assert_json_success(result)
+        self.assertEqual(set(json["presences"].keys()), {hamlet.email, polonius.email})
+
+        result = self.api_post(
+            polonius,
+            "/api/v1/users/me/presence",
+            dict(status="idle"),
+            HTTP_USER_AGENT="ZulipDesktop/1.0",
+        )
+        json = self.assert_json_success(result)
+        self.assertEqual(
+            set(json["presences"].keys()), {hamlet.email, polonius.email, othello.email}
+        )
 
     def test_presence_disabled(self) -> None:
         # Disable presence status and test whether the presence

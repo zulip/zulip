@@ -60,16 +60,17 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
             "DebugRequirePlugin",
             async ({normalModuleFactory}) => {
                 const resolver = normalModuleFactory.getResolver("normal");
-                debugRequirePath = await new Promise((resolve) =>
+                debugRequirePath = await new Promise((resolve) => {
                     resolver.resolve(
                         {},
                         __dirname,
                         "./debug-require",
                         {},
-                        (err?: Error | null, result?: string | false) =>
-                            resolve(err ? false : result!),
-                    ),
-                );
+                        (err?: Error | null, result?: string | false) => {
+                            resolve(err ? false : result!);
+                        },
+                    );
+                });
             },
         );
 

@@ -10,7 +10,8 @@ from django.contrib.sessions.models import Session
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.models import Realm, UserProfile, get_user_profile_by_id
+from zerver.models import Realm, UserProfile
+from zerver.models.users import get_user_profile_by_id
 
 
 class SessionEngine(Protocol):
@@ -49,7 +50,7 @@ def delete_user_sessions(user_profile: UserProfile) -> None:
 
 
 def delete_realm_user_sessions(realm: Realm) -> None:
-    realm_user_ids = list(UserProfile.objects.filter(realm=realm).values_list("id", flat=True))
+    realm_user_ids = set(UserProfile.objects.filter(realm=realm).values_list("id", flat=True))
     for session in Session.objects.all():
         if get_session_user_id(session) in realm_user_ids:
             delete_session(session)

@@ -42,7 +42,7 @@ emoji. Using REST API endpoints requires some technical expertise;
 You can replace a default emoji by adding a custom emoji of the same
 name. If an emoji has several names, you must use the emoji's primary name
 to replace it. You can find the primary name of an emoji by hovering over it
-in the [emoji picker](/help/emoji-and-emoticons#select-an-emoji-from-the-emoji-picker),
+in the [emoji picker](/help/emoji-and-emoticons#use-an-emoji-in-your-message),
 while the search box is empty (you may have to scroll down a bit to find it).
 
 ## Deactivate custom emoji

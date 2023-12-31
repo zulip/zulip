@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from typing import List, Literal, Optional, Union
 
 import orjson
@@ -157,7 +157,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     if deadline_seconds is None:
         # None means no time limit to delete message
         return
-    if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+    if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
         # User cannot delete message after deadline time of realm
         raise JsonableError(_("The time limit for deleting this message has passed"))
     return
@@ -195,8 +195,10 @@ def json_fetch_raw_message(
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)
         message = access_web_public_message(realm, message_id)
+        user_profile = None
     else:
         (message, user_message) = access_message(maybe_user_profile, message_id)
+        user_profile = maybe_user_profile
 
     flags = ["read"]
     if not maybe_user_profile.is_authenticated:
@@ -218,6 +220,8 @@ def json_fetch_raw_message(
         apply_markdown=apply_markdown,
         client_gravatar=True,
         allow_edit_history=allow_edit_history,
+        user_profile=user_profile,
+        realm=message.realm,
     )
     response = dict(
         message=message_dict_list[0],

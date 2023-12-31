@@ -1511,8 +1511,8 @@ test("navbar_helpers", () => {
 
     function test_add_icon_data(test_case) {
         const filter = new Filter(test_case.operator);
-        const context = {};
-        filter.add_icon_data(context);
+        let context = {};
+        context = filter.add_icon_data(context);
         assert.equal(context.icon, test_case.icon);
         assert.equal(context.zulip_icon, test_case.zulip_icon);
     }
@@ -1594,7 +1594,7 @@ test("navbar_helpers", () => {
         {
             operator: is_starred,
             is_common_narrow: true,
-            icon: "star",
+            zulip_icon: "star-filled",
             title: "translated: Starred messages",
             redirect_url_with_search: "/#narrow/is/starred",
         },
@@ -1622,7 +1622,7 @@ test("navbar_helpers", () => {
         {
             operator: is_mentioned,
             is_common_narrow: true,
-            icon: "at",
+            zulip_icon: "at-sign",
             title: "translated: Mentions",
             redirect_url_with_search: "/#narrow/is/mentioned",
         },

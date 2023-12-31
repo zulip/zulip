@@ -52,7 +52,10 @@ from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.middleware import LogRequests, parse_client
-from zerver.models import Client, Realm, UserProfile, clear_client_cache, get_realm, get_user
+from zerver.models import Client, Realm, UserProfile
+from zerver.models.clients import clear_client_cache
+from zerver.models.realms import get_realm
+from zerver.models.users import get_user
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
@@ -1083,7 +1086,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
         post_endpoints = [
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
-            "/api/v1/users/me/hotspots",
+            "/api/v1/users/me/onboarding_steps",
             "/api/v1/users/me/presence",
             "/api/v1/users/me/tutorial_status",
         ]

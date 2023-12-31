@@ -15,7 +15,8 @@ from zerver.lib.exceptions import JsonableError, ValidationFailureError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_int, check_list
-from zerver.models import RealmFilter, UserProfile, linkifiers_for_realm
+from zerver.models import RealmFilter, UserProfile
+from zerver.models.linkifiers import linkifiers_for_realm
 
 
 # Custom realm linkifiers

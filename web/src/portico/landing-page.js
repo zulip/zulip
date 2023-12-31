@@ -135,6 +135,31 @@ $(() => {
         delete page_params.contributors;
         render_tabs(contributors);
     }
+
+    if (window.location.pathname.endsWith("/plans/")) {
+        const tabs = ["#cloud", "#self-hosted"];
+        // Show the correct tab based on context.
+        let tab_to_show = $(".portico-pricing").hasClass("showing-self-hosted")
+            ? "#self-hosted"
+            : "#cloud";
+        const target_hash = window.location.hash;
+
+        // Capture self-hosted-based fragments, such as
+        // #self-hosted-plan-comparison, and show the
+        // #self-hosted tab
+        if (target_hash.startsWith("#self-hosted")) {
+            tab_to_show = "#self-hosted";
+        }
+
+        // Don't scroll to tab targets
+        if (tabs.includes(target_hash)) {
+            window.scroll({top: 0});
+        }
+
+        const $pricing_wrapper = $(".portico-pricing");
+        $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
+        $pricing_wrapper.addClass(`showing-${tab_to_show.slice(1)}`);
+    }
 });
 
 // Scroll to anchor link when clicked. Note that help.js has a similar
@@ -142,4 +167,12 @@ $(() => {
 // page.
 $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
     window.location.hash = $(this).attr("id");
+});
+
+$(document).on("click", ".pricing-tab", function () {
+    const id = $(this).attr("id");
+    const $pricing_wrapper = $(".portico-pricing");
+    $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
+    $pricing_wrapper.addClass(`showing-${id}`);
+    history.pushState(null, null, `#${id}`);
 });

@@ -75,14 +75,9 @@ from zerver.lib.validator import (
     check_string_or_int,
     check_string_or_int_list,
 )
-from zerver.models import (
-    Realm,
-    Recipient,
-    Stream,
-    Subscription,
-    UserMessage,
-    UserProfile,
-    get_active_streams,
+from zerver.models import Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
+from zerver.models.streams import get_active_streams
+from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
 )
@@ -295,6 +290,18 @@ class NarrowBuilder:
             "pm_with": self.by_dm,
             "group_pm_with": self.by_group_pm_with,
         }
+        self.is_stream_narrow = False
+        self.is_dm_narrow = False
+
+    def check_not_both_stream_dm(
+        self, is_dm_narrow: bool = False, is_stream_narrow: bool = False
+    ) -> None:
+        if is_dm_narrow:
+            self.is_dm_narrow = True
+        if is_stream_narrow:
+            self.is_stream_narrow = True
+        if self.is_stream_narrow and self.is_dm_narrow:
+            raise BadNarrowOperatorError("No message can be both a stream and a DM message")
 
     def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
         """
@@ -353,6 +360,7 @@ class NarrowBuilder:
 
         if operand in ["dm", "private"]:
             # "is:private" is a legacy alias for "is:dm"
+            self.check_not_both_stream_dm(is_dm_narrow=True)
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
@@ -402,6 +410,8 @@ class NarrowBuilder:
     def by_stream(
         self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
     ) -> Select:
+        self.check_not_both_stream_dm(is_stream_narrow=True)
+
         try:
             # Because you can see your own message history for
             # private streams you are no longer subscribed to, we
@@ -443,6 +453,8 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        self.check_not_both_stream_dm(is_stream_narrow=True)
+
         if operand == "public":
             # Get all both subscribed and non-subscribed public streams
             # but exclude any private subscribed streams.
@@ -457,6 +469,8 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        self.check_not_both_stream_dm(is_stream_narrow=True)
+
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
@@ -532,6 +546,8 @@ class NarrowBuilder:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
         assert self.user_profile is not None
+
+        self.check_not_both_stream_dm(is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -632,6 +648,8 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
+        self.check_not_both_stream_dm(is_dm_narrow=True)
+
         try:
             if isinstance(operand, str):
                 narrow_user_profile = get_user_including_cross_realm(operand, self.realm)
@@ -680,6 +698,8 @@ class NarrowBuilder:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
         assert self.user_profile is not None
+
+        self.check_not_both_stream_dm(is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):

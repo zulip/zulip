@@ -37,7 +37,7 @@
 
             {{! exterior links (e.g. to a trac ticket) }}
             {{#each topic_links}}
-                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="no-underline">
+                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="external-topic-link no-underline">
                     <i class="fa fa-external-link-square recipient_bar_icon" data-tippy-content="Open {{this.text}}" aria-label="{{t 'External link' }}"></i>
                 </a>
             {{/each}}

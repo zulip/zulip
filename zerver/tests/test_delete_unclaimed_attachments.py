@@ -13,7 +13,8 @@ from zerver.actions.scheduled_messages import check_schedule_message, delete_sch
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.models import ArchivedAttachment, Attachment, Message, UserProfile, get_client
+from zerver.models import ArchivedAttachment, Attachment, Message, UserProfile
+from zerver.models.clients import get_client
 
 
 class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):

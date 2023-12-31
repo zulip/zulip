@@ -246,7 +246,7 @@
         grid-template-areas:
             "compose-textarea message-send-controls-container"
             "message-formatting-controls-container . ";
-        grid-gap: 6px;
+        gap: 4px 6px;
 
         @media ((width >= $sm_min) and (width < $mc_min)) {
             /* Drop to a 62px wide send column. */
@@ -967,30 +967,33 @@ textarea.new_message_textarea,
 }
 
 .compose-control-buttons-container {
-    margin-right: auto;
     display: flex;
-    gap: 4px;
     align-items: center;
 
-    /* We use the selector in this manner to maintain specificity. */
-    .compose_control_button_container .compose_gif_icon {
-        font-size: 22px;
-
-        /* Remove top and bottom padding. This is necessary
-         * because `compose_gif_icon` is no longer a flex item.  */
-        padding: 0 5px;
-    }
-
     .compose_control_button {
-        padding: 5px;
+        height: 28px;
+        width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         opacity: 0.7;
         color: inherit;
         text-decoration: none;
-        font-size: 17px;
-        text-align: center;
+        font-size: 22px;
+        border-radius: 3px;
 
         &:hover {
             opacity: 1;
+            background-color: hsl(0deg 0% 0% / 10%);
+        }
+    }
+
+    .compose_control_button_container.disabled-on-hover:hover {
+        opacity: 0.3;
+        cursor: not-allowed;
+
+        .compose_control_button {
+            pointer-events: none;
         }
     }
 
@@ -1015,16 +1018,17 @@ textarea.new_message_textarea,
 
         .compose_control_menu {
             opacity: 1;
-        }
-    }
+            display: none;
 
-    .hide-sm,
-    .hide-lg {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 0;
-        margin: 0;
+            /* The media query below handles the hiding and showing of the
+            vdot menu icon, so that it is hidden when all compose buttons fit
+            in the main row below the compose box. So, this is the same as
+            the media query for .show_popover_buttons. */
+
+            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+                display: flex;
+            }
+        }
     }
 
     .divider {
@@ -1045,6 +1049,48 @@ textarea.new_message_textarea,
     .compose_help_button {
         font-size: 20px;
         line-height: 17px;
+    }
+
+    .show_popover_buttons {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* We use this class for the div containing those compose buttons, which
+        we hide and show in a popover instead when they no longer fit in a
+        single row. The media query below handles the hiding and showing of the
+        buttons from the main row of compose buttons below the compose box. */
+
+        @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
+            display: none;
+        }
+    }
+
+    .show_popover_buttons_2 {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        /* This is similar to show_popover_buttons, but it's only for those
+        compose buttons that we hide, and show in the popover only when the
+        screen gets extremely narrow. */
+
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+            display: none;
+        }
+    }
+
+    &.show_in_popover {
+        display: none;
+
+        /* This is to show the popover 2 buttons in the popover, only when
+        they are hidden in the main row below the compose box. */
+
+        @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
+            display: flex;
+        }
     }
 }
 
@@ -1146,7 +1192,7 @@ textarea.new_message_textarea,
     & ul {
         list-style: none;
         margin: 0;
-        background: hsl(0deg 0% 100%);
+        background-color: var(--color-background-popover);
     }
 
     .typeahead-header {

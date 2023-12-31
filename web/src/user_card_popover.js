@@ -6,6 +6,7 @@ import tippy from "tippy.js";
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
 import render_user_card_popover_avatar from "../templates/popovers/user_card/user_card_popover_avatar.hbs";
+import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
 import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
@@ -286,7 +287,7 @@ function get_user_card_popover_data(
         status_content_available: Boolean(status_text || status_emoji_info),
         status_text,
         status_emoji_info,
-        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id, !is_active),
         date_joined,
         spectator_view,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
@@ -297,7 +298,7 @@ function get_user_card_popover_data(
         if (is_system_bot) {
             args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
-            const bot_owner = people.get_by_user_id(bot_owner_id);
+            const bot_owner = people.get_bot_owner_user(user);
             args.bot_owner = bot_owner;
         }
     }
@@ -315,12 +316,24 @@ function show_user_card_popover(
     popover_placement,
     on_mount,
 ) {
-    const args = get_user_card_popover_data(
-        user,
-        has_message_context,
-        is_sender_popover,
-        private_msg_class,
-    );
+    let popover_html;
+    let args;
+    if (user.is_inaccessible_user) {
+        const sent_by_url = hash_util.by_sender_url(user.email);
+        args = {
+            user_id: user.user_id,
+            sent_by_url,
+        };
+        popover_html = render_user_card_popover_for_unknown_user(args);
+    } else {
+        args = get_user_card_popover_data(
+            user,
+            has_message_context,
+            is_sender_popover,
+            private_msg_class,
+        );
+        popover_html = render_user_card_popover(args);
+    }
 
     popover_menus.toggle_popover_menu(
         $popover_element[0],
@@ -328,7 +341,7 @@ function show_user_card_popover(
             placement: popover_placement,
             arrow: false,
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_user_card_popover(args)));
+                instance.setContent(ui_util.parse_html(popover_html));
                 user_card_popovers[template_class].instance = instance;
 
                 const $popover = $(instance.popper);
@@ -508,7 +521,6 @@ export function get_user_card_popover_manage_menu_items() {
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
 function toggle_user_card_popover_for_message(element, user, message, on_mount) {
-    message_lists.current.select_id(message.id);
     const $elt = $(element);
     if (!message_user_card.is_open()) {
         if (user === undefined) {
@@ -652,6 +664,15 @@ function register_click_handlers() {
             user = people.get_by_user_id(user_id);
         } else {
             user = people.get_by_email(email);
+            if (user === undefined) {
+                // There can be a case when user is undefined if
+                // the user is an inaccessible user as we do not
+                // create the fake user objects for it because
+                // we do not have user ID. It is fine to not
+                // open popover for this case as such cases
+                // without user ID are rare and old.
+                return;
+            }
         }
         toggle_user_card_popover_for_message(this, user, message);
     });
@@ -742,7 +763,8 @@ function register_click_handlers() {
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
-        const mention = people.get_mention_syntax(name, user_id);
+        const is_active = people.is_active_user_for_popover(user_id);
+        const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();
         e.stopPropagation();

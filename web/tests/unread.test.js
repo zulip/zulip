@@ -59,6 +59,9 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
     assert.deepEqual(notifiable_counts, expected_notifiable_count);
     user_settings.desktop_icon_count_display = 3;
     notifiable_counts = unread.get_notifiable_count();
+    assert.deepEqual(notifiable_counts, expected_notifiable_count);
+    user_settings.desktop_icon_count_display = 4;
+    notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, 0);
 }
 
@@ -236,7 +239,7 @@ test("muting", () => {
     let counts = unread.get_counts();
     assert.equal(counts.stream_count.get(stream_id).unmuted_count, 1);
     assert.equal(counts.home_unread_messages, 1);
-    assert.equal(unread.num_unread_for_stream(stream_id).unmuted_count, 1);
+    assert.equal(unread.unread_count_info_for_stream(stream_id).unmuted_count, 1);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), [message.id]);
     test_notifiable_count(counts.home_unread_messages, 0);
 
@@ -248,14 +251,19 @@ test("muting", () => {
     counts = unread.get_counts();
     assert.equal(counts.stream_count.get(stream_id).unmuted_count, 0);
     assert.equal(counts.home_unread_messages, 0);
-    assert.equal(unread.num_unread_for_stream(stream_id).unmuted_count, 0);
+    assert.equal(unread.unread_count_info_for_stream(stream_id).unmuted_count, 0);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), []);
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // we still find the message id here (muting is ignored)
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
-    assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
+    assert.deepEqual(unread.unread_count_info_for_stream(unknown_stream_id), {
+        unmuted_count: 0,
+        muted_count: 0,
+        followed_count: 0,
+        stream_is_muted: false,
+    });
 });
 
 test("num_unread_for_topic", () => {

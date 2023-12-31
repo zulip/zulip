@@ -2,27 +2,24 @@
 
 {!admin-only.md!}
 
-Organization administrators can set a policy for which users are
-allowed to use [wildcard
-mentions](/help/dm-mention-alert-notifications#wildcard-mentions) in
-large streams (defined for this purpose as streams with more than 15
-subscribers).
-
-Zulip allows anyone to use wildcard mentions in streams with at most
-15 subscribers. The default allows only organization administrators to
-use wildcard mentions in large streams.
-
-Users permitted to use wildcard mentions by the organization's policy
-are warned that wildcard mentions will result in all subscribers
-receiving email and mobile push notifications.
+Organization administrators can configure who is allowed to use [wildcard
+mentions](/help/dm-mention-alert-notifications#wildcard-mentions) that affect a
+large number of users. In particular, an organization can restrict who is
+allowed to use `@all` (and, equivalently, `@everyone` and `@stream`) in streams
+with more than 15 subscribers, and `@topic` in topics with more than 15
+participants.
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-2. Under **Stream permissions**, configure
-   **Who can use @all/@everyone mentions in large streams**.
+1. Under **Stream permissions**, configure **Who can notify a large number of
+   users with a wildcard mention**.
 
 {!save-changes.md!}
 
 {end_tabs}
+
+## Related articles
+
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)

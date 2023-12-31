@@ -2,7 +2,7 @@
 
 {tab|desktop-web}
 
-{relative|stream|all}
+{relative|gear|stream-settings}
 
 1. Click **Create stream** on the right, or click the **plus**
    (<i class="fa fa-plus"></i>) icon in the upper right.

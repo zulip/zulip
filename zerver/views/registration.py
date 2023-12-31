@@ -1,5 +1,4 @@
 import logging
-import urllib
 from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import urlencode, urljoin
@@ -74,10 +73,6 @@ from zerver.lib.validator import (
 )
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
-    MAX_LANGUAGE_ID_LENGTH,
-    DisposableEmailError,
-    DomainNotAllowedForRealmError,
-    EmailContainsPlusError,
     MultiuseInvite,
     PreregistrationRealm,
     PreregistrationUser,
@@ -85,13 +80,18 @@ from zerver.models import (
     RealmUserDefault,
     Stream,
     UserProfile,
-    get_default_stream_groups,
+)
+from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.realms import (
+    DisposableEmailError,
+    DomainNotAllowedForRealmError,
+    EmailContainsPlusError,
     get_org_type_display_name,
     get_realm,
-    get_source_profile,
-    get_user_by_delivery_email,
     name_changes_disabled,
 )
+from zerver.models.streams import get_default_stream_groups
+from zerver.models.users import get_source_profile, get_user_by_delivery_email
 from zerver.views.auth import (
     create_preregistration_realm,
     create_preregistration_user,
@@ -273,7 +273,10 @@ def registration_helper(
             validators.validate_email(email)
         except ValidationError:
             return TemplateResponse(
-                request, "zerver/invalid_email.html", context={"invalid_email": True}
+                request,
+                "zerver/invalid_email.html",
+                context={"invalid_email": True},
+                status=400,
             )
 
     if realm_creation:
@@ -294,18 +297,21 @@ def registration_helper(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "closed_domain": True},
+                status=400,
             )
         except DisposableEmailError:
             return TemplateResponse(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "disposable_emails_not_allowed": True},
+                status=400,
             )
         except EmailContainsPlusError:
             return TemplateResponse(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "email_contains_plus": True},
+                status=400,
             )
 
         if realm.deactivated:
@@ -754,7 +760,7 @@ def prepare_realm_activation_url(
         email, realm_name, string_id, org_type, default_language
     )
     activation_url = create_confirmation_link(
-        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+        prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
     )
 
     if settings.DEVELOPMENT:
@@ -767,8 +773,17 @@ def send_confirm_registration_email(
     activation_url: str,
     *,
     realm: Optional[Realm] = None,
+    realm_subdomain: Optional[str] = None,
+    realm_type: Optional[int] = None,
     request: Optional[HttpRequest] = None,
 ) -> None:
+    org_url = ""
+    org_type = ""
+    if realm is None:
+        assert realm_subdomain is not None
+        org_url = f"{realm_subdomain}.{settings.EXTERNAL_HOST}"
+        assert realm_type is not None
+        org_type = get_org_type_display_name(realm_type)
     send_email(
         "zerver/emails/confirm_registration",
         to_emails=[email],
@@ -778,6 +793,8 @@ def send_confirm_registration_email(
             "create_realm": realm is None,
             "activate_url": activation_url,
             "corporate_enabled": settings.CORPORATE_ENABLED,
+            "organization_url": org_url,
+            "organization_type": org_type,
         },
         realm=realm,
         request=request,
@@ -845,7 +862,13 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 return HttpResponseRedirect(activation_url)
 
             try:
-                send_confirm_registration_email(email, activation_url, request=request)
+                send_confirm_registration_email(
+                    email,
+                    activation_url,
+                    realm_subdomain=realm_subdomain,
+                    realm_type=realm_type,
+                    request=request,
+                )
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
@@ -892,6 +915,18 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
 
 @has_request_variables
 def signup_send_confirm(request: HttpRequest, email: str = REQ("email")) -> HttpResponse:
+    try:
+        # Because we interpolate the email directly into the template
+        # from the query parameter, do a simple validation that it
+        # looks a at least a bit like an email address.
+        validators.validate_email(email)
+    except ValidationError:
+        return TemplateResponse(
+            request,
+            "zerver/invalid_email.html",
+            context={"invalid_email": True},
+            status=400,
+        )
     return TemplateResponse(
         request,
         "zerver/accounts_send_confirm.html",
@@ -1092,7 +1127,7 @@ def find_account(
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
-            data = urllib.parse.urlencode({"emails": ",".join(emails)})
+            data = urlencode({"emails": ",".join(emails)})
             return redirect(append_url_query_string(url, data))
     else:
         form = FindMyTeamForm()

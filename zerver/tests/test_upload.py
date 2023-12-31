@@ -2,10 +2,10 @@ import io
 import os
 import re
 import time
-import urllib
 from io import StringIO
 from unittest import mock
 from unittest.mock import patch
+from urllib.parse import quote
 
 import orjson
 from django.conf import settings
@@ -21,6 +21,7 @@ from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
@@ -39,17 +40,9 @@ from zerver.lib.upload.base import BadImageError, ZulipUploadBackend, resize_emo
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
-from zerver.models import (
-    Attachment,
-    Message,
-    Realm,
-    RealmDomain,
-    UserProfile,
-    get_realm,
-    get_system_bot,
-    get_user_by_delivery_email,
-    validate_attachment_request,
-)
+from zerver.models import Attachment, Message, Realm, RealmDomain, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot, get_user_by_delivery_email
 
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
@@ -216,9 +209,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # without being logged in.
         self.logout()
         self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
-        # The original url shouldn't work when logged out:
+        # The original url shouldn't work when logged out -- it redirects to the login page
         result = self.client_get(url)
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result.headers["Location"].endswith(f"/login/?next={url}"))
 
     def test_serve_file_unauthed(self) -> None:
         self.login("hamlet")
@@ -237,7 +231,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
             self.logout()
             response = self.client_get(url)
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
 
             # Allow file access for web-public stream
             self.login("hamlet")
@@ -253,7 +248,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Deny file access since rate limited
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(url)
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
 
         # Check that the /download/ variant works as well
         download_url = url.replace("/user_uploads/", "/user_uploads/download/")
@@ -262,7 +258,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(response.status_code, 200)
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(download_url)
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.headers["Location"].endswith(f"/login/?next={download_url}"))
 
         # Deny random file access
         response = self.client_get(
@@ -323,8 +320,28 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.logout()
         response = self.client_get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
+
+    def test_image_download_unauthed(self) -> None:
+        """
+        As the above, but with an Accept header that prefers images.
+        """
+        self.login("hamlet")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        response_dict = self.assert_json_success(result)
+        url = response_dict["uri"]
+
+        self.logout()
+        response = self.client_get(
+            url,
+            # This is what Chrome sends for <img> tags
+            headers={"Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"},
+        )
         self.assertEqual(response.status_code, 403)
-        self.assert_in_response("<p>You are not authorized to view this file.</p>", response)
+        self.assertEqual(response.headers["Content-Type"], "image/png")
 
     def test_removed_file_download(self) -> None:
         """
@@ -352,6 +369,29 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.py"
         )
         self.assertEqual(response.status_code, 404)
+        self.assert_in_response("This file does not exist or has been deleted.", response)
+
+    def test_non_existing_image_download(self) -> None:
+        """
+        As the above method, but with an Accept header that prefers images to text
+        """
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        response = self.client_get(
+            f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.png",
+            # This is what Chrome sends for <img> tags
+            headers={"Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.headers["Content-Type"], "image/png")
+
+        response = self.client_get(
+            f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.png",
+            # Ask for something neither image nor text -- you get text as a default
+            headers={"Accept": "audio/*,application/octet-stream"},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
         self.assert_in_response("This file does not exist or has been deleted.", response)
 
     def test_attachment_url_without_upload(self) -> None:
@@ -525,7 +565,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
         for expected in ["Здравейте.txt", "test"]:
             fp = StringIO("bah!")
-            fp.name = urllib.parse.quote(expected)
+            fp.name = quote(expected)
 
             result = self.client_post("/json/user_uploads", {"f1": fp})
             response_dict = self.assert_json_success(result)
@@ -543,7 +583,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             ("**", "uploaded-file"),
         ]:
             fp = StringIO("bah!")
-            fp.name = urllib.parse.quote(uploaded_filename)
+            fp.name = quote(uploaded_filename)
 
             result = self.client_post("/json/user_uploads", {"f1": fp})
             response_dict = self.assert_json_success(result)
@@ -644,7 +684,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Verify that cross-realm access to files for spectators is denied.
         self.logout()
         response = self.client_get(url, subdomain=test_subdomain)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
 
     def test_file_download_authorization_invite_only(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1111,6 +1152,19 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             "Not logged in: API authentication or user session required",
             status_code=401,
         )
+
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+
+        response = self.client_get(f"/avatar/{cordelia.id}", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
+
+        response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
 
     def test_get_user_avatar_medium(self) -> None:
         hamlet = self.example_user("hamlet")

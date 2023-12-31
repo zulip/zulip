@@ -48,3 +48,4 @@ Depending on the type of bot you're creating, you may need to download its
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
+* [Generate URL for an integration](/help/generate-integration-url)

@@ -69,7 +69,12 @@ export function create_item_from_email(
     };
 
     // We pass deactivated true for a deactivated user
-    if (!people.is_person_active(user.user_id)) {
+    //
+    // We consider inaccessible users as active to avoid
+    // falsely showing the user as deactivated as we do
+    // not have any information about whether they are
+    // active or not.
+    if (!people.is_person_active(user.user_id) && !user.is_inaccessible_user) {
         item.deactivated = true;
     }
 

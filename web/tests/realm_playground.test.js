@@ -79,7 +79,7 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
     assert.equal(
         iterator.next().value[1],
-        "Python (python, py, py3, python3, sage, python, py, py3, python3, sage)",
+        "Python (python, bazel, py, py3, python3, sage, starlark, python, bazel, py, py3, python3, sage, starlark)",
     );
     assert.equal(iterator.next().value[1], "Java (java, java)");
     assert.equal(iterator.next().value[1], "Go (go, golang, go, golang)");
@@ -97,7 +97,7 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
     assert.equal(
         iterator.next().value[1],
-        "Python (python, py, py3, python3, sage, python, py, py3, python3, sage)",
+        "Python (python, bazel, py, py3, python3, sage, starlark, python, bazel, py, py3, python3, sage, starlark)",
     );
 
     // Test typing "invent_a_lang". Make sure there is no duplicate entries.
@@ -108,6 +108,6 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
     assert.equal(
         iterator.next().value[1],
-        "Python (python, py, py3, python3, sage, python, py, py3, python3, sage)",
+        "Python (python, bazel, py, py3, python3, sage, starlark, python, bazel, py, py3, python3, sage, starlark)",
     );
 });

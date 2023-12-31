@@ -4,8 +4,23 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 
-from corporate.views.billing_page import billing_home, sponsorship_request, update_plan
-from corporate.views.event_status import event_status, event_status_page
+from corporate.views.billing_page import (
+    billing_page,
+    remote_realm_billing_page,
+    remote_server_billing_page,
+    remote_server_deactivate_page,
+    update_plan,
+    update_plan_for_remote_realm,
+    update_plan_for_remote_server,
+)
+from corporate.views.event_status import (
+    event_status,
+    event_status_page,
+    remote_realm_event_status,
+    remote_realm_event_status_page,
+    remote_server_event_status,
+    remote_server_event_status_page,
+)
 from corporate.views.portico import (
     app_download_link_redirect,
     apps_view,
@@ -13,14 +28,43 @@ from corporate.views.portico import (
     hello_view,
     landing_view,
     plans_view,
+    remote_realm_plans_page,
+    remote_server_plans_page,
     team_view,
+)
+from corporate.views.remote_billing_page import (
+    remote_billing_legacy_server_confirm_login,
+    remote_billing_legacy_server_from_login_confirmation_link,
+    remote_billing_legacy_server_login,
+    remote_realm_billing_confirm_email,
+    remote_realm_billing_finalize_login,
+    remote_realm_billing_from_login_confirmation_link,
 )
 from corporate.views.session import (
     start_card_update_stripe_session,
-    start_retry_payment_intent_session,
+    start_card_update_stripe_session_for_realm_upgrade,
+    start_card_update_stripe_session_for_remote_realm,
+    start_card_update_stripe_session_for_remote_realm_upgrade,
+    start_card_update_stripe_session_for_remote_server,
+    start_card_update_stripe_session_for_remote_server_upgrade,
+)
+from corporate.views.sponsorship import (
+    remote_realm_sponsorship,
+    remote_realm_sponsorship_page,
+    remote_server_sponsorship,
+    remote_server_sponsorship_page,
+    sponsorship,
+    sponsorship_page,
 )
 from corporate.views.support import support_request
-from corporate.views.upgrade import initial_upgrade, sponsorship, upgrade
+from corporate.views.upgrade import (
+    remote_realm_upgrade,
+    remote_realm_upgrade_page,
+    remote_server_upgrade,
+    remote_server_upgrade_page,
+    upgrade,
+    upgrade_page,
+)
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
@@ -31,9 +75,9 @@ i18n_urlpatterns: Any = [
     path("zephyr-mirror/", TemplateView.as_view(template_name="corporate/zephyr-mirror.html")),
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
     # Billing
-    path("billing/", billing_home, name="billing_home"),
-    path("sponsorship/", sponsorship_request, name="sponsorship_request"),
-    path("upgrade/", initial_upgrade, name="initial_upgrade"),
+    path("billing/", billing_page, name="billing_page"),
+    path("sponsorship/", sponsorship_page, name="sponsorship_request"),
+    path("upgrade/", upgrade_page, name="upgrade_page"),
     path("support/", support_request),
     path("billing/event_status/", event_status_page, name="event_status_page"),
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
@@ -45,8 +89,8 @@ v1_api_and_json_patterns = [
     rest_path("billing/plan", PATCH=update_plan),
     rest_path("billing/session/start_card_update_session", POST=start_card_update_stripe_session),
     rest_path(
-        "billing/session/start_retry_payment_intent_session",
-        POST=start_retry_payment_intent_session,
+        "upgrade/session/start_card_update_session",
+        POST=start_card_update_stripe_session_for_realm_upgrade,
     ),
     rest_path("billing/event/status", GET=event_status),
 ]
@@ -142,6 +186,107 @@ i18n_urlpatterns += landing_page_urls
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English
 urlpatterns = list(i18n_urlpatterns)
+
+urlpatterns += [
+    path("remote-billing-login/<signed_billing_access_token>", remote_realm_billing_finalize_login),
+    path(
+        "remote-billing-login/<signed_billing_access_token>/confirm/",
+        remote_realm_billing_confirm_email,
+    ),
+    path(
+        "remote-billing-login/do_confirm/<confirmation_key>",
+        remote_realm_billing_from_login_confirmation_link,
+        name="remote_realm_billing_from_login_confirmation_link",
+    ),
+    # Remote server billing endpoints.
+    path("realm/<realm_uuid>/plans/", remote_realm_plans_page, name="remote_realm_plans_page"),
+    path(
+        "server/<server_uuid>/plans/",
+        remote_server_plans_page,
+        name="remote_server_plans_page",
+    ),
+    path(
+        "realm/<realm_uuid>/billing/", remote_realm_billing_page, name="remote_realm_billing_page"
+    ),
+    path(
+        "server/<server_uuid>/billing/",
+        remote_server_billing_page,
+        name="remote_server_billing_page",
+    ),
+    path(
+        "realm/<realm_uuid>/upgrade/", remote_realm_upgrade_page, name="remote_realm_upgrade_page"
+    ),
+    path(
+        "server/<server_uuid>/upgrade/",
+        remote_server_upgrade_page,
+        name="remote_server_upgrade_page",
+    ),
+    path(
+        "realm/<realm_uuid>/sponsorship/",
+        remote_realm_sponsorship_page,
+        name="remote_realm_sponsorship_page",
+    ),
+    path(
+        "server/<server_uuid>/sponsorship/",
+        remote_server_sponsorship_page,
+        name="remote_server_sponsorship_page",
+    ),
+    path(
+        "server/<server_uuid>/deactivate/",
+        remote_server_deactivate_page,
+        name="remote_server_deactivate_page",
+    ),
+    path(
+        "serverlogin/",
+        remote_billing_legacy_server_login,
+        name="remote_billing_legacy_server_login",
+    ),
+    path(
+        "serverlogin/<server_uuid>/confirm/",
+        remote_billing_legacy_server_confirm_login,
+        name="remote_billing_legacy_server_confirm_login",
+    ),
+    path(
+        "serverlogin/do_confirm/<confirmation_key>",
+        remote_billing_legacy_server_from_login_confirmation_link,
+        name="remote_billing_legacy_server_from_login_confirmation_link",
+    ),
+    path(
+        "realm/<realm_uuid>/billing/event_status/",
+        remote_realm_event_status_page,
+        name="remote_realm_event_status_page",
+    ),
+    path(
+        "server/<server_uuid>/billing/event_status/",
+        remote_server_event_status_page,
+        name="remote_server_event_status_page",
+    ),
+    # Remote variants of above API endpoints.
+    path("json/realm/<realm_uuid>/billing/sponsorship", remote_realm_sponsorship),
+    path("json/server/<server_uuid>/billing/sponsorship", remote_server_sponsorship),
+    path(
+        "json/realm/<realm_uuid>/billing/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_realm,
+    ),
+    path(
+        "json/server/<server_uuid>/billing/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_server,
+    ),
+    path(
+        "json/realm/<realm_uuid>/upgrade/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_realm_upgrade,
+    ),
+    path(
+        "json/server/<server_uuid>/upgrade/session/start_card_update_session",
+        start_card_update_stripe_session_for_remote_server_upgrade,
+    ),
+    path("json/realm/<realm_uuid>/billing/event/status", remote_realm_event_status),
+    path("json/server/<server_uuid>/billing/event/status", remote_server_event_status),
+    path("json/realm/<realm_uuid>/billing/upgrade", remote_realm_upgrade),
+    path("json/server/<server_uuid>/billing/upgrade", remote_server_upgrade),
+    path("json/realm/<realm_uuid>/billing/plan", update_plan_for_remote_realm),
+    path("json/server/<server_uuid>/billing/plan", update_plan_for_remote_server),
+]
 
 urlpatterns += [
     path("api/v1/", include(v1_api_and_json_patterns)),

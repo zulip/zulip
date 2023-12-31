@@ -6,7 +6,7 @@ const MockDate = require("mockdate");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
 const compose_notifications = mock_esm("../src/compose_notifications");
@@ -34,7 +34,6 @@ const message_store = mock_esm("../src/message_store", {
     set_message_booleans() {},
 });
 
-const noop = () => {};
 message_lists.current = {
     view: {
         rerender_messages: noop,
@@ -307,8 +306,8 @@ run_test("insert_local_message direct message", ({override}) => {
 run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
-    override(markdown, "apply_markdown", () => {});
-    override(markdown, "add_topic_links", () => {});
+    override(markdown, "apply_markdown", noop);
+    override(markdown, "add_topic_links", noop);
 
     const message_request = {
         type: "stream",
@@ -318,7 +317,7 @@ run_test("test reify_message_id", ({override}) => {
         sender_id: 123,
         draft_id: 100,
     };
-    echo.insert_local_message(message_request, local_id_float, () => {});
+    echo.insert_local_message(message_request, local_id_float, noop);
 
     let message_store_reify_called = false;
     let notifications_reify_called = false;

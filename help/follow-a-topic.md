@@ -4,19 +4,22 @@ Zulip lets you follow topics you are interested in. You can follow or unfollow
 any topic. You can also configure Zulip to automatically follow topics you start
 or participate in. Participating in a topic means sending a message,
 [reacting](/help/emoji-reactions) with an emoji, or participating in a
-[poll](/help/create-a-poll).
+[poll](/help/create-a-poll). You can also automatically follow topics where you
+are [mentioned](/help/mention-a-user-or-group).
 
 It's easy to prioritize catching up on followed topics. You can:
 
-- Configure how you get notified about new messages for topics you follow.
+- [Configure](/help/follow-a-topic#configure-notifications-for-followed-topics)
+  how you get notified about new messages for topics you follow.
 
-- Use the <kbd>Shift</kbd> + <kbd>N</kbd> keyboard shortcut to go to the next
-  unread followed topic.
+- Use the <kbd>Shift</kbd> + <kbd>N</kbd> [keyboard
+  shortcut](/help/keyboard-shortcuts) to go to the next unread followed topic.
 
-- Filter the [**inbox**](/help/inbox) view to only show followed topics.
+- Filter the [**inbox**](/help/inbox) and [**recent
+  conversations**](/help/recent-conversations) views to only show followed
+  topics.
 
-- See which topics you are following in the **left sidebar** and [**recent
-  conversations**](/help/recent-conversations).
+- See which topics you are following in the **left sidebar**.
 
 You can use followed topics for a variety of workflows:
 
@@ -59,6 +62,11 @@ You can use followed topics for a variety of workflows:
 {end_tabs}
 
 ## Configure notifications for followed topics
+
+You can configure custom notifications for followed topics. You can also
+[configure the unread count
+badge](/help/desktop-notifications#unread-count-badge) to include unread
+messages just in followed topics, without counting other stream messages.
 
 {!configure-notifications-for-followed-topics.md!}
 

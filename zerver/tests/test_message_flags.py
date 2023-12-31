@@ -33,9 +33,9 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_realm,
-    get_stream,
 )
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -171,8 +171,8 @@ class UnreadCountTests(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         with mock.patch(
-            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
-        ) as mock_push_notifications_enabled:
+            "zerver.lib.push_notifications.push_notifications_configured", return_value=True
+        ) as mock_push_notifications_configured:
             self.unread_msg_ids = [
                 self.send_personal_message(
                     self.example_user("iago"), self.example_user("hamlet"), "hello"
@@ -181,7 +181,7 @@ class UnreadCountTests(ZulipTestCase):
                     self.example_user("iago"), self.example_user("hamlet"), "hello2"
                 ),
             ]
-            mock_push_notifications_enabled.assert_called()
+            mock_push_notifications_configured.assert_called()
 
     # Sending a new message results in unread UserMessages being created
     # for users other than sender.
@@ -580,7 +580,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             .values_list("message_id", flat=True)
         )
 
-    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_track_active_mobile_push_notifications(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
@@ -874,16 +874,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
             message_id = self.send_personal_message(
                 from_user=hamlet,
                 to_user=other_user,
-                sending_client_name="some_api_program",
+                read_by_sender=False,
             )
-
-            # Check our test setup is correct--the message should
-            # not have looked like it was sent by a human.
             message = Message.objects.get(id=message_id)
-            self.assertFalse(message.sent_by_human())
 
-            # And since it was not sent by a human, it should not
-            # be read, not even by the sender (Hamlet).
+            # This message should not be read, not even by the sender (Hamlet).
             um = UserMessage.objects.get(
                 user_profile_id=hamlet.id,
                 message_id=message_id,

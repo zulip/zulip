@@ -13,8 +13,8 @@ import render_widgets_poll_widget_results from "../templates/widgets/poll_widget
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
+import type {Message} from "./message_store";
 import * as people from "./people";
-import type {Message} from "./types";
 
 type Event = {sender_id: number; data: InboundData};
 
@@ -28,7 +28,7 @@ type ExtraData =
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface JQuery {
-        handle_events(events: Event[]): void;
+        handle_events: (events: Event[]) => void;
     }
 }
 

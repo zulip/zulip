@@ -1,17 +1,12 @@
-import datetime
+from datetime import timedelta
 from typing import List
 
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_send import get_active_presence_idle_user_ids
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    Message,
-    UserPresence,
-    UserProfile,
-    bulk_get_huddle_user_ids,
-    get_huddle_user_ids,
-)
+from zerver.models import Message, UserPresence, UserProfile
+from zerver.models.recipients import bulk_get_huddle_user_ids, get_huddle_user_ids
 
 
 class MissedMessageTest(ZulipTestCase):
@@ -38,7 +33,7 @@ class MissedMessageTest(ZulipTestCase):
             self.assertEqual(sorted(user_ids), sorted(presence_idle_user_ids))
 
         def set_presence(user: UserProfile, client_name: str, ago: int) -> None:
-            when = timezone_now() - datetime.timedelta(seconds=ago)
+            when = timezone_now() - timedelta(seconds=ago)
             UserPresence.objects.update_or_create(
                 user_profile_id=user.id,
                 defaults=dict(

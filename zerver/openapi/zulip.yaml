@@ -379,8 +379,11 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent generally to all users in an organization for changes
-                                in the set of users or those users metadata.
+                                Event sent generally to all users who can access the modified
+                                user for changes in the set of users or those users metadata.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event
+                                was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1033,8 +1036,29 @@ paths:
                             - type: object
                               description: |
                                 Event sent to all users in a Zulip organization when a new
-                                user joins. Processing this event is important to being able
-                                to display basic details on other users given only their ID.
+                                user joins or when a guest user gains access to a user.
+                                Processing this event is important to being able to display
+                                basic details on other users given only their ID.
+
+                                If the current user is a guest whose access to a newly created user
+                                is limited by a `can_access_all_users_group` policy, and the event
+                                queue was registered with the `user_list_incomplete` client
+                                capability, then the event queue will not receive an event for such
+                                a new user. If a newly created user is inaccessible to the current
+                                user via such a policy, but the client lacks `user_list_incomplete`
+                                client capability, then this event will be delivered to the queue,
+                                with an "Unknown user" object with the usual format but placeholder
+                                data whose only variable content is the user ID.
+
+                                **Changes**: Before Zulip 8.0 (feature level 232), the
+                                `user_list_incomplete` client capability did not exist, and so all
+                                clients whose access to a new user was prevented by
+                                `can_access_all_users_group` policy would receive a fake "Unknown
+                                user" event for such a user.
+
+                                **Changes**: Starting with Zulip 8.0 (feature level 228),
+                                this event is also sent when a guest user gains access to
+                                a user.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1077,7 +1101,9 @@ paths:
                                 }
                             - type: object
                               description: |
-                                No longer sent by modern Zulip servers.
+                                Event sent to guest users when they lose access to a user.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event was deprecated.
 
                                 **Changes**: Deprecated and no longer sent since Zulip 8.0 (feature level 222).
 
@@ -1130,6 +1156,13 @@ paths:
                                 confusing users when someone comes online and immediately sends
                                 a message (one wouldn't want them to still appear offline at
                                 that point!).
+
+                                If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
+                                setting is set to `true`, then the event is only sent to users
+                                who can access the user who came back online.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event
+                                was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1699,8 +1732,11 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the
-                                status of a user changes.
+                                Event sent to all users who can access the modified
+                                user when the status of a user changes.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 228),
+                                this event was sent to all users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2152,11 +2188,15 @@ paths:
 
                                     - 0 = None. Used to indicate that the user no
                                       longer has a special visibility policy for this topic.
-                                    - 1 = Muted. Used to record muted topics.
+                                    - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
                                     - 2 = Unmuted. Used to record unmuted topics.
+                                    - 3 = Followed. Used to record [followed topics](/help/follow-a-topic).
 
-                                    **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                    **Changes**: In Zulip 7.0 (feature level 219), added followed as
                                     a visibility policy option.
+
+                                    In Zulip 7.0 (feature level 170), added unmuted as a visibility
+                                    policy option.
                               additionalProperties: false
                               example:
                                 {
@@ -2232,11 +2272,14 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when the set of onboarding "hotspots" to show for
+                                Event sent when the set of onboarding steps to show for
                                 the current user have changed (E.g. because the user dismissed one).
 
                                 Clients that feature a similar tutorial experience to the Zulip
                                 web app may want to handle these events.
+
+                                **Changes**: Before Zulip 8.0 (feature level 233), this was named
+                                as `Hotspots`. One-time notice wasn't available earlier.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2244,24 +2287,29 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - hotspots
-                                hotspots:
+                                        - onboarding_steps
+                                onboarding_steps:
                                   type: array
                                   description: |
                                     An array of dictionaries where each
-                                    dictionary contains details about a single hotspot.
+                                    dictionary contains details about a single onboarding step.
+
+                                    **Changes**: Before Zulip 8.0 (feature level 233), this array
+                                    was named as `hotspots`. One-time notice wasn't available earlier.
                                   items:
-                                    $ref: "#/components/schemas/Hotspot"
+                                    $ref: "#/components/schemas/OnboardingStep"
                               example:
                                 {
-                                  "type": "hotspots",
-                                  "hotspots":
+                                  "type": "onboarding_steps",
+                                  "onboarding_steps":
                                     [
                                       {
+                                        "type": "hotspot",
                                         "name": "intro_streams",
                                         "title": "Catch up on a stream",
                                         "description": "Messages sent to a stream are seen by everyone subscribed to that stream. Try clicking on one of the stream links below.",
                                         "delay": 0.5,
+                                        "has_trigger": false,
                                       },
                                     ],
                                   "id": 0,
@@ -4556,6 +4604,27 @@ paths:
                                         system group.
 
                                         **Changes**: New in Zulip 8.0 (feature level 225).
+                                    push_notifications_enabled:
+                                      type: boolean
+                                      description: |
+                                        Whether push notifications are enabled for this organization. Typically
+                                        `true` for Zulip Cloud and self-hosted realms that have a valid
+                                        registration for the [Mobile push notifications
+                                        service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                                        and `false` for self-hosted servers that do not.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
+                                        Previously, this value was never updated via events.
+                                    push_notifications_enabled_end_timestamp:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        If the server expects the realm's push notifications access to end at a
+                                        definite time in the future, the time at which this is expected to happen.
+                                        Mobile clients should use this field to display warnings to users when the
+                                        indicated timestamp is near.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 231).
                                   additionalProperties: false
                               example:
                                 {
@@ -5537,6 +5606,17 @@ paths:
             in UTC seconds.
           required: true
           example: 3165826990
+        - name: read_by_sender
+          in: query
+          schema:
+            type: boolean
+          description: |
+            Whether the message should be initially marked read by its
+            sender. If unspecified, the server uses a heuristic based
+            on the client name and the recipient.
+
+            **Changes**: New in Zulip 8.0 (feature level 236).
+          example: true
       responses:
         "200":
           description: Success.
@@ -6304,6 +6384,17 @@ paths:
             chosen freely by the client; the server will pass it back to the client without
             inspecting it, as described in the `queue_id` description.
           example: "100.01"
+        - name: read_by_sender
+          in: query
+          schema:
+            type: boolean
+          description: |
+            Whether the message should be initially marked read by its
+            sender. If unspecified, the server uses a heuristic based
+            on the client name.
+
+            **Changes**: New in Zulip 8.0 (feature level 236).
+          example: true
       responses:
         "200":
           description: Success.
@@ -6380,6 +6471,38 @@ paths:
                         description: |
                           A typical failed JSON response for when a direct message is sent to a user
                           that does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use stream wildcard mentions in this stream.",
+                            "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          of the organization's `wildcard_mention_policy` and large number of
+                          subscribers to the stream.
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use topic wildcard mentions in this topic.",
+                            "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          the message contains a topic wildcard mention, but the user doesn't have
+                          permission to use such a mention in this topic due to the
+                          `wildcard_mention_policy` (and large number of participants in this
+                          specific topic).
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
+                          `wildcard_mention_policy` was not enforced for topic mentions.
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
@@ -7644,6 +7767,38 @@ paths:
                           dialog.
 
                           **Changes**: New in Zulip 7.0 (feature level 172).
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use stream wildcard mentions in this stream.",
+                            "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          of the organization's `wildcard_mention_policy` and large number of
+                          subscribers to the stream.
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                          error returned the `"BAD_REQUEST"` code.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to use topic wildcard mentions in this topic.",
+                            "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          the message contains a topic wildcard mention, but the user doesn't have
+                          permission to use such a mention in this topic due to the
+                          `wildcard_mention_policy` (and large number of participants in this
+                          specific topic).
+
+                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
+                          `wildcard_mention_policy` was not enforced for topic mentions.
     delete:
       operationId: delete-message
       summary: Delete a message
@@ -9370,7 +9525,13 @@ paths:
         This endpoint allows a user to trigger a test push notification to their
         selected mobile device, or all their mobile devices.
 
-        **Changes**: New in Zulip 8.0 (feature level 217).
+        **Changes**: Starting with Zulip 8.0 (feature level 234), test
+        notifications sent via this endpoint use `test` rather than
+        `test-by-device-token` in the `event` field. (All mobile push
+        notifications also now include a `realm_name` field as well as
+        of this feature level).
+
+        New in Zulip 8.0 (feature level 217).
       parameters:
         - name: token
           in: query
@@ -9445,9 +9606,13 @@ paths:
             - 0 = None. Removes the visibility policy previously set for the topic.
             - 1 = Muted. [Mutes the topic](/help/mute-a-topic) in a stream.
             - 2 = Unmuted. [Unmutes the topic](/help/mute-a-topic) in a muted stream.
+            - 3 = Followed. [Follows the topic](/help/follow-a-topic).
 
             In an unmuted stream, a topic visibility policy of unmuted will have the
             same effect as the "None" visibility policy.
+
+            **Changes**: In Zulip 7.0 (feature level 219), added followed as
+            a visibility policy option.
           schema:
             type: integer
             enum:
@@ -9749,6 +9914,10 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         Get the presence information of all the users in an organization.
+
+        If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
+        setting is set to `true`, presence information of only accessible
+        users are returned.
 
         See [Zulip's developer documentation][subsystems-presence]
         for details on the data model for presence in Zulip.
@@ -10453,15 +10622,20 @@ paths:
           description: |
             Unread count badge (appears in desktop sidebar and browser tab)
 
-            - 1 - All unreads
-            - 2 - Direct messages and mentions
-            - 3 - None
+            - 1 - All unread messages
+            - 2 - DMs, mentions, and followed topics
+            - 3 - DMs and mentions
+            - 4 - None
+
+            **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+            topics` option, renumbering the options to insert it in order.
           schema:
             type: integer
             enum:
               - 1
               - 2
               - 3
+              - 4
           example: 1
         - name: realm_name_in_email_notifications_policy
           in: query
@@ -10521,6 +10695,16 @@ paths:
               - 3
               - 4
           example: 1
+        - name: automatically_follow_topics_where_mentioned
+          in: query
+          description: |
+            Whether the server will automatically mark the user as following
+            topics where the user is mentioned.
+
+            **Changes**: New in Zulip 8.0 (feature level 235).
+          schema:
+            type: boolean
+          example: true
         - name: presence_enabled
           in: query
           description: |
@@ -11498,6 +11682,13 @@ paths:
               **Changes**: New in Zulip 7.0 (feature level 176). This capability
               is for backwards-compatibility.
 
+            - `user_list_incomplete`: Boolean for whether the client supports not having an
+              incomplete user database. If true, then the `realm_users` array in the `register`
+              response will not include data for inaccessible users and clients of guest users will
+              not receive `realm_user op:add` events for newly created users that are not accessible
+              to the current user. **Changes**: New in Zulip 8.0 (feature level 232). This
+              capability is for backwards-compatibility.
+
             [help-linkifiers]: /help/add-a-custom-linkifier
             [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
             [events-linkifiers]: /api/get-events#realm_linkifiers
@@ -11668,17 +11859,17 @@ paths:
                           array will be empty if `enable_drafts_synchronization` is set to `false`.
                         items:
                           $ref: "#/components/schemas/Draft"
-                      hotspots:
+                      onboarding_steps:
                         type: array
                         description: |
-                          Present if `hotspots` is present in `fetch_event_types`.
+                          Present if `onboarding_steps` is present in `fetch_event_types`.
 
                           An array of dictionaries, where each dictionary contains details about
-                          a single onboarding hotspot that should be shown to new users.
+                          a single onboarding step that should be shown to new users.
 
                           We expect that only official Zulip clients will interact with these data.
                         items:
-                          $ref: "#/components/schemas/Hotspot"
+                          $ref: "#/components/schemas/OnboardingStep"
                       max_message_id:
                         type: integer
                         deprecated: true
@@ -12734,9 +12925,14 @@ paths:
                             description: |
                               Unread count badge (appears in desktop sidebar and browser tab)
 
-                              - 1 - All unreads
-                              - 2 - Direct messages and mentions
-                              - 3 - None
+                              - 1 - All unread messages
+                              - 2 - DMs, mentions, and followed topics
+                              - 3 - DMs and mentions
+                              - 4 - None
+
+                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              and followed topics` option, renumbering the options to insert it in
+                              order.
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
@@ -12772,6 +12968,13 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_follow_topics_where_mentioned:
+                            type: boolean
+                            description: |
+                              Whether the server will automatically mark the user as following
+                              topics where the user is mentioned.
+
+                              **Changes**: New in Zulip 8.0 (feature level 235).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -12871,9 +13074,13 @@ paths:
 
                                 - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
                                 - 2 = Unmuted. Used to record [unmuted topics](/help/mute-a-topic).
+                                - 3 = Followed. Used to record [followed topics](/help/follow-a-topic).
 
-                                **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                **Changes**: In Zulip 7.0 (feature level 219), added followed as
                                 a visibility policy option.
+
+                                In Zulip 7.0 (feature level 170), added unmuted as a visibility
+                                policy option.
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -14314,8 +14521,26 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether push notifications are enabled for this organization. Typically
-                          `false` for self-hosted servers that have not configured the
-                          [Mobile push notifications service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html).
+                          `true` for Zulip Cloud and self-hosted realms that have a valid
+                          registration for the [Mobile push notifications
+                          service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+                          and `false` for self-hosted servers that do not.
+
+                          **Changes**: Before Zulip 8.0 (feature level 231), this incorrectly was
+                          `true` for servers that were partly configured to use the Mobile Push
+                          Notifications Service but not properly registered.
+                      realm_push_notifications_enabled_end_timestamp:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          If the server expects the realm's push notifications access to end at a
+                          definite time in the future, the time at which this is expected to happen.
+                          Mobile clients should use this field to display warnings to users when the
+                          indicated timestamp is near.
+
+                          **Changes**: New in Zulip 8.0 (feature level 231).
                       realm_upload_quota_mib:
                         type: integer
                         nullable: true
@@ -14922,9 +15147,14 @@ paths:
                             description: |
                               Unread count badge (appears in desktop sidebar and browser tab)
 
-                              - 1 - All unreads
-                              - 2 - Direct messages and mentions
-                              - 3 - None
+                              - 1 - All unread messages
+                              - 2 - DMs, mentions, and followed topics
+                              - 3 - DMs and mentions
+                              - 4 - None
+
+                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              and followed topics` option, renumbering the options to insert it in
+                              order.
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
@@ -14960,6 +15190,13 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_follow_topics_where_mentioned:
+                            type: boolean
+                            description: |
+                              Whether the server will automatically mark the user as following
+                              topics where the user is mentioned.
+
+                              **Changes**: New in Zulip 8.0 (feature level 235).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -15050,7 +15287,22 @@ paths:
                           the usual User dictionary, this does not contain the `is_active`
                           key, as all the users present in this array have active accounts.
 
+                          If the current user is a guest whose access to users is limited by a
+                          `can_access_all_users_group` policy, and the event queue was registered
+                          with the `user_list_incomplete` client capability, then users that the
+                          current user cannot access will not be included in this array. If the
+                          current user's access to a user is restricted but the client lacks this
+                          capability, then that inaccessible user will appear in the users array as
+                          an "Unknown user" object with the usual format but placeholder data whose
+                          only variable content is the user ID.
+
                           See also `cross_realm_bots` and `realm_non_active_users`.
+
+                          **Changes**: Before Zulip 8.0 (feature level 232), the
+                          `user_list_incomplete` client capability did not exist, and so all
+                          clients whose access to a new user was prevented by
+                          `can_access_all_users_group` policy would receive a fake "Unknown
+                          user" event for such users.
                         items:
                           $ref: "#/components/schemas/User"
                       realm_non_active_users:
@@ -15511,7 +15763,7 @@ paths:
                       push_notifications_enabled:
                         type: boolean
                         description: |
-                          Whether mobile/push notifications are enabled.
+                          Whether mobile/push notifications are configured.
                       is_incompatible:
                         type: boolean
                         description: |
@@ -16207,18 +16459,23 @@ paths:
           description: |
             Unread count badge (appears in desktop sidebar and browser tab)
 
-            - 1 - All unreads
-            - 2 - Direct messages and mentions
-            - 3 - None
+            - 1 - All unread messages
+            - 2 - DMs, mentions, and followed topics
+            - 3 - DMs and mentions
+            - 4 - None
 
-            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-            the `PATCH /settings/notifications` endpoint.
+            **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+            topics` option, renumbering the options to insert it in order.
+
+            Before Zulip 5.0 (feature level 80), this setting was managed by the
+            `PATCH /settings/notifications` endpoint.
           schema:
             type: integer
             enum:
               - 1
               - 2
               - 3
+              - 4
           example: 1
         - name: realm_name_in_email_notifications_policy
           in: query
@@ -16281,6 +16538,16 @@ paths:
               - 3
               - 4
           example: 1
+        - name: automatically_follow_topics_where_mentioned
+          in: query
+          description: |
+            Whether the server will automatically mark the user as following
+            topics where the user is mentioned.
+
+            **Changes**: New in Zulip 8.0 (feature level 235).
+          schema:
+            type: boolean
+          example: true
         - name: presence_enabled
           in: query
           description: |
@@ -18353,16 +18620,22 @@ components:
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             **Changes**: New in Zulip 6.0 (feature level 146).
-    Hotspot:
+    OnboardingStep:
       type: object
       additionalProperties: false
       description: |
-        Dictionary containing details of a single hotspot.
+        Dictionary containing details of a single onboarding step.
+
+        **Changes**: Before Zulip 8.0 (feature level 233), this was
+        named as `Hotspot`. One-time notice wasn't available earlier.
       properties:
-        delay:
-          type: number
+        type:
+          type: string
           description: |
-            The delay after which the user should be shown the hotspot.
+            The type of the onboarding step. Valid values are either
+            'hotspot' or 'one_time_notice'.
+
+            **Changes**: New in Zulip 8.0 (feature level 233).
         name:
           type: string
           description: |
@@ -18376,6 +18649,17 @@ components:
           description: |
             The description of the hotspot, as will be displayed to the
             user.
+        delay:
+          type: number
+          description: |
+            The delay after which the user should be shown the hotspot.
+        has_trigger:
+          type: boolean
+          description: |
+            The has_trigger is used to identify if the hotspot will activate
+            only when some specific event occurs.
+
+            **Changes**: New in Zulip 8.0 (feature level 230).
     RealmEmoji:
       type: object
       additionalProperties: false

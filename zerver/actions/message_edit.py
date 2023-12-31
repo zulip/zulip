@@ -1,6 +1,6 @@
-import datetime
 import itertools
 from collections import defaultdict
+from datetime import timedelta
 from typing import AbstractSet, Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from django.conf import settings
@@ -22,7 +22,12 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
-from zerver.lib.exceptions import JsonableError, MessageMoveError
+from zerver.lib.exceptions import (
+    JsonableError,
+    MessageMoveError,
+    StreamWildcardMentionNotAllowedError,
+    TopicWildcardMentionNotAllowedError,
+)
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -31,9 +36,10 @@ from zerver.lib.message import (
     bulk_access_messages,
     check_user_group_mention_allowed,
     normalize_body,
+    stream_wildcard_mention_allowed,
+    topic_wildcard_mention_allowed,
     truncate_topic,
     update_to_dict_cache,
-    wildcard_mention_allowed,
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
@@ -51,6 +57,7 @@ from zerver.lib.topic import (
     TOPIC_LINKS,
     TOPIC_NAME,
     messages_for_topic,
+    participants_for_topic,
     save_message_for_edit_use_case,
     update_edit_history,
     update_messages_for_topic_edit,
@@ -69,9 +76,9 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
-    get_stream_by_id_in_realm,
-    get_system_bot,
 )
+from zerver.models.streams import get_stream_by_id_in_realm
+from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event
 
 
@@ -1144,8 +1151,7 @@ def check_time_limit_for_change_all_propagate_mode(
             Message.objects.filter(
                 # Uses index: zerver_message_pkey
                 id__in=accessible_messages_in_topic,
-                date_sent__gt=timezone_now()
-                - datetime.timedelta(seconds=message_move_deadline_seconds),
+                date_sent__gt=timezone_now() - timedelta(seconds=message_move_deadline_seconds),
             )
             .order_by("date_sent")
             .values_list("id", flat=True)
@@ -1157,7 +1163,7 @@ def check_time_limit_for_change_all_propagate_mode(
             .order_by("id")
             .values_list("id", "date_sent")
         )
-        oldest_allowed_message_date = timezone_now() - datetime.timedelta(
+        oldest_allowed_message_date = timezone_now() - timedelta(
             seconds=message_move_deadline_seconds
         )
         messages_allowed_to_move = [
@@ -1228,7 +1234,7 @@ def check_update_message(
     edit_limit_buffer = 20
     if content is not None and user_profile.realm.message_content_edit_limit_seconds is not None:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
-        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     # If there is a change to the topic, check that the user is allowed to
@@ -1243,7 +1249,7 @@ def check_update_message(
         deadline_seconds = (
             user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
         )
-        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed."))
 
     rendering_result = None
@@ -1259,6 +1265,7 @@ def check_update_message(
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=content,
+            message_sender=message.sender,
         )
         prior_mention_user_ids = get_mentions_for_message_updates(message.id)
 
@@ -1274,12 +1281,19 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
-        if message.is_stream_message() and rendering_result.has_wildcard_mention():
+        if message.is_stream_message() and rendering_result.mentions_stream_wildcard:
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
-            if not wildcard_mention_allowed(message.sender, stream, message.realm):
-                raise JsonableError(
-                    _("You do not have permission to use wildcard mentions in this stream.")
-                )
+            if not stream_wildcard_mention_allowed(message.sender, stream, message.realm):
+                raise StreamWildcardMentionNotAllowedError
+
+        if message.is_stream_message() and rendering_result.mentions_topic_wildcard:
+            topic_participant_count = len(
+                participants_for_topic(message.realm.id, message.recipient.id, message.topic_name())
+            )
+            if not topic_wildcard_mention_allowed(
+                message.sender, topic_participant_count, message.realm
+            ):
+                raise TopicWildcardMentionNotAllowedError
 
         if rendering_result.mentions_user_group_ids:
             mentioned_group_ids = list(rendering_result.mentions_user_group_ids)
@@ -1304,7 +1318,7 @@ def check_update_message(
             deadline_seconds = (
                 user_profile.realm.move_messages_between_streams_limit_seconds + edit_limit_buffer
             )
-            if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+            if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
                 raise JsonableError(
                     _("The time limit for editing this message's stream has passed")
                 )

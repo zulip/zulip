@@ -8,7 +8,7 @@
     "status": null
   },
   "billing_address_collection": null,
-  "cancel_url": "http://zulip.testserver/billing/",
+  "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
   "client_reference_id": null,
   "client_secret": null,
   "consent": null,
@@ -18,6 +18,7 @@
   "currency_conversion": null,
   "custom_fields": [],
   "custom_text": {
+    "after_submit": null,
     "shipping_address": null,
     "submit": null,
     "terms_of_service_acceptance": null
@@ -26,7 +27,7 @@
   "customer_creation": null,
   "customer_details": {
     "address": null,
-    "email": "hamlet@zulip.com",
+    "email": "othello@zulip.com",
     "name": null,
     "phone": null,
     "tax_exempt": null,
@@ -34,23 +35,14 @@
   },
   "customer_email": null,
   "expires_at": 1000000000,
-  "id": "cs_test_NORMALIZED02JRUj5vEAOxkXQyhCbYvS4X6U195gjUdGkdKfLNabtcQLSZ",
+  "id": "cs_test_NORMALIZED02AWV6cYpbthkXlCX4KseQQVcTQACasjJUiz0DrBo5lQpfQP",
   "invoice": null,
   "invoice_creation": null,
   "livemode": false,
   "locale": null,
   "metadata": {
-    "billing_modality": "charge_automatically",
-    "billing_schedule": "1",
-    "license_management": "automatic",
-    "licenses": "6",
-    "price_per_license": "8000",
-    "realm_id": "1",
-    "realm_str": "zulip",
-    "seat_count": "6",
-    "type": "upgrade",
-    "user_email": "hamlet@zulip.com",
-    "user_id": "10"
+    "type": "card_update",
+    "user_id": "12"
   },
   "mode": "setup",
   "object": "checkout.session",
@@ -67,7 +59,7 @@
     "enabled": false
   },
   "recovered_from": null,
-  "setup_intent": "seti_1OAbcDDEQaroqDjs6URoWzLY",
+  "setup_intent": "seti_1OOgt6DEQaroqDjsNS9pHAYJ",
   "shipping": null,
   "shipping_address_collection": null,
   "shipping_options": [],
@@ -78,5 +70,5 @@
   "success_url": "http://zulip.testserver/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
   "total_details": null,
   "ui_mode": "hosted",
-  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02JRUj5vEAOxkXQyhCbYvS4X6U195gjUdGkdKfLNabtcQLSZ#fidkdWxOYHwnPyd1blpxYHZxWl1UZjFOczZJXUE2PUpzUWNPV2ZpdlFzUCcpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBaZmppcGhrJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl"
+  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02AWV6cYpbthkXlCX4KseQQVcTQACasjJUiz0DrBo5lQpfQP#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
 }

@@ -37,7 +37,7 @@ On a high level the typing indicators system works like this:
 Note that there is a user-level privacy setting to disable sending
 typing notifications that a client should check when implementing
 the "writing user" protocol below. See `send_private_typing_notifications`
-in the `UserBaseSettings` model in `zerver/models.py` and in the
+in the `UserBaseSettings` model in `zerver/models/users.py` and in the
 `user_settings` object in the `POST /register` response.
 
 ## Writing user

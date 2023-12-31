@@ -6,7 +6,8 @@ import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.users import get_api_key
-from zerver.models import get_realm, get_user
+from zerver.models.realms import get_realm
+from zerver.models.users import get_user
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse

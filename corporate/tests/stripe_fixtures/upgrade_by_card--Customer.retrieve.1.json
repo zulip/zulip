@@ -2,8 +2,8 @@
   "address": null,
   "balance": 0,
   "created": 1010000002,
-  "currency": "usd",
-  "default_currency": "usd",
+  "currency": null,
+  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
@@ -13,53 +13,7 @@
   "invoice_prefix": "NORMA01",
   "invoice_settings": {
     "custom_fields": null,
-    "default_payment_method": {
-      "billing_details": {
-        "address": {
-          "city": null,
-          "country": null,
-          "line1": null,
-          "line2": null,
-          "postal_code": null,
-          "state": null
-        },
-        "email": null,
-        "name": null,
-        "phone": null
-      },
-      "card": {
-        "brand": "visa",
-        "checks": {
-          "address_line1_check": null,
-          "address_postal_code_check": null,
-          "cvc_check": "pass"
-        },
-        "country": "US",
-        "exp_month": 11,
-        "exp_year": 2024,
-        "fingerprint": "NORMALIZED000001",
-        "funding": "credit",
-        "generated_from": null,
-        "last4": "4242",
-        "networks": {
-          "available": [
-            "visa"
-          ],
-          "preferred": null
-        },
-        "three_d_secure_usage": {
-          "supported": true
-        },
-        "wallet": null
-      },
-      "created": 1010000003,
-      "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OAbgYDEQaroqDjsPkuww2Vr",
-      "livemode": false,
-      "metadata": {},
-      "object": "payment_method",
-      "type": "card"
-    },
+    "default_payment_method": null,
     "footer": null,
     "rendering_options": null
   },
@@ -69,7 +23,7 @@
     "realm_str": "zulip"
   },
   "name": null,
-  "next_invoice_sequence": 2,
+  "next_invoice_sequence": 1,
   "object": "customer",
   "phone": null,
   "preferred_locales": [],

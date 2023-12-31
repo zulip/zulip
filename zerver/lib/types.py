@@ -1,5 +1,5 @@
-import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 from django_stubs_ext import StrPromise
@@ -138,7 +138,7 @@ class RawStreamDict(TypedDict):
     """
 
     can_remove_subscribers_group_id: int
-    date_created: datetime.datetime
+    date_created: datetime
     description: str
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
@@ -309,9 +309,14 @@ class RawUserDict(TypedDict):
     is_billing_admin: bool
     is_bot: bool
     timezone: str
-    date_joined: datetime.datetime
+    date_joined: datetime
     bot_owner_id: Optional[int]
     delivery_email: str
     bot_type: Optional[int]
     long_term_idle: bool
     email_address_visibility: int
+
+
+class RemoteRealmDictValue(TypedDict):
+    can_push: bool
+    expected_end_timestamp: Optional[int]

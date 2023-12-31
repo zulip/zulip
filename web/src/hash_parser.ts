@@ -15,6 +15,18 @@ export function get_hash_section(hash?: string): string {
     return parts[1] || "";
 }
 
+export function get_current_nth_hash_section(n: number): string {
+    const hash = window.location.hash;
+    // given "#settings/profile" and n=2, returns "profile"
+    // given '#streams/5/social" and n=3, returns "social"
+    const parts = hash.replace(/\/$/, "").split(/\//);
+    if (parts.length < n) {
+        return "";
+    }
+
+    return parts[n - 1] || "";
+}
+
 export function get_current_hash_category(): string {
     return get_hash_category(window.location.hash);
 }

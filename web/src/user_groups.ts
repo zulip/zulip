@@ -69,12 +69,18 @@ export function get_user_group_from_id(group_id: number): UserGroup {
 export function update(event: UserGroupUpdateEvent): void {
     const group = get_user_group_from_id(event.group_id);
     if (event.data.name !== undefined) {
-        group.name = event.data.name;
         user_group_name_dict.delete(group.name);
+        group.name = event.data.name;
         user_group_name_dict.set(group.name, group);
     }
     if (event.data.description !== undefined) {
         group.description = event.data.description;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.can_mention_group !== undefined) {
+        group.can_mention_group = event.data.can_mention_group;
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }
@@ -90,17 +96,10 @@ export function get_realm_user_groups(): UserGroup[] {
 }
 
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
-    if (page_params.user_id === undefined) {
-        return [];
-    }
-
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
         const can_mention_group_id = group.can_mention_group;
-        return (
-            page_params.user_id !== undefined &&
-            is_user_in_group(can_mention_group_id, page_params.user_id)
-        );
+        return is_user_in_group(can_mention_group_id, page_params.user_id);
     });
 }
 
@@ -240,6 +239,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         allow_owners_group,
         allow_nobody_group,
         allow_everyone_group,
+        allowed_system_groups,
     } = group_setting_config;
 
     const system_user_groups = settings_config.system_user_groups_list
@@ -257,6 +257,10 @@ export function get_realm_user_groups_for_dropdown_list_widget(
             }
 
             if (!allow_everyone_group && group.name === "role:everyone") {
+                return false;
+            }
+
+            if (allowed_system_groups.length && !allowed_system_groups.includes(group.name)) {
                 return false;
             }
 

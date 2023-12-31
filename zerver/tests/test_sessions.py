@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any, Callable
-from unittest import mock
 
+import time_machine
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -18,7 +18,8 @@ from zerver.lib.sessions import (
     user_sessions,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Realm, UserProfile, get_realm
+from zerver.models import Realm, UserProfile
+from zerver.models.realms import get_realm
 
 
 class TestSessions(ZulipTestCase):
@@ -134,15 +135,13 @@ class TestExpirableSessionVars(ZulipTestCase):
 
     def test_set_and_get_basic(self) -> None:
         start_time = timezone_now()
-        with mock.patch("zerver.lib.sessions.timezone_now", return_value=start_time):
+        with time_machine.travel(start_time, tick=False):
             set_expirable_session_var(
                 self.session, "test_set_and_get_basic", "some_value", expiry_seconds=10
             )
             value = get_expirable_session_var(self.session, "test_set_and_get_basic")
             self.assertEqual(value, "some_value")
-        with mock.patch(
-            "zerver.lib.sessions.timezone_now", return_value=start_time + timedelta(seconds=11)
-        ):
+        with time_machine.travel((start_time + timedelta(seconds=11)), tick=False):
             value = get_expirable_session_var(self.session, "test_set_and_get_basic")
             self.assertEqual(value, None)
 

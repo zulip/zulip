@@ -8,14 +8,10 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
-from zerver.models import (
-    CustomProfileField,
-    CustomProfileFieldValue,
-    Realm,
-    UserProfile,
-    active_user_ids,
-    custom_profile_fields_for_realm,
-)
+from zerver.lib.users import get_user_ids_who_can_access_user
+from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event
 
 
@@ -139,7 +135,7 @@ def notify_user_update_custom_profile_data(
         data["rendered_value"] = field["rendered_value"]
     payload = dict(user_id=user_profile.id, custom_profile_field=data)
     event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm.id))
+    send_event(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
 def do_update_user_custom_profile_data_if_changed(

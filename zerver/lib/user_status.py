@@ -3,7 +3,8 @@ from typing import Dict, Optional, TypedDict
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import UserStatus
+from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
+from zerver.models import Realm, UserProfile, UserStatus
 
 
 class UserInfoDict(TypedDict, total=False):
@@ -48,27 +49,29 @@ def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
     return dct
 
 
-def get_user_status_dict(realm_id: int) -> Dict[str, UserInfoDict]:
-    rows = (
-        UserStatus.objects.filter(
-            user_profile__realm_id=realm_id,
-            user_profile__is_active=True,
-        )
-        .exclude(
-            Q(user_profile__presence_enabled=True)
-            & Q(status_text="")
-            & Q(emoji_name="")
-            & Q(emoji_code="")
-            & Q(reaction_type=UserStatus.UNICODE_EMOJI),
-        )
-        .values(
-            "user_profile_id",
-            "user_profile__presence_enabled",
-            "status_text",
-            "emoji_name",
-            "emoji_code",
-            "reaction_type",
-        )
+def get_user_status_dict(realm: Realm, user_profile: UserProfile) -> Dict[str, UserInfoDict]:
+    query = UserStatus.objects.filter(
+        user_profile__realm_id=realm.id,
+        user_profile__is_active=True,
+    ).exclude(
+        Q(user_profile__presence_enabled=True)
+        & Q(status_text="")
+        & Q(emoji_name="")
+        & Q(emoji_code="")
+        & Q(reaction_type=UserStatus.UNICODE_EMOJI),
+    )
+
+    if not check_user_can_access_all_users(user_profile):
+        accessible_user_ids = get_accessible_user_ids(realm, user_profile)
+        query = query.filter(user_profile_id__in=accessible_user_ids)
+
+    rows = query.values(
+        "user_profile_id",
+        "user_profile__presence_enabled",
+        "status_text",
+        "emoji_name",
+        "emoji_code",
+        "reaction_type",
     )
 
     user_dict: Dict[str, UserInfoDict] = {}

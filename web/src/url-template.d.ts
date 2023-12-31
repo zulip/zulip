@@ -7,12 +7,12 @@ declare module "url-template" {
     export type PrimitiveValue = string | number | boolean | null;
 
     export type Template = {
-        expand(
+        expand: (
             context: Record<
                 string,
                 PrimitiveValue | PrimitiveValue[] | Record<string, PrimitiveValue>
             >,
-        ): string;
+        ) => string;
     };
 
     export function parse(template: string): Template;

@@ -16,6 +16,7 @@ from zerver.lib.i18n import (
     get_language_translation_data,
 )
 from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.push_notifications import uses_notification_bouncer
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
@@ -28,6 +29,7 @@ class BillingInfo:
     show_billing: bool
     show_plans: bool
     sponsorship_pending: bool
+    show_remote_billing: bool
 
 
 @dataclass
@@ -80,14 +82,14 @@ def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
     show_billing = False
     show_plans = False
     sponsorship_pending = False
+    show_remote_billing = (
+        user_profile is not None and user_profile.has_billing_access and uses_notification_bouncer()
+    )
+
     # This query runs on home page load, so we want to avoid
     # hitting the database if possible. So, we only run it for the user
     # types that can actually see the billing info.
-    if (
-        settings.CORPORATE_ENABLED
-        and user_profile is not None
-        and (user_profile.has_billing_access or user_profile.is_realm_owner)
-    ):
+    if settings.CORPORATE_ENABLED and user_profile is not None and user_profile.has_billing_access:
         from corporate.models import CustomerPlan, get_customer_by_realm
 
         customer = get_customer_by_realm(user_profile.realm)
@@ -105,6 +107,7 @@ def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
         show_billing=show_billing,
         show_plans=show_plans,
         sponsorship_pending=sponsorship_pending,
+        show_remote_billing=show_remote_billing,
     )
 
 
@@ -151,6 +154,7 @@ def build_page_params_for_home_page_load(
         "stream_typing_notifications": True,
         "user_settings_object": True,
         "linkifier_url_template": True,
+        "user_list_incomplete": True,
     }
 
     if user_profile is not None:
@@ -211,6 +215,7 @@ def build_page_params_for_home_page_load(
         two_fa_enabled=two_fa_enabled,
         apps_page_url=get_apps_page_url(),
         show_billing=billing_info.show_billing,
+        show_remote_billing=billing_info.show_remote_billing,
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
         show_plans=billing_info.show_plans,
         sponsorship_pending=billing_info.sponsorship_pending,

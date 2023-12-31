@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
@@ -245,7 +246,29 @@ export function activate(raw_operators, opts) {
                 // to where the message is located now.
                 const narrow_topic = filter.operands("topic")[0];
                 const narrow_stream_name = filter.operands("stream")[0];
-                const narrow_stream_id = stream_data.get_sub(narrow_stream_name).stream_id;
+                const narrow_stream_data = stream_data.get_sub(narrow_stream_name);
+                if (!narrow_stream_data) {
+                    // The id of the target message is correct but the stream name is
+                    // incorrect in the URL. We reconstruct the narrow with the correct
+                    // stream name and narrow.
+                    const adjusted_operators = adjusted_operators_if_moved(
+                        raw_operators,
+                        target_message,
+                    );
+
+                    if (adjusted_operators === null) {
+                        blueslip.error("adjusted_operators impossibly null");
+                        return;
+                    }
+
+                    activate(adjusted_operators, {
+                        ...opts,
+                        // Update the URL fragment to reflect the redirect.
+                        change_hash: true,
+                    });
+                    return;
+                }
+                const narrow_stream_id = narrow_stream_data.stream_id;
                 const narrow_dict = {stream_id: narrow_stream_id, topic: narrow_topic};
 
                 const narrow_exists_in_edit_history =
@@ -708,6 +731,8 @@ export function update_selection(opts) {
     if (msg_id === undefined) {
         msg_id = message_lists.current.first_unread_message_id();
     }
+    // There should be something since it's not visibly empty.
+    assert(msg_id !== undefined);
 
     const preserve_pre_narrowing_screen_position =
         message_lists.current.get(msg_id) !== undefined && select_offset !== undefined;
@@ -793,6 +818,12 @@ export function narrow_to_next_topic(opts = {}) {
     }
 
     if (!next_narrow) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text($t({defaultMessage: "You have no more unread topics."}));
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
         return;
     }
 
@@ -810,6 +841,12 @@ export function narrow_to_next_pm_string(opts = {}) {
     const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
 
     if (!next_direct_message) {
+        feedback_widget.show({
+            populate($container) {
+                $container.text($t({defaultMessage: "You have no more unread direct messages."}));
+            },
+            title_text: $t({defaultMessage: "You're done!"}),
+        });
         return;
     }
 
@@ -900,7 +937,6 @@ export function by_recipient(target_id, opts) {
     }
 }
 
-// Called by the narrow_to_compose_target hotkey.
 export function to_compose_target() {
     if (!compose_state.composing()) {
         return;
@@ -909,6 +945,8 @@ export function to_compose_target() {
     const opts = {
         trigger: "narrow_to_compose_target",
     };
+
+    compose_banner.clear_search_view_banner();
 
     if (compose_state.get_message_type() === "stream") {
         const stream_id = compose_state.stream_id();
@@ -1087,6 +1125,7 @@ export function deactivate() {
                 }
                 message_id_to_select = message_lists.current.selected_id();
             }
+            assert(message_id_to_select !== undefined);
             message_lists.current.select_id(message_id_to_select, select_opts);
         }
 

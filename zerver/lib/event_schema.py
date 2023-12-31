@@ -332,25 +332,29 @@ def check_heartbeat(
     _check_heartbeat(var_name, event)
 
 
-_hotspot = DictType(
+_onboarding_steps = DictType(
     required_keys=[
+        ("type", str),
         ("name", str),
+    ],
+    optional_keys=[
         ("title", str),
         ("description", str),
         ("delay", NumberType()),
-    ]
+        ("has_trigger", bool),
+    ],
 )
 
-hotspots_event = event_dict_type(
+onboarding_steps_event = event_dict_type(
     required_keys=[
-        ("type", Equals("hotspots")),
+        ("type", Equals("onboarding_steps")),
         (
-            "hotspots",
-            ListType(_hotspot),
+            "onboarding_steps",
+            ListType(_onboarding_steps),
         ),
     ]
 )
-check_hotspots = make_checker(hotspots_event)
+check_onboarding_steps = make_checker(onboarding_steps_event)
 
 invites_changed_event = event_dict_type(
     required_keys=[
@@ -414,12 +418,11 @@ _check_topic_links = DictType(
     ]
 )
 
-message_fields = [
+basic_message_fields = [
     ("avatar_url", OptionalType(str)),
     ("client", str),
     ("content", str),
     ("content_type", Equals("text/html")),
-    ("display_recipient", str),
     ("id", int),
     ("is_me_message", bool),
     ("reactions", ListType(dict)),
@@ -428,12 +431,17 @@ message_fields = [
     ("sender_email", str),
     ("sender_full_name", str),
     ("sender_id", int),
-    ("stream_id", int),
     (TOPIC_NAME, str),
     (TOPIC_LINKS, ListType(_check_topic_links)),
     ("submessages", ListType(dict)),
     ("timestamp", int),
     ("type", str),
+]
+
+message_fields = [
+    *basic_message_fields,
+    ("display_recipient", str),
+    ("stream_id", int),
 ]
 
 message_event = event_dict_type(
@@ -444,6 +452,28 @@ message_event = event_dict_type(
     ]
 )
 check_message = make_checker(message_event)
+
+_check_direct_message_display_recipient = DictType(
+    required_keys=[
+        ("id", int),
+        ("is_mirror_dummy", bool),
+        ("email", str),
+        ("full_name", str),
+    ]
+)
+
+direct_message_fields = [
+    *basic_message_fields,
+    ("display_recipient", ListType(_check_direct_message_display_recipient)),
+]
+direct_message_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("message")),
+        ("flags", ListType(str)),
+        ("message", DictType(direct_message_fields)),
+    ]
+)
+check_direct_message = make_checker(direct_message_event)
 
 # This legacy presence structure is intended to be replaced by a more
 # sensible data structure.
@@ -1204,6 +1234,16 @@ def check_realm_user_update(
         f"{var_name}['person']",
         event["person"],
     )
+
+
+realm_user_remove_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_user")),
+        ("op", Equals("remove")),
+        ("person", removed_user_type),
+    ],
+)
+check_realm_user_remove = make_checker(realm_user_remove_event)
 
 
 restart_event = event_dict_type(

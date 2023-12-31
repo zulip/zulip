@@ -82,6 +82,7 @@ export function update(new_hash: string): void {
 export function exit_overlay(): void {
     if (hash_parser.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const new_hash = state.hash_before_overlay || `#${user_settings.web_home_view}`;
         update(new_hash);
     }
@@ -106,7 +107,7 @@ export function return_to_web_public_hash(): void {
 export function get_full_url(hash: string): string {
     const location = window.location;
 
-    if (hash.charAt(0) !== "#" && hash !== "") {
+    if (!hash.startsWith("#") && hash !== "") {
         hash = "#" + hash;
     }
 
@@ -114,7 +115,7 @@ export function get_full_url(hash: string): string {
     let pathname = location.pathname;
     if (pathname === undefined) {
         pathname = "/";
-    } else if (pathname === "" || pathname.charAt(0) !== "/") {
+    } else if (pathname === "" || !pathname.startsWith("/")) {
         pathname = "/" + pathname;
     }
 

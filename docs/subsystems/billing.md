@@ -13,7 +13,9 @@ This section deals with developing and testing the billing system.
   `corporate/lib/stripe.py`. You can upgrade to a higher version from
   the Stripe dashboard.
 - Set the private API key.
-  - Go to <https://dashboard.stripe.com/account/apikeys>
+  - Go to <https://dashboard.stripe.com/test/apikeys>
+  - Double-check that you're viewing test API keys (not live keys) to avoid
+    actual charges while testing code.
   - Add `stripe_secret_key` to `zproject/dev-secrets.conf`.
 
 ## Manual testing
@@ -29,7 +31,7 @@ Apart from the common setup mentioned above, you also need to set up your
 development environment to receive webhook events from Stripe.
 
 - Install the Stripe CLI locally by following the instructions
-  [here](https://stripe.com/docs/webhooks/test).
+  [here](https://stripe.com/docs/stripe-cli).
 - Log in to Stripe CLI using the command `stripe login`.
 - You can get Stripe CLI to forward all Stripe webhook events to our local
   webhook endpoint using the following command:
@@ -69,10 +71,10 @@ a few things to keep in mind while conducting these tests manually:
 
 Here are some flows to test when upgrading a Zulip organization:
 
-- When free trials are not enabled, i.e. `FREE_TRIAL_DAYS` is not set
+- When free trials are not enabled, i.e. `CLOUD_FREE_TRIAL_DAYS` is not set
   to any value in `dev_settings.py` (aka the default). You can
   double-check that the setting is disabled by verifying
-  `./scripts/get-django-setting FREE_TRIAL_DAYS` returns 0.
+  `./scripts/get-django-setting CLOUD_FREE_TRIAL_DAYS` returns 0.
 
   - Using a valid card number like `4242 4242 4242 4242`.
   - Using an invalid card number like `4000000000000341`, which will add the card
@@ -84,7 +86,7 @@ Here are some flows to test when upgrading a Zulip organization:
 - Upgrade an organization when free trials are enabled. The free
   trials setting has been (possibly permanently) disabled in
   production for some time now, so testing this code path is not a
-  priority. You can set `FREE_TRIAL_DAYS` to any number greater than
+  priority. You can set `CLOUD_FREE_TRIAL_DAYS` to any number greater than
   `0` in `dev_settings.py` to enable free trials. There are two
   different flows to test here:
   - Right after the organization is created by following the instructions in the

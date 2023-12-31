@@ -1,5 +1,5 @@
-import datetime
 import time
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.db import transaction
@@ -11,7 +11,10 @@ from zerver.lib.presence import (
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import Client, UserPresence, UserProfile, active_user_ids, get_client
+from zerver.lib.users import get_user_ids_who_can_access_user
+from zerver.models import Client, UserPresence, UserProfile
+from zerver.models.clients import get_client
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event
 
 
@@ -27,7 +30,11 @@ def send_presence_changed(
     #
     # See https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
     # internals documentation on presence.
-    user_ids = active_user_ids(user_profile.realm_id)
+    if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE:
+        user_ids = get_user_ids_who_can_access_user(user_profile)
+    else:
+        user_ids = active_user_ids(user_profile.realm_id)
+
     if (
         len(user_ids) > settings.USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
         and not force_send_update
@@ -82,7 +89,7 @@ def consolidate_client(client: Client) -> Client:
 def do_update_user_presence(
     user_profile: UserProfile,
     client: Client,
-    log_time: datetime.datetime,
+    log_time: datetime,
     status: int,
     *,
     force_send_update: bool = False,
@@ -111,15 +118,15 @@ def do_update_user_presence(
     else:
         # The user was never active, so let's consider this large to go over any thresholds
         # we may have.
-        time_since_last_active = datetime.timedelta(days=1)
+        time_since_last_active = timedelta(days=1)
     if presence.last_connected_time is not None:
         time_since_last_connected = log_time - presence.last_connected_time
     else:
         # Same approach as above.
-        time_since_last_connected = datetime.timedelta(days=1)
+        time_since_last_connected = timedelta(days=1)
 
     assert (3 * settings.PRESENCE_PING_INTERVAL_SECS + 20) <= settings.OFFLINE_THRESHOLD_SECS
-    now_online = time_since_last_active > datetime.timedelta(
+    now_online = time_since_last_active > timedelta(
         # Here, we decide whether the user is newly online, and we need to consider
         # sending an immediate presence update via the events system that this user is now online,
         # rather than waiting for other clients to poll the presence update.
@@ -141,7 +148,7 @@ def do_update_user_presence(
     # times per minute with multiple connected browser windows.
     # We also need to be careful not to wrongly "update" the timestamp if we actually already
     # have newer presence than the reported log_time.
-    if not created and time_since_last_connected > datetime.timedelta(
+    if not created and time_since_last_connected > timedelta(
         seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
     ):
         presence.last_connected_time = log_time
@@ -149,8 +156,7 @@ def do_update_user_presence(
     if (
         not created
         and status == UserPresence.LEGACY_STATUS_ACTIVE_INT
-        and time_since_last_active
-        > datetime.timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS)
+        and time_since_last_active > timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS)
     ):
         presence.last_active_time = log_time
         update_fields.append("last_active_time")
@@ -179,7 +185,7 @@ def do_update_user_presence(
 def update_user_presence(
     user_profile: UserProfile,
     client: Client,
-    log_time: datetime.datetime,
+    log_time: datetime,
     status: int,
     new_user_input: bool,
 ) -> None:

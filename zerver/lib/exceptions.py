@@ -46,6 +46,11 @@ class ErrorCode(Enum):
     REACTION_ALREADY_EXISTS = auto()
     REACTION_DOES_NOT_EXIST = auto()
     SERVER_NOT_READY = auto()
+    MISSING_REMOTE_REALM = auto()
+    TOPIC_WILDCARD_MENTION_NOT_ALLOWED = auto()
+    STREAM_WILDCARD_MENTION_NOT_ALLOWED = auto()
+    REMOTE_BILLING_UNAUTHENTICATED_USER = auto()
+    REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
 
 
 class JsonableError(Exception):
@@ -442,6 +447,22 @@ class MissingAuthenticationError(JsonableError):
     # converted into json_unauthorized in Zulip's middleware.
 
 
+class RemoteBillingAuthenticationError(JsonableError):
+    # We want this as a distinct class from MissingAuthenticationError,
+    # as we don't want the json_unauthorized conversion mechanism to apply
+    # to this.
+    code = ErrorCode.REMOTE_BILLING_UNAUTHENTICATED_USER
+    http_status_code = 401
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("User not authenticated")
+
+
 class InvalidSubdomainError(JsonableError):
     code = ErrorCode.NONEXISTENT_SUBDOMAIN
     http_status_code = 404
@@ -570,3 +591,55 @@ class ApiParamValidationError(JsonableError):
 class ServerNotReadyError(JsonableError):
     code = ErrorCode.SERVER_NOT_READY
     http_status_code = 500
+
+
+class RemoteRealmServerMismatchError(JsonableError):  # nocoverage
+    code = ErrorCode.REMOTE_REALM_SERVER_MISMATCH_ERROR
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "Your organization is registered to a different Zulip server. Please contact Zulip support for assistance in resolving this issue."
+        )
+
+
+class MissingRemoteRealmError(JsonableError):  # nocoverage
+    code: ErrorCode = ErrorCode.MISSING_REMOTE_REALM
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Organization not registered")
+
+
+class StreamWildcardMentionNotAllowedError(JsonableError):
+    code: ErrorCode = ErrorCode.STREAM_WILDCARD_MENTION_NOT_ALLOWED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to use stream wildcard mentions in this stream.")
+
+
+class TopicWildcardMentionNotAllowedError(JsonableError):
+    code: ErrorCode = ErrorCode.TOPIC_WILDCARD_MENTION_NOT_ALLOWED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to use topic wildcard mentions in this topic.")

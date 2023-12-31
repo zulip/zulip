@@ -3,7 +3,9 @@
     <td>{{user_name}}</td>
     <td>{{date_muted_str}}</td>
     <td class="actions">
+        {{#if can_unmute}}
         <span><a class="settings-unmute-user">{{t "Unmute" }}</a></span>
+        {{/if}}
     </td>
 </tr>
 {{/with}}

@@ -3,10 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
+const {run_test, noop} = require("./lib/test");
+
 // override file-level function call in reload.js
-window.addEventListener = () => {};
+window.addEventListener = noop;
 const reload = zrequire("reload");
-const {run_test} = require("./lib/test");
 
 run_test("old_metadata_string_is_stale", () => {
     assert.ok(reload.is_stale_refresh_token("1663886962834", "1663883954033"), true);

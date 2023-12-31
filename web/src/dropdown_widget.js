@@ -1,6 +1,7 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
+import render_dropdown_current_value_not_in_options from "../templates/dropdown_current_value_not_in_options.hbs";
 import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.hbs";
 import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
@@ -8,6 +9,7 @@ import render_inline_decorated_stream_name from "../templates/inline_decorated_s
 
 import * as blueslip from "./blueslip";
 import * as ListWidget from "./list_widget";
+import {page_params} from "./page_params";
 import {default_popover_props} from "./popover_menus";
 import {parse_html} from "./ui_util";
 
@@ -43,9 +45,11 @@ export class DropdownWidget {
         // NOTE: Any value other than `null` will be rendered when class is initialized.
         default_id = null,
         unique_id_type = null,
-        // Show disabled state if the default_id is not in `get_options()`.
-        show_disabled_if_current_value_not_in_options = false,
+        // Text to show if the current value is not in `get_options()`.
+        text_if_current_value_not_in_options = null,
         hide_search_box = false,
+        // Disable the widget for spectators.
+        disable_for_spectators = false,
     }) {
         this.widget_name = widget_name;
         this.widget_id = `#${CSS.escape(widget_name)}_widget`;
@@ -67,12 +71,16 @@ export class DropdownWidget {
         this.current_value = default_id;
         this.unique_id_type = unique_id_type;
         this.$events_container = $events_container;
-        this.show_disabled_if_current_value_not_in_options =
-            show_disabled_if_current_value_not_in_options;
+        this.text_if_current_value_not_in_options = text_if_current_value_not_in_options;
         this.hide_search_box = hide_search_box;
+        this.disable_for_spectators = disable_for_spectators;
     }
 
     init() {
+        // NOTE: Widget should only be initialized again if the events_container was rendered again to
+        // avoid duplicate events to be attached to events_container.
+        // Don't attach any events or classes to any element other than `events_container` here, otherwise
+        // the attached events / classes will be lost when the widget is rendered again without initialing the widget again.
         if (this.current_value !== null) {
             this.render();
         }
@@ -88,6 +96,18 @@ export class DropdownWidget {
                 }
             },
         );
+
+        if (this.disable_for_spectators && page_params.is_spectator) {
+            this.$events_container.addClass("dropdown-widget-disabled-for-spectators");
+            this.$events_container.on(
+                "click",
+                `${this.widget_id}, ${this.widget_wrapper_id}`,
+                (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                },
+            );
+        }
     }
 
     show_empty_if_no_items($popper) {
@@ -295,11 +315,16 @@ export class DropdownWidget {
         }
 
         const all_options = this.get_options();
-        let option = all_options.find((option) => option.unique_id === this.current_value);
+        const option = all_options.find((option) => option.unique_id === this.current_value);
 
-        // Show disabled if cannot find current option.
-        if (!option && this.show_disabled_if_current_value_not_in_options) {
-            option = all_options.find((option) => option.is_setting_disabled === true);
+        // If provided, show custom text if cannot find current option.
+        if (!option && this.text_if_current_value_not_in_options) {
+            $(this.widget_value_selector).html(
+                render_dropdown_current_value_not_in_options({
+                    name: this.text_if_current_value_not_in_options,
+                }),
+            );
+            return;
         }
 
         if (!option) {

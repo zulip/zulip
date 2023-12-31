@@ -517,7 +517,7 @@ export function can_access_topic_history(sub: StreamSubscription): boolean {
 }
 
 export function can_preview(sub: StreamSubscription): boolean {
-    return sub.subscribed || !sub.invite_only || sub.previously_subscribed === true;
+    return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
 }
 
 export function can_change_permissions(sub: StreamSubscription): boolean {
@@ -697,19 +697,19 @@ export function get_name(stream_name: string): string {
     return sub.name;
 }
 
-export function is_user_subscribed(stream_id: number, user_id: number): boolean | undefined {
+export function is_user_subscribed(stream_id: number, user_id: number): boolean {
     const sub = sub_store.get(stream_id);
     if (sub === undefined || !can_view_subscribers(sub)) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
-        // so we return undefined (treated as falsy if not explicitly handled).
+        // so we return false.
         blueslip.warn(
             "We got a is_user_subscribed call for a non-existent or inaccessible stream.",
         );
-        return undefined;
+        return false;
     }
     if (user_id === undefined) {
         blueslip.warn("Undefined user_id passed to function is_user_subscribed");
-        return undefined;
+        return false;
     }
 
     return peer_data.is_user_subscribed(stream_id, user_id);
@@ -762,7 +762,7 @@ export function create_sub_from_server_data(
     delete attrs.subscribers;
 
     sub = {
-        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
+        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
         desktop_notifications: null,

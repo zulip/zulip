@@ -34,7 +34,7 @@ from zerver.actions.users import (
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
-from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import (
@@ -61,6 +61,7 @@ from zerver.lib.users import (
     add_service,
     check_bot_creation_policy,
     check_bot_name_available,
+    check_can_access_user,
     check_full_name,
     check_short_name,
     check_valid_bot_config,
@@ -85,14 +86,14 @@ from zerver.lib.validator import (
     check_union,
     check_url,
 )
-from zerver.models import (
+from zerver.models import Service, Stream, UserProfile
+from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
-    Service,
-    Stream,
-    UserProfile,
+)
+from zerver.models.users import (
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
@@ -307,8 +308,16 @@ def avatar(
             avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(
                 int(email_or_id), realm
             )
-        # If there is a valid user account passed in, use its avatar
-        url = avatar_url(avatar_user_profile, medium=medium)
+
+        url: Optional[str] = None
+        if maybe_user_profile.is_authenticated and not check_can_access_user(
+            avatar_user_profile, maybe_user_profile
+        ):
+            url = get_avatar_for_inaccessible_user()
+        else:
+            # If there is a valid user account passed in, use its avatar
+            url = avatar_url(avatar_user_profile, medium=medium)
+        assert url is not None
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         email = email_or_id

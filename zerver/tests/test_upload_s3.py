@@ -1,9 +1,9 @@
 import io
 import os
 import re
-import urllib
 from io import BytesIO, StringIO
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 import botocore.exceptions
 from django.conf import settings
@@ -36,7 +36,9 @@ from zerver.lib.upload.base import (
     resize_avatar,
 )
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import Attachment, RealmEmoji, UserProfile, get_realm, get_system_bot
+from zerver.models import Attachment, RealmEmoji, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot
 
 
 class S3Test(ZulipTestCase):
@@ -191,7 +193,7 @@ class S3Test(ZulipTestCase):
         # In development, this is just a redirect
         response = self.client_get(url)
         redirect_url = response["Location"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlsplit(redirect_url).path
         assert path.startswith("/")
         key = path[len("/") :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -200,7 +202,7 @@ class S3Test(ZulipTestCase):
         with self.settings(DEVELOPMENT=False):
             response = self.client_get(url)
         redirect_url = response["X-Accel-Redirect"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
         key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -210,7 +212,7 @@ class S3Test(ZulipTestCase):
         with self.settings(DEVELOPMENT=False):
             response = self.client_get(download_url)
         redirect_url = response["X-Accel-Redirect"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
         key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -230,7 +232,7 @@ class S3Test(ZulipTestCase):
         with self.settings(DEVELOPMENT=False):
             self.client_get(url_only_url)
         redirect_url = response["X-Accel-Redirect"]
-        path = urllib.parse.urlparse(redirect_url).path
+        path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
         key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
@@ -238,7 +240,8 @@ class S3Test(ZulipTestCase):
         # The original url shouldn't work when logged out:
         with self.settings(DEVELOPMENT=False):
             result = self.client_get(url)
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result.headers["Location"].endswith(f"/login/?next={url}"))
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
@@ -531,5 +534,5 @@ class S3Test(ZulipTestCase):
             warn_log.output,
             ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
         )
-        path_id = urllib.parse.urlparse(url).path
+        path_id = urlsplit(url).path
         self.assertEqual(delete_export_tarball(path_id), path_id)

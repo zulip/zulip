@@ -114,7 +114,7 @@ export function populate_emoji(): void {
     for (const emoji of active_emoji_data) {
         // Add people.js data for the user here.
         if (emoji.author_id !== null) {
-            emoji.author = people.maybe_get_user_by_id(emoji.author_id);
+            emoji.author = people.get_user_by_id_assert_valid(emoji.author_id);
         } else {
             emoji.author = null;
         }
@@ -130,7 +130,7 @@ export function populate_emoji(): void {
                     name: item.name,
                     display_name: item.name.replaceAll("_", " "),
                     source_url: item.source_url,
-                    author: item.author || "",
+                    author: item.author ?? "",
                     can_delete_emoji: can_delete_emoji(item),
                 },
             });
@@ -288,7 +288,9 @@ function show_modal(): void {
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Override default emoji?"}),
                     html_body,
-                    on_click: () => submit_custom_emoji_request(formData),
+                    on_click() {
+                        submit_custom_emoji_request(formData);
+                    },
                 });
             });
         } else {
@@ -335,7 +337,9 @@ export function set_up(): void {
             html_heading: $t_html({defaultMessage: "Deactivate custom emoji?"}),
             html_body,
             id: "confirm_deactivate_custom_emoji_modal",
-            on_click: () => dialog_widget.submit_api_request(channel.del, url, {}, opts),
+            on_click() {
+                dialog_widget.submit_api_request(channel.del, url, {}, opts);
+            },
             loading_spinner: true,
         });
     });

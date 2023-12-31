@@ -14,7 +14,6 @@ import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as rtl from "./rtl";
-import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as user_groups from "./user_groups";
@@ -66,6 +65,21 @@ function get_user_group_id_for_mention_button(elem) {
     return undefined;
 }
 
+function get_message_for_message_content($content) {
+    // TODO: This selector is designed to exclude drafts/scheduled
+    // messages. Arguably those settings should be unconditionally
+    // marked with user-mention-me, but rows.id doesn't support
+    // those elements, and we should address that quirk for
+    // mentions holistically.
+    const $message_row = $content.closest(".message_row");
+    if (!$message_row.length || $message_row.closest(".overlay-message-row").length) {
+        // There's no containing message when rendering a preview.
+        return undefined;
+    }
+    const message_id = rows.id($message_row);
+    return message_store.get(message_id);
+}
+
 // Helper function to update a mentioned user's name.
 export function set_name_in_mention_element(element, name, user_id) {
     if (user_id !== undefined && people.should_add_guest_user_indicator(user_id)) {
@@ -101,59 +115,53 @@ export const update_elements = ($content) => {
         });
     }
 
+    // personal and stream wildcard mentions
     $content.find(".user-mention").each(function () {
         const user_id = get_user_id_for_mention_button(this);
+        const message = get_message_for_message_content($content);
         // We give special highlights to the mention buttons
         // that refer to the current user.
-        if (user_id === "*" || people.is_my_user_id(user_id)) {
-            const $message_header_stream = $content
-                .closest(".recipient_row")
-                .find(".message_header.message_header_stream");
-            // If stream message
-            if ($message_header_stream.length) {
-                const stream_id = Number.parseInt(
-                    $message_header_stream.attr("data-stream-id"),
-                    10,
-                );
-                // Don't highlight the mention if user is not subscribed to the stream.
-                if (stream_data.is_user_subscribed(stream_id, people.my_current_user_id())) {
-                    // Either a wildcard mention or us, so mark it.
-                    $(this).addClass("user-mention-me");
-                }
-            } else {
-                // Always highlight wildcard mentions in direct messages.
-                $(this).addClass("user-mention-me");
-            }
+        if (user_id === "*" && message && message.stream_wildcard_mentioned) {
+            $(this).addClass("user-mention-me");
         }
+        if (
+            user_id !== "*" &&
+            people.is_my_user_id(user_id) &&
+            message &&
+            message.mentioned_me_directly
+        ) {
+            $(this).addClass("user-mention-me");
+        }
+
         if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
-            // If it's a mention of a specific user, edit the
-            // mention text to show the user's current name,
-            // assuming that you're not searching for text
-            // inside the highlight.
+            // If it's a mention of a specific user, edit the mention
+            // text to show the user's current name, assuming that
+            // you're not searching for text inside the highlight.
             const person = people.maybe_get_user_by_id(user_id, true);
-            if (person !== undefined) {
+            if (person === undefined || person.is_inaccessible_user) {
                 // Note that person might be undefined in some
-                // unpleasant corner cases involving data import.
-                set_name_in_mention_element(this, person.full_name, user_id);
+                // unpleasant corner cases involving data import
+                // or when guest users cannot access all users in
+                // the organization.
+                //
+                // In these cases, the best we can do is leave the
+                // existing name in the existing mention pill
+                // HTML. Clicking on the pill will show the the
+                // "Unknown user" popover.
+                if (person === undefined) {
+                    people.add_inaccessible_user(user_id);
+                }
+                return;
             }
+
+            set_name_in_mention_element(this, person.full_name, user_id);
         }
     });
 
     $content.find(".topic-mention").each(function () {
-        // TODO: This selector is designed to exclude drafts/scheduled
-        // messages. Arguably those settings should be unconditionally
-        // marked with user-mention-me, but rows.id doesn't support
-        // those elements, and we should address that quirk for
-        // mentions holistically.
-        const $message_row = $content.closest(".message_row");
-        if (!$message_row.length || $message_row.closest(".overlay-message-row").length) {
-            // There's no containing message when rendering a preview.
-            return;
-        }
-        const message_id = rows.id($message_row);
-        const message = message_store.get(message_id);
+        const message = get_message_for_message_content($content);
 
-        if (message.topic_wildcard_mentioned) {
+        if (message && message.topic_wildcard_mentioned) {
             $(this).addClass("user-mention-me");
         }
     });

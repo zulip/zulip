@@ -120,7 +120,7 @@ export function get_posting_policy_error_message() {
 export function check_posting_policy_for_compose_box() {
     const banner_text = get_posting_policy_error_message();
     if (banner_text === "") {
-        $(".message-send-controls").removeClass("disabled-message-send-controls");
+        compose_validate.set_recipient_disallowed(false);
         compose_banner.clear_errors();
         return;
     }
@@ -129,7 +129,7 @@ export function check_posting_policy_for_compose_box() {
     if (compose_state.selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.private_messages_disabled;
     }
-    $(".message-send-controls").addClass("disabled-message-send-controls");
+    compose_validate.set_recipient_disallowed(true);
     compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
 }
 

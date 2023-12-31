@@ -295,7 +295,6 @@ export function initialize() {
     $("body").on("click", ".move_message_button", function (e) {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         const message_id = rows.id($row);
-        message_lists.current.select_id(message_id);
         const message = message_lists.current.get(message_id);
         stream_popover.build_move_topic_to_stream_popover(
             message.stream_id,
@@ -345,6 +344,9 @@ export function initialize() {
 
         const row_id = rows.id($(this).closest(".message_row"));
         $(`#edit_form_${CSS.escape(row_id)} .file_input`).trigger("click");
+    });
+    $("body").on("focus", ".message_edit_form .message_edit_content", (e) => {
+        compose_state.set_last_focused_compose_type_input(e.target);
     });
 
     $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
@@ -697,6 +699,10 @@ export function initialize() {
 
     $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
+    });
+
+    $("body").on("focus", "#compose-textarea", (e) => {
+        compose_state.set_last_focused_compose_type_input(e.target);
     });
 
     // LEFT SIDEBAR

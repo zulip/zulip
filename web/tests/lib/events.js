@@ -169,24 +169,6 @@ exports.fixtures = {
         value: true,
     },
 
-    hotspots: {
-        type: "hotspots",
-        hotspots: [
-            {
-                name: "topics",
-                title: "About topics",
-                description: "Topics are good.",
-                delay: 1.5,
-            },
-            {
-                name: "compose",
-                title: "Compose box",
-                description: "This is where you compose messages.",
-                delay: 3.14159,
-            },
-        ],
-    },
-
     invites_changed: {
         type: "invites_changed",
     },
@@ -201,6 +183,28 @@ exports.fixtures = {
             {
                 id: 23,
                 timestamp: fake_now,
+            },
+        ],
+    },
+
+    onboarding_steps: {
+        type: "onboarding_steps",
+        onboarding_steps: [
+            {
+                type: "hotspot",
+                name: "topics",
+                title: "About topics",
+                description: "Topics are good.",
+                delay: 1.5,
+                has_trigger: false,
+            },
+            {
+                type: "hotspot",
+                name: "compose",
+                title: "Compose box",
+                description: "This is where you compose messages.",
+                delay: 3.14159,
+                has_trigger: false,
             },
         ],
     },
@@ -556,6 +560,15 @@ exports.fixtures = {
             timezone: "America/New_York",
             date_joined: "2020-01-01",
             delivery_email: "test-delivery@example.com",
+        },
+    },
+
+    realm_user__remove: {
+        type: "realm_user",
+        op: "remove",
+        person: {
+            user_id: test_user.user_id,
+            full_name: "Unknown user",
         },
     },
 

@@ -36,11 +36,12 @@ You can select the sound Zulip uses for audible desktop notifications. Choosing
 
 ## Unread count badge
 
-By default, Zulip displays how many unmuted unread messages you have
-in the organization on the [desktop app](https://zulip.com/apps/)
-sidebar and on the browser tab icon. You can configure which types of
-messages are included in the count. Choosing **None** disables unread
-count badges.
+By default, Zulip displays a count of your unmuted unread messages on the
+[desktop app](https://zulip.com/apps/) sidebar and on the browser tab icon. You
+can configure the badge to only count [direct messages](/help/direct-messages)
+and [mentions](/help/mention-a-user-or-group), or to include messages in
+[followed topics](/help/follow-a-topic) but not other
+[stream](/help/streams-and-topics) messages.
 
 ### Configure unread count badge
 
@@ -50,6 +51,17 @@ count badges.
 
 1. Under **Desktop message notifications**, configure
    **Unread count badge**.
+
+{end_tabs}
+
+### Disable unread count badge
+
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Under **Desktop message notifications**, select **None** from the
+   **Unread count badge** dropdown.
 
 {end_tabs}
 

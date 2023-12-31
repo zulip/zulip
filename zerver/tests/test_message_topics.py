@@ -6,7 +6,10 @@ from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import timeout_mock
 from zerver.lib.timeout import TimeoutExpiredError
-from zerver.models import Message, UserMessage, get_client, get_realm, get_stream
+from zerver.models import Message, UserMessage
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class TopicHistoryTest(ZulipTestCase):

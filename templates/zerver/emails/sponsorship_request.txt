@@ -7,4 +7,11 @@ Organization type: {{ organization_type }}
 Description:
 {{ description }}
 
+Expected users:
+- Total: {{ expected_total_users }}
+- Paid: {{ paid_users_count }}
+
+Description of paid users:
+{{ paid_users_description }}
+
 Requested by: {{ requested_by }} ({{ user_role }})

@@ -60,19 +60,12 @@ from zerver.lib.message import render_markdown
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
-from zerver.models import (
-    Message,
-    RealmEmoji,
-    RealmFilter,
-    SystemGroups,
-    UserGroup,
-    UserMessage,
-    UserProfile,
-    get_client,
-    get_realm,
-    get_stream,
-    linkifiers_for_realm,
-)
+from zerver.models import Message, RealmEmoji, RealmFilter, UserGroup, UserMessage, UserProfile
+from zerver.models.clients import get_client
+from zerver.models.groups import SystemGroups
+from zerver.models.linkifiers import linkifiers_for_realm
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
@@ -242,7 +235,9 @@ class MarkdownMiscTest(ZulipTestCase):
 
         mention_backend = MentionBackend(realm.id)
         lst = get_possible_mentions_info(
-            mention_backend, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
+            mention_backend,
+            {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"},
+            message_sender=None,
         )
         set_of_names = {x.full_name.lower() for x in lst}
         self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
@@ -271,7 +266,7 @@ class MarkdownMiscTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         content = "@**King Hamlet** @**Cordelia, lear's daughter**"
         mention_backend = MentionBackend(realm.id)
-        mention_data = MentionData(mention_backend, content)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
         self.assertEqual(
             mention_data.get_user_by_id(hamlet.id),
@@ -288,12 +283,12 @@ class MarkdownMiscTest(ZulipTestCase):
 
         self.assertFalse(mention_data.message_has_stream_wildcards())
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
-        mention_data = MentionData(mention_backend, content)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertTrue(mention_data.message_has_stream_wildcards())
 
         self.assertFalse(mention_data.message_has_topic_wildcards())
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**topic**"
-        mention_data = MentionData(mention_backend, content)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertTrue(mention_data.message_has_topic_wildcards())
 
     def test_invalid_katex_path(self) -> None:
@@ -1366,6 +1361,25 @@ class MarkdownTest(ZulipTestCase):
             [{"url": "https://example.com/A%20Test/%25%25%ba/123", "text": "url-123"}],
         )
 
+        # Test spaces in the linkifier pattern
+        RealmFilter(
+            realm=realm,
+            pattern=r"community guidelines",
+            url_template="https://zulip.com/development-community/#community-norms",
+        ).save()
+        converted = markdown_convert("community guidelines", message_realm=realm, message=msg)
+        self.assertEqual(
+            converted.rendered_content,
+            '<p><a href="https://zulip.com/development-community/#community-norms">community guidelines</a></p>',
+        )
+        converted = markdown_convert(
+            "please observe community guidelines here", message_realm=realm, message=msg
+        )
+        self.assertEqual(
+            converted.rendered_content,
+            '<p>please observe <a href="https://zulip.com/development-community/#community-norms">community guidelines</a> here</p>',
+        )
+
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         self.check_add_linkifiers(
@@ -2153,6 +2167,35 @@ class MarkdownTest(ZulipTestCase):
             '<p><span class="user-mention silent" '
             f'data-user-id="{user_id}">'
             "King Hamlet</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+
+    def test_mention_inaccessible_users(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        msg = Message(
+            sender=polonius,
+            sending_client=get_client("test"),
+            realm=polonius.realm,
+        )
+        content = "@**Othello, the Moor of Venice** @**King Hamlet** test message"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p>@<strong>Othello, the Moor of Venice</strong> <span class="user-mention" '
+            f'data-user-id="{hamlet.id}">'
+            "@King Hamlet</span> test message</p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
+
+        content = "@_**Othello, the Moor of Venice** @_**King Hamlet** test message"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p>@_<strong>Othello, the Moor of Venice</strong> <span class="user-mention silent" '
+            f'data-user-id="{hamlet.id}">'
+            "King Hamlet</span> test message</p>",
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 

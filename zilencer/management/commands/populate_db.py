@@ -37,6 +37,7 @@ from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
+from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
@@ -63,15 +64,15 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
-    flush_alert_word,
-    get_client,
-    get_or_create_huddle,
-    get_realm,
-    get_stream,
-    get_user,
-    get_user_by_delivery_email,
-    get_user_profile_by_id,
 )
+from zerver.models.alert_words import flush_alert_word
+from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_huddle
+from zerver.models.streams import get_stream
+from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
+from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.views import update_remote_realm_data_for_server
 
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
@@ -125,6 +126,8 @@ def clear_database() -> None:
         UserMessage,
         Client,
         DefaultStream,
+        RemoteRealm,
+        RemoteZulipServer,
     ]:
         model.objects.all().delete()
     Session.objects.all().delete()
@@ -372,6 +375,22 @@ class Command(BaseCommand):
                 # mention-related tests simple.
                 zulip_realm.wildcard_mention_policy = Realm.WILDCARD_MENTION_POLICY_MEMBERS
                 zulip_realm.save(update_fields=["wildcard_mention_policy"])
+
+            # Realms should have matching RemoteRealm entries - simulating having realms registered
+            # with the bouncer, which is going to be the primary case for modern servers. Tests
+            # wanting to have missing registrations, or simulating legacy server scenarios,
+            # should delete RemoteRealms to explicit set things up.
+
+            assert isinstance(settings.ZULIP_ORG_ID, str)
+            assert isinstance(settings.ZULIP_ORG_KEY, str)
+            server = RemoteZulipServer.objects.create(
+                uuid=settings.ZULIP_ORG_ID,
+                api_key=settings.ZULIP_ORG_KEY,
+                hostname=settings.EXTERNAL_HOST,
+                last_updated=timezone_now(),
+                contact_email="remotezulipserver@zulip.com",
+            )
+            update_remote_realm_data_for_server(server, get_realms_info_for_push_bouncer())
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -839,6 +858,9 @@ class Command(BaseCommand):
             #
             # We have separate tests to verify events generated, database query counts,
             # and other important details related to the above-mentioned settings.
+            #
+            # We set the value of 'automatically_follow_topics_where_mentioned' to 'False' so that it
+            # does not increase the number of events and db queries while running tests.
             for user in user_profiles:
                 do_change_user_setting(
                     user,
@@ -850,6 +872,12 @@ class Command(BaseCommand):
                     user,
                     "automatically_unmute_topics_in_muted_streams_policy",
                     UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                    acting_user=None,
+                )
+                do_change_user_setting(
+                    user,
+                    "automatically_follow_topics_where_mentioned",
+                    False,
                     acting_user=None,
                 )
 

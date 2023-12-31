@@ -8,7 +8,7 @@
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
-  "email": "hamlet@zulip.com",
+  "email": "othello@zulip.com",
   "id": "cus_NORMALIZED0001",
   "invoice_prefix": "NORMA01",
   "invoice_settings": {

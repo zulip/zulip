@@ -446,7 +446,7 @@ Test subscribe/unsubscribe:
 
 - Log in as Hamlet and go to his stream settings.
 - As Cordelia, unsubscribe from "public1" using the checkmark in the
-  streams settings page.
+  stream settings page.
 - Verify that Hamlet sees that Cordelia has unsubscribed (and the
   subscriber count should decrement).
 - As Cordelia, resubscribe to "public1."

@@ -1,13 +1,15 @@
-import datetime
 import time
 from collections import defaultdict
+from datetime import datetime, timedelta
 from typing import Any, Dict, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, query_for_ids
+from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
+from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile
 
 
 def get_presence_dicts_for_rows(
@@ -44,14 +46,14 @@ def get_presence_dicts_for_rows(
 
 
 def user_presence_datetime_with_date_joined_default(
-    dt: Optional[datetime.datetime], date_joined: datetime.datetime
-) -> datetime.datetime:
+    dt: Optional[datetime], date_joined: datetime
+) -> datetime:
     """
     Our data models support UserPresence objects not having None
     values for last_active_time/last_connected_time. The legacy API
     however has always sent timestamps, so for backward
     compatibility we cannot send such values through the API and need
-    to default to a sane datetime.
+    to default to a sane
 
     This helper functions expects to take a last_active_time or
     last_connected_time value and the date_joined of the user, which
@@ -64,7 +66,7 @@ def user_presence_datetime_with_date_joined_default(
 
 
 def get_modern_user_presence_info(
-    last_active_time: datetime.datetime, last_connected_time: datetime.datetime
+    last_active_time: datetime, last_connected_time: datetime
 ) -> Dict[str, Any]:
     # TODO: Do further bandwidth optimizations to this structure.
     result = {}
@@ -74,7 +76,7 @@ def get_modern_user_presence_info(
 
 
 def get_legacy_user_presence_info(
-    last_active_time: datetime.datetime, last_connected_time: datetime.datetime
+    last_active_time: datetime, last_connected_time: datetime
 ) -> Dict[str, Any]:
     """
     Reformats the modern UserPresence data structure so that legacy
@@ -105,7 +107,7 @@ def get_legacy_user_presence_info(
 
 
 def format_legacy_presence_dict(
-    last_active_time: datetime.datetime, last_connected_time: datetime.datetime
+    last_active_time: datetime, last_connected_time: datetime
 ) -> Dict[str, Any]:
     """
     This function assumes it's being called right after the presence object was updated,
@@ -113,7 +115,7 @@ def format_legacy_presence_dict(
     """
     if (
         last_active_time
-        + datetime.timedelta(seconds=settings.PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS)
+        + timedelta(seconds=settings.PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS)
         >= last_connected_time
     ):
         status = UserPresence.LEGACY_STATUS_ACTIVE
@@ -151,24 +153,33 @@ def get_presence_for_user(
 
 
 def get_presence_dict_by_realm(
-    realm_id: int, slim_presence: bool = False
+    realm: Realm, slim_presence: bool = False, requesting_user_profile: Optional[UserProfile] = None
 ) -> Dict[str, Dict[str, Any]]:
-    two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
+    two_weeks_ago = timezone_now() - timedelta(weeks=2)
     query = UserPresence.objects.filter(
-        realm_id=realm_id,
+        realm_id=realm.id,
         last_connected_time__gte=two_weeks_ago,
         user_profile__is_active=True,
         user_profile__is_bot=False,
-    ).values(
-        "last_active_time",
-        "last_connected_time",
-        "user_profile__email",
-        "user_profile_id",
-        "user_profile__enable_offline_push_notifications",
-        "user_profile__date_joined",
     )
 
-    presence_rows = list(query)
+    if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE and not check_user_can_access_all_users(
+        requesting_user_profile
+    ):
+        assert requesting_user_profile is not None
+        accessible_user_ids = get_accessible_user_ids(realm, requesting_user_profile)
+        query = query.filter(user_profile_id__in=accessible_user_ids)
+
+    presence_rows = list(
+        query.values(
+            "last_active_time",
+            "last_connected_time",
+            "user_profile__email",
+            "user_profile_id",
+            "user_profile__enable_offline_push_notifications",
+            "user_profile__date_joined",
+        )
+    )
 
     mobile_query = PushDeviceToken.objects.distinct("user_id").values_list(
         "user_id",
@@ -196,13 +207,13 @@ def get_presence_dict_by_realm(
 
 
 def get_presences_for_realm(
-    realm: Realm, slim_presence: bool
+    realm: Realm, slim_presence: bool, requesting_user_profile: UserProfile
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
     if realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict)
 
-    return get_presence_dict_by_realm(realm.id, slim_presence)
+    return get_presence_dict_by_realm(realm, slim_presence, requesting_user_profile)
 
 
 def get_presence_response(
@@ -210,5 +221,5 @@ def get_presence_response(
 ) -> Dict[str, Any]:
     realm = requesting_user_profile.realm
     server_timestamp = time.time()
-    presences = get_presences_for_realm(realm, slim_presence)
+    presences = get_presences_for_realm(realm, slim_presence, requesting_user_profile)
     return dict(presences=presences, server_timestamp=server_timestamp)

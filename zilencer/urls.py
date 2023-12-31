@@ -3,6 +3,7 @@ from typing import Any
 from django.conf.urls import include
 from django.urls import path
 
+from corporate.views.remote_billing_page import remote_realm_billing_entry
 from zilencer.auth import remote_server_path
 from zilencer.views import (
     deactivate_remote_server,
@@ -33,6 +34,9 @@ push_bouncer_patterns = [
     remote_server_path("remotes/server/analytics/status", GET=remote_server_check_analytics),
 ]
 
+billing_patterns = [remote_server_path("remotes/server/billing", POST=remote_realm_billing_entry)]
+
 urlpatterns = [
     path("api/v1/", include(push_bouncer_patterns)),
+    path("api/v1/", include(billing_patterns)),
 ]

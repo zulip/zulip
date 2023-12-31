@@ -122,7 +122,8 @@ function render_user_profile_subscribe_widget() {
             placement: "bottom-start",
         },
     };
-    user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
+    user_profile_subscribe_widget =
+        user_profile_subscribe_widget || new dropdown_widget.DropdownWidget(opts);
     user_profile_subscribe_widget.setup();
 }
 
@@ -145,6 +146,15 @@ function reset_subscribe_widget() {
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
         $t({defaultMessage: "Select a stream"}),
     );
+    //  There are two cases when the subscribe widget is reset: when the user_profile
+    //  is setup (the object is null), or after subscribing of a user in the dropdown.
+    //
+    //  After subscribing a user, we want the current_value of dropdown to be reset
+    //  to null after the subscribe widget is reloaded. This is to avoid  an error
+    //  of not finding the current_value of the user_profile in the options.
+    if (user_profile_subscribe_widget) {
+        user_profile_subscribe_widget.current_value = null;
+    }
 }
 
 export function get_user_unsub_streams() {
@@ -183,7 +193,7 @@ function format_user_stream_list_item_html(stream, user) {
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.stream_edit_url(stream),
+        stream_edit_url: hash_util.stream_edit_url(stream, "general"),
     });
 }
 
@@ -307,8 +317,12 @@ export function get_custom_profile_field_data(user, field, field_types) {
 }
 
 export function hide_user_profile() {
-    user_streams_list_widget = undefined;
     modals.close_if_open("user-profile-modal");
+}
+
+function on_user_profile_hide() {
+    user_streams_list_widget = undefined;
+    user_profile_subscribe_widget = undefined;
 }
 
 function show_manage_user_tab(target) {
@@ -379,14 +393,14 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         if (is_system_bot) {
             args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
-            const bot_owner = people.get_by_user_id(bot_owner_id);
+            const bot_owner = people.get_bot_owner_user(user);
             args.bot_owner = bot_owner;
         }
         args.bot_type = settings_data.bot_type_id_to_string(user.bot_type);
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    modals.open("user-profile-modal", {autoremove: true});
+    modals.open("user-profile-modal", {autoremove: true, on_hide: on_user_profile_hide});
     $(".tabcontent").hide();
 
     let default_tab = 0;
@@ -882,7 +896,7 @@ export function initialize() {
             (people.is_my_user_id(target_user_id) ||
                 peer_data.get_subscriber_count(stream_id) === 1)
         ) {
-            const new_hash = hash_util.stream_edit_url(sub);
+            const new_hash = hash_util.stream_edit_url(sub, "general");
             hide_user_profile();
             browser_history.go_to_location(new_hash);
             return;

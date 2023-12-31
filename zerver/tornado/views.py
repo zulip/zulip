@@ -20,7 +20,9 @@ from zerver.lib.validator import (
     check_string,
     to_non_negative_int,
 )
-from zerver.models import Client, UserProfile, get_client, get_user_profile_by_id
+from zerver.models import Client, UserProfile
+from zerver.models.clients import get_client
+from zerver.models.users import get_user_profile_by_id
 from zerver.tornado.descriptors import is_current_port
 from zerver.tornado.event_queue import access_client_descriptor, fetch_events, process_notification
 from zerver.tornado.sharding import get_user_tornado_port, notify_tornado_queue_name
@@ -159,6 +161,9 @@ def get_events_backend(
     linkifier_url_template: bool = REQ(
         default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
+    user_list_incomplete: bool = REQ(
+        default=False, json_validator=check_bool, intentionally_undocumented=True
+    ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
         raise JsonableError(_("User not authorized for this query"))
@@ -192,6 +197,7 @@ def get_events_backend(
             user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
     result = in_tornado_thread(fetch_events)(

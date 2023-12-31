@@ -74,7 +74,7 @@
             },
             "paid": false,
             "payment_intent": "pi_NORMALIZED00000000000002",
-            "payment_method": "pm_1OAbesDEQaroqDjs5R6CuXDC",
+            "payment_method": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
             "payment_method_details": {
               "card": {
                 "amount_authorized": null,
@@ -85,12 +85,12 @@
                   "cvc_check": "pass"
                 },
                 "country": "US",
-                "exp_month": 11,
+                "exp_month": 12,
                 "exp_year": 2024,
                 "extended_authorization": {
                   "status": "disabled"
                 },
-                "fingerprint": "NORMALIZED000001",
+                "fingerprint": "NORMALIZED000002",
                 "funding": "credit",
                 "incremental_authorization": {
                   "status": "unavailable"
@@ -114,6 +114,7 @@
               },
               "type": "card"
             },
+            "radar_options": {},
             "receipt_email": "hamlet@zulip.com",
             "receipt_number": null,
             "receipt_url": null,
@@ -135,7 +136,7 @@
         "total_count": 1,
         "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
       },
-      "client_secret": "pi_NORMALIZED00000000000002_secret_Xnfeb3bcGcLT0u7Y6t4QrBywl",
+      "client_secret": "pi_NORMALIZED00000000000002_secret_Ov2D1BDnuVPiuN9rhlcAgnEtf",
       "confirmation_method": "automatic",
       "created": 1000000000,
       "currency": "usd",
@@ -171,9 +172,9 @@
               "cvc_check": "pass"
             },
             "country": "US",
-            "exp_month": 11,
+            "exp_month": 12,
             "exp_year": 2024,
-            "fingerprint": "NORMALIZED000001",
+            "fingerprint": "NORMALIZED000002",
             "funding": "credit",
             "generated_from": null,
             "last4": "0341",
@@ -190,7 +191,7 @@
           },
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
-          "id": "pm_1OAbesDEQaroqDjs5R6CuXDC",
+          "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
           "livemode": false,
           "metadata": {},
           "object": "payment_method",
@@ -253,9 +254,9 @@
           "cvc_check": "pass"
         },
         "country": "US",
-        "exp_month": 11,
+        "exp_month": 12,
         "exp_year": 2024,
-        "fingerprint": "NORMALIZED000001",
+        "fingerprint": "NORMALIZED000002",
         "funding": "credit",
         "generated_from": null,
         "last4": "0341",
@@ -272,13 +273,13 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OAbesDEQaroqDjs5R6CuXDC",
+      "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
       "type": "card"
     },
-    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0012?t=1699549490",
+    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0007?t=1702907327",
     "setup_intent": null,
     "source": null,
     "type": "card_error"
@@ -291,13 +292,13 @@
     "Access-Control-Max-Age": "300",
     "Cache-Control": "no-cache, no-store",
     "Connection": "keep-alive",
-    "Content-Length": "9060",
+    "Content-Length": "9107",
     "Content-Security-Policy": "report-uri https://q.stripe.com/csp-report?p=v1%2Finvoices%2F%3Ainvoice%2Fpay; block-all-mixed-content; default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'",
     "Content-Type": "application/json",
     "Date": "NORMALIZED DATETIME",
-    "Idempotency-Key": "c79d6ed1-3d57-49cf-b3e5-c5fda9deb46f",
-    "Original-Request": "req_NORMALIZED0012",
-    "Request-Id": "req_NORMALIZED0012",
+    "Idempotency-Key": "36aa1721-9236-4330-97c3-85e372e003fd",
+    "Original-Request": "req_NORMALIZED0007",
+    "Request-Id": "req_NORMALIZED0007",
     "Server": "nginx",
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
     "Stripe-Should-Retry": "false",
@@ -380,7 +381,7 @@
               },
               "paid": false,
               "payment_intent": "pi_NORMALIZED00000000000002",
-              "payment_method": "pm_1OAbesDEQaroqDjs5R6CuXDC",
+              "payment_method": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
               "payment_method_details": {
                 "card": {
                   "amount_authorized": null,
@@ -391,12 +392,12 @@
                     "cvc_check": "pass"
                   },
                   "country": "US",
-                  "exp_month": 11,
+                  "exp_month": 12,
                   "exp_year": 2024,
                   "extended_authorization": {
                     "status": "disabled"
                   },
-                  "fingerprint": "NORMALIZED000001",
+                  "fingerprint": "NORMALIZED000002",
                   "funding": "credit",
                   "incremental_authorization": {
                     "status": "unavailable"
@@ -420,6 +421,7 @@
                 },
                 "type": "card"
               },
+              "radar_options": {},
               "receipt_email": "hamlet@zulip.com",
               "receipt_number": null,
               "receipt_url": null,
@@ -447,7 +449,7 @@
           "total_count": 1,
           "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
         },
-        "client_secret": "pi_NORMALIZED00000000000002_secret_Xnfeb3bcGcLT0u7Y6t4QrBywl",
+        "client_secret": "pi_NORMALIZED00000000000002_secret_Ov2D1BDnuVPiuN9rhlcAgnEtf",
         "confirmation_method": "automatic",
         "created": 1000000000,
         "currency": "usd",
@@ -483,9 +485,9 @@
                 "cvc_check": "pass"
               },
               "country": "US",
-              "exp_month": 11,
+              "exp_month": 12,
               "exp_year": 2024,
-              "fingerprint": "NORMALIZED000001",
+              "fingerprint": "NORMALIZED000002",
               "funding": "credit",
               "generated_from": null,
               "last4": "0341",
@@ -502,7 +504,7 @@
             },
             "created": 1000000000,
             "customer": "cus_NORMALIZED0001",
-            "id": "pm_1OAbesDEQaroqDjs5R6CuXDC",
+            "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
             "livemode": false,
             "metadata": {},
             "object": "payment_method",
@@ -565,9 +567,9 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 11,
+          "exp_month": 12,
           "exp_year": 2024,
-          "fingerprint": "NORMALIZED000001",
+          "fingerprint": "NORMALIZED000002",
           "funding": "credit",
           "generated_from": null,
           "last4": "0341",
@@ -584,16 +586,16 @@
         },
         "created": 1000000000,
         "customer": "cus_NORMALIZED0001",
-        "id": "pm_1OAbesDEQaroqDjs5R6CuXDC",
+        "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
         "livemode": false,
         "metadata": {},
         "object": "payment_method",
         "type": "card"
       },
-      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0012?t=1699549490",
+      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0007?t=1702907327",
       "type": "card_error"
     }
   },
   "param": null,
-  "request_id": "req_NORMALIZED0012"
+  "request_id": "req_NORMALIZED0007"
 }

@@ -1,7 +1,7 @@
-import datetime
+from datetime import timedelta
 from email.headerregistry import Address
-from unittest import mock
 
+import time_machine
 from django.conf import settings
 from django.core import mail
 from django.utils.html import escape
@@ -18,14 +18,9 @@ from zerver.actions.realm_settings import do_deactivate_realm, do_set_realm_prop
 from zerver.actions.user_settings import do_change_user_setting, do_start_email_change_process
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    EmailChangeStatus,
-    UserProfile,
-    get_realm,
-    get_user,
-    get_user_by_delivery_email,
-    get_user_profile_by_id,
-)
+from zerver.models import EmailChangeStatus, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 
 
 class EmailChangeTestCase(ZulipTestCase):
@@ -78,8 +73,8 @@ class EmailChangeTestCase(ZulipTestCase):
             user_profile=user_profile,
             realm=user_profile.realm,
         )
-        date_sent = now() - datetime.timedelta(days=2)
-        with mock.patch("confirmation.models.timezone_now", return_value=date_sent):
+        date_sent = now() - timedelta(days=2)
+        with time_machine.travel(date_sent, tick=False):
             url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
 
         response = self.client_get(url)
@@ -131,6 +126,25 @@ class EmailChangeTestCase(ZulipTestCase):
         response = self.client_get(activation_url)
         self.assertEqual(response.status_code, 404)
 
+    def test_change_email_revokes(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        old_email = user_profile.delivery_email
+
+        first_email = "hamlet-newer@zulip.com"
+        first_url = self.generate_email_change_link(first_email)
+        second_email = "hamlet-newest@zulip.com"
+        second_url = self.generate_email_change_link(second_email)
+        response = self.client_get(first_url)
+        self.assertEqual(response.status_code, 404)
+        user_profile.refresh_from_db()
+        self.assertEqual(user_profile.delivery_email, old_email)
+
+        response = self.client_get(second_url)
+        self.assertEqual(response.status_code, 200)
+        user_profile.refresh_from_db()
+        self.assertEqual(user_profile.delivery_email, second_email)
+
     def test_change_email_deactivated_user_realm(self) -> None:
         new_email = "hamlet-new@zulip.com"
         user_profile = self.example_user("hamlet")
@@ -175,7 +189,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(email_message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(email_message),
-            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
 
         self.assertEqual(email_message.extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
@@ -221,6 +235,49 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_length(mail.outbox, 0)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Already has an account", result)
+
+    def test_email_change_already_taken_later(self) -> None:
+        conflict_email = "conflict@zulip.com"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        self.login_user(hamlet)
+        hamlet_url = self.generate_email_change_link(conflict_email)
+        self.logout()
+
+        self.login_user(cordelia)
+        cordelia_url = self.generate_email_change_link(conflict_email)
+        response = self.client_get(cordelia_url)
+        self.assertEqual(response.status_code, 200)
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.delivery_email, conflict_email)
+
+        self.logout()
+        self.login_user(hamlet)
+        response = self.client_get(hamlet_url)
+        self.assertEqual(response.status_code, 400)
+        self.assert_in_response("Already has an account", response)
+
+    def test_change_email_to_disposable_email(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Make the realm allow permissive email changes, create a
+        # link, and then lock the permissions down -- the change
+        # should not be allowed when the link is followed.
+        realm = hamlet.realm
+        realm.disallow_disposable_email_addresses = False
+        realm.emails_restricted_to_domains = False
+        realm.save()
+
+        self.login_user(hamlet)
+        confirmation_url = self.generate_email_change_link("hamlet@mailnator.com")
+
+        realm.disallow_disposable_email_addresses = True
+        realm.save()
+
+        response = self.client_get(confirmation_url)
+        self.assertEqual(response.status_code, 400)
+        self.assert_in_response("Please use your real email address.", response)
 
     def test_unauthorized_email_change_from_email_confirmation_link(self) -> None:
         new_email = "hamlet-new@zulip.com"
@@ -299,9 +356,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_configure_demo_organization_owner_email(self) -> None:
         desdemona = self.example_user("desdemona")
-        desdemona.realm.demo_organization_scheduled_deletion_date = now() + datetime.timedelta(
-            days=30
-        )
+        desdemona.realm.demo_organization_scheduled_deletion_date = now() + timedelta(days=30)
         desdemona.realm.save()
         assert desdemona.realm.demo_organization_scheduled_deletion_date is not None
 
@@ -330,7 +385,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(email_message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(email_message),
-            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertEqual(email_message.extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
 

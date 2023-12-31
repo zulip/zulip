@@ -1,7 +1,6 @@
 import base64
-import datetime
 import logging
-import urllib
+from datetime import datetime
 from functools import wraps
 from io import BytesIO
 from typing import (
@@ -16,6 +15,7 @@ from typing import (
     cast,
     overload,
 )
+from urllib.parse import urlsplit
 
 import django_otp
 from django.conf import settings
@@ -61,7 +61,9 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
-from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
+from zerver.models import UserProfile
+from zerver.models.clients import get_client
+from zerver.models.users import get_user_profile_by_api_key
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -393,8 +395,8 @@ def zulip_redirect_to_login(
     resolved_login_url = resolve_url(login_url or settings.LOGIN_URL)
     # If the login URL is the same scheme and net location then just
     # use the path as the "next" url.
-    login_scheme, login_netloc = urllib.parse.urlparse(resolved_login_url)[:2]
-    current_scheme, current_netloc = urllib.parse.urlparse(path)[:2]
+    login_scheme, login_netloc = urlsplit(resolved_login_url)[:2]
+    current_scheme, current_netloc = urlsplit(path)[:2]
     if (not login_scheme or login_scheme == current_scheme) and (
         not login_netloc or login_netloc == current_netloc
     ):
@@ -948,7 +950,7 @@ def internal_notify_view(
     return _wrapped_view_func
 
 
-def to_utc_datetime(var_name: str, timestamp: str) -> datetime.datetime:
+def to_utc_datetime(var_name: str, timestamp: str) -> datetime:
     return timestamp_to_datetime(float(timestamp))
 
 

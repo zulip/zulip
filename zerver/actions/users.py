@@ -17,6 +17,7 @@ from zerver.lib.avatar import avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
@@ -24,7 +25,12 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import get_active_bots_owned_by_user
+from zerver.lib.users import (
+    get_active_bots_owned_by_user,
+    get_user_ids_who_can_access_user,
+    get_users_involved_in_dms_with_target_users,
+    user_access_restricted_in_realm,
+)
 from zerver.models import (
     Message,
     Realm,
@@ -35,17 +41,20 @@ from zerver.models import (
     Subscription,
     UserGroupMembership,
     UserProfile,
+)
+from zerver.models.bots import get_bot_services
+from zerver.models.realms import get_fake_email_domain
+from zerver.models.users import (
+    active_non_guest_user_ids,
     active_user_ids,
     bot_owner_user_ids,
     get_bot_dicts_in_realm,
-    get_bot_services,
-    get_fake_email_domain,
     get_user_profile_by_id,
 )
 from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed
+    from corporate.lib.stripe import RealmBillingSession
 
 
 def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
@@ -74,7 +83,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
         replacement_user = create_user(
             force_id=user_id,
             email=Address(
-                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm)
+                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm.host)
             ).addr_spec,
             password=None,
             realm=realm,
@@ -180,7 +189,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
         # is cleaner by using the same re-assignment approach for them together with Messages.
         random_token = secrets.token_hex(16)
         temp_replacement_user = create_user(
-            email=f"temp_deleteduser{random_token}@{get_fake_email_domain(realm)}",
+            email=f"temp_deleteduser{random_token}@{get_fake_email_domain(realm.host)}",
             password=None,
             realm=realm,
             full_name=f"Deleted User {user_id} (temp)",
@@ -200,7 +209,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
 
         replacement_user = create_user(
             force_id=user_id,
-            email=f"deleteduser{user_id}@{get_fake_email_domain(realm)}",
+            email=f"deleteduser{user_id}@{get_fake_email_domain(realm.host)}",
             password=None,
             realm=realm,
             full_name=f"Deleted User {user_id}",
@@ -246,6 +255,69 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
 
 
+def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
+    event_deactivate_user = dict(
+        type="realm_user",
+        op="update",
+        person=dict(user_id=user_profile.id, is_active=False),
+    )
+    realm = user_profile.realm
+
+    if not user_access_restricted_in_realm(user_profile):
+        send_event_on_commit(realm, event_deactivate_user, active_user_ids(realm.id))
+        return
+
+    non_guest_user_ids = active_non_guest_user_ids(realm.id)
+    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([user_profile], realm)
+
+    # This code path is parallel to
+    # get_subscribers_of_target_user_subscriptions, but can't reuse it
+    # because we need to process stream and huddle subscriptions
+    # separately.
+    deactivated_user_subs = Subscription.objects.filter(
+        user_profile=user_profile,
+        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        active=True,
+    ).values_list("recipient_id", flat=True)
+    subscribers_in_deactivated_user_subs = Subscription.objects.filter(
+        recipient_id__in=list(deactivated_user_subs),
+        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        is_user_active=True,
+        active=True,
+    ).values_list("recipient__type", "user_profile_id")
+
+    subscribers_in_deactivated_user_streams = set()
+    subscribers_in_deactivated_user_huddles = set()
+    for recipient_type, user_id in subscribers_in_deactivated_user_subs:
+        if recipient_type == Recipient.HUDDLE:
+            subscribers_in_deactivated_user_huddles.add(user_id)
+        else:
+            subscribers_in_deactivated_user_streams.add(user_id)
+
+    users_with_access_to_deactivated_user = (
+        set(non_guest_user_ids)
+        | users_involved_in_dms_dict[user_profile.id]
+        | subscribers_in_deactivated_user_huddles
+    )
+    if users_with_access_to_deactivated_user:
+        send_event_on_commit(
+            realm, event_deactivate_user, list(users_with_access_to_deactivated_user)
+        )
+
+    users_losing_access_to_deactivated_user = (
+        subscribers_in_deactivated_user_streams - users_with_access_to_deactivated_user
+    )
+    if users_losing_access_to_deactivated_user:
+        event_remove_user = dict(
+            type="realm_user",
+            op="remove",
+            person=dict(user_id=user_profile.id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
+        )
+        send_event_on_commit(
+            realm, event_remove_user, list(users_losing_access_to_deactivated_user)
+        )
+
+
 def do_deactivate_user(
     user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -287,6 +359,7 @@ def do_deactivate_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
         do_increment_logging_stat(
             user_profile.realm,
             COUNT_STATS["active_users_log:is_bot:day"],
@@ -295,18 +368,12 @@ def do_deactivate_user(
             increment=-1,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
         transaction.on_commit(lambda: delete_user_sessions(user_profile))
 
-        event_deactivate_user = dict(
-            type="realm_user",
-            op="update",
-            person=dict(user_id=user_profile.id, is_active=False),
-        )
-        send_event_on_commit(
-            user_profile.realm, event_deactivate_user, active_user_ids(user_profile.realm_id)
-        )
+        send_events_for_user_deactivation(user_profile)
 
         if user_profile.is_bot:
             event_deactivate_bot = dict(
@@ -376,7 +443,20 @@ def send_stream_events_for_role_update(
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
+    # We want to both (a) take a lock on the UserProfile row, and (b)
+    # modify the passed-in UserProfile object, so that callers see the
+    # changes in the object they hold.  Unfortunately,
+    # `select_for_update` cannot be combined with `refresh_from_db`
+    # (https://code.djangoproject.com/ticket/28344).  Call
+    # `select_for_update` and throw away the result, so that we know
+    # we have the lock on the row, then re-fill the `user_profile`
+    # object with the values now that the lock exists.
+    UserProfile.objects.select_for_update().get(id=user_profile.id)
+    user_profile.refresh_from_db()
+
     old_value = user_profile.role
+    if old_value == value:
+        return
     old_system_group = get_system_user_group_for_user(user_profile)
 
     previously_accessible_streams = get_streams_for_user(
@@ -399,10 +479,11 @@ def do_change_user_role(
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         },
     )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
-    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group
@@ -450,7 +531,7 @@ def do_change_is_billing_admin(user_profile: UserProfile, value: bool) -> None:
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_billing_admin=value)
     )
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
 def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:

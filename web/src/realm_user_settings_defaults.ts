@@ -46,6 +46,7 @@ export type RealmDefaultSettings = {
     wildcard_mentions_notify: boolean;
     automatically_follow_topics_policy: number;
     automatically_unmute_topics_in_muted_streams_policy: number;
+    automatically_follow_topics_where_mentioned: boolean;
 };
 
 export let realm_user_settings_defaults: RealmDefaultSettings;

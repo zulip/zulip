@@ -6,10 +6,10 @@ Nagios plugin to check that our MIT users' Zephyr mirrors are running.
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
-import datetime
 import os
 import sys
-from typing import NoReturn
+from datetime import timedelta
+from typing import NoReturn, Optional
 
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
@@ -17,6 +17,7 @@ from scripts.lib.setup_path import setup_path
 setup_path()
 
 import django
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
@@ -25,9 +26,10 @@ sys.path.append("/home/zulip/deployments/current/zerver")
 
 django.setup()
 
-from typing import AbstractSet, Any, Dict
+from typing import Dict
 
 from zerver.models import UserActivity
+from zerver.models.clients import get_client
 
 states: Dict[str, int] = {
     "OK": 0,
@@ -40,15 +42,26 @@ state_file_path = "/var/lib/nagios_state/check_user_zephyr_mirror_liveness"
 now = timezone_now()
 
 
-def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> NoReturn:
+def report(
+    state: str, short_msg: str, all_users: Optional[QuerySet[UserActivity]] = None
+) -> NoReturn:
     too_old_data = ""
-    if too_old:
+    if all_users is not None:
+        recently_inactive_users = (
+            all_users.filter(last_visit__lt=now - timedelta(minutes=10))
+            .distinct("user_profile_id")
+            .difference(
+                all_users.filter(last_visit__lt=now - timedelta(minutes=60)).distinct(
+                    "user_profile_id"
+                )
+            )
+        )
         too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(
             "{:>16}: {}".format(
                 user.user_profile.email,
                 user.last_visit.strftime("%Y-%m-%d %H:%M %Z"),
             )
-            for user in too_old
+            for user in recently_inactive_users
         )
 
     with open(state_file_path + ".tmp", "w") as f:
@@ -58,18 +71,35 @@ def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> NoR
     sys.exit(states[state])
 
 
+zephyr_client = get_client("zephyr_mirror")
 all_users = UserActivity.objects.filter(
-    query__in=["get_events", "/api/v1/events"], client__name="zephyr_mirror"
+    # We need to use the client_id so we can use the partial index we
+    # have created, which builds in both the query and the client_id.
+    # The partial index is:
+    # CREATE INDEX CONCURRENTLY zerver_useractivity_zehpyr_liveness
+    #     ON zerver_useractivity(last_visit)
+    #  WHERE client_id = 1005
+    #    AND query IN ('get_events', '/api/v1/events');
+    query__in=["get_events", "/api/v1/events"],
+    client_id=zephyr_client.id,
 )
-new_inactive_users = [
-    user for user in all_users if user.last_visit < now - datetime.timedelta(minutes=10)
-]
-old_inactive_users = [
-    user for user in new_inactive_users if user.last_visit < now - datetime.timedelta(minutes=60)
-]
-recently_inactive_users = set(new_inactive_users) - set(old_inactive_users)
+new_inactive_users = (
+    all_users.filter(last_visit__lt=now - timedelta(minutes=10))
+    .values("user_profile_id")
+    .distinct("user_profile_id")
+    .count()
+)
 
-if (len(recently_inactive_users) / float(len(old_inactive_users))) > 0.25:
-    report("CRITICAL", "Many mirrors recently became inactive", recently_inactive_users)
+old_inactive_users = (
+    all_users.filter(last_visit__lt=now - timedelta(minutes=60))
+    .values("user_profile_id")
+    .distinct("user_profile_id")
+    .count()
+)
+
+recently_inactive_users = new_inactive_users - old_inactive_users
+
+if recently_inactive_users / float(old_inactive_users) > 0.25:
+    report("CRITICAL", "Many mirrors recently became inactive", all_users)
 else:
     report("OK", "Most mirrors that were recently active continue to be active")

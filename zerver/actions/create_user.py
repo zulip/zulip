@@ -1,5 +1,5 @@
-import datetime
 from collections import defaultdict
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 from django.conf import settings
@@ -21,6 +21,7 @@ from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
@@ -29,6 +30,8 @@ from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
     get_api_key,
+    get_data_for_inaccessible_user,
+    user_access_restricted_in_realm,
     user_profile_to_user_row,
 )
 from zerver.models import (
@@ -41,19 +44,17 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    SystemGroups,
     UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
-    active_user_ids,
-    bot_owner_user_ids,
-    get_system_bot,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed
+    from corporate.lib.stripe import RealmBillingSession
 
 
 MAX_NUM_ONBOARDING_MESSAGES = 1000
@@ -63,7 +64,7 @@ MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
 # feel like Zulip is buggy, but in low-traffic or bursty-traffic
 # organizations, it's reasonable for the most recent 20 messages to be
 # several weeks old and still be a good place to start.
-ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=12)
+ONBOARDING_RECENT_TIMEDELTA = timedelta(weeks=12)
 
 DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 
@@ -301,7 +302,7 @@ def process_new_human_user(
     send_initial_direct_message(user_profile)
 
 
-def notify_created_user(user_profile: UserProfile) -> None:
+def notify_created_user(user_profile: UserProfile, notify_user_ids: List[int]) -> None:
     user_row = user_profile_to_user_row(user_profile)
 
     format_user_row_kwargs: Dict[str, Any] = {
@@ -320,13 +321,41 @@ def notify_created_user(user_profile: UserProfile) -> None:
         "custom_profile_field_data": {},
     }
 
-    active_users = user_profile.realm.get_active_users()
+    user_ids_without_access_to_created_user: List[int] = []
+    users_with_access_to_created_users: List[UserProfile] = []
+
+    if notify_user_ids:
+        # This is currently used to send creation event when a guest
+        # gains access to a user, so we depend on the caller to make
+        # sure that only accessible users receive the user data.
+        users_with_access_to_created_users = list(
+            user_profile.realm.get_active_users().filter(id__in=notify_user_ids)
+        )
+    else:
+        active_realm_users = list(user_profile.realm.get_active_users())
+
+        # This call to user_access_restricted_in_realm results in
+        # one extra query in the user creation codepath to check
+        # "realm.can_access_all_users_group.name" because we do
+        # not prefetch realm and its related fields when fetching
+        # PreregistrationUser object.
+        if user_access_restricted_in_realm(user_profile):
+            for user in active_realm_users:
+                if user.is_guest:
+                    # This logic assumes that can_access_all_users_group
+                    # setting can only be set to EVERYONE or MEMBERS.
+                    user_ids_without_access_to_created_user.append(user.id)
+                else:
+                    users_with_access_to_created_users.append(user)
+        else:
+            users_with_access_to_created_users = active_realm_users
+
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
 
     person_for_real_email_access_users = None
     person_for_without_real_email_access_users = None
-    for recipient_user in active_users:
+    for recipient_user in users_with_access_to_created_users:
         if can_access_delivery_email(
             recipient_user, user_profile.id, user_row["email_address_visibility"]
         ):
@@ -358,6 +387,15 @@ def notify_created_user(user_profile: UserProfile) -> None:
         assert person_for_without_real_email_access_users is not None
         event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
         send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
+
+    if user_ids_without_access_to_created_user:
+        event = dict(
+            type="realm_user",
+            op="add",
+            person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
+            inaccessible_user=True,
+        )
+        send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -456,6 +494,7 @@ def do_create_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
 
         if realm_creation:
             # If this user just created a realm, make sure they are
@@ -476,7 +515,8 @@ def do_create_user(
             event_time,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
         system_user_group = get_system_user_group_for_user(user_profile)
         UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
@@ -509,7 +549,7 @@ def do_create_user(
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
-    notify_created_user(user_profile)
+    notify_created_user(user_profile, [])
 
     do_send_user_group_members_update_event("add_members", system_user_group, [user_profile.id])
     if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
@@ -579,6 +619,7 @@ def do_activate_mirror_dummy_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
+        maybe_enqueue_audit_log_upload(user_profile.realm)
         do_increment_logging_stat(
             user_profile.realm,
             COUNT_STATS["active_users_log:is_bot:day"],
@@ -586,9 +627,10 @@ def do_activate_mirror_dummy_user(
             event_time,
         )
         if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+            billing_session.update_license_ledger_if_needed(event_time)
 
-    notify_created_user(user_profile)
+    notify_created_user(user_profile, [])
 
 
 @transaction.atomic(savepoint=False)
@@ -611,6 +653,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         },
     )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
 
     bot_owner_changed = False
     if (
@@ -638,7 +681,8 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         event_time,
     )
     if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(event_time)
 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)

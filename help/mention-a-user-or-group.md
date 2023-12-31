@@ -78,7 +78,8 @@ only when your message requires timely attention from many stream subscribers.
 An organization can be configured to
 [restrict](/help/restrict-wildcard-mentions) wildcard mentions in large streams.
 
-Users can disable notifications for `@**topic**` mentions by:
+Users can disable notifications for `@**all**`, `@**everyone**`, and
+`@**stream**` mentions by:
 
 - Disabling notifications for wildcard mentions
 [globally](/help/dm-mention-alert-notifications) or for [individual

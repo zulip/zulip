@@ -212,7 +212,7 @@ function do_hashchange_overlay(old_hash) {
     const old_base = hash_parser.get_hash_category(old_hash);
     let section = hash_parser.get_current_hash_section();
 
-    if (base === "groups" && (!page_params.development_environment || page_params.is_guest)) {
+    if (base === "groups" && page_params.is_guest) {
         // The #groups settings page is unfinished, and disabled in production.
         show_home_view();
         return;
@@ -247,7 +247,9 @@ function do_hashchange_overlay(old_hash) {
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
         if (base === "streams") {
-            stream_settings_ui.change_state(section);
+            // e.g. #streams/29/social/subscribers
+            const right_side_tab = hash_parser.get_current_nth_hash_section(4);
+            stream_settings_ui.change_state(section, right_side_tab);
             return;
         }
 
@@ -312,7 +314,9 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "streams") {
-        stream_settings_ui.launch(section);
+        // e.g. #streams/29/social/subscribers
+        const right_side_tab = hash_parser.get_current_nth_hash_section(4);
+        stream_settings_ui.launch(section, right_side_tab);
         return;
     }
 

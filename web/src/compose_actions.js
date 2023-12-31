@@ -75,8 +75,8 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
-    compose_validate.clear_wildcard_warnings($("#compose_banners"));
-    compose_validate.set_user_acknowledged_wildcard_flag(false);
+    compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
+    compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
     clear_textarea();
@@ -87,6 +87,7 @@ function clear_box() {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
+    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
 }
 
 export function autosize_message_content() {
@@ -263,6 +264,7 @@ export function start(msg_type, opts) {
     // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {
         compose_state.message_content(opts.content);
+        $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
     }
 
     compose_state.set_message_type(msg_type);
@@ -290,6 +292,10 @@ export function start(msg_type, opts) {
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
+    // Show a warning if the user is in a search narrow when replying to a message
+    if (opts.is_reply) {
+        compose_validate.warn_if_in_search_view();
+    }
 
     compose_recipient.check_posting_policy_for_compose_box();
 
@@ -328,6 +334,24 @@ export function cancel() {
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
+}
+
+export function on_show_navigation_view() {
+    /* This function dictates the behavior of the compose box
+     * when navigating to a view, as opposed to a narrow. */
+
+    // Leave the compose box closed if it was already closed.
+    if (!compose_state.composing()) {
+        return;
+    }
+
+    // Leave the compose box open if there is content or if the recipient was edited.
+    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
+        return;
+    }
+
+    // Otherwise, close the compose box.
+    cancel();
 }
 
 export function on_topic_narrow() {

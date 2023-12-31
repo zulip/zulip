@@ -9,14 +9,14 @@
 
 
 {% block content %}
-
+<div class="activity-page">
     {% if not is_home %}
     <a class="show-all" href="/activity">Home</a>
     <br />
     {% endif %}
 
-    <div class="container">
+    <div>
         {{ data|safe }}
     </div>
-
+</div>
 {% endblock %}

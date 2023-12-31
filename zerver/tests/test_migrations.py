@@ -24,9 +24,9 @@ from zerver.lib.test_classes import MigrationsTestCase
 #   "zerver_subscription" because it has pending trigger events
 
 
-class UserMessageIndex(MigrationsTestCase):
-    migrate_from = "0485_alter_usermessage_flags_and_add_index"
-    migrate_to = "0486_clear_old_data_for_unused_usermessage_flags"
+class RenameUserHotspot(MigrationsTestCase):
+    migrate_from = "0492_realm_push_notifications_enabled_and_more"
+    migrate_to = "0493_rename_userhotspot_to_onboardingstep"
 
     @override
     def setUp(self) -> None:
@@ -35,42 +35,21 @@ class UserMessageIndex(MigrationsTestCase):
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        UserMessage = apps.get_model("zerver", "usermessage")
+        self.assertRaises(LookupError, lambda: apps.get_model("zerver", "onboardingstep"))
 
-        um_1 = UserMessage.objects.get(id=1)
-        um_1.flags.topic_wildcard_mentioned = True
-        um_1.flags.stream_wildcard_mentioned = True
-        um_1.flags.force_expand = True
-        um_1.save()
+        UserHotspot = apps.get_model("zerver", "userhotspot")
 
-        um_2 = UserMessage.objects.get(id=2)
-        um_2.flags.group_mentioned = True
-        um_2.flags.topic_wildcard_mentioned = True
-        um_2.flags.mentioned = True
-        um_2.flags.force_collapse = True
-        um_2.save()
+        expected_field_names = {"id", "hotspot", "timestamp", "user"}
+        fields_name = {field.name for field in UserHotspot._meta.get_fields()}
 
-        um_1 = UserMessage.objects.get(id=1)
-        um_2 = UserMessage.objects.get(id=2)
+        self.assertEqual(fields_name, expected_field_names)
 
-        self.assertTrue(um_1.flags.topic_wildcard_mentioned)
-        self.assertTrue(um_1.flags.stream_wildcard_mentioned)
-        self.assertTrue(um_1.flags.force_expand)
-        self.assertTrue(um_2.flags.group_mentioned)
-        self.assertTrue(um_2.flags.topic_wildcard_mentioned)
-        self.assertTrue(um_2.flags.mentioned)
-        self.assertTrue(um_2.flags.force_collapse)
+    def test_renamed_model_and_field(self) -> None:
+        self.assertRaises(LookupError, lambda: self.apps.get_model("zerver", "userhotspot"))
 
-    def test_clear_topic_wildcard_and_group_mentioned_flags(self) -> None:
-        UserMessage = self.apps.get_model("zerver", "usermessage")
+        OnboardingStep = self.apps.get_model("zerver", "onboardingstep")
 
-        um_1 = UserMessage.objects.get(id=1)
-        um_2 = UserMessage.objects.get(id=2)
+        expected_field_names = {"id", "onboarding_step", "timestamp", "user"}
+        fields_name = {field.name for field in OnboardingStep._meta.get_fields()}
 
-        self.assertFalse(um_1.flags.topic_wildcard_mentioned)
-        self.assertTrue(um_1.flags.stream_wildcard_mentioned)
-        self.assertFalse(um_1.flags.force_expand)
-        self.assertFalse(um_2.flags.group_mentioned)
-        self.assertFalse(um_2.flags.topic_wildcard_mentioned)
-        self.assertTrue(um_2.flags.mentioned)
-        self.assertFalse(um_2.flags.force_collapse)
+        self.assertEqual(fields_name, expected_field_names)

@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 
@@ -8,7 +9,6 @@ import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
-import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -21,6 +21,9 @@ import * as util from "./util";
 
 export let user_cursor;
 export let user_filter;
+
+// Function initialized from `ui_init` to avoid importing narrow.js and causing circular imports.
+let narrow_by_email;
 
 function get_pm_list_item(user_id) {
     return buddy_list.find_li({
@@ -65,7 +68,7 @@ export function redraw_user(user_id) {
     const info = buddy_data.get_item(user_id);
 
     buddy_list.insert_or_move({
-        key: user_id,
+        user_id,
         item: info,
     });
 }
@@ -92,13 +95,13 @@ export function build_user_sidebar() {
 
     const filter_text = get_filter_text();
 
-    const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
+    const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
-    buddy_list.populate({keys: user_ids});
+    buddy_list.populate({all_user_ids});
 
     render_empty_user_list_message_if_needed(buddy_list.$container);
 
-    return user_ids; // for testing
+    return all_user_ids; // for testing
 }
 
 function do_update_users_for_search() {
@@ -111,7 +114,9 @@ function do_update_users_for_search() {
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
 
-export function initialize() {
+export function initialize(opts) {
+    narrow_by_email = opts.narrow_by_email;
+
     set_cursor_and_filter();
 
     build_user_sidebar();
@@ -132,6 +137,15 @@ export function initialize() {
 }
 
 export function update_presence_info(user_id, info, server_time) {
+    // There can be some case where the presence event
+    // was set for an inaccessible user if
+    // CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is
+    // disabled. We just ignore that event and return.
+    const person = people.maybe_get_user_by_id(user_id, true);
+    if (person === undefined || person.is_inaccessible_user) {
+        return;
+    }
+
     presence.update_info_from_event(user_id, info, server_time);
     redraw_user(user_id);
     pm_list.update_private_messages();
@@ -150,7 +164,7 @@ export function reset_users() {
 }
 
 export function narrow_for_user(opts) {
-    const user_id = buddy_list.get_key_from_li({$li: opts.$li});
+    const user_id = buddy_list.get_user_id_from_li({$li: opts.$li});
     return narrow_for_user_id({user_id});
 }
 
@@ -158,7 +172,8 @@ export function narrow_for_user_id(opts) {
     const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
-    narrow.by("dm", email, {trigger: "sidebar"});
+    assert(narrow_by_email);
+    narrow_by_email(email);
     user_filter.clear_and_hide_search();
 }
 

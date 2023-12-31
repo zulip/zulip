@@ -1,0 +1,33 @@
+{
+  "address": null,
+  "balance": 0,
+  "created": 1000000000,
+  "currency": null,
+  "default_currency": null,
+  "default_source": null,
+  "delinquent": false,
+  "description": "zulip.testserver bb6ee6b4-a71",
+  "discount": null,
+  "email": "hamlet@zulip.com",
+  "id": "cus_NORMALIZED0001",
+  "invoice_prefix": "NORMA01",
+  "invoice_settings": {
+    "custom_fields": null,
+    "default_payment_method": "pm_1OPIxoDEQaroqDjsIEtENx2f",
+    "footer": null,
+    "rendering_options": null
+  },
+  "livemode": false,
+  "metadata": {
+    "remote_realm_host": "zulip.testserver",
+    "remote_realm_uuid": "bb6ee6b4-a719-4ed9-a5e2-6421d9843ef6"
+  },
+  "name": null,
+  "next_invoice_sequence": 1,
+  "object": "customer",
+  "phone": null,
+  "preferred_locales": [],
+  "shipping": null,
+  "tax_exempt": "none",
+  "test_clock": null
+}

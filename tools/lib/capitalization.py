@@ -26,6 +26,7 @@ IGNORED_PHRASES = [
     r"IP",
     r"JSON",
     r"Kerberos",
+    r"LinkedIn",
     r"LDAP",
     r"Markdown",
     r"OTP",
@@ -46,7 +47,9 @@ IGNORED_PHRASES = [
     r"Zulip Server",
     r"Zulip Account Security",
     r"Zulip Security",
+    r"Zulip Cloud",
     r"Zulip Cloud Standard",
+    r"Zulip Cloud Plus",
     r"BigBlueButton",
     # Code things
     r"\.zuliprc",
@@ -145,6 +148,8 @@ IGNORED_PHRASES = [
     r"guest",
     # Used in pills for deactivated users.
     r"deactivated",
+    # This is a reference to a setting/secret and should be lowercase.
+    r"zulip_org_id",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -234,7 +239,11 @@ def check_banned_words(text: str) -> List[str]:
         if word in lower_cased_text:
             # Hack: Should move this into BANNED_WORDS framework; for
             # now, just hand-code the skips:
-            if "realm_name" in lower_cased_text or "realm_uri" in lower_cased_text:
+            if (
+                "realm_name" in lower_cased_text
+                or "realm_uri" in lower_cased_text
+                or "remote_realm_host" in lower_cased_text
+            ):
                 continue
             kwargs = dict(word=word, text=text, reason=reason)
             msg = "{word} found in '{text}'. {reason}".format(**kwargs)

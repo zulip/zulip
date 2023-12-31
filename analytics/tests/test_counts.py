@@ -68,20 +68,19 @@ from zerver.models import (
     Client,
     Huddle,
     Message,
-    NotificationTriggers,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
     Recipient,
     Stream,
-    SystemGroups,
     UserActivityInterval,
     UserGroup,
     UserProfile,
-    get_client,
-    get_user,
-    is_cross_realm_bot_email,
 )
+from zerver.models.clients import get_client
+from zerver.models.groups import SystemGroups
+from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.users import get_user, is_cross_realm_bot_email
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,
@@ -116,6 +115,10 @@ class AnalyticsTestCase(ZulipTestCase):
         # used as defaults in self.assert_table_count
         self.current_property: Optional[str] = None
 
+        # Delete RemoteRealm registrations to have a clean slate - the relevant
+        # tests want to construct this from scratch.
+        RemoteRealm.objects.all().delete()
+
     # Lightweight creation of users, streams, and messages
     def create_user(self, **kwargs: Any) -> UserProfile:
         self.name_counter += 1
@@ -130,7 +133,7 @@ class AnalyticsTestCase(ZulipTestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         kwargs["delivery_email"] = kwargs["email"]
-        with mock.patch("zerver.lib.create_user.timezone_now", return_value=kwargs["date_joined"]):
+        with time_machine.travel(kwargs["date_joined"], tick=False):
             pass_kwargs: Dict[str, Any] = {}
             if kwargs["is_bot"]:
                 pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
@@ -1455,8 +1458,9 @@ class TestLoggingCountStats(AnalyticsTestCase):
         now = timezone_now()
         with time_machine.travel(now, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch(
-            "zilencer.views.send_apple_push_notification", return_value=1
+        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
         ), self.assertLogs(
             "zilencer.views", level="INFO"
         ):
@@ -1515,8 +1519,9 @@ class TestLoggingCountStats(AnalyticsTestCase):
         }
         with time_machine.travel(now, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch(
-            "zilencer.views.send_apple_push_notification", return_value=1
+        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
         ), self.assertLogs(
             "zilencer.views", level="INFO"
         ):
@@ -1574,8 +1579,9 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         with time_machine.travel(now, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
-        ), mock.patch(
-            "zilencer.views.send_apple_push_notification", return_value=1
+        ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=10,
         ), self.assertLogs(
             "zilencer.views", level="INFO"
         ):

@@ -2,7 +2,7 @@ from django import forms
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from corporate.lib.support import get_support_url
+from corporate.lib.support import get_realm_support_url
 from zerver.decorator import zulip_login_required
 from zerver.lib.request import has_request_variables
 from zerver.lib.send_email import FromAddress, send_email
@@ -38,14 +38,14 @@ def support_request(request: HttpRequest) -> HttpResponse:
                 "realm_string_id": user.realm.string_id,
                 "request_subject": form.cleaned_data["request_subject"],
                 "request_message": form.cleaned_data["request_message"],
-                "support_url": get_support_url(user.realm),
+                "support_url": get_realm_support_url(user.realm),
                 "user_role": user.get_role_name(),
             }
-
+            # Sent to the server's support team, so this email is not user-facing.
             send_email(
                 "zerver/emails/support_request",
                 to_emails=[FromAddress.SUPPORT],
-                from_name="Zulip Support",
+                from_name="Zulip support request",
                 from_address=FromAddress.tokenized_no_reply_address(),
                 reply_to_email=user.delivery_email,
                 context=email_context,

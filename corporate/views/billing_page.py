@@ -1,81 +1,67 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from corporate.lib.decorator import (
+    authenticated_remote_realm_management_endpoint,
+    authenticated_remote_server_management_endpoint,
+)
 from corporate.lib.stripe import (
     RealmBillingSession,
-    do_change_plan_status,
-    downgrade_at_the_end_of_billing_cycle,
-    downgrade_now_without_creating_additional_invoices,
-    get_latest_seat_count,
-    update_license_ledger_for_manual_plan,
-    validate_licenses,
+    RemoteRealmBillingSession,
+    RemoteServerBillingSession,
+    ServerDeactivateWithExistingPlanError,
+    UpdatePlanRequest,
+    do_deactivate_remote_server,
 )
-from corporate.models import CustomerPlan, get_current_plan_by_realm, get_customer_by_realm
-from zerver.decorator import require_billing_access, zulip_login_required
+from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
+from zerver.decorator import process_as_post, require_billing_access, zulip_login_required
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_bool, check_int, check_int_in, check_string
-from zerver.models import Realm, UserProfile
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.validator import check_int, check_int_in
+from zerver.models import UserProfile
+from zilencer.lib.remote_counts import MissingDataError
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 billing_logger = logging.getLogger("corporate.stripe")
 
-
-def add_sponsorship_info_to_context(context: Dict[str, Any], user_profile: UserProfile) -> None:
-    def key_helper(d: Any) -> int:
-        return d[1]["display_order"]
-
-    context.update(
-        realm_org_type=user_profile.realm.org_type,
-        sorted_org_types=sorted(
-            (
-                [org_type_name, org_type]
-                for (org_type_name, org_type) in Realm.ORG_TYPES.items()
-                if not org_type.get("hidden")
-            ),
-            key=key_helper,
-        ),
-    )
+ALLOWED_PLANS_API_STATUS_VALUES = [
+    CustomerPlan.ACTIVE,
+    CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+    CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+    CustomerPlan.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE,
+    CustomerPlan.FREE_TRIAL,
+    CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+    CustomerPlan.ENDED,
+]
 
 
 @zulip_login_required
-@has_request_variables
-def sponsorship_request(request: HttpRequest) -> HttpResponse:
-    user = request.user
-    assert user.is_authenticated
-    context: Dict[str, Any] = {}
-
-    customer = get_customer_by_realm(user.realm)
-    if customer is not None and customer.sponsorship_pending:
-        context["is_sponsorship_pending"] = True
-
-    if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
-        context["is_sponsored"] = True
-
-    add_sponsorship_info_to_context(context, user)
-    return render(request, "corporate/sponsorship.html", context=context)
-
-
-@zulip_login_required
-@has_request_variables
-def billing_home(
+@typed_endpoint
+def billing_page(
     request: HttpRequest,
-    onboarding: bool = REQ(default=False, json_validator=check_bool),
-    success_message: str = REQ(default="", str_validator=check_string),
+    *,
+    success_message: str = "",
 ) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
+
+    # BUG: This should pass the acting_user; this is just working
+    # around that make_end_of_cycle_updates_if_needed doesn't do audit
+    # logging not using the session user properly.
+    billing_session = RealmBillingSession(user=None, realm=user.realm)
 
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
         "org_name": user.realm.name,
+        "billing_base_url": "",
     }
 
     if not user.has_billing_access:
@@ -84,38 +70,156 @@ def billing_home(
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         return HttpResponseRedirect(reverse("sponsorship_request"))
 
-    PAID_PLANS = [
-        Realm.PLAN_TYPE_STANDARD,
-        Realm.PLAN_TYPE_PLUS,
-    ]
-
     customer = get_customer_by_realm(user.realm)
     if customer is not None and customer.sponsorship_pending:
         # Don't redirect to sponsorship page if the realm is on a paid plan
-        if user.realm.plan_type not in PAID_PLANS:
+        if not billing_session.on_paid_plan():
             return HttpResponseRedirect(reverse("sponsorship_request"))
         # If the realm is on a paid plan, show the sponsorship pending message
-        # TODO: Add a sponsorship pending message to the billing page
         context["sponsorship_pending"] = True
 
     if user.realm.plan_type == user.realm.PLAN_TYPE_LIMITED:
         return HttpResponseRedirect(reverse("plans"))
 
-    if customer is None:
-        from corporate.views.upgrade import initial_upgrade
+    if customer is None or get_current_plan_by_customer(customer) is None:
+        return HttpResponseRedirect(reverse("upgrade_page"))
 
-        return HttpResponseRedirect(reverse(initial_upgrade))
-
-    if not CustomerPlan.objects.filter(customer=customer).exists():
-        from corporate.views.upgrade import initial_upgrade
-
-        return HttpResponseRedirect(reverse(initial_upgrade))
-
-    billing_session = RealmBillingSession(user=None, realm=user.realm)
     main_context = billing_session.get_billing_page_context()
     if main_context:
         context.update(main_context)
-        context.update({"onboarding": onboarding, "success_message": success_message})
+        context["success_message"] = success_message
+
+    return render(request, "corporate/billing.html", context=context)
+
+
+@authenticated_remote_realm_management_endpoint
+@typed_endpoint
+def remote_realm_billing_page(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    *,
+    success_message: str = "",
+) -> HttpResponse:
+    realm_uuid = billing_session.remote_realm.uuid
+    context: Dict[str, Any] = {
+        # We wouldn't be here if user didn't have access.
+        "admin_access": billing_session.has_billing_access(),
+        "has_active_plan": False,
+        "org_name": billing_session.remote_realm.name,
+        "billing_base_url": billing_session.billing_base_url,
+    }
+
+    if billing_session.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_COMMUNITY:  # nocoverage
+        return HttpResponseRedirect(reverse("remote_realm_sponsorship_page", args=(realm_uuid,)))
+
+    customer = billing_session.get_customer()
+    if customer is not None and customer.sponsorship_pending:  # nocoverage
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        if (
+            not billing_session.on_paid_plan()
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+        ):
+            return HttpResponseRedirect(
+                reverse("remote_realm_sponsorship_page", args=(realm_uuid,))
+            )
+        # If the realm is on a paid plan, show the sponsorship pending message
+        context["sponsorship_pending"] = True
+
+    if (
+        customer is None
+        or get_current_plan_by_customer(customer) is None
+        or (
+            billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+            and billing_session.remote_realm.plan_type
+            in [
+                RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+                RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+            ]
+        )
+    ):  # nocoverage
+        return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
+
+    try:
+        main_context = billing_session.get_billing_page_context()
+    except MissingDataError:  # nocoverage
+        return billing_session.missing_data_error_page(request)
+
+    if main_context:
+        context.update(main_context)
+        context["success_message"] = success_message
+
+    return render(request, "corporate/billing.html", context=context)
+
+
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def remote_server_billing_page(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    *,
+    success_message: str = "",
+) -> HttpResponse:
+    context: Dict[str, Any] = {
+        # We wouldn't be here if user didn't have access.
+        "admin_access": billing_session.has_billing_access(),
+        "has_active_plan": False,
+        "org_name": billing_session.remote_server.hostname,
+        "billing_base_url": billing_session.billing_base_url,
+    }
+
+    if (
+        billing_session.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_COMMUNITY
+    ):  # nocoverage
+        return HttpResponseRedirect(
+            reverse(
+                "remote_server_sponsorship_page",
+                kwargs={"server_uuid": billing_session.remote_server.uuid},
+            )
+        )
+
+    customer = billing_session.get_customer()
+    if customer is not None and customer.sponsorship_pending:
+        # Don't redirect to sponsorship page if the remote realm is on a paid plan or scheduled for an upgrade.
+        if (
+            not billing_session.on_paid_plan()
+            and billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+        ):
+            return HttpResponseRedirect(
+                reverse(
+                    "remote_server_sponsorship_page",
+                    kwargs={"server_uuid": billing_session.remote_server.uuid},
+                )
+            )
+        # If the realm is on a paid plan, show the sponsorship pending message
+        context["sponsorship_pending"] = True  # nocoverage
+
+    if (
+        customer is None
+        or get_current_plan_by_customer(customer) is None
+        or (
+            billing_session.get_legacy_remote_server_next_plan_name(customer) is None
+            and billing_session.remote_server.plan_type
+            in [
+                RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
+                RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY,
+            ]
+        )
+    ):
+        return HttpResponseRedirect(
+            reverse(
+                "remote_server_upgrade_page",
+                kwargs={"server_uuid": billing_session.remote_server.uuid},
+            )
+        )
+
+    try:
+        main_context = billing_session.get_billing_page_context()
+    except MissingDataError:  # nocoverage
+        return billing_session.missing_data_error_page(request)
+
+    if main_context:
+        context.update(main_context)
+        context["success_message"] = success_message
 
     return render(request, "corporate/billing.html", context=context)
 
@@ -127,102 +231,112 @@ def update_plan(
     user: UserProfile,
     status: Optional[int] = REQ(
         "status",
-        json_validator=check_int_in(
-            [
-                CustomerPlan.ACTIVE,
-                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-                CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
-                CustomerPlan.ENDED,
-            ]
-        ),
+        json_validator=check_int_in(ALLOWED_PLANS_API_STATUS_VALUES),
         default=None,
     ),
     licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
     licenses_at_next_renewal: Optional[int] = REQ(
         "licenses_at_next_renewal", json_validator=check_int, default=None
     ),
+    schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
 ) -> HttpResponse:
-    plan = get_current_plan_by_realm(user.realm)
-    assert plan is not None  # for mypy
-
-    realm = plan.customer.realm
-    billing_session = RealmBillingSession(user=None, realm=realm)
-    new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
-        plan, timezone_now()
+    update_plan_request = UpdatePlanRequest(
+        status=status,
+        licenses=licenses,
+        licenses_at_next_renewal=licenses_at_next_renewal,
+        schedule=schedule,
     )
-    if new_plan is not None:
-        raise JsonableError(
-            _("Unable to update the plan. The plan has been expired and replaced with a new plan.")
-        )
+    billing_session = RealmBillingSession(user=user)
+    billing_session.do_update_plan(update_plan_request)
+    return json_success(request)
 
-    if last_ledger_entry is None:
-        raise JsonableError(_("Unable to update the plan. The plan has ended."))
 
-    if status is not None:
-        if status == CustomerPlan.ACTIVE:
-            assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-            do_change_plan_status(plan, status)
-        elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
-            assert plan.status == CustomerPlan.ACTIVE
-            downgrade_at_the_end_of_billing_cycle(user.realm)
-        elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
-            assert plan.billing_schedule == CustomerPlan.MONTHLY
-            assert plan.status == CustomerPlan.ACTIVE
-            assert plan.fixed_price is None
-            do_change_plan_status(plan, status)
-        elif status == CustomerPlan.ENDED:
-            assert plan.is_free_trial()
-            downgrade_now_without_creating_additional_invoices(user.realm)
-        return json_success(request)
+@authenticated_remote_realm_management_endpoint
+@process_as_post
+@has_request_variables
+def update_plan_for_remote_realm(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    status: Optional[int] = REQ(
+        "status",
+        json_validator=check_int_in(ALLOWED_PLANS_API_STATUS_VALUES),
+        default=None,
+    ),
+    licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
+    licenses_at_next_renewal: Optional[int] = REQ(
+        "licenses_at_next_renewal", json_validator=check_int, default=None
+    ),
+    schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
+) -> HttpResponse:  # nocoverage
+    update_plan_request = UpdatePlanRequest(
+        status=status,
+        licenses=licenses,
+        licenses_at_next_renewal=licenses_at_next_renewal,
+        schedule=schedule,
+    )
+    billing_session.do_update_plan(update_plan_request)
+    return json_success(request)
 
-    if licenses is not None:
-        if plan.automanage_licenses:
-            raise JsonableError(
-                _(
-                    "Unable to update licenses manually. Your plan is on automatic license management."
-                )
-            )
-        if last_ledger_entry.licenses == licenses:
-            raise JsonableError(
-                _(
-                    "Your plan is already on {licenses} licenses in the current billing period."
-                ).format(licenses=licenses)
-            )
-        if last_ledger_entry.licenses > licenses:
-            raise JsonableError(
-                _("You cannot decrease the licenses in the current billing period.")
-            )
-        validate_licenses(
-            plan.charge_automatically,
-            licenses,
-            get_latest_seat_count(user.realm),
-            plan.customer.exempt_from_license_number_check,
-        )
-        update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
-        return json_success(request)
 
-    if licenses_at_next_renewal is not None:
-        if plan.automanage_licenses:
-            raise JsonableError(
-                _(
-                    "Unable to update licenses manually. Your plan is on automatic license management."
-                )
-            )
-        if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
-            raise JsonableError(
-                _(
-                    "Your plan is already scheduled to renew with {licenses_at_next_renewal} licenses."
-                ).format(licenses_at_next_renewal=licenses_at_next_renewal)
-            )
-        validate_licenses(
-            plan.charge_automatically,
-            licenses_at_next_renewal,
-            get_latest_seat_count(user.realm),
-            plan.customer.exempt_from_license_number_check,
-        )
-        update_license_ledger_for_manual_plan(
-            plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
-        )
-        return json_success(request)
+@authenticated_remote_server_management_endpoint
+@process_as_post
+@has_request_variables
+def update_plan_for_remote_server(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    status: Optional[int] = REQ(
+        "status",
+        json_validator=check_int_in(ALLOWED_PLANS_API_STATUS_VALUES),
+        default=None,
+    ),
+    licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
+    licenses_at_next_renewal: Optional[int] = REQ(
+        "licenses_at_next_renewal", json_validator=check_int, default=None
+    ),
+    schedule: Optional[int] = REQ("schedule", json_validator=check_int, default=None),
+) -> HttpResponse:
+    update_plan_request = UpdatePlanRequest(
+        status=status,
+        licenses=licenses,
+        licenses_at_next_renewal=licenses_at_next_renewal,
+        schedule=schedule,
+    )
+    billing_session.do_update_plan(update_plan_request)
+    return json_success(request)
 
-    raise JsonableError(_("Nothing to change."))
+
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def remote_server_deactivate_page(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    *,
+    confirmed: Literal[None, "true"] = None,
+) -> HttpResponse:
+    if request.method not in ["GET", "POST"]:  # nocoverage
+        return HttpResponseNotAllowed(["GET", "POST"])
+
+    remote_server = billing_session.remote_server
+    context = {
+        "server_hostname": remote_server.hostname,
+        "action_url": reverse(remote_server_deactivate_page, args=[str(remote_server.uuid)]),
+    }
+    if request.method == "GET":
+        return render(request, "corporate/remote_billing_server_deactivate.html", context=context)
+
+    assert request.method == "POST"
+    if confirmed is None:  # nocoverage
+        # Should be impossible if the user is using the UI.
+        raise JsonableError(_("Parameter 'confirmed' is required"))
+
+    try:
+        do_deactivate_remote_server(remote_server, billing_session)
+    except ServerDeactivateWithExistingPlanError:  # nocoverage
+        context["show_existing_plan_error"] = "true"
+        return render(request, "corporate/remote_billing_server_deactivate.html", context=context)
+
+    return render(
+        request,
+        "corporate/remote_billing_server_deactivated_success.html",
+        context={"server_hostname": remote_server.hostname},
+    )

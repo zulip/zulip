@@ -34,6 +34,8 @@ from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_used_colors_for_user_ids,
+    get_user_ids_for_streams,
+    get_users_for_streams,
 )
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
@@ -47,6 +49,10 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import get_subscribers_query
 from zerver.lib.types import APISubscriptionDict
+from zerver.lib.users import (
+    get_subscribers_of_target_user_subscriptions,
+    get_users_involved_in_dms_with_target_users,
+)
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
@@ -60,11 +66,48 @@ from zerver.models import (
     Subscription,
     UserGroup,
     UserProfile,
-    active_non_guest_user_ids,
-    active_user_ids,
-    get_system_bot,
 )
+from zerver.models.groups import SystemGroups
+from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event, send_event_on_commit
+
+
+def send_user_remove_events_on_stream_deactivation(
+    stream: Stream, subscribed_users: List[UserProfile]
+) -> None:
+    guest_subscribed_users = [user for user in subscribed_users if user.is_guest]
+
+    if len(guest_subscribed_users) == 0:  # nocoverage
+        # Save a few database queries in the case that the stream
+        # didn't contain any guest users.
+        return
+
+    other_subscriptions_of_subscribed_users = get_subscribers_of_target_user_subscriptions(
+        guest_subscribed_users
+    )
+    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
+        guest_subscribed_users, stream.realm
+    )
+
+    subscriber_ids = {user.id for user in subscribed_users}
+    inaccessible_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    for guest_user in guest_subscribed_users:
+        users_accessible_by_guest = (
+            {guest_user.id}
+            | other_subscriptions_of_subscribed_users[guest_user.id]
+            | users_involved_in_dms_dict[guest_user.id]
+        )
+        users_inaccessible_to_guest = subscriber_ids - users_accessible_by_guest
+        for user_id in users_inaccessible_to_guest:
+            inaccessible_user_dict[user_id].add(guest_user.id)
+
+    for user_id, notify_user_ids in inaccessible_user_dict.items():
+        event_remove_user = dict(
+            type="realm_user",
+            op="remove",
+            person=dict(user_id=user_id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
+        )
+        send_event_on_commit(stream.realm, event_remove_user, list(notify_user_ids))
 
 
 @transaction.atomic(savepoint=False)
@@ -87,9 +130,11 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
 
-    get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True).update(
-        active=False
-    )
+    stream_subscribers = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=True
+    ).select_related("user_profile")
+    subscribed_users = [sub.user_profile for sub in stream_subscribers]
+    stream_subscribers.update(active=False)
 
     was_invite_only = stream.invite_only
     was_public = stream.is_public()
@@ -149,6 +194,9 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
     send_event_on_commit(stream.realm, event, affected_user_ids)
+
+    if stream.realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+        send_user_remove_events_on_stream_deactivation(stream, subscribed_users)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -592,6 +640,65 @@ def send_peer_subscriber_events(
             send_event_on_commit(realm, event, peer_user_ids)
 
 
+def send_user_creation_events_on_adding_subscriptions(
+    realm: Realm,
+    altered_user_dict: Dict[int, Set[int]],
+    altered_streams_dict: Dict[UserProfile, Set[int]],
+    subscribers_of_altered_user_subscriptions: Dict[int, Set[int]],
+) -> None:
+    altered_users = list(altered_streams_dict.keys())
+    non_guest_user_ids = active_non_guest_user_ids(realm.id)
+
+    users_involved_in_dms = get_users_involved_in_dms_with_target_users(altered_users, realm)
+
+    altered_stream_ids = altered_user_dict.keys()
+    subscribers_dict = get_users_for_streams(set(altered_stream_ids))
+
+    subscribers_user_id_map: Dict[int, UserProfile] = {}
+    subscriber_ids_dict: Dict[int, Set[int]] = defaultdict(set)
+    for stream_id, subscribers in subscribers_dict.items():
+        for user in subscribers:
+            subscriber_ids_dict[stream_id].add(user.id)
+            subscribers_user_id_map[user.id] = user
+
+    from zerver.actions.create_user import notify_created_user
+
+    for user in altered_users:
+        streams_for_user = altered_streams_dict[user]
+        subscribers_in_altered_streams: Set[int] = set()
+        for stream_id in streams_for_user:
+            subscribers_in_altered_streams |= subscriber_ids_dict[stream_id]
+
+        users_already_with_access_to_altered_user = (
+            set(non_guest_user_ids)
+            | subscribers_of_altered_user_subscriptions[user.id]
+            | users_involved_in_dms[user.id]
+            | {user.id}
+        )
+
+        users_to_receive_creation_event = (
+            subscribers_in_altered_streams - users_already_with_access_to_altered_user
+        )
+        if users_to_receive_creation_event:
+            notify_created_user(user, list(users_to_receive_creation_event))
+
+        if user.is_guest:
+            # If the altered user is a guest, then the user may receive
+            # user creation events for subscribers of the new stream.
+            users_already_accessible_to_altered_user = (
+                subscribers_of_altered_user_subscriptions[user.id]
+                | users_involved_in_dms[user.id]
+                | {user.id}
+            )
+
+            new_accessible_user_ids = (
+                subscribers_in_altered_streams - users_already_accessible_to_altered_user
+            )
+            for accessible_user_id in new_accessible_user_ids:
+                accessible_user = subscribers_user_id_map[accessible_user_id]
+                notify_created_user(accessible_user, [user.id])
+
+
 SubT: TypeAlias = Tuple[List[SubInfo], List[SubInfo]]
 
 
@@ -680,19 +787,27 @@ def bulk_add_subscriptions(
         # We can return early if users are already subscribed to all the streams.
         return ([], already_subscribed)
 
+    altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    altered_guests: Set[int] = set()
+    altered_streams_dict: Dict[UserProfile, Set[int]] = defaultdict(set)
+    for sub_info in subs_to_add + subs_to_activate:
+        altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
+        altered_streams_dict[sub_info.user].add(sub_info.stream.id)
+        if sub_info.user.is_guest:
+            altered_guests.add(sub_info.user.id)
+
+    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+        altered_users = list(altered_streams_dict.keys())
+        subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
+            altered_users
+        )
+
     bulk_add_subs_to_db_with_logging(
         realm=realm,
         acting_user=acting_user,
         subs_to_add=subs_to_add,
         subs_to_activate=subs_to_activate,
     )
-
-    altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
-    altered_guests: Set[int] = set()
-    for sub_info in subs_to_add + subs_to_activate:
-        altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
-        if sub_info.user.is_guest:
-            altered_guests.add(sub_info.user.id)
 
     stream_dict = {stream.id: stream for stream in streams}
 
@@ -719,6 +834,14 @@ def bulk_add_subscriptions(
             realm=realm,
             sub_info_list=subs_to_add + subs_to_activate,
             subscriber_dict=subscriber_peer_info.subscribed_ids,
+        )
+
+    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+        send_user_creation_events_on_adding_subscriptions(
+            realm,
+            altered_user_dict,
+            altered_streams_dict,
+            subscribers_of_altered_user_subscriptions,
         )
 
     send_peer_subscriber_events(
@@ -815,6 +938,67 @@ def send_subscription_remove_events(
     )
 
 
+def send_user_remove_events_on_removing_subscriptions(
+    realm: Realm, altered_user_dict: Dict[UserProfile, Set[int]]
+) -> None:
+    altered_stream_ids: Set[int] = set()
+    altered_users = list(altered_user_dict.keys())
+    for stream_ids in altered_user_dict.values():
+        altered_stream_ids |= stream_ids
+
+    users_involved_in_dms = get_users_involved_in_dms_with_target_users(altered_users, realm)
+    subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
+        altered_users
+    )
+
+    non_guest_user_ids = active_non_guest_user_ids(realm.id)
+
+    subscribers_dict = get_user_ids_for_streams(altered_stream_ids)
+
+    for user in altered_users:
+        users_in_unsubscribed_streams: Set[int] = set()
+        for stream_id in altered_user_dict[user]:
+            users_in_unsubscribed_streams = (
+                users_in_unsubscribed_streams | subscribers_dict[stream_id]
+            )
+
+        users_who_can_access_altered_user = (
+            set(non_guest_user_ids)
+            | subscribers_of_altered_user_subscriptions[user.id]
+            | users_involved_in_dms[user.id]
+            | {user.id}
+        )
+
+        subscribers_without_access_to_altered_user = (
+            users_in_unsubscribed_streams - users_who_can_access_altered_user
+        )
+
+        if subscribers_without_access_to_altered_user:
+            event_remove_user = dict(
+                type="realm_user",
+                op="remove",
+                person=dict(user_id=user.id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
+            )
+            send_event_on_commit(
+                realm, event_remove_user, list(subscribers_without_access_to_altered_user)
+            )
+
+        if user.is_guest:
+            users_inaccessible_to_altered_user = users_in_unsubscribed_streams - (
+                subscribers_of_altered_user_subscriptions[user.id]
+                | users_involved_in_dms[user.id]
+                | {user.id}
+            )
+
+            for user_id in users_inaccessible_to_altered_user:
+                event_remove_user = dict(
+                    type="realm_user",
+                    op="remove",
+                    person=dict(user_id=user_id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
+                )
+                send_event_on_commit(realm, event_remove_user, [user.id])
+
+
 def bulk_remove_subscriptions(
     realm: Realm,
     users: Iterable[UserProfile],
@@ -896,6 +1080,12 @@ def bulk_remove_subscriptions(
 
     removed_sub_tuples = [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate]
     send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
+
+    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+        altered_user_dict: Dict[UserProfile, Set[int]] = defaultdict(set)
+        for user, stream in removed_sub_tuples:
+            altered_user_dict[user].add(stream.id)
+        send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
 
     new_vacant_streams = set(streams_to_unsubscribe) - set(occupied_streams_after)
     new_vacant_private_streams = [stream for stream in new_vacant_streams if stream.invite_only]

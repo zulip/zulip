@@ -1,5 +1,3 @@
-import assert from "minimalistic-assert";
-
 import {page_params} from "./page_params";
 import * as people from "./people";
 import type {User} from "./people";
@@ -7,10 +5,7 @@ import type {User} from "./people";
 let user_id_set: Set<number>;
 
 export function initialize_with_current_user(): void {
-    const current_user_id = page_params.user_id;
-    user_id_set = new Set<number>();
-    assert(current_user_id !== undefined, "Current user's id is undefined");
-    user_id_set.add(current_user_id);
+    user_id_set = new Set([page_params.user_id]);
 }
 
 export function sorted_user_ids(): number[] {

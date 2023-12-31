@@ -27,15 +27,11 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import (
-    NotificationTriggers,
-    UserMessage,
-    UserProfile,
-    UserTopic,
-    get_name_keyed_dict_for_active_realm_emoji,
-    get_realm,
-    get_stream,
-)
+from zerver.models import UserMessage, UserProfile, UserTopic
+from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
+from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.streams import get_stream
 
 
 class TestMessageNotificationEmails(ZulipTestCase):
@@ -131,7 +127,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
             reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
         assert isinstance(msg, EmailMultiAlternatives)
-        from_email = str(Address(display_name="Zulip notifications", addr_spec=FromAddress.NOREPLY))
+        from_email = str(
+            Address(display_name="testserver notifications", addr_spec=FromAddress.NOREPLY)
+        )
         self.assert_length(mail.outbox, 1)
         self.assertEqual(self.email_envelope_from(msg), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertEqual(self.email_display_from(msg), from_email)
@@ -1592,6 +1590,20 @@ class TestMessageNotificationEmails(ZulipTestCase):
             ' title="cloud with lightning and rain" style="height: 20px;">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
+
+    def test_latex_math_formulas_in_email(self) -> None:
+        msg_id = self.send_stream_message(
+            self.example_user("iago"), "Denmark", "Equation: $$d^* = +\\infty$$ is correct."
+        )
+        verify_body_include = ["Equation: <span>$$d^* = +\\infty$$</span> is correct"]
+        email_subject = "#Denmark > test"
+        self._test_cases(
+            msg_id,
+            verify_body_include,
+            email_subject,
+            verify_html_body=True,
+            trigger=NotificationTriggers.STREAM_EMAIL,
+        )
 
     def test_empty_backticks_in_missed_message(self) -> None:
         msg_id = self.send_personal_message(

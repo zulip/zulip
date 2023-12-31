@@ -30,6 +30,20 @@ export function replace_emoji_with_text($element: JQuery): void {
     });
 }
 
+export function change_katex_to_raw_latex($element: JQuery): void {
+    // Find all the span elements with the class "katex"
+    $element.find("span.katex").each(function () {
+        // Find the text within the <annotation> tag
+        const latex_text = $(this).find('annotation[encoding="application/x-tex"]').text();
+
+        // Create a new <span> element with the raw latex wrapped in $$
+        const $latex_span = $("<span>").text("$$" + latex_text + "$$");
+
+        // Replace the current .katex element with the new <span> containing the text
+        $(this).replaceWith($latex_span);
+    });
+}
+
 export function blur_active_element(): void {
     // this blurs anything that may perhaps be actively focused on.
     if (document.activeElement instanceof HTMLElement) {

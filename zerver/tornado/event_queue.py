@@ -48,12 +48,7 @@ from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.handlers import (
-    clear_handler_by_id,
-    finish_handler,
-    get_handler_by_id,
-    handler_stats_string,
-)
+from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -98,6 +93,7 @@ class ClientDescriptor:
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = False,
+        user_list_incomplete: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -127,6 +123,7 @@ class ClientDescriptor:
         self.user_settings_object = user_settings_object
         self.pronouns_field_type_supported = pronouns_field_type_supported
         self.linkifier_url_template = linkifier_url_template
+        self.user_list_incomplete = user_list_incomplete
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -156,6 +153,7 @@ class ClientDescriptor:
             user_settings_object=self.user_settings_object,
             pronouns_field_type_supported=self.pronouns_field_type_supported,
             linkifier_url_template=self.linkifier_url_template,
+            user_list_incomplete=self.user_list_incomplete,
         )
 
     @override
@@ -191,6 +189,7 @@ class ClientDescriptor:
             d.get("user_settings_object", False),
             d.get("pronouns_field_type_supported", True),
             d.get("linkifier_url_template", False),
+            d.get("user_list_incomplete", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -198,28 +197,29 @@ class ClientDescriptor:
     def add_event(self, event: Mapping[str, Any]) -> None:
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
-            assert handler._request is not None
-            async_request_timer_restart(handler._request)
+            if handler is not None:
+                assert handler._request is not None
+                async_request_timer_restart(handler._request)
 
         self.event_queue.push(event)
         self.finish_current_handler()
 
     def finish_current_handler(self) -> bool:
-        if self.current_handler_id is not None:
-            try:
-                finish_handler(
-                    self.current_handler_id,
-                    self.event_queue.id,
-                    self.event_queue.contents(),
-                )
-            except Exception:
-                logging.exception(
-                    "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
-                )
-            finally:
-                self.disconnect_handler()
-            return True
-        return False
+        if self.current_handler_id is None:
+            return False
+        try:
+            finish_handler(
+                self.current_handler_id,
+                self.event_queue.id,
+                self.event_queue.contents(),
+            )
+        except Exception:
+            logging.exception(
+                "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
+            )
+        finally:
+            self.disconnect_handler()
+        return True
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
         if self.event_types is not None:
@@ -279,7 +279,6 @@ class ClientDescriptor:
     def disconnect_handler(self, client_closed: bool = False) -> None:
         if self.current_handler_id:
             clear_descriptor_by_handler_id(self.current_handler_id)
-            clear_handler_by_id(self.current_handler_id)
             if client_closed:
                 logging.info(
                     "Client disconnected for queue %s (%s via %s)",
@@ -1046,6 +1045,8 @@ def process_message_event(
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
+    user_ids_without_access_to_sender = event_template.get("user_ids_without_access_to_sender", [])
+    realm_host = event_template.get("realm_host", "")
 
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
@@ -1064,11 +1065,15 @@ def process_message_event(
     sending_client: str = wide_dict["client"]
 
     @lru_cache(maxsize=None)
-    def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
+    def get_client_payload(
+        apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
+    ) -> Dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            can_access_sender=can_access_sender,
+            realm_host=realm_host,
         )
 
     # Extra user-specific data to include
@@ -1144,7 +1149,10 @@ def process_message_event(
             # message data unnecessarily
             continue
 
-        message_dict = get_client_payload(client.apply_markdown, client.client_gravatar)
+        can_access_sender = client.user_profile_id not in user_ids_without_access_to_sender
+        message_dict = get_client_payload(
+            client.apply_markdown, client.client_gravatar, can_access_sender
+        )
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):
@@ -1394,6 +1402,17 @@ def process_custom_profile_fields_event(event: Mapping[str, Any], users: Iterabl
                 client.add_event(event)
 
 
+def process_realm_user_add_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    user_add_event = dict(event)
+    event_for_inaccessible_user = user_add_event.pop("inaccessible_user", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(user_add_event):
+                if event_for_inaccessible_user and client.user_list_incomplete:
+                    continue
+                client.add_event(user_add_event)
+
+
 def maybe_enqueue_notifications_for_message_update(
     user_notifications_data: UserMessageNotificationsData,
     message_id: int,
@@ -1534,6 +1553,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_presence_event(event, cast(List[int], users))
     elif event["type"] == "custom_profile_fields":
         process_custom_profile_fields_event(event, cast(List[int], users))
+    elif event["type"] == "realm_user" and event["op"] == "add":
+        process_realm_user_add_event(event, cast(List[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

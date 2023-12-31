@@ -2,7 +2,8 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
-import type {MatchedMessage, Message, RawMessage, UpdateMessageEvent} from "./types";
+import type {MatchedMessage, Message, RawMessage} from "./message_store";
+import type {UpdateMessageEvent} from "./types";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
@@ -19,10 +20,10 @@ export function random_int(min: number, max: number): number {
 // for some i and false otherwise.
 //
 // Usage: lower_bound(array, value, less)
-export function lower_bound<T>(
-    array: T[],
-    value: T,
-    less: (item: T, value: T, middle: number) => boolean,
+export function lower_bound<T1, T2>(
+    array: T1[],
+    value: T2,
+    less: (item: T1, value: T2, middle: number) => boolean,
 ): number {
     let first = 0;
     const last = array.length;
@@ -192,8 +193,8 @@ export class CachedValue<T> {
     }
 }
 
-export function find_wildcard_mentions(message_content: string): string | null {
-    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream|topic)\*{2})($|\s)/);
+export function find_stream_wildcard_mentions(message_content: string): string | null {
+    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
     if (mention === null) {
         return null;
     }
@@ -471,7 +472,7 @@ export function try_parse_as_truthy<T>(val: (T | undefined)[]): T[] | undefined 
     return result;
 }
 
-export function is_valid_url(url: string, require_absolute: boolean = false): boolean {
+export function is_valid_url(url: string, require_absolute = false): boolean {
     try {
         let base_url;
         if (!require_absolute) {

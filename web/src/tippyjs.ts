@@ -28,7 +28,7 @@ function get_tooltip_content(reference: Element): string | Element | DocumentFra
 // transition, while the "long" version is intended for elements where
 // we want to avoid distracting the user with the tooltip
 // unnecessarily.
-const INSTANT_HOVER_DELAY: [number, number] = [100, 20];
+export const INSTANT_HOVER_DELAY: [number, number] = [100, 20];
 // INTERACTIVE_HOVER_DELAY is for elements like the emoji reactions, where
 // the tooltip includes useful information (who reacted?), but that
 // needs a short delay for users who are just tapping a reaction
@@ -206,6 +206,22 @@ export function initialize(): void {
                 content = $t({defaultMessage: "No drafts selected"});
             }
             instance.setContent(content);
+        },
+    });
+
+    delegate("body", {
+        target: "#add-poll-modal .dialog_submit_button_container",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t({defaultMessage: "Please enter a question."});
+            const $elem = $(instance.reference);
+            // Show tooltip to enter question only if submit button is disabled
+            // (due to question field being empty).
+            if ($elem.find(".dialog_submit_button").is(":disabled")) {
+                instance.setContent(content);
+                return undefined;
+            }
+            return false;
         },
     });
 

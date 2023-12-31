@@ -15,11 +15,11 @@ from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
-from zerver.models import (
+from zerver.models import UserProfile
+from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    UserProfile,
 )
 
 

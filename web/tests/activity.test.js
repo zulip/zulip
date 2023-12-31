@@ -3,14 +3,14 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
-$(window).idle = () => {};
+$(window).idle = noop;
 
 const _document = {
     hasFocus() {
@@ -20,11 +20,11 @@ const _document = {
 
 const channel = mock_esm("../src/channel");
 const compose_state = mock_esm("../src/compose_state");
-const narrow = mock_esm("../src/narrow");
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
 const popovers = mock_esm("../src/popovers");
 const resize = mock_esm("../src/resize");
+const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
 const watchdog = mock_esm("../src/watchdog");
@@ -41,6 +41,7 @@ const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
 const activity = zrequire("activity");
 const activity_ui = zrequire("activity_ui");
+const util = zrequire("util");
 
 const me = {
     email: "me@zulip.com",
@@ -91,7 +92,7 @@ people.initialize_current_user(me.user_id);
 
 function clear_buddy_list() {
     buddy_list.populate({
-        keys: [],
+        all_user_ids: [],
     });
 }
 
@@ -211,7 +212,7 @@ test("huddle_data.process_loaded_messages", () => {
 });
 
 test("presence_list_full_update", ({override, mock_template}) => {
-    override(padded_widget, "update_padding", () => {});
+    override(padded_widget, "update_padding", noop);
     mock_template("presence_rows.hbs", false, (data) => {
         assert.equal(data.presence_rows.length, 7);
         assert.equal(data.presence_rows[0].user_id, me.user_id);
@@ -271,20 +272,20 @@ test("direct_message_update_dom_counts", () => {
     assert.equal($count.text(), "");
 });
 
-test("handlers", ({override, mock_template}) => {
+test("handlers", ({override, override_rewire, mock_template}) => {
     let filter_key_handlers;
 
-    mock_template("presence_rows.hbs", false, () => {});
+    mock_template("presence_rows.hbs", false, noop);
 
     override(keydown_util, "handle", (opts) => {
         filter_key_handlers = opts.handlers;
     });
-    override(scroll_util, "scroll_element_into_container", () => {});
-    override(padded_widget, "update_padding", () => {});
-    override(popovers, "hide_all", () => {});
-    override(sidebar_ui, "hide_all", () => {});
-    override(sidebar_ui, "show_userlist_sidebar", () => {});
-    override(resize, "resize_sidebars", () => {});
+    override(scroll_util, "scroll_element_into_container", noop);
+    override(padded_widget, "update_padding", noop);
+    override(popovers, "hide_all", noop);
+    override(sidebar_ui, "hide_all", noop);
+    override(sidebar_ui, "show_userlist_sidebar", noop);
+    override(resize, "resize_sidebars", noop);
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
@@ -294,18 +295,23 @@ test("handlers", ({override, mock_template}) => {
 
     let narrowed;
 
-    override(narrow, "by", (_method, email) => {
+    function narrow_by_email(email) {
         assert.equal(email, "alice@zulip.com");
         narrowed = true;
-    });
+    }
 
     function init() {
         $.clear_all_elements();
         buddy_list.populate({
-            keys: [me.user_id, alice.user_id, fred.user_id],
+            all_user_ids: [me.user_id, alice.user_id, fred.user_id],
         });
-        activity_ui.set_cursor_and_filter();
-        $("#buddy-list-users-matching-view").empty = () => {};
+
+        buddy_list.start_scroll_handler = noop;
+        override_rewire(util, "call_function_periodically", noop);
+        override_rewire(activity, "send_presence_to_server", noop);
+        activity_ui.initialize({narrow_by_email});
+
+        $("#buddy-list-users-matching-view").empty = noop;
 
         $me_li = $.create("me stub");
         $alice_li = $.create("alice stub");
@@ -429,13 +435,13 @@ test("first/prev/next", ({override, mock_template}) => {
         }
     });
 
-    override(padded_widget, "update_padding", () => {});
+    override(padded_widget, "update_padding", noop);
 
     assert.equal(buddy_list.first_key(), undefined);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
     assert.equal(buddy_list.next_key(alice.user_id), undefined);
 
-    override(buddy_list.$container, "append", () => {});
+    override(buddy_list.$container, "append", noop);
 
     activity_ui.redraw_user(alice.user_id);
     activity_ui.redraw_user(fred.user_id);
@@ -497,7 +503,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
         return html;
     });
 
-    override(padded_widget, "update_padding", () => {});
+    override(padded_widget, "update_padding", noop);
 
     let appended_html;
     override(buddy_list.$container, "append", (html) => {
@@ -516,7 +522,7 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
     override(buddy_list.$container, "append", (html) => {
         appended_html = html;
     });
-    override(padded_widget, "update_padding", () => {});
+    override(padded_widget, "update_padding", noop);
 
     activity_ui.redraw_user(alice.user_id);
     assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
@@ -534,7 +540,7 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     override(buddy_list.$container, "append", (html) => {
         appended_html = html;
     });
-    override(padded_widget, "update_padding", () => {});
+    override(padded_widget, "update_padding", noop);
 
     activity_ui.redraw_user(fred.user_id);
     assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
@@ -603,7 +609,7 @@ test("redraw_muted_user", () => {
 });
 
 test("update_presence_info", ({override}) => {
-    override(pm_list, "update_private_messages", () => {});
+    override(pm_list, "update_private_messages", noop);
 
     page_params.realm_presence_disabled = false;
     page_params.server_presence_ping_interval_seconds = 60;
@@ -636,13 +642,29 @@ test("update_presence_info", ({override}) => {
 
     const expected = {status: "active", last_active: 500};
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
+
+    // Test invalid and inaccessible user IDs.
+    const invalid_user_id = 99;
+    activity_ui.update_presence_info(invalid_user_id, info, server_time);
+    assert.equal(presence.presence_info.get(invalid_user_id), undefined);
+
+    const inaccessible_user_id = 10;
+    settings_data.user_can_access_all_other_users = () => false;
+    const inaccessible_user = people.make_user(
+        inaccessible_user_id,
+        "user10@zulipdev.com",
+        "Unknown user",
+    );
+    people._add_user(inaccessible_user);
+    activity_ui.update_presence_info(inaccessible_user_id, info, server_time);
+    assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
 test("initialize", ({override, mock_template}) => {
-    mock_template("presence_rows.hbs", false, () => {});
-    override(padded_widget, "update_padding", () => {});
-    override(pm_list, "update_private_messages", () => {});
-    override(watchdog, "check_for_unsuspend", () => {});
+    mock_template("presence_rows.hbs", false, noop);
+    override(padded_widget, "update_padding", noop);
+    override(pm_list, "update_private_messages", noop);
+    override(watchdog, "check_for_unsuspend", noop);
 
     let payload;
     override(channel, "post", (arg) => {
@@ -656,7 +678,7 @@ test("initialize", ({override, mock_template}) => {
     function clear() {
         $.clear_all_elements();
         buddy_list.$container = $("#buddy-list-users-matching-view");
-        buddy_list.$container.append = () => {};
+        buddy_list.$container.append = noop;
         clear_buddy_list();
         page_params.presences = {};
     }
@@ -683,7 +705,7 @@ test("initialize", ({override, mock_template}) => {
     });
 
     activity.initialize();
-    activity_ui.initialize();
+    activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: true,
         presences: {},
@@ -707,7 +729,7 @@ test("initialize", ({override, mock_template}) => {
 
     $(window).off("focus");
     activity.initialize();
-    activity_ui.initialize();
+    activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: false,
         presences: {},
@@ -728,7 +750,7 @@ test("initialize", ({override, mock_template}) => {
 });
 
 test("electron_bridge", ({override_rewire}) => {
-    override_rewire(activity, "send_presence_to_server", () => {});
+    override_rewire(activity, "send_presence_to_server", noop);
 
     function with_bridge_idle(bridge_idle, f) {
         with_overrides(({override}) => {

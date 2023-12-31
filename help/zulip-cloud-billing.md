@@ -1,8 +1,83 @@
 # Zulip Cloud billing
 
 This page answers some frequently asked questions about [Zulip Cloud plans and
-pricing](https://zulip.com/plans/). If you have any other questions, please don't hesitate to
-reach out at sales@zulip.com.
+pricing](https://zulip.com/plans/). If you have any other questions, please
+don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
+
+## Upgrade to a Zulip Cloud Standard or Plus plan
+
+{start_tabs}
+
+{tab|zulip-cloud-standard}
+
+{relative|gear|plans}
+
+1. Under the **Cloud Standard** pricing plan, click **Upgrade to Standard**.
+
+1. Select your preferred option from the **Payment schedule** dropdown.
+
+1. Click **Add card** to enter your payment details.
+
+1. Click **Purchase Zulip Cloud Standard**.
+
+{tab|zulip-cloud-plus}
+
+{relative|gear|plans}
+
+1. Under the **Cloud Plus** pricing plan, click **Contact sales**.
+
+{end_tabs}
+
+## Manage billing
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|gear|billing}
+
+{end_tabs}
+
+## Cancel paid plan
+
+If you cancel your plan, your organization will be downgraded to **Zulip Cloud
+Free** at the end of the current billing period.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|gear|billing}
+
+1. At the bottom of the page, click **Cancel plan**.
+
+1. Click **Downgrade** to confirm.
+
+{end_tabs}
+
+## Apply for sponsorship
+
+{start_tabs}
+
+{tab|request-sponsorship}
+
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
+
+1. Click the **Request sponsorship** link at the top of the gear menu.
+
+1. Fill out the requested information, and click **Submit**.
+
+{tab|request-education-pricing}
+
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
+
+1. Click the **Request education pricing** link at the top of the gear menu.
+
+1. Fill out the requested information, and click **Submit**.
+
+{end_tabs}
 
 ## Differences between Zulip Cloud plans
 
@@ -26,39 +101,51 @@ tool.
 You can always use a credit card to pay. If you would like to pay by invoice,
 you will need to sign up for an annual plan.
 
-### What is the difference between automatic and manual billing?
+### How does automatic billing work?
 
-With automatic billing, you automatically purchase a Zulip license for each user
-in your organization at the start of each billing period (month or year).
-[Deactivating a user][deactivate-user] frees up their license for reuse.
-Additional licenses are purchased automatically as needed.
+{!automatic-billing.md!}
 
-With manual billing, you choose and pay for a preset user limit. If
-he limit is reached, no more users can join until licenses are manually
-added.
+### How does manual billing work?
 
-In general, selecting automatic billing is highly recommended unless you
-have a specific reason to do otherwise.
+{!manual-billing-intro.md!}
+
+#### Manually manage licenses
+
+If your organization is on a manual billing plan, you can manage the number of
+licenses on your organization's billing page.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|gear|billing}
+
+1. Modify **Number of licenses for current billing period** or **Number of
+   licenses for next billing period**, and click **Update**.
+
+!!! tip ""
+
+    You can only increase the number of licenses for the current billing period.
+
+{end_tabs}
 
 ## Temporary users and guests
 
 ### How will I be charged for temporary users (e.g. limited-time clients)?
 
-Users [can be deactivated][deactivate-user] any time. Deactivating a user frees
-up their license for reuse.
+Users [can be deactivated](/help/deactivate-or-reactivate-a-user) any time.
+Deactivating a user frees up their license for reuse.
 
 ### How are guest accounts billed? Is there special pricing?
 
-For an organization with N other users, 5*N [guest
-users](/help/roles-and-permissions) are included at no extra charge. After that,
-you will be charged at 1/5 of your regular per-user pricing for each additional
-guest.
+For an organization with N other users, 5*N [guest users](/help/guest-users)
+are included at no extra charge. After that, you will be charged at 1/5 of
+your regular per-user pricing for each additional guest.
 
 ## Related articles
 
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
+* [Self-hosted billing](/help/self-hosted-billing)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Contact support](/help/contact-support)
-
-[deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user

@@ -5,6 +5,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -18,6 +19,7 @@ import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
+import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
@@ -117,6 +119,7 @@ export function clear_compose_box() {
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
+    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
 }
 
 export function send_message_success(request, data) {
@@ -131,9 +134,13 @@ export function send_message_success(request, data) {
 
     if (request.type === "stream") {
         if (data.automatic_new_visibility_policy) {
+            if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
+                return;
+            }
             // topic has been automatically unmuted or followed. No need to
             // suggest the user to unmute. Show the banner and return.
             compose_notifications.notify_automatic_new_visibility_policy(request, data);
+            onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
             return;
         }
 
@@ -179,16 +186,29 @@ export function send_message(request = create_message_object()) {
         send_message_success(request, data);
     }
 
-    function error(response) {
-        // If we're not local echo'ing messages, or if this message was not
-        // locally echoed, show error in compose box
+    function error(response, server_error_code) {
+        // Error callback for failed message send attempts.
         if (!locally_echoed) {
-            compose_banner.show_error_message(
-                response,
-                compose_banner.CLASSNAMES.generic_compose_error,
-                $("#compose_banners"),
-                $("textarea#compose-textarea"),
-            );
+            if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
+                // The topic wildcard mention permission code path has
+                // a special error.
+                const new_row_html = render_wildcard_mention_not_allowed_error({
+                    banner_type: compose_banner.ERROR,
+                    classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                });
+                compose_banner.append_compose_banner_to_banner_list(
+                    $(new_row_html),
+                    $("#compose_banners"),
+                );
+            } else {
+                compose_banner.show_error_message(
+                    response,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $("#compose_banners"),
+                    $("textarea#compose-textarea"),
+                );
+            }
+
             // For messages that were not locally echoed, we're
             // responsible for hiding the compose spinner to restore
             // the compose box so one can send a next message.
@@ -369,12 +389,12 @@ function schedule_message_to_custom_date() {
     const success = function (data) {
         drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
         clear_compose_box();
-        const new_row = render_success_message_scheduled_banner({
+        const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
             deliver_at,
         });
         compose_banner.clear_message_sent_banners();
-        compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
     };
 
     const error = function (xhr) {

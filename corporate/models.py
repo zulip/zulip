@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, Optional, Union
 
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -7,7 +8,7 @@ from django.db.models import CASCADE, Q
 from typing_extensions import override
 
 from zerver.models import Realm, UserProfile
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteRealm, RemoteZulipServer
 
 
 class Customer(models.Model):
@@ -17,8 +18,12 @@ class Customer(models.Model):
     and the active plan, if any.
     """
 
+    # The actual model object that this customer is associated
+    # with. Exactly one of the following will be non-null.
     realm = models.OneToOneField(Realm, on_delete=CASCADE, null=True)
+    remote_realm = models.OneToOneField(RemoteRealm, on_delete=CASCADE, null=True)
     remote_server = models.OneToOneField(RemoteZulipServer, on_delete=CASCADE, null=True)
+
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending = models.BooleanField(default=False)
     # A percentage, like 85.
@@ -29,11 +34,19 @@ class Customer(models.Model):
     # they purchased.
     exempt_from_license_number_check = models.BooleanField(default=False)
 
+    # In cents.
+    flat_discount = models.IntegerField(default=2000)
+    # Number of months left in the flat discount period.
+    flat_discounted_months = models.IntegerField(default=0)
+
     class Meta:
+        # Enforce that at least one of these is set.
         constraints = [
             models.CheckConstraint(
-                check=Q(realm__isnull=False) ^ Q(remote_server__isnull=False),
-                name="cloud_xor_self_hosted",
+                check=Q(realm__isnull=False)
+                | Q(remote_server__isnull=False)
+                | Q(remote_realm__isnull=False),
+                name="has_associated_model_object",
             )
         ]
 
@@ -47,6 +60,14 @@ class Customer(models.Model):
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
     return Customer.objects.filter(realm=realm).first()
+
+
+def get_customer_by_remote_server(remote_server: RemoteZulipServer) -> Optional[Customer]:
+    return Customer.objects.filter(remote_server=remote_server).first()
+
+
+def get_customer_by_remote_realm(remote_realm: RemoteRealm) -> Optional[Customer]:  # nocoverage
+    return Customer.objects.filter(remote_realm=remote_realm).first()
 
 
 class Event(models.Model):
@@ -91,29 +112,28 @@ def get_last_associated_event_by_type(
 class Session(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)
     stripe_session_id = models.CharField(max_length=255, unique=True)
-    payment_intent = models.ForeignKey("PaymentIntent", null=True, on_delete=CASCADE)
 
-    UPGRADE_FROM_BILLING_PAGE = 1
-    RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD = 10
-    FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE = 20
-    FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE = 30
     CARD_UPDATE_FROM_BILLING_PAGE = 40
+    CARD_UPDATE_FROM_UPGRADE_PAGE = 50
     type = models.SmallIntegerField()
 
     CREATED = 1
     COMPLETED = 10
     status = models.SmallIntegerField(default=CREATED)
 
+    # Did the user opt to manually manage licenses before clicking on update button?
+    is_manual_license_management_upgrade_session = models.BooleanField(default=False)
+
+    # CustomerPlan tier that the user is upgrading to.
+    tier = models.SmallIntegerField(null=True)
+
     def get_status_as_string(self) -> str:
         return {Session.CREATED: "created", Session.COMPLETED: "completed"}[self.status]
 
     def get_type_as_string(self) -> str:
         return {
-            Session.UPGRADE_FROM_BILLING_PAGE: "upgrade_from_billing_page",
-            Session.RETRY_UPGRADE_WITH_ANOTHER_PAYMENT_METHOD: "retry_upgrade_with_another_payment_method",
-            Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE: "free_trial_upgrade_from_billing_page",
-            Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE: "free_trial_upgrade_from_onboarding_page",
             Session.CARD_UPDATE_FROM_BILLING_PAGE: "card_update_from_billing_page",
+            Session.CARD_UPDATE_FROM_UPGRADE_PAGE: "card_update_from_upgrade_page",
         }[self.type]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -121,8 +141,10 @@ class Session(models.Model):
 
         session_dict["status"] = self.get_status_as_string()
         session_dict["type"] = self.get_type_as_string()
-        if self.payment_intent:
-            session_dict["stripe_payment_intent_id"] = self.payment_intent.stripe_payment_intent_id
+        session_dict[
+            "is_manual_license_management_upgrade_session"
+        ] = self.is_manual_license_management_upgrade_session
+        session_dict["tier"] = self.tier
         event = self.get_last_associated_event()
         if event is not None:
             session_dict["event_handler"] = event.get_event_handler_details_as_dict()
@@ -167,18 +189,15 @@ class PaymentIntent(models.Model):
     def get_last_associated_event(self) -> Optional[Event]:
         if self.status == PaymentIntent.SUCCEEDED:
             event_type = "payment_intent.succeeded"
-        elif self.status == PaymentIntent.REQUIRES_PAYMENT_METHOD:
-            event_type = "payment_intent.payment_failed"
-        else:
-            return None
+        # TODO: Add test for this case. Not sure how to trigger naturally.
+        else:  # nocoverage
+            return None  # nocoverage
         return get_last_associated_event_by_type(self, event_type)
 
     def to_dict(self) -> Dict[str, Any]:
         payment_intent_dict: Dict[str, Any] = {}
         payment_intent_dict["status"] = self.get_status_as_string()
         event = self.get_last_associated_event()
-        if self.last_payment_error:
-            payment_intent_dict["last_payment_error"] = self.last_payment_error
         if event is not None:
             payment_intent_dict["event_handler"] = event.get_event_handler_details_as_dict()
         return payment_intent_dict
@@ -214,11 +233,11 @@ class CustomerPlan(models.Model):
     # billing_cycle_anchor.
     billing_cycle_anchor = models.DateTimeField()
 
-    ANNUAL = 1
-    MONTHLY = 2
+    BILLING_SCHEDULE_ANNUAL = 1
+    BILLING_SCHEDULE_MONTHLY = 2
     BILLING_SCHEDULES = {
-        ANNUAL: "Annual",
-        MONTHLY: "Monthly",
+        BILLING_SCHEDULE_ANNUAL: "Annual",
+        BILLING_SCHEDULE_MONTHLY: "Monthly",
     }
     billing_schedule = models.SmallIntegerField()
 
@@ -239,24 +258,36 @@ class CustomerPlan(models.Model):
     )
     end_date = models.DateTimeField(null=True)
 
-    DONE = 1
-    STARTED = 2
-    INITIAL_INVOICE_TO_BE_SENT = 3
+    INVOICING_STATUS_DONE = 1
+    INVOICING_STATUS_STARTED = 2
+    INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT = 3
     # This status field helps ensure any errors encountered during the
     # invoicing process do not leave our invoicing system in a broken
     # state.
-    invoicing_status = models.SmallIntegerField(default=DONE)
+    invoicing_status = models.SmallIntegerField(default=INVOICING_STATUS_DONE)
 
-    STANDARD = 1
-    PLUS = 2  # not available through self-serve signup
-    ENTERPRISE = 10
+    TIER_CLOUD_STANDARD = 1
+    TIER_CLOUD_PLUS = 2
+    # Reserved tier IDs for future use
+    TIER_CLOUD_COMMUNITY = 3
+    TIER_CLOUD_ENTERPRISE = 4
+
+    TIER_SELF_HOSTED_BASE = 100
+    TIER_SELF_HOSTED_LEGACY = 101
+    TIER_SELF_HOSTED_COMMUNITY = 102
+    TIER_SELF_HOSTED_BASIC = 103
+    TIER_SELF_HOSTED_BUSINESS = 104
+    TIER_SELF_HOSTED_ENTERPRISE = 105
     tier = models.SmallIntegerField()
 
     ACTIVE = 1
     DOWNGRADE_AT_END_OF_CYCLE = 2
     FREE_TRIAL = 3
     SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
-    SWITCH_NOW_FROM_STANDARD_TO_PLUS = 5
+    SWITCH_PLAN_TIER_NOW = 5
+    SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6
+    DOWNGRADE_AT_END_OF_FREE_TRIAL = 7
+    SWITCH_PLAN_TIER_AT_PLAN_END = 8
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10
@@ -267,19 +298,38 @@ class CustomerPlan(models.Model):
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
 
+    @override
+    def __str__(self) -> str:
+        return f"{self.name} (status: {self.get_plan_status_as_text()})"
+
+    @staticmethod
+    def name_from_tier(tier: int) -> str:
+        # NOTE: Check `statement_descriptor` values after updating this.
+        # Stripe has a 22 character limit on the statement descriptor length.
+        # https://stripe.com/docs/payments/account/statement-descriptors
+        return {
+            CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
+            CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
+            CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Self-managed (legacy plan)",
+            CustomerPlan.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
+            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
+        }[tier]
+
     @property
     def name(self) -> str:
-        return {
-            CustomerPlan.STANDARD: "Zulip Cloud Standard",
-            CustomerPlan.PLUS: "Zulip Plus",
-            CustomerPlan.ENTERPRISE: "Zulip Enterprise",
-        }[self.tier]
+        return self.name_from_tier(self.tier)
 
     def get_plan_status_as_text(self) -> str:
         return {
             self.ACTIVE: "Active",
-            self.DOWNGRADE_AT_END_OF_CYCLE: "Scheduled for downgrade at end of cycle",
+            self.DOWNGRADE_AT_END_OF_CYCLE: "Downgrade end of cycle",
             self.FREE_TRIAL: "Free trial",
+            self.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: "Scheduled switch to annual",
+            self.SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: "Scheduled switch to monthly",
+            self.DOWNGRADE_AT_END_OF_FREE_TRIAL: "Downgrade end of free trial",
+            self.SWITCH_PLAN_TIER_AT_PLAN_END: "New plan scheduled",
             self.ENDED: "Ended",
             self.NEVER_STARTED: "Never started",
         }[self.status]
@@ -290,7 +340,10 @@ class CustomerPlan(models.Model):
         return ledger_entry.licenses
 
     def licenses_at_next_renewal(self) -> Optional[int]:
-        if self.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+        if self.status in (
+            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ):
             return None
         ledger_entry = LicenseLedger.objects.filter(plan=self).order_by("id").last()
         assert ledger_entry is not None
@@ -347,9 +400,17 @@ class LicenseLedger(models.Model):
     licenses_at_next_renewal = models.IntegerField(null=True)
 
 
+class SponsoredPlanTypes(Enum):
+    # unspecified used for cloud sponsorship requests
+    UNSPECIFIED = ""
+    COMMUNITY = "Community"
+    BASIC = "Basic"
+    BUSINESS = "Business"
+
+
 class ZulipSponsorshipRequest(models.Model):
-    realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)
+    requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE, null=True, blank=True)
 
     org_type = models.PositiveSmallIntegerField(
         default=Realm.ORG_TYPES["unspecified"]["id"],
@@ -363,3 +424,9 @@ class ZulipSponsorshipRequest(models.Model):
     expected_total_users = models.TextField(default="")
     paid_users_count = models.TextField(default="")
     paid_users_description = models.TextField(default="")
+
+    requested_plan = models.CharField(
+        max_length=50,
+        choices=[(plan.value, plan.name) for plan in SponsoredPlanTypes],
+        default=SponsoredPlanTypes.UNSPECIFIED.value,
+    )

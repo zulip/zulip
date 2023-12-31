@@ -2,6 +2,7 @@
 
 const compose_banner = require("../../src/compose_banner");
 
+const {noop} = require("./test");
 const $ = require("./zjquery");
 
 exports.mock_banners = () => {
@@ -13,16 +14,16 @@ exports.mock_banners = () => {
                 .split(" ")
                 .map((classname) => CSS.escape(classname))
                 .join(".")}`,
-        ).remove = () => {};
+        ).remove = noop;
     }
-    $("#compose_banners .warning").remove = () => {};
-    $("#compose_banners .error").remove = () => {};
-    $("#compose_banners .upload_banner").remove = () => {};
+    $("#compose_banners .warning").remove = noop;
+    $("#compose_banners .error").remove = noop;
+    $("#compose_banners .upload_banner").remove = noop;
 
     const $stub = $.create("stub_to_remove");
     const $cb = $("#compose_banners");
 
-    $stub.remove = () => {};
+    $stub.remove = noop;
     $stub.length = 0;
 
     $cb.closest = () => [];

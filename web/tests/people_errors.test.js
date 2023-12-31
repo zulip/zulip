@@ -9,6 +9,7 @@ const blueslip = require("./lib/zblueslip");
 const reload_state = mock_esm("../src/reload_state", {
     is_in_progress: () => false,
 });
+const settings_data = mock_esm("../src/settings_data");
 
 const people = zrequire("people");
 
@@ -24,11 +25,17 @@ people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 run_test("report_late_add", ({override}) => {
+    override(settings_data, "user_can_access_all_other_users", () => true);
     blueslip.expect("error", "Added user late");
     people.report_late_add(55, "foo@example.com");
 
+    override(settings_data, "user_can_access_all_other_users", () => false);
     blueslip.expect("log", "Added user late");
     override(reload_state, "is_in_progress", () => true);
+    people.report_late_add(55, "foo@example.com");
+
+    override(reload_state, "is_in_progress", () => false);
+    blueslip.expect("log", "Message was sent by an inaccessible user");
     people.report_late_add(55, "foo@example.com");
 });
 

@@ -8,7 +8,7 @@ import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
-import * as sub_store from "./sub_store";
+import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 
 export function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
@@ -39,7 +39,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         compose_args = {
             type: "stream",
             stream_id: scheduled_msg.to,
-            stream: sub_store.maybe_get_stream_name(scheduled_msg.to),
+            stream: stream_data.get_stream_name_from_id(scheduled_msg.to),
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
         };
@@ -47,7 +47,10 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         const recipient_emails = [];
         if (scheduled_msg.to) {
             for (const recipient_id of scheduled_msg.to) {
-                recipient_emails.push(people.get_by_user_id(recipient_id).email);
+                const recipient_user = people.get_by_user_id(recipient_id);
+                if (!recipient_user.is_inaccessible_user) {
+                    recipient_emails.push(recipient_user.email);
+                }
             }
         }
         compose_args = {
@@ -70,7 +73,7 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
         new Date(scheduled_delivery_timestamp * 1000),
         "time",
     );
-    const unscheduled_banner = render_compose_banner({
+    const unscheduled_banner_html = render_compose_banner({
         banner_type: compose_banner.WARNING,
         banner_text: $t({
             defaultMessage: "This message is no longer scheduled to be sent.",
@@ -78,7 +81,10 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
         button_text: $t({defaultMessage: "Schedule for {deliver_at}"}, {deliver_at}),
         classname: compose_banner.CLASSNAMES.unscheduled_message,
     });
-    compose_banner.append_compose_banner_to_banner_list(unscheduled_banner, $("#compose_banners"));
+    compose_banner.append_compose_banner_to_banner_list(
+        $(unscheduled_banner_html),
+        $("#compose_banners"),
+    );
 }
 
 export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {

@@ -26,7 +26,11 @@ export function initialize_pill(): UserPillWidget {
     return pill;
 }
 
-export function initialize({on_pill_create_or_remove}: {on_pill_create_or_remove(): void}): void {
+export function initialize({
+    on_pill_create_or_remove,
+}: {
+    on_pill_create_or_remove: () => void;
+}): void {
     widget = initialize_pill();
 
     widget.onPillCreate(() => {

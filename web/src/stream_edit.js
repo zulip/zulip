@@ -15,7 +15,6 @@ import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
-import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
@@ -38,11 +37,6 @@ import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-
-function setup_subscriptions_stream_hash(sub) {
-    const hash = hash_util.stream_edit_url(sub);
-    browser_history.update(hash);
-}
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -90,13 +84,13 @@ function get_sub_for_target(target) {
     return sub;
 }
 
-export function open_edit_panel_for_row(stream_row) {
+export function open_edit_panel_for_row(stream_row, right_side_tab) {
     const sub = get_sub_for_target(stream_row);
 
     $(".stream-row.active").removeClass("active");
     stream_settings_components.show_subs_pane.settings(sub);
     $(stream_row).addClass("active");
-    setup_subscriptions_stream_hash(sub);
+    stream_edit_toggler.setup_subscriptions_stream_hash(sub, right_side_tab);
     setup_stream_settings(stream_row);
 }
 
@@ -570,7 +564,7 @@ export function initialize() {
         stream_settings_components.sub_or_unsub(sub, $stream_row);
 
         if (!sub.subscribed) {
-            open_edit_panel_for_row($stream_row);
+            open_edit_panel_for_row($stream_row, stream_edit_toggler.select_tab);
         }
         stream_ui_updates.update_regular_sub_settings(sub);
 
@@ -638,7 +632,7 @@ export function initialize() {
 
     $("#streams_overlay_container").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            open_edit_panel_for_row(this);
+            open_edit_panel_for_row(this, stream_edit_toggler.select_tab);
         }
     });
 

@@ -39,7 +39,7 @@ run_test("get_localized_date_or_time_for_format returns default date with incorr
     const date = date_2019;
     const expectedDate = "Friday, April 12, 2019";
 
-    user_settings.default_language = "invalidLanguageCode";
+    user_settings.default_language = "invalid";
     const actualDate = timerender.get_localized_date_or_time_for_format(
         date,
         "weekday_dayofyear_year",
@@ -174,20 +174,19 @@ run_test("get_tz_with_UTC_offset", () => {
     let time = date_2019;
 
     assert.equal(timerender.get_tz_with_UTC_offset(time), "UTC");
-    const previous_env_tz = process.env.TZ;
 
     // Test the GMT[+-]x:y logic.
-    process.env.TZ = "Asia/Kolkata";
+    timerender.set_display_time_zone("Asia/Kolkata");
     assert.equal(timerender.get_tz_with_UTC_offset(time), "(UTC+05:30)");
 
-    process.env.TZ = "America/Los_Angeles";
+    timerender.set_display_time_zone("America/Los_Angeles");
     assert.equal(timerender.get_tz_with_UTC_offset(time), "PDT (UTC-07:00)");
 
     time = date_2025;
 
     assert.equal(timerender.get_tz_with_UTC_offset(time), "PST (UTC-08:00)");
 
-    process.env.TZ = previous_env_tz;
+    timerender.set_display_time_zone("UTC");
 });
 
 run_test("render_now_returns_today", () => {
@@ -285,40 +284,38 @@ run_test("format_time_modern", () => {
 });
 
 run_test("format_time_modern_different_timezones", () => {
-    const utc_tz = process.env.TZ;
-
     // Day is yesterday in UTC+0 but is 2 days ago in local timezone hence DOW is returned.
     let today = date_2017_PM;
     let yesterday = add(date_2017, {days: -1});
     assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
 
-    process.env.TZ = "America/Juneau";
+    timerender.set_display_time_zone("America/Juneau");
     let expected = "translated: 5/16/2017 at 11:12:53 PM AKDT (UTC-08:00)";
     assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
-    process.env.TZ = utc_tz;
+    timerender.set_display_time_zone("UTC");
 
     // Day is 2 days ago in UTC+0 but is yesterday in local timezone.
     today = date_2017;
     yesterday = add(date_2017_PM, {days: -2});
     assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
 
-    process.env.TZ = "Asia/Brunei";
+    timerender.set_display_time_zone("Asia/Brunei");
     expected = "translated: 5/17/2017 at 5:12:53 AM (UTC+08:00)";
     assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
-    process.env.TZ = utc_tz;
+    timerender.set_display_time_zone("UTC");
 
     // Day is 6 days ago in UTC+0 but a week ago in local timezone hence difference in returned strings.
     today = date_2017_PM;
     yesterday = add(date_2017, {days: -6});
     assert.equal(timerender.format_time_modern(yesterday, today), "Friday");
 
-    process.env.TZ = "America/Juneau";
+    timerender.set_display_time_zone("America/Juneau");
     expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
     assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
-    process.env.TZ = utc_tz;
+    timerender.set_display_time_zone("UTC");
 });
 
 run_test("render_now_returns_year_with_year_boundary", () => {
@@ -471,13 +468,12 @@ run_test("get_full_datetime", () => {
     user_settings.twenty_four_hour_time = false;
 
     // Test the GMT[+-]x:y logic.
-    const previous_env_tz = process.env.TZ;
-    process.env.TZ = "Asia/Kolkata";
+    timerender.set_display_time_zone("Asia/Kolkata");
     expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+05:30)";
     assert.equal(timerender.get_full_datetime_clarification(time), expected);
     expected = "translated: May 19, 2017 at 2:42:53 AM";
     assert.equal(timerender.get_full_datetime(time), expected);
-    process.env.TZ = previous_env_tz;
+    timerender.set_display_time_zone("UTC");
 });
 
 run_test("last_seen_status_from_date", () => {

@@ -71,7 +71,7 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
         email, realm_name, realm_subdomain, realm_type, realm_default_language
     )
     activation_url = create_confirmation_link(
-        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+        prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
     )
     key = activation_url.split("/")[-1]
     # Need to add test data to POST request as it doesn't originally contain the required parameters
@@ -104,7 +104,7 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         email, realm_name, realm_subdomain, realm_type, realm_default_language
     )
     activation_url = create_confirmation_link(
-        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+        prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
     )
     key = activation_url.split("/")[-1]
     # Need to add test data to POST request as it doesn't originally contain the required parameters

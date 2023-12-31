@@ -6,7 +6,7 @@
   "description": "Payment (Card ending in 4242)",
   "discountable": false,
   "discounts": [],
-  "id": "ii_NORMALIZED00000000000004",
+  "id": "ii_NORMALIZED00000000000002",
   "invoice": null,
   "livemode": false,
   "metadata": {},
@@ -19,7 +19,7 @@
   "price": {
     "active": false,
     "billing_scheme": "per_unit",
-    "created": 1010000006,
+    "created": 1010000008,
     "currency": "usd",
     "custom_unit_amount": null,
     "id": "price_NORMALIZED00000000000002",

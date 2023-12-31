@@ -337,6 +337,7 @@ export function paste_handler_converter(paste_html) {
         emDelimiter: "*",
         codeBlockStyle: "fenced",
         headingStyle: "atx",
+        br: "",
     });
     turndownService.addRule("style", {
         filter: "style",

@@ -6,8 +6,11 @@ import $ from "jquery";
 export const page_params: {
     annual_price: number;
     monthly_price: number;
-    percent_off: number;
     seat_count: number;
+    billing_base_url: string;
+    tier: number;
+    flat_discount: number;
+    flat_discounted_months: number;
 } = $("#page-params").data("params");
 
 if (!page_params) {

@@ -7,15 +7,9 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import LinkifierDict
-from zerver.models import (
-    Realm,
-    RealmAuditLog,
-    RealmFilter,
-    UserProfile,
-    active_user_ids,
-    flush_linkifiers,
-    linkifiers_for_realm,
-)
+from zerver.models import Realm, RealmAuditLog, RealmFilter, UserProfile
+from zerver.models.linkifiers import flush_linkifiers, linkifiers_for_realm
+from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 

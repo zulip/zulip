@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
@@ -49,6 +49,8 @@ const polonius = {
     full_name: "Polonius",
     is_guest: true,
 };
+const inaccessible_user_id = 33;
+const inaccessible_user = people.add_inaccessible_user(inaccessible_user_id);
 people.init();
 people.add_active_user(iago);
 people.add_active_user(cordelia);
@@ -88,14 +90,34 @@ const $array = (array) => {
     return {each};
 };
 
-function set_closest_dot_find_result($content, value) {
-    $content.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".recipient_row");
-        const find = (find_opts) => {
-            assert.equal(find_opts, ".message_header.message_header_stream");
-            return value;
+function set_message_for_message_content($content, value) {
+    // no message row found
+    if (value === undefined) {
+        $content.closest = (closest_opts) => {
+            assert.equal(closest_opts, ".message_row");
+            return [];
         };
-        return {find};
+        return;
+    }
+    // message row found
+    const $message_row = $.create(".message-row");
+    $content.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".message_row");
+        return $message_row;
+    };
+    $message_row.length = 1;
+    $message_row.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".overlay-message-row");
+        return [];
+    };
+    const message_id = 100;
+    rows.id = (message_row) => {
+        assert.equal(message_row, $message_row);
+        return message_id;
+    };
+    message_store.get = (message_id_opt) => {
+        assert.equal(message_id_opt, message_id);
+        return value;
     };
 }
 
@@ -112,7 +134,7 @@ const get_content_element = () => {
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
-    set_closest_dot_find_result($content, []);
+    set_message_for_message_content($content, undefined);
 
     // Fend off dumb security bugs by forcing devs to be
     // intentional about HTML manipulation.
@@ -186,12 +208,16 @@ run_test("user-mention", () => {
     assert.equal($polonius.text(), "never-been-set");
 
     rm.update_elements($content);
-
-    // Final asserts
-    assert.ok($iago.hasClass("user-mention-me"));
+    assert.ok(!$iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), `@${iago.full_name}`);
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
     assert.equal($polonius.text(), `translated: @${polonius.full_name} (guest)`);
+
+    // message row found
+    const message = {mentioned_me_directly: true};
+    set_message_for_message_content($content, message);
+    rm.update_elements($content);
+    assert.ok($iago.hasClass("user-mention-me"));
 });
 
 run_test("user-mention without guest indicator", () => {
@@ -206,47 +232,41 @@ run_test("user-mention without guest indicator", () => {
     assert.equal($polonius.text(), `@${polonius.full_name}`);
 });
 
-run_test("user-mention PM (wildcard)", () => {
+run_test("user-mention of inaccessible users", () => {
+    const $content = get_content_element();
+    const $othello = $.create("user-mention(othello)");
+    $othello.set_find_results(".highlight", false);
+    $othello.attr("data-user-id", inaccessible_user_id);
+    $othello.text("@Othello");
+    $content.set_find_results(".user-mention", $array([$othello]));
+
+    rm.update_elements($content);
+    assert.equal($othello.text(), "@Othello");
+    assert.notEqual($othello.text(), `@${inaccessible_user.full_name}`);
+
+    // Test inaccessible user id with no user object.
+    const $cordelia = $.create("user-mention(cordelia)");
+    $cordelia.set_find_results(".highlight", false);
+    $cordelia.attr("data-user-id", 40);
+    $cordelia.text("@Cordelia");
+    $content.set_find_results(".user-mention", $array([$cordelia]));
+
+    rm.update_elements($content);
+    assert.equal($cordelia.text(), "@Cordelia");
+});
+
+run_test("user-mention (stream wildcard)", () => {
     // Setup
     const $content = get_content_element();
     const $mention = $.create("mention");
     $mention.attr("data-user-id", "*");
     $content.set_find_results(".user-mention", $array([$mention]));
+    const message = {stream_wildcard_mentioned: true};
+    set_message_for_message_content($content, message);
 
     assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert.ok($mention.hasClass("user-mention-me"));
-});
-
-run_test("user-mention Stream subbed (wildcard)", ({override_rewire}) => {
-    // Setup
-    const $content = get_content_element();
-    const $mention = $.create("mention");
-    $mention.attr("data-user-id", "*");
-    $content.set_find_results(".user-mention", $array([$mention]));
-    const attr = () => stream.stream_id;
-    set_closest_dot_find_result($content, {attr, length: 1});
-    override_rewire(stream_data, "is_user_subscribed", () => true);
-
-    assert.ok(!$mention.hasClass("user-mention-me"));
-    rm.update_elements($content);
-    assert.ok($mention.hasClass("user-mention-me"));
-});
-
-run_test("user-mention Stream not subbed (wildcard)", ({override_rewire}) => {
-    // Setup
-    const $content = get_content_element();
-    const $mention = $.create("mention");
-    $mention.attr("data-user-id", "*");
-    $content.set_find_results(".user-mention", $array([$mention]));
-    const attr = () => 1;
-    set_closest_dot_find_result($content, {attr, length: 1});
-    override_rewire(stream_data, "is_user_subscribed", () => false);
-
-    // Don't add user-mention-me class.
-    assert.ok(!$mention.hasClass("user-mention-me"));
-    rm.update_elements($content);
-    assert.ok(!$mention.hasClass("user-mention-me"));
 });
 
 run_test("user-mention (email)", () => {
@@ -277,39 +297,16 @@ run_test("topic-mention", () => {
     const $mention = $.create("mention");
     $content.set_find_results(".topic-mention", $array([$mention]));
 
-    // no message row found
-    $content.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".message_row");
-        return [];
-    };
+    // when no message row found
     assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert.ok(!$mention.hasClass("user-mention-me"));
 
     // message row found
-    const $message_row = $.create(".message-row");
-    $content.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".message_row");
-        return $message_row;
-    };
-    $message_row.length = 1;
-    $message_row.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".overlay-message-row");
-        return [];
-    };
-    const message_id = 100;
-    rows.id = (message_row) => {
-        assert.equal(message_row, $message_row);
-        return message_id;
-    };
     const message = {
-        stream_id: 1,
         topic_wildcard_mentioned: true,
     };
-    message_store.get = (message_id_opt) => {
-        assert.equal(message_id_opt, message_id);
-        return message;
-    };
+    set_message_for_message_content($content, message);
 
     assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
@@ -321,29 +318,11 @@ run_test("topic-mention not topic participant", () => {
     const $content = get_content_element();
     const $mention = $.create("mention");
     $content.set_find_results(".topic-mention", $array([$mention]));
-    const $message_row = $.create(".message-row");
-    $content.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".message_row");
-        return $message_row;
-    };
-    $message_row.length = 1;
-    $message_row.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".overlay-message-row");
-        return [];
-    };
-    const message_id = 100;
-    rows.id = (message_row) => {
-        assert.equal(message_row, $message_row);
-        return message_id;
-    };
+
     const message = {
-        stream_id: 1,
         topic_wildcard_mentioned: false,
     };
-    message_store.get = (message_id_opt) => {
-        assert.equal(message_id_opt, message_id);
-        return message;
-    };
+    set_message_for_message_content($content, message);
 
     assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
@@ -607,7 +586,7 @@ run_test("code playground none", ({override, mock_template}) => {
         return undefined;
     });
 
-    override(copied_tooltip, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, false);
     assert.deepEqual(prepends, [$copy_code]);
@@ -623,7 +602,7 @@ run_test("code playground single", ({override, mock_template}) => {
         return [{name: "Some Javascript Playground"}];
     });
 
-    override(copied_tooltip, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);
@@ -643,7 +622,7 @@ run_test("code playground multiple", ({override, mock_template}) => {
         return ["whatever", "whatever"];
     });
 
-    override(copied_tooltip, "show_copied_confirmation", () => {});
+    override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);

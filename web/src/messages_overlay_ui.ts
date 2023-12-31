@@ -7,9 +7,9 @@ type Context = {
     row_item_selector: string;
     box_item_selector: string;
     id_attribute_name: string;
-    get_items_ids(): number[];
-    on_enter(): void;
-    on_delete(): void;
+    get_items_ids: () => number[];
+    on_enter: () => void;
+    on_delete: () => void;
 };
 
 export function row_with_focus(context: Context): JQuery {

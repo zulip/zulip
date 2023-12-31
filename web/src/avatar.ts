@@ -83,7 +83,7 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
     }
 
     if (!settings_data.user_can_change_avatar) {
-        return undefined;
+        return;
     }
 
     $("#user-avatar-upload-widget .image-delete-button").on("click", (e) => {
@@ -116,7 +116,7 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         });
     });
 
-    return upload_widget.build_direct_upload_widget(
+    upload_widget.build_direct_upload_widget(
         get_file_input,
         $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
         $("#user-avatar-upload-widget .image_upload_button").expectOne(),

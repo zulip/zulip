@@ -1,4 +1,3 @@
-import {format, isSameDay} from "date-fns";
 import $ from "jquery";
 
 import render_message_edit_history from "../templates/message_edit_history.hbs";
@@ -14,8 +13,10 @@ import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as spectators from "./spectators";
 import * as sub_store from "./sub_store";
+import {is_same_day} from "./time_zone_util";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
+import {user_settings} from "./user_settings";
 
 export function fetch_and_render_message_history(message) {
     channel.get({
@@ -26,20 +27,27 @@ export function fetch_and_render_message_history(message) {
             let prev_time = null;
             let prev_stream_item = null;
 
+            const date_time_format = new Intl.DateTimeFormat(user_settings.default_language, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
             for (const [index, msg] of data.message_history.entries()) {
                 // Format times and dates nicely for display
                 const time = new Date(msg.timestamp * 1000);
                 const item = {
                     timestamp: timerender.stringify_time(time),
-                    display_date: format(time, "MMMM d, yyyy"),
-                    show_date_row: prev_time === null || !isSameDay(time, prev_time),
+                    display_date: date_time_format.format(time),
+                    show_date_row:
+                        prev_time === null ||
+                        !is_same_day(time, prev_time, timerender.display_time_zone),
                 };
 
                 if (!msg.user_id) {
                     continue;
                 }
 
-                const person = people.get_by_user_id(msg.user_id);
+                const person = people.get_user_by_id_assert_valid(msg.user_id);
                 const full_name = person.full_name;
 
                 if (index === 0) {

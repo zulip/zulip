@@ -18,7 +18,7 @@ from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
-from zerver.lib.hotspots import get_next_hotspots
+from zerver.lib.hotspots import get_next_onboarding_steps
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
     WEBHOOK_INTEGRATIONS,
@@ -39,7 +39,6 @@ from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import check_narrow_for_events, read_stop_words
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
-from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
@@ -63,12 +62,12 @@ from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
+    get_data_for_inaccessible_user,
     get_users_for_api,
     is_administrator_role,
     max_message_id_for_user,
 )
 from zerver.models import (
-    MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Draft,
@@ -80,13 +79,14 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    custom_profile_fields_for_realm,
-    get_all_custom_emoji_for_realm,
-    get_default_stream_groups,
-    get_realm_domains,
-    get_realm_playgrounds,
-    linkifiers_for_realm,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.linkifiers import linkifiers_for_realm
+from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
+from zerver.models.realm_playgrounds import get_realm_playgrounds
+from zerver.models.realms import get_realm_domains
+from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
@@ -131,6 +131,7 @@ def fetch_initial_state_data(
     spectator_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
+    user_list_incomplete: bool = False,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -183,11 +184,13 @@ def fetch_initial_state_data(
 
             del state["custom_profile_field_types"]["PRONOUNS"]
 
-    if want("hotspots"):
-        # Even if we offered special hotspots for guests without an
+    if want("onboarding_steps"):
+        # Even if we offered special onboarding steps for guests without an
         # account, we'd maybe need to store their state using cookies
         # or local storage, rather than in the database.
-        state["hotspots"] = [] if user_profile is None else get_next_hotspots(user_profile)
+        state["onboarding_steps"] = (
+            [] if user_profile is None else get_next_onboarding_steps(user_profile)
+        )
 
     if want("message"):
         # Since the introduction of `anchor="latest"` in the API,
@@ -231,7 +234,9 @@ def fetch_initial_state_data(
 
     if want("presence"):
         state["presences"] = (
-            {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
+            {}
+            if user_profile is None
+            else get_presences_for_realm(realm, slim_presence, user_profile)
         )
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
@@ -326,6 +331,13 @@ def fetch_initial_state_data(
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
 
+        if realm.push_notifications_enabled_end_timestamp is not None:
+            state["realm_push_notifications_enabled_end_timestamp"] = datetime_to_timestamp(
+                realm.push_notifications_enabled_end_timestamp
+            )
+        else:
+            state["realm_push_notifications_enabled_end_timestamp"] = None
+
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
@@ -342,8 +354,7 @@ def fetch_initial_state_data(
             "event_queue_longpoll_timeout_seconds"
         ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
 
-        # TODO: Should these have the realm prefix replaced with server_?
-        state["realm_push_notifications_enabled"] = push_notifications_enabled()
+        # TODO: This probably belongs on the server object.
         state["realm_default_external_accounts"] = get_default_external_accounts()
 
         server_default_jitsi_server_url = (
@@ -442,7 +453,7 @@ def fetch_initial_state_data(
         assert spectator_requested_language is not None
         # When UserProfile=None, we want to serve the values for various
         # settings as the defaults.  Instead of copying the default values
-        # from models.py here, we access these default values from a
+        # from models/users.py here, we access these default values from a
         # temporary UserProfile object that will not be saved to the database.
         #
         # We also can set various fields to avoid duplicating code
@@ -461,6 +472,8 @@ def fetch_initial_state_data(
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
             default_language=spectator_requested_language,
+            # Set home view to recent conversations for spectators regardless of default.
+            web_home_view="recent_topics",
         )
     if want("realm_user"):
         state["raw_users"] = get_users_for_api(
@@ -470,6 +483,7 @@ def fetch_initial_state_data(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             # Don't send custom profile field values to spectators.
             include_custom_profile_fields=user_profile is not None,
+            user_list_incomplete=user_list_incomplete,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 
@@ -652,7 +666,9 @@ def fetch_initial_state_data(
     if want("user_status"):
         # We require creating an account to access statuses.
         state["user_status"] = (
-            {} if user_profile is None else get_user_status_dict(realm_id=realm.id)
+            {}
+            if user_profile is None
+            else get_user_status_dict(realm=realm, user_profile=user_profile)
         )
 
     if want("user_topic"):
@@ -692,6 +708,7 @@ def apply_events(
     slim_presence: bool,
     include_subscribers: bool,
     linkifier_url_template: bool,
+    user_list_incomplete: bool,
 ) -> None:
     for event in events:
         if event["type"] == "restart":
@@ -714,6 +731,7 @@ def apply_events(
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
 
@@ -726,6 +744,7 @@ def apply_event(
     slim_presence: bool,
     include_subscribers: bool,
     linkifier_url_template: bool,
+    user_list_incomplete: bool,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -837,8 +856,8 @@ def apply_event(
                 if scheduled_message["scheduled_message_id"] == event["scheduled_message_id"]:
                     del state["scheduled_messages"][idx]
 
-    elif event["type"] == "hotspots":
-        state["hotspots"] = event["hotspots"]
+    elif event["type"] == "onboarding_steps":
+        state["onboarding_steps"] = event["onboarding_steps"]
     elif event["type"] == "custom_profile_fields":
         state["custom_profile_fields"] = event["fields"]
         custom_profile_field_ids = {field["id"] for field in state["custom_profile_fields"]}
@@ -985,6 +1004,21 @@ def apply_event(
                         sub["subscribers"] = [
                             user_id for user_id in sub["subscribers"] if user_id != person_user_id
                         ]
+        elif event["op"] == "remove":
+            if person_user_id in state["raw_users"]:
+                if user_list_incomplete:
+                    del state["raw_users"][person_user_id]
+                else:
+                    inaccessible_user_dict = get_data_for_inaccessible_user(
+                        user_profile.realm, person_user_id
+                    )
+                    state["raw_users"][person_user_id] = inaccessible_user_dict
+
+            if include_subscribers:
+                for sub in state["subscriptions"]:
+                    sub["subscribers"] = [
+                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                    ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
@@ -1052,6 +1086,12 @@ def apply_event(
                 state["streams"] = [
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
+
+            state["subscriptions"] = [
+                stream
+                for stream in state["subscriptions"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
 
             state["unsubscribed"] = [
                 stream
@@ -1517,6 +1557,7 @@ def do_events_register(
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
     user_settings_object = client_capabilities.get("user_settings_object", False)
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
+    user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
 
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
@@ -1540,6 +1581,7 @@ def do_events_register(
             linkifier_url_template=linkifier_url_template,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
+            user_list_incomplete=user_list_incomplete,
             # slim_presence is a noop, because presence is not included.
             slim_presence=True,
             # Force include_subscribers=False for security reasons.
@@ -1575,6 +1617,7 @@ def do_events_register(
             user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
         if queue_id is None:
@@ -1592,6 +1635,7 @@ def do_events_register(
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
+            user_list_incomplete=user_list_incomplete,
         )
 
         # Apply events that came in while we were fetching initial data
@@ -1606,6 +1650,7 @@ def do_events_register(
                 slim_presence=slim_presence,
                 include_subscribers=include_subscribers,
                 linkifier_url_template=linkifier_url_template,
+                user_list_incomplete=user_list_incomplete,
             )
         except RestartEventError:
             # This represents a rare race condition, where Tornado

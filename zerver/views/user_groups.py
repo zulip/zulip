@@ -37,7 +37,8 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.lib.validator import check_bool, check_int, check_list
-from zerver.models import UserGroup, UserProfile, get_system_bot
+from zerver.models import UserGroup, UserProfile
+from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
 

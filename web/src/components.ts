@@ -16,13 +16,13 @@ import * as keydown_util from "./keydown_util";
 */
 
 export type Toggle = {
-    maybe_go_left(): boolean;
-    maybe_go_right(): boolean;
-    disable_tab(name: string): void;
-    enable_tab(name: string): void;
-    value(): string | undefined;
-    get(): JQuery;
-    goto(name: string): void;
+    maybe_go_left: () => boolean;
+    maybe_go_right: () => boolean;
+    disable_tab: (name: string) => void;
+    enable_tab: (name: string) => void;
+    value: () => string | undefined;
+    get: () => JQuery;
+    goto: (name: string) => void;
 };
 
 export function toggle(opts: {

@@ -14,6 +14,7 @@ export function set_scroll_to_message_banner_message_id(val: number | null): voi
 export const WARNING = "warning";
 export const ERROR = "error";
 export const SUCCESS = "success";
+export const INFO = "info";
 
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
@@ -36,6 +37,7 @@ export const CLASSNAMES = {
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
     unscheduled_message: "unscheduled_message",
+    search_view: "search_view",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
@@ -64,22 +66,22 @@ export function get_compose_banner_container($textarea: JQuery): JQuery {
 // to a banner container. The function accepts a container element
 // as a parameter, to which a banner should be appended.
 export function append_compose_banner_to_banner_list(
-    banner: HTMLElement | JQuery.htmlString,
+    $banner: JQuery,
     $list_container: JQuery,
 ): void {
-    scroll_util.get_content_element($list_container).append(banner);
+    scroll_util.get_content_element($list_container).append($banner);
 }
 
 export function update_or_append_banner(
-    banner: HTMLElement | JQuery.htmlString,
+    $banner: JQuery,
     banner_classname: string,
     $list_container: JQuery,
 ): void {
-    const $banner = $list_container.find(`.${CSS.escape(banner_classname)}`);
-    if ($banner.length === 0) {
-        append_compose_banner_to_banner_list(banner, $list_container);
+    const $existing_banner = $list_container.find(`.${CSS.escape(banner_classname)}`);
+    if ($existing_banner.length === 0) {
+        append_compose_banner_to_banner_list($banner, $list_container);
     } else {
-        $banner.replaceWith(banner);
+        $existing_banner.replaceWith($banner);
     }
 }
 
@@ -121,6 +123,10 @@ export function clear_unmute_topic_notifications(): void {
     ).remove();
 }
 
+export function clear_search_view_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.search_view)}`).remove();
+}
+
 export function clear_all(): void {
     scroll_util.get_content_element($(`#compose_banners`)).empty();
 }
@@ -131,11 +137,17 @@ export function show_error_message(
     $container: JQuery,
     $bad_input?: JQuery,
 ): void {
+    // Important: This API intentionally does not support passing an
+    // HTML message; doing so creates unnecessary XSS risk. If you
+    // want HTML in your compose banner, use a partial subclassing
+    // compose_banner and the append_compose_banner_to_banner_list
+    // API; See, for example, automatic_new_visibility_policy_banner.
+    //
     // To prevent the same banner from appearing twice,
     // we remove the banner with a matched classname.
     $container.find(`.${CSS.escape(classname)}`).remove();
 
-    const new_row = render_compose_banner({
+    const new_row_html = render_compose_banner({
         banner_type: ERROR,
         stream_id: null,
         topic_name: null,
@@ -143,7 +155,7 @@ export function show_error_message(
         button_text: null,
         classname,
     });
-    append_compose_banner_to_banner_list(new_row, $container);
+    append_compose_banner_to_banner_list($(new_row_html), $container);
 
     hide_compose_spinner();
 
@@ -156,12 +168,12 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     // Remove any existing banners with this warning.
     $(`#compose_banners .${CSS.escape(CLASSNAMES.stream_does_not_exist)}`).remove();
 
-    const new_row = render_stream_does_not_exist_error({
+    const new_row_html = render_stream_does_not_exist_error({
         banner_type: ERROR,
         stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
-    append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     hide_compose_spinner();
 
     // Open stream select dropdown.

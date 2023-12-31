@@ -12,7 +12,8 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import extract_message_dict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
-from zerver.models import Message, Reaction, RealmEmoji, UserMessage, get_realm
+from zerver.models import Message, Reaction, RealmEmoji, UserMessage
+from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse

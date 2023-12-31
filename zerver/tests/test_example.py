@@ -1,7 +1,8 @@
-import datetime
+from datetime import timedelta
 from unittest import mock
 
 import orjson
+import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.users import do_change_can_create_users, do_change_user_role
@@ -10,7 +11,10 @@ from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.users import is_administrator_role
-from zerver.models import UserProfile, UserStatus, get_realm, get_stream, get_user_by_delivery_email
+from zerver.models import UserProfile, UserStatus
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_user_by_delivery_email
 
 
 # Most Zulip tests use ZulipTestCase, which inherits from django.test.TestCase.
@@ -487,14 +491,11 @@ class TestMocking(ZulipTestCase):
         # You can also use mock.patch() as a decorator depending on the
         # requirements. Read more at the documentation link provided above.
 
-        time_beyond_edit_limit = message_sent_time + datetime.timedelta(
+        time_beyond_edit_limit = message_sent_time + timedelta(
             seconds=MESSAGE_CONTENT_EDIT_LIMIT + 100
         )  # There's a buffer time applied to the limit, hence the extra 100s.
 
-        with mock.patch(
-            "zerver.actions.message_edit.timezone_now",
-            return_value=time_beyond_edit_limit,
-        ):
+        with time_machine.travel(time_beyond_edit_limit, tick=False):
             result = self.client_patch(
                 f"/json/messages/{sent_message_id}", {"content": "I actually want pizza."}
             )

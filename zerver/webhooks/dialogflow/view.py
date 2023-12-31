@@ -7,7 +7,8 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
-from zerver.models import UserProfile, get_user
+from zerver.models import UserProfile
+from zerver.models.users import get_user
 
 
 @webhook_view("Dialogflow")

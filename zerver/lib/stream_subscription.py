@@ -163,6 +163,21 @@ def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
     return result
 
 
+def get_users_for_streams(stream_ids: Set[int]) -> Dict[int, Set[UserProfile]]:
+    all_subs = (
+        get_active_subscriptions_for_stream_ids(stream_ids)
+        .select_related("user_profile", "recipient")
+        .order_by("recipient__type_id")
+    )
+
+    result: Dict[int, Set[UserProfile]] = defaultdict(set)
+    for stream_id, rows in itertools.groupby(all_subs, key=lambda obj: obj.recipient.type_id):
+        users = {row.user_profile for row in rows}
+        result[stream_id] = users
+
+    return result
+
+
 def bulk_get_subscriber_peer_info(
     realm: Realm,
     streams: Collection[Stream],

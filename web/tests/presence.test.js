@@ -2,17 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
-const reload_state = mock_esm("../src/reload_state", {
-    is_in_progress: () => false,
-});
-
 const people = zrequire("people");
-const watchdog = zrequire("watchdog");
 const presence = zrequire("presence");
 
 const OFFLINE_THRESHOLD_SECS = 200;
@@ -89,24 +83,15 @@ test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");
 });
 
-test("unknown user", ({override}) => {
+test("unknown user", () => {
     const unknown_user_id = 999;
     const now = 888888;
     const presences = {};
     presences[unknown_user_id.toString()] = "does-not-matter";
 
-    blueslip.expect("error", "Unknown user ID in presence data");
+    // We just skip the unknown user.
     presence.set_info(presences, now);
-
-    // If the server is suspected to be offline or reloading,
-    // then we suppress errors.  The use case here is that we
-    // haven't gotten info for a brand new user yet.
-    watchdog.set_suspect_offline(true);
-    presence.set_info(presences, now);
-
-    watchdog.set_suspect_offline(false);
-    override(reload_state, "is_in_progress", () => true);
-    presence.set_info(presences, now);
+    assert.equal(presence.presence_info.get(unknown_user_id), undefined);
 });
 
 test("status_from_raw", () => {
@@ -221,46 +206,36 @@ test("set_presence_info", () => {
     assert.equal(presence.get_status(jane.user_id), "idle");
 });
 
-test("falsy values", () => {
+test("missing values", () => {
     /*
         When a user does not have a relevant active timestamp,
         the server just leaves off the `active_timestamp` field
         to save bandwidth, which looks like `undefined` to us
         if we try to dereference it.
-
-        Our code should just treat all falsy values the same way,
-        though, to defend against bugs where we say the person
-        was last online in 1970 or silly things like that.
     */
     const now = 2000000;
     const a_bit_ago = now - 5;
     const presences = {};
 
-    for (const falsy_value of [undefined, 0, null]) {
-        presences[zoe.user_id.toString()] = {
-            active_timestamp: falsy_value,
-            idle_timestamp: a_bit_ago,
-        };
+    presences[zoe.user_id.toString()] = {
+        idle_timestamp: a_bit_ago,
+    };
 
-        presence.set_info(presences, now);
+    presence.set_info(presences, now);
 
-        assert.deepEqual(presence.presence_info.get(zoe.user_id), {
-            status: "idle",
-            last_active: a_bit_ago,
-        });
+    assert.deepEqual(presence.presence_info.get(zoe.user_id), {
+        status: "idle",
+        last_active: a_bit_ago,
+    });
 
-        presences[zoe.user_id.toString()] = {
-            active_timestamp: falsy_value,
-            idle_timestamp: falsy_value,
-        };
+    presences[zoe.user_id.toString()] = {};
 
-        presence.set_info(presences, now);
+    presence.set_info(presences, now);
 
-        assert.deepEqual(presence.presence_info.get(zoe.user_id), {
-            status: "offline",
-            last_active: undefined,
-        });
-    }
+    assert.deepEqual(presence.presence_info.get(zoe.user_id), {
+        status: "offline",
+        last_active: undefined,
+    });
 });
 
 test("big realms", ({override_rewire}) => {

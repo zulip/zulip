@@ -1,36 +1,86 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "sponsorship" %}
 
-{% set PAGE_TITLE = "Request Zulip Cloud sponsorship" %}
+{% block title %}
+<title>
+    {% if is_sponsored or is_sponsorship_pending %}
+        Zulip
+        {% if is_remotely_hosted %}
+        {% else %}
+        Cloud
+        {% endif %}
+        billing for {{ org_name }}
+    {% else %}
+        Request Zulip
+        {% if is_remotely_hosted %}
+        {% else %}
+        Cloud
+        {% endif %} sponsorship
+    {% endif %}
+</title>
+{% endblock %}
 
 {% block portico_content %}
 
-{% if is_sponsored %}
+{% if is_sponsored or is_sponsorship_pending %}
 
-<div class="flex full-page thanks-page sponsorship-status-page">
+<div class="register-account flex full-page sponsorship-status-page">
     <div class="center-block new-style">
+        <div class="alert alert-success sponsorship-page-success" id="sponsorship-status-success-message-top">
+            {% if is_sponsored %}
+            Zulip is sponsoring a free <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan for this organization. 🎉
+            {% else %}
+            This organization has requested sponsorship for a
+            {% if sponsorship_plan_name == "Business" %}
+            discounted
+            {% endif %}
+            <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
+            {% endif %}
+        </div>
         <div class="pitch">
-            <h1>Zulip Cloud billing for {{realm_name}}</h1>
+            <h1>
+                Zulip
+                {% if is_remotely_hosted %}
+                {% else %}
+                Cloud
+                {% endif %}
+                billing for {{ org_name }}
+            </h1>
         </div>
         <div class="white-box">
-            <p> Zulip is sponsoring free <a href="/plans/">Zulip Cloud Standard</a> hosting for this organization. 🎉 </p>
+            <div id="sponsorship-status-page-details">
+                <div class="input-box sponsorship-form-field no-validation">
+                    <label for="sponsored-org-current-plan" class="inline-block label-title">Your plan</label>
+                    <div id="sponsored-org-current-plan" class="not-editable-realm-field">
+                        {% if is_sponsored %}
+                        <a href="{{ billing_base_url }}/plans/">
+                        {{ sponsorship_plan_name }}
+                        </a>
+                        {% elif free_trial %}
+                        <a href="{{ billing_base_url }}/plans/">
+                        {{ plan_name -}}
+                        </a> <i>(free trial)</i>
+                        {% elif is_server_on_legacy_plan %}
+                        <a href="{{ billing_base_url }}/plans/">
+                        {{ plan_name.replace(" (legacy plan)", "") -}}
+                        </a> <i>(legacy plan)</i>
+                        {% else %}
+                        <a href="{{ billing_base_url }}/plans/">
+                        {{ plan_name }}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
-{% elif is_sponsorship_pending %}
-
-<div class="flex full-page thanks-page sponsorship-status-page">
-    <div class="center-block new-style">
-        <div class="pitch">
-            <h1>Sponsorship request pending for {{realm_name}}</h1>
-        </div>
-        <div class="white-box">
-            <p> This organization has requested sponsorship for a free or discounted <a href="/plans/">Zulip Cloud Standard</a> plan.</p>
+        {% if is_sponsored %}
+        <hr />
+        <div class="support-link">
             <p>
-                Please feel free to <a href="mailto:support@zulip.com">contact Zulip support</a> with any questions or updates to your request.
+                To make changes to your plan or view your billing history <a href="mailto:support@zulip.com">contact Zulip support</a>.
             </p>
         </div>
+        {% endif %}
     </div>
 </div>
 
@@ -39,20 +89,26 @@
 <div class="register-account flex full-page sponsorship-page">
     <div class="center-block new-style">
         <div class="pitch">
-            <h1>Request Zulip Cloud sponsorship</h1>
+            <h1>
+                Request Zulip
+                {% if is_remotely_hosted %}
+                {% else %}
+                Cloud
+                {% endif %} sponsorship
+            </h1>
         </div>
         <div class="white-box">
             <div id="sponsorship-error" class="alert alert-danger"></div>
             <div id="sponsorship-input-section">
-                <form id="sponsorship-form" method="post">
+                <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}" data-is-remotely-hosted="{{ is_remotely_hosted }}">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-name" class="inline-block label-title">Organization</label>
-                        <div id="org-name" class="not-editable-realm-field">{{ realm_name }}</div>
+                        <div id="org-name" class="not-editable-realm-field">{{ org_name }}</div>
                     </div>
                     <div class="input-box sponsorship-form-field">
                         <div class="inline-block relative">
-                            <select name="organization-type" id="organization-type" class="sponsorship-form-select">
+                            <select name="organization_type" id="organization-type" class="sponsorship-form-select">
                                 {% for org_type in sorted_org_types %}
                                     {% if not org_type[1].hidden %}
                                     <option data-string-value="{{ org_type[0] }}"
@@ -64,9 +120,31 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <label for="organization-type" class="inline-block label-title">Organization type</label>
+                        <label for="organization_type" class="inline-block label-title">
+                            Organization type
+                            {% if is_remotely_hosted %}
+                            <a href="https://zulip.com/help/self-hosted-billing#free-community-plan" target="_blank" rel="noopener noreferrer">
+                                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                            </a>
+                            {% endif %}
+                        </label>
                     </div>
                     <p id="sponsorship-discount-details"></p>
+                    {% if is_remotely_hosted %}
+                    <div class="input-box sponsorship-form-field">
+                        <div class="inline-block relative">
+                            <select name="requested_plan" id="organization-requested-plan" class="sponsorship-form-select">
+                                <option value="Community" selected>
+                                    Community
+                                </option>
+                                <option value="Business">
+                                    Business (discounted)
+                                </option>
+                            </select>
+                        </div>
+                        <label for="organization-requested-plan" class="inline-block label-title">Requested plan</label>
+                    </div>
+                    {% endif %}
                     <div class="input-box sponsorship-form-field no-validation">
                         <label for="org-website" class="inline-block
                           label-title">Organization website (if any)</label>

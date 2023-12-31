@@ -1,7 +1,7 @@
 import logging
-import urllib
 from contextlib import suppress
-from typing import Any, Dict, List, Optional
+from typing import Any, Collection, Dict, List, Optional
+from urllib.parse import unquote
 
 import tornado.web
 from asgiref.sync import sync_to_async
@@ -24,8 +24,8 @@ handlers: Dict[int, "AsyncDjangoHandler"] = {}
 fake_wsgi_container = WSGIContainer(lambda environ, start_response: [])
 
 
-def get_handler_by_id(handler_id: int) -> "AsyncDjangoHandler":
-    return handlers[handler_id]
+def get_handler_by_id(handler_id: int) -> Optional["AsyncDjangoHandler"]:
+    return handlers.get(handler_id)
 
 
 def allocate_handler_id(handler: "AsyncDjangoHandler") -> int:
@@ -37,7 +37,8 @@ def allocate_handler_id(handler: "AsyncDjangoHandler") -> int:
 
 
 def clear_handler_by_id(handler_id: int) -> None:
-    del handlers[handler_id]
+    if handler_id in handlers:
+        del handlers[handler_id]
 
 
 def handler_stats_string() -> str:
@@ -51,12 +52,18 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
         from zerver.lib.request import RequestNotes
         from zerver.middleware import async_request_timer_restart
 
+        # The request handler may have been GC'd by a
+        # on_connection_close elsewhere already, so we have to check
+        # it is still around.
+        handler = get_handler_by_id(handler_id)
+        if handler is None:
+            return
+        request = handler._request
+        assert request is not None
+
         # We call async_request_timer_restart here in case we are
         # being finished without any events (because another
         # get_events request has supplanted this request)
-        handler = get_handler_by_id(handler_id)
-        request = handler._request
-        assert request is not None
         async_request_timer_restart(request)
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
@@ -83,6 +90,8 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
 class AsyncDjangoHandler(tornado.web.RequestHandler):
     handler_id: int
 
+    SUPPORTED_METHODS: Collection[str] = {"GET", "POST", "DELETE"}  # type: ignore[assignment]  # https://github.com/tornadoweb/tornado/pull/3354
+
     @override
     def initialize(self, django_handler: base.BaseHandler) -> None:
         self.django_handler = django_handler
@@ -91,10 +100,18 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         self._auto_finish = False
 
         # Handler IDs are allocated here, and the handler ID map must
-        # be cleared when the handler finishes its response
+        # be cleared when the handler finishes its response.  See
+        # on_finish and on_connection_close.
         self.handler_id = allocate_handler_id(self)
 
         self._request: Optional[HttpRequest] = None
+
+    @override
+    def on_finish(self) -> None:
+        # Note that this only runs on _successful_ requests.  If the
+        # client closes the connection, see on_connection_close,
+        # below.
+        clear_handler_by_id(self.handler_id)
 
     @override
     def __repr__(self) -> str:
@@ -108,7 +125,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # HttpRequest object with the original Tornado request's HTTP
         # headers, parameters, etc.
         environ = fake_wsgi_container.environ(self.request)
-        environ["PATH_INFO"] = urllib.parse.unquote(environ["PATH_INFO"])
+        environ["PATH_INFO"] = unquote(environ["PATH_INFO"])
 
         # Django WSGIRequest setup code that should match logic from
         # Django's WSGIHandler.__call__ before the call to
@@ -182,10 +199,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
                 # For normal/synchronous requests that don't end up
                 # long-polling, we just need to write the HTTP
                 # response that Django prepared for us via Tornado.
-
-                # Mark this handler ID as finished for Zulip's own tracking.
-                clear_handler_by_id(self.handler_id)
-
                 assert isinstance(response, HttpResponse)
                 await self.write_django_response_as_tornado_response(response)
         finally:
@@ -194,10 +207,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
             # resetting the urlconf and any cache/database
             # connections.
             await sync_to_async(response.close, thread_sensitive=True)()
-
-    @override
-    async def head(self, *args: Any, **kwargs: Any) -> None:
-        await self.get(*args, **kwargs)
 
     @override
     async def post(self, *args: Any, **kwargs: Any) -> None:
@@ -211,10 +220,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
     def on_connection_close(self) -> None:
         # Register a Tornado handler that runs when client-side
         # connections are closed to notify the events system.
-        #
-        # TODO: Theoretically, this code should run when you Ctrl-C
-        # curl to cause it to break a `GET /events` connection, but
-        # that seems to no longer run this code.  Investigate what's up.
+
+        # If the client goes away, garbage collect the handler (with
+        # attached request information).
+        clear_handler_by_id(self.handler_id)
         client_descriptor = get_descriptor_by_handler_id(self.handler_id)
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)

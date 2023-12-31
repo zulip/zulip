@@ -42,9 +42,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVlud2I2a3p1RThsbzZGU3ptSGRZNmVMVHMxek1lLDkwMDkwMzM30200UMWq3mri?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBRGF4WTJXQzI5MW5EQzBSRkt1RWFmQzNTV09TLDkzNDQ3MTY00200lCwDruej?s=ap",
       "id": "in_NORMALIZED00000000000004",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVlud2I2a3p1RThsbzZGU3ptSGRZNmVMVHMxek1lLDkwMDkwMzM30200UMWq3mri/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBRGF4WTJXQzI5MW5EQzBSRkt1RWFmQzNTV09TLDkzNDQ3MTY00200lCwDruej/pdf?s=ap",
       "last_finalization_error": null,
       "latest_revision": null,
       "lines": {
@@ -156,7 +156,7 @@
       "total_excluding_tax": 36830,
       "total_tax_amounts": [],
       "transfer_data": null,
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -200,9 +200,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVluZjFQeVlZcER3MDBDUE82Q29YME9nU0ZFcVY1LDkwMDkwMzM30200qJw3TWsz?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBcVY1MDN1d2paM0xObmg3bTFmUmVjdzlDdnluLDkzNDQ3MTY00200tDAtvZX5?s=ap",
       "id": "in_NORMALIZED00000000000003",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVluZjFQeVlZcER3MDBDUE82Q29YME9nU0ZFcVY1LDkwMDkwMzM30200qJw3TWsz/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBcVY1MDN1d2paM0xObmg3bTFmUmVjdzlDdnluLDkzNDQ3MTY00200tDAtvZX5/pdf?s=ap",
       "last_finalization_error": null,
       "latest_revision": null,
       "lines": {
@@ -408,9 +408,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVludzhEWmlzQzhZQkR5VkN0anZjNTJYaTVGRmRVLDkwMDkwMzM30200pdCLTQwB?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBanFqMUliZzFxSnFGZU0xYjd0TWlibFBsakI5LDkzNDQ3MTY00200Uc1gWc0I?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVludzhEWmlzQzhZQkR5VkN0anZjNTJYaTVGRmRVLDkwMDkwMzM30200pdCLTQwB/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBanFqMUliZzFxSnFGZU0xYjd0TWlibFBsakI5LDkzNDQ3MTY00200Uc1gWc0I/pdf?s=ap",
       "last_finalization_error": null,
       "latest_revision": null,
       "lines": {
@@ -566,9 +566,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVluTHJvZFg5d00wVnNvZXBFbjV2dVRtaFZEZXkyLDkwMDkwMzM30200mXeRUhVK?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBT2dFQXVwclJNM0lTZ2JmaklEd3l5ZzdHenhLLDkzNDQ3MTY00200foCFl3DK?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9PeVluTHJvZFg5d00wVnNvZXBFbjV2dVRtaFZEZXkyLDkwMDkwMzM30200mXeRUhVK/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBT2dFQXVwclJNM0lTZ2JmaklEd3l5ZzdHenhLLDkzNDQ3MTY00200foCFl3DK/pdf?s=ap",
       "last_finalization_error": null,
       "latest_revision": null,
       "lines": {

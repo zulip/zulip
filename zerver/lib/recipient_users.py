@@ -3,7 +3,9 @@ from typing import Dict, Optional, Sequence
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-from zerver.models import Recipient, UserProfile, get_or_create_huddle, is_cross_realm_bot_email
+from zerver.models import Recipient, UserProfile
+from zerver.models.recipients import get_or_create_huddle
+from zerver.models.users import is_cross_realm_bot_email
 
 
 def get_recipient_from_user_profiles(

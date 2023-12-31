@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 
 /*
    Our test from an earlier example verifies that the update events
@@ -85,7 +85,7 @@ function test_helper({override}) {
 run_test("insert_message", ({override}) => {
     message_store.clear_for_testing();
 
-    override(pm_list, "update_private_messages", () => {});
+    override(pm_list, "update_private_messages", noop);
 
     const helper = test_helper({override});
 

@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 import orjson
 from django.conf import settings
@@ -8,8 +8,11 @@ from typing_extensions import override
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.send_email import send_custom_email
+from zerver.lib.send_email import send_custom_email, send_custom_server_email
 from zerver.models import Realm, UserProfile
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 
 class Command(ZulipBaseCommand):
@@ -42,11 +45,6 @@ class Command(ZulipBaseCommand):
             action="store_true",
             help="Send to all organization administrators of sponsored organizations.",
         )
-        targets.add_argument(
-            "--json-file",
-            help="Load the JSON file, and send to the users whose ids are the keys in that dict; "
-            "the context for each email will be extended by each value in the dict.",
-        )
         self.add_user_list_args(
             targets,
             help="Email addresses of user(s) to send emails to.",
@@ -55,6 +53,15 @@ class Command(ZulipBaseCommand):
         # Realm is only required for --users and --all-users, so it is
         # not mutually exclusive with the rest of the above.
         self.add_realm_args(parser)
+
+        # This is an additional filter on the above.  It ideally would
+        # be in the mutually-exclusive set, but we would like to reuse
+        # it with --remote-servers
+        parser.add_argument(
+            "--json-file",
+            help="Load the JSON file, and send to the users whose ids are the keys in that dict; "
+            "the context for each email will be extended by each value in the dict.",
+        )
 
         # This is an additional filter which is composed with the above
         parser.add_argument(
@@ -86,10 +93,40 @@ class Command(ZulipBaseCommand):
         )
 
     @override
-    def handle(self, *args: Any, **options: str) -> None:
-        target_emails: List[str] = []
+    def handle(
+        self, *args: Any, dry_run: bool = False, admins_only: bool = False, **options: str
+    ) -> None:
         users: QuerySet[UserProfile] = UserProfile.objects.none()
         add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None
+
+        if options["remote_servers"]:
+            servers = RemoteZulipServer.objects.filter(deactivated=False)
+            add_server_context = None
+            if options["json_file"]:
+                with open(options["json_file"]) as f:
+                    server_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
+                servers = RemoteZulipServer.objects.filter(
+                    id__in=[int(server_id) for server_id in server_data]
+                )
+
+                def add_server_context_from_dict(
+                    context: Dict[str, object], server: RemoteZulipServer
+                ) -> None:
+                    context.update(server_data.get(str(server.id), {}))
+
+                add_server_context = add_server_context_from_dict
+
+            send_custom_server_email(
+                servers,
+                dry_run=dry_run,
+                options=options,
+                add_context=add_server_context,
+            )
+            if dry_run:
+                print("Would send the above email to:")
+                for server in servers:
+                    print(f"  {server.contact_email} ({server.hostname})")
+            return
 
         if options["entire_server"]:
             users = UserProfile.objects.filter(
@@ -111,16 +148,7 @@ class Command(ZulipBaseCommand):
                 context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
 
             add_context = add_marketing_unsubscribe
-        elif options["remote_servers"]:
-            from zilencer.models import RemoteZulipServer
 
-            target_emails = list(
-                set(
-                    RemoteZulipServer.objects.filter(deactivated=False).values_list(
-                        "contact_email", flat=True
-                    )
-                )
-            )
         elif options["all_sponsored_org_admins"]:
             # Sends at most one copy to each email address, even if it
             # is an administrator in several organizations.
@@ -136,19 +164,22 @@ class Command(ZulipBaseCommand):
                 realm__deactivated=False,
                 realm__in=sponsored_realms,
             ).distinct("delivery_email")
-        elif options["json_file"]:
+        else:
+            realm = self.get_realm(options)
+            users = self.get_users(options, realm, is_bot=False)
+
+        if options["json_file"]:
             with open(options["json_file"]) as f:
                 user_data: Dict[str, Dict[str, object]] = orjson.loads(f.read())
-            users = UserProfile.objects.filter(id__in=[int(user_id) for user_id in user_data])
+            users = users.filter(id__in=[int(user_id) for user_id in user_data])
 
             def add_context_from_dict(context: Dict[str, object], user: UserProfile) -> None:
                 context.update(user_data.get(str(user.id), {}))
 
             add_context = add_context_from_dict
 
-        else:
-            realm = self.get_realm(options)
-            users = self.get_users(options, realm, is_bot=False)
+        if admins_only:
+            users = users.filter(is_realm_admin=True)
 
         # Only email users who've agreed to the terms of service.
         if settings.TERMS_OF_SERVICE_VERSION is not None:
@@ -156,12 +187,13 @@ class Command(ZulipBaseCommand):
                 Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
             )
         send_custom_email(
-            users, target_emails=target_emails, options=options, add_context=add_context
+            users,
+            dry_run=dry_run,
+            options=options,
+            add_context=add_context,
         )
 
-        if options["dry_run"]:
+        if dry_run:
             print("Would send the above email to:")
             for user in users:
                 print(f"  {user.delivery_email} ({user.realm.string_id})")
-            for email in target_emails:
-                print(f"  {email}")

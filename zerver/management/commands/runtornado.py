@@ -5,11 +5,9 @@ from contextlib import AsyncExitStack
 from typing import Any
 from urllib.parse import SplitResult
 
-import __main__
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
-from tornado import autoreload
 from tornado.platform.asyncio import AsyncIOMainLoop
 from typing_extensions import override
 
@@ -41,6 +39,7 @@ class Command(BaseCommand):
 
     @override
     def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument("--autoreload", action="store_true", help="Enable Tornado autoreload")
         parser.add_argument(
             "addrport",
             help="[port number or ipaddr:port]",
@@ -98,6 +97,9 @@ class Command(BaseCommand):
                 set_current_port(port)
                 translation.activate(settings.LANGUAGE_CODE)
 
+                if settings.CUSTOM_DEVELOPMENT_SETTINGS:
+                    print("Using custom settings from zproject/custom_dev_settings.py.")
+
                 # We pass display_num_errors=False, since Django will
                 # likely display similar output anyway.
                 self.check(display_num_errors=False)
@@ -114,7 +116,7 @@ class Command(BaseCommand):
                     )
 
                 # Application is an instance of Django's standard wsgi handler.
-                application = create_tornado_application()
+                application = create_tornado_application(autoreload=options["autoreload"])
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application, xheaders=True)
@@ -131,14 +133,6 @@ class Command(BaseCommand):
                 if settings.USING_RABBITMQ:
                     setup_tornado_rabbitmq(queue_client)
 
-                if hasattr(__main__, "add_reload_hook"):
-                    autoreload.start()
-
                 await stop_fut
-
-                # Monkey patch tornado.autoreload to prevent it from continuing
-                # to watch for changes after catching our SystemExit. Otherwise
-                # the user needs to press Ctrl+C twice.
-                __main__.wait = lambda: None
 
         async_to_sync(inner_run, force_new_loop=True)()

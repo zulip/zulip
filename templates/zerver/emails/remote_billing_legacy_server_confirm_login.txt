@@ -1,0 +1,8 @@
+{% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Zulip plan for {{ remote_server_hostname }}.{% endtrans %}
+
+
+{% trans %}Click the link below to log in.{% endtrans %} {% trans %}This link will expire in {{ validity_in_hours }} hours.{% endtrans %}
+
+{{ _("Log in") }}: {{ confirmation_url }}
+
+{% trans %}Questions? Learn more at {{ billing_help_link }} or contact {{ billing_contact_email }}.{% endtrans %}

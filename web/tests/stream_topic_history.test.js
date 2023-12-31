@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 
 const channel = mock_esm("../src/channel");
 const message_util = mock_esm("../src/message_util");
@@ -320,11 +320,11 @@ test("server_history_end_to_end", () => {
         get_error_callback = opts.error;
     };
 
-    stream_topic_history_util.get_server_history(stream_id, () => {});
+    stream_topic_history_util.get_server_history(stream_id, noop);
 
     // Another call. Early return because a request is already in progress
     // for stream_id = 99. This function call adds coverage.
-    stream_topic_history_util.get_server_history(stream_id, () => {});
+    stream_topic_history_util.get_server_history(stream_id, noop);
     assert.ok(stream_topic_history.is_request_pending_for(stream_id));
 
     get_error_callback();

@@ -75,6 +75,7 @@ import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navbar_help_menu from "./navbar_help_menu";
 import * as navigate from "./navigate";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -494,6 +495,7 @@ export function initialize_everything() {
     }
 
     i18n.initialize(i18n_params);
+    timerender.initialize();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
@@ -609,7 +611,6 @@ export function initialize_everything() {
     copy_and_paste.initialize();
     overlays.initialize();
     invite.initialize();
-    timerender.initialize();
     message_view_header.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);
@@ -667,7 +668,11 @@ export function initialize_everything() {
 
     initialize_unread_ui();
     activity.initialize();
-    activity_ui.initialize();
+    activity_ui.initialize({
+        narrow_by_email(email) {
+            narrow.by("dm", email, {trigger: "sidebar"});
+        },
+    });
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
@@ -688,6 +693,7 @@ export function initialize_everything() {
     });
     drafts.initialize();
     drafts_overlay_ui.initialize();
+    onboarding_steps.initialize();
     hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();

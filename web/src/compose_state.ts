@@ -7,6 +7,7 @@ import * as sub_store from "./sub_store";
 
 let message_type: "stream" | "private" | false = false;
 let recipient_edited_manually = false;
+let last_focused_compose_type_input: HTMLInputElement | false = false; // an HTML input element or false-y
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -22,6 +23,14 @@ export function set_recipient_edited_manually(flag: boolean): void {
 
 export function is_recipient_edited_manually(): boolean {
     return recipient_edited_manually;
+}
+
+export function set_last_focused_compose_type_input(element: HTMLInputElement): void {
+    last_focused_compose_type_input = element;
+}
+
+export function get_last_focused_compose_type_input(): HTMLInputElement | false {
+    return last_focused_compose_type_input;
 }
 
 export function set_message_type(msg_type: "stream" | "private" | false): void {
@@ -95,7 +104,7 @@ export function stream_id(): number | undefined {
 export function stream_name(): string {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
-        return sub_store.maybe_get_stream_name(stream_id) || "";
+        return sub_store.maybe_get_stream_name(stream_id) ?? "";
     }
     return "";
 }

@@ -1809,16 +1809,16 @@ button {
     color: hsl(0deg 0% 100%);
 }
 
-.pricing-model .pricing-container {
+.for-education-pricing-model .pricing-container {
     text-align: center;
 }
 
-.pricing-model .pricing-container .block {
+.for-education-pricing-model .pricing-container .block {
     display: inline-block;
     margin: 40px 20px 20px;
 }
 
-.pricing-model .pricing-container .block .plan-title {
+.for-education-pricing-model .pricing-container .block .plan-title {
     padding: 10px;
     margin-bottom: 3px;
 
@@ -1828,33 +1828,15 @@ button {
     font-weight: 300;
 }
 
-.pricing-model .pricing-container .price-box {
-    position: relative;
-    display: inline-block;
-    vertical-align: bottom;
-    margin: 0;
-    width: 300px;
-    height: 500px;
-
-    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
-
-    text-align: left;
-    background-color: hsl(0deg 0% 100%);
-
-    transition-property: all;
-    transition-duration: 0.3s;
-    transition-timing-function: ease;
-}
-
-.pricing-model .pricing-container .text-content {
+.for-education-pricing-model .pricing-container .text-content {
     margin: 18px;
 }
 
-.pricing-model .padded-content .text-header .text-content h1 {
+.for-education-pricing-model .padded-content .text-header .text-content h1 {
     margin-top: 0;
 }
 
-.pricing-model .pricing-container .text-content h2 {
+.for-education-pricing-model .pricing-container .text-content h2 {
     font-size: 1.5em;
     font-weight: 400;
     margin-bottom: 0;
@@ -1862,25 +1844,25 @@ button {
     text-align: left;
 }
 
-.pricing-model .pricing-container hr {
+.for-education-pricing-model .pricing-container hr {
     border: none;
     border-bottom: 2px solid hsl(170deg 47% 53%);
     margin: 15px 0;
 }
 
-.pricing-model .pricing-container .text-content .description {
+.for-education-pricing-model .pricing-container .text-content .description {
     font-size: 0.9em;
     font-weight: 400;
     color: hsl(0deg 0% 53%);
 }
 
-.pricing-model .pricing-container ul.feature-list {
+.for-education-pricing-model .pricing-container ul.feature-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.pricing-model .pricing-container ul.feature-list li {
+.for-education-pricing-model .pricing-container ul.feature-list li {
     position: relative;
     padding: 10px 0 10px 25px;
 
@@ -1888,7 +1870,7 @@ button {
     font-weight: 400;
 }
 
-.pricing-model .pricing-container ul.feature-list li::before {
+.for-education-pricing-model .pricing-container ul.feature-list li::before {
     content: " ";
     position: absolute;
     top: 10px;
@@ -1904,7 +1886,7 @@ button {
     filter: invert(0.3);
 }
 
-.pricing-model .pricing-container .bottom {
+.for-education-pricing-model .pricing-container .bottom {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -1913,7 +1895,7 @@ button {
     background-color: hsl(0deg 0% 93%);
 }
 
-.pricing-model .pricing-container .text-content .price::before {
+.for-education-pricing-model .pricing-container .text-content .price::before {
     content: "$";
     position: relative;
     vertical-align: top;
@@ -1925,7 +1907,7 @@ button {
     color: hsl(0deg 0% 53%);
 }
 
-.pricing-model .pricing-container .text-content .price {
+.for-education-pricing-model .pricing-container .text-content .price {
     display: inline-block;
     margin-right: 2px;
 
@@ -1935,7 +1917,7 @@ button {
     margin-top: 4px;
 }
 
-.pricing-model .pricing-container .bottom .details {
+.for-education-pricing-model .pricing-container .bottom .details {
     display: inline-block;
     vertical-align: top;
     margin-left: 8px;
@@ -1949,7 +1931,7 @@ button {
     white-space: nowrap;
 }
 
-.pricing-model .pricing-container .bottom .button {
+.for-education-pricing-model .pricing-container .bottom .button {
     margin-top: 24px;
     display: block;
     text-align: center;
@@ -1959,16 +1941,19 @@ button {
     transition: all 0.3s ease;
 }
 
-.pricing-model .pricing-container .price-box:focus {
+.for-education-pricing-model .pricing-container .price-box:focus {
     outline: none;
 }
 
-.pricing-model .pricing-container .price-box:focus .button {
+.for-education-pricing-model .pricing-container .price-box:focus .button {
     box-shadow: 0 0 25px hsl(169deg 48% 60%);
     animation: box-shadow-pulse 2s infinite;
 }
 
-.pricing-model .pricing-container .text-content .standard-price-box {
+.for-education-pricing-model
+    .pricing-container
+    .text-content
+    .standard-price-box {
     display: flex;
     height: 55px;
 
@@ -1977,7 +1962,11 @@ button {
     }
 }
 
-.pricing-model .pricing-container .text-content .price .price-cents {
+.for-education-pricing-model
+    .pricing-container
+    .text-content
+    .price
+    .price-cents {
     font-size: 0.4em;
     vertical-align: top;
     position: relative;
@@ -2090,7 +2079,7 @@ button {
 }
 
 @media (width <= 1376px) {
-    .portico-landing.plans .price-box {
+    .portico-landing.plans .for-education-pricing-model .price-box {
         margin: 20px;
     }
 }
@@ -2262,7 +2251,8 @@ button {
         width: 100%;
     }
 
-    .portico-landing.why-page .padded-content {
+    .portico-landing.why-page .padded-content,
+    .portico-landing.why-page .for-education-pricing-model .padded-content {
         padding: 50px 20px;
     }
 
@@ -2478,7 +2468,7 @@ button {
 }
 
 @media (width <= 450px) {
-    .portico-landing.plans .price-box {
+    .portico-landing.plans .for-education-pricing-model .price-box {
         display: inline-flex;
         flex-direction: column;
         min-height: 500px;
@@ -2488,11 +2478,11 @@ button {
         margin: 10px 0;
     }
 
-    .pricing-model .pricing-container .text-content {
+    .for-education-pricing-model .pricing-container .text-content {
         flex: 1;
     }
 
-    .pricing-model .pricing-container .bottom {
+    .for-education-pricing-model .pricing-container .bottom {
         position: static;
         height: auto;
     }
@@ -2957,7 +2947,7 @@ button {
     }
 }
 
-.solutions-page .pricing-model {
+.solutions-page .for-education-pricing-model {
     .padded-content {
         padding-bottom: 10px;
     }
@@ -2973,14 +2963,28 @@ button {
     }
 }
 
-.for-education.pricing-model {
+.for-education-pricing-model {
     .pricing-details {
         color: inherit;
         font-style: inherit;
     }
 
     .price-box {
+        position: relative;
+        display: inline-block;
+        vertical-align: bottom;
+        margin: 0;
+        width: 300px;
         height: 625px;
+
+        box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
+
+        text-align: left;
+        background-color: hsl(0deg 0% 100%);
+
+        transition-property: all;
+        transition-duration: 0.3s;
+        transition-timing-function: ease;
 
         .bottom {
             height: 275px;
@@ -3057,7 +3061,7 @@ button {
             max-width: 800px;
         }
 
-        .pricing-model {
+        .for-education-pricing-model {
             @media (width >= 768px) {
                 .price-box {
                     margin: 10px;
@@ -3264,7 +3268,7 @@ button {
         }
     }
 
-    .for-education.pricing-model .pricing-container .price-box {
+    .for-education-pricing-model .pricing-container .price-box {
         height: 525px;
 
         .bottom {

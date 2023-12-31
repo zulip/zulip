@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
@@ -105,7 +105,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(!compose_validate.validate_stream_message_address_info("social"));
     assert.ok(user_not_subscribed_rendered);
 
-    page_params.narrow_stream = false;
+    page_params.narrow_stream = "social";
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "social");
         payload.data.subscribed = true;
@@ -130,6 +130,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.stream_does_not_exist);
         assert.equal(data.stream_name, "Frontend");
         stream_does_not_exist_rendered = true;
+        return "<banner-stub>";
     });
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "Frontend");
@@ -143,6 +144,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         assert.equal(data.classname, "subscription_error");
         assert.equal(data.banner_text, $t({defaultMessage: "Error checking subscription."}));
         subscription_error_rendered = true;
+        return "<banner-stub>";
     });
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "social");
@@ -164,13 +166,13 @@ test_ui("validate", ({mock_template}) => {
         $("#private_message_recipient")[0] = {};
         $("#private_message_recipient").set_parent($pm_pill_container);
         $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-        $("#private_message_recipient").before = () => {};
+        $("#private_message_recipient").before = noop;
 
         compose_pm_pill.initialize({
             on_pill_create_or_remove: compose_recipient.update_placeholder_text,
         });
 
-        $("#zephyr-mirror-error").is = () => {};
+        $("#zephyr-mirror-error").is = noop;
 
         mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
 
@@ -195,6 +197,7 @@ test_ui("validate", ({mock_template}) => {
             $t({defaultMessage: "Please specify at least one valid recipient."}),
         );
         pm_recipient_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
@@ -215,6 +218,7 @@ test_ui("validate", ({mock_template}) => {
             $t({defaultMessage: "You cannot send messages to deactivated users."}),
         );
         deactivated_user_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
@@ -240,6 +244,7 @@ test_ui("validate", ({mock_template}) => {
             );
             zephyr_error_rendered = true;
         }
+        return "<banner-stub>";
     });
     initialize_pm_pill();
     compose_state.private_message_recipient("welcome-bot@example.com");
@@ -274,6 +279,7 @@ test_ui("validate", ({mock_template}) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
         assert.equal(data.banner_text, $t({defaultMessage: "Please specify a stream."}));
         empty_stream_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(empty_stream_error_rendered);
@@ -294,6 +300,7 @@ test_ui("validate", ({mock_template}) => {
             $t({defaultMessage: "Topics are required in this organization."}),
         );
         missing_topic_error_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(missing_topic_error_rendered);
@@ -324,7 +331,7 @@ test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
-test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
+test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     page_params.user_id = me.user_id;
 
     // First, check for large streams (>15 subscribers) where the wildcard mention
@@ -335,39 +342,39 @@ test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
         settings_config.wildcard_mention_policy_values.by_everyone.code;
     page_params.is_guest = true;
     page_params.is_admin = false;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.nobody.code;
     page_params.is_admin = true;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_members.code;
     page_params.is_guest = true;
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.is_guest = false;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_moderators_only.code;
     page_params.is_moderator = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     page_params.is_moderator = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_admins_only.code;
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // TODO: Add a by_admins_only case when we implement stream-level administrators.
 
     page_params.is_admin = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_full_members.code;
@@ -375,9 +382,9 @@ test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
     person.date_joined = new Date(Date.now());
     page_params.realm_waiting_period_threshold = 10;
 
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
     page_params.is_admin = false;
-    assert.ok(!compose_validate.wildcard_mention_allowed());
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // Now, check for small streams (<=15 subscribers) where the wildcard mention
     // policy doesn't matter; everyone is allowed to use wildcard mentions.
@@ -386,7 +393,7 @@ test_ui("test_wildcard_mention_allowed", ({override_rewire}) => {
         settings_config.wildcard_mention_policy_values.by_admins_only.code;
     page_params.is_admin = false;
     page_params.is_guest = true;
-    assert.ok(compose_validate.wildcard_mention_allowed());
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
 test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
@@ -413,32 +420,28 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(stream_id, 101);
         return 16;
     });
-    let wildcard_warning_rendered = false;
+    let stream_wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
-    mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
-        wildcard_warning_rendered = true;
+    mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
+        stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
+        return "<banner-stub>";
     });
 
-    override_rewire(compose_validate, "wildcard_mention_allowed_in_large_stream", () => true);
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(wildcard_warning_rendered);
+    assert.ok(stream_wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+    mock_template("compose_banner/wildcard_mention_not_allowed_error.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage:
-                    "You do not have permission to use wildcard mentions in this stream.",
-            }),
-        );
+        assert.equal(data.stream_wildcard_mention, "all");
         wildcards_not_allowed_rendered = true;
+        return "<banner-stub>";
     });
-    override_rewire(compose_validate, "wildcard_mention_allowed_in_large_stream", () => false);
+    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => false);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });
@@ -471,6 +474,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
@@ -515,6 +519,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
@@ -550,6 +555,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
@@ -561,7 +567,6 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
 
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
-    const $send_button = $("#compose-send-button");
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
@@ -572,6 +577,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
             }),
         );
         banner_rendered = true;
+        return "<banner-stub>";
     });
 
     // Indicator should show red colored text
@@ -585,7 +591,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.equal(limit_indicator_html, "10001&ZeroWidthSpace;/10000\n");
     assert.ok($textarea.hasClass("over_limit"));
     assert.ok(banner_rendered);
-    assert.ok($send_button.prop("disabled"));
+    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator should show orange colored text
     banner_rendered = false;
@@ -594,7 +600,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "9001&ZeroWidthSpace;/10000\n");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!$send_button.prop("disabled"));
+    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(!banner_rendered);
 
     // Indicator must be empty
@@ -665,7 +671,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
         assert.equal(data.stream_name, "Denmark");
         banner_rendered = true;
-        return "private_stream_warning_stub";
+        return "<banner-stub>";
     });
 
     function test_noop_case(invite_only) {
@@ -715,6 +721,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         assert.equal(data.stream_id, 111);
         assert.equal(data.name, "Foo Barson");
         new_banner_rendered = true;
+        return "<banner-stub>";
     });
 
     function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
@@ -802,7 +809,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
             }),
         );
         error_shown = true;
-        return "topic_resolved_warning_stub";
+        return "<banner-stub>";
     });
 
     const sub = {

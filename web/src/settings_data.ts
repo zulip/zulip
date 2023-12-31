@@ -19,24 +19,6 @@ export function initialize(current_user_join_date: Date): void {
     about page_params and settings_config details.
 */
 
-export type TimePreferences = {
-    timezone: string;
-    format: string;
-};
-
-export function get_time_preferences(user_timezone: string): TimePreferences {
-    if (user_settings.twenty_four_hour_time) {
-        return {
-            timezone: user_timezone,
-            format: "H:mm",
-        };
-    }
-    return {
-        timezone: user_timezone,
-        format: "h:mm a",
-    };
-}
-
 export function user_can_change_name(): boolean {
     if (page_params.is_admin) {
         return true;
@@ -262,6 +244,17 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
     }
 
     return bot_type.name;
+}
+
+export function user_can_access_all_other_users(): boolean {
+    if (!page_params.user_id) {
+        return true;
+    }
+
+    return user_groups.is_user_in_group(
+        page_params.realm_can_access_all_users_group,
+        page_params.user_id,
+    );
 }
 
 /* istanbul ignore next */
