@@ -41,10 +41,9 @@ export function maybe_disable_widgets() {
 
 let display_in_profile_summary_fields_limit_reached = false;
 let order = [];
-const field_types = page_params.custom_profile_field_types;
 
 export function field_type_id_to_string(type_id) {
-    for (const field_type of Object.values(field_types)) {
+    for (const field_type of Object.values(page_params.custom_profile_field_types)) {
         if (field_type.id === type_id) {
             // Few necessary modifications in field-type-name for
             // table-list view of custom fields UI in org settings
@@ -61,6 +60,7 @@ export function field_type_id_to_string(type_id) {
 
 // Checking custom profile field type is valid for showing display on user card checkbox field.
 function is_valid_to_display_in_summary(field_type) {
+    const field_types = page_params.custom_profile_field_types;
     if (field_type === field_types.LONG_TEXT.id || field_type === field_types.USER.id) {
         return false;
     }
@@ -163,6 +163,8 @@ function create_choice_row(container) {
 }
 
 function clear_form_data() {
+    const field_types = page_params.custom_profile_field_types;
+
     $("#profile_field_name").val("").closest(".input-group").show();
     $("#profile_field_hint").val("").closest(".input-group").show();
     // Set default type "Short text" in field type dropdown
@@ -181,6 +183,8 @@ function clear_form_data() {
 }
 
 function set_up_create_field_form() {
+    const field_types = page_params.custom_profile_field_types;
+
     // Hide error on field type change.
     $("#dialog_error").hide();
     const $field_elem = $("#profile_field_external_accounts");
@@ -233,6 +237,8 @@ function set_up_create_field_form() {
 }
 
 function read_field_data_from_form(field_type_id, $profile_field_form, old_field_data) {
+    const field_types = page_params.custom_profile_field_types;
+
     // Only read field data if we are creating a select field
     // or external account field.
     if (field_type_id === field_types.SELECT.id) {
@@ -428,6 +434,8 @@ function set_up_select_field_edit_form($profile_field_form, field_data) {
 }
 
 function open_edit_form_modal(e) {
+    const field_types = page_params.custom_profile_field_types;
+
     const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
     const field = get_profile_field(field_id);
 
@@ -619,6 +627,8 @@ export function populate_profile_fields(profile_fields_data) {
 }
 
 export function do_populate_profile_fields(profile_fields_data) {
+    const field_types = page_params.custom_profile_field_types;
+
     // We should only call this internally or from tests.
     const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
 
@@ -681,6 +691,8 @@ export function do_populate_profile_fields(profile_fields_data) {
 }
 
 function set_up_select_field() {
+    const field_types = page_params.custom_profile_field_types;
+
     create_choice_row("#profile_field_choices");
 
     if (page_params.is_admin) {
