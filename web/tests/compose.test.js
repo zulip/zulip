@@ -327,6 +327,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             assert.equal(data.classname, "generic_compose_error");
             assert.equal(data.banner_text, "Error sending message: Server says 408");
             banner_rendered = true;
+            return "<banner-stub>";
         });
         stub_state = initialize_state_stub_dict();
         $("textarea#compose-textarea").val("foobarfoobar");

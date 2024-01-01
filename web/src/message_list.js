@@ -1,5 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
@@ -131,7 +132,9 @@ export class MessageList {
             // message. Regardless of whether the messages are new or
             // old, we want to select a message as though we just
             // entered this view.
-            this.select_id(this.first_unread_message_id(), {then_scroll: true, use_closest: true});
+            const first_unread_message_id = this.first_unread_message_id();
+            assert(first_unread_message_id !== undefined);
+            this.select_id(first_unread_message_id, {then_scroll: true, use_closest: true});
         }
 
         return render_info;

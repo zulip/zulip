@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import type {Term} from "./filter";
 import type {GroupPermissionSetting} from "./types";
 
 const t1 = performance.now();
@@ -23,9 +24,9 @@ export const page_params: {
     }[];
     delivery_email: string;
     development_environment: boolean;
+    furthest_read_time: number | null;
     is_admin: boolean;
     is_billing_admin: boolean;
-    is_bot: boolean;
     is_guest: boolean;
     is_moderator: boolean;
     is_owner: boolean;
@@ -34,15 +35,17 @@ export const page_params: {
         code: string;
         locale: string;
         name: string;
-        percent_translated: number | undefined;
+        percent_translated?: number;
     }[];
     login_page: string;
     max_avatar_file_size_mib: number;
     max_icon_file_size_mib: number;
     max_logo_file_size_mib: number;
+    max_message_id: number;
     muted_users: {id: number; timestamp: number}[];
+    narrow?: Term[];
+    narrow_stream?: string;
     needs_tutorial: boolean;
-    page_load_time: number;
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
     realm_available_video_chat_providers: {
@@ -62,6 +65,7 @@ export const page_params: {
     realm_description: string;
     realm_edit_topic_policy: number;
     realm_email_changes_disabled: boolean;
+    realm_enable_guest_user_indicator: boolean;
     realm_enable_spectator_access: boolean;
     realm_icon_source: string;
     realm_icon_url: string;
@@ -81,8 +85,7 @@ export const page_params: {
     realm_plan_type: number;
     realm_private_message_policy: number;
     realm_push_notifications_enabled: boolean;
-    realm_sentry_key: string | undefined;
-    realm_enable_guest_user_indicator: boolean;
+    realm_sentry_key?: string;
     realm_upload_quota_mib: number | null;
     realm_uri: string;
     realm_user_group_edit_policy: number;
@@ -94,10 +97,10 @@ export const page_params: {
     server_name_changes_disabled: boolean;
     server_needs_upgrade: boolean;
     server_presence_offline_threshold_seconds: number;
-    server_sentry_dsn: string | undefined;
-    server_sentry_environment: string | undefined;
-    server_sentry_sample_rate: number | undefined;
-    server_sentry_trace_rate: number | undefined;
+    server_sentry_dsn: string | null;
+    server_sentry_environment?: string;
+    server_sentry_sample_rate?: number;
+    server_sentry_trace_rate?: number;
     server_supported_permission_settings: {
         realm: Record<string, GroupPermissionSetting>;
         stream: Record<string, GroupPermissionSetting>;
@@ -109,7 +112,7 @@ export const page_params: {
     show_webathena: boolean;
     sponsorship_pending: boolean;
     translation_data: Record<string, string>;
-    user_id: number | undefined;
+    user_id: number;
     zulip_merge_base: string;
     zulip_plan_is_not_limited: boolean;
     zulip_version: string;

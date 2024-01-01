@@ -64,9 +64,7 @@ async function navigate_to_private_messages(page: Page): Promise<void> {
 }
 
 async function test_reload_hash(page: Page): Promise<void> {
-    const initial_page_load_time = await page.evaluate(
-        (): number => zulip_test.page_params.page_load_time,
-    );
+    const initial_page_load_time = await page.evaluate((): number => zulip_test.page_load_time);
     console.log(`initial load time: ${initial_page_load_time}`);
 
     const initial_hash = await page.evaluate(() => window.location.hash);
@@ -75,7 +73,7 @@ async function test_reload_hash(page: Page): Promise<void> {
     await page.waitForNavigation();
     await page.waitForSelector("#zfilt", {visible: true});
 
-    const page_load_time = await page.evaluate(() => zulip_test.page_params.page_load_time);
+    const page_load_time = await page.evaluate(() => zulip_test.page_load_time);
     assert.ok(page_load_time > initial_page_load_time, "Page not reloaded.");
 
     const hash = await page.evaluate(() => window.location.hash);

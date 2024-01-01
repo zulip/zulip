@@ -2,19 +2,16 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import {page_params} from "./page_params";
 
-function truncate_precision(float) {
+function truncate_precision(float: number): number {
     return Number.parseFloat(float.toFixed(3));
 }
 
 export const get_next_id_float = (function () {
     const already_used = new Set();
 
-    return function () {
+    return function (): number | undefined {
         const local_id_increment = 0.01;
-        let latest = page_params.max_message_id;
-        if (all_messages_data.last() !== undefined) {
-            latest = all_messages_data.last().id;
-        }
+        let latest = all_messages_data.last()?.id ?? page_params.max_message_id;
         latest = Math.max(0, latest);
         const local_id_float = truncate_precision(latest + local_id_increment);
 

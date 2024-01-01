@@ -8,7 +8,7 @@ import time_machine
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import RealmBillingSession, add_months
+from corporate.lib.stripe import RealmBillingSession, RemoteRealmBillingSession, add_months
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -54,6 +54,41 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 requested_plan=plan,
             )
 
+        def add_legacy_plan_and_upgrade(name: str) -> None:
+            legacy_anchor = datetime(2050, 1, 1, tzinfo=timezone.utc)
+            next_plan_anchor = datetime(2050, 2, 1, tzinfo=timezone.utc)
+            billed_licenses = 10
+            remote_realm = RemoteRealm.objects.get(name=name)
+            billing_session = RemoteRealmBillingSession(remote_realm)
+
+            billing_session.migrate_customer_to_legacy_plan(legacy_anchor, next_plan_anchor)
+            customer = billing_session.get_customer()
+            assert customer is not None
+            legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
+            assert legacy_plan is not None
+            assert legacy_plan.end_date is not None
+            last_ledger_entry = (
+                LicenseLedger.objects.filter(plan=legacy_plan).order_by("-id").first()
+            )
+            assert last_ledger_entry is not None
+            last_ledger_entry.licenses_at_next_renewal = billed_licenses
+            last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
+            legacy_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            legacy_plan.save(update_fields=["status"])
+            plan_params = {
+                "automanage_licenses": True,
+                "charge_automatically": False,
+                "price_per_license": 100,
+                "discount": customer.default_discount,
+                "billing_cycle_anchor": next_plan_anchor,
+                "billing_schedule": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                "tier": CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                "status": CustomerPlan.NEVER_STARTED,
+            }
+            CustomerPlan.objects.create(
+                customer=customer, next_invoice_date=next_plan_anchor, **plan_params
+            )
+
         super().setUp()
 
         # Set up some initial example data.
@@ -92,6 +127,9 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             paid_users="",
             plan=SponsoredPlanTypes.COMMUNITY.value,
         )
+
+        # Add expected legacy customer and plan data
+        add_legacy_plan_and_upgrade(name="realm-name-3")
 
     def test_search(self) -> None:
         def assert_server_details_in_response(
@@ -170,6 +208,25 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 result,
             )
 
+        def check_legacy_and_next_plan(result: "TestHttpResponse") -> None:
+            self.assert_in_success_response(
+                [
+                    "<h4>📅 Current plan information:</h4>",
+                    "<b>Plan name</b>: Self-managed (legacy plan)<br />",
+                    "<b>Status</b>: New plan scheduled<br />",
+                    "<b>End date</b>: 01 February 2050<br />",
+                    "<h4>⏱️ Next plan information:</h4>",
+                    "<b>Plan name</b>: Zulip Basic<br />",
+                    "<b>Status</b>: Never started<br />",
+                    "<b>Start date</b>: 01 February 2050<br />",
+                    "<b>Billing schedule</b>: Monthly<br />",
+                    "<b>Price per license</b>: $1.00<br />",
+                    "<b>Estimated billed licenses</b>: 10<br />",
+                    "<b>Estimated annual revenue</b>: $120.00<br />",
+                ],
+                result,
+            )
+
         self.login("cordelia")
 
         result = self.client_get("/activity/remote/support")
@@ -228,6 +285,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         assert_server_details_in_response(result, f"zulip-{server}.example.com")
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
         check_no_sponsorship_request(result)
+        check_legacy_and_next_plan(result)
 
 
 class TestSupportEndpoint(ZulipTestCase):

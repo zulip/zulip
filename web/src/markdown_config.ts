@@ -33,40 +33,40 @@ import {user_settings} from "./user_settings";
 
 // TODO/typescript: Move this to markdown
 type AbstractMap<K, V> = {
-    keys(): Iterator<K>;
-    entries(): Iterator<[K, V]>;
-    get(k: K): V | undefined;
+    keys: () => Iterator<K>;
+    entries: () => Iterator<[K, V]>;
+    get: (k: K) => V | undefined;
 };
 
 // TODO/typescript: Move this to markdown
 type MarkdownHelpers = {
     // user stuff
-    get_actual_name_from_user_id(user_id: number): string | undefined;
-    get_user_id_from_name(full_name: string): number | undefined;
-    is_valid_full_name_and_user_id(full_name: string, user_id: number): boolean;
-    my_user_id(): number;
-    is_valid_user_id(user_id: number): boolean;
+    get_actual_name_from_user_id: (user_id: number) => string | undefined;
+    get_user_id_from_name: (full_name: string) => number | undefined;
+    is_valid_full_name_and_user_id: (full_name: string, user_id: number) => boolean;
+    my_user_id: () => number;
+    is_valid_user_id: (user_id: number) => boolean;
 
     // user groups
-    get_user_group_from_name(name: string): {id: number; name: string} | undefined;
-    is_member_of_user_group(user_id: number, user_group_id: number): boolean;
+    get_user_group_from_name: (name: string) => {id: number; name: string} | undefined;
+    is_member_of_user_group: (user_id: number, user_group_id: number) => boolean;
 
     // stream hashes
-    get_stream_by_name(stream_name: string): {stream_id: number; name: string} | undefined;
-    stream_hash(stream_id: number): string;
-    stream_topic_hash(stream_id: number, topic: string): string;
+    get_stream_by_name: (stream_name: string) => {stream_id: number; name: string} | undefined;
+    stream_hash: (stream_id: number) => string;
+    stream_topic_hash: (stream_id: number, topic: string) => string;
 
     // settings
-    should_translate_emoticons(): boolean;
+    should_translate_emoticons: () => boolean;
 
     // emojis
-    get_emoji_name(codepoint: string): string | undefined;
-    get_emoji_codepoint(emoji_name: string): string | undefined;
-    get_emoticon_translations(): {regex: RegExp; replacement_text: string}[];
-    get_realm_emoji_url(emoji_name: string): string | undefined;
+    get_emoji_name: (codepoint: string) => string | undefined;
+    get_emoji_codepoint: (emoji_name: string) => string | undefined;
+    get_emoticon_translations: () => {regex: RegExp; replacement_text: string}[];
+    get_realm_emoji_url: (emoji_name: string) => string | undefined;
 
     // linkifiers
-    get_linkifier_map(): AbstractMap<
+    get_linkifier_map: () => AbstractMap<
         RegExp,
         {url_template: url_template_lib.Template; group_number_to_name: Record<number, string>}
     >;
