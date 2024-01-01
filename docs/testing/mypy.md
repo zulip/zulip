@@ -201,7 +201,7 @@ if it isn't.
 It supports being passed a `sub_validator`, which will verify that
 each element in the list has a given type as well. One can express
 the idea "If `sub_validator` validates that something is a `ResultT`,
-`check_list(sub_validator)` validators that something is a
+`check_list(sub_validator)` validates that something is a
 `List[ResultT]` as follows:
 
 ```python
