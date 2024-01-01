@@ -14,9 +14,9 @@ import * as compose_validate from "./compose_validate";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import {state_data} from "./state_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -244,7 +244,7 @@ function get_options_for_recipient_widget() {
     };
 
     if (
-        page_params.realm_private_message_policy ===
+        state_data.realm_private_message_policy ===
         settings_config.private_message_policy_values.by_anyone.code
     ) {
         options.unshift(direct_messages_option);

@@ -9,12 +9,12 @@ import * as dialog_widget from "./dialog_widget";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
 import * as scroll_util from "./scroll_util";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
+import {state_data} from "./state_data";
 import * as timerender from "./timerender";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
@@ -157,7 +157,7 @@ function bot_info(bot_user_id) {
     }
 
     info.is_current_user = false;
-    info.can_modify = page_params.is_admin;
+    info.can_modify = state_data.is_admin;
     info.cannot_deactivate = bot_user.is_system_bot;
     info.cannot_edit = bot_user.is_system_bot;
 
@@ -186,9 +186,9 @@ function human_info(person) {
     info.full_name = person.full_name;
     info.bot_owner_id = person.bot_owner_id;
 
-    info.can_modify = page_params.is_admin;
+    info.can_modify = state_data.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
-    info.cannot_deactivate = info.is_current_user || (person.is_owner && !page_params.is_owner);
+    info.cannot_deactivate = info.is_current_user || (person.is_owner && !state_data.is_owner);
     info.display_email = person.delivery_email;
 
     if (info.is_active) {

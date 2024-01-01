@@ -1,5 +1,5 @@
-import {page_params} from "./page_params";
 import * as people from "./people";
+import {state_data} from "./state_data";
 import {user_settings} from "./user_settings";
 
 export type RawPresence = {
@@ -73,7 +73,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     */
 
     /* Mark users as offline after this many seconds since their last checkin, */
-    const offline_threshold_secs = page_params.server_presence_offline_threshold_seconds;
+    const offline_threshold_secs = state_data.server_presence_offline_threshold_seconds;
 
     function age(timestamp = 0): number {
         return raw.server_timestamp - timestamp;

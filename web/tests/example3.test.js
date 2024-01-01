@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {state_data} = require("./lib/zpage_params");
 
 // In the Zulip app you can narrow your message stream by topic, by
 // sender, by direct message recipient, by search keywords, etc.
@@ -14,12 +14,12 @@ const {page_params} = require("./lib/zpage_params");
 const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 
-// This is the first time we have to deal with page_params.
-// page_params has a lot of important data shared by various
+// This is the first time we have to deal with state_data.
+// state_data has a lot of important data shared by various
 // modules. Most of the data is irrelevant to our tests.
 // Use this to explicitly say we are not a special Zephyr
 // realm, since we want to test the "normal" codepath.
-page_params.realm_is_zephyr_mirror_realm = false;
+state_data.realm_is_zephyr_mirror_realm = false;
 
 const denmark_stream = {
     color: "blue",

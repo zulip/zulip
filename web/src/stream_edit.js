@@ -18,11 +18,11 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
+import {state_data} from "./state_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -52,7 +52,7 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
 }
 
 export function get_display_text_for_realm_message_retention_setting() {
-    const realm_message_retention_days = page_params.realm_message_retention_days;
+    const realm_message_retention_days = state_data.realm_message_retention_days;
     if (realm_message_retention_days === settings_config.retain_message_forever) {
         return $t({defaultMessage: "(forever)"});
     }
@@ -246,12 +246,11 @@ export function show_settings_for(node) {
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
-        zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
-        upgrade_text_for_wide_organization_logo:
-            page_params.upgrade_text_for_wide_organization_logo,
+        zulip_plan_is_not_limited: state_data.zulip_plan_is_not_limited,
+        upgrade_text_for_wide_organization_logo: state_data.upgrade_text_for_wide_organization_logo,
         is_business_type_org:
-            page_params.realm_org_type === settings_config.all_org_type_values.business.code,
-        is_admin: page_params.is_admin,
+            state_data.realm_org_type === settings_config.all_org_type_values.business.code,
+        is_admin: state_data.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         can_access_stream_email: stream_data.can_access_stream_email(sub),
     });
@@ -433,8 +432,8 @@ export function initialize() {
         const template_data = {
             stream_name: stream.name,
             stream_description: stream.description,
-            max_stream_name_length: page_params.max_stream_name_length,
-            max_stream_description_length: page_params.max_stream_description_length,
+            max_stream_name_length: state_data.max_stream_name_length,
+            max_stream_description_length: state_data.max_stream_description_length,
         };
         const change_stream_info_modal = render_change_stream_info_modal(template_data);
         dialog_widget.launch({
@@ -603,9 +602,9 @@ export function initialize() {
         const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
 
         const is_new_stream_notification_stream =
-            stream_id === page_params.realm_notifications_stream_id;
+            stream_id === state_data.realm_notifications_stream_id;
         const is_signup_notification_stream =
-            stream_id === page_params.realm_signup_notifications_stream_id;
+            stream_id === state_data.realm_signup_notifications_stream_id;
         const is_notification_stream =
             is_new_stream_notification_stream || is_signup_notification_stream;
 

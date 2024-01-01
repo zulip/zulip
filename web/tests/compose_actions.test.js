@@ -7,7 +7,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {state_data} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
 
@@ -535,7 +535,7 @@ test("on_narrow", ({override, override_rewire}) => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;
-    page_params.realm_private_message_policy =
+    state_data.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
     compose_actions.on_narrow({
         force_close: false,
@@ -551,7 +551,7 @@ test("on_narrow", ({override, override_rewire}) => {
     });
     assert.ok(start_called);
 
-    page_params.realm_private_message_policy =
+    state_data.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     compose_actions.on_narrow({
         force_close: false,

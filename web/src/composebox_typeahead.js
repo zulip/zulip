@@ -20,6 +20,7 @@ import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -1105,10 +1106,10 @@ function get_header_html() {
             tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
             break;
         case "syntax":
-            if (page_params.realm_default_code_block_language !== "") {
+            if (state_data.realm_default_code_block_language !== "") {
                 tip_text = $t(
                     {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
-                    {language: page_params.realm_default_code_block_language},
+                    {language: state_data.realm_default_code_block_language},
                 );
                 break;
             }

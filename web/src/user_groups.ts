@@ -1,8 +1,8 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
-import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
+import {state_data} from "./state_data";
 import type {User, UserGroupUpdateEvent} from "./types";
 
 export type UserGroup = {
@@ -99,7 +99,7 @@ export function get_user_groups_allowed_to_mention(): UserGroup[] {
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
         const can_mention_group_id = group.can_mention_group;
-        return is_user_in_group(can_mention_group_id, page_params.user_id);
+        return is_user_in_group(can_mention_group_id, state_data.user_id);
     });
 }
 

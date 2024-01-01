@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
+const {state_data} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const user_pill = zrequire("user_pill");
@@ -73,7 +73,7 @@ test("create_item", () => {
         assert.deepEqual(item, expected_item);
     }
 
-    page_params.realm_is_zephyr_mirror_realm = true;
+    state_data.realm_is_zephyr_mirror_realm = true;
 
     test_create_item("bogus@example.com", [], bogus_item);
     test_create_item("bogus@example.com", [bogus_item], undefined);
@@ -81,14 +81,14 @@ test("create_item", () => {
     test_create_item("isaac@example.com", [], isaac_item);
     test_create_item("isaac@example.com", [isaac_item], undefined);
 
-    page_params.realm_is_zephyr_mirror_realm = false;
+    state_data.realm_is_zephyr_mirror_realm = false;
 
     test_create_item("bogus@example.com", [], undefined);
     test_create_item("isaac@example.com", [], isaac_item);
     test_create_item("isaac@example.com", [isaac_item], undefined);
 
     settings_data.user_can_access_all_other_users = () => false;
-    page_params.realm_bot_domain = "example.com";
+    state_data.realm_bot_domain = "example.com";
     people.add_inaccessible_user(inaccessible_user_id);
 
     test_create_item("user103@example.com", [], undefined, {exclude_inaccessible_users: true});

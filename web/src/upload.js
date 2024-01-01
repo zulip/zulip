@@ -13,8 +13,8 @@ import * as compose_validate from "./compose_validate";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
 import * as rows from "./rows";
+import {state_data} from "./state_data";
 
 let drag_drop_img = null;
 export let compose_upload_object;
@@ -179,7 +179,7 @@ export async function upload_files(uppy, config, files) {
     if (files.length === 0) {
         return;
     }
-    if (page_params.max_file_upload_size_mib === 0) {
+    if (state_data.max_file_upload_size_mib === 0) {
         show_error_message(
             config,
             $t({
@@ -255,7 +255,7 @@ export function setup_upload(config) {
         debug: false,
         autoProceed: true,
         restrictions: {
-            maxFileSize: page_params.max_file_upload_size_mib * 1024 * 1024,
+            maxFileSize: state_data.max_file_upload_size_mib * 1024 * 1024,
         },
         locale: {
             strings: {
@@ -264,7 +264,7 @@ export function setup_upload(config) {
                         defaultMessage:
                             "%'{file}' exceeds the maximum file size for attachments ({variable} MB).",
                     },
-                    {variable: `${page_params.max_file_upload_size_mib}`},
+                    {variable: `${state_data.max_file_upload_size_mib}`},
                 ),
                 failedToUpload: $t({defaultMessage: "Failed to upload %'{file}'"}),
             },

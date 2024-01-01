@@ -39,7 +39,7 @@ export function get_count_in_topic(stream_id?: number, topic?: string): number {
         const message = message_store.get(id);
 
         if (message === undefined) {
-            // We know the `id` from the initial data fetch from page_params,
+            // We know the `id` from the initial data fetch from state_data,
             // but the message itself hasn't been fetched from the server yet.
             // We ignore this message, since we can't check if it belongs to
             // the topic, but it could, meaning this implementation isn't

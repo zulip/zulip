@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {state_data, user_settings} = require("./lib/zpage_params");
 
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
 
@@ -50,8 +50,8 @@ user_topics.update_user_topics(
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.is_admin = false;
-        page_params.realm_users = [];
+        state_data.is_admin = false;
+        state_data.realm_users = [];
         user_settings.enable_followed_topic_desktop_notifications = true;
         user_settings.enable_followed_topic_audible_notifications = true;
         user_settings.enable_desktop_notifications = true;

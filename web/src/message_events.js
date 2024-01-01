@@ -19,13 +19,13 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {state_data} from "./state_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -204,7 +204,7 @@ export function update_messages(events) {
             // edits have edit_history logged for both before any
             // potential narrowing as part of the topic edit loop.
             if (event.orig_content !== undefined) {
-                if (page_params.realm_allow_edit_history) {
+                if (state_data.realm_allow_edit_history) {
                     // Note that we do this for topic edits separately, below.
                     // If an event changed both content and topic, we'll generate
                     // two client-side events, which is probably good for display.
@@ -305,7 +305,7 @@ export function update_messages(events) {
             }
 
             for (const moved_message of event_messages) {
-                if (page_params.realm_allow_edit_history) {
+                if (state_data.realm_allow_edit_history) {
                     /* Simulate the format of server-generated edit
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such

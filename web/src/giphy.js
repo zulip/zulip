@@ -5,9 +5,9 @@ import render_giphy_picker from "../templates/giphy_picker.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
-import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
+import {state_data} from "./state_data";
 import * as ui_util from "./ui_util";
 
 let giphy_fetch;
@@ -28,15 +28,15 @@ export function focus_current_edit_message() {
 
 export function is_giphy_enabled() {
     return (
-        page_params.giphy_api_key !== "" &&
-        page_params.realm_giphy_rating !== page_params.giphy_rating_options.disabled.id
+        state_data.giphy_api_key !== "" &&
+        state_data.realm_giphy_rating !== state_data.giphy_rating_options.disabled.id
     );
 }
 
 export function update_giphy_rating() {
     if (
-        page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id ||
-        page_params.giphy_api_key === ""
+        state_data.realm_giphy_rating === state_data.giphy_rating_options.disabled.id ||
+        state_data.giphy_api_key === ""
     ) {
         $(".compose_gif_icon").hide();
     } else {
@@ -45,16 +45,16 @@ export function update_giphy_rating() {
 }
 
 function get_rating() {
-    const options = page_params.giphy_rating_options;
-    for (const rating in page_params.giphy_rating_options) {
-        if (options[rating].id === page_params.realm_giphy_rating) {
+    const options = state_data.giphy_rating_options;
+    for (const rating in state_data.giphy_rating_options) {
+        if (options[rating].id === state_data.realm_giphy_rating) {
             return rating;
         }
     }
 
     // The below should never run unless a server bug allowed a
     // `giphy_rating` value not present in `giphy_rating_options`.
-    blueslip.error("Invalid giphy_rating value: " + page_params.realm_giphy_rating);
+    blueslip.error("Invalid giphy_rating value: " + state_data.realm_giphy_rating);
     return "g";
 }
 
@@ -63,7 +63,7 @@ async function renderGIPHYGrid(targetEl) {
     const {GiphyFetch} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-fetch-api");
 
     if (giphy_fetch === undefined) {
-        giphy_fetch = new GiphyFetch(page_params.giphy_api_key);
+        giphy_fetch = new GiphyFetch(state_data.giphy_api_key);
     }
 
     function fetchGifs(offset) {

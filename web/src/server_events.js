@@ -11,6 +11,7 @@ import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 import * as server_events_dispatch from "./server_events_dispatch";
+import {state_data} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as watchdog from "./watchdog";
 
@@ -172,8 +173,8 @@ function get_events({dont_block = false} = {}) {
         watchdog.set_suspect_offline(true);
     }
     if (get_events_params.queue_id === undefined) {
-        get_events_params.queue_id = page_params.queue_id;
-        get_events_params.last_event_id = page_params.last_event_id;
+        get_events_params.queue_id = state_data.queue_id;
+        get_events_params.last_event_id = state_data.last_event_id;
     }
 
     if (get_events_xhr !== undefined) {
@@ -190,7 +191,7 @@ function get_events({dont_block = false} = {}) {
     get_events_xhr = channel.get({
         url: "/json/events",
         data: get_events_params,
-        timeout: page_params.event_queue_longpoll_timeout_seconds * 1000,
+        timeout: state_data.event_queue_longpoll_timeout_seconds * 1000,
         success(data) {
             watchdog.set_suspect_offline(false);
             try {
@@ -286,7 +287,7 @@ function cleanup_event_queue() {
     event_queue_expired = true;
     channel.del({
         url: "/json/events",
-        data: {queue_id: page_params.queue_id},
+        data: {queue_id: state_data.queue_id},
         ignore_reload: true,
     });
 }

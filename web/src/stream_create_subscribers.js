@@ -5,8 +5,8 @@ import render_new_stream_users from "../templates/stream_settings/new_stream_use
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as ListWidget from "./list_widget";
-import {page_params} from "./page_params";
 import * as people from "./people";
+import {state_data} from "./state_data";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
 import * as user_sort from "./user_sort";
 
@@ -84,7 +84,7 @@ export function build_widgets() {
     build_pill_widget({$parent_container: $add_people_container});
 
     stream_create_subscribers_data.initialize_with_current_user();
-    const current_user_id = page_params.user_id;
+    const current_user_id = state_data.user_id;
 
     all_users_list_widget = ListWidget.create($("#create_stream_subscribers"), [current_user_id], {
         name: "new_stream_add_users",

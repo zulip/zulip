@@ -11,9 +11,9 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import {invite_schema} from "./settings_invites";
+import {state_data} from "./state_data";
 
 export function confirm_deactivation(
     user_id: number,
@@ -38,8 +38,8 @@ export function confirm_deactivation(
 
             const bots_owned_by_user = bot_data.get_all_bots_owned_by_user(user_id);
             const user = people.get_by_user_id(user_id);
-            const realm_url = page_params.realm_uri;
-            const realm_name = page_params.realm_name;
+            const realm_url = state_data.realm_uri;
+            const realm_name = state_data.realm_name;
             const opts = {
                 username: user.full_name,
                 email: user.delivery_email,

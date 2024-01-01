@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {state_data, page_params, user_settings} = require("./lib/zpage_params");
 
 // TODO: Remove after we enable support for
 // web_public_streams in production.
@@ -51,9 +51,9 @@ const moderators_group = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.is_admin = false;
-        page_params.realm_users = [];
-        page_params.is_guest = false;
+        state_data.is_admin = false;
+        state_data.realm_users = [];
+        state_data.is_guest = false;
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
@@ -256,7 +256,7 @@ test("get_streams_for_user", () => {
     peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
-    page_params.realm_invite_to_stream_policy =
+    state_data.realm_invite_to_stream_policy =
         settings_config.common_policy_values.by_admins_only.code;
     assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
 
@@ -273,15 +273,14 @@ test("get_streams_for_user", () => {
     ]);
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
     // Verify can subscribe if we're an administrator.
-    page_params.is_admin = true;
+    state_data.is_admin = true;
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
     ]);
-    page_params.is_admin = false;
+    state_data.is_admin = false;
 
-    page_params.realm_invite_to_stream_policy =
-        settings_config.common_policy_values.by_members.code;
+    state_data.realm_invite_to_stream_policy = settings_config.common_policy_values.by_members.code;
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
@@ -341,7 +340,7 @@ test("admin_options", () => {
     }
 
     // non-admins can't do anything
-    page_params.is_admin = false;
+    state_data.is_admin = false;
     let sub = make_sub();
     assert.ok(!is_realm_admin(sub));
     assert.ok(!can_change_stream_permissions(sub));
@@ -350,7 +349,7 @@ test("admin_options", () => {
     assert.equal(sub.color, "blue");
 
     // the remaining cases are for admin users
-    page_params.is_admin = true;
+    state_data.is_admin = true;
 
     // admins can make public streams become private
     sub = make_sub();
@@ -443,7 +442,7 @@ test("stream_settings", () => {
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);
-    page_params.is_guest = true;
+    state_data.is_guest = true;
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
@@ -695,10 +694,10 @@ test("is_notifications_stream_muted", () => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
 
-    page_params.realm_notifications_stream_id = tony.stream_id;
+    state_data.realm_notifications_stream_id = tony.stream_id;
     assert.ok(!stream_data.is_notifications_stream_muted());
 
-    page_params.realm_notifications_stream_id = jazy.stream_id;
+    state_data.realm_notifications_stream_id = jazy.stream_id;
     assert.ok(stream_data.is_notifications_stream_muted());
 });
 
@@ -749,9 +748,9 @@ test("muted_stream_ids", () => {
 });
 
 test("realm_has_notifications_stream", () => {
-    page_params.realm_notifications_stream_id = 10;
+    state_data.realm_notifications_stream_id = 10;
     assert.ok(stream_data.realm_has_notifications_stream());
-    page_params.realm_notifications_stream_id = -1;
+    state_data.realm_notifications_stream_id = -1;
     assert.ok(!stream_data.realm_has_notifications_stream());
 });
 
@@ -845,7 +844,7 @@ test("initialize", () => {
         stream_data.initialize(get_params());
     }
 
-    page_params.realm_notifications_stream_id = -1;
+    state_data.realm_notifications_stream_id = -1;
 
     initialize();
 
@@ -856,7 +855,7 @@ test("initialize", () => {
     assert.equal(stream_data.get_notifications_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to
-    page_params.realm_notifications_stream_id = 89;
+    state_data.realm_notifications_stream_id = 89;
     initialize();
     assert.equal(stream_data.get_notifications_stream(), "");
 
@@ -935,31 +934,31 @@ test("can_post_messages_in_stream", () => {
         history_public_to_subscribers: false,
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
     };
-    page_params.is_admin = false;
+    state_data.is_admin = false;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    page_params.is_admin = true;
+    state_data.is_admin = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.moderators.code;
-    page_params.is_moderator = false;
-    page_params.is_admin = false;
+    state_data.is_moderator = false;
+    state_data.is_admin = false;
 
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
-    page_params.is_moderator = true;
+    state_data.is_moderator = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
-    page_params.is_moderator = false;
+    state_data.is_moderator = false;
     me.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
+    state_data.realm_waiting_period_threshold = 10;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     me.date_joined = new Date(Date.now() - 20 * 86400000);
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
-    page_params.is_guest = true;
+    state_data.is_guest = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     social.stream_post_policy = settings_config.stream_post_policy_values.everyone.code;
@@ -1037,17 +1036,17 @@ test("can_unsubscribe_others", () => {
 
     // Even with the nobody system group, admins can still unsubscribe others.
     sub.can_remove_subscribers_group = nobody.id;
-    page_params.is_admin = true;
+    state_data.is_admin = true;
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    page_params.is_admin = false;
+    state_data.is_admin = false;
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
     sub.subscribed = false;
     sub.invite_only = true;
-    page_params.is_admin = true;
+    state_data.is_admin = true;
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    page_params.is_admin = false;
+    state_data.is_admin = false;
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 });
 
@@ -1161,10 +1160,10 @@ test("can_access_stream_email", () => {
         invite_only: true,
         history_public_to_subscribers: false,
     };
-    page_params.is_admin = false;
+    state_data.is_admin = false;
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    page_params.is_admin = true;
+    state_data.is_admin = true;
     assert.equal(stream_data.can_access_stream_email(social), true);
 
     social.subscribed = false;
@@ -1173,10 +1172,10 @@ test("can_access_stream_email", () => {
     social.invite_only = false;
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    page_params.is_admin = false;
+    state_data.is_admin = false;
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    page_params.is_guest = true;
+    state_data.is_guest = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
 
     social.subscribed = true;

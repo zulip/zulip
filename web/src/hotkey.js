@@ -51,6 +51,7 @@ import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
@@ -1113,7 +1114,7 @@ export function process_hotkey(e, hotkey) {
             return true;
         }
         case "view_edit_history": {
-            if (page_params.realm_allow_edit_history) {
+            if (state_data.realm_allow_edit_history) {
                 message_edit_history.show_history(msg);
                 $("#message-history-cancel").trigger("focus");
                 return true;

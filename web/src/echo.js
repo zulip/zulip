@@ -12,12 +12,12 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_view_data from "./recent_view_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
@@ -81,7 +81,7 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
 
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
-    message.queue_id = page_params.queue_id;
+    message.queue_id = state_data.queue_id;
     message.resend = true;
 
     function on_success(data) {
@@ -184,7 +184,7 @@ export function insert_local_message(message_request, local_id_float, insert_new
     message.content_type = "text/html";
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
-    message.avatar_url = page_params.avatar_url;
+    message.avatar_url = state_data.avatar_url;
     message.timestamp = Date.now() / 1000;
     message.local_id = local_id_float.toString();
     message.locally_echoed = true;

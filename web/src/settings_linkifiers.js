@@ -10,9 +10,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
-import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_ui from "./settings_ui";
+import {state_data} from "./state_data";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -24,13 +24,13 @@ export function reset() {
 }
 
 export function maybe_disable_widgets() {
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         return;
     }
 }
 
 function open_linkifier_edit_form(linkifier_id) {
-    const linkifiers_list = page_params.realm_linkifiers;
+    const linkifiers_list = state_data.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
     const html_body = render_admin_linkifier_edit_form({
         linkifier_id,
@@ -140,7 +140,7 @@ export function populate_linkifiers(linkifiers_data) {
                     url_template: linkifier.url_template,
                     id: linkifier.id,
                 },
-                can_modify: page_params.is_admin,
+                can_modify: state_data.is_admin,
                 can_drag: filter_value.length === 0,
             });
         },
@@ -160,7 +160,7 @@ export function populate_linkifiers(linkifiers_data) {
         $simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
 
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         Sortable.create($linkifiers_table[0], {
             onUpdate: update_linkifiers_order,
             handle: ".move-handle",
@@ -179,7 +179,7 @@ export function build_page() {
     meta.loaded = true;
 
     // Populate linkifiers table
-    populate_linkifiers(page_params.realm_linkifiers);
+    populate_linkifiers(state_data.realm_linkifiers);
 
     $(".admin_linkifiers_table").on("click", ".delete", function (e) {
         e.preventDefault();

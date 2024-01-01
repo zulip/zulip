@@ -15,7 +15,7 @@ import * as util from "./util";
 // The unread module tracks the message IDs and locations of the
 // user's unread messages.  The tracking is initialized with
 // server-provided data of the total set of unread messages in the
-// user's history via page_params.unread_msgs (well, it cuts off at
+// user's history via state_data.unread_msgs (well, it cuts off at
 // MAX_UNREAD_MESSAGES unreads for performance reasons).  As a result,
 // it can contain many thousands of messages that we don't have full
 // data for in `message_store`, so we cannot in general look these

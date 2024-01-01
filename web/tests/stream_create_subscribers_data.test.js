@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {state_data} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const stream_create_subscribers_data = zrequire("stream_create_subscribers_data");
@@ -35,13 +35,13 @@ const test_user103 = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.is_admin = false;
+        state_data.is_admin = false;
         people.init();
         people.add_active_user(me);
         people.add_active_user(test_user101);
         people.add_active_user(test_user102);
         people.add_active_user(test_user103);
-        page_params.user_id = me.user_id;
+        state_data.user_id = me.user_id;
         people.initialize_current_user(me.user_id);
         f(helpers);
     });
@@ -71,10 +71,10 @@ test("basics", () => {
 });
 
 test("must_be_subscribed", () => {
-    page_params.is_admin = false;
+    state_data.is_admin = false;
     assert.ok(stream_create_subscribers_data.must_be_subscribed(me.user_id));
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(test_user101.user_id));
-    page_params.is_admin = true;
+    state_data.is_admin = true;
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(me.user_id));
     assert.ok(!stream_create_subscribers_data.must_be_subscribed(test_user101.user_id));
 });

@@ -7,7 +7,7 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("./lib/markdown_assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {state_data, user_settings} = require("./lib/zpage_params");
 
 const example_realm_linkifiers = [
     {
@@ -201,7 +201,7 @@ linkifiers.initialize(example_realm_linkifiers);
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.realm_users = [];
+        state_data.realm_users = [];
         linkifiers.update_linkifier_rules(example_realm_linkifiers);
         f(helpers);
     });

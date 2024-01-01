@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {state_data, page_params} = require("./lib/zpage_params");
 
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
@@ -52,7 +52,7 @@ const jeff = {
 const example_avatar_url = "http://example.com/example.png";
 
 function init() {
-    page_params.is_admin = true;
+    state_data.is_admin = true;
 
     people.init();
     people.add_active_user(bob);
@@ -955,7 +955,7 @@ test("people_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).user_pill_context.should_add_guest_user_indicator;
     }
 
-    page_params.realm_enable_guest_user_indicator = true;
+    state_data.realm_enable_guest_user_indicator = true;
     suggestions = get_suggestions(query);
 
     assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), false);
@@ -969,7 +969,7 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.equal(get_should_add_guest_user_indicator("sender:bob@zulip.com"), true);
     assert.equal(get_should_add_guest_user_indicator("dm-including:bob@zulip.com"), true);
 
-    page_params.realm_enable_guest_user_indicator = false;
+    state_data.realm_enable_guest_user_indicator = false;
     suggestions = get_suggestions(query);
 
     assert.equal(get_should_add_guest_user_indicator("dm:bob@zulip.com"), false);

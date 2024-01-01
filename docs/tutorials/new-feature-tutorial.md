@@ -545,11 +545,11 @@ Then add the new form control in `web/src/admin.js`.
 
  export function build_page() {
      const options = {
-         custom_profile_field_types: page_params.custom_profile_field_types,
-         full_name: page_params.full_name,
-         realm_name: page_params.realm_name,
+         custom_profile_field_types: state_data.custom_profile_field_types,
+         full_name: state_data.full_name,
+         realm_name: state_data.realm_name,
          // ...
-+        realm_mandatory_topics: page_params.realm_mandatory_topics,
++        realm_mandatory_topics: state_data.realm_mandatory_topics,
          // ...
 ```
 

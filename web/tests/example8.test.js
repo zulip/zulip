@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {state_data} = require("./lib/zpage_params");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -78,7 +78,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     const $typing_notifications = $("#typing_notifications");
 
     // Narrow to a group direct message with four users.
-    override(page_params, "user_id", anna.user_id);
+    override(state_data, "user_id", anna.user_id);
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const conversation_key = typing_data.get_direct_message_conversation_key(group);
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;

@@ -6,7 +6,7 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {page_params, state_data, user_settings} = require("./lib/zpage_params");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
@@ -137,18 +137,18 @@ run_test("reload_defaults", () => {
 });
 
 test("get_status", () => {
-    page_params.realm_users = [];
-    page_params.user_id = 999;
+    state_data.realm_users = [];
+    state_data.user_id = 999;
 
-    assert.equal(presence.get_status(page_params.user_id), "active");
+    assert.equal(presence.get_status(state_data.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "active");
     assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
 
     user_settings.presence_enabled = false;
-    assert.equal(presence.get_status(page_params.user_id), "offline");
+    assert.equal(presence.get_status(state_data.user_id), "offline");
     user_settings.presence_enabled = true;
-    assert.equal(presence.get_status(page_params.user_id), "active");
+    assert.equal(presence.get_status(state_data.user_id), "active");
 
     presence.presence_info.delete(zoe.user_id);
     assert.equal(presence.get_status(zoe.user_id), "offline");
@@ -596,7 +596,7 @@ test("insert_unfiltered_user_with_filter", () => {
 });
 
 test("realm_presence_disabled", () => {
-    page_params.realm_presence_disabled = true;
+    state_data.realm_presence_disabled = true;
 
     activity_ui.redraw_user();
     activity_ui.build_user_sidebar();
@@ -611,9 +611,9 @@ test("redraw_muted_user", () => {
 test("update_presence_info", ({override}) => {
     override(pm_list, "update_private_messages", noop);
 
-    page_params.realm_presence_disabled = false;
-    page_params.server_presence_ping_interval_seconds = 60;
-    page_params.server_presence_offline_threshold_seconds = 200;
+    state_data.realm_presence_disabled = false;
+    state_data.server_presence_ping_interval_seconds = 60;
+    state_data.server_presence_offline_threshold_seconds = 200;
 
     const server_time = 500;
     const info = {
@@ -680,7 +680,7 @@ test("initialize", ({override, mock_template}) => {
         buddy_list.$container = $("#buddy-list-users-matching-view");
         buddy_list.$container.append = noop;
         clear_buddy_list();
-        page_params.presences = {};
+        state_data.presences = {};
     }
 
     clear();

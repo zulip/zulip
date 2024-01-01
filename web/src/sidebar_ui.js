@@ -9,6 +9,7 @@ import * as resize from "./resize";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
+import {state_data} from "./state_data";
 import {user_settings} from "./user_settings";
 
 export let left_sidebar_expanded_as_overlay = false;
@@ -136,7 +137,7 @@ export function initialize() {
 
 export function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
-        is_guest: page_params.is_guest,
+        is_guest: state_data.is_guest,
         development_environment: page_params.development_environment,
         is_inbox_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,

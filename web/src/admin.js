@@ -20,6 +20,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as settings_users from "./settings_users";
+import {state_data} from "./state_data";
 
 const admin_settings_label = {
     // Organization profile
@@ -70,10 +71,10 @@ const admin_settings_label = {
 };
 
 function insert_tip_box() {
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         return;
     }
-    const tip_box = render_settings_organization_settings_tip({is_admin: page_params.is_admin});
+    const tip_box = render_settings_organization_settings_tip({is_admin: state_data.is_admin});
     $(".organization-box")
         .find(".settings-section")
         .not("#emoji-settings")
@@ -101,24 +102,24 @@ function get_realm_level_notification_settings(options) {
 
 export function build_page() {
     const options = {
-        custom_profile_field_types: page_params.custom_profile_field_types,
-        full_name: page_params.full_name,
-        realm_name: page_params.realm_name,
-        realm_org_type: page_params.realm_org_type,
-        realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
-        server_jitsi_server_url: page_params.server_jitsi_server_url,
-        giphy_rating_options: page_params.giphy_rating_options,
-        giphy_api_key_empty: page_params.giphy_api_key === "",
-        realm_description: page_params.realm_description,
-        realm_inline_image_preview: page_params.realm_inline_image_preview,
-        server_inline_image_preview: page_params.server_inline_image_preview,
-        realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
-        server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
-        realm_authentication_methods: page_params.realm_authentication_methods,
-        realm_name_changes_disabled: page_params.realm_name_changes_disabled,
-        realm_email_changes_disabled: page_params.realm_email_changes_disabled,
-        realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
-        realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
+        custom_profile_field_types: state_data.custom_profile_field_types,
+        full_name: state_data.full_name,
+        realm_name: state_data.realm_name,
+        realm_org_type: state_data.realm_org_type,
+        realm_available_video_chat_providers: state_data.realm_available_video_chat_providers,
+        server_jitsi_server_url: state_data.server_jitsi_server_url,
+        giphy_rating_options: state_data.giphy_rating_options,
+        giphy_api_key_empty: state_data.giphy_api_key === "",
+        realm_description: state_data.realm_description,
+        realm_inline_image_preview: state_data.realm_inline_image_preview,
+        server_inline_image_preview: state_data.server_inline_image_preview,
+        realm_inline_url_embed_preview: state_data.realm_inline_url_embed_preview,
+        server_inline_url_embed_preview: state_data.server_inline_url_embed_preview,
+        realm_authentication_methods: state_data.realm_authentication_methods,
+        realm_name_changes_disabled: state_data.realm_name_changes_disabled,
+        realm_email_changes_disabled: state_data.realm_email_changes_disabled,
+        realm_avatar_changes_disabled: state_data.realm_avatar_changes_disabled,
+        realm_add_custom_emoji_policy: state_data.realm_add_custom_emoji_policy,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
         realm_message_content_edit_limit_minutes:
@@ -129,38 +130,37 @@ export function build_page() {
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_delete_limit_seconds",
             ),
-        realm_message_retention_days: page_params.realm_message_retention_days,
-        realm_allow_edit_history: page_params.realm_allow_edit_history,
-        realm_allow_message_editing: page_params.realm_allow_message_editing,
+        realm_message_retention_days: state_data.realm_message_retention_days,
+        realm_allow_edit_history: state_data.realm_allow_edit_history,
+        realm_allow_message_editing: state_data.realm_allow_message_editing,
         language_list,
-        realm_default_language_name: get_language_name(page_params.realm_default_language),
-        realm_default_language_code: page_params.realm_default_language,
-        realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
-        realm_notifications_stream_id: page_params.realm_notifications_stream_id,
-        realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
-        is_admin: page_params.is_admin,
-        is_guest: page_params.is_guest,
-        is_owner: page_params.is_owner,
+        realm_default_language_name: get_language_name(state_data.realm_default_language),
+        realm_default_language_code: state_data.realm_default_language,
+        realm_waiting_period_threshold: state_data.realm_waiting_period_threshold,
+        realm_notifications_stream_id: state_data.realm_notifications_stream_id,
+        realm_signup_notifications_stream_id: state_data.realm_signup_notifications_stream_id,
+        is_admin: state_data.is_admin,
+        is_guest: state_data.is_guest,
+        is_owner: state_data.is_owner,
         user_can_change_logo: settings_data.user_can_change_logo(),
-        realm_icon_source: page_params.realm_icon_source,
-        realm_icon_url: page_params.realm_icon_url,
-        realm_logo_source: page_params.realm_logo_source,
-        realm_logo_url: page_params.realm_logo_url,
-        realm_night_logo_source: page_params.realm_night_logo_source,
-        realm_night_logo_url: page_params.realm_night_logo_url,
-        realm_mandatory_topics: page_params.realm_mandatory_topics,
-        realm_send_welcome_emails: page_params.realm_send_welcome_emails,
+        realm_icon_source: state_data.realm_icon_source,
+        realm_icon_url: state_data.realm_icon_url,
+        realm_logo_source: state_data.realm_logo_source,
+        realm_logo_url: state_data.realm_logo_url,
+        realm_night_logo_source: state_data.realm_night_logo_source,
+        realm_night_logo_url: state_data.realm_night_logo_url,
+        realm_mandatory_topics: state_data.realm_mandatory_topics,
+        realm_send_welcome_emails: state_data.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
-            page_params.realm_message_content_allowed_in_email_notifications,
-        realm_enable_spectator_access: page_params.realm_enable_spectator_access,
-        settings_send_digest_emails: page_params.settings_send_digest_emails,
-        realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
-        realm_digest_weekday: page_params.realm_digest_weekday,
+            state_data.realm_message_content_allowed_in_email_notifications,
+        realm_enable_spectator_access: state_data.realm_enable_spectator_access,
+        settings_send_digest_emails: state_data.settings_send_digest_emails,
+        realm_digest_emails_enabled: state_data.realm_digest_emails_enabled,
+        realm_digest_weekday: state_data.realm_digest_weekday,
         development: page_params.development_environment,
-        zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
-        upgrade_text_for_wide_organization_logo:
-            page_params.upgrade_text_for_wide_organization_logo,
-        realm_default_external_accounts: page_params.realm_default_external_accounts,
+        zulip_plan_is_not_limited: state_data.zulip_plan_is_not_limited,
+        upgrade_text_for_wide_organization_logo: state_data.upgrade_text_for_wide_organization_logo,
+        realm_default_external_accounts: state_data.realm_default_external_accounts,
         admin_settings_label,
         msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
@@ -171,9 +171,9 @@ export function build_page() {
             settings_config.waiting_period_threshold_dropdown_values,
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
-        realm_invite_required: page_params.realm_invite_required,
+        realm_invite_required: state_data.realm_invite_required,
         policy_values: settings_config.common_policy_values,
-        realm_delete_own_message_policy: page_params.realm_delete_own_message_policy,
+        realm_delete_own_message_policy: state_data.realm_delete_own_message_policy,
         DELETE_OWN_MESSAGE_POLICY_ADMINS_ONLY:
             settings_config.common_message_policy_values.by_admins_only.code,
         ...settings_org.get_organization_settings_options(),
@@ -200,17 +200,16 @@ export function build_page() {
         create_web_public_stream_policy_values:
             settings_config.create_web_public_stream_policy_values,
         disable_enable_spectator_access_setting:
-            !page_params.server_web_public_streams_enabled ||
-            !page_params.zulip_plan_is_not_limited,
-        realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
+            !state_data.server_web_public_streams_enabled || !state_data.zulip_plan_is_not_limited,
+        realm_push_notifications_enabled: state_data.realm_push_notifications_enabled,
         realm_org_type_values: settings_org.get_org_type_dropdown_options(),
         realm_want_advertise_in_communities_directory:
-            page_params.realm_want_advertise_in_communities_directory,
+            state_data.realm_want_advertise_in_communities_directory,
         disable_want_advertise_in_communities_directory:
-            !page_params.realm_push_notifications_enabled,
+            !state_data.realm_push_notifications_enabled,
         is_business_type_org:
-            page_params.realm_org_type === settings_config.all_org_type_values.business.code,
-        realm_enable_read_receipts: page_params.realm_enable_read_receipts,
+            state_data.realm_org_type === settings_config.all_org_type_values.business.code,
+        realm_enable_read_receipts: state_data.realm_enable_read_receipts,
         allow_sorting_deactivated_users_list_by_email:
             settings_users.allow_sorting_deactivated_users_list_by_email(),
         has_bots: bot_data.get_all_bots_for_current_user().length > 0,
@@ -219,7 +218,7 @@ export function build_page() {
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
-        realm_enable_guest_user_indicator: page_params.realm_enable_guest_user_indicator,
+        realm_enable_guest_user_indicator: state_data.realm_enable_guest_user_indicator,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -244,20 +243,20 @@ export function build_page() {
     settings_invites.update_invite_user_panel();
     insert_tip_box();
 
-    if (page_params.demo_organization_scheduled_deletion_date && page_params.is_admin) {
+    if (state_data.demo_organization_scheduled_deletion_date && state_data.is_admin) {
         demo_organizations_ui.insert_demo_organization_warning();
         demo_organizations_ui.handle_demo_organization_conversion();
     }
 
-    $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
+    $("#id_realm_bot_creation_policy").val(state_data.realm_bot_creation_policy);
 
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
 
-    const is_plan_plus = page_params.realm_plan_type === 10;
-    const is_plan_self_hosted = page_params.realm_plan_type === 1;
+    const is_plan_plus = state_data.realm_plan_type === 10;
+    const is_plan_self_hosted = state_data.realm_plan_type === 1;
     if (
         page_params.development_environment &&
-        page_params.is_admin &&
+        state_data.is_admin &&
         !(is_plan_plus || is_plan_self_hosted)
     ) {
         $("#realm_can_access_all_users_group_widget").prop("disabled", true);

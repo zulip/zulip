@@ -93,7 +93,8 @@ run_test("tr_tag", ({mock_template}) => {
             settings: {},
         },
         notification_settings: {},
-        page_params: {
+        page_params: {},
+        state_data: {
             full_name: "John Doe",
             delivery_email: "john@zulip.com",
         },

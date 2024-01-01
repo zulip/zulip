@@ -2,12 +2,12 @@ import * as Sentry from "@sentry/browser";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 
 export function send_message(request, on_success, error) {
@@ -108,8 +108,8 @@ export function reply_message(opts) {
     const local_id = sent_messages.get_new_local_id();
 
     const reply = {
-        sender_id: page_params.user_id,
-        queue_id: page_params.queue_id,
+        sender_id: state_data.user_id,
+        queue_id: state_data.queue_id,
         local_id,
     };
 

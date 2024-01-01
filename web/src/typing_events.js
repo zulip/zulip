@@ -4,8 +4,8 @@ import render_typing_notifications from "../templates/typing_notifications.hbs";
 
 import * as blueslip from "./blueslip";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
+import {state_data} from "./state_data";
 import * as typing_data from "./typing_data";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
@@ -45,7 +45,7 @@ function get_users_typing_for_narrow() {
         const narrow_user_ids = narrow_user_ids_string
             .split(",")
             .map((user_id_string) => Number.parseInt(user_id_string, 10));
-        const group = [...narrow_user_ids, page_params.user_id];
+        const group = [...narrow_user_ids, state_data.user_id];
         return typing_data.get_group_typists(group);
     }
     // Get all users typing (in all direct message conversations with current user)
@@ -113,7 +113,7 @@ export function display_notification(event) {
 
     typing_data.kickstart_inbound_timer(
         key,
-        page_params.server_typing_started_expiry_period_milliseconds,
+        state_data.server_typing_started_expiry_period_milliseconds,
         () => {
             hide_notification(event);
         },

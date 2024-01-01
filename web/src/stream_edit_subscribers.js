@@ -12,10 +12,10 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as hash_parser from "./hash_parser";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as sub_store from "./sub_store";
@@ -30,7 +30,7 @@ function format_member_list_elem(person, user_can_remove_subscribers) {
     return render_stream_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
-        is_current_user: person.user_id === page_params.user_id,
+        is_current_user: person.user_id === state_data.user_id,
         email: person.delivery_email,
         can_remove_subscribers: user_can_remove_subscribers,
         for_user_group_members: false,
@@ -153,11 +153,11 @@ function subscribe_new_users({pill_user_ids}) {
 
     const user_id_set = new Set(active_user_ids);
 
-    if (user_id_set.has(page_params.user_id) && sub.subscribed) {
+    if (user_id_set.has(state_data.user_id) && sub.subscribed) {
         // We don't want to send a request to subscribe ourselves
         // if we are already subscribed to this stream. This
         // case occurs when creating user pills from a stream.
-        user_id_set.delete(page_params.user_id);
+        user_id_set.delete(state_data.user_id);
     }
     let ignored_deactivated_users;
     if (deactivated_users.size > 0) {

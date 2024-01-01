@@ -11,9 +11,9 @@ import * as hash_parser from "./hash_parser";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_profile_fields from "./settings_profile_fields";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -87,7 +87,7 @@ export function reset() {
 }
 
 export function maybe_disable_widgets() {
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         return;
     }
 
@@ -108,7 +108,7 @@ export function build_default_stream_table() {
         modifier_html(item) {
             return render_admin_default_streams_list({
                 stream: item,
-                can_modify: page_params.is_admin,
+                can_modify: state_data.is_admin,
             });
         },
         filter: {

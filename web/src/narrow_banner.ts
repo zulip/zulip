@@ -9,6 +9,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
@@ -52,7 +53,7 @@ function retrieve_search_query_data(): SearchData {
 
     // Gather information about each query word
     for (const query_word of query_words) {
-        if (page_params.stop_words.includes(query_word)) {
+        if (state_data.stop_words.includes(query_word)) {
             search_string_result.has_stop_word = true;
             search_string_result.query_words.push({
                 query_word,
@@ -203,7 +204,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 case "dm":
                     // You have no direct messages.
                     if (
-                        page_params.realm_private_message_policy ===
+                        state_data.realm_private_message_policy ===
                         settings_config.private_message_policy_values.disabled.code
                     ) {
                         return {
@@ -310,7 +311,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
             assert(user_ids !== undefined);
             if (
-                page_params.realm_private_message_policy ===
+                state_data.realm_private_message_policy ===
                     settings_config.private_message_policy_values.disabled.code &&
                 (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
             ) {
@@ -403,7 +404,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 };
             }
             if (
-                page_params.realm_private_message_policy ===
+                state_data.realm_private_message_policy ===
                     settings_config.private_message_policy_values.disabled.code &&
                 !person_in_dms.is_bot
             ) {

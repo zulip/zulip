@@ -3,9 +3,9 @@ import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as muted_users from "./muted_users";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
+import {state_data} from "./state_data";
 import * as timerender from "./timerender";
 import * as unread from "./unread";
 import {user_settings} from "./user_settings";
@@ -113,7 +113,7 @@ export function user_last_seen_time_status(user_id: number): string {
     }
 
     const last_active_date = presence.last_active_date(user_id);
-    if (page_params.realm_is_zephyr_mirror_realm) {
+    if (state_data.realm_is_zephyr_mirror_realm) {
         // We don't send presence data to clients in Zephyr mirroring realms
         return $t({defaultMessage: "Activity unknown"});
     } else if (last_active_date === undefined) {

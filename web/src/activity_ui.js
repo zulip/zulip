@@ -9,12 +9,12 @@ import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as sidebar_ui from "./sidebar_ui";
+import {state_data} from "./state_data";
 import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
 import * as util from "./util";
@@ -55,7 +55,7 @@ export function clear_for_testing() {
 }
 
 export function redraw_user(user_id) {
-    if (page_params.realm_presence_disabled) {
+    if (state_data.realm_presence_disabled) {
         return;
     }
 
@@ -89,7 +89,7 @@ export function render_empty_user_list_message_if_needed($container) {
 }
 
 export function build_user_sidebar() {
-    if (page_params.realm_presence_disabled) {
+    if (state_data.realm_presence_disabled) {
         return undefined;
     }
 
@@ -128,7 +128,7 @@ export function initialize(opts) {
     }
 
     /* Time between keep-alive pings */
-    const active_ping_interval_ms = page_params.server_presence_ping_interval_seconds * 1000;
+    const active_ping_interval_ms = state_data.server_presence_ping_interval_seconds * 1000;
     util.call_function_periodically(get_full_presence_list_update, active_ping_interval_ms);
 
     // Let the server know we're here, but do not pass

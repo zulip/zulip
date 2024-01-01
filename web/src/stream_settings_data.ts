@@ -1,7 +1,7 @@
 import * as hash_util from "./hash_util";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store";
 import * as sub_store from "./sub_store";
@@ -26,10 +26,10 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
     return {
         ...sub,
 
-        is_realm_admin: page_params.is_admin,
+        is_realm_admin: state_data.is_admin,
         // Admin can change any stream's name & description either stream is public or
         // private, subscribed or unsubscribed.
-        can_change_name_description: page_params.is_admin,
+        can_change_name_description: state_data.is_admin,
 
         should_display_subscription_button: stream_data.can_toggle_subscription(sub),
         should_display_preview_button: stream_data.can_preview(sub),
@@ -57,7 +57,7 @@ export function get_updated_unsorted_subs(): SettingsSubscription[] {
     let all_subs = stream_data.get_unsorted_subs();
 
     // We don't display unsubscribed streams to guest users.
-    if (page_params.is_guest) {
+    if (state_data.is_guest) {
         all_subs = all_subs.filter((sub) => sub.subscribed);
     }
 

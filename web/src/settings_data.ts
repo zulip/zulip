@@ -1,5 +1,6 @@
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
+import {state_data} from "./state_data";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
@@ -16,41 +17,41 @@ export function initialize(current_user_join_date: Date): void {
 
     Our main goal with this code is to isolate
     some key modules from having to know
-    about page_params and settings_config details.
+    about state_data and settings_config details.
 */
 
 export function user_can_change_name(): boolean {
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         return true;
     }
-    if (page_params.realm_name_changes_disabled || page_params.server_name_changes_disabled) {
+    if (state_data.realm_name_changes_disabled || state_data.server_name_changes_disabled) {
         return false;
     }
     return true;
 }
 
 export function user_can_change_avatar(): boolean {
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         return true;
     }
-    if (page_params.realm_avatar_changes_disabled || page_params.server_avatar_changes_disabled) {
+    if (state_data.realm_avatar_changes_disabled || state_data.server_avatar_changes_disabled) {
         return false;
     }
     return true;
 }
 
 export function user_can_change_email(): boolean {
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         return true;
     }
-    if (page_params.realm_email_changes_disabled) {
+    if (state_data.realm_email_changes_disabled) {
         return false;
     }
     return true;
 }
 
 export function user_can_change_logo(): boolean {
-    return page_params.is_admin && page_params.zulip_plan_is_not_limited;
+    return state_data.is_admin && state_data.zulip_plan_is_not_limited;
 }
 
 function user_has_permission(policy_value: number): boolean {
@@ -62,7 +63,7 @@ function user_has_permission(policy_value: number): boolean {
         return false;
     }
 
-    if (page_params.is_owner) {
+    if (state_data.is_owner) {
         return true;
     }
 
@@ -72,7 +73,7 @@ function user_has_permission(policy_value: number): boolean {
         return false;
     }
 
-    if (page_params.is_admin) {
+    if (state_data.is_admin) {
         return true;
     }
 
@@ -87,7 +88,7 @@ function user_has_permission(policy_value: number): boolean {
         return true;
     }
 
-    if (page_params.is_guest) {
+    if (state_data.is_guest) {
         return false;
     }
 
@@ -95,7 +96,7 @@ function user_has_permission(policy_value: number): boolean {
         return false;
     }
 
-    if (page_params.is_moderator) {
+    if (state_data.is_moderator) {
         return true;
     }
 
@@ -111,62 +112,62 @@ function user_has_permission(policy_value: number): boolean {
     const person_date_joined = new Date(user_join_date);
     const user_join_days =
         (current_datetime.getTime() - person_date_joined.getTime()) / 1000 / 86400;
-    return user_join_days >= page_params.realm_waiting_period_threshold;
+    return user_join_days >= state_data.realm_waiting_period_threshold;
 }
 
 export function user_can_invite_users_by_email(): boolean {
     if (
-        page_params.realm_invite_to_realm_policy ===
+        state_data.realm_invite_to_realm_policy ===
         settings_config.email_invite_to_realm_policy_values.nobody.code
     ) {
         return false;
     }
-    return user_has_permission(page_params.realm_invite_to_realm_policy);
+    return user_has_permission(state_data.realm_invite_to_realm_policy);
 }
 
 export function user_can_create_multiuse_invite(): boolean {
-    if (!page_params.user_id) {
+    if (!state_data.user_id) {
         return false;
     }
     return user_groups.is_user_in_group(
-        page_params.realm_create_multiuse_invite_group,
-        page_params.user_id,
+        state_data.realm_create_multiuse_invite_group,
+        state_data.user_id,
     );
 }
 
 export function user_can_subscribe_other_users(): boolean {
-    return user_has_permission(page_params.realm_invite_to_stream_policy);
+    return user_has_permission(state_data.realm_invite_to_stream_policy);
 }
 
 export function user_can_create_private_streams(): boolean {
-    return user_has_permission(page_params.realm_create_private_stream_policy);
+    return user_has_permission(state_data.realm_create_private_stream_policy);
 }
 
 export function user_can_create_public_streams(): boolean {
-    return user_has_permission(page_params.realm_create_public_stream_policy);
+    return user_has_permission(state_data.realm_create_public_stream_policy);
 }
 
 export function user_can_create_web_public_streams(): boolean {
     if (
-        !page_params.server_web_public_streams_enabled ||
-        !page_params.realm_enable_spectator_access
+        !state_data.server_web_public_streams_enabled ||
+        !state_data.realm_enable_spectator_access
     ) {
         return false;
     }
 
-    return user_has_permission(page_params.realm_create_web_public_stream_policy);
+    return user_has_permission(state_data.realm_create_web_public_stream_policy);
 }
 
 export function user_can_move_messages_between_streams(): boolean {
-    return user_has_permission(page_params.realm_move_messages_between_streams_policy);
+    return user_has_permission(state_data.realm_move_messages_between_streams_policy);
 }
 
 export function user_can_edit_user_groups(): boolean {
-    return user_has_permission(page_params.realm_user_group_edit_policy);
+    return user_has_permission(state_data.realm_user_group_edit_policy);
 }
 
 export function can_edit_user_group(group_id: number): boolean {
-    if (!page_params.user_id) {
+    if (!state_data.user_id) {
         return false;
     }
 
@@ -177,23 +178,23 @@ export function can_edit_user_group(group_id: number): boolean {
     // Admins and moderators are allowed to edit user groups even if they
     // are not a member of that user group. Members can edit user groups
     // only if they belong to that group.
-    if (page_params.is_admin || page_params.is_moderator) {
+    if (state_data.is_admin || state_data.is_moderator) {
         return true;
     }
 
-    return user_groups.is_direct_member_of(page_params.user_id, group_id);
+    return user_groups.is_direct_member_of(state_data.user_id, group_id);
 }
 
 export function user_can_add_custom_emoji(): boolean {
-    return user_has_permission(page_params.realm_add_custom_emoji_policy);
+    return user_has_permission(state_data.realm_add_custom_emoji_policy);
 }
 
 export function user_can_move_messages_to_another_topic(): boolean {
-    return user_has_permission(page_params.realm_edit_topic_policy);
+    return user_has_permission(state_data.realm_edit_topic_policy);
 }
 
 export function user_can_delete_own_message(): boolean {
-    return user_has_permission(page_params.realm_delete_own_message_policy);
+    return user_has_permission(state_data.realm_delete_own_message_policy);
 }
 
 export function should_mask_unread_count(sub_muted: boolean): boolean {
@@ -232,8 +233,8 @@ export function using_dark_theme(): boolean {
 export function user_email_not_configured(): boolean {
     // The following should also be true in the only circumstance
     // under which we expect this condition to be possible:
-    // page_params.demo_organization_scheduled_deletion_date
-    return page_params.is_owner && page_params.delivery_email === "";
+    // state_data.demo_organization_scheduled_deletion_date
+    return state_data.is_owner && state_data.delivery_email === "";
 }
 
 export function bot_type_id_to_string(type_id: number): string | undefined {
@@ -247,13 +248,13 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
 }
 
 export function user_can_access_all_other_users(): boolean {
-    if (!page_params.user_id) {
+    if (!state_data.user_id) {
         return true;
     }
 
     return user_groups.is_user_in_group(
-        page_params.realm_can_access_all_users_group,
-        page_params.user_id,
+        state_data.realm_can_access_all_users_group,
+        state_data.user_id,
     );
 }
 

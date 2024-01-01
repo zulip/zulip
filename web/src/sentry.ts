@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/browser";
 import _ from "lodash";
 
 import {page_params} from "./page_params";
+import {state_data} from "./state_data";
 
 type UserInfo = {
     id?: string;
@@ -37,8 +38,8 @@ if (page_params.server_sentry_dsn) {
             new RegExp("^" + _.escapeRegExp(new URL(".", document.currentScript.src).href)),
         );
     }
-    if (page_params.realm_uri !== undefined) {
-        url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
+    if (state_data.realm_uri !== undefined) {
+        url_matches.push(new RegExp("^" + _.escapeRegExp(state_data.realm_uri) + "/"));
     }
     const sentry_key =
         // No parameter is the portico pages, empty string is the empty realm
@@ -51,21 +52,21 @@ if (page_params.server_sentry_dsn) {
         realm: sentry_key,
     };
     if (sentry_key !== "www") {
-        user_info.role = page_params.is_owner
+        user_info.role = state_data.is_owner
             ? "Organization owner"
-            : page_params.is_admin
+            : state_data.is_admin
               ? "Organization administrator"
-              : page_params.is_moderator
+              : state_data.is_moderator
                 ? "Moderator"
-                : page_params.is_guest
+                : state_data.is_guest
                   ? "Guest"
                   : page_params.is_spectator
                     ? "Spectator"
-                    : page_params.user_id
+                    : state_data.user_id
                       ? "Member"
                       : "Logged out";
-        if (page_params.user_id) {
-            user_info.id = page_params.user_id.toString();
+        if (state_data.user_id) {
+            user_info.id = state_data.user_id.toString();
         }
     }
 
@@ -108,7 +109,7 @@ if (page_params.server_sentry_dsn) {
             tags: {
                 realm: sentry_key,
                 user_role: user_info.role ?? "Browser",
-                server_version: page_params.zulip_version,
+                server_version: state_data.zulip_version,
             },
             user: user_info,
         },

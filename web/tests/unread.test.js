@@ -6,9 +6,9 @@ const _ = require("lodash");
 
 const {zrequire, set_global} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {state_data, user_settings} = require("./lib/zpage_params");
 
-page_params.realm_push_notifications_enabled = false;
+state_data.realm_push_notifications_enabled = false;
 
 set_global("document", "document-stub");
 const {FoldDict} = zrequire("fold_dict");

@@ -1,6 +1,6 @@
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {page_params} from "./page_params";
+import {state_data} from "./state_data";
 
 export const ONE_TIME_NOTICES_TO_DISPLAY = new Set();
 
@@ -35,5 +35,5 @@ export function update_notice_to_display(onboarding_steps) {
 }
 
 export function initialize() {
-    update_notice_to_display(page_params.onboarding_steps);
+    update_notice_to_display(state_data.onboarding_steps);
 }

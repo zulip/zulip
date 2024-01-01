@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as channel from "./channel";
-import {page_params} from "./page_params";
+import {state_data} from "./state_data";
 import * as upload_widget from "./upload_widget";
 import type {UploadFunction} from "./upload_widget";
 
@@ -10,10 +10,10 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         return $<HTMLInputElement>("#realm-icon-upload-widget .image_file_input").expectOne();
     };
 
-    if (!page_params.is_admin) {
+    if (!state_data.is_admin) {
         return;
     }
-    if (page_params.realm_icon_source === "G") {
+    if (state_data.realm_icon_source === "G") {
         $("#realm-icon-upload-widget .image-delete-button").hide();
     } else {
         $("#realm-icon-upload-widget .image-delete-button").show();
@@ -31,13 +31,13 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         $("#realm-icon-upload-widget .image_file_input_error").expectOne(),
         $("#realm-icon-upload-widget .image_upload_button").expectOne(),
         upload_function,
-        page_params.max_icon_file_size_mib,
+        state_data.max_icon_file_size_mib,
     );
 }
 
 export function rerender(): void {
-    $("#realm-icon-upload-widget .image-block").attr("src", page_params.realm_icon_url);
-    if (page_params.realm_icon_source === "U") {
+    $("#realm-icon-upload-widget .image-block").attr("src", state_data.realm_icon_url);
+    if (state_data.realm_icon_source === "U") {
         $("#realm-icon-upload-widget .image-delete-button").show();
     } else {
         $("#realm-icon-upload-widget .image-delete-button").hide();

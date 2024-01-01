@@ -6,7 +6,7 @@ const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {state_data} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
@@ -62,13 +62,13 @@ const realm_available_video_chat_providers = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.realm_available_video_chat_providers = realm_available_video_chat_providers;
+        state_data.realm_available_video_chat_providers = realm_available_video_chat_providers;
         f(helpers);
     });
 }
 
 test("videos", ({override}) => {
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
+    state_data.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
 
     override(upload, "feature_check", noop);
 
@@ -117,15 +117,15 @@ test("videos", ({override}) => {
         const handler = $("body").get_on_handler("click", ".video_link");
         $("textarea#compose-textarea").val("");
 
-        page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
+        state_data.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
 
-        page_params.realm_jitsi_server_url = null;
-        page_params.server_jitsi_server_url = null;
+        state_data.realm_jitsi_server_url = null;
+        state_data.server_jitsi_server_url = null;
         handler(ev);
         assert.ok(!called);
 
-        page_params.realm_jitsi_server_url = null;
-        page_params.server_jitsi_server_url = "https://server.example.com";
+        state_data.realm_jitsi_server_url = null;
+        state_data.server_jitsi_server_url = "https://server.example.com";
         handler(ev);
         // video link ids consist of 15 random digits
         let video_link_regex =
@@ -133,16 +133,16 @@ test("videos", ({override}) => {
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
 
-        page_params.realm_jitsi_server_url = "https://realm.example.com";
-        page_params.server_jitsi_server_url = null;
+        state_data.realm_jitsi_server_url = "https://realm.example.com";
+        state_data.server_jitsi_server_url = null;
         handler(ev);
         video_link_regex =
             /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
 
-        page_params.realm_jitsi_server_url = "https://realm.example.com";
-        page_params.server_jitsi_server_url = "https://server.example.com";
+        state_data.realm_jitsi_server_url = "https://realm.example.com";
+        state_data.server_jitsi_server_url = "https://server.example.com";
         handler(ev);
         video_link_regex =
             /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
@@ -170,8 +170,8 @@ test("videos", ({override}) => {
             called = true;
         });
 
-        page_params.realm_video_chat_provider = realm_available_video_chat_providers.zoom.id;
-        page_params.has_zoom_token = false;
+        state_data.realm_video_chat_provider = realm_available_video_chat_providers.zoom.id;
+        state_data.has_zoom_token = false;
 
         window.open = (url) => {
             assert.ok(url.endsWith("/calls/zoom/register"));
@@ -225,7 +225,7 @@ test("videos", ({override}) => {
         const handler = $("body").get_on_handler("click", ".video_link");
         $("textarea#compose-textarea").val("");
 
-        page_params.realm_video_chat_provider =
+        state_data.realm_video_chat_provider =
             realm_available_video_chat_providers.big_blue_button.id;
 
         override(compose_closed_ui, "get_recipient_label", () => "a");
@@ -249,7 +249,7 @@ test("videos", ({override}) => {
 test("test_video_chat_button_toggle disabled", ({override}) => {
     override(upload, "feature_check", noop);
 
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
+    state_data.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), false);
 });
@@ -257,8 +257,8 @@ test("test_video_chat_button_toggle disabled", ({override}) => {
 test("test_video_chat_button_toggle no url", ({override}) => {
     override(upload, "feature_check", noop);
 
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
-    page_params.jitsi_server_url = null;
+    state_data.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
+    state_data.jitsi_server_url = null;
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), false);
 });
@@ -266,8 +266,8 @@ test("test_video_chat_button_toggle no url", ({override}) => {
 test("test_video_chat_button_toggle enabled", ({override}) => {
     override(upload, "feature_check", noop);
 
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
-    page_params.realm_jitsi_server_url = "https://meet.jit.si";
+    state_data.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
+    state_data.realm_jitsi_server_url = "https://meet.jit.si";
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
 });

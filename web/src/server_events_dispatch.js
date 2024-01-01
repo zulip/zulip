@@ -33,7 +33,6 @@ import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -67,6 +66,7 @@ import * as settings_users from "./settings_users";
 import * as sidebar_ui from "./sidebar_ui";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
@@ -99,8 +99,8 @@ export function dispatch_normal_event(event) {
             break;
 
         case "custom_profile_fields":
-            page_params.custom_profile_fields = event.fields;
-            settings_profile_fields.populate_profile_fields(page_params.custom_profile_fields);
+            state_data.custom_profile_fields = event.fields;
+            settings_profile_fields.populate_profile_fields(state_data.custom_profile_fields);
             settings_account.add_custom_profile_fields_to_settings();
             break;
 
@@ -134,7 +134,7 @@ export function dispatch_normal_event(event) {
         }
 
         case "has_zoom_token":
-            page_params.has_zoom_token = event.value;
+            state_data.has_zoom_token = event.value;
             if (event.value) {
                 for (const callback of compose_call.zoom_token_callbacks.values()) {
                     callback();
@@ -146,8 +146,8 @@ export function dispatch_normal_event(event) {
         case "onboarding_steps":
             hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
             onboarding_steps.update_notice_to_display(event.onboarding_steps);
-            page_params.onboarding_steps = page_params.onboarding_steps
-                ? [...page_params.onboarding_steps, ...event.onboarding_steps]
+            state_data.onboarding_steps = state_data.onboarding_steps
+                ? [...state_data.onboarding_steps, ...event.onboarding_steps]
                 : event.onboarding_steps;
             break;
 
@@ -249,7 +249,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "update":
                     if (Object.hasOwn(realm_settings, event.property)) {
-                        page_params["realm_" + event.property] = event.value;
+                        state_data["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
 
@@ -283,7 +283,7 @@ export function dispatch_normal_event(event) {
                     switch (event.property) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
-                                page_params["realm_" + key] = value;
+                                state_data["realm_" + key] = value;
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
@@ -305,8 +305,8 @@ export function dispatch_normal_event(event) {
                             }
                             break;
                         case "icon":
-                            page_params.realm_icon_url = event.data.icon_url;
-                            page_params.realm_icon_source = event.data.icon_source;
+                            state_data.realm_icon_url = event.data.icon_url;
+                            state_data.realm_icon_source = event.data.icon_source;
                             realm_icon.rerender();
                             {
                                 const electron_bridge = window.electron_bridge;
@@ -319,13 +319,13 @@ export function dispatch_normal_event(event) {
                             }
                             break;
                         case "logo":
-                            page_params.realm_logo_url = event.data.logo_url;
-                            page_params.realm_logo_source = event.data.logo_source;
+                            state_data.realm_logo_url = event.data.logo_url;
+                            state_data.realm_logo_source = event.data.logo_source;
                             realm_logo.render();
                             break;
                         case "night_logo":
-                            page_params.realm_night_logo_url = event.data.night_logo_url;
-                            page_params.realm_night_logo_source = event.data.night_logo_source;
+                            state_data.realm_night_logo_url = event.data.night_logo_url;
+                            state_data.realm_night_logo_source = event.data.night_logo_source;
                             realm_logo.render();
                             break;
                         default:
@@ -346,7 +346,7 @@ export function dispatch_normal_event(event) {
                     window.location.href = "/accounts/deactivated/";
                     break;
             }
-            if (page_params.is_admin) {
+            if (state_data.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
                 navbar_alerts.show_profile_incomplete(navbar_alerts.check_profile_incomplete());
@@ -389,15 +389,15 @@ export function dispatch_normal_event(event) {
             break;
 
         case "realm_linkifiers":
-            page_params.realm_linkifiers = event.realm_linkifiers;
-            linkifiers.update_linkifier_rules(page_params.realm_linkifiers);
-            settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
+            state_data.realm_linkifiers = event.realm_linkifiers;
+            linkifiers.update_linkifier_rules(state_data.realm_linkifiers);
+            settings_linkifiers.populate_linkifiers(state_data.realm_linkifiers);
             break;
 
         case "realm_playgrounds":
-            page_params.realm_playgrounds = event.realm_playgrounds;
-            realm_playground.update_playgrounds(page_params.realm_playgrounds);
-            settings_playgrounds.populate_playgrounds(page_params.realm_playgrounds);
+            state_data.realm_playgrounds = event.realm_playgrounds;
+            realm_playground.update_playgrounds(state_data.realm_playgrounds);
+            settings_playgrounds.populate_playgrounds(state_data.realm_playgrounds);
             break;
 
         case "realm_domains":
@@ -405,35 +405,35 @@ export function dispatch_normal_event(event) {
                 let i;
                 switch (event.op) {
                     case "add":
-                        page_params.realm_domains.push(event.realm_domain);
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
+                        state_data.realm_domains.push(event.realm_domain);
+                        settings_org.populate_realm_domains_label(state_data.realm_domains);
                         settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
+                            state_data.realm_domains,
                         );
                         break;
                     case "change":
-                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                            if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
-                                page_params.realm_domains[i].allow_subdomains =
+                        for (i = 0; i < state_data.realm_domains.length; i += 1) {
+                            if (state_data.realm_domains[i].domain === event.realm_domain.domain) {
+                                state_data.realm_domains[i].allow_subdomains =
                                     event.realm_domain.allow_subdomains;
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
+                        settings_org.populate_realm_domains_label(state_data.realm_domains);
                         settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
+                            state_data.realm_domains,
                         );
                         break;
                     case "remove":
-                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                            if (page_params.realm_domains[i].domain === event.domain) {
-                                page_params.realm_domains.splice(i, 1);
+                        for (i = 0; i < state_data.realm_domains.length; i += 1) {
+                            if (state_data.realm_domains[i].domain === event.domain) {
+                                state_data.realm_domains.splice(i, 1);
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
+                        settings_org.populate_realm_domains_label(state_data.realm_domains);
                         settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
+                            state_data.realm_domains,
                         );
                         break;
                     default:
@@ -561,12 +561,12 @@ export function dispatch_normal_event(event) {
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream.stream_id);
-                        if (page_params.realm_notifications_stream_id === stream.stream_id) {
-                            page_params.realm_notifications_stream_id = -1;
+                        if (state_data.realm_notifications_stream_id === stream.stream_id) {
+                            state_data.realm_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("notifications_stream_id");
                         }
-                        if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
-                            page_params.realm_signup_notifications_stream_id = -1;
+                        if (state_data.realm_signup_notifications_stream_id === stream.stream_id) {
+                            state_data.realm_signup_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("signup_notifications_stream_id");
                         }
                     }
@@ -639,7 +639,7 @@ export function dispatch_normal_event(event) {
             }
             break;
         case "typing":
-            if (event.sender.user_id === page_params.user_id) {
+            if (event.sender.user_id === state_data.user_id) {
                 // typing notifications are sent to the user who is typing
                 // as well as recipients; we ignore such self-generated events.
                 return;
@@ -816,7 +816,7 @@ export function dispatch_normal_event(event) {
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
-                activity_ui.redraw_user(page_params.user_id);
+                activity_ui.redraw_user(state_data.user_id);
                 break;
             }
             if (event.property === "email_address_visibility") {

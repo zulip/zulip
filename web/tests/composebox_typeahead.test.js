@@ -7,7 +7,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {state_data, user_settings} = require("./lib/zpage_params");
 
 let autosize_called;
 
@@ -739,7 +739,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     let expected_value;
-    page_params.custom_profile_field_types = {
+    state_data.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
 
@@ -1609,7 +1609,7 @@ test("content_highlighter", ({override_rewire}) => {
 test("filter_and_sort_mentions (normal)", () => {
     compose_state.set_message_type("stream");
     const is_silent = false;
-    page_params.user_id = 101;
+    state_data.user_id = 101;
     let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
     const mention_all = ct.broadcast_mentions()[0];
@@ -1617,14 +1617,14 @@ test("filter_and_sort_mentions (normal)", () => {
 
     // call_center group is shown in typeahead even when user is member of
     // one of the subgroups of can_mention_group.
-    page_params.user_id = 104;
+    state_data.user_id = 104;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
 
     // call_center group is not shown in typeahead when user is neither
     // a direct member of can_mention_group nor a member of any of its
     // recursive subgroups.
-    page_params.user_id = 102;
+    state_data.user_id = 102;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(suggestions, [mention_all, ali, alice, hal]);
 });
@@ -1639,7 +1639,7 @@ test("filter_and_sort_mentions (silent)", () => {
     // call_center group is shown in typeahead irrespective of whether
     // user is member of can_mention_group or its subgroups for a
     // silent mention.
-    page_params.user_id = 102;
+    state_data.user_id = 102;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
 });
@@ -1750,7 +1750,7 @@ test("typeahead_results", () => {
     // Earlier user group and stream mentions were autocompleted by their
     // description too. This is now removed as it often led to unexpected
     // behaviour, and did not have any great discoverability advantage.
-    page_params.user_id = 101;
+    state_data.user_id = 101;
     // Autocomplete user group mentions by group name.
     assert_mentions_matches("hamletchar", [hamletcharacters]);
 

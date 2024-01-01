@@ -3,7 +3,7 @@ import {FetchStatus} from "./fetch_status";
 import type {Filter} from "./filter";
 import type {Message} from "./message_store";
 import * as muted_users from "./muted_users";
-import {page_params} from "./page_params";
+import {state_data} from "./state_data";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -605,7 +605,7 @@ export class MessageListData {
     }
 
     get_last_message_sent_by_me(): Message | undefined {
-        const msg_index = this._items.findLastIndex((msg) => msg.sender_id === page_params.user_id);
+        const msg_index = this._items.findLastIndex((msg) => msg.sender_id === state_data.user_id);
         if (msg_index === -1) {
             return undefined;
         }

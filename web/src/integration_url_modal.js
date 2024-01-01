@@ -7,7 +7,7 @@ import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t_html} from "./i18n";
-import {page_params} from "./page_params";
+import {state_data} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
 
@@ -25,7 +25,7 @@ export function show_generate_integration_url_modal(api_key) {
     };
     const html_body = render_generate_integration_url_modal({
         default_url_message,
-        max_topic_length: page_params.max_topic_length,
+        max_topic_length: state_data.max_topic_length,
     });
 
     function generate_integration_url_post_render() {
@@ -76,7 +76,7 @@ export function show_generate_integration_url_modal(api_key) {
                 }
             }
 
-            const realm_url = page_params.realm_uri;
+            const realm_url = state_data.realm_uri;
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params}`);
             $dialog_submit_button.prop("disabled", false);
@@ -102,7 +102,7 @@ export function show_generate_integration_url_modal(api_key) {
         function get_options_for_integration_input_dropdown_widget() {
             const options = [
                 default_integration_option,
-                ...page_params.realm_incoming_webhook_bots
+                ...state_data.realm_incoming_webhook_bots
                     .sort((a, b) => util.strcmp(a.display_name, b.display_name))
                     .map((bot) => ({
                         name: bot.display_name,

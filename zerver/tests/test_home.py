@@ -39,19 +39,47 @@ logger_string = "zulip.soft_deactivation"
 class HomeTest(ZulipTestCase):
     # Keep this list sorted!!!
     expected_page_params_keys = [
-        "alert_words",
         "apps_page_url",
+        "bot_types",
+        "corporate_enabled",
+        "development_environment",
+        "first_in_realm",
+        "furthest_read_time",
+        "insecure_desktop_app",
+        "is_spectator",
+        "language_list",
+        "login_page",
+        "narrow",
+        "narrow_stream",
+        "needs_tutorial",
+        "no_event_queue",
+        "promote_sponsoring_zulip",
+        "prompt_for_invites",
+        "request_language",
+        "server_sentry_dsn",
+        "show_billing",
+        "show_plans",
+        "show_remote_billing",
+        "show_webathena",
+        "sponsorship_pending",
+        "state_data",
+        "test_suite",
+        "translation_data",
+        "two_fa_enabled",
+        "two_fa_enabled_user",
+        "warn_no_email",
+    ]
+    expected_state_data_keys = [
+        "alert_words",
         "avatar_source",
         "avatar_url",
         "avatar_url_medium",
-        "bot_types",
         "can_create_private_streams",
         "can_create_public_streams",
         "can_create_streams",
         "can_create_web_public_streams",
         "can_invite_others_to_realm",
         "can_subscribe_other_users",
-        "corporate_enabled",
         "cross_realm_bots",
         "custom_profile_field_types",
         "custom_profile_fields",
@@ -60,23 +88,17 @@ class HomeTest(ZulipTestCase):
         "drafts",
         "email",
         "event_queue_longpoll_timeout_seconds",
-        "first_in_realm",
         "full_name",
-        "furthest_read_time",
         "giphy_api_key",
         "giphy_rating_options",
         "has_zoom_token",
-        "insecure_desktop_app",
         "is_admin",
         "is_billing_admin",
         "is_guest",
         "is_moderator",
         "is_owner",
-        "is_spectator",
         "jitsi_server_url",
-        "language_list",
         "last_event_id",
-        "login_page",
         "max_avatar_file_size_mib",
         "max_file_upload_size_mib",
         "max_icon_file_size_mib",
@@ -88,17 +110,11 @@ class HomeTest(ZulipTestCase):
         "max_topic_length",
         "muted_topics",
         "muted_users",
-        "narrow",
-        "narrow_stream",
-        "needs_tutorial",
         "never_subscribed",
-        "no_event_queue",
         "onboarding_steps",
         "password_min_guesses",
         "password_min_length",
         "presences",
-        "promote_sponsoring_zulip",
-        "prompt_for_invites",
         "queue_id",
         "realm_add_custom_emoji_policy",
         "realm_allow_edit_history",
@@ -185,7 +201,6 @@ class HomeTest(ZulipTestCase):
         "realm_want_advertise_in_communities_directory",
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
-        "request_language",
         "scheduled_messages",
         "server_avatar_changes_disabled",
         "server_emoji_data_url",
@@ -197,7 +212,6 @@ class HomeTest(ZulipTestCase):
         "server_needs_upgrade",
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
-        "server_sentry_dsn",
         "server_supported_permission_settings",
         "server_timestamp",
         "server_typing_started_expiry_period_milliseconds",
@@ -205,18 +219,9 @@ class HomeTest(ZulipTestCase):
         "server_typing_stopped_wait_period_milliseconds",
         "server_web_public_streams_enabled",
         "settings_send_digest_emails",
-        "show_billing",
-        "show_plans",
-        "show_remote_billing",
-        "show_webathena",
-        "sponsorship_pending",
         "starred_messages",
         "stop_words",
         "subscriptions",
-        "test_suite",
-        "translation_data",
-        "two_fa_enabled",
-        "two_fa_enabled_user",
         "unread_msgs",
         "unsubscribed",
         "upgrade_text_for_wide_organization_logo",
@@ -224,7 +229,6 @@ class HomeTest(ZulipTestCase):
         "user_settings",
         "user_status",
         "user_topics",
-        "warn_no_email",
         "zulip_feature_level",
         "zulip_merge_base",
         "zulip_plan_is_not_limited",
@@ -269,9 +273,8 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
 
-        actual_keys = sorted(str(k) for k in page_params)
-
-        self.assertEqual(actual_keys, self.expected_page_params_keys)
+        self.assertCountEqual(page_params, self.expected_page_params_keys)
+        self.assertCountEqual(page_params["state_data"], self.expected_state_data_keys)
 
         # TODO: Inspect the page_params data further.
         # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
@@ -290,8 +293,7 @@ class HomeTest(ZulipTestCase):
             "user_id",
         ]
 
-        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0])
-        self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
+        self.assertCountEqual(page_params["state_data"]["realm_bots"][0], realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
         realm = get_realm("zulip")
@@ -310,13 +312,12 @@ class HomeTest(ZulipTestCase):
                 self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        actual_keys = sorted(str(k) for k in page_params)
-        expected_keys = [
-            *self.expected_page_params_keys,
+        self.assertCountEqual(page_params, self.expected_page_params_keys)
+        expected_state_data_keys = [
+            *self.expected_state_data_keys,
             "demo_organization_scheduled_deletion_date",
         ]
-
-        self.assertEqual(set(actual_keys), set(expected_keys))
+        self.assertCountEqual(page_params["state_data"], expected_state_data_keys)
 
     def test_logged_out_home(self) -> None:
         realm = get_realm("zulip")
@@ -335,7 +336,6 @@ class HomeTest(ZulipTestCase):
         # Check no unnecessary params are passed to spectators.
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["is_spectator"], True)
-        actual_keys = sorted(str(k) for k in page_params)
         expected_keys = [
             "apps_page_url",
             "bot_types",
@@ -352,7 +352,6 @@ class HomeTest(ZulipTestCase):
             "no_event_queue",
             "promote_sponsoring_zulip",
             "prompt_for_invites",
-            "queue_id",
             "realm_rendered_description",
             "request_language",
             "server_sentry_dsn",
@@ -361,13 +360,18 @@ class HomeTest(ZulipTestCase):
             "show_remote_billing",
             "show_webathena",
             "sponsorship_pending",
+            "state_data",
             "test_suite",
             "translation_data",
             "two_fa_enabled",
             "two_fa_enabled_user",
             "warn_no_email",
         ]
-        self.assertEqual(actual_keys, expected_keys)
+        self.assertCountEqual(page_params, expected_keys)
+        expected_state_data_keys = [
+            "queue_id",
+        ]
+        self.assertCountEqual(page_params["state_data"], expected_state_data_keys)
 
     def test_sentry_keys(self) -> None:
         def home_params() -> Dict[str, Any]:
@@ -635,7 +639,8 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         page_params = self._get_page_params(result)
         self.assertEqual(
-            page_params["realm_notifications_stream_id"], get_stream("Denmark", realm).id
+            page_params["state_data"]["realm_notifications_stream_id"],
+            get_stream("Denmark", realm).id,
         )
 
     def create_bot(self, owner: UserProfile, bot_email: str, bot_name: str) -> UserProfile:
@@ -669,7 +674,8 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         page_params = self._get_page_params(result)
         self.assertEqual(
-            page_params["realm_signup_notifications_stream_id"], get_stream("Denmark", realm).id
+            page_params["state_data"]["realm_signup_notifications_stream_id"],
+            get_stream("Denmark", realm).id,
         )
 
     def test_people(self) -> None:
@@ -712,7 +718,7 @@ class HomeTest(ZulipTestCase):
         ]
 
         for field in buckets:
-            users = page_params[field]
+            users = page_params["state_data"][field]
             self.assertGreaterEqual(len(users), 3, field)
             for rec in users:
                 self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
@@ -724,9 +730,9 @@ class HomeTest(ZulipTestCase):
                     self.assertIn("is_bot", rec)
                     self.assertNotIn("is_active", rec)
 
-        active_ids = {p["user_id"] for p in page_params["realm_users"]}
-        non_active_ids = {p["user_id"] for p in page_params["realm_non_active_users"]}
-        bot_ids = {p["user_id"] for p in page_params["realm_bots"]}
+        active_ids = {p["user_id"] for p in page_params["state_data"]["realm_users"]}
+        non_active_ids = {p["user_id"] for p in page_params["state_data"]["realm_non_active_users"]}
+        bot_ids = {p["user_id"] for p in page_params["state_data"]["realm_bots"]}
 
         self.assertIn(hamlet.id, active_ids)
         self.assertIn(defunct_user.id, non_active_ids)
@@ -739,7 +745,7 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn(hamlet.id, non_active_ids)
         self.assertNotIn(defunct_user.id, active_ids)
 
-        cross_bots = page_params["cross_realm_bots"]
+        cross_bots = page_params["state_data"]["cross_realm_bots"]
         self.assert_length(cross_bots, 3)
         cross_bots.sort(key=lambda d: d["email"])
         for cross_bot in cross_bots:
@@ -824,7 +830,7 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
-        self.assertEqual(page_params["max_message_id"], -1)
+        self.assertEqual(page_params["state_data"]["max_message_id"], -1)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     def test_get_billing_info(self) -> None:
@@ -1099,7 +1105,7 @@ class HomeTest(ZulipTestCase):
     ) -> int:
         stream_narrow = self._get_home_page(stream=stream, topic=topic)
         page_params = self._get_page_params(stream_narrow)
-        return page_params["unread_msgs"]["count"]
+        return page_params["state_data"]["unread_msgs"]["count"]
 
     def test_unread_count_user_soft_deactivation(self) -> None:
         # In this test we make sure if a soft deactivated user had unread
@@ -1217,7 +1223,7 @@ class HomeTest(ZulipTestCase):
         ):
             result = self.client_get("/de/")
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params["user_settings"]["default_language"], "es")
+        self.assertEqual(page_params["state_data"]["user_settings"]["default_language"], "es")
         # TODO: Verify that the actual language we're using in the
         # translation data is German.
 
@@ -1230,7 +1236,7 @@ class HomeTest(ZulipTestCase):
         self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params["user_settings"]["default_language"], "es")
+        self.assertEqual(page_params["state_data"]["user_settings"]["default_language"], "es")
 
     # TODO: This test would likely be better written as a /register
     # API test with just the drafts event type, to avoid the
@@ -1262,13 +1268,17 @@ class HomeTest(ZulipTestCase):
         # recently edited ones.
         self.login("hamlet")
         page_params = self._get_page_params(self._get_home_page())
-        self.assertEqual(page_params["user_settings"]["enable_drafts_synchronization"], True)
-        self.assert_length(page_params["drafts"], settings.MAX_DRAFTS_IN_REGISTER_RESPONSE)
+        self.assertEqual(
+            page_params["state_data"]["user_settings"]["enable_drafts_synchronization"], True
+        )
+        self.assert_length(
+            page_params["state_data"]["drafts"], settings.MAX_DRAFTS_IN_REGISTER_RESPONSE
+        )
         self.assertEqual(
             Draft.objects.count(), settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1 + initial_count
         )
         # +2 for what's already in the test DB.
-        for draft in page_params["drafts"]:
+        for draft in page_params["state_data"]["drafts"]:
             self.assertNotEqual(draft["timestamp"], base_time)
 
     def test_realm_push_notifications_enabled_end_timestamp(self) -> None:
@@ -1281,6 +1291,6 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page(stream="Denmark")
         page_params = self._get_page_params(result)
         self.assertEqual(
-            page_params["realm_push_notifications_enabled_end_timestamp"],
+            page_params["state_data"]["realm_push_notifications_enabled_end_timestamp"],
             datetime_to_timestamp(end_timestamp),
         )

@@ -5,12 +5,12 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {state_data, user_settings} = require("./lib/zpage_params");
 
 set_global("document", "document-stub");
 
-page_params.is_admin = false;
-page_params.realm_users = [];
+state_data.is_admin = false;
+state_data.realm_users = [];
 
 // We use this with override.
 let unread_unmuted_count;

@@ -4,11 +4,11 @@ import tippy from "tippy.js";
 import render_personal_menu from "../templates/personal_menu.hbs";
 
 import * as narrow from "./narrow";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
+import {state_data} from "./state_data";
 import {parse_html} from "./ui_util";
 import * as user_profile from "./user_profile";
 import * as user_status from "./user_status";
@@ -47,7 +47,7 @@ export function initialize() {
 
             $popper.one("click", ".personal-menu-clear-status", (e) => {
                 e.preventDefault();
-                const me = page_params.user_id;
+                const me = state_data.user_id;
                 user_status.server_update_status({
                     user_id: me,
                     status_text: "",
@@ -68,7 +68,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".narrow-self-direct-message", (e) => {
-                const user_id = page_params.user_id;
+                const user_id = state_data.user_id;
                 const email = people.get_by_user_id(user_id).email;
                 narrow.by("dm", email, {trigger: "personal menu"});
                 popovers.hide_all();
@@ -76,7 +76,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".narrow-messages-sent", (e) => {
-                const user_id = page_params.user_id;
+                const user_id = state_data.user_id;
                 const email = people.get_by_user_id(user_id).email;
                 narrow.by("sender", email, {trigger: "personal menu"});
                 popovers.hide_all();

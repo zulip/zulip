@@ -3,6 +3,7 @@ import Handlebars from "handlebars/runtime";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
+import {state_data} from "./state_data";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
 import {StreamPostPolicy} from "./sub_store";
 import type {
@@ -21,7 +22,7 @@ import type {
 
     We plan to eventually transition much of this file to have a more
     standard format and then to be populated using data sent from the
-    Zulip server in `page_params`, so that the data is available for
+    Zulip server in `state_data`, so that the data is available for
     other parts of the ecosystem to use (including the mobile apps and
     API documentation) without a ton of copying.
 */
@@ -805,7 +806,7 @@ export function get_notifications_table_row_data(
             is_mobile_checkbox: false,
         };
         if (column === "mobile") {
-            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+            checkbox.is_disabled = !state_data.realm_push_notifications_enabled;
             checkbox.is_mobile_checkbox = true;
         }
         return checkbox;
@@ -857,8 +858,8 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
         other_email_settings,
     },
     show_push_notifications_tooltip: {
-        push_notifications: !page_params.realm_push_notifications_enabled,
-        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
+        push_notifications: !state_data.realm_push_notifications_enabled,
+        enable_online_push_notifications: !state_data.realm_push_notifications_enabled,
     },
 });
 

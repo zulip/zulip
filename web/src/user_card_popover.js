@@ -32,6 +32,7 @@ import {hide_all} from "./popovers";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as sidebar_ui from "./sidebar_ui";
+import {state_data} from "./state_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
@@ -255,8 +256,8 @@ function get_user_card_popover_data(
         );
     }
     // Filtering out only those profile fields that can be display in the popover and are not empty.
-    const field_types = page_params.custom_profile_field_types;
-    const display_profile_fields = page_params.custom_profile_fields
+    const field_types = state_data.custom_profile_field_types;
+    const display_profile_fields = state_data.custom_profile_fields
         .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
@@ -265,7 +266,7 @@ function get_user_card_popover_data(
         can_send_private_message:
             is_active &&
             !is_me &&
-            page_params.realm_private_message_policy !==
+            state_data.realm_private_message_policy !==
                 settings_config.private_message_policy_values.disabled.code,
         display_profile_fields,
         has_message_context,
@@ -479,7 +480,7 @@ function toggle_user_card_popover_manage_menu(element, user) {
 
     const args = {
         can_mute: muting_allowed && !is_muted,
-        can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
+        can_manage_user: state_data.is_admin && !is_me && !is_system_bot,
         can_unmute: muting_allowed && is_muted,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,

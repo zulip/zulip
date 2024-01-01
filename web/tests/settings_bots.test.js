@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {state_data} = require("./lib/zpage_params");
 
 const bot_data_params = {
     realm_bots: [
@@ -45,8 +45,8 @@ bot_data.initialize(bot_data_params);
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        page_params.realm_uri = "https://chat.example.com";
-        page_params.realm_embedded_bots = [
+        state_data.realm_uri = "https://chat.example.com";
+        state_data.realm_embedded_bots = [
             {name: "converter", config: {}},
             {name: "giphy", config: {key: "12345678"}},
             {name: "foobot", config: {bar: "baz", qux: "quux"}},
@@ -142,13 +142,13 @@ test("test tab clicks", () => {
 });
 
 test("can_create_new_bots", () => {
-    page_params.is_admin = true;
+    state_data.is_admin = true;
     assert.ok(settings_bots.can_create_new_bots());
 
-    page_params.is_admin = false;
-    page_params.realm_bot_creation_policy = 1;
+    state_data.is_admin = false;
+    state_data.realm_bot_creation_policy = 1;
     assert.ok(settings_bots.can_create_new_bots());
 
-    page_params.realm_bot_creation_policy = 3;
+    state_data.realm_bot_creation_policy = 3;
     assert.ok(!settings_bots.can_create_new_bots());
 });

@@ -8,7 +8,7 @@ const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {page_params, state_data} = require("./lib/zpage_params");
 
 const message_store = mock_esm("../src/message_store");
 
@@ -979,7 +979,7 @@ function test_mit_exceptions() {
 }
 
 test("mit_exceptions", ({override}) => {
-    override(page_params, "realm_is_zephyr_mirror_realm", true);
+    override(state_data, "realm_is_zephyr_mirror_realm", true);
     test_mit_exceptions();
 });
 
@@ -1753,7 +1753,7 @@ test("navbar_helpers", () => {
         },
     ];
 
-    page_params.realm_enable_guest_user_indicator = true;
+    state_data.realm_enable_guest_user_indicator = true;
 
     for (const test_case of test_cases) {
         test_helpers(test_case);
@@ -1808,7 +1808,7 @@ test("navbar_helpers", () => {
 
     test_get_title(stream_topic_search_term_test_case);
 
-    page_params.realm_enable_guest_user_indicator = false;
+    state_data.realm_enable_guest_user_indicator = false;
     const guest_user_test_cases_without_indicator = [
         {
             operator: guest_sender,

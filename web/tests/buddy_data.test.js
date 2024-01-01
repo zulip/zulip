@@ -7,7 +7,7 @@ const _ = require("lodash");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {state_data, user_settings} = require("./lib/zpage_params");
 
 const timerender = mock_esm("../src/timerender");
 
@@ -316,7 +316,7 @@ test("title_data", () => {
         third_line: "translated: Active now",
         show_you: true,
     };
-    page_params.user_id = me.user_id;
+    state_data.user_id = me.user_id;
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
@@ -422,7 +422,7 @@ test("always show me", () => {
 });
 
 test("level", () => {
-    page_params.server_presence_offline_threshold_seconds = 200;
+    state_data.server_presence_offline_threshold_seconds = 200;
 
     add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
@@ -456,12 +456,12 @@ test("user_last_seen_time_status", ({override}) => {
 
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
-    page_params.realm_is_zephyr_mirror_realm = true;
+    state_data.realm_is_zephyr_mirror_realm = true;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Activity unknown",
     );
-    page_params.realm_is_zephyr_mirror_realm = false;
+    state_data.realm_is_zephyr_mirror_realm = false;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Active more than 2 weeks ago",
