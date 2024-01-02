@@ -12,20 +12,29 @@ const max_conversations_to_show = 8;
 // Maximum number of conversation threads to show in default view with unreads.
 const max_conversations_to_show_with_unreads = 15;
 
-export function get_active_user_ids_string() {
+export function get_active_user_ids() {
     const filter = narrow_state.filter();
 
     if (!filter) {
-        return undefined;
+        return {
+            user_ids_string: undefined,
+            user_ids_array: undefined,
+        };
     }
 
     const emails = filter.operands("dm")[0];
 
     if (!emails) {
-        return undefined;
+        return {
+            user_ids_string: undefined,
+            user_ids_array: undefined,
+        };
     }
 
-    return people.emails_strings_to_user_ids_string(emails);
+    return {
+        user_ids_string: people.emails_strings_to_user_ids_string(emails),
+        user_ids_array: people.emails_strings_to_user_ids_array(emails),
+    };
 }
 
 export function get_conversations() {
@@ -33,7 +42,7 @@ export function get_conversations() {
     const display_objects = [];
 
     // The user_ids_string for the current view, if any.
-    const active_user_ids_string = get_active_user_ids_string();
+    const active_user_ids_string = get_active_user_ids().user_ids_string;
 
     for (const conversation of private_messages) {
         const user_ids_string = conversation.user_ids_string;
