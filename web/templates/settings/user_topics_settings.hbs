@@ -1,27 +1,16 @@
 <div id="user-topic-settings" class="settings-section" data-name="topics">
     <p>
-        {{#if development}}
-            {{#tr}}
-                Zulip lets you configure notifications for each topic. You can also automatically follow or unmute topics
-                you start or participate in.
-            {{/tr}}
-        {{else}}
-            {{#tr}}
-                Zulip lets you mute topics and streams to avoid receiving notifications messages you are not interested in.
-                Muting a stream effectively mutes all topics in that stream. You can also manually mute a topic in an unmuted stream,
-                or unmute a topic in a muted stream. <z-link>Learn more.</z-link>
-                {{#*inline "z-link"}}<a href="/help/topic-notifications" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
-        {{/if}}
+        {{#tr}}
+            Zulip lets you follow topics you are interested in, and mute topics you want to ignore.
+            You can also <z-automatically-follow>automatically follow</z-automatically-follow>
+            topics you start or participate in, and topics where you're mentioned.
+            {{#*inline "z-automatically-follow"}}<a href="/help/follow-a-topic#automatically-follow-topics" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
     </p>
     <div class="settings_panel_list_header">
-        {{#if development}}
-            <h3>{{t "Topic settings"}}
-                {{> ../help_link_widget link="/help/topic-notifications" }}
-            </h3>
-        {{else}}
-            <h3>{{t "Topic settings"}}</h3>
-        {{/if}}
+        <h3>{{t "Topic settings"}}
+            {{> ../help_link_widget link="/help/topic-notifications" }}
+        </h3>
         {{> settings_save_discard_widget section_name="user-topics-settings" show_only_indicator=true }}
         <input id="user_topics_search" class="search filter_text_input" type="text" placeholder="{{t 'Filter topics' }}" aria-label="{{t 'Filter topics' }}"/>
     </div>
