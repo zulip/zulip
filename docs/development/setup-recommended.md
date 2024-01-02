@@ -86,7 +86,30 @@ Jump to:
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
 
-Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
+### Steps to Reproduce the ERR_PNPM_LINKING_FAILED
+1. Clone the Zulip repository to your local machine.
+2. Follow the standard setup instructions outlined in the documentation.
+3. During the execution of the setup script or when running `pnpm install`, observe the appearance of the ERR_PNPM_LINKING_FAILED error.
+
+### To address the ERR_PNPM_LINKING_FAILED error on macOS,
+ It is recommended to switch the file system implementation to osxfs (Legacy) in Docker for Mac settings. This adjustment has proven effective in resolving the issue for many users.
+
+### Steps to Update Docker for Mac Settings:
+1. Open Docker for Mac.
+2. Go to Preferences.
+3. Under the File Sharing tab, add or edit the paths to include the Zulip repository.
+4. Switch the file system implementation to osxfs (Legacy).
+5. Save changes and restart Docker for Mac.
+
+
+Continue with the regular setup process once these changes are applied.
+
+The setup process should proceed without encountering the ERR_PNPM_LINKING_FAILED error. By switching the file system implementation to osxfs (Legacy) in Docker for Mac settings, users can resolve this issue and continue with the Zulip repository setup smoothly.
+
+
+Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code)
+
+
 
 #### Ubuntu
 
