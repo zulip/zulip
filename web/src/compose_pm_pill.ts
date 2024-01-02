@@ -12,6 +12,7 @@ export let widget: UserPillWidget;
 
 const pill_config: InputPillConfig = {
     show_user_status_emoji: true,
+    exclude_inaccessible_users: true,
 };
 
 export function initialize_pill(): UserPillWidget {
