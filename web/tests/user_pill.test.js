@@ -2,13 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const user_pill = zrequire("user_pill");
+
+const settings_data = mock_esm("../src/settings_data");
 
 const alice = {
     email: "alice@example.com",
@@ -40,6 +42,19 @@ const isaac_item = {
     should_add_guest_user_indicator: false,
 };
 
+const inaccessible_user_id = 103;
+
+const inaccessible_user_item = {
+    email: "user103@example.com",
+    display_value: "translated: Unknown user",
+    type: "user",
+    user_id: inaccessible_user_id,
+    deactivated: false,
+    img_src: `http://zulip.zulipdev.com/avatar/${inaccessible_user_id}?s=50`,
+    status_emoji_info: undefined,
+    should_add_guest_user_indicator: false,
+};
+
 let pill_widget = {};
 
 function test(label, f) {
@@ -53,8 +68,8 @@ function test(label, f) {
 }
 
 test("create_item", () => {
-    function test_create_item(email, current_items, expected_item) {
-        const item = user_pill.create_item_from_email(email, current_items);
+    function test_create_item(email, current_items, expected_item, pill_config) {
+        const item = user_pill.create_item_from_email(email, current_items, pill_config);
         assert.deepEqual(item, expected_item);
     }
 
@@ -71,6 +86,15 @@ test("create_item", () => {
     test_create_item("bogus@example.com", [], undefined);
     test_create_item("isaac@example.com", [], isaac_item);
     test_create_item("isaac@example.com", [isaac_item], undefined);
+
+    settings_data.user_can_access_all_other_users = () => false;
+    page_params.realm_bot_domain = "example.com";
+    people.add_inaccessible_user(inaccessible_user_id);
+
+    test_create_item("user103@example.com", [], undefined, {exclude_inaccessible_users: true});
+    test_create_item("user103@example.com", [], inaccessible_user_item, {
+        exclude_inaccessible_users: false,
+    });
 });
 
 test("get_email", () => {
