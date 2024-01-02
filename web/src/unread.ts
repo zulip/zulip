@@ -6,6 +6,7 @@ import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
+import type {TopicHistoryEntry} from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import type {UpdateMessageEvent} from "./types";
 import {user_settings} from "./user_settings";
@@ -48,13 +49,6 @@ const unread_messages = new Set<number>();
 // Functionally a cache; see clear_and_populate_unread_mention_topics
 // for how we can refresh it efficiently.
 export const unread_mention_topics = new Map();
-
-type Topic = {
-    message_id: number;
-    pretty_name: string;
-    historical: boolean;
-    count: number;
-};
 
 type StreamCountInfo = {
     unmuted_count: number;
@@ -307,7 +301,7 @@ class UnreadTopicCounter {
 
     get_missing_topics(opts: {
         stream_id: number;
-        topic_dict: FoldDict<Topic>;
+        topic_dict: FoldDict<TopicHistoryEntry>;
     }): {pretty_name: string; message_id: number}[] {
         /* Clients have essentially complete unread data, but
          * stream_topic_history.is_complete_for_stream_id() can be
@@ -992,7 +986,7 @@ export function get_all_msg_ids(): number[] {
 
 export function get_missing_topics(opts: {
     stream_id: number;
-    topic_dict: FoldDict<Topic>;
+    topic_dict: FoldDict<TopicHistoryEntry>;
 }): {pretty_name: string; message_id: number}[] {
     return unread_topic_counter.get_missing_topics(opts);
 }
