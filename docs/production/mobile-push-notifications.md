@@ -287,6 +287,38 @@ If you'd like to rotate your server's API key for this service
 generate a new `zulip_org_key` and store that new key in
 `/etc/zulip/zulip-secrets.conf`.
 
+## Deactivating your server's registration
+
+If you are deleting your Zulip server or otherwise no longer want to
+use the mobile push notifications service, you can deactivate your
+registration as follows. If you are currently on a paid plan, you will
+need to cancel the plan via the plan management interface before
+deactivating your registration.
+
+Note that deactivation cannot be undone without contacting support; if
+you'd like to temporarily stop using the service, you can simply
+comment `PUSH_NOTIFICATION_BOUNCER_URL` as detailed in the second step
+without deactivating your registration.
+
+1. Run the deregistration command. If you installed Zulip directly on
+   the server (without Docker), run as root:
+
+   ```
+   su zulip -c '/home/zulip/deployments/current/manage.py register_server --deactivate'
+   ```
+
+   Or if you're using Docker, run:
+
+   ```
+   docker exec -it -u zulip <container_name> /home/zulip/deployments/current/manage.py register_server --deactivate
+   ```
+
+1. Comment out the
+   `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line
+   in your `/etc/zulip/settings.py` file (i.e., add `# ` at the
+   start of the line), and [restart your Zulip
+   server](settings.md#making-changes).
+
 ## Sending push notifications directly from your server
 
 This section documents an alternative way to send push notifications
