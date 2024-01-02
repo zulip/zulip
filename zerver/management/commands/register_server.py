@@ -10,7 +10,11 @@ from requests.models import Response
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand, check_config
-from zerver.lib.remote_server import PushBouncerSession, send_server_data_to_push_bouncer
+from zerver.lib.remote_server import (
+    PushBouncerSession,
+    send_json_to_push_bouncer,
+    send_server_data_to_push_bouncer,
+)
 
 if settings.DEVELOPMENT:
     SECRETS_FILENAME = "zproject/dev-secrets.conf"
@@ -28,10 +32,16 @@ class Command(ZulipBaseCommand):
             action="store_true",
             help="Agree to the Zulipchat Terms of Service: https://zulip.com/policies/terms.",
         )
-        parser.add_argument(
+        action = parser.add_mutually_exclusive_group()
+        action.add_argument(
             "--rotate-key",
             action="store_true",
             help="Automatically rotate your server's zulip_org_key",
+        )
+        action.add_argument(
+            "--deactivate",
+            action="store_true",
+            help="Deregister the server; this will stop mobile push notifications",
         )
 
     @override
@@ -57,6 +67,11 @@ class Command(ZulipBaseCommand):
                     "Please uncomment PUSH_NOTIFICATION_BOUNCER_URL "
                     "in /etc/zulip/settings.py (remove the '#')"
                 )
+
+        if options["deactivate"]:
+            send_json_to_push_bouncer("POST", "server/deactivate", {})
+            print("Mobile Push Notification Service registration successfully deactivated!")
+            return
 
         request = {
             "zulip_org_id": settings.ZULIP_ORG_ID,
