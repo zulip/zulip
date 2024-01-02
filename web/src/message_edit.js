@@ -1331,7 +1331,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
     // possible that we might display a topic in the left sidebar
     // (and thus expose the UI for moving its topic to another
     // stream) without having a message ID that is definitely
-    // within the topic.  (The comments in stream_topic_history.js
+    // within the topic.  (The comments in stream_topic_history.ts
     // discuss the tricky issues around message deletion that are
     // involved here).
     //

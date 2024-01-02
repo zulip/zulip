@@ -1,14 +1,18 @@
+import assert from "minimalistic-assert";
+
 import {all_messages_data} from "./all_messages_data";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
 import * as sub_store from "./sub_store";
+import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
 
-const stream_dict = new Map(); // stream_id -> PerStreamHistory object
-const fetched_stream_ids = new Set();
-const request_pending_stream_ids = new Set();
+// stream_id -> PerStreamHistory object
+const stream_dict = new Map<number, PerStreamHistory>();
+const fetched_stream_ids = new Set<number>();
+const request_pending_stream_ids = new Set<number>();
 
-export function all_topics_in_cache(sub) {
+export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // Checks whether this browser's cache of contiguous messages
     // (used to locally render narrows) in all_messages_data has all
     // messages from a given stream, and thus all historical topics
@@ -41,13 +45,13 @@ export function all_topics_in_cache(sub) {
     return first_cached_message.id <= sub.first_message_id;
 }
 
-export function is_complete_for_stream_id(stream_id) {
+export function is_complete_for_stream_id(stream_id: number): boolean {
     if (fetched_stream_ids.has(stream_id)) {
         return true;
     }
 
     const sub = sub_store.get(stream_id);
-    const in_cache = all_topics_in_cache(sub);
+    const in_cache = sub !== undefined && all_topics_in_cache(sub);
 
     if (in_cache) {
         /*
@@ -63,15 +67,34 @@ export function is_complete_for_stream_id(stream_id) {
     return in_cache;
 }
 
-export function stream_has_topics(stream_id) {
+export function stream_has_topics(stream_id: number): boolean {
     if (!stream_dict.has(stream_id)) {
         return false;
     }
 
     const history = stream_dict.get(stream_id);
+    assert(history !== undefined);
 
     return history.has_topics();
 }
+
+export type TopicHistoryEntry =
+    | {
+          historical: true;
+          message_id: number;
+          pretty_name: string;
+      }
+    | {
+          historical: false;
+          count: number;
+          message_id: number;
+          pretty_name: string;
+      };
+
+type ServerTopicHistoryEntry = {
+    name: string;
+    max_id: number;
+};
 
 export class PerStreamHistory {
     /*
@@ -103,26 +126,26 @@ export class PerStreamHistory {
           deleted.
     */
 
-    topics = new FoldDict();
+    topics = new FoldDict<TopicHistoryEntry>();
     // Most recent message ID for the stream.
     max_message_id = 0;
+    stream_id: number;
 
-    constructor(stream_id) {
+    constructor(stream_id: number) {
         this.stream_id = stream_id;
     }
 
-    has_topics() {
+    has_topics(): boolean {
         return this.topics.size !== 0;
     }
 
-    update_stream_max_message_id(message_id) {
+    update_stream_max_message_id(message_id: number): void {
         if (message_id > this.max_message_id) {
             this.max_message_id = message_id;
         }
     }
 
-    add_or_update(topic_name, message_id) {
-        message_id = Number.parseInt(message_id, 10);
+    add_or_update(topic_name: string, message_id: number): void {
         this.update_stream_max_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
@@ -147,7 +170,7 @@ export class PerStreamHistory {
         }
     }
 
-    maybe_remove(topic_name, num_messages) {
+    maybe_remove(topic_name: string, num_messages: number): void {
         const existing = this.topics.get(topic_name);
 
         if (!existing) {
@@ -169,7 +192,7 @@ export class PerStreamHistory {
         existing.count -= num_messages;
     }
 
-    add_history(server_history) {
+    add_history(server_history: ServerTopicHistoryEntry[]): void {
         // This method populates historical topics from the
         // server.  We have less data about these than the
         // client can maintain for newer topics.
@@ -199,7 +222,7 @@ export class PerStreamHistory {
         }
     }
 
-    get_recent_topic_names() {
+    get_recent_topic_names(): string[] {
         const my_recents = [...this.topics.values()];
 
         /* Add any older topics with unreads that may not be present
@@ -218,12 +241,17 @@ export class PerStreamHistory {
         return names;
     }
 
-    get_max_message_id() {
+    get_max_message_id(): number {
         return this.max_message_id;
     }
 }
 
-export function remove_messages(opts) {
+export function remove_messages(opts: {
+    stream_id: number;
+    topic_name: string;
+    num_messages: number;
+    max_removed_msg_id: number;
+}): void {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
     const num_messages = opts.num_messages;
@@ -263,7 +291,7 @@ export function remove_messages(opts) {
     }
 }
 
-export function find_or_create(stream_id) {
+export function find_or_create(stream_id: number): PerStreamHistory {
     let history = stream_dict.get(stream_id);
 
     if (!history) {
@@ -274,9 +302,13 @@ export function find_or_create(stream_id) {
     return history;
 }
 
-export function add_message(opts) {
+export function add_message(opts: {
+    stream_id: number;
+    message_id: number;
+    topic_name: string;
+}): void {
     const stream_id = opts.stream_id;
-    const message_id = opts.message_id ?? 0;
+    const message_id = opts.message_id;
     const topic_name = opts.topic_name;
 
     const history = find_or_create(stream_id);
@@ -284,43 +316,43 @@ export function add_message(opts) {
     history.add_or_update(topic_name, message_id);
 }
 
-export function add_history(stream_id, server_history) {
+export function add_history(stream_id: number, server_history: ServerTopicHistoryEntry[]): void {
     const history = find_or_create(stream_id);
     history.add_history(server_history);
     fetched_stream_ids.add(stream_id);
 }
 
-export function has_history_for(stream_id) {
+export function has_history_for(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
 
-export function get_recent_topic_names(stream_id) {
+export function get_recent_topic_names(stream_id: number): string[] {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
 }
 
-export function get_max_message_id(stream_id) {
+export function get_max_message_id(stream_id: number): number {
     const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
 }
 
-export function reset() {
+export function reset(): void {
     // This is only used by tests.
     stream_dict.clear();
     fetched_stream_ids.clear();
     request_pending_stream_ids.clear();
 }
 
-export function is_request_pending_for(stream_id) {
+export function is_request_pending_for(stream_id: number): boolean {
     return request_pending_stream_ids.has(stream_id);
 }
 
-export function add_request_pending_for(stream_id) {
+export function add_request_pending_for(stream_id: number): void {
     request_pending_stream_ids.add(stream_id);
 }
 
-export function remove_request_pending_for(stream_id) {
+export function remove_request_pending_for(stream_id: number): void {
     request_pending_stream_ids.delete(stream_id);
 }
