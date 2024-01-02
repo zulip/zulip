@@ -93,7 +93,10 @@ export function initialize_custom_user_type_fields(
             const $pill_container = $(element_id)
                 .find(`.custom_user_field[data-field-id="${CSS.escape(field.id)}"] .pill-container`)
                 .expectOne();
-            const pills = user_pill.create_pills($pill_container);
+            const pill_config = {
+                exclude_inaccessible_users: is_editable,
+            };
+            const pills = user_pill.create_pills($pill_container, pill_config);
 
             if (field_value_raw) {
                 const field_value = JSON.parse(field_value_raw);

@@ -19,6 +19,7 @@ export type UserPillWidget = InputPillContainer<UserPill>;
 export function create_item_from_email(
     email: string,
     current_items: InputPillItem<UserPill>[],
+    pill_config?: InputPillConfig | undefined,
 ): InputPillItem<UserPill> | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
     const user = people.get_by_email(email);
@@ -42,6 +43,10 @@ export function create_item_from_email(
         }
 
         // The email is not allowed, so return.
+        return undefined;
+    }
+
+    if (pill_config?.exclude_inaccessible_users && user.is_inaccessible_user) {
         return undefined;
     }
 
