@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import * as buddy_data from "./buddy_data";
 import * as hash_util from "./hash_util";
 import * as narrow_state from "./narrow_state";
@@ -5,6 +7,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as unread from "./unread";
 import * as user_status from "./user_status";
+import type {UserStatusEmojiInfo} from "./user_status";
 
 // Maximum number of conversation threads to show in default view.
 const max_conversations_to_show = 8;
@@ -12,7 +15,7 @@ const max_conversations_to_show = 8;
 // Maximum number of conversation threads to show in default view with unreads.
 const max_conversations_to_show_with_unreads = 15;
 
-export function get_active_user_ids_string() {
+export function get_active_user_ids_string(): string | undefined {
     const filter = narrow_state.filter();
 
     if (!filter) {
@@ -28,7 +31,20 @@ export function get_active_user_ids_string() {
     return people.emails_strings_to_user_ids_string(emails);
 }
 
-export function get_conversations() {
+type DisplayObject = {
+    recipients: string;
+    user_ids_string: string;
+    unread: number;
+    is_zero: boolean;
+    is_active: boolean;
+    url: string;
+    status_emoji_info?: UserStatusEmojiInfo;
+    user_circle_class?: string;
+    is_group: boolean;
+    is_bot: boolean;
+};
+
+export function get_conversations(): DisplayObject[] {
     const private_messages = pm_conversations.recent.get();
     const display_objects = [];
 
@@ -38,6 +54,7 @@ export function get_conversations() {
     for (const conversation of private_messages) {
         const user_ids_string = conversation.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
+        assert(reply_to !== undefined);
         const recipients_string = people.get_recipients(user_ids_string);
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
@@ -80,7 +97,10 @@ export function get_conversations() {
 }
 
 // Designed to closely match topic_list_data.get_list_info().
-export function get_list_info(zoomed) {
+export function get_list_info(zoomed: boolean): {
+    conversations_to_be_shown: DisplayObject[];
+    more_conversations_unread_count: number;
+} {
     const conversations = get_conversations();
 
     if (zoomed || conversations.length <= max_conversations_to_show) {
@@ -92,7 +112,7 @@ export function get_list_info(zoomed) {
 
     const conversations_to_be_shown = [];
     let more_conversations_unread_count = 0;
-    function should_show_conversation(idx, conversation) {
+    function should_show_conversation(idx: number, conversation: DisplayObject): boolean {
         // We always show the active conversation; see the similar
         // comment in topic_list_data.js.
         if (conversation.is_active) {
