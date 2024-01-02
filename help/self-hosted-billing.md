@@ -343,9 +343,8 @@ discounts on paid plans. You can also contact
 [sales@zulip.com](mailto:sales@zulip.com) to discuss bulk discount pricing for a
 large organization.
 
-- **Non-profit** discounts of 85+% are available with a minimum purchase of 100
-  licenses. Organizations with up to 100 users are eligible for free Community plan
-  sponsorship.
+- [Education organizations](#education-pricing) and [non-profit
+  organizations](#non-profit-pricing).
 
 - Discounts are available for organizations based in the **developing world**.
 
@@ -354,21 +353,34 @@ large organization.
 
 ### Education pricing
 
-**Education pricing** is available with a minimum purchase of 100 licenses.
-Organizations with up to 100 users are eligible for free Community plan
-sponsorship.
+Organizations operated by individual educators (for example, a professor
+teaching one or more classes) are generally eligible for a free
+Community plan.
+
+Departments and other institutions using Zulip are eligible for discounted
+education pricing.
 
 - **For-profit education pricing**:
     - **Basic plan**: $0.50 per user per month
     - **Business plan**: $1 per user per month with annual billing
-    ($1.20/month billed monthly).
+    ($1.20/month billed monthly) with a minimum purchase of 100 licenses.
 
 - **Non-profit education pricing**: The non-profit discount applies to
   online purchases only (no additional legal agreements) for use at registered
   non-profit institutions (e.g., colleges and universities).
     - **Basic plan**: $0.35 per user per month
     - **Business plan**: $0.67 per user per month with annual billing
-      ($0.80/month billed monthly).
+      ($0.80/month billed monthly) with a minimum purchase of 100 licenses.
+
+### Non-profit pricing
+
+Non-profits with no paid staff are eligible for the free Community plan.
+
+For non-profits with paid staff, volunteers and other unpaid participants in
+your community are eligible for free Zulip accounts. Additionally, discounts are
+available for paid staff accounts. Contact
+[sales@zulip.com](mailto:sales@zulip.com) to arrange discounted pricing for your
+organization.
 
 ### Guest user discounts
 
@@ -376,6 +388,18 @@ There is no automatic discount for guest users. However, organizations with a
 large number of guest users are very likely to be eligible for a discount. If
 this is your situation, please apply for a discount or email
 [sales@zulip.com](mailto:sales@zulip.com).
+
+### Duplicate accounts
+
+Some servers host multiple organizations, with some individuals having accounts in
+several of these organizations. If you have this setup, the ability to
+[configure whether guests can see other
+users](/help/guest-users#configure-whether-guests-can-see-all-other-users)
+(introduced in Zulip 8.0) may allow you to consolidate into a single Zulip
+organization.
+
+If you want to maintain a multi-organization setup with duplicate accounts, you
+may contact [sales@zulip.com](mailto:sales@zulip.com) to arrange a discounted rate.
 
 ### Apply for a paid plan discount
 
