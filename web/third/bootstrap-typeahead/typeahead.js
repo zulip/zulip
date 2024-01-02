@@ -130,6 +130,19 @@
  *  
  *   This allows us to have things like a close button, and be able
  *   to move focus there without the typeahead closing.
+ *
+ * 15. Add `allowNoHighlight` and `shouldHighlightFirstResult` options:
+ *
+ *   Allow none of the typeahead options to be highlighted, which lets
+ *   the user remove highlight by going navigating (with the keyboard)
+ *   past the last item or before the first item.
+ *
+ *   Why? A main way to initiate a search is to press enter from the
+ *   search box, but if an item is highlighted then the enter key selects
+ *   that item to add it as a pill to the search box.
+ *
+ *   `shouldHighlightFirstResult` relatedly lets us decide whether
+ *   the first result should be highlighted when the typeahead opens.
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -176,9 +189,6 @@ import {get_string_diff} from "../../src/util";
     if (this.fixed) {
       this.$container.css('position', 'fixed');
     }
-    // The naturalSearch option causes arrow keys to immediately
-    // update the search box with the underlying values from the
-    // search suggestions.
     this.listen()
   }
 
@@ -370,39 +380,49 @@ import {get_string_diff} from "../../src/util";
         return i[0]
       })
 
-      items.first().addClass('active')
+      if (!(this.options.allowNoHighlight && !this.options.shouldHighlightFirstResult())) {
+        items.first().addClass('active')
+      }
       this.$menu.html(items)
       return this
     }
 
   , next: function (event) {
-      var active = this.$menu.find('.active').removeClass('active')
-        , next = active.next()
+      const active = this.$menu.find('.active');
+      active.removeClass('active');
+      let next = active.next();
+
+      // This lets there be a way to not have any item highlighted,
+      // which can be important for e.g. letting the user press enter on
+      // whatever's already in the search box.
+      if (this.options.allowNoHighlight && active.length && !next.length) {
+        return;
+      }
 
       if (!next.length) {
         next = $(this.$menu.find('li')[0])
       }
 
       next.addClass('active')
-
-      if (this.options.naturalSearch) {
-        this.set_value();
-      }
     }
 
   , prev: function (event) {
-      var active = this.$menu.find('.active').removeClass('active')
-        , prev = active.prev()
+      const active = this.$menu.find('.active');
+      active.removeClass('active');
+      let prev = active.prev();
+
+      // This lets there be a way to not have any item highlighted,
+      // which can be important for e.g. letting the user press enter on
+      // whatever's already in the search box.
+      if (this.options.allowNoHighlight && active.length && !prev.length) {
+        return;
+      }
 
       if (!prev.length) {
         prev = this.$menu.find('li').last()
       }
 
       prev.addClass('active')
-
-      if (this.options.naturalSearch) {
-        this.set_value();
-      }
     }
 
   , listen: function () {
@@ -448,6 +468,14 @@ import {get_string_diff} from "../../src/util";
       }
   }
 
+  , maybeStopAdvance(e) {
+    const pseudo_keycode = get_pseudo_keycode(e);
+    if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
+        && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
+        e.stopPropagation();
+    }
+  }
+
   , move: function (e) {
       if (!this.shown) return
       const pseudo_keycode = get_pseudo_keycode(e);
@@ -471,10 +499,7 @@ import {get_string_diff} from "../../src/util";
           break
       }
 
-      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
-          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
-          e.stopPropagation()
-      }
+      this.maybeStopAdvance(e);
     }
 
   , mousemove: function(e) {
@@ -498,9 +523,12 @@ import {get_string_diff} from "../../src/util";
     }
 
   , keypress: function (e) {
-      if (this.suppressKeyPressRepeat) return
-      this.move(e)
+    if (!this.suppressKeyPressRepeat) {
+      this.move(e);
+      return;
     }
+    this.maybeStopAdvance(e);
+  }
 
   , keyup: function (e) {
       const pseudo_keycode = get_pseudo_keycode(e);
@@ -545,10 +573,7 @@ import {get_string_diff} from "../../src/util";
           this.lookup(hideOnEmpty)
       }
 
-      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
-          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
-          e.stopPropagation()
-      }
+      this.maybeStopAdvance(e);
 
       e.preventDefault()
   }
@@ -639,6 +664,7 @@ import {get_string_diff} from "../../src/util";
   , openInputFieldOnKeyUp: null
   , closeInputFieldOnHide: null
   , tabIsEnter: true
+  , shouldHighlightFirstResult: () => true,
   }
 
   $.fn.typeahead.Constructor = Typeahead

@@ -172,7 +172,11 @@
 
         color: var(--color-text-search);
 
-        &::placeholder {
+        display: flex;
+        align-items: center;
+
+        &:empty::before {
+            content: attr(data-placeholder-text);
             color: var(--color-text-search-placeholder);
         }
     }
@@ -183,6 +187,10 @@
         /* override .input-append style from app_components.js */
         letter-spacing: normal;
         height: var(--search-box-height);
+        /* Override .pill-container */
+        flex-wrap: nowrap;
+        padding: 0;
+        border: none;
     }
 
     @media (width >= $md_min) {
@@ -246,16 +254,16 @@
         .search_list_item .pill-container {
             margin-left: 5px;
         }
-    }
 
-    .pill {
-        align-items: baseline;
-    }
+        .pill {
+            align-items: baseline;
+        }
 
-    .pill-image {
-        /* Add line-height equal to height to mimic baseline alignment. */
-        line-height: 20px;
-        align-self: center;
+        .pill-image {
+            /* Add line-height equal to height to mimic baseline alignment. */
+            line-height: 20px;
+            align-self: center;
+        }
     }
 
     /* Break really long words (unlikely to happen). */
