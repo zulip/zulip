@@ -23,6 +23,7 @@ export type InputPillItem<T> = {
 
 export type InputPillConfig = {
     show_user_status_emoji?: boolean;
+    exclude_inaccessible_users?: boolean;
 };
 
 type InputPillCreateOptions<T> = {
@@ -31,6 +32,7 @@ type InputPillCreateOptions<T> = {
     create_item_from_text: (
         text: string,
         existing_items: InputPillItem<T>[],
+        pill_config?: InputPillConfig | undefined,
     ) => InputPillItem<T> | undefined;
     get_text_from_item: (item: InputPillItem<T>) => string;
 };
@@ -117,7 +119,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         create_item(text: string) {
             const existing_items = funcs.items();
-            const item = store.create_item_from_text(text, existing_items);
+            const item = store.create_item_from_text(text, existing_items, store.pill_config);
 
             if (!item?.display_value) {
                 store.$input.addClass("shake");
