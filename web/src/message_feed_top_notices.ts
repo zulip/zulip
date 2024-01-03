@@ -1,36 +1,40 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
+import type {MessageList} from "./message_lists";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 
-function show_history_limit_notice() {
+function show_history_limit_notice(): void {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
     narrow_banner.hide_empty_narrow_message();
 }
 
-function hide_history_limit_notice() {
+function hide_history_limit_notice(): void {
     $(".top-messages-logo").show();
     $(".history-limited-box").hide();
 }
 
-function hide_end_of_results_notice() {
+function hide_end_of_results_notice(): void {
     $(".all-messages-search-caution").hide();
 }
 
-function show_end_of_results_notice() {
+function show_end_of_results_notice(): void {
     $(".all-messages-search-caution").show();
 
     // Set the link to point to this search with streams:public added.
     // Note that element we adjust is not visible to spectators.
-    const terms = narrow_state.filter().terms();
+    const narrow_filter = narrow_state.filter();
+    assert(narrow_filter !== undefined);
+    const terms = narrow_filter.terms();
     const update_hash = hash_util.search_public_streams_notice_url(terms);
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 }
 
-export function update_top_of_narrow_notices(msg_list) {
+export function update_top_of_narrow_notices(msg_list: MessageList): void {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
     if (msg_list !== message_lists.current) {
@@ -46,6 +50,7 @@ export function update_top_of_narrow_notices(msg_list) {
             // user moved away from the narrow / filter to Recent Conversations.
             return;
         }
+        assert(filter !== undefined);
         // Potentially display the notice that lets users know
         // that not all messages were searched.  One could
         // imagine including `filter.is_keyword_search()` in these
@@ -66,7 +71,7 @@ export function update_top_of_narrow_notices(msg_list) {
     }
 }
 
-export function hide_top_of_narrow_notices() {
+export function hide_top_of_narrow_notices(): void {
     hide_end_of_results_notice();
     hide_history_limit_notice();
 }
