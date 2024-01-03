@@ -54,6 +54,7 @@ if settings.BILLING_ENABLED:
         RealmBillingSession,
         RemoteRealmBillingSession,
         RemoteServerBillingSession,
+        SupportRequestError,
         SupportType,
         SupportViewRequest,
         cents_to_dollar_string,
@@ -265,8 +266,11 @@ def support(
             billing_session = RealmBillingSession(
                 user=acting_user, realm=realm, support_session=True
             )
-            success_message = billing_session.process_support_view_request(support_view_request)
-            context["success_message"] = success_message
+            try:
+                success_message = billing_session.process_support_view_request(support_view_request)
+                context["success_message"] = success_message
+            except SupportRequestError as error:
+                context["error_message"] = error.msg
 
     if query:
         key_words = get_invitee_emails_set(query)
@@ -466,14 +470,21 @@ def remote_servers_support(
             )
         if support_view_request is not None:
             if remote_realm_support_request:
-                success_message = RemoteRealmBillingSession(
-                    support_staff=acting_user, remote_realm=remote_realm
-                ).process_support_view_request(support_view_request)
+                try:
+                    success_message = RemoteRealmBillingSession(
+                        support_staff=acting_user, remote_realm=remote_realm
+                    ).process_support_view_request(support_view_request)
+                    context["success_message"] = success_message
+                except SupportRequestError as error:
+                    context["error_message"] = error.msg
             else:
-                success_message = RemoteServerBillingSession(
-                    support_staff=acting_user, remote_server=remote_server
-                ).process_support_view_request(support_view_request)
-            context["success_message"] = success_message
+                try:
+                    success_message = RemoteServerBillingSession(
+                        support_staff=acting_user, remote_server=remote_server
+                    ).process_support_view_request(support_view_request)
+                    context["success_message"] = success_message
+                except SupportRequestError as error:
+                    context["error_message"] = error.msg
 
     email_to_search = None
     hostname_to_search = None
