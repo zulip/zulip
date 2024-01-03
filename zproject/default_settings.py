@@ -148,6 +148,7 @@ S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION: Optional[str] = None
 S3_ENDPOINT_URL: Optional[str] = None
+S3_ADDRESSING_STYLE: Literal["auto", "virtual", "path"] = "auto"
 S3_SKIP_PROXY = True
 S3_UPLOADS_STORAGE_CLASS: Literal[
     "GLACIER_IR",
