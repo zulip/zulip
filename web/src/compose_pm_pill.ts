@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import type {InputPillConfig} from "./input_pill";
 import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
@@ -9,7 +10,7 @@ import * as util from "./util";
 
 export let widget: UserPillWidget;
 
-const pill_config = {
+const pill_config: InputPillConfig = {
     show_user_status_emoji: true,
 };
 
