@@ -1,4 +1,5 @@
-.showing-cloud .zulip-plans-comparison {
+.showing-cloud .self-hosted-comparison,
+.showing-self-hosted .cloud-comparison {
     display: none;
 }
 
