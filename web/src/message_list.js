@@ -109,7 +109,7 @@ export class MessageList {
 
         if (interior_messages.length > 0) {
             this.view.rerender_preserving_scrolltop(true);
-            return true;
+            return {need_user_to_scroll: true};
         }
         if (top_messages.length > 0) {
             this.view.prepend(top_messages);
