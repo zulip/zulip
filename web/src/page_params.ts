@@ -111,6 +111,7 @@ export const page_params: {
     show_plans: boolean;
     show_webathena: boolean;
     sponsorship_pending: boolean;
+    stop_words: string[];
     translation_data: Record<string, string>;
     user_id: number;
     zulip_merge_base: string;

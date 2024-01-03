@@ -1,6 +1,8 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import {$t, $t_html} from "./i18n";
+import type {NarrowBannerData, SearchData} from "./narrow_error";
 import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -24,13 +26,14 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
     ),
 };
 
-function retrieve_search_query_data() {
+function retrieve_search_query_data(): SearchData {
     // when search bar contains multiple filters, only retrieve search queries
     const current_filter = narrow_state.filter();
+    assert(current_filter !== undefined);
     const search_query = current_filter.operands("search")[0];
     const query_words = search_query.split(" ");
 
-    const search_string_result = {
+    const search_string_result: SearchData = {
         query_words: [],
         has_stop_word: false,
     };
@@ -66,7 +69,7 @@ function retrieve_search_query_data() {
     return search_string_result;
 }
 
-function pick_empty_narrow_banner() {
+function pick_empty_narrow_banner(): NarrowBannerData {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
@@ -248,7 +251,7 @@ function pick_empty_narrow_banner() {
                     return SPECTATOR_STREAM_NARROW_BANNER;
                 }
 
-                function can_toggle_narrowed_stream() {
+                function can_toggle_narrowed_stream(): boolean | undefined {
                     const stream_name = narrow_state.stream_name();
 
                     if (!stream_name) {
@@ -305,6 +308,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
+            assert(user_ids !== undefined);
             if (
                 page_params.realm_private_message_policy ===
                     settings_config.private_message_policy_values.disabled.code &&
@@ -430,12 +434,12 @@ function pick_empty_narrow_banner() {
     return default_banner;
 }
 
-export function show_empty_narrow_message() {
+export function show_empty_narrow_message(): void {
     $(".empty_feed_notice_main").empty();
     const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner());
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
 }
 
-export function hide_empty_narrow_message() {
+export function hide_empty_narrow_message(): void {
     $(".empty_feed_notice_main").empty();
 }

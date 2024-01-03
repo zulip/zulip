@@ -5,14 +5,14 @@ type QueryWord = {
     is_stop_word: boolean;
 };
 
-type SearchData = {
-    query_word: QueryWord[];
+export type SearchData = {
+    query_words: QueryWord[];
     has_stop_word: boolean;
     stream_query?: string;
     topic_query?: string;
 };
 
-type NarrowBannerData = {
+export type NarrowBannerData = {
     title: string;
     html?: string;
     search_data?: SearchData;
