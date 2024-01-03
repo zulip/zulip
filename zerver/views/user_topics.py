@@ -15,8 +15,9 @@ from zerver.lib.streams import (
     access_stream_to_remove_visibility_policy_by_name,
     check_for_exactly_one_stream_arg,
 )
-from zerver.lib.validator import check_int, check_int_in, check_string_in
+from zerver.lib.validator import check_capped_string, check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, UserTopic
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 
 def mute_topic(
@@ -66,7 +67,7 @@ def update_muted_topic(
     user_profile: UserProfile,
     stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     stream: Optional[str] = REQ(default=None),
-    topic: str = REQ(),
+    topic: str = REQ(str_validator=check_capped_string(MAX_TOPIC_NAME_LENGTH)),
     op: str = REQ(str_validator=check_string_in(["add", "remove"])),
 ) -> HttpResponse:
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
@@ -94,7 +95,7 @@ def update_user_topic(
     request: HttpRequest,
     user_profile: UserProfile,
     stream_id: int = REQ(json_validator=check_int),
-    topic: str = REQ(),
+    topic: str = REQ(str_validator=check_capped_string(MAX_TOPIC_NAME_LENGTH)),
     visibility_policy: int = REQ(json_validator=check_int_in(UserTopic.VisibilityPolicy.values)),
 ) -> HttpResponse:
     if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
