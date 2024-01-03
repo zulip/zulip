@@ -76,12 +76,12 @@ export function has_recent_activity_but_muted(sub) {
     return has_recent_activity(sub) && sub.is_muted;
 }
 
-export function sort_groups(streams, search_term) {
-    const stream_id_to_name = (stream) => sub_store.get(stream).name;
+export function sort_groups(stream_ids, search_term) {
+    const stream_id_to_name = (stream_id) => sub_store.get(stream_id).name;
     // Use -, _ and / as word separators apart from the default space character
     const word_separator_regex = /[\s/_-]/;
-    streams = util.filter_by_word_prefix_match(
-        streams,
+    stream_ids = util.filter_by_word_prefix_match(
+        stream_ids,
         search_term,
         stream_id_to_name,
         word_separator_regex,
@@ -97,23 +97,23 @@ export function sort_groups(streams, search_term) {
     const muted_active_streams = [];
     const dormant_streams = [];
 
-    for (const stream of streams) {
-        const sub = sub_store.get(stream);
+    for (const stream_id of stream_ids) {
+        const sub = sub_store.get(stream_id);
         const pinned = sub.pin_to_top;
         if (pinned) {
             if (!sub.is_muted) {
-                pinned_streams.push(stream);
+                pinned_streams.push(stream_id);
             } else {
-                muted_pinned_streams.push(stream);
+                muted_pinned_streams.push(stream_id);
             }
         } else if (is_normal(sub)) {
             if (!sub.is_muted) {
-                normal_streams.push(stream);
+                normal_streams.push(stream_id);
             } else {
-                muted_active_streams.push(stream);
+                muted_active_streams.push(stream_id);
             }
         } else {
-            dormant_streams.push(stream);
+            dormant_streams.push(stream_id);
         }
     }
 
