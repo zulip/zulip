@@ -13,6 +13,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_topics import get_topic_mutes, topic_has_visibility_policy
 from zerver.models import UserProfile, UserTopic
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.streams import get_stream
 
 
@@ -199,6 +200,12 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")
 
+        data = {"stream_id": stream.id, "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1), "op": "add"}
+        result = self.api_patch(user, url, data)
+        self.assert_json_error(
+            result, f"topic is too long (limit: {MAX_TOPIC_NAME_LENGTH} characters)"
+        )
+
     def test_muted_topic_remove_invalid(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
@@ -232,6 +239,12 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
         data = {"stream": stream.name, "stream_id": stream.id, "topic": "Verona3", "op": "remove"}
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")
+
+        data = {"stream_id": stream.id, "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1), "op": "remove"}
+        result = self.api_patch(user, url, data)
+        self.assert_json_error(
+            result, f"topic is too long (limit: {MAX_TOPIC_NAME_LENGTH} characters)"
+        )
 
 
 class MutedTopicsTests(ZulipTestCase):
@@ -436,6 +449,17 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.api_post(user, url, data)
         self.assert_json_error(result, "Invalid stream ID")
 
+        stream = get_stream("Verona", user.realm)
+        data = {
+            "stream_id": stream.id,
+            "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1),
+            "visibility_policy": UserTopic.VisibilityPolicy.MUTED,
+        }
+        result = self.api_post(user, url, data)
+        self.assert_json_error(
+            result, f"topic is too long (limit: {MAX_TOPIC_NAME_LENGTH} characters)"
+        )
+
     def test_muted_topic_remove_invalid(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -449,6 +473,17 @@ class MutedTopicsTests(ZulipTestCase):
 
         result = self.api_post(user, url, data)
         self.assert_json_error(result, "Invalid stream ID")
+
+        stream = get_stream("Verona", user.realm)
+        data = {
+            "stream_id": stream.id,
+            "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1),
+            "visibility_policy": UserTopic.VisibilityPolicy.INHERIT,
+        }
+        result = self.api_post(user, url, data)
+        self.assert_json_error(
+            result, f"topic is too long (limit: {MAX_TOPIC_NAME_LENGTH} characters)"
+        )
 
 
 class UnmutedTopicsTests(ZulipTestCase):
