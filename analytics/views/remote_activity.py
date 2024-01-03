@@ -5,6 +5,7 @@ from psycopg2.sql import SQL
 from analytics.views.activity_common import (
     fix_rows,
     format_date_for_activity_reports,
+    format_none_as_zero,
     get_query_data,
     make_table,
     remote_installation_stats_link,
@@ -122,6 +123,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     for i, col in enumerate(cols):
         if col == "Last update time":
             fix_rows(rows, i, format_date_for_activity_reports)
+        if col in ["Mobile users", "Mobile pushes forwarded"]:
+            fix_rows(rows, i, format_none_as_zero)
         if i == 0:
             total_row.append("Total")
         elif i in totals_columns:

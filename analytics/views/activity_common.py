@@ -51,7 +51,7 @@ def make_table(
 def fix_rows(
     rows: List[List[Any]],
     i: int,
-    fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str]],
+    fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str], Callable[[int], int]],
 ) -> None:
     for row in rows:
         row[i] = fixup_func(row[i])
@@ -77,6 +77,13 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
         return date.astimezone(eastern_tz).strftime("%Y-%m-%d %H:%M")
     else:
         return ""
+
+
+def format_none_as_zero(value: Optional[int]) -> int:
+    if value:
+        return value
+    else:
+        return 0
 
 
 def user_activity_link(email: str, user_profile_id: int) -> Markup:
