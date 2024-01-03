@@ -2920,6 +2920,14 @@ select.invite-as {
     vertical-align: middle;
 }
 
+div.user-groups-to-invite {
+    width: 96%;
+
+    .input {
+        flex-grow: 1;
+    }
+}
+
 #multiuse_invite_link {
     width: 370px;
     text-overflow: ellipsis;

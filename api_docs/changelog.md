@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 240**
+
+* `POST /invites`, `POST /invites/multiuse`: Added a new parameter
+  `user_group_ids` which allows users to be added to user groups through
+  invitations.
+
 Feature levels 238-239 are reserved for future use in 8.x maintenance
 releases.
 

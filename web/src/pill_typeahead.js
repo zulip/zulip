@@ -35,6 +35,7 @@ export function set_up($input, pills, opts) {
         items: 5,
         fixed: true,
         dropup: true,
+        helpOnEmptyStrings: opts.help_on_empty_strings,
         source() {
             let source = [];
             if (include_streams(this.query)) {
@@ -45,7 +46,13 @@ export function set_up($input, pills, opts) {
             }
 
             if (include_user_groups) {
-                source = [...source, ...user_group_pill.typeahead_source(pills)];
+                source = [
+                    ...source,
+                    ...user_group_pill.typeahead_source(
+                        pills,
+                        opts.only_show_user_groups_editable_by_user,
+                    ),
+                ];
             }
 
             if (include_users) {

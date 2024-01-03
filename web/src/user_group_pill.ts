@@ -1,17 +1,16 @@
+import * as input_pill from "./input_pill";
 import type {InputPillContainer, InputPillItem} from "./input_pill";
+import * as settings_data from "./settings_data";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
 
 type UserGroupPill = {
-    id: number;
+    group_id: number;
     group_name: string;
+    group_size: number;
 };
 
-type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
-
-function display_pill(group: UserGroup): string {
-    return `${group.name}: ${group.members.size} users`;
-}
+export type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
 
 export function create_item_from_group_name(
     group_name: string,
@@ -23,16 +22,17 @@ export function create_item_from_group_name(
         return undefined;
     }
 
-    const in_current_items = current_items.find((item) => item.id === group.id);
+    const in_current_items = current_items.find((item) => item.group_id === group.id);
     if (in_current_items !== undefined) {
         return undefined;
     }
 
     const item = {
         type: "user_group",
-        display_value: display_pill(group),
-        id: group.id,
+        display_value: group.name,
+        group_id: group.id,
         group_name: group.name,
+        group_size: group.members.size,
     };
 
     return item;
@@ -43,7 +43,7 @@ export function get_group_name_from_item(item: InputPillItem<UserGroupPill>): st
 }
 
 function get_user_ids_from_user_groups(items: InputPillItem<UserGroupPill>[]): number[] {
-    const group_ids = items.map((item) => item.id).filter(Boolean);
+    const group_ids = items.map((item) => item.group_id).filter(Boolean);
     return group_ids.flatMap((group_id) => [
         ...user_groups.get_user_group_from_id(group_id).members,
     ]);
@@ -62,16 +62,17 @@ export function get_user_ids(pill_widget: UserGroupPillWidget): number[] {
 export function append_user_group(group: UserGroup, pill_widget: UserGroupPillWidget): void {
     pill_widget.appendValidatedData({
         type: "user_group",
-        display_value: display_pill(group),
-        id: group.id,
+        display_value: group.name,
+        group_id: group.id,
         group_name: group.name,
+        group_size: group.members.size,
     });
     pill_widget.clear_text();
 }
 
 export function get_group_ids(pill_widget: UserGroupPillWidget): number[] {
     const items = pill_widget.items();
-    let group_ids = items.map((item) => item.id);
+    let group_ids = items.map((item) => item.group_id);
     group_ids = group_ids.filter(Boolean);
 
     return group_ids;
@@ -86,7 +87,29 @@ export function filter_taken_groups(
     return items;
 }
 
-export function typeahead_source(pill_widget: UserGroupPillWidget): UserGroup[] {
-    const groups = user_groups.get_realm_user_groups();
+export function typeahead_source(
+    pill_widget: UserGroupPillWidget,
+    only_show_user_groups_editable_by_user: boolean,
+): UserGroup[] {
+    let groups = user_groups.get_realm_user_groups();
+
+    if (only_show_user_groups_editable_by_user) {
+        groups = groups.filter((group) => settings_data.can_edit_user_group(group.id));
+    }
     return filter_taken_groups(groups, pill_widget);
+}
+
+export function create_pills(
+    $pill_container: JQuery,
+    pill_config?: {
+        show_user_group_size?: boolean;
+    },
+): UserGroupPillWidget | undefined {
+    const pills = input_pill.create({
+        $container: $pill_container,
+        pill_config,
+        create_item_from_text: create_item_from_group_name,
+        get_text_from_item: get_group_name_from_item,
+    });
+    return pills;
 }

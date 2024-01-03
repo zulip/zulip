@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const $ = require("./lib/zjquery");
 
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
@@ -22,16 +23,18 @@ const testers = {
 };
 
 const admins_pill = {
-    id: admins.id,
+    group_id: admins.id,
     group_name: admins.name,
     type: "user_group",
-    display_value: admins.name + ": " + admins.members.length + " users",
+    display_value: admins.name,
+    group_size: 2,
 };
 const testers_pill = {
-    id: testers.id,
+    group_id: testers.id,
     group_name: testers.name,
     type: "user_group",
-    display_value: testers.name + ": " + testers.members.length + " users",
+    display_value: testers.name,
+    group_size: 4,
 };
 
 const groups = [admins, testers];
@@ -69,6 +72,37 @@ run_test("get_group_ids", () => {
 
     const group_ids = user_group_pill.get_group_ids(widget);
     assert.deepEqual(group_ids, [101, 102]);
+});
+
+run_test("create_pills", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(data.display_value, "Testers");
+        assert.equal(data.user_group_id, 102);
+        assert.equal(data.group_size, 4);
+        return html;
+    });
+
+    const pill_config = {
+        show_user_group_size: true,
+    };
+
+    const $pill_input = $.create("pill_input");
+    const $container = $.create("container");
+    $container.set_find_results(".input", $pill_input);
+    const widget = user_group_pill.create_pills($container, pill_config);
+
+    let inserted_before;
+    const opts = {display_value: "Testers", user_group_id: 102, group_size: 4};
+    const expected_html = require("../templates/input_pill.hbs")(opts);
+
+    $pill_input.before = ($elem) => {
+        inserted_before = true;
+        assert.equal($elem.html(), expected_html);
+    };
+
+    widget.appendValidatedData(testers_pill);
+    assert.ok(inserted_before);
+    assert.deepEqual(widget.items(), [testers_pill]);
 });
 
 run_test("append_user_group", () => {

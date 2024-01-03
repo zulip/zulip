@@ -2,6 +2,7 @@ import re
 from typing import List, Optional, Sequence, Set
 
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
@@ -19,8 +20,9 @@ from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.user_groups import access_user_group_by_id
 from zerver.lib.validator import check_int, check_int_in, check_list, check_none_or
-from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
+from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserGroup, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
 # Because mypy fails to correctly infer the type of the validator, we want this constant
@@ -58,6 +60,7 @@ def invite_users_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    user_group_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -93,10 +96,27 @@ def invite_users_backend(
     if len(streams) and not user_profile.can_subscribe_other_users():
         raise JsonableError(_("You do not have permission to subscribe other users to streams."))
 
+    user_groups: List[UserGroup] = []
+    with transaction.atomic():
+        for user_group_id in user_group_ids:
+            try:
+                user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+            except JsonableError:
+                raise JsonableError(
+                    _(
+                        "Usergroup does not exist with id: {user_group_id}. No invites were sent."
+                    ).format(user_group_id=user_group_id)
+                )
+            user_groups.append(user_group)
+
+    if user_groups and not user_profile.can_edit_user_groups():
+        raise JsonableError(_("Insufficient permission"))
+
     do_invite_users(
         user_profile,
         invitee_emails,
         streams,
+        user_groups,
         invite_expires_in_minutes=invite_expires_in_minutes,
         invite_as=invite_as,
     )
@@ -200,6 +220,7 @@ def generate_multiuse_invite_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    user_group_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
     if not user_profile.can_create_multiuse_invite_to_realm():
         # Guest users case will not be handled here as it will
@@ -227,7 +248,23 @@ def generate_multiuse_invite_backend(
             )
         streams.append(stream)
 
+    user_groups: List[UserGroup] = []
+    with transaction.atomic():
+        for user_group_id in user_group_ids:
+            try:
+                user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+            except JsonableError:
+                raise JsonableError(
+                    _("Invalid user_group ID {user_group_id}. No invites were sent.").format(
+                        user_group_id=user_group_id
+                    )
+                )
+            user_groups.append(user_group)
+
+    if user_groups and not user_profile.can_edit_user_groups():
+        raise JsonableError(_("Insufficient permission"))
+
     invite_link = do_create_multiuse_invite_link(
-        user_profile, invite_as, invite_expires_in_minutes, streams
+        user_profile, invite_as, invite_expires_in_minutes, streams, user_groups
     )
     return json_success(request, data={"invite_link": invite_link})

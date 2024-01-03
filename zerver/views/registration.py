@@ -79,6 +79,7 @@ from zerver.models import (
     Realm,
     RealmUserDefault,
     Stream,
+    UserGroup,
     UserProfile,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
@@ -726,6 +727,7 @@ def prepare_activation_url(
     *,
     realm: Optional[Realm],
     streams: Optional[Iterable[Stream]] = None,
+    user_groups: Optional[Iterable[UserGroup]] = None,
     invited_as: Optional[int] = None,
     multiuse_invite: Optional[MultiuseInvite] = None,
 ) -> str:
@@ -737,6 +739,9 @@ def prepare_activation_url(
 
     if streams is not None:
         prereg_user.streams.set(streams)
+
+    if user_groups is not None:
+        prereg_user.user_groups.set(user_groups)
 
     if invited_as is not None:
         prereg_user.invited_as = invited_as
@@ -975,6 +980,7 @@ def accounts_home(
 
     from_multiuse_invite = False
     streams_to_subscribe = None
+    user_groups_to_subscribe = None
     invited_as = None
 
     if multiuse_object:
@@ -984,6 +990,7 @@ def accounts_home(
         assert realm == multiuse_object.realm
 
         streams_to_subscribe = multiuse_object.streams.all()
+        user_groups_to_subscribe = multiuse_object.user_groups.all()
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
 
@@ -1018,6 +1025,7 @@ def accounts_home(
                 request.session,
                 realm=realm,
                 streams=streams_to_subscribe,
+                user_groups=user_groups_to_subscribe,
                 invited_as=invited_as,
                 multiuse_invite=multiuse_object,
             )
