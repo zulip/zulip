@@ -497,9 +497,7 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
     if remote_server is None:
         raise AssertionError("Remote server not found! Please run manage.py register_server")
 
-    update_remote_realm_data_for_server(
-        remote_server, get_realms_info_for_push_bouncer(local_realm.id)
-    )
+    update_remote_realm_data_for_server(remote_server, get_realms_info_for_push_bouncer())
 
     remote_realm = RemoteRealm.objects.get(uuid=local_realm.uuid)
     user = UserProfile.objects.filter(realm=local_realm).first()
