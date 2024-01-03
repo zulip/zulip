@@ -16,7 +16,7 @@ type MessageListView = {
     _render_win_end: number;
 };
 
-type MessageList = {
+export type MessageList = {
     table_name: string;
     view: MessageListView;
     selected_id: () => number;
