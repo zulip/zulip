@@ -56,6 +56,7 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     StripeCardError,
+    SupportRequestError,
     SupportType,
     SupportViewRequest,
     add_months,
@@ -5392,6 +5393,14 @@ class TestSupportBillingHelpers(StripeTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, support_admin)
+
+        # Confirm that once a plan has been purchased and is active,
+        # approving a full sponsorship (our version of 100% discount) fails.
+        with self.assertRaisesRegex(
+            SupportRequestError,
+            "Customer on plan Zulip Cloud Standard. Please end current plan before approving sponsorship!",
+        ):
+            billing_session.approve_sponsorship()
 
     def test_approve_realm_sponsorship(self) -> None:
         realm = get_realm("zulip")
