@@ -8,28 +8,35 @@ import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import type {PseudoMentionUser, User} from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pygments_data from "./pygments_data";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
+import type {StreamSubscription} from "./sub_store";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import * as user_status from "./user_status";
+import type {UserStatusEmojiInfo} from "./user_status";
 import * as util from "./util";
+
+export type UserOrMention = PseudoMentionUser | (User & {is_broadcast: undefined});
+
 // Returns an array of direct message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
-export function get_cleaned_pm_recipients(query_string) {
+export function get_cleaned_pm_recipients(query_string: string): string[] {
     let recipients = util.extract_pm_recipients(query_string);
     recipients = recipients.filter((elem) => elem.match(/\S/));
     return recipients;
 }
 
-export function build_highlight_regex(query) {
+export function build_highlight_regex(query: string): RegExp {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
     return regex;
 }
 
-export function highlight_with_escaping_and_regex(regex, item) {
+export function highlight_with_escaping_and_regex(regex: RegExp, item: string): string {
     // if regex is empty return entire item highlighted and escaped
     if (regex.source === "()") {
         return "<strong>" + Handlebars.Utils.escapeExpression(item) + "</strong>";
@@ -57,7 +64,7 @@ export function highlight_with_escaping_and_regex(regex, item) {
     return result;
 }
 
-export function make_query_highlighter(query) {
+export function make_query_highlighter(query: string): (phrase: string) => string {
     query = query.toLowerCase();
 
     const regex = build_highlight_regex(query);
@@ -67,22 +74,48 @@ export function make_query_highlighter(query) {
     };
 }
 
-export function render_typeahead_item(args) {
-    args.has_image = args.img_src !== undefined;
-    args.has_status = args.status_emoji_info !== undefined;
-    args.has_secondary = args.secondary !== undefined;
-    args.has_pronouns = args.pronouns !== undefined;
-    return render_typeahead_list_item(args);
+type StreamData = {
+    invite_only: boolean;
+    is_web_public: boolean;
+    color: string;
+    name: string;
+    description: string;
+    subscribed: boolean;
+};
+
+export function render_typeahead_item(args: {
+    primary?: string;
+    is_person?: boolean;
+    img_src?: string;
+    status_emoji_info?: UserStatusEmojiInfo;
+    secondary?: string | null;
+    pronouns?: string;
+    is_user_group?: boolean;
+    stream?: StreamData;
+    is_unsubscribed?: boolean;
+    emoji_code?: string;
+}): string {
+    const has_image = args.img_src !== undefined;
+    const has_status = args.status_emoji_info !== undefined;
+    const has_secondary = args.secondary !== undefined;
+    const has_pronouns = args.pronouns !== undefined;
+    return render_typeahead_list_item({
+        ...args,
+        has_image,
+        has_status,
+        has_secondary,
+        has_pronouns,
+    });
 }
 
-export function render_person(person) {
-    const user_circle_class = buddy_data.get_user_circle_class(person.user_id);
-    if (person.special_item_text) {
+export function render_person(person: UserOrMention): string {
+    if (person.is_broadcast) {
         return render_typeahead_item({
             primary: person.special_item_text,
             is_person: true,
         });
     }
+    const user_circle_class = buddy_data.get_user_circle_class(person.user_id);
 
     const avatar_url = people.small_avatar_url_for_person(person);
 
@@ -101,13 +134,13 @@ export function render_person(person) {
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
         pronouns,
+        secondary: person.delivery_email,
     };
 
-    typeahead_arguments.secondary = person.delivery_email;
     return render_typeahead_item(typeahead_arguments);
 }
 
-export function render_user_group(user_group) {
+export function render_user_group(user_group: {name: string; description: string}): string {
     return render_typeahead_item({
         primary: user_group.name,
         secondary: user_group.description,
@@ -115,7 +148,9 @@ export function render_user_group(user_group) {
     });
 }
 
-export function render_person_or_user_group(item) {
+export function render_person_or_user_group(
+    item: UserGroup | (UserOrMention & {members: undefined}),
+): string {
     if (user_groups.is_user_group(item)) {
         return render_user_group(item);
     }
@@ -123,7 +158,7 @@ export function render_person_or_user_group(item) {
     return render_person(item);
 }
 
-export function render_stream(stream) {
+export function render_stream(stream: StreamData): string {
     let desc = stream.description;
     const short_desc = desc.slice(0, 35);
 
@@ -138,27 +173,34 @@ export function render_stream(stream) {
     });
 }
 
-export function render_emoji(item) {
+export function render_emoji(item: {
+    emoji_name: string;
+    emoji_url: string;
+    emoji_code: string;
+}): string {
     const args = {
         is_emoji: true,
         primary: item.emoji_name.replaceAll("_", " "),
     };
 
     if (item.emoji_url) {
-        args.img_src = item.emoji_url;
-    } else {
-        args.emoji_code = item.emoji_code;
+        return render_typeahead_item({
+            ...args,
+            img_src: item.emoji_url,
+        });
     }
-
-    return render_typeahead_item(args);
+    return render_typeahead_item({
+        ...args,
+        emoji_code: item.emoji_code,
+    });
 }
 
-export function sorter(query, objs, get_item) {
+export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string): T[] {
     const results = typeahead.triage(query, objs, get_item);
     return [...results.matches, ...results.rest];
 }
 
-export function compare_by_pms(user_a, user_b) {
+export function compare_by_pms(user_a: User, user_b: User): number {
     const count_a = people.get_recipient_count(user_a);
     const count_b = people.get_recipient_count(user_b);
 
@@ -185,11 +227,11 @@ export function compare_by_pms(user_a, user_b) {
 }
 
 export function compare_people_for_relevance(
-    person_a,
-    person_b,
-    tertiary_compare,
-    current_stream_id,
-) {
+    person_a: UserOrMention,
+    person_b: UserOrMention,
+    tertiary_compare: (user_a: User, user_b: User) => number,
+    current_stream_id?: number,
+): number {
     // give preference to "all", "everyone" or "stream"
     // We use is_broadcast for a quick check.  It will
     // true for all/everyone/stream and undefined (falsy)
@@ -241,7 +283,11 @@ export function compare_people_for_relevance(
     return tertiary_compare(person_a, person_b);
 }
 
-export function sort_people_for_relevance(objs, current_stream_id, current_topic) {
+export function sort_people_for_relevance(
+    objs: UserOrMention[],
+    current_stream_id: number,
+    current_topic: string,
+): UserOrMention[] {
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     let current_stream = null;
     if (current_stream_id) {
@@ -271,7 +317,7 @@ export function sort_people_for_relevance(objs, current_stream_id, current_topic
     return objs;
 }
 
-function compare_language_by_popularity(lang_a, lang_b) {
+function compare_language_by_popularity(lang_a: string, lang_b: string): number {
     const lang_a_data = pygments_data.langs[lang_a];
     const lang_b_data = pygments_data.langs[lang_b];
 
@@ -320,7 +366,7 @@ function compare_language_by_popularity(lang_a, lang_b) {
 
 // This function compares two languages first by their popularity, then if
 // there is a tie on popularity, then compare alphabetically to break the tie.
-export function compare_language(lang_a, lang_b) {
+export function compare_language(lang_a: string, lang_b: string): number {
     let diff = compare_language_by_popularity(lang_a, lang_b);
 
     // Check to see if there is a tie. If there is, then use alphabetical order
@@ -332,7 +378,7 @@ export function compare_language(lang_a, lang_b) {
     return diff;
 }
 
-function retain_unique_language_aliases(matches) {
+function retain_unique_language_aliases(matches: string[]): string[] {
     // We make the typeahead a little more nicer but only showing one alias per language.
     // For example if the user searches for prefix "j", then the typeahead list should contain
     // "javascript" only, and not "js" and "javascript".
@@ -350,7 +396,7 @@ function retain_unique_language_aliases(matches) {
     return unique_aliases;
 }
 
-export function sort_languages(matches, query) {
+export function sort_languages(matches: string[], query: string): string[] {
     const results = typeahead.triage(query, matches, (x) => x, compare_language);
 
     return retain_unique_language_aliases([...results.matches, ...results.rest]);
@@ -363,8 +409,15 @@ export function sort_recipients({
     current_topic,
     groups = [],
     max_num_items = 20,
-}) {
-    function sort_relevance(items) {
+}: {
+    users: UserOrMention[];
+    query: string;
+    current_stream_id: number;
+    current_topic: string;
+    groups: UserGroup[];
+    max_num_items: number;
+}): (UserOrMention | UserGroup)[] {
+    function sort_relevance(items: UserOrMention[]): UserOrMention[] {
         return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
 
@@ -374,41 +427,82 @@ export function sort_recipients({
 
     const groups_results = typeahead.triage(query, groups, (g) => g.name);
 
-    const best_users = () => sort_relevance(users_name_results.matches);
-    const best_groups = () => groups_results.matches;
-    const ok_users = () => sort_relevance(email_results.matches);
-    const worst_users = () => sort_relevance(email_results.rest);
-    const worst_groups = () => groups_results.rest;
+    const best_users = (): UserOrMention[] => sort_relevance(users_name_results.matches);
+    const best_groups = (): UserGroup[] => groups_results.matches;
+    const ok_users = (): UserOrMention[] => sort_relevance(email_results.matches);
+    const worst_users = (): UserOrMention[] => sort_relevance(email_results.rest);
+    const worst_groups = (): UserGroup[] => groups_results.rest;
 
-    const getters = [best_users, best_groups, ok_users, worst_users, worst_groups];
-
-    /*
-        The following optimization is important for large realms.
-        If we know we're only showing 5 suggestions, and we
-        get 5 matches from `best_users`, then we want to avoid
-        calling the expensive sorts for `ok_users` and `worst_users`,
-        since they just get dropped.
-    */
-
-    let items = [];
-
-    for (const getter of getters) {
-        if (items.length < max_num_items) {
-            items = [...items, ...getter()];
-        }
-    }
+    const getters: (
+        | {
+              getter: () => UserOrMention[];
+              type: "users";
+          }
+        | {
+              getter: () => UserGroup[];
+              type: "groups";
+          }
+    )[] = [
+        {
+            getter: best_users,
+            type: "users",
+        },
+        {
+            getter: best_groups,
+            type: "groups",
+        },
+        {
+            getter: ok_users,
+            type: "users",
+        },
+        {
+            getter: worst_users,
+            type: "users",
+        },
+        {
+            getter: worst_groups,
+            type: "groups",
+        },
+    ];
 
     // We suggest only the first matching stream wildcard mention,
     // irrespective of how many equivalent stream wildcard mentions match.
-    const recipients = [];
+    const recipients: (UserOrMention | UserGroup)[] = [];
     let stream_wildcard_mention_included = false;
-    for (const item of items) {
-        const topic_wildcard_mention = item.email === "topic";
-        if (!item.is_broadcast || topic_wildcard_mention || !stream_wildcard_mention_included) {
-            recipients.push(item);
-            if (item.is_broadcast && !topic_wildcard_mention) {
-                stream_wildcard_mention_included = true;
+
+    function add_user_recipients(items: UserOrMention[]): void {
+        for (const item of items) {
+            const topic_wildcard_mention = item.email === "topic";
+            if (!item.is_broadcast || topic_wildcard_mention || !stream_wildcard_mention_included) {
+                recipients.push(item);
+                if (item.is_broadcast && !topic_wildcard_mention) {
+                    stream_wildcard_mention_included = true;
+                }
             }
+        }
+    }
+
+    function add_group_recipients(items: UserGroup[]): void {
+        for (const item of items) {
+            recipients.push(item);
+        }
+    }
+
+    for (const getter of getters) {
+        /*
+            The following optimization is important for large realms.
+            If we know we're only showing 5 suggestions, and we
+            get 5 matches from `best_users`, then we want to avoid
+            calling the expensive sorts for `ok_users` and `worst_users`,
+            since they just get dropped.
+        */
+        if (recipients.length >= max_num_items) {
+            break;
+        }
+        if (getter.type === "users") {
+            add_user_recipients(getter.getter());
+        } else {
+            add_group_recipients(getter.getter());
         }
     }
 
@@ -420,7 +514,14 @@ export function sort_recipients({
     return recipients.slice(0, max_num_items);
 }
 
-function slash_command_comparator(slash_command_a, slash_command_b) {
+type SlashCommand = {
+    name: string;
+};
+
+function slash_command_comparator(
+    slash_command_a: SlashCommand,
+    slash_command_b: SlashCommand,
+): number {
     if (slash_command_a.name < slash_command_b.name) {
         return -1;
     } else if (slash_command_a.name > slash_command_b.name) {
@@ -430,7 +531,7 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
     return 0;
 }
 
-export function sort_slash_commands(matches, query) {
+export function sort_slash_commands(matches: SlashCommand[], query: string): SlashCommand[] {
     // We will likely want to in the future make this sort the
     // just-`/` commands by something approximating usefulness.
     const results = typeahead.triage(query, matches, (x) => x.name, slash_command_comparator);
@@ -439,7 +540,7 @@ export function sort_slash_commands(matches, query) {
 }
 
 // Gives stream a score from 0 to 3 based on its activity
-function activity_score(sub) {
+function activity_score(sub: StreamSubscription): number {
     let stream_score = 0;
     if (!sub.subscribed) {
         stream_score = -1;
@@ -458,19 +559,22 @@ function activity_score(sub) {
 // Sort streams by ranking them by activity. If activity is equal,
 // as defined bv activity_score, decide based on our weekly traffic
 // stats.
-export function compare_by_activity(stream_a, stream_b) {
+export function compare_by_activity(
+    stream_a: StreamSubscription,
+    stream_b: StreamSubscription,
+): number {
     let diff = activity_score(stream_b) - activity_score(stream_a);
     if (diff !== 0) {
         return diff;
     }
-    diff = (stream_b.stream_weekly_traffic || 0) - (stream_a.stream_weekly_traffic || 0);
+    diff = (stream_b.stream_weekly_traffic ?? 0) - (stream_a.stream_weekly_traffic ?? 0);
     if (diff !== 0) {
         return diff;
     }
     return util.strcmp(stream_a.name, stream_b.name);
 }
 
-export function sort_streams(matches, query) {
+export function sort_streams(matches: StreamSubscription[], query: string): StreamSubscription[] {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,
