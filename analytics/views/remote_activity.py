@@ -36,8 +36,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         icount as (
             select
                 icount_id.server_id,
-                value as latest_value,
-                end_time as latest_end_time
+                value as latest_value
             from icount_id
             join zilencer_remoteinstallationcount
             on max_count_id = zilencer_remoteinstallationcount.id
@@ -64,9 +63,9 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             rserver.hostname,
             rserver.contact_email,
             rserver.last_version,
+            rserver.last_audit_log_update,
             latest_value,
             push_user_count,
-            latest_end_time,
             push_forwarded_count
         from zilencer_remotezulipserver rserver
         left join icount on icount.server_id = rserver.id
@@ -82,9 +81,9 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Hostname",
         "Contact email",
         "Zulip version",
+        "Last audit log update",
         "Analytics users",
         "Mobile users",
-        "Last update time",
         "Mobile pushes forwarded",
         "Plan name",
         "Plan status",
@@ -96,7 +95,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
 
     rows = get_query_data(query)
     total_row = []
-    totals_columns = [4, 5]
+    totals_columns = [5, 6, 7]
     plan_data_by_remote_server = get_plan_data_by_remote_server()
 
     for row in rows:
@@ -121,7 +120,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         links = stats + " " + support
         row.append(links)
     for i, col in enumerate(cols):
-        if col == "Last update time":
+        if col == "Last audit log update":
             fix_rows(rows, i, format_date_for_activity_reports)
         if col in ["Mobile users", "Mobile pushes forwarded"]:
             fix_rows(rows, i, format_none_as_zero)
