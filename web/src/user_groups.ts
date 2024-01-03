@@ -2,8 +2,8 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
 import {page_params} from "./page_params";
-import type {User} from "./people";
 import * as settings_config from "./settings_config";
+import type {UserOrMention} from "./typeahead_helper";
 import type {UserGroupUpdateEvent} from "./types";
 
 export type UserGroup = {
@@ -167,7 +167,9 @@ export function initialize(params: {realm_user_groups: UserGroupRaw[]}): void {
     }
 }
 
-export function is_user_group(item: User | UserGroup): item is UserGroup {
+export function is_user_group(
+    item: (UserOrMention & {members: undefined}) | UserGroup,
+): item is UserGroup {
     return item.members !== undefined;
 }
 

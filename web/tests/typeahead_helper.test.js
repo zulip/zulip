@@ -722,6 +722,7 @@ test("render_person special_item_text", ({mock_template}) => {
         is_bot: false,
         user_id: 7,
         special_item_text: "special_text",
+        is_broadcast: true,
     };
 
     rendered = false;
