@@ -9498,6 +9498,10 @@ paths:
           description: |
             The topic to (un)mute. Note that the request will succeed regardless of
             whether any messages have been sent to the specified topic.
+
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length.
           schema:
             type: string
           example: dinner
@@ -9594,6 +9598,10 @@ paths:
             The topic for which the personal preferences needs to be updated.
             Note that the request will succeed regardless of whether
             any messages have been sent to the specified topic.
+
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length.
           schema:
             type: string
           example: dinner
