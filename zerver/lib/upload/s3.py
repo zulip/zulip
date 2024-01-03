@@ -11,7 +11,6 @@ import botocore
 from boto3.session import Session
 from botocore.client import Config
 from django.conf import settings
-from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
 from typing_extensions import override
 
@@ -130,23 +129,7 @@ class S3UploadBackend(ZulipUploadBackend):
         self.session = Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
-
-        self._boto_client: Optional[S3Client] = None
         self.public_upload_url_base = self.construct_public_upload_url_base()
-
-    def get_boto_client(self) -> S3Client:
-        """
-        Creating the client takes a long time so we need to cache it.
-        """
-        if self._boto_client is None:
-            config = Config(signature_version=botocore.UNSIGNED)
-            self._boto_client = self.session.client(
-                "s3",
-                region_name=settings.S3_REGION,
-                endpoint_url=settings.S3_ENDPOINT_URL,
-                config=config,
-            )
-        return self._boto_client
 
     def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
         key = bucket.Object(path_id)
@@ -174,13 +157,18 @@ class S3UploadBackend(ZulipUploadBackend):
         # normal public URL for a key.
         #
         # It unfortunately takes 2ms per query to call
-        # generate_presigned_url, even with our cached boto
-        # client. Since we need to potentially compute hundreds of
-        # avatar URLs in single `GET /messages` request, we instead
-        # back-compute the URL pattern here.
+        # generate_presigned_url. Since we need to potentially compute
+        # hundreds of avatar URLs in single `GET /messages` request,
+        # we instead back-compute the URL pattern here.
 
         DUMMY_KEY = "dummy_key_ignored"
-        foo_url = self.get_boto_client().generate_presigned_url(
+        client = self.session.client(
+            "s3",
+            region_name=settings.S3_REGION,
+            endpoint_url=settings.S3_ENDPOINT_URL,
+            config=Config(signature_version=botocore.UNSIGNED),
+        )
+        dummy_signed_url = client.generate_presigned_url(
             ClientMethod="get_object",
             Params={
                 "Bucket": self.avatar_bucket.name,
@@ -188,7 +176,7 @@ class S3UploadBackend(ZulipUploadBackend):
             },
             ExpiresIn=0,
         )
-        split_url = urlsplit(foo_url)
+        split_url = urlsplit(dummy_signed_url)
         assert split_url.path.endswith(f"/{DUMMY_KEY}")
 
         return urlunsplit(
