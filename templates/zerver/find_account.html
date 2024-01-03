@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block portico_content %}
-
 <div class="app find-account-page flex full-page">
     <div class="inline-block new-style">
         <div class="lead">
@@ -13,26 +12,6 @@
         </div>
 
         <div class="app-main find-account-page-container white-box">
-            {% if emails %}
-            <div id="results">
-                <p>
-                    {% trans %}
-                    Emails sent! You will only receive emails at addresses
-                    associated with Zulip organizations. The addresses entered
-                    on the previous page are listed below:
-                    {% endtrans %}
-                </p>
-
-                <ul>
-                    {% for email in emails %}
-                    <li>{{ email }}</li>
-                    {% endfor %}
-                </ul>
-
-                {% include 'zerver/dev_env_email_access_details.html' %}
-
-            </div>
-            {% else %}
             <div class="find-account-form">
                 <p>
                     {% trans %}
@@ -61,7 +40,6 @@
                     {% endfor %}
                 {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
