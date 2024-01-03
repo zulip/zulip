@@ -5,11 +5,12 @@ import * as sub_store from "./sub_store";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
-let previous_pinned;
-let previous_normal;
-let previous_dormant;
-let previous_muted_active;
-let previous_muted_pinned;
+let first_render_completed = false;
+let previous_pinned = [];
+let previous_normal = [];
+let previous_dormant = [];
+let previous_muted_active = [];
+let previous_muted_pinned = [];
 let all_streams = [];
 
 // Because we need to check whether we are filtering inactive streams
@@ -123,7 +124,7 @@ export function sort_groups(streams, search_term) {
     dormant_streams.sort(compare_function);
 
     const same_as_before =
-        previous_pinned !== undefined &&
+        first_render_completed &&
         util.array_compare(previous_pinned, pinned_streams) &&
         util.array_compare(previous_normal, normal_streams) &&
         util.array_compare(previous_muted_pinned, muted_pinned_streams) &&
@@ -131,6 +132,7 @@ export function sort_groups(streams, search_term) {
         util.array_compare(previous_dormant, dormant_streams);
 
     if (!same_as_before) {
+        first_render_completed = true;
         previous_pinned = pinned_streams;
         previous_normal = normal_streams;
         previous_muted_pinned = muted_pinned_streams;
