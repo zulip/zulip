@@ -21,11 +21,13 @@ export type InputPillItem<T> = {
     should_add_guest_user_indicator?: boolean;
 } & T;
 
+export type InputPillConfig = {
+    show_user_status_emoji?: boolean;
+};
+
 type InputPillCreateOptions<T> = {
     $container: JQuery;
-    pill_config?: {
-        show_user_status_emoji?: boolean;
-    };
+    pill_config?: InputPillConfig | undefined;
     create_item_from_text: (
         text: string,
         existing_items: InputPillItem<T>[],
