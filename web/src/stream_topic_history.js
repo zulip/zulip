@@ -121,7 +121,7 @@ export class PerStreamHistory {
         }
     }
 
-    add_or_update({topic_name, message_id = 0}) {
+    add_or_update(topic_name, message_id) {
         message_id = Number.parseInt(message_id, 10);
         this.update_stream_max_message_id(message_id);
 
@@ -276,15 +276,12 @@ export function find_or_create(stream_id) {
 
 export function add_message(opts) {
     const stream_id = opts.stream_id;
-    const message_id = opts.message_id;
+    const message_id = opts.message_id ?? 0;
     const topic_name = opts.topic_name;
 
     const history = find_or_create(stream_id);
 
-    history.add_or_update({
-        topic_name,
-        message_id,
-    });
+    history.add_or_update(topic_name, message_id);
 }
 
 export function add_history(stream_id, server_history) {
