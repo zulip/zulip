@@ -1,6 +1,15 @@
 <div class="remote-realm-information">
     <span class="label">remote realm</span>
     <h3>{{ remote_realm.name }}</h3>
+    {% if remote_realm.realm_locally_deleted %}
+        <h4>Remote realm is locally deleted 🛑</h4>
+    {% endif %}
+    {% if remote_realm.registration_deactivated %}
+        <h4>Remote realm registration deactivated 🛑</h4>
+    {% endif %}
+    {% if remote_realm.realm_deactivated %}
+        <h4>Remote realm is deactivated on remote server 🛑</h4>
+    {% endif %}
     {% if remote_realm.plan_type == SPONSORED_PLAN_TYPE %}
         <h4>On 100% sponsored Zulip Community plan 🎉</h4>
     {% endif %}
