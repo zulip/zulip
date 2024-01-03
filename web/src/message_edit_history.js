@@ -133,7 +133,7 @@ export function fetch_and_render_message_history(message) {
                     edited_messages: content_edit_history,
                 }),
             );
-            // Pass the history through rendered_markdown.js
+            // Pass the history through rendered_markdown.ts
             // to update dynamic_elements in the content.
             $("#message-history")
                 .find(".rendered_markdown")

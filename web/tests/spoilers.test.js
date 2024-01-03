@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 
 const spoilers = zrequire("spoilers");
 
-// This function is taken from rendered_markdown.js and slightly modified.
+// This function is taken from rendered_markdown.ts and slightly modified.
 const $array = (array) => {
     const each = (func) => {
         for (const [index, $elem] of array.entries()) {

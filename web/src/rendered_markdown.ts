@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import copy_code_button from "../templates/copy_code_button.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
@@ -10,6 +11,7 @@ import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {$t, $t_html} from "./i18n";
 import * as message_store from "./message_store";
+import type {Message} from "./message_store";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
@@ -31,7 +33,7 @@ import * as util from "./util";
     is being displayed.
 */
 
-export function get_user_id_for_mention_button(elem) {
+export function get_user_id_for_mention_button(elem: HTMLElement): "*" | number | undefined {
     const user_id_string = $(elem).attr("data-user-id");
     // Handle legacy Markdown that was rendered before we cut
     // over to using data-user-id.
@@ -55,7 +57,7 @@ export function get_user_id_for_mention_button(elem) {
     return undefined;
 }
 
-function get_user_group_id_for_mention_button(elem) {
+function get_user_group_id_for_mention_button(elem: HTMLElement): number | undefined {
     const user_group_id = $(elem).attr("data-user-group-id");
 
     if (user_group_id) {
@@ -65,7 +67,7 @@ function get_user_group_id_for_mention_button(elem) {
     return undefined;
 }
 
-function get_message_for_message_content($content) {
+function get_message_for_message_content($content: JQuery): Message | undefined {
     // TODO: This selector is designed to exclude drafts/scheduled
     // messages. Arguably those settings should be unconditionally
     // marked with user-mention-me, but rows.id doesn't support
@@ -77,11 +79,16 @@ function get_message_for_message_content($content) {
         return undefined;
     }
     const message_id = rows.id($message_row);
+    assert(message_id !== undefined);
     return message_store.get(message_id);
 }
 
 // Helper function to update a mentioned user's name.
-export function set_name_in_mention_element(element, name, user_id) {
+export function set_name_in_mention_element(
+    element: HTMLElement,
+    name: string,
+    user_id?: number,
+): void {
     if (user_id !== undefined && people.should_add_guest_user_indicator(user_id)) {
         let display_text;
         if (!$(element).hasClass("silent")) {
@@ -100,7 +107,7 @@ export function set_name_in_mention_element(element, name, user_id) {
     }
 }
 
-export const update_elements = ($content) => {
+export const update_elements = ($content: JQuery): void => {
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction($content.text()) === "rtl") {
         $content.addClass("rtl");
@@ -108,7 +115,7 @@ export const update_elements = ($content) => {
 
     if (util.is_client_safari()) {
         // Without this video thumbnail doesn't load on Safari.
-        $content.find(".message_inline_video video").each(function () {
+        $content.find<HTMLMediaElement>(".message_inline_video video").each(function () {
             // On Safari, one needs to manually load video elements.
             // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/load
             this.load();
@@ -116,7 +123,7 @@ export const update_elements = ($content) => {
     }
 
     // personal and stream wildcard mentions
-    $content.find(".user-mention").each(function () {
+    $content.find(".user-mention").each(function (): void {
         const user_id = get_user_id_for_mention_button(this);
         const message = get_message_for_message_content($content);
         // We give special highlights to the mention buttons
@@ -125,6 +132,7 @@ export const update_elements = ($content) => {
             $(this).addClass("user-mention-me");
         }
         if (
+            user_id !== undefined &&
             user_id !== "*" &&
             people.is_my_user_id(user_id) &&
             message &&
@@ -158,7 +166,7 @@ export const update_elements = ($content) => {
         }
     });
 
-    $content.find(".topic-mention").each(function () {
+    $content.find(".topic-mention").each(function (): void {
         const message = get_message_for_message_content($content);
 
         if (message && message.topic_wildcard_mentioned) {
@@ -166,9 +174,13 @@ export const update_elements = ($content) => {
         }
     });
 
-    $content.find(".user-group-mention").each(function () {
+    $content.find(".user-group-mention").each(function (): void {
         const user_group_id = get_user_group_id_for_mention_button(this);
         let user_group;
+        if (user_group_id === undefined) {
+            blueslip.info("Rendered undefined user group");
+            return;
+        }
         try {
             user_group = user_groups.get_user_group_from_id(user_group_id);
         } catch {
@@ -192,38 +204,44 @@ export const update_elements = ($content) => {
         }
     });
 
-    $content.find("a.stream").each(function () {
-        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
-        if (stream_id && !$(this).find(".highlight").length) {
-            // Display the current name for stream if it is not
-            // being displayed in search highlight.
-            const stream_name = sub_store.maybe_get_stream_name(stream_id);
-            if (stream_name !== undefined) {
-                // If the stream has been deleted,
-                // sub_store.maybe_get_stream_name might return
-                // undefined.  Otherwise, display the current stream name.
-                $(this).text("#" + stream_name);
+    $content.find("a.stream").each(function (): void {
+        const stream_id_string = $(this).attr("data-stream-id");
+        if (stream_id_string !== undefined) {
+            const stream_id = Number.parseInt(stream_id_string, 10);
+            if (stream_id && !$(this).find(".highlight").length) {
+                // Display the current name for stream if it is not
+                // being displayed in search highlight.
+                const stream_name = sub_store.maybe_get_stream_name(stream_id);
+                if (stream_name !== undefined) {
+                    // If the stream has been deleted,
+                    // sub_store.maybe_get_stream_name might return
+                    // undefined.  Otherwise, display the current stream name.
+                    $(this).text("#" + stream_name);
+                }
             }
         }
     });
 
-    $content.find("a.stream-topic").each(function () {
-        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
-        if (stream_id && !$(this).find(".highlight").length) {
-            // Display the current name for stream if it is not
-            // being displayed in search highlight.
-            const stream_name = sub_store.maybe_get_stream_name(stream_id);
-            if (stream_name !== undefined) {
-                // If the stream has been deleted,
-                // sub_store.maybe_get_stream_name might return
-                // undefined.  Otherwise, display the current stream name.
-                const text = $(this).text();
-                $(this).text("#" + stream_name + text.slice(text.indexOf(" > ")));
+    $content.find("a.stream-topic").each(function (): void {
+        const stream_id_string = $(this).attr("data-stream-id");
+        if (stream_id_string !== undefined) {
+            const stream_id = Number.parseInt(stream_id_string, 10);
+            if (stream_id && !$(this).find(".highlight").length) {
+                // Display the current name for stream if it is not
+                // being displayed in search highlight.
+                const stream_name = sub_store.maybe_get_stream_name(stream_id);
+                if (stream_name !== undefined) {
+                    // If the stream has been deleted,
+                    // sub_store.maybe_get_stream_name might return
+                    // undefined.  Otherwise, display the current stream name.
+                    const text = $(this).text();
+                    $(this).text("#" + stream_name + text.slice(text.indexOf(" > ")));
+                }
             }
         }
     });
 
-    $content.find("time").each(function () {
+    $content.find("time").each(function (): void {
         // Populate each timestamp span with mentioned time
         // in user's local time zone.
         const time_str = $(this).attr("datetime");
@@ -243,8 +261,10 @@ export const update_elements = ($content) => {
         }
     });
 
-    $content.find("span.timestamp-error").each(function () {
-        const [, time_str] = /^Invalid time format: (.*)$/.exec($(this).text());
+    $content.find("span.timestamp-error").each(function (): void {
+        const match_array = /^Invalid time format: (.*)$/.exec($(this).text());
+        assert(match_array !== null);
+        const [, time_str] = match_array;
         const text = $t(
             {defaultMessage: "Invalid time format: {timestamp}"},
             {timestamp: time_str},
@@ -252,7 +272,7 @@ export const update_elements = ($content) => {
         $(this).text(text);
     });
 
-    $content.find("div.spoiler-header").each(function () {
+    $content.find("div.spoiler-header").each(function (): void {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.
         if ($(this).html().trim().length === 0) {
@@ -267,7 +287,7 @@ export const update_elements = ($content) => {
 
     // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,
     // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.js`.
-    $content.find("div.codehilite").each(function () {
+    $content.find("div.codehilite").each(function (): void {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
         const fenced_code_lang = $codehilite.data("code-language");
@@ -310,7 +330,7 @@ export const update_elements = ($content) => {
     // Display emoji (including realm emoji) as text if
     // user_settings.emojiset is 'text'.
     if (user_settings.emojiset === "text") {
-        $content.find(".emoji").replaceWith(function () {
+        $content.find(".emoji").replaceWith(function (): string {
             const text = $(this).attr("title");
             return ":" + text + ":";
         });

@@ -128,7 +128,7 @@ function build_page() {
                     // FIXME: One thing to note here is that the "view code in playground"
                     // option for an already rendered code block (tagged with this newly added
                     // language) would not be visible without a re-render. To fix this, we should
-                    // probably do some extraction in `rendered_markdown.js` which does a
+                    // probably do some extraction in `rendered_markdown.ts` which does a
                     // live-update of the `data-code-language` parameter in code blocks. Or change
                     // how we do the HTML in the frontend so that the icon labels/behavior are
                     // computed dynamically when you hover over the message based on configured
