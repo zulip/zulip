@@ -434,6 +434,14 @@ class InvalidTierError(Exception):
         super().__init__(self.message)
 
 
+class SupportRequestError(BillingError):
+    def __init__(self, message: str) -> None:
+        super().__init__(
+            "invalid support request",
+            message,
+        )
+
+
 def catch_stripe_errors(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
     @wraps(func)
     def wrapped(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
@@ -1164,12 +1172,12 @@ class BillingSession(ABC):
                 f"Cannot upgrade from {plan.name} to {CustomerPlan.name_from_tier(new_plan_tier)}"
             )
 
-    def check_customer_not_on_paid_plan(self, customer: Customer) -> str:  # nocoverage
+    def check_customer_not_on_paid_plan(self, customer: Customer) -> str:
         current_plan = get_current_plan_by_customer(customer)
         if current_plan is not None:
             # Check if the customer is scheduled for an upgrade.
             next_plan = self.get_next_plan(current_plan)
-            if next_plan is not None:
+            if next_plan is not None:  # nocoverage
                 return f"Customer scheduled for upgrade to {next_plan.name}. Please cancel upgrade before approving sponsorship!"
 
             # It is fine to end legacy plan not scheduled for an upgrade.
@@ -3037,8 +3045,8 @@ class RealmBillingSession(BillingSession):
         customer = self.get_customer()
         if customer is not None:
             error_message = self.check_customer_not_on_paid_plan(customer)
-            if error_message != "":  # nocoverage
-                return error_message
+            if error_message != "":
+                raise SupportRequestError(error_message)
 
         from zerver.actions.message_send import internal_send_private_message
 
@@ -3398,7 +3406,7 @@ class RemoteRealmBillingSession(BillingSession):
         if customer is not None:
             error_message = self.check_customer_not_on_paid_plan(customer)
             if error_message != "":
-                return error_message
+                raise SupportRequestError(error_message)
 
             if self.remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY:
                 plan = get_current_plan_by_customer(customer)
@@ -3804,7 +3812,7 @@ class RemoteServerBillingSession(BillingSession):
         if customer is not None:
             error_message = self.check_customer_not_on_paid_plan(customer)
             if error_message != "":
-                return error_message
+                raise SupportRequestError(error_message)
 
             if self.remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY:
                 plan = get_current_plan_by_customer(customer)
