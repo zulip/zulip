@@ -140,6 +140,4 @@ async function user_deactivation_test(page: Page): Promise<void> {
     await test_bot_deactivation_and_reactivation(page);
 }
 
-// Test temporarily disabled due to nondeterminsitic failures
-
 common.run_test(user_deactivation_test);
