@@ -1,5 +1,5 @@
 import * as blueslip from "./blueslip";
-import type {InputPillContainer, InputPillItem} from "./input_pill";
+import type {InputPillConfig, InputPillContainer, InputPillItem} from "./input_pill";
 import * as input_pill from "./input_pill";
 import {page_params} from "./page_params";
 import type {User} from "./people";
@@ -147,9 +147,7 @@ export function append_user(user: User, pills: UserPillWidget): void {
 
 export function create_pills(
     $pill_container: JQuery,
-    pill_config?: {
-        show_user_status_emoji?: boolean;
-    },
+    pill_config?: InputPillConfig | undefined,
 ): input_pill.InputPillContainer<UserPill> {
     const pills = input_pill.create({
         $container: $pill_container,
