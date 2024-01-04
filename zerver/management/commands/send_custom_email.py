@@ -98,6 +98,7 @@ class Command(ZulipBaseCommand):
     ) -> None:
         users: QuerySet[UserProfile] = UserProfile.objects.none()
         add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None
+        distinct_email = False
 
         if options["remote_servers"]:
             servers = RemoteZulipServer.objects.filter(deactivated=False)
@@ -136,25 +137,22 @@ class Command(ZulipBaseCommand):
             # Marketing email sent at most once to each email address
             # for users who are recently active (!long_term_idle)
             # users of the product, or who are admins/owners.
-            users = (
-                UserProfile.objects.filter(
-                    is_active=True,
-                    is_bot=False,
-                    is_mirror_dummy=False,
-                    realm__deactivated=False,
-                    enable_marketing_emails=True,
+            users = UserProfile.objects.filter(
+                is_active=True,
+                is_bot=False,
+                is_mirror_dummy=False,
+                realm__deactivated=False,
+                enable_marketing_emails=True,
+            ).filter(
+                Q(long_term_idle=False)
+                | Q(
+                    role__in=[
+                        UserProfile.ROLE_REALM_OWNER,
+                        UserProfile.ROLE_REALM_ADMINISTRATOR,
+                    ]
                 )
-                .filter(
-                    Q(long_term_idle=False)
-                    | Q(
-                        role__in=[
-                            UserProfile.ROLE_REALM_OWNER,
-                            UserProfile.ROLE_REALM_ADMINISTRATOR,
-                        ]
-                    )
-                )
-                .distinct("delivery_email")
             )
+            distinct_email = True
 
             def add_marketing_unsubscribe(context: Dict[str, object], user: UserProfile) -> None:
                 context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
@@ -175,7 +173,8 @@ class Command(ZulipBaseCommand):
                 role__in=admin_roles,
                 realm__deactivated=False,
                 realm__in=sponsored_realms,
-            ).distinct("delivery_email")
+            )
+            distinct_email = True
         else:
             realm = self.get_realm(options)
             users = self.get_users(options, realm, is_bot=False)
@@ -203,6 +202,7 @@ class Command(ZulipBaseCommand):
             dry_run=dry_run,
             options=options,
             add_context=add_context,
+            distinct_email=distinct_email,
         )
 
         if dry_run:
