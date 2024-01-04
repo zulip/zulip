@@ -690,7 +690,8 @@ integration](../production/scim.md).
    (Alternatively, open the URL in your browser
    `https://keycloak.example.com/auth/realms/master/protocol/saml/descriptor`.
    Replace the domain (`keycloak.example.com`) as well as the realm
-   name (`master`) in the url. The certificate is the content inside
+   name (`master`) in the url. Note that depending on your version of Keycloak,
+   `/auth/` may or may not be present in the URL. The certificate is the content inside
    `<ds:X509Certificate>[...]</ds:X509Certificate>`).
 
    Save the certificate in a new `{idp_name}.crt` file constructed as follows:
