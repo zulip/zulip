@@ -187,11 +187,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 [
                     "<li><b>Organization type</b>: Community</li>",
                     "<li><b>Organization website</b>: No website submitted</li>",
-                    "<li><b>Paid users</b>: None</li>",
+                    "<li><b>Paid staff</b>: None</li>",
                     "<li><b>Requested plan</b>: Business</li>",
                     "<li><b>Organization description</b>: We help people.</li>",
                     "<li><b>Estimated total users</b>: 20-35</li>",
-                    "<li><b>Description of paid users</b>: </li>",
+                    "<li><b>Description of paid staff</b>: </li>",
                 ],
                 result,
             )
@@ -201,11 +201,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 [
                     "<li><b>Organization type</b>: Open-source project</li>",
                     "<li><b>Organization website</b>: example.org</li>",
-                    "<li><b>Paid users</b>: </li>",
+                    "<li><b>Paid staff</b>: </li>",
                     "<li><b>Requested plan</b>: Community</li>",
                     "<li><b>Organization description</b>: We help people.</li>",
                     "<li><b>Estimated total users</b>: 20-35</li>",
-                    "<li><b>Description of paid users</b>: </li>",
+                    "<li><b>Description of paid staff</b>: </li>",
                 ],
                 result,
             )
@@ -215,7 +215,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 [
                     "<li><b>Organization description</b>: We help people.</li>",
                     "<li><b>Estimated total users</b>: 20-35</li>",
-                    "<li><b>Description of paid users</b>: </li>",
+                    "<li><b>Description of paid staff</b>: </li>",
                 ],
                 result,
             )

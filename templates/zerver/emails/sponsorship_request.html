@@ -3,7 +3,11 @@
 {% block content %}
 <br />
 
-<b>Zulip Cloud?</b> {{ is_cloud_organization }}
+{% if is_cloud_organization %}
+<b>Zulip Cloud</b>
+{% else %}
+<b>Self-hosted</b>
+{% endif %}
 
 <br /><br />
 
@@ -25,12 +29,12 @@
 
 <br /><br />
 
-<b>Expected Users</b>: {{ expected_total_users }}
-<br/>
-<b>Paid staff</b>: {{ paid_users_count }}
+<b>Expected users</b>: {{ expected_total_users }}
 
 <br /><br />
 
+<b>Paid staff</b>: {{ paid_users_count }}
+<br />
 <b>Description of paid staff</b>:
 <br />
 {{ paid_users_description }}
