@@ -41,6 +41,8 @@ export function process_message(message: Message): void {
         return;
     }
 
+    my_alert_words.sort((a, b) => b.length - a.length);
+
     for (const word of my_alert_words) {
         const clean = _.escapeRegExp(word).replaceAll(
             /["&'<>]/g,
