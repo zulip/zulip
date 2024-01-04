@@ -25,10 +25,10 @@
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     {% if has_fixed_price %}
-    <input type="number" name="discount" value="{{ sponsorship_data.default_discount }}" disabled />
+    <input type="number" name="discount" value="{{ format_discount(sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" disabled />
     <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
     {% else %}
-    <input type="number" name="discount" value="{{ sponsorship_data.default_discount }}" required />
+    <input type="number" name="discount" value="{{ format_discount(sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" required />
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
     {% endif %}
 </form>

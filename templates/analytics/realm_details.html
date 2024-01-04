@@ -101,10 +101,10 @@
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     {% if plan_data[realm.id].current_plan and plan_data[realm.id].current_plan.fixed_price %}
-    <input type="number" name="discount" value="{{ get_discount(plan_data[realm.id].customer) }}" disabled />
+    <input type="number" name="discount" value="{{ format_discount(get_discount(plan_data[realm.id].customer)) }}" step="0.01" min="0" max="99.99" disabled />
     <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
     {% else %}
-    <input type="number" name="discount" value="{{ get_discount(plan_data[realm.id].customer) }}" required />
+    <input type="number" name="discount" value="{{ format_discount(get_discount(plan_data[realm.id].customer)) }}" step="0.01" min="0" max="99.99" required />
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
     {% endif %}
 </form>
