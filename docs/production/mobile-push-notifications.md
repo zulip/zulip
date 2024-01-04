@@ -290,15 +290,12 @@ generate a new `zulip_org_key` and store that new key in
 ## Deactivating your server's registration
 
 If you are deleting your Zulip server or otherwise no longer want to
-use the mobile push notifications service, you can deactivate your
-registration as follows. If you are currently on a paid plan, you will
-need to cancel the plan via the plan management interface before
-deactivating your registration.
+use the Mobile Push Notification Service, you can deactivate your server's
+registration.
 
-Note that deactivation cannot be undone without contacting support; if
-you'd like to temporarily stop using the service, you can simply
-comment `PUSH_NOTIFICATION_BOUNCER_URL` as detailed in the second step
-without deactivating your registration.
+1. [Cancel any paid
+   plans](https://zulip.com/help/self-hosted-billing#cancel-paid-plan)
+   associated with your server.
 
 1. Run the deregistration command. If you installed Zulip directly on
    the server (without Docker), run as root:
@@ -319,10 +316,21 @@ without deactivating your registration.
    start of the line), and [restart your Zulip
    server](settings.md#making-changes).
 
+If you ever need to reactivate your server's registration, [contact Zulip
+support](https://zulip.com/help/contact-support).
+
+### Pausing use of the Mobile Push Notification Service
+
+You can temporarily stop using the Mobile Push Notification Service. Comment out
+the `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line in your
+`/etc/zulip/settings.py` file (i.e., add `# ` at the start of the line), and
+[restart your Zulip server](settings.md#making-changes). This approach makes it
+easy to start using the service again by uncommenting the same line.
+
 ## Sending push notifications directly from your server
 
 This section documents an alternative way to send push notifications
-that does not involve using the Mobile Push Notifications Service at
+that does not involve using the Mobile Push Notification Service at
 the cost of needing to compile and distribute modified versions of the
 Zulip mobile apps.
 
