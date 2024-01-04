@@ -314,6 +314,16 @@ cd zulip
 vagrant up --provider=docker
 ```
 
+:::{warning}
+There is a [known upstream issue on macOS](https://chat.zulip.org/#narrow/stream/21-provision-help/topic/provision.20error.20ERR_PNPM_LINKING_FAILED/near/1649241)
+that can cause provisioning to fail with `ERR_PNPM_LINKING_FAILED` or other errors. The temporary
+fix is to open the Docker desktop app's settings panel, and choose `osxfs (legacy)` under "Choose
+file sharing implementation for your containers." Once Docker restarts, you should be able to
+successfully run `vagrant up --provider=docker`. Back in Docker, you can return to using VirtioFS
+for better system performance while developing, but you may need to revert to `osxfs (legacy)`
+whenever you need to re-provision.
+:::
+
 The first time you run this command it will take some time because Vagrant
 does the following:
 
