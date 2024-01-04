@@ -18,6 +18,11 @@ class Command(ZulipBaseCommand):
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
+            "--only-never-logged-in",
+            action="store_true",
+            help="Filter to only users which have not accepted the TOS.",
+        )
+        parser.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server. "
         )
         self.add_user_list_args(
@@ -43,6 +48,11 @@ class Command(ZulipBaseCommand):
                         "You have to pass -u/--users or -a/--all-users or --entire-server."
                     )
                 raise error
+        if options["only_never_logged_in"]:
+            users = users.filter(tos_version=-1)
+
+        if not users.exists():
+            print("No matching users!")
 
         self.send(users)
 
