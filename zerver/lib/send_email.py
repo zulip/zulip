@@ -21,6 +21,7 @@ from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
 from django.db.models import QuerySet
+from django.db.models.functions import Lower
 from django.http import HttpRequest
 from django.template import loader
 from django.utils.timezone import now as timezone_now
@@ -583,7 +584,7 @@ def send_custom_email(
     options: Dict[str, str],
     add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
     distinct_email: bool = False,
-) -> None:
+) -> QuerySet[UserProfile]:
     """
     Helper for `manage.py send_custom_email`.
 
@@ -598,7 +599,11 @@ def send_custom_email(
 
     users = users.select_related("realm")
     if distinct_email:
-        users = users.distinct("delivery_email").order_by("delivery_email", "id")
+        users = (
+            users.annotate(lower_email=Lower("delivery_email"))
+            .distinct("lower_email")
+            .order_by("lower_email", "id")
+        )
     else:
         users = users.order_by("id")
     for user_profile in users:
@@ -617,6 +622,7 @@ def send_custom_email(
 
         if dry_run:
             break
+    return users
 
 
 def send_custom_server_email(

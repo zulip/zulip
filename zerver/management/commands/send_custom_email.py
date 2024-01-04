@@ -197,7 +197,7 @@ class Command(ZulipBaseCommand):
             users = users.exclude(
                 Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
             )
-        send_custom_email(
+        users = send_custom_email(
             users,
             dry_run=dry_run,
             options=options,
