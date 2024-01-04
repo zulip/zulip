@@ -62,6 +62,13 @@ If you imported your organization into Zulip Cloud, simply e-mail
      ./manage.py send_password_reset_email -r <subdomain> --all-users
      ```
 
+   If you would like to only send emails to users who have not logged in yet,
+   you can use the following variant instead:
+
+     ```
+     ./manage.py send_password_reset_email -r <subdomain> --all-users --only-never-logged-in
+     ```
+
 {end_tabs}
 
 ### Manual password resets
