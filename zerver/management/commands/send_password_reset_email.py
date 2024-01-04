@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
-from typing import Any, Iterable
+from typing import Any
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core.management.base import CommandError
+from django.db.models import QuerySet
 from typing_extensions import override
 
 from zerver.forms import generate_password_reset_url
@@ -29,7 +30,7 @@ class Command(ZulipBaseCommand):
     @override
     def handle(self, *args: Any, **options: str) -> None:
         if options["entire_server"]:
-            users: Iterable[UserProfile] = UserProfile.objects.filter(
+            users: QuerySet[UserProfile] = UserProfile.objects.filter(
                 is_active=True, is_bot=False, is_mirror_dummy=False
             )
         else:
@@ -45,7 +46,7 @@ class Command(ZulipBaseCommand):
 
         self.send(users)
 
-    def send(self, users: Iterable[UserProfile]) -> None:
+    def send(self, users: QuerySet[UserProfile]) -> None:
         """Sends one-use only links for resetting password to target users"""
         for user_profile in users:
             context = {
