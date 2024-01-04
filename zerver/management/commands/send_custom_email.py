@@ -133,16 +133,28 @@ class Command(ZulipBaseCommand):
                 is_active=True, is_bot=False, is_mirror_dummy=False, realm__deactivated=False
             )
         elif options["marketing"]:
-            # Marketing email sent at most once to each email address for users
-            # who are recently active (!long_term_idle) users of the product.
-            users = UserProfile.objects.filter(
-                is_active=True,
-                is_bot=False,
-                is_mirror_dummy=False,
-                realm__deactivated=False,
-                enable_marketing_emails=True,
-                long_term_idle=False,
-            ).distinct("delivery_email")
+            # Marketing email sent at most once to each email address
+            # for users who are recently active (!long_term_idle)
+            # users of the product, or who are admins/owners.
+            users = (
+                UserProfile.objects.filter(
+                    is_active=True,
+                    is_bot=False,
+                    is_mirror_dummy=False,
+                    realm__deactivated=False,
+                    enable_marketing_emails=True,
+                )
+                .filter(
+                    Q(long_term_idle=False)
+                    | Q(
+                        role__in=[
+                            UserProfile.ROLE_REALM_OWNER,
+                            UserProfile.ROLE_REALM_ADMINISTRATOR,
+                        ]
+                    )
+                )
+                .distinct("delivery_email")
+            )
 
             def add_marketing_unsubscribe(context: Dict[str, object], user: UserProfile) -> None:
                 context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
