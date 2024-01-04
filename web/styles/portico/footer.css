@@ -97,12 +97,11 @@
     }
 
     .footer__legal {
-        margin: 12px 0 5px;
+        margin: 12px 0 0;
         padding: 0 52px;
         border-top: 1px solid hsl(0deg 0% 100% / 10%);
 
         & a {
-            margin-bottom: 10px;
             border-bottom: 1px solid var(--color-footer-background);
 
             &:hover {
@@ -117,9 +116,9 @@
 
     .footer__legal-container {
         max-width: 1132px;
-        padding-top: 15px;
+        padding: 15px 0;
         display: flex;
-        justify-content: space-between;
+        place-content: center space-between;
         flex-flow: row wrap;
         margin: 0 auto;
 
@@ -136,7 +135,13 @@
 
     .footer__legal-container .copyright {
         color: hsl(0deg 0% 100% / 50%);
-        margin-bottom: 8px;
+
+        @media screen and (width <= 600px) {
+            /* Maintain space between copyright
+               and legal links when flex-wrapping
+               at narrower viewports. */
+            margin-bottom: 8px;
+        }
     }
 
     .footer__legal-container a {
