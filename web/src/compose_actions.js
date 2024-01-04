@@ -251,6 +251,7 @@ export function start(msg_type, opts) {
         compose_recipient.on_compose_select_recipient_update();
     } else {
         // Open stream selection dropdown if no stream is selected.
+        compose_state.set_stream_id("");
         compose_recipient.open_compose_recipient_dropdown();
     }
     compose_state.topic(opts.topic);
