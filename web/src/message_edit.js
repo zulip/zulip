@@ -1132,6 +1132,8 @@ export function edit_last_sent_message() {
         return;
     }
 
+    message_lists.current.select_id(msg.id, {then_scroll: true, from_scroll: true});
+
     const $msg_row = message_lists.current.get_row(msg.id);
     if (!$msg_row) {
         // This should never happen, since we got the message above
@@ -1139,8 +1141,6 @@ export function edit_last_sent_message() {
         blueslip.error("Could not find row for id", {msg_id: msg.id});
         return;
     }
-
-    message_lists.current.select_id(msg.id, {then_scroll: true, from_scroll: true});
 
     // Finally do the real work!
     compose_actions.cancel();
