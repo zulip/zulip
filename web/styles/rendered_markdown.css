@@ -211,7 +211,7 @@
     }
 
     .alert-word {
-        background-color: hsl(18deg 100% 84%);
+        background-color: var(--color-background-alert-word);
     }
 
     /* Timestamps */
