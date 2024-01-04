@@ -582,6 +582,7 @@ def send_custom_email(
     dry_run: bool,
     options: Dict[str, str],
     add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
+    order_by: Optional[List[str]] = None,
 ) -> None:
     """
     Helper for `manage.py send_custom_email`.
@@ -593,8 +594,10 @@ def send_custom_email(
         from_name="Sender Name")
     )
     """
+    if order_by is None:
+        order_by = ["id"]
     email_sender = custom_email_sender(**options, dry_run=dry_run)
-    for user_profile in users.select_related("realm").order_by("id"):
+    for user_profile in users.select_related("realm").order_by(*order_by):
         context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,

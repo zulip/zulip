@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import orjson
 from django.conf import settings
@@ -98,6 +98,7 @@ class Command(ZulipBaseCommand):
     ) -> None:
         users: QuerySet[UserProfile] = UserProfile.objects.none()
         add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None
+        order_by: Optional[List[str]] = None
 
         if options["remote_servers"]:
             servers = RemoteZulipServer.objects.filter(deactivated=False)
@@ -143,6 +144,7 @@ class Command(ZulipBaseCommand):
                 enable_marketing_emails=True,
                 long_term_idle=False,
             ).distinct("delivery_email")
+            order_by = ["delivery_email", "id"]
 
             def add_marketing_unsubscribe(context: Dict[str, object], user: UserProfile) -> None:
                 context["unsubscribe_link"] = one_click_unsubscribe_link(user, "marketing")
@@ -164,6 +166,7 @@ class Command(ZulipBaseCommand):
                 realm__deactivated=False,
                 realm__in=sponsored_realms,
             ).distinct("delivery_email")
+            order_by = ["delivery_email", "id"]
         else:
             realm = self.get_realm(options)
             users = self.get_users(options, realm, is_bot=False)
@@ -191,6 +194,7 @@ class Command(ZulipBaseCommand):
             dry_run=dry_run,
             options=options,
             add_context=add_context,
+            order_by=order_by,
         )
 
         if dry_run:
