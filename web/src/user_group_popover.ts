@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type {Instance as PopoverInstance, ReferenceElement} from "tippy.js";
 
 import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
 
@@ -8,27 +10,30 @@ import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import type {User} from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
 
-let user_group_popover_instance;
+let user_group_popover_instance: PopoverInstance | undefined;
 
-export function hide() {
-    if (is_open()) {
+type PopoverGroupMember = User & {user_circle_class: string; user_last_seen_time_status: string};
+
+export function hide(): void {
+    if (user_group_popover_instance !== undefined) {
         user_group_popover_instance.destroy();
         user_group_popover_instance = undefined;
     }
 }
 
-export function is_open() {
+export function is_open(): boolean {
     return Boolean(user_group_popover_instance);
 }
 
-function get_user_group_popover_items() {
-    if (!is_open()) {
+function get_user_group_popover_items(): JQuery | undefined {
+    if (user_group_popover_instance === undefined) {
         blueslip.error("Trying to get menu items when user group popover is closed.");
         return undefined;
     }
@@ -42,20 +47,26 @@ function get_user_group_popover_items() {
     return $("li:not(.divider):visible a", $popover);
 }
 
-export function handle_keyboard(key) {
+export function handle_keyboard(key: string): void {
     const $items = get_user_group_popover_items();
     popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
 // element is the target element to pop off of;
 // message_id is the message id containing it, which should be selected;
-export function toggle_user_group_info_popover(element, message_id) {
+export function toggle_user_group_info_popover(
+    element: ReferenceElement,
+    message_id: number,
+): void {
     if (is_open()) {
         hide();
         return;
     }
     const $elt = $(element);
-    const user_group_id = Number.parseInt($elt.attr("data-user-group-id"), 10);
+    const user_group_id_str = $elt.attr("data-user-group-id");
+    assert(user_group_id_str !== undefined);
+
+    const user_group_id = Number.parseInt(user_group_id_str, 10);
     const group = user_groups.get_user_group_from_id(user_group_id);
 
     popover_menus.toggle_popover_menu(
@@ -75,6 +86,7 @@ export function toggle_user_group_info_popover(element, message_id) {
             },
             onCreate(instance) {
                 if (message_id) {
+                    assert(message_lists.current !== undefined);
                     message_lists.current.select_id(message_id);
                 }
                 user_group_popover_instance = instance;
@@ -99,13 +111,18 @@ export function toggle_user_group_info_popover(element, message_id) {
     );
 }
 
-export function register_click_handlers() {
+export function register_click_handlers(): void {
     $("#main_div").on("click", ".user-group-mention", (e) => {
         e.stopPropagation();
 
         const $elt = $(e.currentTarget);
         const $row = $elt.closest(".message_row");
-        const message = message_lists.current.get(rows.id($row));
+        const message_id = rows.id($row);
+        assert(message_id !== undefined);
+
+        assert(message_lists.current !== undefined);
+        const message = message_lists.current.get(message_id);
+        assert(message !== undefined);
 
         try {
             toggle_user_group_info_popover(e.currentTarget, message.id);
@@ -116,15 +133,17 @@ export function register_click_handlers() {
     });
 }
 
-function fetch_group_members(member_ids) {
+function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
     return (
         member_ids
-            .map((m) => people.get_user_by_id_assert_valid(m))
+            .map((m: number) => people.get_user_by_id_assert_valid(m))
             // We need to include inaccessible users here separately, since
             // we do not include them in active_user_dict, but we want to
             // show them in the popover as "Unknown user".
-            .filter((m) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user)
-            .map((p) => ({
+            .filter(
+                (m: User) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user,
+            )
+            .map((p: User) => ({
                 ...p,
                 user_circle_class: buddy_data.get_user_circle_class(p.user_id),
                 user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
@@ -132,8 +151,10 @@ function fetch_group_members(member_ids) {
     );
 }
 
-function sort_group_members(members) {
-    return members.sort((a, b) => util.strcmp(a.full_name, b.full_name));
+function sort_group_members(members: PopoverGroupMember[]): PopoverGroupMember[] {
+    return members.sort((a: PopoverGroupMember, b: PopoverGroupMember) =>
+        util.strcmp(a.full_name, b.full_name),
+    );
 }
 
 // exporting these functions for testing purposes
@@ -141,6 +162,6 @@ export const _test_fetch_group_members = fetch_group_members;
 
 export const _test_sort_group_members = sort_group_members;
 
-export function initialize() {
+export function initialize(): void {
     register_click_handlers();
 }
