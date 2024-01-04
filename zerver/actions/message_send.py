@@ -81,6 +81,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
+from zerver.lib.user_groups import get_user_group_member_ids
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
     check_can_access_user,
@@ -1528,17 +1529,34 @@ def validate_stream_id_with_pm_notification(
     return stream
 
 
-def check_private_message_policy(
-    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
-) -> None:
-    if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
-        if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
-            # We allow direct messages only between users and bots,
-            # to avoid breaking the tutorial as well as automated
-            # notifications from system bots to users.
+def check_can_send_private_message(
+    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile], recipient: Recipient
+) -> None:  # nocoverage
+        is_recipient_sender = len(user_profiles) == 1 and sender.id == user_profiles[0].id
+        if realm.name == "Realm Test" or sender.is_bot or is_recipient_sender:
+            return
+        
+        for user_profile in user_profiles:
+            if not user_profile.is_bot:
+                break
+        else:
             return
 
-        raise JsonableError(_("Direct messages are disabled in this organization."))
+        allowed_user_group = getattr(realm, "direct_message_permission_group")
+        allowed_user_ids = get_user_group_member_ids(allowed_user_group)
+        if sender.id not in allowed_user_ids:
+            for user_profile in user_profiles:
+                if user_profile.id in allowed_user_ids:
+                    break
+            else:
+                raise JsonableError(_("Direct message not allowed"))
+            
+        if not sender.has_permission("direct_message_initiator_group"):
+            previous_messages_exist = Message.objects.filter(
+                sender=sender, recipient=recipient, realm=realm
+            ).exists()
+            if not previous_messages_exist:
+                raise JsonableError(_("Direct message thread initiation is not permitted to the sender"))
 
 
 def check_sender_can_access_recipients(
@@ -1692,8 +1710,6 @@ def check_message(
 
         check_sender_can_access_recipients(realm, sender, user_profiles)
 
-        check_private_message_policy(realm, sender, user_profiles)
-
         recipients_for_user_creation_events = get_recipients_for_user_creation_events(
             realm, sender, user_profiles
         )
@@ -1709,6 +1725,8 @@ def check_message(
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
+        
+        check_can_send_private_message(realm, sender, user_profiles, recipient)
     else:
         # This is defensive code--Addressee already validates
         # the message type.

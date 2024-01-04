@@ -621,7 +621,7 @@ def get_usermessage_by_message_id(
     user_profile: UserProfile, message_id: int
 ) -> Optional[UserMessage]:
     try:
-        return UserMessage.objects.select_related().get(
+        return UserMessage.objects.select_related("user_profile", "message").get(
             user_profile=user_profile, message_id=message_id
         )
     except UserMessage.DoesNotExist:

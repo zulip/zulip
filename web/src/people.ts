@@ -14,8 +14,10 @@ import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as timerender from "./timerender";
+import { is_user_in_group } from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
+import { all_messages_data } from "./all_messages_data";
 
 export type ProfileData = {
     value: string;
@@ -799,6 +801,24 @@ export function should_add_guest_user_indicator(user_id: number): boolean {
     return user.is_guest;
 }
 
+export function user_can_initiate_direct_message_thread(recipient_ids_string: string) {
+    const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
+    if (recipient_ids.length === 1 && my_current_user_id() === recipient_ids[0]) {
+        return true;
+    }
+    let is_recipient_bot = true;
+    for(const recipient of recipient_ids) {
+        if (!user_is_bot(recipient)) {
+            is_recipient_bot = false;
+        }
+    }
+    if (is_recipient_bot) {
+        return true;
+    }
+    const prevoius_messages_exist = all_messages_data.all_messages().find(message => message.is_private && message.to_user_ids === recipient_ids_string);
+    return prevoius_messages_exist || is_user_in_group(page_params.realm_direct_message_initiator_group, my_current_user_id())
+}
+
 export function user_can_direct_message(recipient_ids_string: string): boolean {
     // Common function for checking if a user can send a direct
     // message to the target user (or group of users) represented by a
@@ -806,17 +826,26 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
 
     // Regardless of policy, we allow sending direct messages to bots.
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (recipient_ids.length === 1 && user_is_bot(recipient_ids[0])) {
+    if (recipient_ids.length === 1 && my_current_user_id() === recipient_ids[0]) {
         return true;
     }
-
-    if (
-        page_params.realm_private_message_policy ===
-        settings_config.private_message_policy_values.disabled.code
-    ) {
-        return false;
+    let is_recipient_bot = true;
+    for(const recipient of recipient_ids) {
+        if (!user_is_bot(recipient)) {
+            is_recipient_bot = false;
+        }
     }
-    return true;
+    if (is_recipient_bot) {
+        return true;
+    }
+    const direct_message_permission_group_id = page_params.realm_direct_message_permission_group;
+    if (is_user_in_group(direct_message_permission_group_id, my_user_id)) {
+        return true;
+    }
+    for (let recipient_id of recipient_ids) {
+        if (is_user_in_group(direct_message_permission_group_id, recipient_id)) return true;
+    }
+    return false;
 }
 
 function gravatar_url_for_email(email: string): string {

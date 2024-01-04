@@ -79,6 +79,8 @@ def update_realm(
     create_multiuse_invite_group_id: Optional[int] = REQ(
         "create_multiuse_invite_group", json_validator=check_int, default=None
     ),
+    direct_message_initiator_group_id: Optional[int] = REQ("direct_message_initiator_group", json_validator=check_int, default=None),
+    direct_message_permission_group_id: Optional[int] = REQ("direct_message_permission_group", json_validator=check_int, default=None),
     name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),

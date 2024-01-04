@@ -22,6 +22,7 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
+import { all_messages_data } from "./all_messages_data";
 
 function composing_to_current_topic_narrow() {
     return (
@@ -100,9 +101,14 @@ export function update_on_recipient_change() {
 export function get_posting_policy_error_message() {
     if (compose_state.selected_recipient_id === "direct") {
         const recipients = compose_pm_pill.get_user_ids_string();
+        if (!people.user_can_initiate_direct_message_thread(recipients)) {
+            return $t({
+                defaultMessage: "You are not allowed to initiate direct message thread.",
+            });
+        }
         if (!people.user_can_direct_message(recipients)) {
             return $t({
-                defaultMessage: "You are not allowed to send direct messages in this organization.",
+                defaultMessage: "You are not allowed to send direct messages here.",
             });
         }
         return "";

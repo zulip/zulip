@@ -737,6 +737,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "create_public_stream_policy",
             "create_web_public_stream_policy",
             "delete_own_message_policy",
+            "direct_message_initiator_group",
+            "direct_message_permission_group",
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",

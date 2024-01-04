@@ -138,6 +138,10 @@ export function build_page() {
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
+        realm_direct_message_initiator_group_id:
+            page_params.realm_direct_message_initiator_group,
+        realm_direct_message_permission_group_id:
+            page_params.realm_direct_message_permission_group,
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
         is_owner: page_params.is_owner,
@@ -268,6 +272,10 @@ export function build_page() {
         };
 
         tippy($("#realm_can_access_all_users_group_widget_container")[0], opts);
+    }
+
+    if (options.realm_direct_message_permission_group_id === 9) {
+        $("#realm_direct_message_initiator_group_widget").prop("disabled", true);
     }
 }
 

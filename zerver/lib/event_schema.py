@@ -1021,7 +1021,7 @@ night_logo_data = DictType(
 
 group_setting_update_data_type = DictType(
     required_keys=[],
-    optional_keys=[("create_multiuse_invite_group", int), ("can_access_all_users_group", int)],
+    optional_keys=[("create_multiuse_invite_group", int), ("can_access_all_users_group", int), ("direct_message_initiator_group", int), ("direct_message_permission_group", int)],
 )
 
 update_dict_data = UnionType(

@@ -202,14 +202,23 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     };
                 case "dm":
                     // You have no direct messages.
-                    if (
-                        page_params.realm_private_message_policy ===
-                        settings_config.private_message_policy_values.disabled.code
-                    ) {
+                    const user_ids = people.emails_strings_to_user_ids_array(first_operand);
+                    console.log(user_ids)
+                    assert(user_ids !== undefined);
+                    const user_ids_string = user_ids.join(",");
+                    if (!people.user_can_initiate_direct_message_thread(user_ids_string)) {
                         return {
                             title: $t({
                                 defaultMessage:
-                                    "You are not allowed to send direct messages in this organization.",
+                                    "You are not allowed to initiate direct message thread.",
+                            }),
+                        };
+                    }
+                    if (!people.user_can_direct_message(user_ids_string)) {
+                        return {
+                            title: $t({
+                                defaultMessage:
+                                    "You are not allowed to send direct messages here.",
                             }),
                         };
                     }
@@ -309,15 +318,20 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
             assert(user_ids !== undefined);
-            if (
-                page_params.realm_private_message_policy ===
-                    settings_config.private_message_policy_values.disabled.code &&
-                (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
-            ) {
+            const user_ids_string = user_ids.join(",");
+            if (!people.user_can_initiate_direct_message_thread(user_ids_string)) {
                 return {
                     title: $t({
                         defaultMessage:
-                            "You are not allowed to send direct messages in this organization.",
+                            "You are not allowed to initiate direct message thread.",
+                    }),
+                };
+            }
+            if (!people.user_can_direct_message(user_ids_string)) {
+                return {
+                    title: $t({
+                        defaultMessage:
+                            "You are not allowed to send direct messages here.",
                     }),
                 };
             }

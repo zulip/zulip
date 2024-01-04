@@ -246,6 +246,8 @@ export let can_remove_subscribers_group_widget = null;
 export let can_access_all_users_group_widget = null;
 export let can_mention_group_widget = null;
 export let new_group_can_mention_group_widget = null;
+export let direct_message_initiator_group_widget = null;
+export let direct_message_permission_group_widget = null;
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
@@ -257,6 +259,10 @@ export function get_widget_for_dropdown_list_settings(property_name) {
             return default_code_language_widget;
         case "realm_create_multiuse_invite_group":
             return create_multiuse_invite_group_widget;
+        case "realm_direct_message_initiator_group":
+            return direct_message_initiator_group_widget;
+        case "realm_direct_message_permission_group":
+            return direct_message_permission_group_widget;
         case "can_remove_subscribers_group":
             return can_remove_subscribers_group_widget;
         case "realm_can_access_all_users_group":
@@ -285,6 +291,12 @@ export function set_create_multiuse_invite_group_widget(widget) {
     create_multiuse_invite_group_widget = widget;
 }
 
+export function set_direct_message_initiator_group_widget(widget) {
+    direct_message_initiator_group_widget = widget;
+}
+export function set_direct_message_permission_group_widget(widget) {
+    direct_message_permission_group_widget = widget;
+}
 export function set_can_remove_subscribers_group_widget(widget) {
     can_remove_subscribers_group_widget = widget;
 }
@@ -509,6 +521,8 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
+        case "realm_direct_message_initiator_group":
+        case "realm_direct_message_permission_group":
         case "can_mention_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;

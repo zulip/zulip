@@ -26,6 +26,8 @@ import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
+import { is_user_in_group } from "./user_groups";
+import { all_messages_data } from "./all_messages_data";
 
 let user_acknowledged_stream_wildcard = false;
 let upload_in_progress = false;
@@ -665,16 +667,21 @@ function validate_stream_message(scheduling_message) {
 // for now)
 function validate_private_message() {
     const user_ids = compose_pm_pill.get_user_ids();
+    const user_ids_string = user_ids.join(",");
     const $banner_container = $("#compose_banners");
-
-    if (
-        page_params.realm_private_message_policy ===
-            settings_config.private_message_policy_values.disabled.code &&
-        (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
-    ) {
+    if (!people.user_can_initiate_direct_message_thread(user_ids_string)) {
+        compose_banner.show_error_message(
+            $t({defaultMessage: "You are not allowed to initiate conversation."}),
+            compose_banner.CLASSNAMES.private_messages_disabled,
+            $banner_container,
+            $("#private_message_recipient"),
+        );
+        return false;
+    }
+    if (!people.user_can_direct_message(user_ids.join(","))) {
         // Unless we're composing to a bot
         compose_banner.show_error_message(
-            $t({defaultMessage: "Direct messages are disabled in this organization."}),
+            $t({defaultMessage: "You can't send direct messages here."}),
             compose_banner.CLASSNAMES.private_messages_disabled,
             $banner_container,
             $("#private_message_recipient"),

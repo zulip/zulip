@@ -7,6 +7,7 @@ import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import { all_messages_data } from "./all_messages_data";
 
 export function get_recipient_label(message) {
     // TODO: This code path is bit of a type-checking disaster; we mix
@@ -121,9 +122,13 @@ function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
 export function update_buttons_for_private() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     const is_direct_message_narrow = true;
+    const user_ids_string = narrow_state.pm_ids_string();
     if (
-        !narrow_state.pm_ids_string() ||
-        people.user_can_direct_message(narrow_state.pm_ids_string())
+        !user_ids_string || 
+        (
+            people.user_can_initiate_direct_message_thread(user_ids_string) &&
+            people.user_can_direct_message(user_ids_string)
+        )
     ) {
         $("#new_conversation_button").attr(
             "data-tooltip-template-id",

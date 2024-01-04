@@ -478,6 +478,8 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
+        case "realm_direct_message_initiator_group":
+        case "realm_direct_message_permission_group":
         case "realm_can_access_all_users_group":
         case "can_mention_group":
             settings_components.set_dropdown_list_widget_setting_value(
@@ -740,6 +742,64 @@ export function init_dropdown_widgets() {
         create_multiuse_invite_group_widget,
     );
     create_multiuse_invite_group_widget.setup();
+
+    const direct_message_permission_group = new dropdown_widget.DropdownWidget({
+        widget_name: "realm_direct_message_permission_group",
+        get_options: () =>
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "direct_message_permission_group",
+                "realm",
+            ),
+        $events_container: $("#settings_overlay_container #organization-permissions"),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            settings_components.direct_message_permission_group_widget.render();
+            settings_components.save_discard_widget_status_handler($("#org-direct-message-permissions"));
+        },
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: page_params.realm_direct_message_permission_group,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    settings_components.set_direct_message_permission_group_widget(
+        direct_message_permission_group,
+    );
+    direct_message_permission_group.setup();
+
+    const direct_message_initiator_group = new dropdown_widget.DropdownWidget({
+        widget_name: "realm_direct_message_initiator_group",
+        get_options: () => 
+            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "direct_message_initiator_group",
+                "realm",
+            ),
+        $events_container: $("#settings_overlay_container #organization-permissions"),
+        item_click_callback(event, dropdown) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            settings_components.direct_message_initiator_group_widget.render();
+            settings_components.save_discard_widget_status_handler($("#org-direct-message-permissions"));
+        },
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        default_id: page_params.realm_direct_message_initiator_group,
+        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        on_mount_callback(dropdown) {
+            $(dropdown.popper).css("min-width", "300px");
+        },
+    });
+    settings_components.set_direct_message_initiator_group_widget(
+        direct_message_initiator_group,
+    );
+    direct_message_initiator_group.setup();
 
     const can_access_all_users_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "realm_can_access_all_users_group",

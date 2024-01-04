@@ -352,6 +352,26 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
                 id_field_name: "can_access_all_users_group_id",
                 allowed_system_groups: ["role:everyone", "role:members"],
             },
+            direct_message_initiator_group: {
+                require_system_group: true,
+                allow_internet_group: false,
+                allow_owners_group: true,
+                allow_nobody_group: true,
+                allow_everyone_group: true,
+                default_group_name: "role:everyone",
+                id_field_name: "direct_message_initiator_group_id",
+                allowed_system_groups: [],
+            },
+            direct_message_permission_group: {
+                require_system_group: true,
+                allow_internet_group: false,
+                allow_owners_group: true,
+                allow_nobody_group: true,
+                allow_everyone_group: true,
+                default_group_name: "role:everyone",
+                id_field_name: "direct_message_permission_group_id",
+                allowed_system_groups: [],
+            },
         },
     };
 
