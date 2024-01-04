@@ -582,6 +582,7 @@ def send_custom_email(
     dry_run: bool,
     options: Dict[str, str],
     add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
+    distinct_email: bool = False,
 ) -> None:
     """
     Helper for `manage.py send_custom_email`.
@@ -594,7 +595,13 @@ def send_custom_email(
     )
     """
     email_sender = custom_email_sender(**options, dry_run=dry_run)
-    for user_profile in users.select_related("realm").order_by("id"):
+
+    users = users.select_related("realm")
+    if distinct_email:
+        users = users.distinct("delivery_email").order_by("delivery_email", "id")
+    else:
+        users = users.order_by("id")
+    for user_profile in users:
         context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
