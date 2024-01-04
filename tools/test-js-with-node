@@ -267,7 +267,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_group_create_members_data.ts",
         "web/src/user_group_edit.js",
         "web/src/user_group_edit_members.js",
-        "web/src/user_group_popover.js",
+        "web/src/user_group_popover.ts",
         "web/src/user_group_ui_updates.js",
         "web/src/user_groups.ts",
         "web/src/user_pill.ts",
