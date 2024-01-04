@@ -124,8 +124,7 @@ def format_discount_percentage(discount: Optional[Decimal]) -> Optional[str]:
     if type(discount) is not Decimal or discount == Decimal(0):
         return None
 
-    # Even though it looks like /activity/support only finds integers valid,
-    # this will look good for any custom discounts that we apply.
+    # This will look good for any custom discounts that we apply.
     if discount * 100 % 100 == 0:
         precision = 0
     else:

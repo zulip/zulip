@@ -32,6 +32,7 @@
     {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
     {% set remote_id = remote_realm.id %}
     {% set remote_type = "remote_realm_id" %}
+    {% set format_discount = format_discount %}
     {% set has_fixed_price = support_data[remote_realm.id].plan_data.has_fixed_price %}
     {% include 'analytics/sponsorship_forms_support.html' %}
 {% endwith %}
