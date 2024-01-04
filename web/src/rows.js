@@ -80,22 +80,14 @@ export function id($message_row) {
         return undefined;
     }
 
-    /*
-        For blueslip errors, don't return early, since
-        we may have some code now that actually relies
-        on the NaN behavior here.  We can try to clean
-        that up in the future, but we mainly just want
-        more data now.
-    */
-
     if ($message_row.length !== 1) {
-        blueslip.error("Caller should pass in a single row.");
+        throw new Error("Caller should pass in a single row.");
     }
 
     const zid = $message_row.attr("zid");
 
     if (zid === undefined) {
-        blueslip.error("Calling code passed rows.id a row with no zid attr.");
+        throw new Error("Calling code passed rows.id a row with no zid attr.");
     }
 
     return Number.parseFloat(zid);
