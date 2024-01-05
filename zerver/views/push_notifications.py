@@ -124,14 +124,14 @@ def self_hosting_auth_redirect(
     request: HttpRequest,
     *,
     next_page: Optional[str] = None,
-) -> HttpResponse:  # nocoverage
-    if not uses_notification_bouncer():
+) -> HttpResponse:
+    if not uses_notification_bouncer():  # nocoverage
         return render(request, "404.html", status=404)
 
     user = request.user
     assert user.is_authenticated
     assert isinstance(user, UserProfile)
-    if not user.has_billing_access:
+    if not user.has_billing_access:  # nocoverage
         # We may want to replace this with an html error page at some point,
         # but this endpoint shouldn't be accessible via the UI to an unauthorized
         # user - and they need to directly enter the URL in their browser. So a json
@@ -164,10 +164,10 @@ def self_hosting_auth_redirect(
         # Upload realm info and re-try. It should work now.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
         result = send_to_push_bouncer("POST", "server/billing", post_data)
-    except RemoteRealmServerMismatchError:
+    except RemoteRealmServerMismatchError:  # nocoverage
         return render(request, "zilencer/remote_realm_server_mismatch_error.html", status=403)
 
-    if result["result"] != "success":
+    if result["result"] != "success":  # nocoverage
         raise JsonableError(_("Error returned by the bouncer: {result}").format(result=result))
 
     redirect_url = result["billing_access_url"]
