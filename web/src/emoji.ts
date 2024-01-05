@@ -5,7 +5,7 @@ import type {User} from "./people";
 
 // This is the data structure that we get from the server on initialization.
 export type ServerEmoji = {
-    id: number;
+    id: string;
     author_id: number;
     deactivated: boolean;
     name: string;
@@ -38,7 +38,7 @@ export type EmoticonTranslation = {
 };
 
 type RealmEmoji = {
-    id: number;
+    id: string;
     emoji_name: string;
     emoji_url: string;
     still_url: string | null;
@@ -60,7 +60,7 @@ type EmojiDict = {
 export type EmojiRenderingDetails = {
     emoji_name: string;
     reaction_type: string;
-    emoji_code: string | number;
+    emoji_code: string;
     url?: string;
     still_url?: string | null;
 };
