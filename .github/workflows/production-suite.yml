@@ -251,9 +251,9 @@ jobs:
           - docker_image: zulip/ci:bullseye-5.0
             name: 5.0 Version Upgrade
             os: bullseye
-          - docker_image: zulip/ci:bullseye-6.0
+          - docker_image: zulip/ci:jammy-6.0
             name: 6.0 Version Upgrade
-            os: bullseye
+            os: jammy
           - docker_image: zulip/ci:bookworm-7.0
             name: 7.0 Version Upgrade
             os: bookworm
