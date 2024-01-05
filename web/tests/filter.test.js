@@ -1495,7 +1495,11 @@ test("navbar_helpers", () => {
 
     // make sure title has names separated with correct delimiters
     function properly_separated_names(names) {
-        return names.join(", ");
+        const names_internationalized = new Intl.ListFormat("en", {
+            style: "long",
+            type: "conjunction",
+        }).format(names);
+        return names_internationalized;
     }
 
     function test_redirect_url_with_search(test_case) {
@@ -1709,7 +1713,7 @@ test("navbar_helpers", () => {
             terms: dm_group_including_guest,
             is_common_narrow: true,
             icon: "envelope",
-            title: "translated: alice (guest), joe",
+            title: "translated: alice (guest) and joe",
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
         {
