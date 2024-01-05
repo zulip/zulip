@@ -147,7 +147,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    f"<h3>{hostname}</h3>",
+                    f"<h3>{hostname} <a",
                     f"<b>Contact email</b>: admin@{hostname}",
                     "<b>Date created</b>:",
                     "<b>UUID</b>:",
@@ -158,7 +158,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 ],
                 html_response,
             )
-            self.assert_not_in_success_response(["<h3>zulip-0.example.com</h3>"], result)
+            self.assert_not_in_success_response(["<h3>zulip-0.example.com"], result)
 
         def assert_realm_details_in_response(
             html_response: "TestHttpResponse", name: str, host: str
@@ -173,12 +173,12 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 ],
                 html_response,
             )
-            self.assert_not_in_success_response(["<h3>zulip-1.example.com</h3>"], result)
+            self.assert_not_in_success_response(["<h3>zulip-1.example.com"], result)
 
         def check_remote_server_with_no_realms(result: "TestHttpResponse") -> None:
             assert_server_details_in_response(result, "zulip-1.example.com")
             self.assert_not_in_success_response(
-                ["<h3>zulip-2.example.com</h3>", "<b>Remote realm host:</b>"], result
+                ["<h3>zulip-2.example.com", "<b>Remote realm host:</b>"], result
             )
             self.assert_in_success_response(["<b>Has remote realms</b>: False<br />"], result)
 
@@ -259,10 +259,10 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
 
         server = 0
         result = self.client_get("/activity/remote/support", {"q": "example.com"})
-        self.assert_not_in_success_response([f"<h3>zulip-{server}.example.com</h3>"], result)
+        self.assert_not_in_success_response([f"<h3>zulip-{server}.example.com"], result)
         for i in range(5):
             if i != server:
-                self.assert_in_success_response([f"<h3>zulip-{i}.example.com</h3>"], result)
+                self.assert_in_success_response([f"<h3>zulip-{i}.example.com <a"], result)
 
         server = 1
         result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})

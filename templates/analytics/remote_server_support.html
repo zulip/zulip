@@ -37,7 +37,7 @@
         <div class="support-query-result">
             <div class="remote-server-information">
                 <span class="label">remote server</span>
-                <h3>{{ remote_server.hostname }}</h3>
+                <h3>{{ remote_server.hostname }} {{ server_analytics_link(remote_server.id ) }}</h3>
                 {% if remote_server.plan_type == SPONSORED_PLAN_TYPE %}
                     <h4>On 100% sponsored Zulip Community plan 🎉</h4>
                 {% endif %}
