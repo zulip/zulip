@@ -488,12 +488,29 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Delete any existing remote realms.
         RemoteRealm.objects.all().delete()
 
+        # First, set a sponsorship as pending.
+        # TODO: Ideally, we'd submit a proper sponsorship request.
+        server_customer.sponsorship_pending = True
+        server_customer.save()
+
         # Send server data to push bouncer.
         self.add_mock_response()
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         # RemoteRealm objects should be created for all realms on the server.
         self.assert_length(RemoteRealm.objects.all(), 4)
+
+        # Server's plan should not have been migrated yet.
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
+
+        # Now clear sponsorship_pending.
+        # TODO: Ideally, this would approve the sponsorship.
+        server_customer.sponsorship_pending = False
+        server_customer.save()
+
+        # Send server data to push bouncer again.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         # Server plan status was reset
         self.server.refresh_from_db()

@@ -847,6 +847,15 @@ def handle_customer_migration_from_server_to_realms(
     if server_customer is None:
         return
 
+    if server_customer.sponsorship_pending:
+        # If we have a pending sponsorship request, defer moving any
+        # data until the sponsorship request has been processed. This
+        # avoids a race where a sponsorship request made at the server
+        # level gets approved after the legacy plan has already been
+        # moved to the sole human RemoteRealm, which would violate
+        # invariants.
+        return
+
     server_plan = get_current_plan_by_customer(server_customer)
     if server_plan is None:
         # If the server has no current plan, either because it never
