@@ -26,6 +26,7 @@ import * as settings_ui from "./settings_ui";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
+import * as util from "./util";
 
 const meta = {
     loaded: false,
@@ -370,7 +371,7 @@ export function populate_realm_domains_label(realm_domains) {
     const domains_list = realm_domains.map((realm_domain) =>
         realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain,
     );
-    let domains = domains_list.join(", ");
+    let domains = util.format_array_as_list(domains_list, "long", "conjunction");
     if (domains.length === 0) {
         domains = $t({defaultMessage: "None"});
     }
