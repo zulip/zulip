@@ -993,21 +993,6 @@ def remote_server_post_analytics(
         if remote_server_version_updated:
             fix_remote_realm_foreign_keys(server, realms)
 
-        try:
-            handle_customer_migration_from_server_to_realms(server, realms)
-        except Exception:  # nocoverage
-            logger.exception(
-                "%s: Failed to migrate customer from server (id: %s) to realms",
-                request.path,
-                server.id,
-                stack_info=True,
-            )
-            raise JsonableError(
-                _(
-                    "Failed to migrate customer from server to realms. Please contact support for assistance."
-                )
-            )
-
     realm_id_to_remote_realm = build_realm_id_to_remote_realm_dict(server, realms)
 
     remote_realm_counts = [
