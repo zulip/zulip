@@ -147,7 +147,9 @@ export function show_realm_domains_modal(): void {
         html_body: realm_domains_table_body,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         id: "realm_domains_modal",
-        on_click() {},
+        on_click() {
+            // This modal has no submit button.
+        },
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,
