@@ -801,8 +801,11 @@ def update_remote_realm_data_for_server(
         if not remote_realm.realm_locally_deleted:
             # Otherwise we already knew about this, so nothing to do.
             remote_realm.realm_locally_deleted = True
-            remote_realm.registration_deactivated = True
 
+            ## Temporarily disabled deactivating the registration for
+            ## locally deleted realms pending further work on how to
+            ## handle test upgrades to 8.0.
+            # remote_realm.registration_deactivated = True
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
                     server=server,
