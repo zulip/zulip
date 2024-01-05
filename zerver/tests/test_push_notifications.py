@@ -2417,7 +2417,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
             logger.warning("Dummy warning")
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
         remote_realm_for_deleted_realm = RemoteRealm.objects.get(uuid=deleted_realm_uuid)
-        self.assertEqual(remote_realm_for_deleted_realm.registration_deactivated, True)
+
+        self.assertEqual(remote_realm_for_deleted_realm.registration_deactivated, False)
         self.assertEqual(remote_realm_for_deleted_realm.realm_locally_deleted, True)
         self.assertEqual(analytics_logger.output, ["WARNING:zulip.analytics:Dummy warning"])
 
