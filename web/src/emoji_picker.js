@@ -282,6 +282,14 @@ function filter_emojis() {
 }
 
 function toggle_reaction(emoji_name, event) {
+    // The emoji picker for setting user status
+    // doesn't have a concept of toggling.
+    // TODO: Ideally we never even get here in
+    // that context, see #28464.
+    if ($("#set-user-status-modal").length) {
+        return;
+    }
+
     const message_id = current_message_id;
     const message = message_store.get(message_id);
     if (!message) {
