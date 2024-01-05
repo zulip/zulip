@@ -18,6 +18,7 @@ import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
@@ -31,6 +32,7 @@ import {current_user} from "./state_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
 import * as user_group_edit from "./user_group_edit";
+import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -371,6 +373,15 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "scheduled") {
         scheduled_messages_overlay_ui.launch();
+    }
+    if (base === "user") {
+        const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
+        if (!people.is_known_user_id(user_id)) {
+            user_profile.show_user_profile_access_error_modal();
+        } else {
+            const user = people.get_by_user_id(user_id);
+            user_profile.show_user_profile(user);
+        }
     }
 }
 

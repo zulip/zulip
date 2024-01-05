@@ -10,6 +10,7 @@ import render_user_card_popover_for_unknown_user from "../templates/popovers/use
 import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -739,8 +740,7 @@ function register_click_handlers() {
 
     $("body").on("click", ".user-card-popover-actions .view_full_user_profile", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        const user = people.get_by_user_id(user_id);
-        user_profile.show_user_profile(user);
+        browser_history.go_to_location(`user/${user_id}`);
         e.stopPropagation();
         e.preventDefault();
     });
