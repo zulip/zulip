@@ -263,10 +263,10 @@ export function add_reaction(event) {
             reaction_type: event.reaction_type,
             emoji_name: event.emoji_name,
             emoji_code: event.emoji_code,
+            should_display_reactors,
         });
 
         message.clean_reactions.set(local_id, clean_reaction_object);
-        update_user_fields(clean_reaction_object, should_display_reactors);
         insert_new_reaction(clean_reaction_object, message, user_id);
     }
 }
@@ -468,24 +468,24 @@ export function set_clean_reactions(message) {
     // to make sure reify_message_id moves the data structure
     // properly.
     message.clean_reactions = new Map();
+
+    const reaction_counts_and_user_ids = [...distinct_reactions.keys()].map((local_id) => {
+        const user_ids = user_map.get(local_id);
+        return {
+            count: user_ids.length,
+            user_ids,
+        };
+    });
+    const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
+
     for (const local_id of distinct_reactions.keys()) {
         const reaction = distinct_reactions.get(local_id);
         const user_ids = user_map.get(local_id);
 
         message.clean_reactions.set(
             local_id,
-            make_clean_reaction({local_id, user_ids, ...reaction}),
+            make_clean_reaction({local_id, user_ids, should_display_reactors, ...reaction}),
         );
-    }
-
-    // We do update_user_fields in a separate loop, because doing so
-    // lets us avoid duplicating check_should_display_reactors to
-    // determine whether to store in the vote_text field a count or
-    // the names of reactors (users who reacted).
-    const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
-    const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
-    for (const clean_reaction of message.clean_reactions.values()) {
-        update_user_fields(clean_reaction, should_display_reactors);
     }
 
     // We don't maintain message.reactions when users react to
@@ -495,17 +495,46 @@ export function set_clean_reactions(message) {
     delete message.reactions;
 }
 
-function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reaction_type}) {
-    const clean_reaction_object = {
+function make_clean_reaction({
+    local_id,
+    user_ids,
+    emoji_name,
+    emoji_code,
+    reaction_type,
+    should_display_reactors,
+}) {
+    const emoji_details = emoji.get_emoji_details_for_rendering({
+        emoji_name,
+        emoji_code,
+        reaction_type,
+    });
+    const emoji_alt_code = user_settings.emojiset === "text";
+    const is_realm_emoji =
+        emoji_details.reaction_type === "realm_emoji" ||
+        emoji_details.reaction_type === "zulip_extra_emoji";
+
+    const count = user_ids.length;
+    const label = generate_title(emoji_name, user_ids);
+
+    const reaction_class = user_ids.includes(current_user.user_id)
+        ? "message_reaction reacted"
+        : "message_reaction";
+
+    // The vote_text field set here is used directly in the Handlebars
+    // template for rendering (or rerendering!) a message.
+    const vote_text = get_vote_text(user_ids, should_display_reactors);
+
+    return {
         local_id,
         user_ids,
-        ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
+        ...emoji_details,
+        emoji_alt_code,
+        is_realm_emoji,
+        class: reaction_class,
+        count,
+        label,
+        vote_text,
     };
-    clean_reaction_object.emoji_alt_code = user_settings.emojiset === "text";
-    clean_reaction_object.is_realm_emoji =
-        clean_reaction_object.reaction_type === "realm_emoji" ||
-        clean_reaction_object.reaction_type === "zulip_extra_emoji";
-    return clean_reaction_object;
 }
 
 export function update_user_fields(clean_reaction_object, should_display_reactors) {
@@ -532,7 +561,10 @@ export function update_user_fields(clean_reaction_object, should_display_reactor
 
     // The vote_text field set here is used directly in the Handlebars
     // template for rendering (or rerendering!) a message.
-    clean_reaction_object.vote_text = get_vote_text(clean_reaction_object, should_display_reactors);
+    clean_reaction_object.vote_text = get_vote_text(
+        clean_reaction_object.user_ids,
+        should_display_reactors,
+    );
 }
 
 function get_reaction_counts_and_user_ids(message) {
@@ -542,11 +574,11 @@ function get_reaction_counts_and_user_ids(message) {
     }));
 }
 
-export function get_vote_text(clean_reaction_object, should_display_reactors) {
+export function get_vote_text(user_ids, should_display_reactors) {
     if (should_display_reactors) {
-        return comma_separated_usernames(clean_reaction_object.user_ids);
+        return comma_separated_usernames(user_ids);
     }
-    return `${clean_reaction_object.user_ids.length}`;
+    return `${user_ids.length}`;
 }
 
 function check_should_display_reactors(reaction_counts_and_user_ids) {
@@ -585,7 +617,7 @@ export function update_vote_text_on_message(message) {
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const [reaction, clean_reaction] of message.clean_reactions.entries()) {
         const reaction_elem = find_reaction(message.id, clean_reaction.local_id);
-        const vote_text = get_vote_text(clean_reaction, should_display_reactors);
+        const vote_text = get_vote_text(clean_reaction.user_ids, should_display_reactors);
         message.clean_reactions.get(reaction).vote_text = vote_text;
         set_reaction_vote_text(reaction_elem, vote_text);
     }
