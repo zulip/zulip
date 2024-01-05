@@ -283,7 +283,7 @@
                     {% elif downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial %}
                         <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
                             <button class="reactivate-current-plan-button plan-toggle-action-button">
-                                <span class="billing-button-text">
+                                <span class="billing-button-text {% if not downgrade_at_end_of_free_trial %}get-started-button{% endif %}">
                                     {% if downgrade_at_end_of_free_trial %}
                                     Cancel downgrade
                                     {% else %}
