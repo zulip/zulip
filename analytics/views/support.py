@@ -15,6 +15,7 @@ from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from analytics.views.activity_common import remote_installation_stats_link
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from zerver.actions.create_realm import do_change_realm_subdomain
@@ -541,6 +542,7 @@ def remote_servers_support(
     context["get_org_type_display_name"] = get_org_type_display_name
     context["format_discount"] = format_discount_percentage
     context["dollar_amount"] = cents_to_dollar_string
+    context["server_analytics_link"] = remote_installation_stats_link
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
 
     return render(
