@@ -2463,6 +2463,65 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
         self.check_user_subscribed_only_to_streams("alice", [])
 
+    def test_multiuse_invite_without_permission_to_subscribe_others(self) -> None:
+        realm = get_realm("zulip")
+        members_group = UserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", members_group, acting_user=None
+        )
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
+
+        self.login("hamlet")
+        stream_names = ["Rome", "Scotland", "Venice"]
+        streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
+        stream_ids = [stream.id for stream in streams]
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to subscribe other users to streams."
+        )
+
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps([]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_success(result)
+
+        self.login("iago")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_success(result)
+
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_success(result)
+
     def test_create_multiuse_invite_group_setting(self) -> None:
         realm = get_realm("zulip")
         full_members_system_group = UserGroup.objects.get(
