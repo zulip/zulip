@@ -93,11 +93,15 @@ export function open_edit_panel_for_row(stream_row) {
     setup_stream_settings(stream_row);
 }
 
-export function open_edit_panel_empty() {
-    const tab_key = stream_settings_components.get_active_data().$tabs.first().attr("data-tab-key");
+export function empty_right_panel() {
     $(".stream-row.active").removeClass("active");
     $("#subscription_overlay .right").removeClass("show");
     stream_settings_components.show_subs_pane.nothing_selected();
+}
+
+export function open_edit_panel_empty() {
+    const tab_key = stream_settings_components.get_active_data().$tabs.first().attr("data-tab-key");
+    empty_right_panel();
     setup_subscriptions_tab_hash(tab_key);
 }
 

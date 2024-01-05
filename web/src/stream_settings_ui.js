@@ -706,17 +706,20 @@ export function change_state(section, right_side_tab) {
             show_right_section();
         } else {
             toggler.goto("subscribed");
+            stream_edit.empty_right_panel();
         }
         return;
     }
 
     if (section === "all") {
         toggler.goto("all-streams");
+        stream_edit.empty_right_panel();
         return;
     }
 
     if (section === "subscribed") {
         toggler.goto("subscribed");
+        stream_edit.empty_right_panel();
         return;
     }
 
@@ -734,6 +737,7 @@ export function change_state(section, right_side_tab) {
         // In all these cases we redirect the user to 'subscribed' tab.
         if (!sub || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
             toggler.goto("subscribed");
+            stream_edit.empty_right_panel();
         } else {
             show_right_section();
             stream_edit_toggler.set_select_tab(right_side_tab);
@@ -744,6 +748,7 @@ export function change_state(section, right_side_tab) {
 
     blueslip.warn("invalid section for streams: " + section);
     toggler.goto("subscribed");
+    stream_edit.empty_right_panel();
 }
 
 export function launch(section, right_side_tab) {
