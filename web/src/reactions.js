@@ -15,8 +15,8 @@ import {user_settings} from "./user_settings";
 
 const waiting_for_server_request_ids = new Set();
 
-export function get_local_reaction_id(reaction_info) {
-    return [reaction_info.reaction_type, reaction_info.emoji_code].join(",");
+export function get_local_reaction_id(rendering_details) {
+    return [rendering_details.reaction_type, rendering_details.emoji_code].join(",");
 }
 
 export function current_user_has_reacted_to_emoji(message, local_id) {
@@ -37,18 +37,18 @@ function get_message(message_id) {
     return message;
 }
 
-function create_reaction(message_id, reaction_info) {
+function create_reaction(message_id, rendering_details) {
     return {
         message_id,
         user_id: page_params.user_id,
-        local_id: get_local_reaction_id(reaction_info),
-        reaction_type: reaction_info.reaction_type,
-        emoji_name: reaction_info.emoji_name,
-        emoji_code: reaction_info.emoji_code,
+        local_id: get_local_reaction_id(rendering_details),
+        reaction_type: rendering_details.reaction_type,
+        emoji_name: rendering_details.emoji_name,
+        emoji_code: rendering_details.emoji_code,
     };
 }
 
-function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
+function update_ui_and_send_reaction_ajax(message_id, rendering_details) {
     if (page_params.is_spectator) {
         // Spectators can't react, since they don't have accounts.  We
         // stop here to avoid a confusing reaction local echo.
@@ -57,10 +57,10 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     }
 
     const message = get_message(message_id);
-    const local_id = get_local_reaction_id(reaction_info);
+    const local_id = get_local_reaction_id(rendering_details);
     const has_reacted = current_user_has_reacted_to_emoji(message, local_id);
     const operation = has_reacted ? "remove" : "add";
-    const reaction = create_reaction(message_id, reaction_info);
+    const reaction = create_reaction(message_id, rendering_details);
 
     // To avoid duplicate requests to the server, we construct a
     // unique request ID combining the message ID and the local ID,
@@ -78,7 +78,7 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
 
     const args = {
         url: "/json/messages/" + message_id + "/reactions",
-        data: reaction_info,
+        data: rendering_details,
         success() {
             waiting_for_server_request_ids.delete(reaction_request_id);
         },
@@ -113,8 +113,8 @@ export function toggle_emoji_reaction(message_id, emoji_name) {
     // method. This codepath is to be used only where there is no chance of an
     // user interacting with a deactivated realm emoji like emoji picker.
 
-    const reaction_info = emoji.get_emoji_details_by_name(emoji_name);
-    update_ui_and_send_reaction_ajax(message_id, reaction_info);
+    const rendering_details = emoji.get_emoji_details_by_name(emoji_name);
+    update_ui_and_send_reaction_ajax(message_id, rendering_details);
 }
 
 export function process_reaction_click(message_id, local_id) {
@@ -132,13 +132,13 @@ export function process_reaction_click(message_id, local_id) {
         return;
     }
 
-    const reaction_info = {
+    const rendering_details = {
         reaction_type: clean_reaction_object.reaction_type,
         emoji_name: clean_reaction_object.emoji_name,
         emoji_code: clean_reaction_object.emoji_code,
     };
 
-    update_ui_and_send_reaction_ajax(message_id, reaction_info);
+    update_ui_and_send_reaction_ajax(message_id, rendering_details);
 }
 
 function generate_title(emoji_name, user_ids) {
