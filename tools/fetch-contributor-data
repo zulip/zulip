@@ -110,6 +110,7 @@ def update_contributor_data_file() -> None:
         "zulip",
         "zulip-android",
         "zulip-desktop",
+        "zulip-flutter",
         "zulip-ios-legacy",
         "zulip-js",
         "zulip-mobile",
