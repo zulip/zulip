@@ -58,6 +58,8 @@
                 <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
                 <b>Non-guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.non_guest_user_count }}<br />
                 <b>Guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.guest_user_count }}<br />
+                <b>Mobile user count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.mobile_users }}<br />
+                <b>7-day mobile pushes count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.mobile_pushes_forwarded }}<br />
             </div>
 
             {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
