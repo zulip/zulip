@@ -1395,7 +1395,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         time_input_string = match.group("time")
         try:
             timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
-        except ValueError:
+        except (ValueError, OverflowError):
             try:
                 timestamp = datetime.fromtimestamp(float(time_input_string), tz=timezone.utc)
             except ValueError:
