@@ -528,7 +528,9 @@ def remote_servers_support(
                 remote_server
             )
         except MissingDataError:
-            remote_server_to_max_monthly_messages[remote_server.id] = "Recent data missing"
+            remote_server_to_max_monthly_messages[
+                remote_server.id
+            ] = "Recent analytics data missing"
 
     context["remote_servers"] = remote_servers
     context["remote_servers_support_data"] = server_support_data

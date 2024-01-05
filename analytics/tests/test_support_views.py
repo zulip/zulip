@@ -285,7 +285,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 "/activity/remote/support", {"q": f"zulip-{server}.example.com"}
             )
         self.assert_in_success_response(
-            ["<b>Max monthly messages</b>: Recent data missing"], result
+            ["<b>Max monthly messages</b>: Recent analytics data missing"], result
         )
         assert_server_details_in_response(result, f"zulip-{server}.example.com")
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")

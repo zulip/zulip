@@ -150,7 +150,9 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
             try:
                 plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
             except MissingDataError:  # nocoverage
-                plan_data.warning = "Recent data missing: No information for used licenses"
+                plan_data.warning = (
+                    "Recent audit log data missing: No information for used licenses"
+                )
 
         assert plan_data.current_plan is not None  # for mypy
 
