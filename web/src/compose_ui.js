@@ -14,8 +14,8 @@ import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
-import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
+import * as util from "./util";
 
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
@@ -259,9 +259,7 @@ export function compute_placeholder_text(opts) {
             }
             return user.full_name;
         });
-        const recipient_names = Intl.ListFormat
-            ? new Intl.ListFormat(user_settings.default_language).format(recipient_parts)
-            : recipient_parts.join(", ");
+        const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
