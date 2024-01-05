@@ -97,21 +97,17 @@
 
     .comparison-table a {
         color: var(--color-table-link);
-        text-decoration: underline !important;
         text-underline-offset: 4px;
         text-decoration-thickness: 1px;
         text-decoration-color: var(--color-table-link-decoration);
     }
 
     .comparison-table a:hover {
-        text-decoration: underline !important;
         color: var(--color-table-link-hover);
         text-decoration-color: var(--color-table-link-decoration-hover);
     }
 
     .comparison-table a:active {
-        text-decoration: underline !important;
-        color: !important;
         text-decoration-color: var(--color-table-link-decoration-active);
     }
 
