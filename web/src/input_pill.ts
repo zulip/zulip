@@ -268,7 +268,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     !funcs.appendPill(pill),
             );
 
-            store.$input.text(drafts.join(", "));
+            store.$input.text(drafts.join(","));
             // when using the `text` insertion feature with jQuery the caret is
             // placed at the beginning of the input field, so this moves it to
             // the end.
