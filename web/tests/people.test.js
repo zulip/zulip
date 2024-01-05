@@ -390,7 +390,6 @@ test_people("basics", ({override}) => {
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
     assert.equal(people.is_my_user_id(isaac.user_id), false);
-    assert.equal(people.is_my_user_id(undefined), false);
 
     // Reactivating issac
     people.add_active_user(isaac);

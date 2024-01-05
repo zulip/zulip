@@ -1717,16 +1717,7 @@ export function get_custom_fields_by_type(
     return filteredProfileData;
 }
 
-export function is_my_user_id(user_id: number | string): boolean {
-    if (!user_id) {
-        return false;
-    }
-
-    if (typeof user_id !== "number") {
-        blueslip.error("user_id is a string in my_user_id", {user_id});
-        user_id = Number.parseInt(user_id, 10);
-    }
-
+export function is_my_user_id(user_id: number): boolean {
     return user_id === my_user_id;
 }
 

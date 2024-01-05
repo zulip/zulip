@@ -39,12 +39,6 @@ run_test("report_late_add", ({override}) => {
     people.report_late_add(55, "foo@example.com");
 });
 
-run_test("is_my_user_id", () => {
-    blueslip.expect("error", "user_id is a string in my_user_id", 2);
-    assert.equal(people.is_my_user_id("999"), false);
-    assert.equal(people.is_my_user_id(me.user_id.toString()), true);
-});
-
 run_test("blueslip", () => {
     const unknown_email = "alicebobfred@example.com";
 
