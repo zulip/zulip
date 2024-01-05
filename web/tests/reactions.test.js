@@ -441,7 +441,7 @@ test("get_vote_text (more than 3 reactions)", () => {
     user_settings.display_emoji_reaction_users = true;
     assert.equal(
         "translated: You, Bob van Roberts, Cali",
-        reactions.get_vote_text({user_ids}, message),
+        reactions.get_vote_text(user_ids, message),
     );
 });
 
@@ -455,7 +455,7 @@ test("get_vote_text (3 reactions)", () => {
     user_settings.display_emoji_reaction_users = true;
     assert.equal(
         "translated: You, Bob van Roberts, Cali",
-        reactions.get_vote_text({user_ids}, message),
+        reactions.get_vote_text(user_ids, message),
     );
 });
 
