@@ -501,7 +501,7 @@ function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reacti
 
 export function update_user_fields(clean_reaction_object, should_display_reactors) {
     // update_user_fields needs to be called whenever the set of users
-    // whor eacted on a message might have changed, including due to
+    // who reacted on a message might have changed, including due to
     // upvote/downvotes on ANY reaction in the message, because those
     // can change the correct value of should_display_reactors to use.
     clean_reaction_object.count = clean_reaction_object.user_ids.length;
