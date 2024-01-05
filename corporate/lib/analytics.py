@@ -80,11 +80,21 @@ def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # no
         current_data = remote_server_plan_data.get(server_id)
         if current_data is not None:
             current_revenue = remote_server_plan_data[server_id].annual_revenue
-            remote_server_plan_data[server_id] = RemoteActivityPlanData(
-                current_status="Multiple plans",
-                current_plan_name="See support view",
-                annual_revenue=current_revenue + renewal_cents,
-            )
+            if (
+                current_data.current_plan_name == plan.name
+                and current_data.current_status == plan.get_plan_status_as_text()
+            ):
+                remote_server_plan_data[server_id] = RemoteActivityPlanData(
+                    current_status=current_data.current_status,
+                    current_plan_name=current_data.current_plan_name,
+                    annual_revenue=current_revenue + renewal_cents,
+                )
+            else:
+                remote_server_plan_data[server_id] = RemoteActivityPlanData(
+                    current_status="Multiple plans",
+                    current_plan_name="See support view",
+                    annual_revenue=current_revenue + renewal_cents,
+                )
         else:
             remote_server_plan_data[server_id] = RemoteActivityPlanData(
                 current_status=plan.get_plan_status_as_text(),
