@@ -257,6 +257,9 @@ jobs:
           - docker_image: zulip/ci:bookworm-7.0
             name: 7.0 Version Upgrade
             os: bookworm
+          - docker_image: zulip/ci:bookworm-8.0
+            name: 8.0 Version Upgrade
+            os: bookworm
 
     name: ${{ matrix.name  }}
     container:
