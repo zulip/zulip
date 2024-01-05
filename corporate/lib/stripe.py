@@ -3800,6 +3800,16 @@ class RemoteServerBillingSession(BillingSession):
         # Sponsorship approval is only a support admin action.
         assert self.support_session
 
+        # Check no realm has a current plan, which would mean
+        # approving this sponsorship would violate our invariant that
+        # we never have active plans for both a remote realm and its
+        # remote server.
+        realm_plans = CustomerPlan.objects.filter(
+            customer__remote_realm__server=self.remote_server
+        ).exclude(status=CustomerPlan.ENDED)
+        if realm_plans.exists():
+            return "Cannot approve server-level Community plan while some realms active plans."
+
         customer = self.get_customer()
         if customer is not None:
             error_message = self.check_customer_not_on_paid_plan(customer)
