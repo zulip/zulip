@@ -115,11 +115,7 @@ test("process_new_message", () => {
     assert.equal(message.alerted, true);
     assert.equal(message.is_me_message, false);
 
-    let retrieved_message = message_store.get(2067);
-    assert.equal(retrieved_message, message);
-
-    blueslip.expect("error", "message_store got non-number");
-    retrieved_message = message_store.get("2067");
+    const retrieved_message = message_store.get(2067);
     assert.equal(retrieved_message, message);
 
     // access cached previous message, and test match subject/content
@@ -355,9 +351,4 @@ test("update_property", () => {
     assert.equal(message1.display_recipient, "Prod");
     assert.equal(message2.stream_id, denmark.stream_id);
     assert.equal(message2.display_recipient, denmark.name);
-});
-
-test("errors", () => {
-    blueslip.expect("error", "message_store.get got bad value");
-    message_store.get(undefined);
 });

@@ -156,19 +156,6 @@ export function clear_for_testing(): void {
 }
 
 export function get(message_id: number): Message | undefined {
-    if (message_id === undefined || message_id === null) {
-        blueslip.error("message_store.get got bad value", {message_id});
-        return undefined;
-    }
-
-    if (typeof message_id !== "number") {
-        blueslip.error("message_store got non-number", {message_id});
-
-        // Try to soldier on, assuming the caller treats message
-        // ids as strings.
-        message_id = Number.parseFloat(message_id);
-    }
-
     return stored_messages.get(message_id);
 }
 
