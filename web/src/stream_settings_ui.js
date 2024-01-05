@@ -792,9 +792,10 @@ export function switch_rows(event) {
     }
 
     const row_data = get_row_data($switch_row);
+    const selected_tab = $(".stream_settings_header .tab-switcher .selected").data("tab-key");
     if (row_data) {
         const stream_id = row_data.id;
-        switch_to_stream_row(stream_id, "general");
+        switch_to_stream_row(stream_id, selected_tab);
     } else if (event === "up_arrow" && !row_data) {
         $("#search_stream_name").trigger("focus");
     }
