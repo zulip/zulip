@@ -1092,10 +1092,16 @@ def remote_server_post_analytics(
     assert log_data is not None
     can_push_values = set()
 
-    remote_realms = RemoteRealm.objects.filter(server=server, realm_locally_deleted=False)
+    # Return details on exactly the set of remote realm the client told us about.
     remote_realm_dict: Dict[str, RemoteRealmDictValue] = {}
-    remote_human_realm_count = remote_realms.filter(is_system_bot_realm=False).count()
-    for remote_realm in remote_realms:
+    remote_human_realm_count = len(
+        [
+            remote_realm
+            for remote_realm in realm_id_to_remote_realm.values()
+            if not remote_realm.is_system_bot_realm
+        ]
+    )
+    for remote_realm in realm_id_to_remote_realm.values():
         uuid = str(remote_realm.uuid)
         status = get_push_status_for_remote_request(server, remote_realm)
         if remote_realm.is_system_bot_realm:
@@ -1122,7 +1128,7 @@ def remote_server_post_analytics(
 
 def build_realm_id_to_remote_realm_dict(
     server: RemoteZulipServer, realms: Optional[List[RealmDataForAnalytics]]
-) -> Dict[int, Optional[RemoteRealm]]:
+) -> Dict[int, RemoteRealm]:
     if realms is None:
         return {}
 
