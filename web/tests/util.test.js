@@ -338,3 +338,16 @@ run_test("is_valid_url", () => {
     assert.equal(util.is_valid_url("http://google.com/something?q=query#hash", true), true);
     assert.equal(util.is_valid_url("/abc/", true), false);
 });
+
+run_test("format_array_as_list", () => {
+    const array = ["apple", "banana", "orange"];
+    // when Intl exist
+    assert.equal(
+        util.format_array_as_list(array, "long", "conjunction"),
+        "apple, banana, and orange",
+    );
+
+    // when Intl.ListFormat does not exist
+    global.Intl.ListFormat = undefined;
+    assert.equal(util.format_array_as_list(array, "long", "conjunction"), "apple, banana, orange");
+});
