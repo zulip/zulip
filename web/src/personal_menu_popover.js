@@ -10,12 +10,7 @@ import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import {parse_html} from "./ui_util";
-import * as user_profile from "./user_profile";
 import * as user_status from "./user_status";
-
-function elem_to_user_id($elem) {
-    return Number.parseInt($elem.attr("data-user-id"), 10);
-}
 
 export function initialize() {
     popover_menus.register_popover_menu("#personal-menu", {
@@ -57,14 +52,6 @@ export function initialize() {
                         instance.hide();
                     },
                 });
-            });
-
-            $popper.one("click", ".personal-menu-actions .view_full_user_profile", (e) => {
-                const user_id = elem_to_user_id($(e.target).closest(".personal-menu-actions"));
-                const user = people.get_by_user_id(user_id);
-                popovers.hide_all();
-                user_profile.show_user_profile(user);
-                e.preventDefault();
             });
 
             $popper.one("click", ".narrow-self-direct-message", (e) => {

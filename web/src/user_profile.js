@@ -1,6 +1,7 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
 
+import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
@@ -323,6 +324,7 @@ export function hide_user_profile() {
 function on_user_profile_hide() {
     user_streams_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
+    browser_history.exit_overlay();
 }
 
 function show_manage_user_tab(target) {
@@ -341,6 +343,18 @@ function initialize_user_type_fields(user) {
     } else {
         initialize_bot_owner("#user-profile-modal #content", user.user_id);
     }
+}
+
+export function show_user_profile_access_error_modal() {
+    $("body").append(render_profile_access_error_model());
+
+    // This opens the model, referencing it by it's ID('profile_access_error_model)
+    modals.open("profile_access_error_modal", {
+        autoremove: true,
+        on_hide() {
+            browser_history.exit_overlay();
+        },
+    });
 }
 
 export function show_user_profile(user, default_tab_key = "profile-tab") {
