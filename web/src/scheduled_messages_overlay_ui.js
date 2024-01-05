@@ -13,6 +13,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import * as util from "./util";
 
 export const keyboard_handling_context = {
     get_items_ids() {
@@ -77,7 +78,11 @@ function format(scheduled_messages) {
                 stream_color.get_stream_privacy_icon_color(color);
         } else {
             msg_render_context.is_stream = false;
-            msg_render_context.recipients = people.get_recipients(msg.to.join(","));
+            msg_render_context.recipients = util.format_array_as_list(
+                people.get_recipients(msg.to.join(",")),
+                "long",
+                "conjunction",
+            );
         }
         const time = new Date(msg.scheduled_delivery_timestamp * 1000);
         msg_render_context.formatted_send_at_time = timerender.get_full_datetime(time, "time");

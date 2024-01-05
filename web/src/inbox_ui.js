@@ -567,7 +567,11 @@ function row_in_search_results(keyword, text) {
 function filter_should_hide_row({stream_id, topic, dm_key}) {
     let text;
     if (dm_key !== undefined) {
-        const recipients_string = people.get_recipients(dm_key);
+        const recipients_string = util.format_array_as_list(
+            people.get_recipients(dm_key),
+            "long",
+            "conjunction",
+        );
         text = recipients_string.toLowerCase();
     } else {
         const sub = sub_store.get(stream_id);
