@@ -71,6 +71,8 @@ def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # no
             renewal_cents = RemoteRealmBillingSession(
                 remote_realm=plan.customer.remote_realm
             ).get_customer_plan_renewal_amount(plan, timezone_now())
+            if plan.customer.remote_realm.registration_deactivated:
+                continue
 
         assert server_id is not None
 
