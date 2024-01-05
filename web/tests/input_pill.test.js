@@ -62,7 +62,7 @@ run_test("basics", ({mock_template}) => {
             show_user_status_emoji: true,
         },
     });
-    const status_emoji_info = {emoji_code: 5};
+    const status_emoji_info = {emoji_code: "5"};
 
     // type for a pill can be any string but it needs to be
     // defined while creating any pill.

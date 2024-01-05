@@ -9,7 +9,7 @@ const unread = mock_esm("../src/unread");
 
 mock_esm("../src/user_status", {
     get_status_emoji: () => ({
-        emoji_code: 20,
+        emoji_code: "20",
     }),
 });
 
@@ -107,7 +107,7 @@ test("get_conversations", ({override}) => {
             user_circle_class: "user_circle_empty",
             user_ids_string: "103",
             status_emoji_info: {
-                emoji_code: 20,
+                emoji_code: "20",
             },
         },
         {
