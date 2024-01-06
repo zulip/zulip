@@ -10,6 +10,7 @@
             font-size: 1em;
             padding: 3px 10px;
             vertical-align: middle;
+            font-variant-caps: unicase;
         }
 
         .compose_mobile_button {
