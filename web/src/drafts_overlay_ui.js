@@ -29,7 +29,10 @@ function restore_draft(draft_id) {
         if (draft.stream_id !== undefined && draft.topic !== "") {
             narrow.activate(
                 [
-                    {operator: "stream", operand: compose_args.stream_name},
+                    {
+                        operator: "stream",
+                        operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
+                    },
                     {operator: "topic", operand: compose_args.topic},
                 ],
                 {trigger: "restore draft"},
