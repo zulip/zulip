@@ -24,6 +24,7 @@ from corporate.models import (
 )
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
 from zerver.actions.realm_settings import do_deactivate_realm
+from zerver.lib.exceptions import RemoteRealmServerMismatchError
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -173,6 +174,57 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
         # It's up to the caller to verify further details, such as the exact redirect URL,
         # depending on the set up and intent of the test.
         return result
+
+
+@override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
+    @responses.activate
+    def test_self_hosted_billing_endpoints(self) -> None:
+        self.login("desdemona")
+
+        self.add_mock_response()
+
+        self_hosted_billing_url = "/self-hosted-billing/"
+        self_hosted_billing_json_url = "/json/self-hosted-billing"
+
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None):
+            result = self.client_get(self_hosted_billing_url)
+            self.assertEqual(result.status_code, 404)
+            self.assert_in_response("Page not found (404)", result)
+
+            result = self.client_get(self_hosted_billing_json_url)
+            self.assert_json_error(result, "Server doesn't use the push notification service", 404)
+
+        with mock.patch(
+            "zerver.views.push_notifications.send_to_push_bouncer",
+            side_effect=RemoteRealmServerMismatchError,
+        ):
+            result = self.client_get(self_hosted_billing_url)
+            self.assertEqual(result.status_code, 403)
+            self.assert_in_response("Unexpected Zulip server registration", result)
+
+            result = self.client_get(self_hosted_billing_json_url)
+            self.assert_json_error(
+                result,
+                "Your organization is registered to a different Zulip server. Please contact Zulip support for assistance in resolving this issue.",
+                403,
+            )
+
+        # Now test successes. We only check that an url for accessing the remote billing system
+        # is returned (in the appropriate format - redirect or json data, depending on the endpoint).
+        # We don't need to test that returned URL beyond that, because that's just the full auth flow,
+        # which gets tested properly in other tests.
+        result = self.client_get(self_hosted_billing_url)
+        self.assertEqual(result.status_code, 302)
+        self.assertIn("http://selfhosting.testserver/remote-billing-login/", result["Location"])
+
+        result = self.client_get(self_hosted_billing_json_url)
+        self.assert_json_success(result)
+        data = result.json()
+        self.assertEqual(sorted(data.keys()), ["billing_access_url", "msg", "result"])
+        self.assertIn(
+            "http://selfhosting.testserver/remote-billing-login/", data["billing_access_url"]
+        )
 
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")

@@ -34,6 +34,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
+import * as desktop_integration from "./desktop_integration";
 import * as desktop_notifications from "./desktop_notifications";
 import * as drafts from "./drafts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui";
@@ -701,6 +702,7 @@ export function initialize_everything() {
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
     hotkey.initialize();
+    desktop_integration.initialize();
 
     $("#app-loading").addClass("loaded");
 }

@@ -2,6 +2,8 @@ import $ from "jquery";
 
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as feedback_widget from "./feedback_widget";
+import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import * as narrow from "./narrow";
 import * as stream_data from "./stream_data";
@@ -60,6 +62,35 @@ if (window.electron_bridge !== undefined) {
             data,
             success,
             error,
+        });
+    });
+}
+
+export function initialize() {
+    if (window.electron_bridge === undefined) {
+        return;
+    }
+
+    $(document).on("click", "#open-self-hosted-billing", (event) => {
+        event.preventDefault();
+
+        const url = "/json/self-hosted-billing";
+
+        channel.get({
+            url,
+            success(data) {
+                window.open(data.billing_access_url, "_blank", "noopener,noreferrer");
+            },
+            error(xhr) {
+                if (xhr.responseJSON?.msg) {
+                    feedback_widget.show({
+                        populate($container) {
+                            $container.text(xhr.responseJSON.msg);
+                        },
+                        title_text: $t({defaultMessage: "Error"}),
+                    });
+                }
+            },
         });
     });
 }
