@@ -2069,6 +2069,23 @@ class BillingSession(ABC):
 
         return None, context
 
+    def min_licenses_for_flat_discount_to_self_hosted_basic_plan(
+        self, customer: Optional[Customer]
+    ) -> int:
+        # Since monthly and annual TIER_SELF_HOSTED_BASIC plans have same per user price we only need to do this calculation once.
+        # If we decided to apply this for other tiers, then we will have to do this calculation based on billing schedule selected by the user.
+        price_per_license = get_price_per_license(
+            CustomerPlan.TIER_SELF_HOSTED_BASIC, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        )
+        if customer is None:
+            return (
+                Customer._meta.get_field("flat_discount").get_default() // price_per_license
+            ) + 1
+        elif customer.flat_discounted_months > 0:
+            return (customer.flat_discount // price_per_license) + 1
+        # If flat discount is not applied.
+        return 1
+
     def min_licenses_for_plan(self, tier: int) -> int:
         customer = self.get_customer()
         if customer is not None and customer.minimum_licenses:
@@ -2076,7 +2093,7 @@ class BillingSession(ABC):
             return customer.minimum_licenses
 
         if tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:
-            return 10
+            return min(self.min_licenses_for_flat_discount_to_self_hosted_basic_plan(customer), 10)
         if tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
             return 25
         return 1

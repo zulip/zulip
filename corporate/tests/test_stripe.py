@@ -5851,7 +5851,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         min_licenses = self.billing_session.min_licenses_for_plan(
             CustomerPlan.TIER_SELF_HOSTED_BASIC
         )
-        self.assertEqual(min_licenses, 10)
+        self.assertEqual(min_licenses, 6)
         flat_discount, flat_discounted_months = self.billing_session.get_flat_discount_info()
         self.assertEqual(flat_discounted_months, 12)
 
@@ -5919,7 +5919,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )
 
-        self.assertEqual(latest_ledger.licenses, 20)
+        self.assertEqual(latest_ledger.licenses, min_licenses + 10)
         for substring in [
             "Zulip Basic",
             "Number of licenses",
@@ -5931,6 +5931,13 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "Update card",
         ]:
             self.assert_in_response(substring, response)
+
+        # Check minimum licenses is 0 after flat discounted months is over.
+        customer.flat_discounted_months = 0
+        customer.save(update_fields=["flat_discounted_months"])
+        self.assertEqual(
+            self.billing_session.min_licenses_for_plan(CustomerPlan.TIER_SELF_HOSTED_BASIC), 1
+        )
 
     @responses.activate
     def test_request_sponsorship(self) -> None:
@@ -6529,7 +6536,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         min_licenses = self.billing_session.min_licenses_for_plan(
             CustomerPlan.TIER_SELF_HOSTED_BASIC
         )
-        self.assertEqual(min_licenses, 10)
+        self.assertEqual(min_licenses, 6)
         flat_discount, flat_discounted_months = self.billing_session.get_flat_discount_info()
         self.assertEqual(flat_discounted_months, 12)
 
@@ -6571,7 +6578,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 1)
 
         with time_machine.travel(self.now + timedelta(days=2), tick=False):
-            for count in range(realm_user_count, min_licenses + 10):
+            for count in range(realm_user_count, realm_user_count + 10):
                 do_create_user(
                     f"email {count}",
                     f"password {count}",
@@ -6586,18 +6593,18 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
         self.assertEqual(
             RemoteRealmAuditLog.objects.count(),
-            min_licenses + 10 - realm_user_count + audit_log_count,
+            audit_log_count + 10,
         )
         latest_ledger = LicenseLedger.objects.last()
         assert latest_ledger is not None
-        self.assertEqual(latest_ledger.licenses, min_licenses + 10)
+        self.assertEqual(latest_ledger.licenses, 28)
 
         with time_machine.travel(self.now + timedelta(days=1), tick=False):
             response = self.client_get(
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )
 
-        self.assertEqual(latest_ledger.licenses, 20)
+        self.assertEqual(latest_ledger.licenses, 28)
         for substring in [
             "Zulip Basic",
             "Number of licenses",
@@ -6609,6 +6616,13 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Update card",
         ]:
             self.assert_in_response(substring, response)
+
+        # Check minimum licenses is 0 after flat discounted months is over.
+        customer.flat_discounted_months = 0
+        customer.save(update_fields=["flat_discounted_months"])
+        self.assertEqual(
+            self.billing_session.min_licenses_for_plan(CustomerPlan.TIER_SELF_HOSTED_BASIC), 1
+        )
 
     def test_deactivate_registration_with_push_notification_service(self) -> None:
         self.login("hamlet")
