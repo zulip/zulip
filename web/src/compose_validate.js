@@ -679,12 +679,9 @@ function validate_private_message() {
     const user_ids = compose_pm_pill.get_user_ids();
     const $banner_container = $("#compose_banners");
 
-    if (
-        realm.realm_private_message_policy ===
-            settings_config.private_message_policy_values.disabled.code &&
-        (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
-    ) {
-        // Unless we're composing to a bot
+    const user_ids_string = user_ids.join(",");
+
+    if (!people.user_can_direct_message(user_ids_string)) {
         compose_banner.show_error_message(
             $t({defaultMessage: "Direct messages are disabled in this organization."}),
             compose_banner.CLASSNAMES.private_messages_disabled,

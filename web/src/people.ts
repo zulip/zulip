@@ -805,9 +805,12 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
     // message to the target user (or group of users) represented by a
     // user ids string.
 
-    // Regardless of policy, we allow sending direct messages to bots.
+    // Regardless of policy, we allow sending direct messages to bots and to self.
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (recipient_ids.length === 1 && is_valid_bot_user(recipient_ids[0])) {
+    if (
+        recipient_ids.length === 1 &&
+        (is_valid_bot_user(recipient_ids[0]) || is_my_user_id(recipient_ids[0]))
+    ) {
         return true;
     }
 
