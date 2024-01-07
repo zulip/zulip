@@ -244,7 +244,7 @@ test("remove_old_drafts", () => {
 });
 
 test("update_draft", ({override, override_rewire}) => {
-    compose_state.set_message_type(false);
+    compose_state.set_message_type(undefined);
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
 

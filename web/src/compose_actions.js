@@ -332,7 +332,7 @@ export function cancel() {
     clear_box();
     compose_banner.clear_message_sent_banners();
     call_hooks(compose_cancel_hooks);
-    compose_state.set_message_type(false);
+    compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
 }
