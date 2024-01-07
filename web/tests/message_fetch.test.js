@@ -66,7 +66,7 @@ people.add_active_user(alice);
 
 function make_home_msg_list() {
     const table_name = "whatever";
-    const filter = new Filter();
+    const filter = new Filter([]);
 
     const list = new message_list.MessageList({
         table_name,

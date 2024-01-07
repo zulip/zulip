@@ -246,15 +246,10 @@ export class Filter {
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
 
-    constructor(terms?: Term[]) {
-        if (terms === undefined) {
-            this._terms = [];
-            this._sub = undefined;
-        } else {
-            this._terms = this.fix_terms(terms);
-            if (this.has_operator("stream")) {
-                this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
-            }
+    constructor(terms: Term[]) {
+        this._terms = this.fix_terms(terms);
+        if (this.has_operator("stream")) {
+            this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
         }
     }
 
@@ -761,11 +756,6 @@ export class Filter {
         if (this.single_term_type_returns_all_messages_of_conversation()) {
             return true;
         }
-        const term_types = this.sorted_term_types();
-        if (_.isEqual(term_types, [])) {
-            // "All messages" view
-            return true;
-        }
         return false;
     }
 
@@ -808,6 +798,11 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["in-all"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, [])) {
+            // Empty filters means we are displaying all possible messages.
             return true;
         }
 

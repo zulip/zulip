@@ -695,7 +695,7 @@ test("render_windows", () => {
 
     const view = (function make_view() {
         const table_name = "zfilt";
-        const filter = new Filter();
+        const filter = new Filter([]);
 
         const list = new message_list.MessageList({
             table_name,
