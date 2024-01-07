@@ -2613,6 +2613,73 @@ class InternalPrepTest(ZulipTestCase):
         # wasn't automatically created.
         Stream.objects.get(name=stream_name, realm_id=realm.id)
 
+    def test_direct_message_to_self_and_bot_in_dm_disabled_org(self) -> None:
+        """
+        Test that a user can send a direct message to themselves and to a bot in a DM disabled organization
+        """
+        sender = self.example_user("hamlet")
+        sender.realm.private_message_policy = Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+        sender.realm.save()
+
+        #  Create a non-bot user
+        recipient_user = self.example_user("othello")
+        recipient_user.realm = sender.realm
+
+        # Create a new bot user
+        bot = do_create_user(
+            email="test-bot@zulip.com",
+            password="",
+            realm=sender.realm,
+            full_name="Test Bot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=sender,
+            acting_user=None,
+        )
+
+        # Test sending a message to self
+        result = self.api_post(
+            sender,
+            "/api/v1/messages",
+            {
+                "type": "private",
+                "to": orjson.dumps([sender.id]).decode(),
+                "content": "Test message to self",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        expected = "Test message to self"
+        self.assertEqual(msg.content, expected)
+
+        # Test sending a message to non-bot user
+        result = self.api_post(
+            sender,
+            "/api/v1/messages",
+            {
+                "type": "private",
+                "to": orjson.dumps([recipient_user.id]).decode(),
+                "content": "Test message",
+            },
+        )
+        self.assert_json_error(result, "Direct messages are disabled in this organization.")
+
+        # Test sending a message to the bot
+        result = self.api_post(
+            sender,
+            "/api/v1/messages",
+            {
+                "type": "private",
+                "to": orjson.dumps([bot.id]).decode(),
+                "content": "Test message to bot",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        expected = "Test message to bot"
+        self.assertEqual(msg.content, expected)
+
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
