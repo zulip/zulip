@@ -83,7 +83,7 @@ function add_initialize_users() {
 }
 
 function init_message_list() {
-    const filter = new Filter();
+    const filter = new Filter([]);
     const list = new MessageList({
         filter,
     });

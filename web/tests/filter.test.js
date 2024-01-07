@@ -527,7 +527,7 @@ test("show_first_unread", () => {
     filter = new Filter(terms);
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
 
-    filter = new Filter();
+    filter = new Filter([]);
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.allow_use_first_unread_when_narrowing());
 
@@ -987,7 +987,7 @@ test("predicate_edge_cases", () => {
     let predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
-    predicate = new Filter().predicate();
+    predicate = new Filter([]).predicate();
     assert.ok(predicate({}));
 
     // Upstream code should prevent Filter.predicate from being called with
