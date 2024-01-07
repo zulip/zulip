@@ -246,6 +246,10 @@
                                     Current plan
                                     {% endif %}
                                 </a>
+                                {% elif is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY %}
+                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Contact sales
+                                </a>
                                 {% elif is_self_hosted_realm %}
                                 <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_basic }}" class="button upgrade-button">
                                     {% if free_trial_days %}
@@ -330,6 +334,10 @@
                                     {% else %}
                                     Current plan
                                     {% endif %}
+                                </a>
+                                {% elif is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY %}
+                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Contact sales
                                 </a>
                                 {% elif is_self_hosted_realm %}
                                 <a href="{{ billing_base_url }}/upgrade/?tier={{ tier_self_hosted_business }}" class="button upgrade-button">
