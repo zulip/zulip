@@ -202,7 +202,7 @@
                                 <div class="standard-price-box">
                                     {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC)
                                       or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Basic")
-                                      or (is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_BASIC)%}
+                                      or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
                                     <div class="price no-discount"><span class="currency-symbol">$</span>3.50</div>
                                     <div class="details no-discount singular-billing-frequency">
                                         <p>
@@ -284,7 +284,7 @@
                                     <div class="standard-price-box">
                                         {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS)
                                           or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business")
-                                          or (is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_BUSINESS)%}
+                                          or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
                                         <div class="price no-discount"><span class="currency-symbol">$</span>6.67</div>
                                         <div class="details">
                                             <p>
