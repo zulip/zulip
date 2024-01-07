@@ -21,8 +21,15 @@ let remote_server_plan_start_date: string =
     typeof ls_remote_server_plan_start_date === "string"
         ? ls_remote_server_plan_start_date
         : "billing_cycle_end_date";
+
 let selected_schedule: string =
     typeof ls_selected_schedule === "string" ? ls_selected_schedule : "monthly";
+if ($("input[type=hidden][name=schedule]").length === 1) {
+    // If we want to force a particular schedule, like "monthly" for free trials,
+    // we need to override schedule from localstorage if it was set.
+    selected_schedule = $<HTMLInputElement>("input[type=hidden][name=schedule]").val()!;
+}
+
 let current_license_count = page_params.seat_count;
 
 const upgrade_response_schema = z.object({
