@@ -702,6 +702,11 @@ export class Filter {
         });
     }
 
+    is_in_home(): boolean {
+        // All messages view.
+        return this._terms.length === 1 && this.has_operand("in", "home");
+    }
+
     is_keyword_search(): boolean {
         return this.has_operator("search");
     }

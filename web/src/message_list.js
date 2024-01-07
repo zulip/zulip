@@ -474,11 +474,10 @@ export class MessageList {
         // all_messages_data, since otherwise unmuting a previously
         // muted stream won't work.
         //
-        // TODO: The zhome conditional is a bit awkward, but a check
-        // for whether the filter excludes muted streams wouldn't be
-        // correct, because other narrows can't pull from
-        // all_messages.
-        if (this.table_name === "zhome") {
+        // "in-home" filter doesn't included muted stream messages, so we
+        // need to repopulate the message list with all messages to include
+        // the previous messages in muted streams so that update_items_for_muting works.
+        if (this.data.filter.is_in_home()) {
             this.data.clear();
             this.data.add_messages(all_messages_data.all_messages());
         }
