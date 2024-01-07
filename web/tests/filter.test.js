@@ -1900,3 +1900,18 @@ run_test("is_spectator_compatible", () => {
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
     );
 });
+
+run_test("is_in_home", () => {
+    const filter = new Filter([{operator: "in", operand: "home"}]);
+    assert.ok(filter.is_in_home());
+
+    const filter2 = new Filter([{operator: "in", operand: "all"}]);
+    assert.ok(!filter2.is_in_home());
+
+    // Test home with additional terms is not all messages.
+    const filter3 = new Filter([
+        {operator: "in", operand: "home"},
+        {operator: "topic", operand: "foo"},
+    ]);
+    assert.ok(!filter3.is_in_home());
+});
