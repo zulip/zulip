@@ -100,14 +100,14 @@ function test(label, f) {
         $(".new_message_textarea").css = noop;
 
         people.init();
-        compose_state.set_message_type(false);
+        compose_state.set_message_type(undefined);
         f(helpers);
     });
 }
 
 test("initial_state", () => {
     assert.equal(compose_state.composing(), false);
-    assert.equal(compose_state.get_message_type(), false);
+    assert.equal(compose_state.get_message_type(), undefined);
     assert.equal(compose_state.has_message_content(), false);
 });
 
@@ -466,7 +466,7 @@ test("focus_in_empty_compose", () => {
     $("textarea#compose-textarea").val("");
     assert.ok(compose_state.focus_in_empty_compose());
 
-    compose_state.set_message_type(false);
+    compose_state.set_message_type(undefined);
     assert.ok(!compose_state.focus_in_empty_compose());
 
     $("textarea#compose-textarea").val("foo");

@@ -660,7 +660,7 @@ run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
     disallow_rewire(narrow, "activate");
 
     // No-op when not composing.
-    compose_state.set_message_type(false);
+    compose_state.set_message_type(undefined);
     narrow.to_compose_target();
 
     // No-op when empty stream.
