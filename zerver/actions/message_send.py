@@ -1530,8 +1530,10 @@ def check_private_message_policy(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
     if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
-        if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
-            # We allow direct messages only between users and bots,
+        if sender.is_bot or (
+            len(user_profiles) == 1 and (user_profiles[0].is_bot or user_profiles[0] == sender)
+        ):
+            # We allow direct messages only between users and bots or to oneself,
             # to avoid breaking the tutorial as well as automated
             # notifications from system bots to users.
             return
