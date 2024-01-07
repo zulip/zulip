@@ -363,13 +363,6 @@
                 font-size: 38px;
                 line-height: 1;
                 letter-spacing: -1px;
-
-                &.no-discount {
-                    /* Pad prices that do not have
-                       a discount (e.g., Free, or a
-                       customer's current plan). */
-                    padding-bottom: 25px;
-                }
             }
 
             .currency-symbol {
@@ -400,6 +393,16 @@
                 margin-bottom: -5px;
                 border-radius: 4px 4px 0 0;
                 background-color: hsl(0deg 0% 85%);
+            }
+
+            .price,
+            .details {
+                &.no-discount {
+                    /* Pad prices that do not have
+                       a discount (e.g., Free, or a
+                       customer's current plan). */
+                    padding-bottom: 25px;
+                }
             }
         }
     }
