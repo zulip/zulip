@@ -95,6 +95,7 @@ function update_fade() {
 export function update_on_recipient_change() {
     update_fade();
     update_narrow_to_recipient_visibility();
+    check_posting_policy_for_compose_box();
 }
 
 export function get_posting_policy_error_message() {
@@ -212,7 +213,6 @@ export function on_compose_select_recipient_update() {
         stream_bar.decorate(stream_id, $stream_header_colorblock);
     }
 
-    check_posting_policy_for_compose_box();
     update_on_recipient_change();
 }
 
