@@ -1457,7 +1457,7 @@ class BillingSession(ABC):
         }[schedule]
         data: Dict[str, Any] = {}
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
-        free_trial = is_free_trial_offer_enabled(is_self_hosted_billing)
+        free_trial = is_free_trial_offer_enabled(is_self_hosted_billing, upgrade_request.tier)
         remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
         should_schedule_upgrade_for_legacy_remote_server = (
             remote_server_legacy_plan is not None
@@ -2011,7 +2011,7 @@ class BillingSession(ABC):
         # Don't show free trial for remote servers on legacy plan.
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if remote_server_legacy_plan_end_date is None:
-            free_trial_days = get_free_trial_days(is_self_hosted_billing)
+            free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
                     tier,
@@ -4155,21 +4155,26 @@ def compute_plan_parameters(
         next_invoice_date = add_months(billing_cycle_anchor, 1)
     if free_trial:
         period_end = billing_cycle_anchor + timedelta(
-            days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing))
+            days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing, tier))
         )
         next_invoice_date = period_end
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
 
-def get_free_trial_days(is_self_hosted_billing: bool = False) -> Optional[int]:
+def get_free_trial_days(
+    is_self_hosted_billing: bool = False, tier: Optional[int] = None
+) -> Optional[int]:
     if is_self_hosted_billing:
+        # Free trial is only available for self-hosted basic plan.
+        if tier is not None and tier != CustomerPlan.TIER_SELF_HOSTED_BASIC:
+            return None
         return settings.SELF_HOSTING_FREE_TRIAL_DAYS
 
     return settings.CLOUD_FREE_TRIAL_DAYS
 
 
-def is_free_trial_offer_enabled(is_self_hosted_billing: bool) -> bool:
-    return get_free_trial_days(is_self_hosted_billing) not in (None, 0)
+def is_free_trial_offer_enabled(is_self_hosted_billing: bool, tier: Optional[int] = None) -> bool:
+    return get_free_trial_days(is_self_hosted_billing, tier) not in (None, 0)
 
 
 def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
