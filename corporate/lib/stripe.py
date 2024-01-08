@@ -4,7 +4,7 @@ import os
 import secrets
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from enum import Enum
 from functools import wraps
@@ -554,6 +554,7 @@ class SupportType(Enum):
     update_billing_modality = 4
     modify_plan = 5
     update_minimum_licenses = 6
+    update_plan_end_date = 7
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -564,6 +565,7 @@ class SupportViewRequest(TypedDict, total=False):
     plan_modification: Optional[str]
     new_plan_tier: Optional[int]
     minimum_licenses: Optional[int]
+    plan_end_date: Optional[str]
 
 
 class AuditLogEventType(Enum):
@@ -578,6 +580,7 @@ class AuditLogEventType(Enum):
     CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 9
     BILLING_ENTITY_PLAN_TYPE_CHANGED = 10
     MINIMUM_LICENSES_CHANGED = 11
+    CUSTOMER_PLAN_END_DATE_CHANGED = 12
 
 
 class PlanTierChangeType(Enum):
@@ -1165,6 +1168,31 @@ class BillingSession(ABC):
         else:
             success_message = f"Billing collection method of {self.billing_entity_display_name} updated to send invoice."
         return success_message
+
+    def update_end_date_of_current_plan(self, end_date_string: str) -> str:
+        new_end_date = datetime.strptime(end_date_string, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        if new_end_date.date() <= timezone_now().date():
+            raise SupportRequestError(
+                f"Cannot update current plan for {self.billing_entity_display_name} to end on {end_date_string}."
+            )
+        customer = self.get_customer()
+        if customer is not None:
+            plan = get_current_plan_by_customer(customer)
+            if plan is not None:
+                assert plan.end_date is not None
+                assert plan.status == CustomerPlan.ACTIVE
+                old_end_date = plan.end_date.strftime("%Y-%m-%d")
+                plan.end_date = new_end_date
+                plan.save(update_fields=["end_date"])
+                self.write_to_audit_log(
+                    event_type=AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED,
+                    event_time=timezone_now(),
+                    extra_data={"old_end_date": old_end_date, "new_end_date": end_date_string},
+                )
+                return f"Current plan for {self.billing_entity_display_name} updated to end on {end_date_string}."
+        raise SupportRequestError(
+            f"No current plan for {self.billing_entity_display_name}."
+        )  # nocoverage
 
     def setup_upgrade_payment_intent_and_charge(
         self,
@@ -2661,6 +2689,10 @@ class BillingSession(ABC):
             assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
             charge_automatically = support_request["billing_modality"] == "charge_automatically"
             success_message = self.update_billing_modality_of_current_plan(charge_automatically)
+        elif support_type == SupportType.update_plan_end_date:
+            assert support_request["plan_end_date"] is not None
+            new_plan_end_date = support_request["plan_end_date"]
+            success_message = self.update_end_date_of_current_plan(new_plan_end_date)
         elif support_type == SupportType.modify_plan:
             assert support_request["plan_modification"] is not None
             plan_modification = support_request["plan_modification"]
@@ -2986,6 +3018,8 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RealmAuditLog.REALM_BILLING_MODALITY_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
+            return RealmAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
             return RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
@@ -3344,6 +3378,8 @@ class RemoteRealmBillingSession(BillingSession):
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
+            return RemoteRealmAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
@@ -3756,6 +3792,8 @@ class RemoteServerBillingSession(BillingSession):
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
+            return RemoteZulipServerAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (

@@ -9,6 +9,16 @@
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
 </form>
 
+{% if current_plan.end_date and current_plan.status == current_plan.ACTIVE %}
+<form method="POST" class="remote-form">
+    <b>Plan end date</b><br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="date" name="plan_end_date" value="{{ current_plan.end_date.strftime('%Y-%m-%d') }}" required />
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+{% endif %}
+
 <form method="POST" class="remote-form">
     <b>Modify current plan</b><br />
     {{ csrf_input }}
