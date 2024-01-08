@@ -11,7 +11,8 @@
 .modal__overlay {
     position: fixed;
     inset: 0;
-    background: hsl(0deg 0% 0% / 60%);
+    background: var(--color-background-modal-overlay);
+    backdrop-filter: blur(25px);
     display: flex;
     justify-content: center;
     align-items: center;
