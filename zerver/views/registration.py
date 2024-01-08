@@ -1127,8 +1127,11 @@ def find_account(
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
-            data = urlencode({"emails": ",".join(emails)})
-            return redirect(append_url_query_string(url, data))
+            # data = urlencode({"emails": ",".join(emails)})
+            # return redirect(append_url_query_string(url, data))
+            return render(
+                request, "zerver/find_account_success.html", context={"emails": emails}, status=302
+            )
     else:
         form = FindMyTeamForm()
         # The below validation is perhaps unnecessary, in that we
