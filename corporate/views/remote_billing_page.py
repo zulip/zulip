@@ -47,7 +47,11 @@ from zerver.lib.exceptions import (
     RemoteBillingAuthenticationError,
     RemoteRealmServerMismatchError,
 )
-from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
+from zerver.lib.remote_server import (
+    RealmDataForAnalytics,
+    UserDataForRemoteBilling,
+    get_realms_info_for_push_bouncer,
+)
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -61,6 +65,7 @@ from zilencer.models import (
     RemoteZulipServer,
     get_remote_server_by_uuid,
 )
+from zilencer.views import handle_customer_migration_from_server_to_realms
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -193,6 +198,23 @@ def remote_realm_billing_finalize_login(
         # These should definitely still exist, since the access token was signed
         # pretty recently. (And we generally don't delete these at all.)
         raise AssertionError
+
+    try:
+        handle_customer_migration_from_server_to_realms(
+            server=remote_server, realms=get_realms_info_for_push_bouncer()
+        )
+    except Exception:  # nocoverage
+        billing_logger.exception(
+            "%s: Failed to migrate customer from server (id: %s) to realms",
+            request.path,
+            remote_server.id,
+            stack_info=True,
+        )
+        raise JsonableError(
+            _(
+                "Failed to migrate customer from server to realms. Please contact support for assistance."
+            )
+        )
 
     # Redirect to error page if server is on an active plan
     server_customer = get_customer_by_remote_server(remote_server)

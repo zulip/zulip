@@ -791,12 +791,20 @@
     #settings_page .settings-header,
     #settings_page .sidebar li.active,
     #settings_page .sidebar-wrapper .tab-container,
-    .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
     #subscription_overlay #stream-creation .settings-sticky-footer,
     #groups_overlay #user-group-creation .settings-sticky-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .table-striped tbody tr:nth-child(even) td {
+        border-color: hsl(0deg 0% 0% / 20%);
+        background-color: color-mix(
+            in srgb,
+            hsl(0deg 0% 0%) 20%,
+            var(--color-background-modal)
+        );
     }
 
     .table-striped tbody tr:nth-child(odd) td {

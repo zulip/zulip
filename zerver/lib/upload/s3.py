@@ -8,10 +8,9 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import boto3
 import botocore
-from boto3.session import Session
 from botocore.client import Config
 from django.conf import settings
-from mypy_boto3_s3.client import S3Client
+from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
 from typing_extensions import override
 
@@ -57,13 +56,18 @@ if settings.S3_SKIP_PROXY is True:  # nocoverage
     botocore.utils.should_bypass_proxies = lambda url: True
 
 
-def get_bucket(bucket_name: str, session: Optional[Session] = None) -> Bucket:
-    if session is None:
-        session = Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = session.resource(
-        "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
+def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
+    return boto3.resource(
+        "s3",
+        aws_access_key_id=settings.S3_KEY if authed else None,
+        aws_secret_access_key=settings.S3_SECRET_KEY if authed else None,
+        region_name=settings.S3_REGION,
+        endpoint_url=settings.S3_ENDPOINT_URL,
+        config=Config(
+            signature_version=None if authed else botocore.UNSIGNED,
+            s3={"addressing_style": settings.S3_ADDRESSING_STYLE},
+        ),
     ).Bucket(bucket_name)
-    return bucket
 
 
 def upload_image_to_s3(
@@ -103,13 +107,7 @@ def upload_image_to_s3(
 
 
 def get_signed_upload_url(path: str, force_download: bool = False) -> str:
-    client = boto3.client(
-        "s3",
-        aws_access_key_id=settings.S3_KEY,
-        aws_secret_access_key=settings.S3_SECRET_KEY,
-        region_name=settings.S3_REGION,
-        endpoint_url=settings.S3_ENDPOINT_URL,
-    )
+    client: S3Client = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET).meta.client  # type: ignore[assignment]  # https://github.com/youtype/mypy_boto3_builder/issues/239
     params = {
         "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
         "Key": path,
@@ -127,26 +125,9 @@ def get_signed_upload_url(path: str, force_download: bool = False) -> str:
 
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
-        self.session = Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
-        self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
-
-        self._boto_client: Optional[S3Client] = None
+        self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET)
+        self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
         self.public_upload_url_base = self.construct_public_upload_url_base()
-
-    def get_boto_client(self) -> S3Client:
-        """
-        Creating the client takes a long time so we need to cache it.
-        """
-        if self._boto_client is None:
-            config = Config(signature_version=botocore.UNSIGNED)
-            self._boto_client = self.session.client(
-                "s3",
-                region_name=settings.S3_REGION,
-                endpoint_url=settings.S3_ENDPOINT_URL,
-                config=config,
-            )
-        return self._boto_client
 
     def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
         key = bucket.Object(path_id)
@@ -174,13 +155,17 @@ class S3UploadBackend(ZulipUploadBackend):
         # normal public URL for a key.
         #
         # It unfortunately takes 2ms per query to call
-        # generate_presigned_url, even with our cached boto
-        # client. Since we need to potentially compute hundreds of
-        # avatar URLs in single `GET /messages` request, we instead
-        # back-compute the URL pattern here.
+        # generate_presigned_url. Since we need to potentially compute
+        # hundreds of avatar URLs in single `GET /messages` request,
+        # we instead back-compute the URL pattern here.
 
         DUMMY_KEY = "dummy_key_ignored"
-        foo_url = self.get_boto_client().generate_presigned_url(
+
+        # We do not access self.avatar_bucket.meta.client directly,
+        # since that client is auth'd, and we want only the direct
+        # unauthed endpoint here.
+        client: S3Client = get_bucket(self.avatar_bucket.name, authed=False).meta.client  # type: ignore[assignment]  # https://github.com/youtype/mypy_boto3_builder/issues/239
+        dummy_signed_url = client.generate_presigned_url(
             ClientMethod="get_object",
             Params={
                 "Bucket": self.avatar_bucket.name,
@@ -188,7 +173,7 @@ class S3UploadBackend(ZulipUploadBackend):
             },
             ExpiresIn=0,
         )
-        split_url = urlsplit(foo_url)
+        split_url = urlsplit(dummy_signed_url)
         assert split_url.path.endswith(f"/{DUMMY_KEY}")
 
         return urlunsplit(
@@ -262,9 +247,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
-        client = self.session.client(
-            "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
-        )
+        client = self.uploads_bucket.meta.client
         paginator = client.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name)
 

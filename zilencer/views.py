@@ -144,6 +144,7 @@ def register_remote_server(
                 "hostname": hostname,
                 "contact_email": contact_email,
                 "api_key": zulip_org_key,
+                "last_request_datetime": timezone_now(),
             },
         )
         if created:
@@ -163,6 +164,8 @@ def register_remote_server(
             remote_server.contact_email = contact_email
             if new_org_key is not None:
                 remote_server.api_key = new_org_key
+
+            remote_server.last_request_datetime = timezone_now()
             remote_server.save()
 
     return json_success(request, data={"created": created})
@@ -207,6 +210,9 @@ def register_remote_push_device(
             # We want to associate the RemotePushDeviceToken with the RemoteRealm.
             kwargs["remote_realm_id"] = remote_realm.id
 
+            remote_realm.last_request_datetime = timezone_now()
+            remote_realm.save(update_fields=["last_request_datetime"])
+
     try:
         with transaction.atomic():
             RemotePushDeviceToken.objects.create(
@@ -232,9 +238,12 @@ def unregister_remote_push_device(
     token_kind: int = REQ(json_validator=check_int),
     user_id: Optional[int] = REQ(json_validator=check_int, default=None),
     user_uuid: Optional[str] = REQ(default=None),
+    realm_uuid: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
+
+    update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
 
     (num_deleted, ignored) = RemotePushDeviceToken.objects.filter(
         user_identity.filter_q(), token=token, kind=token_kind, server=server
@@ -251,11 +260,28 @@ def unregister_all_remote_push_devices(
     server: RemoteZulipServer,
     user_id: Optional[int] = REQ(json_validator=check_int, default=None),
     user_uuid: Optional[str] = REQ(default=None),
+    realm_uuid: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
+    update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
+
     RemotePushDeviceToken.objects.filter(user_identity.filter_q(), server=server).delete()
     return json_success(request)
+
+
+def update_remote_realm_last_request_datetime_helper(
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    realm_uuid: Optional[str],
+    user_uuid: Optional[str],
+) -> None:
+    if realm_uuid is not None:
+        assert user_uuid is not None
+        remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+        if remote_realm is not None:
+            remote_realm.last_request_datetime = timezone_now()
+            remote_realm.save(update_fields=["last_request_datetime"])
 
 
 def delete_duplicate_registrations(
@@ -321,6 +347,7 @@ class TestNotificationPayload(BaseModel):
     token_kind: int
     user_id: int
     user_uuid: str
+    realm_uuid: Optional[str] = None
     base_payload: Dict[str, Any]
 
     model_config = ConfigDict(extra="forbid")
@@ -338,6 +365,7 @@ def remote_server_send_test_notification(
 
     user_id = payload.user_id
     user_uuid = payload.user_uuid
+    realm_uuid = payload.realm_uuid
 
     # The remote server only sends the base payload with basic user and server info,
     # and the actual format of the test notification is defined on the bouncer, as that
@@ -348,6 +376,8 @@ def remote_server_send_test_notification(
     # This is a new endpoint, so it can assume it will only be used by newer
     # servers that will send user both UUID and ID.
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
+
+    update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
 
     try:
         device = RemotePushDeviceToken.objects.get(
@@ -504,6 +534,9 @@ def remote_server_notify_push(
             timezone_now(),
             increment=len(android_devices) + len(apple_devices),
         )
+
+        remote_realm.last_request_datetime = timezone_now()
+        remote_realm.save(update_fields=["last_request_datetime"])
 
     # Truncate incoming pushes to 200, due to APNs maximum message
     # sizes; see handle_remove_push_notification for the version of
@@ -992,21 +1025,6 @@ def remote_server_post_analytics(
         update_remote_realm_data_for_server(server, realms)
         if remote_server_version_updated:
             fix_remote_realm_foreign_keys(server, realms)
-
-        try:
-            handle_customer_migration_from_server_to_realms(server, realms)
-        except Exception:  # nocoverage
-            logger.exception(
-                "%s: Failed to migrate customer from server (id: %s) to realms",
-                request.path,
-                server.id,
-                stack_info=True,
-            )
-            raise JsonableError(
-                _(
-                    "Failed to migrate customer from server to realms. Please contact support for assistance."
-                )
-            )
 
     realm_id_to_remote_realm = build_realm_id_to_remote_realm_dict(server, realms)
 

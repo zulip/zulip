@@ -2,11 +2,14 @@ import $ from "jquery";
 
 import {all_messages_data} from "./all_messages_data";
 import * as loading from "./loading";
+import type {MessageListData} from "./message_list_data";
+import type {MessageList, RenderInfo} from "./message_lists";
 import * as message_store from "./message_store";
+import type {Message} from "./message_store";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
-export function do_unread_count_updates(messages, expect_no_new_unreads = false) {
+export function do_unread_count_updates(messages: Message[], expect_no_new_unreads = false): void {
     const any_new_unreads = unread.process_loaded_messages(messages, expect_no_new_unreads);
 
     if (any_new_unreads) {
@@ -16,23 +19,33 @@ export function do_unread_count_updates(messages, expect_no_new_unreads = false)
     }
 }
 
-export function add_messages(messages, msg_list, opts) {
+export function add_messages(
+    messages: Message[],
+    msg_list: MessageList,
+    append_to_view_opts: {messages_are_new: boolean},
+): RenderInfo | undefined {
     if (!messages) {
         return undefined;
     }
 
     loading.destroy_indicator($("#page_loading_indicator"));
 
-    const render_info = msg_list.add_messages(messages, opts);
+    const render_info = msg_list.add_messages(messages, append_to_view_opts);
 
     return render_info;
 }
 
-export function add_old_messages(messages, msg_list) {
+export function add_old_messages(
+    messages: Message[],
+    msg_list: MessageList,
+): RenderInfo | undefined {
     return add_messages(messages, msg_list, {messages_are_new: false});
 }
 
-export function add_new_messages(messages, msg_list) {
+export function add_new_messages(
+    messages: Message[],
+    msg_list: MessageList,
+): RenderInfo | undefined {
     if (!msg_list.data.fetch_status.has_found_newest()) {
         // We don't render newly received messages for the message list,
         // if we haven't found the latest messages to be displayed in the
@@ -44,7 +57,16 @@ export function add_new_messages(messages, msg_list) {
     return add_messages(messages, msg_list, {messages_are_new: true});
 }
 
-export function add_new_messages_data(messages, msg_list_data) {
+export function add_new_messages_data(
+    messages: Message[],
+    msg_list_data: MessageListData,
+):
+    | {
+          top_messages: Message[];
+          bottom_messages: Message[];
+          interior_messages: Message[];
+      }
+    | undefined {
     if (!msg_list_data.fetch_status.has_found_newest()) {
         // The reasoning in add_new_messages applies here as well;
         // we're trying to maintain a data structure that's a
@@ -56,7 +78,7 @@ export function add_new_messages_data(messages, msg_list_data) {
     return msg_list_data.add_messages(messages);
 }
 
-export function get_messages_in_topic(stream_id, topic) {
+export function get_messages_in_topic(stream_id: number, topic: string): Message[] {
     return all_messages_data
         .all_messages()
         .filter(
@@ -67,7 +89,7 @@ export function get_messages_in_topic(stream_id, topic) {
         );
 }
 
-export function get_max_message_id_in_stream(stream_id) {
+export function get_max_message_id_in_stream(stream_id: number): number {
     let max_message_id = 0;
     for (const msg of all_messages_data.all_messages()) {
         if (msg.type === "stream" && msg.stream_id === stream_id && msg.id > max_message_id) {
@@ -77,7 +99,7 @@ export function get_max_message_id_in_stream(stream_id) {
     return max_message_id;
 }
 
-export function get_topics_for_message_ids(message_ids) {
+export function get_topics_for_message_ids(message_ids: number[]): Map<string, [number, string]> {
     const topics = new Map(); // key = stream_id:topic
     for (const msg_id of message_ids) {
         // message_store still has data on deleted messages when this runs.

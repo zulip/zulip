@@ -106,15 +106,16 @@ def update_contributor_data_file() -> None:
     # the total count, including those that should *not* have tabs on the team
     # page (e.g. if they are deprecated).
     repo_names = [
-        "zulip",
-        "zulip-desktop",
-        "zulip-mobile",
         "python-zulip-api",
-        "zulip-js",
-        "zulipbot",
-        "zulip-terminal",
-        "zulip-ios-legacy",
+        "zulip",
         "zulip-android",
+        "zulip-desktop",
+        "zulip-flutter",
+        "zulip-ios-legacy",
+        "zulip-js",
+        "zulip-mobile",
+        "zulip-terminal",
+        "zulipbot",
     ]
 
     data: ContributorsJSON = dict(date=str(datetime.now(tz=timezone.utc).date()), contributors=[])

@@ -21,7 +21,10 @@ function narrow_via_edit_scheduled_message(compose_args) {
     if (compose_args.type === "stream") {
         narrow.activate(
             [
-                {operator: "stream", operand: compose_args.stream},
+                {
+                    operator: "stream",
+                    operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
+                },
                 {operator: "topic", operand: compose_args.topic},
             ],
             {trigger: "edit scheduled message"},
@@ -39,7 +42,6 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         compose_args = {
             type: "stream",
             stream_id: scheduled_msg.to,
-            stream: stream_data.get_stream_name_from_id(scheduled_msg.to),
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
         };

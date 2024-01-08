@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
-from typing import Any, Iterable
+from typing import Any
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core.management.base import CommandError
+from django.db.models import QuerySet
 from typing_extensions import override
 
 from zerver.forms import generate_password_reset_url
@@ -17,6 +18,11 @@ class Command(ZulipBaseCommand):
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
+            "--only-never-logged-in",
+            action="store_true",
+            help="Filter to only users which have not accepted the TOS.",
+        )
+        parser.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server. "
         )
         self.add_user_list_args(
@@ -29,7 +35,7 @@ class Command(ZulipBaseCommand):
     @override
     def handle(self, *args: Any, **options: str) -> None:
         if options["entire_server"]:
-            users: Iterable[UserProfile] = UserProfile.objects.filter(
+            users: QuerySet[UserProfile] = UserProfile.objects.filter(
                 is_active=True, is_bot=False, is_mirror_dummy=False
             )
         else:
@@ -42,10 +48,15 @@ class Command(ZulipBaseCommand):
                         "You have to pass -u/--users or -a/--all-users or --entire-server."
                     )
                 raise error
+        if options["only_never_logged_in"]:
+            users = users.filter(tos_version=-1)
+
+        if not users.exists():
+            print("No matching users!")
 
         self.send(users)
 
-    def send(self, users: Iterable[UserProfile]) -> None:
+    def send(self, users: QuerySet[UserProfile]) -> None:
         """Sends one-use only links for resetting password to target users"""
         for user_profile in users:
             context = {

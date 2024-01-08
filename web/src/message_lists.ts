@@ -17,6 +17,7 @@ type MessageListView = {
     sticky_recipient_message_id: number | undefined;
 };
 
+export type RenderInfo = {need_user_to_scroll: boolean};
 export type MessageList = {
     table_name: string;
     view: MessageListView;
@@ -31,6 +32,10 @@ export type MessageList = {
     data: MessageListData;
     select_id: (message_id: number) => void;
     get_row: (message_id: number) => JQuery;
+    add_messages: (
+        messages: Message[],
+        append_opts: {messages_are_new: boolean},
+    ) => RenderInfo | undefined;
 };
 
 export let home: MessageList | undefined;

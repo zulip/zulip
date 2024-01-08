@@ -9523,17 +9523,17 @@ paths:
   /mobile_push/test_notification:
     post:
       operationId: test-notify
-      summary: Sends a test notification to the user's mobile device(s)
+      summary: Send a test notification to mobile device(s)
       tags: ["mobile"]
       description: |
-        This endpoint allows a user to trigger a test push notification to their
-        selected mobile device, or all their mobile devices.
+        Trigger sending a test push notification to the user's
+        selected mobile device or all of their mobile devices.
 
         **Changes**: Starting with Zulip 8.0 (feature level 234), test
         notifications sent via this endpoint use `test` rather than
-        `test-by-device-token` in the `event` field. (All mobile push
-        notifications also now include a `realm_name` field as well as
-        of this feature level).
+        `test-by-device-token` in the `event` field. Also, as of this
+        feature level, all mobile push notifications now include a
+        `realm_name` field.
 
         New in Zulip 8.0 (feature level 217).
       parameters:
@@ -9542,11 +9542,11 @@ paths:
           description: |
             The push token for the device to which to send the test notification.
 
-            If this parameter is not submitted, the test notification will be sent to all of the
-            user's devices registered on the server.
+            If this parameter is not submitted, the test notification will be sent
+            to all of the user's devices registered on the server.
 
-            Mobile device clients should pass this parameter in order to trigger a notification
-            that is only delivered to this client.
+            A mobile client should pass this parameter, to avoid triggering a test
+            notification for other clients.
           schema:
             type: string
           example: "111222"

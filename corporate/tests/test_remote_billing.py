@@ -51,6 +51,7 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
         # This only matters if first_time_login is True, since otherwise
         # there's no confirmation link to be clicked:
         return_without_clicking_confirmation_link: bool = False,
+        server_on_active_plan_error: bool = False,
     ) -> "TestHttpResponse":
         now = timezone_now()
 
@@ -67,6 +68,10 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
         signed_access_token = signed_auth_url.split("/")[-1]
         with time_machine.travel(now, tick=False):
             result = self.client_get(signed_auth_url, subdomain="selfhosting")
+
+        if server_on_active_plan_error:
+            self.assert_in_response("Plan management not available", result)
+            return result
 
         if first_time_login:
             self.assertFalse(RemoteRealmBillingUser.objects.filter(user_uuid=user.uuid).exists())
@@ -463,6 +468,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
     @responses.activate
     def test_transfer_legacy_plan_from_server_to_all_realms(self) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
         # Assert current server is not on any plan.
         self.assertIsNone(get_customer_by_remote_server(self.server))
 
@@ -497,6 +505,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.add_mock_response()
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
+        # Login to plan management.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=True
+        )
+        self.assertEqual(result.status_code, 200)
+
         # RemoteRealm objects should be created for all realms on the server.
         self.assert_length(RemoteRealm.objects.all(), 4)
 
@@ -509,8 +523,11 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         server_customer.sponsorship_pending = False
         server_customer.save()
 
-        # Send server data to push bouncer again.
-        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        # Login to plan management. Performs customer migration from server to realms.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=False
+        )
+        self.assertEqual(result.status_code, 302)
 
         # Server plan status was reset
         self.server.refresh_from_db()
@@ -538,6 +555,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
     def test_transfer_legacy_plan_scheduled_for_upgrade_from_server_to_realm(
         self,
     ) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
         # Assert current server is not on any plan.
         self.assertIsNone(get_customer_by_remote_server(self.server))
 
@@ -580,6 +600,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.add_mock_response()
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
+        # Login to plan management.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=True
+        )
+        self.assertEqual(result.status_code, 200)
+
         # Server plan status stayed the same.
         self.server.refresh_from_db()
         self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
@@ -599,6 +625,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Send server data to push bouncer.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Login to plan management. Performs customer migration from server to realms.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=False
+        )
+        self.assertEqual(result.status_code, 302)
 
         # Server plan status was reset
         self.server.refresh_from_db()
@@ -635,6 +667,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
     def test_transfer_business_plan_from_server_to_realm(
         self,
     ) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
         # Assert current server is not on any plan.
         self.assertIsNone(get_customer_by_remote_server(self.server))
         self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
@@ -666,6 +701,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.add_mock_response()
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
+        # Login to plan management.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=True
+        )
+        self.assertEqual(result.status_code, 200)
+
         # Server plan status stayed the same.
         self.server.refresh_from_db()
         self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
@@ -685,6 +726,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Send server data to push bouncer.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Login to plan management. Performs customer migration from server to realms.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=False
+        )
+        self.assertEqual(result.status_code, 302)
 
         # Server plan status was reset
         self.server.refresh_from_db()
@@ -709,12 +756,19 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
     @responses.activate
     def test_transfer_plan_from_server_to_realm_edge_cases(self) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
         # CASE: Server has no customer
         self.assertIsNone(get_customer_by_remote_server(self.server))
 
         # Send server data to push bouncer.
         self.add_mock_response()
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Login to plan management.
+        result = self.execute_remote_billing_authentication_flow(desdemona)
+        self.assertEqual(result.status_code, 302)
 
         # Still no customer.
         self.assertIsNone(get_customer_by_remote_server(self.server))
@@ -725,6 +779,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Send server data to push bouncer.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Login to plan management.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, first_time_login=False, expect_tos=False
+        )
+        self.assertEqual(result.status_code, 302)
 
         # Server still has no plan.
         self.assertIsNone(get_current_plan_by_customer(server_customer))
@@ -740,6 +800,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Send server data to push bouncer.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
+        # Login to plan management.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=True
+        )
+        self.assertEqual(result.status_code, 200)
+
         # Server stays on the same plan.
         server_plan = get_current_plan_by_customer(server_customer)
         assert server_plan is not None
@@ -753,8 +819,11 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
         self.server.save(update_fields=["plan_type"])
 
-        # Send server data to push bouncer.
-        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        # Login to plan management.
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, server_on_active_plan_error=True
+        )
+        self.assertEqual(result.status_code, 200)
 
         # Server stays on the same plan.
         server_customer.refresh_from_db()

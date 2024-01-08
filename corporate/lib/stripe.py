@@ -4386,21 +4386,34 @@ def get_push_status_for_remote_request(
     else:
         current_plan = None
 
-    if current_plan is not None:
-        if current_plan.status in [
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-        ]:
-            # Plans scheduled to end
-            expected_end_timestamp = datetime_to_timestamp(
-                billing_session.get_next_billing_cycle(current_plan)
-            )
+    user_count: Optional[int] = None
+    if current_plan is None:
+        try:
+            user_count = billing_session.current_count_for_billed_licenses()
+        except MissingDataError:
             return PushNotificationsEnabledStatus(
-                can_push=True,
-                expected_end_timestamp=expected_end_timestamp,
-                message="Scheduled end",
+                can_push=False,
+                expected_end_timestamp=None,
+                message="Missing data",
             )
 
+        if user_count > MAX_USERS_WITHOUT_PLAN:
+            return PushNotificationsEnabledStatus(
+                can_push=False,
+                expected_end_timestamp=None,
+                message="No plan many users",
+            )
+
+        return PushNotificationsEnabledStatus(
+            can_push=True,
+            expected_end_timestamp=None,
+            message="No plan few users",
+        )
+
+    if current_plan.status not in [
+        CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+        CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+    ]:
         # Current plan, no expected end.
         return PushNotificationsEnabledStatus(
             can_push=True,
@@ -4411,21 +4424,24 @@ def get_push_status_for_remote_request(
     try:
         user_count = billing_session.current_count_for_billed_licenses()
     except MissingDataError:
+        user_count = None
+
+    if user_count is not None and user_count <= MAX_USERS_WITHOUT_PLAN:
+        # We have an expiring plan, but we know we have few enough
+        # users that once the plan expires, we will enter the "No plan
+        # few users" case, so don't notify users about the plan
+        # expiring via sending expected_end_timestamp.
         return PushNotificationsEnabledStatus(
-            can_push=False,
+            can_push=True,
             expected_end_timestamp=None,
-            message="Missing data",
+            message="Expiring plan few users",
         )
 
-    if user_count > MAX_USERS_WITHOUT_PLAN:
-        return PushNotificationsEnabledStatus(
-            can_push=False,
-            expected_end_timestamp=None,
-            message="No plan many users",
-        )
-
+    expected_end_timestamp = datetime_to_timestamp(
+        billing_session.get_next_billing_cycle(current_plan)
+    )
     return PushNotificationsEnabledStatus(
         can_push=True,
-        expected_end_timestamp=None,
-        message="No plan",
+        expected_end_timestamp=expected_end_timestamp,
+        message="Scheduled end",
     )

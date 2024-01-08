@@ -6070,10 +6070,19 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(server_customer_plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
 
-        # Upload data. Performs customer migration from server to realms.
+        # Upload data.
         with time_machine.travel(self.now, tick=False):
             self.add_mock_response()
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        billing_base_url = self.billing_session.billing_base_url
+
+        # Login. Performs customer migration from server to realms.
+        result = self.execute_remote_billing_authentication_flow(hamlet)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{billing_base_url}/plans/")
 
         remote_server.refresh_from_db()
         server_customer_plan.refresh_from_db()
@@ -6091,15 +6100,6 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             assert customer_plan is not None
             self.assertEqual(customer_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
             self.assertEqual(customer_plan.status, CustomerPlan.ACTIVE)
-
-        self.login("hamlet")
-        hamlet = self.example_user("hamlet")
-        billing_base_url = self.billing_session.billing_base_url
-
-        # Login
-        result = self.execute_remote_billing_authentication_flow(hamlet)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"{billing_base_url}/plans/")
 
         # upgrade to business plan
         with time_machine.travel(self.now, tick=False):

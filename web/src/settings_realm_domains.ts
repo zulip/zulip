@@ -9,7 +9,12 @@ import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
-export function populate_realm_domains_table(realm_domains) {
+type RealmDomain = {
+    domain: string;
+    allow_subdomains: boolean;
+};
+
+export function populate_realm_domains_table(realm_domains: RealmDomain[]): void {
     // Don't populate the table if the realm domains modal isn't open.
     if ($("#realm_domains_modal").length === 0) {
         return;
@@ -27,19 +32,19 @@ export function populate_realm_domains_table(realm_domains) {
     }
 }
 
-function fade_status_element($elem) {
+function fade_status_element($elem: JQuery): void {
     setTimeout(() => {
         $elem.fadeOut(500);
     }, 3000);
 }
 
-export function setup_realm_domains_modal_handlers() {
+export function setup_realm_domains_modal_handlers(): void {
     $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         const domain = $(this).parents("tr").find(".domain").text();
         const url = "/json/realm/domains/" + domain;
         const $realm_domains_info = $(".realm_domains_info");
 
-        channel.del({
+        void channel.del({
             url,
             success() {
                 ui_report.success(
@@ -65,7 +70,7 @@ export function setup_realm_domains_modal_handlers() {
             allow_subdomains: JSON.stringify(allow_subdomains),
         };
 
-        channel.patch({
+        void channel.patch({
             url,
             data,
             success() {
@@ -111,7 +116,7 @@ export function setup_realm_domains_modal_handlers() {
             allow_subdomains: JSON.stringify(allow_subdomains),
         };
 
-        channel.post({
+        void channel.post({
             url: "/json/realm/domains",
             data,
             success() {
@@ -134,7 +139,7 @@ export function setup_realm_domains_modal_handlers() {
     });
 }
 
-export function show_realm_domains_modal() {
+export function show_realm_domains_modal(): void {
     const realm_domains_table_body = render_realm_domains_modal();
 
     dialog_widget.launch({
@@ -142,7 +147,9 @@ export function show_realm_domains_modal() {
         html_body: realm_domains_table_body,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         id: "realm_domains_modal",
-        on_click() {},
+        on_click() {
+            // This modal has no submit button.
+        },
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,

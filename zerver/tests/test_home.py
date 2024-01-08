@@ -1013,20 +1013,21 @@ class HomeTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=timezone.utc)
-        with time_machine.travel((now + timedelta(days=10)), tick=False):
-            self.assertEqual(is_outdated_server(iago), False)
-            self.assertEqual(is_outdated_server(hamlet), False)
-            self.assertEqual(is_outdated_server(None), False)
+        with patch("os.path.getmtime", return_value=now.timestamp()):
+            with time_machine.travel((now + timedelta(days=10)), tick=False):
+                self.assertEqual(is_outdated_server(iago), False)
+                self.assertEqual(is_outdated_server(hamlet), False)
+                self.assertEqual(is_outdated_server(None), False)
 
-        with time_machine.travel((now + timedelta(days=397)), tick=False):
-            self.assertEqual(is_outdated_server(iago), True)
-            self.assertEqual(is_outdated_server(hamlet), True)
-            self.assertEqual(is_outdated_server(None), True)
+            with time_machine.travel((now + timedelta(days=397)), tick=False):
+                self.assertEqual(is_outdated_server(iago), True)
+                self.assertEqual(is_outdated_server(hamlet), True)
+                self.assertEqual(is_outdated_server(None), True)
 
-        with time_machine.travel((now + timedelta(days=380)), tick=False):
-            self.assertEqual(is_outdated_server(iago), True)
-            self.assertEqual(is_outdated_server(hamlet), False)
-            self.assertEqual(is_outdated_server(None), False)
+            with time_machine.travel((now + timedelta(days=380)), tick=False):
+                self.assertEqual(is_outdated_server(iago), True)
+                self.assertEqual(is_outdated_server(hamlet), False)
+                self.assertEqual(is_outdated_server(None), False)
 
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")

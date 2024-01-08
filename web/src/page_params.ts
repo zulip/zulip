@@ -63,6 +63,7 @@ export const page_params: {
     realm_create_web_public_stream_policy: number;
     realm_delete_own_message_policy: number;
     realm_description: string;
+    realm_domains: {domain: string; allow_subdomains: boolean}[];
     realm_edit_topic_policy: number;
     realm_email_changes_disabled: boolean;
     realm_enable_guest_user_indicator: boolean;
