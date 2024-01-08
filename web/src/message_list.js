@@ -69,9 +69,6 @@ export class MessageList {
         // home_msg_list is the message list that is special/unique.
         this.narrowed = this.table_name === "zfilt";
 
-        // TODO: This appears to be unused and can be deleted.
-        this.num_appends = 0;
-
         // Keeps track of whether the user has done a UI interaction,
         // such as "Mark as unread", that should disable marking
         // messages as read until prevent_reading is called again.
@@ -372,7 +369,6 @@ export class MessageList {
     }
 
     append_to_view(messages, {messages_are_new = false} = {}) {
-        this.num_appends += 1;
         const render_info = this.view.append(messages, messages_are_new);
         return render_info;
     }
