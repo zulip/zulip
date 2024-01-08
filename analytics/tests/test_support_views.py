@@ -336,6 +336,44 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         check_no_sponsorship_request(result)
         check_legacy_plan_without_upgrade(result)
 
+    def test_extend_current_plan_end_date(self) -> None:
+        remote_realm = RemoteRealm.objects.get(name="realm-name-5")
+        customer = Customer.objects.get(remote_realm=remote_realm)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+        self.assertEqual(plan.end_date, datetime(2050, 2, 1, tzinfo=timezone.utc))
+
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+        result = self.client_post(
+            "/activity/remote/support",
+            {"realm_id": f"{remote_realm.id}", "end_date": "2040-01-01"},
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_realm_id": f"{remote_realm.id}", "plan_end_date": "2040-01-01"},
+        )
+        self.assert_in_success_response(
+            ["Current plan for realm-name-5 updated to end on 2040-01-01."], result
+        )
+        plan.refresh_from_db()
+        self.assertEqual(plan.end_date, datetime(2040, 1, 1, tzinfo=timezone.utc))
+
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_realm_id": f"{remote_realm.id}", "plan_end_date": "2020-01-01"},
+        )
+        self.assert_in_success_response(
+            ["Cannot update current plan for realm-name-5 to end on 2020-01-01."], result
+        )
+
 
 class TestSupportEndpoint(ZulipTestCase):
     def create_customer_and_plan(self, realm: Realm, monthly: bool = False) -> Customer:

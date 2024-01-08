@@ -33,7 +33,13 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain_from_hostname
-from zerver.lib.validator import check_bool, check_string_in, to_decimal, to_non_negative_int
+from zerver.lib.validator import (
+    check_bool,
+    check_date,
+    check_string_in,
+    to_decimal,
+    to_non_negative_int,
+)
 from zerver.models import (
     MultiuseInvite,
     PreregistrationRealm,
@@ -416,6 +422,7 @@ def remote_servers_support(
     billing_modality: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)
     ),
+    plan_end_date: Optional[str] = REQ(default=None, str_validator=check_date),
     modify_plan: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
@@ -469,6 +476,11 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.update_billing_modality,
                 billing_modality=billing_modality,
+            )
+        elif plan_end_date is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_plan_end_date,
+                plan_end_date=plan_end_date,
             )
         elif modify_plan is not None:
             support_view_request = SupportViewRequest(
