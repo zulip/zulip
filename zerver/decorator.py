@@ -19,7 +19,7 @@ from urllib.parse import urlsplit
 
 import django_otp
 from django.conf import settings
-from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
@@ -36,6 +36,7 @@ from django_otp import user_has_device
 from two_factor.utils import default_device
 from typing_extensions import Concatenate, ParamSpec
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import (
     AccessDeniedError,
     AnomalousWebhookPayloadError,
@@ -463,12 +464,30 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     """Creates a session, logging in the user, using the Django method,
     and also adds helpful data needed by our server logs.
     """
-    django_login(request, user_profile)
-    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
-    process_client(request, user_profile, is_browser_view=True)
+
+    # As a hardening measure, pass the user_profile through the dummy backend,
+    # which does the minimal validation that the user is allowed to log in.
+    # This, and stronger validation, should have already been done by the
+    # caller, so we raise an AssertionError if this doesn't work as expected.
+    # This is to prevent misuse of this function, as it would pose a major
+    # security issue.
+    realm = get_valid_realm_from_request(request)
+    validated_user_profile = authenticate(
+        request=request, username=user_profile.delivery_email, realm=realm, use_dummy_backend=True
+    )
+    if validated_user_profile is None or validated_user_profile != user_profile:
+        raise AssertionError("do_login called for a user_profile that shouldn't be able to log in")
+
+    assert isinstance(validated_user_profile, UserProfile)
+
+    django_login(request, validated_user_profile)
+    RequestNotes.get_notes(
+        request
+    ).requester_for_logs = validated_user_profile.format_requester_for_logs()
+    process_client(request, validated_user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Log in with two factor authentication as well.
-        do_two_factor_login(request, user_profile)
+        do_two_factor_login(request, validated_user_profile)
 
 
 def log_view_func(

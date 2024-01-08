@@ -5424,7 +5424,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_success(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
@@ -5433,7 +5438,10 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         username = "hamlet"
         user_profile = self.example_user("hamlet")
         with self.settings(
-            AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",),
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            ),
             SSO_APPEND_DOMAIN="zulip.com",
         ):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=username)
@@ -5443,7 +5451,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_case_insensitive(self) -> None:
         user_profile = self.example_user("hamlet")
         email_upper = user_profile.delivery_email.upper()
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=email_upper)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
@@ -5462,7 +5475,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_login_failure_due_to_nonexisting_user(self) -> None:
         email = "nonexisting@zulip.com"
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
             self.assertEqual(result.status_code, 200)
             self.assert_logged_in_user_id(None)
@@ -5470,13 +5488,21 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_login_failure_due_to_invalid_email(self) -> None:
         email = "hamlet"
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
             result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
             self.assert_json_error_contains(result, "Enter a valid email address.", 400)
 
     def test_login_failure_due_to_missing_field(self) -> None:
         with self.settings(
-            AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
         ), self.assertLogs("django.request", level="ERROR") as m:
             result = self.client_get("/accounts/login/sso/")
             self.assertEqual(result.status_code, 500)
@@ -5488,7 +5514,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
             with mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
                 result = self.client_get(
                     "http://testserver:9080/accounts/login/sso/", REMOTE_USER=email
@@ -5499,7 +5530,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_login_failure_due_to_empty_subdomain(self) -> None:
         email = self.example_email("hamlet")
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.ZulipRemoteUserBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
             with mock.patch("zerver.views.auth.get_subdomain", return_value=""):
                 result = self.client_get(
                     "http://testserver:9080/accounts/login/sso/", REMOTE_USER=email
@@ -5513,14 +5549,22 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         email = user_profile.delivery_email
         with mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"):
             with self.settings(
-                AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
+                AUTHENTICATION_BACKENDS=(
+                    "zproject.backends.ZulipRemoteUserBackend",
+                    "zproject.backends.ZulipDummyBackend",
+                )
             ):
                 result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
                 self.assertEqual(result.status_code, 302)
                 self.assert_logged_in_user_id(user_profile.id)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
-    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",))
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.ZulipRemoteUserBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
     def test_login_mobile_flow_otp_success_email(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
@@ -5568,7 +5612,12 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(SSO_APPEND_DOMAIN="zulip.com")
-    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",))
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.ZulipRemoteUserBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
     def test_login_mobile_flow_otp_success_username(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
@@ -5689,7 +5738,10 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             user_profile = self.example_user("hamlet")
             email = user_profile.delivery_email
             with self.settings(
-                AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
+                AUTHENTICATION_BACKENDS=(
+                    "zproject.backends.ZulipRemoteUserBackend",
+                    "zproject.backends.ZulipDummyBackend",
+                )
             ):
                 result = self.client_get("/accounts/login/sso/", {"next": next}, REMOTE_USER=email)
             return result
