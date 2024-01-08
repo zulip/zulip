@@ -590,17 +590,18 @@ class UserMessage(AbstractUserMessage):
 
     @staticmethod
     def select_for_update_query() -> QuerySet["UserMessage"]:
-        """This SELECT FOR UPDATE query ensures consistent ordering on
-        the row locks acquired by a bulk update operation to modify
-        message flags using bitand/bitor.
+        """This `SELECT FOR UPDATE OF zerver_usermessage` query ensures
+        consistent ordering on the row locks acquired by a bulk update
+        operation to modify message flags using bitand/bitor.
 
         This consistent ordering is important to prevent deadlocks when
         2 or more bulk updates to the same rows in the UserMessage table
         race against each other (For example, if a client submits
         simultaneous duplicate API requests to mark a certain set of
         messages as read).
+
         """
-        return UserMessage.objects.select_for_update().order_by("message_id")
+        return UserMessage.objects.select_for_update(of=("self",)).order_by("message_id")
 
     @staticmethod
     def has_any_mentions(user_profile_id: int, message_id: int) -> bool:
