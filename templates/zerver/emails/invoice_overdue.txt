@@ -1,0 +1,3 @@
+Support URL: {{ support_url }}
+
+Last data upload: {{ last_audit_log_update }}

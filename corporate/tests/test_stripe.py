@@ -6378,6 +6378,105 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         for key, value in invoice_item_params.items():
             self.assertEqual(invoice_item2[key], value)
 
+    @responses.activate
+    @mock_stripe()
+    def test_invoice_plans_as_needed(self, *mocks: Mock) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.execute_remote_billing_authentication_flow(hamlet)
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade(
+                tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+            )
+
+        customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+        plan = CustomerPlan.objects.get(customer=customer)
+        assert plan.customer.remote_realm is not None
+        self.assertEqual(plan.next_invoice_date, self.next_month)
+
+        with time_machine.travel(self.now + timedelta(days=2), tick=False):
+            for count in range(5):
+                do_create_user(
+                    f"email - {count}",
+                    f"password {count}",
+                    hamlet.realm,
+                    "name",
+                    role=UserProfile.ROLE_MEMBER,
+                    acting_user=None,
+                )
+
+        # Data upload was 25 days before the invoice date.
+        last_audit_log_update = self.now + timedelta(days=5)
+        with time_machine.travel(last_audit_log_update, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        invoice_plans_as_needed(self.next_month)
+        plan.refresh_from_db()
+        self.assertEqual(plan.next_invoice_date, self.next_month)
+        self.assertTrue(plan.invoice_overdue_email_sent)
+
+        from django.core.mail import outbox
+
+        messages_count = len(outbox)
+        message = outbox[-1]
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.subject, "Invoice overdue due to stale data")
+        self.assertIn(
+            f"Support URL: {self.billing_session.support_url()}",
+            message.body,
+        )
+        self.assertIn(
+            f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
+        )
+
+        # Cron runs again, don't send another email to Zulip team.
+        invoice_plans_as_needed(self.next_month + timedelta(days=1))
+        self.assert_length(outbox, messages_count)
+
+        # Ledger is up-to-date. Plan invoiced.
+        with time_machine.travel(self.next_month, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        invoice_plans_as_needed(self.next_month)
+        plan.refresh_from_db()
+        self.assertEqual(plan.next_invoice_date, add_months(self.next_month, 1))
+        self.assertFalse(plan.invoice_overdue_email_sent)
+
+        assert customer.stripe_customer_id
+        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
+
+        [invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
+        invoice_item_params = {
+            "amount": 16 * 3.5 * 100,
+            "description": "Zulip Basic - renewal",
+            "quantity": 16,
+            "period": {
+                "start": datetime_to_timestamp(self.next_month),
+                "end": datetime_to_timestamp(add_months(self.next_month, 1)),
+            },
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item1[key], value)
+
+        invoice_item_params = {
+            "description": "Additional license (Jan 4, 2012 - Feb 2, 2012)",
+            "quantity": 5,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=2)),
+                "end": datetime_to_timestamp(self.next_month),
+            },
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item2[key], value)
+
+        # Verify Zulip team receives mail for the next cycle.
+        invoice_plans_as_needed(add_months(self.next_month, 1))
+        self.assert_length(outbox, messages_count + 1)
+
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
