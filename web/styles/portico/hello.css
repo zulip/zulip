@@ -40,6 +40,32 @@ ul {
     margin: 0;
 }
 
+.body-bg {
+    position: relative;
+    width: 0;
+    height: 0;
+}
+
+.body-bg__layer {
+    position: fixed;
+    z-index: -1;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(
+        180deg,
+        hsl(209.4deg 40.2% 50.2%) 30%,
+        hsl(238.4deg 27.9% 26.7%) 70%
+    );
+
+    @media (prefers-color-scheme: dark) {
+        background: linear-gradient(
+            180deg,
+            hsl(209deg 63% 40%) 30%,
+            hsl(238deg 28% 21%) 70%
+        );
+    }
+}
+
 .portico-hello-page {
     ._full-height-no-scroll {
         height: 100%;
@@ -61,24 +87,6 @@ ul {
 
     & img {
         border-style: none;
-    }
-
-    .body-bg {
-        position: relative;
-        width: 0;
-        height: 0;
-    }
-
-    .body-bg__layer {
-        position: fixed;
-        z-index: -1;
-        width: 100vw;
-        height: 100vh;
-        background: linear-gradient(
-            180deg,
-            hsl(209.4deg 40.2% 50.2%) 30%,
-            hsl(238.4deg 27.9% 26.7%) 70%
-        );
     }
 
     .page-wrapper {
@@ -601,14 +609,6 @@ ul {
     @media (prefers-color-scheme: dark) {
         & body {
             background: hsl(209deg 63% 40%);
-        }
-
-        .body-bg__layer {
-            background: linear-gradient(
-                180deg,
-                hsl(209deg 63% 40%) 30%,
-                hsl(238deg 28% 21%) 70%
-            );
         }
 
         .screen-1 {
