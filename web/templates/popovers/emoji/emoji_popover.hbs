@@ -1,4 +1,4 @@
-<div class="emoji-picker-popover">
+<div class="emoji-picker-popover" data-emoji-destination="{{#if message_id }}reaction{{else if is_status_emoji_popover}}status{{else}}composition{{/if}}">
     <div class="emoji-popover">
         <div class="emoji-popover-top">
             <input class="emoji-popover-filter filter_text_input" type="text" placeholder="{{t 'Search' }}" />

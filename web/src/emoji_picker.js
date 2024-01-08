@@ -207,10 +207,6 @@ export function hide_emoji_popover() {
     emoji_popover_instance = null;
 }
 
-function get_selected_emoji() {
-    return $(".emoji-popover-emoji:focus")[0];
-}
-
 function get_rendered_emoji(section, index) {
     const emoji_id = get_emoji_id(section, index);
     const $emoji = $(`.emoji-popover-emoji[data-emoji-id='${CSS.escape(emoji_id)}']`);
@@ -306,40 +302,15 @@ function toggle_reaction(emoji_name, event) {
     $(event.target).closest(".reaction").toggleClass("reacted");
 }
 
-function is_composition(emoji) {
-    return $(emoji).hasClass("composition");
-}
-
-function is_status_emoji(emoji) {
-    return $(emoji).hasClass("status-emoji");
-}
-
 function process_enter_while_filtering(e) {
     if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
         e.stopPropagation();
         const $first_emoji = get_rendered_emoji(0, 0);
         if ($first_emoji) {
-            if (is_composition($first_emoji)) {
-                $first_emoji.trigger("click");
-            } else {
-                toggle_reaction($first_emoji.attr("data-emoji-name"), e);
-            }
+            handle_emoji_clicked($first_emoji, e);
         }
     }
-}
-
-function toggle_selected_emoji(e) {
-    // Toggle the currently selected emoji.
-    const selected_emoji = get_selected_emoji();
-
-    if (selected_emoji === undefined) {
-        return;
-    }
-
-    const emoji_name = $(selected_emoji).attr("data-emoji-name");
-
-    toggle_reaction(emoji_name, e);
 }
 
 function round_off_to_previous_multiple(number_to_round, multiple) {
@@ -469,11 +440,7 @@ export function navigate(event_name, e) {
     }
 
     if (event_name === "enter") {
-        if (is_composition(e.target) || is_status_emoji(e.target)) {
-            e.target.click();
-        } else {
-            toggle_selected_emoji(e);
-        }
+        handle_emoji_clicked($(e.target), e);
         return true;
     }
 
@@ -715,34 +682,74 @@ export function toggle_emoji_popover(target, id, additional_popover_options) {
         },
     );
 }
-function register_click_handlers() {
-    $(document).on("click", ".emoji-popover-emoji.reaction", function (e) {
-        // When an emoji is clicked in the popover,
-        // if the user has reacted to this message with this emoji
-        // the reaction is removed
-        // otherwise, the reaction is added
-        const emoji_name = $(this).attr("data-emoji-name");
-        toggle_reaction(emoji_name, e);
-    });
 
-    $(document).on("click", ".emoji-popover-emoji.composition", function (e) {
-        const emoji_name = $(this).attr("data-emoji-name");
-        const emoji_text = ":" + emoji_name + ":";
-        // The following check will return false if emoji was not selected in
-        // message edit form.
-        if (edit_message_id !== null) {
-            const $edit_message_textarea = $(
-                `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
-            );
-            // Assign null to edit_message_id so that the selection of emoji in new
-            // message composition form works correctly.
-            edit_message_id = null;
-            compose_ui.insert_syntax_and_focus(emoji_text, $edit_message_textarea);
-        } else {
-            compose_ui.insert_syntax_and_focus(emoji_text);
+function handle_reaction_emoji_clicked(emoji_name, event) {
+    // When an emoji is clicked in the popover,
+    // if the user has reacted to this message with this emoji
+    // the reaction is removed
+    // otherwise, the reaction is added
+    toggle_reaction(emoji_name, event);
+}
+
+function handle_status_emoji_clicked(emoji_name) {
+    hide_emoji_popover();
+    let emoji_info = {
+        emoji_name,
+        emoji_alt_code: user_settings.emojiset === "text",
+    };
+    if (!emoji_info.emoji_alt_code) {
+        emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
+    }
+    user_status_ui.set_selected_emoji_info(emoji_info);
+    user_status_ui.update_button();
+    user_status_ui.toggle_clear_message_button();
+}
+
+function handle_composition_emoji_clicked(emoji_name) {
+    hide_emoji_popover();
+    const emoji_text = ":" + emoji_name + ":";
+    // The following check will return false if emoji was not selected in
+    // message edit form.
+    if (edit_message_id !== null) {
+        const $edit_message_textarea = $(
+            `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+        );
+        // Assign null to edit_message_id so that the selection of emoji in new
+        // message composition form works correctly.
+        edit_message_id = null;
+        compose_ui.insert_syntax_and_focus(emoji_text, $edit_message_textarea);
+    } else {
+        compose_ui.insert_syntax_and_focus(emoji_text);
+    }
+}
+
+function handle_emoji_clicked($emoji, event) {
+    const emoji_name = $emoji.attr("data-emoji-name");
+    const emoji_destination = $emoji
+        .closest(".emoji-picker-popover")
+        .attr("data-emoji-destination");
+
+    switch (emoji_destination) {
+        case "reaction": {
+            handle_reaction_emoji_clicked(emoji_name, event);
+            break;
         }
+        case "status": {
+            handle_status_emoji_clicked(emoji_name);
+            break;
+        }
+        case "composition": {
+            handle_composition_emoji_clicked(emoji_name);
+            break;
+        }
+    }
+}
+
+function register_click_handlers() {
+    $("body").on("click", ".emoji-popover-emoji", (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        hide_emoji_popover();
+        handle_emoji_clicked($(e.currentTarget), e);
     });
 
     $("body").on("click", ".emoji_map", (e) => {
@@ -829,23 +836,6 @@ function register_click_handlers() {
         "#set-user-status-modal #selected_emoji .status-emoji-wrapper",
         ui_util.convert_enter_to_click,
     );
-
-    $(document).on("click", ".emoji-popover-emoji.status-emoji", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        hide_emoji_popover();
-        const emoji_name = $(this).attr("data-emoji-name");
-        let emoji_info = {
-            emoji_name,
-            emoji_alt_code: user_settings.emojiset === "text",
-        };
-        if (!emoji_info.emoji_alt_code) {
-            emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
-        }
-        user_status_ui.set_selected_emoji_info(emoji_info);
-        user_status_ui.update_button();
-        user_status_ui.toggle_clear_message_button();
-    });
 }
 
 export function initialize() {
