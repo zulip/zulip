@@ -1811,14 +1811,14 @@ test("navbar_helpers", () => {
     page_params.realm_enable_guest_user_indicator = false;
     const guest_user_test_cases_without_indicator = [
         {
-            operator: guest_sender,
+            terms: guest_sender,
             is_common_narrow: true,
             icon: undefined,
             title: "translated: Messages sent by alice",
             redirect_url_with_search: "/#narrow/sender/" + alice.user_id + "-alice",
         },
         {
-            operator: dm_with_guest,
+            terms: dm_with_guest,
             is_common_narrow: true,
             icon: "envelope",
             title: properly_separated_names([alice.full_name]),
@@ -1826,16 +1826,17 @@ test("navbar_helpers", () => {
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
         },
         {
-            operator: dm_group_including_guest,
+            terms: dm_group_including_guest,
             is_common_narrow: true,
             icon: "envelope",
             title: properly_separated_names([alice.full_name, joe.full_name]),
-            redirect_url_with_search:
-                "/#narrow/dm/" + Number(alice.user_id) + "," + joe.user_id + "-group",
+            redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
     ];
 
-    test_get_title(guest_user_test_cases_without_indicator);
+    for (const test_case of guest_user_test_cases_without_indicator) {
+        test_helpers(test_case);
+    }
 
     // this is actually wrong, but the code is currently not robust enough to throw an error here
     // also, used as an example of triggering last return statement.
