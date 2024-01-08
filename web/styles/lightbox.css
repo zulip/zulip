@@ -1,5 +1,6 @@
 #lightbox_overlay {
-    background-color: hsl(227deg 40% 16%);
+    background: var(--color-background-modal-overlay);
+    backdrop-filter: blur(25px);
 
     .image-preview {
         display: flex;
