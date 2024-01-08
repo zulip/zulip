@@ -931,7 +931,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(104), self.assert_memcached_count(18):
+        with self.assert_database_query_count(105), self.assert_memcached_count(18):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -3762,6 +3762,7 @@ class UserSignUpTest(ZulipTestCase):
         AUTHENTICATION_BACKENDS=(
             "zproject.backends.ZulipLDAPAuthBackend",
             "zproject.backends.EmailAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
         )
     )
     def test_ldap_invite_user_as_admin(self) -> None:
@@ -3773,6 +3774,7 @@ class UserSignUpTest(ZulipTestCase):
         AUTHENTICATION_BACKENDS=(
             "zproject.backends.ZulipLDAPAuthBackend",
             "zproject.backends.EmailAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
         )
     )
     def test_ldap_invite_user_as_guest(self) -> None:
@@ -3784,6 +3786,7 @@ class UserSignUpTest(ZulipTestCase):
         AUTHENTICATION_BACKENDS=(
             "zproject.backends.ZulipLDAPAuthBackend",
             "zproject.backends.EmailAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
         )
     )
     def test_ldap_invite_streams(self) -> None:
