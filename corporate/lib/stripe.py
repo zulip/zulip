@@ -4342,15 +4342,19 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
 def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
     if event_time is None:  # nocoverage
         event_time = timezone_now()
-    # TODO: Add RemoteServerBillingSession cases.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
+        remote_server: Optional[RemoteZulipServer] = None
         if plan.customer.realm is not None:
-            RealmBillingSession(realm=plan.customer.realm).invoice_plan(plan, event_time)
+            billing_session: BillingSession = RealmBillingSession(realm=plan.customer.realm)
         elif plan.customer.remote_realm is not None:
             remote_realm = plan.customer.remote_realm
             remote_server = remote_realm.server
             billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+        elif plan.customer.remote_server is not None:
+            remote_server = plan.customer.remote_server
+            billing_session = RemoteServerBillingSession(remote_server=remote_server)
 
+        if remote_server:
             assert remote_server.last_audit_log_update is not None
             assert plan.next_invoice_date is not None
             if plan.next_invoice_date > remote_server.last_audit_log_update:
@@ -4375,8 +4379,7 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     plan.save(update_fields=["invoice_overdue_email_sent"])
                 continue
 
-            billing_session.invoice_plan(plan, event_time)
-        # TODO: Assert that we never invoice legacy plans.
+        billing_session.invoice_plan(plan, event_time)
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:
