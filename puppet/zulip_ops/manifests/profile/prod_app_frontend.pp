@@ -3,6 +3,11 @@ class zulip_ops::profile::prod_app_frontend {
   include zulip_ops::app_frontend
   include zulip::hooks::zulip_notify
 
+  $conntrack_max = zulipconf('application_server', 'conntrack_max', 262144)
+  zulip::sysctl { 'conntrack':
+    content => template('zulip/sysctl.d/40-conntrack.conf.erb'),
+  }
+
   file { '/etc/nginx/sites-available/zulip':
     ensure  => file,
     require => Package['nginx-full'],
