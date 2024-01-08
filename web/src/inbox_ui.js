@@ -152,8 +152,7 @@ function format_dm(user_ids_string, unread_count, latest_msg_id) {
                 status_emoji_info: user_status.get_status_emoji(recipient_id),
             }),
         )
-        .sort()
-        .join(", ");
+        .sort();
 
     let user_circle_class;
     let is_bot = false;
@@ -165,7 +164,7 @@ function format_dm(user_ids_string, unread_count, latest_msg_id) {
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with,
+        rendered_dm_with: util.format_array_as_list(rendered_dm_with, "long", "conjunction"),
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
