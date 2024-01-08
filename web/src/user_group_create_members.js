@@ -105,6 +105,7 @@ export function build_widgets() {
                 user_id: user.user_id,
                 full_name: user.full_name,
                 is_current_user: user.user_id === current_user_id,
+                img_src: people.small_avatar_url_for_person(user),
             };
             return render_new_user_group_user(item);
         },

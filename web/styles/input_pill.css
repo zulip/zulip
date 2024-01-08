@@ -156,6 +156,29 @@
     }
 }
 
+.panel_subscriber_member_list > .pill-container {
+    background-color: hsl(0deg 0% 0% / 7%);
+
+    &:hover {
+        color: inherit;
+    }
+
+    > .pill {
+        background-color: transparent;
+        border: none;
+        text-decoration: none;
+
+        &:focus {
+            color: inherit;
+        }
+
+        > .pill-value {
+            padding: 5px;
+            max-width: 165px;
+        }
+    }
+}
+
 @keyframes shake {
     10%,
     90% {

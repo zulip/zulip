@@ -1207,6 +1207,19 @@
         }
     }
 
+    .panel_subscriber_member_list > .pill-container {
+        &:hover {
+            color: inherit;
+        }
+
+        > .pill {
+            &:focus,
+            &:hover {
+                color: inherit;
+            }
+        }
+    }
+
     /* Originally the icon inherits the color of label, but when the setting
     is disabled, the color of the label is changed and thus the icon becomes
     too light. So, we set the color explicitly to original color of label to

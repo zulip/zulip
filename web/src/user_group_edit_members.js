@@ -57,6 +57,7 @@ function format_member_list_elem(person) {
         email: person.delivery_email,
         can_remove_subscribers: settings_data.can_edit_user_group(current_group_id),
         for_user_group_members: true,
+        img_src: people.small_avatar_url_for_person(person),
     });
 }
 
