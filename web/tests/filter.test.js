@@ -1499,8 +1499,8 @@ test("navbar_helpers", () => {
     }
 
     function test_redirect_url_with_search(test_case) {
-        test_case.terms.push({operator: "search", operand: "fizzbuzz"});
-        const filter = new Filter(test_case.terms);
+        const terms = [...test_case.terms, {operator: "search", operand: "fizzbuzz"}];
+        const filter = new Filter(terms);
         assert.equal(filter.generate_redirect_url(), test_case.redirect_url_with_search);
     }
 
