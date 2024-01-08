@@ -636,7 +636,7 @@ function focus_inbox_search() {
     focus_current_id();
 }
 
-export function is_list_focused(){
+export function is_list_focused() {
     return ![INBOX_SEARCH_ID, INBOX_FILTERS_DROPDOWN_ID].includes(current_focus_id);
 }
 
