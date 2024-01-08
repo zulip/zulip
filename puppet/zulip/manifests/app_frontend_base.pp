@@ -190,20 +190,9 @@ class zulip::app_frontend_base {
     content => template('zulip/uwsgi.ini.template.erb'),
     notify  => Service[$zulip::common::supervisor_service],
   }
-  file { '/etc/sysctl.d/40-uwsgi.conf':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => template('zulip/sysctl.d/40-uwsgi.conf.erb'),
-  }
-  exec { 'sysctl_p_uwsgi':
-    command     => '/sbin/sysctl -p /etc/sysctl.d/40-uwsgi.conf',
-    subscribe   => File['/etc/sysctl.d/40-uwsgi.conf'],
-    refreshonly => true,
-    # We have to protect against running in Docker and other
-    # containerization which prevents adjusting these.
-    onlyif      => 'touch /proc/sys/net/core/somaxconn',
+  zulip::sysctl { 'uwsgi':
+    content     => template('zulip/sysctl.d/40-uwsgi.conf.erb'),
+    skip_docker => true,
   }
 
   file { [

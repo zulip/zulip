@@ -9,17 +9,8 @@ class zulip_ops::profile::postgresql {
 
   zulip_ops::firewall_allow{ 'postgresql': }
 
-  file { '/etc/sysctl.d/40-postgresql.conf':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
+  zulip::sysctl { 'postgresql':
     source => 'puppet:///modules/zulip_ops/postgresql/40-postgresql.conf',
-  }
-  exec { 'sysctl_p':
-    command     => '/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf',
-    subscribe   => File['/etc/sysctl.d/40-postgresql.conf'],
-    refreshonly => true,
   }
 
   file { '/root/setup_disks.sh':
