@@ -63,11 +63,7 @@ export class MessageList {
 
         // Whether this is a narrowed message list. The only message
         // list that is not is the home_msg_list global.
-        //
-        // TODO: It would probably be more readable to replace this
-        // with another property with an inverted meaning, since
-        // home_msg_list is the message list that is special/unique.
-        this.narrowed = this.table_name === "zfilt";
+        this.narrowed = !this.data.filter.is_in_home();
 
         // Keeps track of whether the user has done a UI interaction,
         // such as "Mark as unread", that should disable marking
