@@ -249,6 +249,11 @@ class CustomerPlan(models.Model):
     # next_invoice_date.
     next_invoice_date = models.DateTimeField(db_index=True, null=True)
 
+    # Flag to track if an email has been sent to Zulip team for
+    # invoice overdue by >= one day. Helps to send an email only once
+    # and not every time when cron run.
+    invoice_overdue_email_sent = models.BooleanField(default=False)
+
     # On next_invoice_date, we go through ledger entries that were
     # created after invoiced_through and process them by generating
     # invoices for any additional users and/or plan renewal. Once the

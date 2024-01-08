@@ -2478,7 +2478,8 @@ class BillingSession(ABC):
             stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.next_invoice_date = next_invoice_date(plan)
-        plan.save(update_fields=["next_invoice_date"])
+        plan.invoice_overdue_email_sent = False
+        plan.save(update_fields=["next_invoice_date", "invoice_overdue_email_sent"])
 
     def do_change_plan_to_new_tier(self, new_plan_tier: int) -> str:
         customer = self.get_customer()
@@ -4341,10 +4342,40 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
 def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
     if event_time is None:  # nocoverage
         event_time = timezone_now()
-    # TODO: Add RemoteRealmBillingSession and RemoteServerBillingSession cases.
+    # TODO: Add RemoteServerBillingSession cases.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         if plan.customer.realm is not None:
             RealmBillingSession(realm=plan.customer.realm).invoice_plan(plan, event_time)
+        elif plan.customer.remote_realm is not None:
+            remote_realm = plan.customer.remote_realm
+            remote_server = remote_realm.server
+            billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+
+            assert remote_server.last_audit_log_update is not None
+            assert plan.next_invoice_date is not None
+            if plan.next_invoice_date > remote_server.last_audit_log_update:
+                if (
+                    plan.next_invoice_date - remote_server.last_audit_log_update
+                    >= timedelta(days=1)
+                    and not plan.invoice_overdue_email_sent
+                ):
+                    context = {
+                        "support_url": billing_session.support_url(),
+                        "last_audit_log_update": remote_server.last_audit_log_update.strftime(
+                            "%Y-%m-%d"
+                        ),
+                    }
+                    send_email(
+                        "zerver/emails/invoice_overdue",
+                        to_emails=[BILLING_SUPPORT_EMAIL],
+                        from_address=FromAddress.tokenized_no_reply_address(),
+                        context=context,
+                    )
+                    plan.invoice_overdue_email_sent = True
+                    plan.save(update_fields=["invoice_overdue_email_sent"])
+                continue
+
+            billing_session.invoice_plan(plan, event_time)
         # TODO: Assert that we never invoice legacy plans.
 
 
