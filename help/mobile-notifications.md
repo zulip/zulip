@@ -138,11 +138,21 @@ which explains the notification settings for many popular Android vendors.
 
     These instructions do not apply to Zulip Cloud organizations (`*.zulipchat.com`).
 
-To enable push notifications for your organization, your server administrator
-will need to register your Zulip server with the [Zulip mobile push notification
-service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
+To enable push notifications for your organization:
 
-#### Check whether notifications have been set up on your Zulip server
+{start_tabs}
+
+1. Your server administrator needs to register your Zulip server with the
+   [Zulip Mobile Push Notification
+   Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
+
+1. For organizations with more than 10 users, an
+   [owner](/help/roles-and-permissions) or billing administrator needs
+   to sign up for a [plan](/plans/#self-hosted) for your organization.
+
+{end_tabs}
+
+#### Check whether notifications are enabled on your Zulip server
 
 {start_tabs}
 
@@ -152,7 +162,7 @@ service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notificat
 
 1. Tap **Settings**.
 
-1. Tap **Notifications**. If notifications have not been set up, you will see a
+1. Tap **Notifications**. If notifications are not enabled, you will see a
    banner that indicates this.
 
 {end_tabs}
