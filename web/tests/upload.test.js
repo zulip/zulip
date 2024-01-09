@@ -29,6 +29,9 @@ const rows = mock_esm("../src/rows");
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
 const message_lists = zrequire("message_lists");
+message_lists.current = {
+    table_name: "zfilt",
+};
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.max_file_upload_size_mib = 25;
