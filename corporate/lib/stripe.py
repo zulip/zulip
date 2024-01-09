@@ -2445,6 +2445,23 @@ class BillingSession(ABC):
             licenses_base = ledger_entry.licenses
 
         if invoice_item_created:
+            flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
+            if flat_discounted_months > 0:
+                num_months = (
+                    12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+                )
+                flat_discounted_months = min(flat_discounted_months, num_months)
+                discount = flat_discount * flat_discounted_months
+                plan.customer.flat_discounted_months -= flat_discounted_months
+                plan.customer.save(update_fields=["flat_discounted_months"])
+                stripe.InvoiceItem.create(
+                    currency="usd",
+                    customer=plan.customer.stripe_customer_id,
+                    description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
+                    # Negative value to apply discount.
+                    amount=(-1 * discount),
+                )
+
             if plan.charge_automatically:
                 collection_method = "charge_automatically"
                 days_until_due = None
