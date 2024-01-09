@@ -55,7 +55,36 @@ Free** at the end of the current billing period.
 
 {end_tabs}
 
-## Apply for sponsorship
+## Free and discounted Zulip Cloud Standard
+
+Zulip sponsors free plans for over 1000 worthy organizations. The following
+types of organizations are generally eligible for a free Zulip Cloud Standard plan.
+
+- Open-source projects, including projects with a small paid team.
+- Research organizations, such as research groups, cross-institutional
+  collaborations, etc.
+- Academic conferences and other non-profit events.
+- Non-profits with no paid staff.
+- Communities and personal organizations (clubs, groups of
+  friends, volunteer groups, etc.).
+
+The following types of organizations are generally eligible for significant
+discounts on Zulip Cloud Standard.
+
+- Education organizations are eligible for [education
+  pricing](https://zulip.com/for/education/#feature-pricing).
+
+- Discounts are available for organizations based in the **developing world**.
+
+- Non-profits and other organizations where many users are **not paid staff**
+  are generally eligible for a discount.
+
+### Apply for sponsorship
+
+Submit a sponsorship request to apply for a free or discounted Zulip Cloud
+Standard plan. If you do not have a Zulip organization yet, contact
+[sales@zulip.com](mailto:sales@zulip.com) to inquire about sponsorship
+eligibility.
 
 {start_tabs}
 

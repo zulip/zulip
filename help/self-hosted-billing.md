@@ -274,7 +274,9 @@ types of organizations are generally eligible for the free Community plan.
 - Open-source projects, including projects with a small paid team.
 - Research organizations, such as research groups, cross-institutional
   collaborations, etc.
-- Education and non-profit organizations with up to 100 users.
+- Organizations operated by individual educators, such as a professor teaching
+  one or more classes.
+- Non-profits with no paid staff.
 - Communities and personal organizations (clubs, groups of
   friends, volunteer groups, etc.).
 
@@ -286,8 +288,8 @@ features.
 
 If you aren't sure whether your organization qualifies, submitting a sponsorship
 form describing your situation is a great starting point. Many organizations
-that don't qualify for the Community plan can still receive discounted Business
-plan pricing.
+that don't qualify for the Community plan can still receive [discounted paid
+plan pricing](#paid-plan-discounts).
 
 ### Apply for Community plan
 
@@ -486,6 +488,19 @@ you will need to sign up for an annual plan.
     You can only increase the number of licenses for the current billing period.
 
 {end_tabs}
+
+## How paid plans support the Zulip project
+
+Zulip is proudly independent, with [no venture capital
+funding](https://zulip.com/values/#building-a-sustainable-business-aligned-with-our-values),
+which means that revenue strongly impacts the pace of Zulip’s development. Paid
+plans for self-hosted customers help fund improvements in Zulip's self-hosting
+experience, and overall product development. Zulip needs the support of
+businesses that self-host Zulip in order to thrive as an independent, [100%
+open-source](https://github.com/zulip/zulip#readme) project.
+
+You can also learn about [other ways](/help/support-zulip-project) to support
+the Zulip project.
 
 ## Self-hosting Zulip for free
 
