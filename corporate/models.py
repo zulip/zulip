@@ -29,6 +29,9 @@ class Customer(models.Model):
     # A percentage, like 85.
     default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)
     minimum_licenses = models.PositiveIntegerField(null=True)
+    # Used for limiting a default_discount or a fixed_price
+    # to be used only for a particular CustomerPlan tier.
+    required_plan_tier = models.SmallIntegerField(null=True)
     # Some non-profit organizations on manual license management pay
     # only for their paid employees.  We don't prevent these
     # organizations from adding more users than the number of licenses
