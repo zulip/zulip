@@ -108,6 +108,7 @@
     }
 
     .comparison-table a:active {
+        color: var(--color-table-link-active);
         text-decoration-color: var(--color-table-link-decoration-active);
     }
 
