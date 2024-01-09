@@ -108,17 +108,9 @@ class zulip_ops::profile::nagios {
     '/etc/nagios4/conf.d/contacts_nagios2.cfg',
     '/etc/nagios4/conf.d/hostgroups_nagios2.cfg',
     '/etc/nagios4/conf.d/localhost_nagios2.cfg',
+    '/etc/nagios4/conf.d/zulip_nagios.cfg',
   ]:
     ensure     => absent,
-  }
-
-  file { '/etc/nagios4/conf.d/zulip_nagios.cfg':
-    ensure => file,
-    mode   => '0644',
-    owner  => 'root',
-    group  => 'root',
-    source => '/usr/local/share/zulip/integrations/nagios/zulip_nagios.cfg',
-    notify => Service['nagios4'],
   }
 
   $hosts = zulipconf_nagios_hosts()
