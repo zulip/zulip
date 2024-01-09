@@ -212,6 +212,10 @@
         /* Set positioning context for use
            with tooltip hovers on icons. */
         position: relative;
+        /* Make non-icon text (e.g., "Billed hourly")
+           less prominent than other text in the table's
+           rows or columns. */
+        font-size: 0.9em;
     }
 
     .comparison-value-positive::after,
