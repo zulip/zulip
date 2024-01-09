@@ -163,13 +163,24 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
         return;
     }
 
-    const new_row_html = render_private_stream_warning({
-        banner_type: compose_banner.WARNING,
-        stream_name: linked_stream.name,
-        classname: compose_banner.CLASSNAMES.private_stream_warning,
-    });
-    const $container = compose_banner.get_compose_banner_container($textarea);
-    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+    const $existing_stream_warnings_area = $banner_container.find(
+        `.${CSS.escape(compose_banner.CLASSNAMES.private_stream_warning)}`,
+    );
+
+    const existing_stream_warnings = [...$existing_stream_warnings_area].map((stream_row) =>
+        Number.parseInt($(stream_row).data("stream-id"), 10),
+    );
+
+    if (!existing_stream_warnings.includes(linked_stream.stream_id)) {
+        const new_row_html = render_private_stream_warning({
+            stream_id: linked_stream.stream_id,
+            banner_type: compose_banner.WARNING,
+            stream_name: linked_stream.name,
+            classname: compose_banner.CLASSNAMES.private_stream_warning,
+        });
+        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+    }
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
