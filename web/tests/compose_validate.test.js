@@ -700,8 +700,26 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     };
     stream_data.add_sub(secret_stream);
     banner_rendered = false;
+    const $banner_container = $("#compose_banners");
+    $banner_container.set_find_results(".private_stream_warning", []);
     compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
     assert.ok(banner_rendered);
+
+    // Simulate that the row was added to the DOM.
+    const $warning_row = $("#compose_banners .private_stream_warning");
+    $warning_row.data = (key) =>
+        ({
+            "stream-id": "22",
+        })[key];
+    $("#compose_banners .private_stream_warning").length = 1;
+    $("#compose_banners .private_stream_warning")[0] = $warning_row;
+
+    // Now try to mention the same stream again. The template should
+    // not render.
+    banner_rendered = false;
+    $banner_container.set_find_results(".private_stream_warning", $warning_row);
+    compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
+    assert.ok(!banner_rendered);
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
