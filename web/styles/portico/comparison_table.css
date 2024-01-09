@@ -199,16 +199,21 @@
 
     .comparison-value-positive {
         color: hsl(147deg 80% 29% / 100%);
-        position: relative;
     }
 
     .comparison-value-warning {
         color: hsl(42deg 85% 35% / 100%);
-        position: relative;
     }
 
     .comparison-value-negative {
         color: hsl(224deg 8% 50% / 100%);
+    }
+
+    .comparison-value-positive,
+    .comparison-value-warning,
+    .comparison-value-negative {
+        /* Set positioning context for use
+           with tooltip hovers on icons. */
         position: relative;
     }
 
