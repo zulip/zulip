@@ -614,6 +614,7 @@ html {
         line-height: 16px;
         background-color: transparent;
         border: 1px solid hsl(152deg 79% 24% / 10%);
+        font-weight: normal;
     }
 
     .current-plan-button:hover {
