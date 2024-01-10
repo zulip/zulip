@@ -80,7 +80,7 @@ export function is_overlay_row($row: JQuery): boolean {
 
 export function id($message_row: JQuery): number | undefined {
     if (is_overlay_row($message_row)) {
-        blueslip.error("Drafts and scheduled messages have no zid");
+        blueslip.error("Drafts and scheduled messages have no message id.");
         return undefined;
     }
 
@@ -88,28 +88,28 @@ export function id($message_row: JQuery): number | undefined {
         throw new Error("Caller should pass in a single row.");
     }
 
-    const zid = $message_row.attr("zid");
+    const message_id = $message_row.attr("data-message-id");
 
-    if (zid === undefined) {
-        throw new Error("Calling code passed rows.id a row with no zid attr.");
+    if (message_id === undefined) {
+        throw new Error("Calling code passed rows.id a row with no `data-message-id` attr.");
     }
 
-    return Number.parseFloat(zid);
+    return Number.parseFloat(message_id);
 }
 
 export function local_echo_id($message_row: JQuery): string | undefined {
-    const zid = $message_row.attr("zid");
+    const message_id = $message_row.attr("data-message-id");
 
-    if (zid === undefined) {
-        blueslip.error("Calling code passed rows.local_id a row with no zid attr.");
+    if (message_id === undefined) {
+        blueslip.error("Calling code passed rows.local_id a row with no `data-message-id` attr.");
         return undefined;
     }
 
-    if (!zid.includes(".0")) {
-        blueslip.error("Trying to get local_id from row that has reified message id", {zid});
+    if (!message_id.includes(".0")) {
+        blueslip.error("Trying to get local_id from row that has reified message id", {message_id});
     }
 
-    return zid;
+    return message_id;
 }
 
 export function get_message_id(elem: string): number | undefined {

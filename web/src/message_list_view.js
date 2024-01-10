@@ -1500,7 +1500,7 @@ export class MessageListView {
             const $row = this._rows.get(old_id);
             this._rows.delete(old_id);
 
-            $row.attr("zid", new_id);
+            $row.attr("data-message-id", new_id);
             $row.attr("id", `message-row-${this.list.id}-` + new_id);
             $row.removeClass("local");
             this._rows.set(new_id, $row);
@@ -1688,7 +1688,8 @@ export class MessageListView {
 
     show_messages_as_unread(message_ids) {
         const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
-            const message_id = Number.parseFloat($row.getAttribute("zid"));
+            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
+            const message_id = Number.parseFloat($row.getAttribute("data-message-id"));
             return message_ids.includes(message_id);
         });
         $rows_to_show_as_unread.addClass("unread");

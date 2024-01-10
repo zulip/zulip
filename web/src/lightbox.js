@@ -491,11 +491,11 @@ export function parse_media_data(media) {
     if (is_compose_preview_media) {
         sender_full_name = people.my_full_name();
     } else {
-        const $message = $parent.closest("[zid]");
-        const zid = rows.id($message);
-        const message = message_store.get(zid);
+        const $message = $parent.closest(".message_row");
+        const message_id = rows.id($message);
+        const message = message_store.get(message_id);
         if (message === undefined) {
-            blueslip.error("Lightbox for unknown message", {zid});
+            blueslip.error("Lightbox for unknown message", {message_id});
         } else {
             sender_full_name = message.sender_full_name;
         }

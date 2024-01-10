@@ -46,10 +46,10 @@ test("pan_and_zoom", ({override}) => {
 
     $img.attr("src", "example");
 
-    let fetched_zid;
+    let fetched_message_id;
 
-    message_store.get = (zid) => {
-        fetched_zid = zid;
+    message_store.get = (message_id) => {
+        fetched_message_id = message_id;
         return "message-stub";
     };
 
@@ -60,7 +60,7 @@ test("pan_and_zoom", ({override}) => {
     const open_image = lightbox.build_open_media_function();
     open_image($img);
 
-    assert.equal(fetched_zid, 1234);
+    assert.equal(fetched_message_id, 1234);
 });
 
 test("youtube", ({override}) => {

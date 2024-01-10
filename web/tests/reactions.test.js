@@ -44,6 +44,11 @@ const settings_data = mock_esm("../src/settings_data");
 const spectators = mock_esm("../src/spectators", {
     login_to_access() {},
 });
+mock_esm("../src/message_lists", {
+    current: {
+        id: 1,
+    },
+});
 
 set_global("document", "document-stub");
 
@@ -410,9 +415,8 @@ test("prevent_simultaneous_requests_updating_reaction", ({override, override_rew
 });
 
 function stub_reactions(message_id) {
-    const $message_row = $.create("message-row-stub");
     const $message_reactions = $.create("reactions-stub");
-    $(".message-list").set_find_results(`[zid='${CSS.escape(message_id)}']`, $message_row);
+    const $message_row = $.create(`#message-row-1-${CSS.escape(message_id)}`);
     $message_row.set_find_results(".message_reactions", $message_reactions);
     return $message_reactions;
 }
