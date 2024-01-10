@@ -738,3 +738,12 @@ input[name="licenses"] {
     #account-deactivated-success-page-top-message {
     margin-top: 10px;
 }
+
+.flat-discount-minus-sign {
+    position: absolute;
+    left: -10px;
+}
+
+.flat-discount-separator {
+    border-bottom: 1px solid hsl(0deg 0% 0%);
+}

@@ -241,10 +241,6 @@
                                 <label for="expected-charge">Expected next charge</label>
                                 {% if not fixed_price %}
                                 <div class="not-editable-realm-field">
-                                    {% if using_min_licenses_for_plan %}
-                                    <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
-                                    <br />
-                                    {% endif %}
                                     ${{ pre_discount_renewal_cents }} (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
                                     {% if switch_to_annual_at_end_of_cycle %}
                                         12 months
@@ -255,7 +251,8 @@
                                     {%- endif -%})
                                     {% if discounted_months_left != 0 %}
                                     <br />
-                                    Discount: ${{ flat_discount }}/month off <i class="billing-page-discount">({{ discounted_months_left }} {{ "month" if discounted_months_left == 1 else "months" }} remaining)</i>
+                                    <span class="flat-discount-minus-sign">−</span>
+                                    <span class="flat-discount-separator">${{ flat_discount }}/month off</span> <i class="billing-page-discount">({{ discounted_months_left }} {{ "month" if discounted_months_left == 1 else "months" }} remaining)</i>
                                     {% endif %}
                                     {% if discount_percent %}
                                     <br />
@@ -265,6 +262,9 @@
                                 {% endif %}
                             </div>
                             <h1>${{ renewal_amount }}</h1>
+                            {% if not fixed_price and using_min_licenses_for_plan %}
+                            <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
+                            {% endif %}
                             {% endif %}
                         {% else %}
                             Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
