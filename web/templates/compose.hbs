@@ -19,11 +19,13 @@
                         {{t 'Compose message' }}
                     </button>
                 </div>
-                <button type="button" class="button compose_new_conversation_button"
-                  id="new_conversation_button"
-                  data-tooltip-template-id="new_stream_message_button_tooltip_template">
-                    {{t 'Start new conversation' }}
-                </button>
+                <span id="new_conversation_container" class="compose_new_conversation_container">
+                    <button type="button" class="button compose_new_conversation_button"
+                      id="new_conversation_button"
+                      data-tooltip-template-id="new_stream_message_button_tooltip_template">
+                        {{t 'Start new conversation' }}
+                    </button>
+                </span>
             </div>
             <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"

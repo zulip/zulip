@@ -7,6 +7,7 @@ import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import type {StreamSubscription} from "./sub_store";
 
 function format_stream_recipient_label(stream_id: number, topic: string): string {
     const stream = stream_data.get_sub_by_id(stream_id);
@@ -59,13 +60,21 @@ export function get_recipient_label(message?: ComposeClosedMessage): string {
     return "";
 }
 
-function update_reply_button_state(disable = false): void {
+function update_reply_button_state(is_direct_message_narrow?: boolean, disable = false): void {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
+
     if (disable) {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "direct_disabled",
-        );
+        if (is_direct_message_narrow) {
+            $("#compose_buttons .compose-reply-button-wrapper").attr(
+                "data-reply-button-type",
+                "direct_disabled",
+            );
+        } else {
+            $("#compose_buttons .compose-reply-button-wrapper").attr(
+                "data-reply-button-type",
+                "stream_disabled",
+            );
+        }
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
@@ -83,21 +92,40 @@ function update_reply_button_state(disable = false): void {
 
 function update_new_conversation_button(
     btn_text: string,
-    is_direct_message_narrow?: boolean,
+    is_direct_message_narrow: boolean,
+    disable_reply: boolean,
 ): void {
     const $new_conversation_button = $("#new_conversation_button");
+    const $new_conversation_button_container = $("#new_conversation_container");
     $new_conversation_button.text(btn_text);
+
     // In a direct-message narrow, the new conversation button should act
     // like a new direct message button
     if (is_direct_message_narrow) {
-        $new_conversation_button.addClass("compose_new_direct_message_button");
-        $new_conversation_button.removeClass("compose_new_conversation_button");
+        $new_conversation_button
+            .toggleClass("compose_new_direct_message_button", true)
+            .toggleClass("compose_new_conversation_button", false)
+            .toggleClass("disabled_compose_new_conversation_button", false)
+            .attr("disabled", null);
     } else {
         // Restore the usual new conversation button class, if it was
         // changed after a previous direct-message narrow visit
-        $new_conversation_button.addClass("compose_new_conversation_button");
-        $new_conversation_button.removeClass("compose_new_direct_message_button");
+        $new_conversation_button
+            .toggleClass("compose_new_conversation_button", !disable_reply)
+            .toggleClass(
+                "compose_new_direct_message_button",
+                is_direct_message_narrow && disable_reply,
+            )
+            .toggleClass("disabled_compose_new_conversation_button", disable_reply)
+            .attr("disabled", disable_reply ? "disabled" : null);
     }
+
+    $new_conversation_button_container
+        .toggleClass("compose_new_conversation_container", !disable_reply)
+        .toggleClass(
+            "disabled_compose_new_conversation_container",
+            !is_direct_message_narrow && disable_reply,
+        );
 }
 
 function update_new_direct_message_button(btn_text: string): void {
@@ -115,13 +143,13 @@ function toggle_direct_message_button_visibility(is_direct_message_narrow?: bool
 
 function update_buttons(
     text_stream: string,
-    is_direct_message_narrow?: boolean,
-    disable_reply?: boolean,
+    is_direct_message_narrow: boolean,
+    disable_reply: boolean,
 ): void {
     const text_conversation = $t({defaultMessage: "New direct message"});
-    update_new_conversation_button(text_stream, is_direct_message_narrow);
+    update_new_conversation_button(text_stream, is_direct_message_narrow, disable_reply);
     update_new_direct_message_button(text_conversation);
-    update_reply_button_state(disable_reply);
+    update_reply_button_state(is_direct_message_narrow, disable_reply);
     toggle_direct_message_button_visibility(is_direct_message_narrow);
 }
 
@@ -146,14 +174,32 @@ export function update_buttons_for_private(): void {
 
 export function update_buttons_for_stream_views(): void {
     const text_stream = $t({defaultMessage: "Start new conversation"});
+    const is_direct_message_narrow = false;
+    const stream = get_stream_from_message_list();
+    const disable_reply = stream && !stream_data.can_post_messages_in_stream(stream);
+
     $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons(text_stream);
+    update_buttons(text_stream, is_direct_message_narrow, disable_reply ?? false);
 }
 
 export function update_buttons_for_non_specific_views(): void {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons(text_stream);
+    const is_direct_message_narrow = false;
+    const stream = get_stream_from_message_list();
+    const disable_reply = stream && !stream_data.can_post_messages_in_stream(stream);
+
+    $("#new_conversation_button").attr("data-conversation-type", "non-stream");
+    update_buttons(text_stream, is_direct_message_narrow, disable_reply ?? false);
+}
+
+function get_stream_from_message_list(): StreamSubscription | undefined {
+    if (message_lists.current !== undefined && !message_lists.current.visibly_empty()) {
+        const message: ComposeClosedMessage = message_lists.current.selected_message();
+        if (message.stream_id !== undefined) {
+            return stream_data.get_sub_by_id(message.stream_id);
+        }
+    }
+    return narrow_state.stream_sub();
 }
 
 function set_reply_button_label(label: string): void {
@@ -183,6 +229,8 @@ export function initialize(): void {
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();
+            update_buttons_for_non_specific_views();
+            update_buttons_for_stream_views();
         }
     });
 

@@ -68,6 +68,14 @@ export function initialize(): void {
                     );
                     return;
                 }
+                case "stream_disabled": {
+                    instance.setContent(
+                        parse_html(
+                            $("#compose_reply_stream_button_disabled_tooltip_template").html(),
+                        ),
+                    );
+                    return;
+                }
                 default: {
                     instance.setContent(
                         parse_html($("#compose_reply_message_button_tooltip_template").html()),
@@ -231,6 +239,17 @@ export function initialize(): void {
 
             return parse_html(render_narrow_to_compose_recipients_tooltip({display_current_view}));
         },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        delay: EXTRA_LONG_HOVER_DELAY,
+        target: ".disabled_compose_new_conversation_container",
+        maxWidth: 350,
+        content: () => "You do not have permission to post in this stream.",
+        appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
         },
