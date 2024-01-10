@@ -90,7 +90,7 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
 }
 
 export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
-    const scheduled_msg = scheduled_messages.scheduled_messages_data[scheduled_message_id];
+    const scheduled_msg = scheduled_messages.scheduled_messages_data.get(scheduled_message_id);
     scheduled_messages.delete_scheduled_message(scheduled_message_id, () => {
         open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
         show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);

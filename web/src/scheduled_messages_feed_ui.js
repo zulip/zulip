@@ -7,7 +7,7 @@ import * as scheduled_messages from "./scheduled_messages";
 import * as util from "./util";
 
 function get_scheduled_messages_matching_narrow() {
-    const scheduled_messages_list = Object.values(scheduled_messages.scheduled_messages_data);
+    const scheduled_messages_list = [...scheduled_messages.scheduled_messages_data.values()];
     const filter = narrow_state.filter();
     const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
     const current_view_type = narrow_state.narrowed_to_pms() ? "private" : "stream";
