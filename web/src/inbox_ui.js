@@ -86,7 +86,7 @@ export function show() {
     views_util.show({
         highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
         $view: $("#inbox-view"),
-        update_compose: compose_closed_ui.set_standard_text_for_reply_button,
+        update_compose: compose_closed_ui.update_buttons_for_non_stream_views,
         is_visible,
         set_visible,
         complete_rerender,
