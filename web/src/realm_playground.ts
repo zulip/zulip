@@ -12,20 +12,18 @@ type RealmPlayground = {
     url_template: string;
 };
 
-const map_language_to_playground_info = new Map<
-    string,
-    Omit<RealmPlayground, "pygments_language">[]
->();
+const map_language_to_playground_info = new Map<string, RealmPlayground[]>();
 const map_pygments_pretty_name_to_aliases = new Map<string, string[]>();
 
 export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
     map_language_to_playground_info.clear();
 
     for (const data of playgrounds_data) {
-        const element_to_push: Omit<RealmPlayground, "pygments_language"> = {
+        const element_to_push: RealmPlayground = {
             id: data.id,
             name: data.name,
             url_template: data.url_template,
+            pygments_language: data.pygments_language,
         };
         if (map_language_to_playground_info.has(data.pygments_language)) {
             map_language_to_playground_info.get(data.pygments_language)!.push(element_to_push);
@@ -35,9 +33,7 @@ export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
     }
 }
 
-export function get_playground_info_for_languages(
-    lang: string,
-): Omit<RealmPlayground, "pygments_language">[] | undefined {
+export function get_playground_info_for_languages(lang: string): RealmPlayground[] | undefined {
     return map_language_to_playground_info.get(lang);
 }
 
