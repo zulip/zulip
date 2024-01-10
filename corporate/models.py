@@ -65,7 +65,7 @@ class Customer(models.Model):
     def get_discount_for_plan_tier(self, plan_tier: int) -> Optional[Decimal]:
         if self.required_plan_tier is None or self.required_plan_tier == plan_tier:
             return self.default_discount
-        return None  # nocoverage
+        return None
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:

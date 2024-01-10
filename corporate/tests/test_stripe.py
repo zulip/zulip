@@ -5447,6 +5447,77 @@ class TestSupportBillingHelpers(StripeTestCase):
         ):
             billing_session.process_support_view_request(support_view_request)
 
+    def test_set_required_plan_tier(self) -> None:
+        valid_plan_tier = CustomerPlan.TIER_CLOUD_STANDARD
+        support_view_request = SupportViewRequest(
+            support_type=SupportType.update_required_plan_tier,
+            required_plan_tier=valid_plan_tier,
+        )
+        support_admin = self.example_user("iago")
+        user = self.example_user("hamlet")
+        billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+        customer = billing_session.get_customer()
+        assert customer is None
+
+        # Set valid plan tier - creates Customer object
+        message = billing_session.process_support_view_request(support_view_request)
+        self.assertEqual("Required plan tier for zulip set to Zulip Cloud Standard.", message)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": None,
+            "new_value": valid_plan_tier,
+            "property": "required_plan_tier",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        customer = billing_session.get_customer()
+        assert customer is not None
+        self.assertEqual(customer.required_plan_tier, valid_plan_tier)
+        self.assertEqual(customer.default_discount, None)
+
+        # Check that discount is only applied to set plan tier
+        billing_session.attach_discount_to_customer(Decimal(50))
+        customer.refresh_from_db()
+        self.assertEqual(customer.default_discount, Decimal(50))
+        discount_for_standard_plan = customer.get_discount_for_plan_tier(valid_plan_tier)
+        self.assertEqual(discount_for_standard_plan, customer.default_discount)
+        discount_for_plus_plan = customer.get_discount_for_plan_tier(CustomerPlan.TIER_CLOUD_PLUS)
+        self.assertEqual(discount_for_plus_plan, None)
+
+        # Try to set invalid plan tier
+        invalid_plan_tier = CustomerPlan.TIER_SELF_HOSTED_BASE
+        support_view_request = SupportViewRequest(
+            support_type=SupportType.update_required_plan_tier,
+            required_plan_tier=invalid_plan_tier,
+        )
+        with self.assertRaisesRegex(SupportRequestError, "Invalid plan tier for zulip."):
+            billing_session.process_support_view_request(support_view_request)
+
+        # Set plan tier to None and check that discount is applied to all plan tiers
+        support_view_request = SupportViewRequest(
+            support_type=SupportType.update_required_plan_tier, required_plan_tier=0
+        )
+        message = billing_session.process_support_view_request(support_view_request)
+        self.assertEqual("Required plan tier for zulip set to None.", message)
+        customer.refresh_from_db()
+        self.assertIsNone(customer.required_plan_tier)
+        discount_for_standard_plan = customer.get_discount_for_plan_tier(valid_plan_tier)
+        self.assertEqual(discount_for_standard_plan, customer.default_discount)
+        discount_for_plus_plan = customer.get_discount_for_plan_tier(CustomerPlan.TIER_CLOUD_PLUS)
+        self.assertEqual(discount_for_plus_plan, customer.default_discount)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": valid_plan_tier,
+            "new_value": None,
+            "property": "required_plan_tier",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
     def test_approve_realm_sponsorship(self) -> None:
         realm = get_realm("zulip")
         self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)

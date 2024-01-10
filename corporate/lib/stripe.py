@@ -554,6 +554,7 @@ class SupportType(Enum):
     modify_plan = 5
     update_minimum_licenses = 6
     update_plan_end_date = 7
+    update_required_plan_tier = 8
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -565,6 +566,7 @@ class SupportViewRequest(TypedDict, total=False):
     new_plan_tier: Optional[int]
     minimum_licenses: Optional[int]
     plan_end_date: Optional[str]
+    required_plan_tier: Optional[int]
 
 
 class AuditLogEventType(Enum):
@@ -790,6 +792,10 @@ class BillingSession(ABC):
     def get_upgrade_page_session_type_specific_context(
         self,
     ) -> UpgradePageSessionTypeSpecificContext:
+        pass
+
+    @abstractmethod
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:
         pass
 
     @abstractmethod
@@ -1130,6 +1136,39 @@ class BillingSession(ABC):
         if previous_minimum_license_count is None:
             previous_minimum_license_count = 0
         return f"Minimum licenses for {self.billing_entity_display_name} changed to {new_minimum_license_count} from {previous_minimum_license_count}."
+
+    def set_required_plan_tier(self, required_plan_tier: int) -> str:
+        previous_required_plan_tier = None
+        new_plan_tier = None
+        if required_plan_tier != 0:
+            new_plan_tier = required_plan_tier
+        customer = self.get_customer()
+
+        if new_plan_tier is not None and not self.check_plan_tier_is_billable(required_plan_tier):
+            raise SupportRequestError(f"Invalid plan tier for {self.billing_entity_display_name}.")
+
+        if customer is not None:
+            previous_required_plan_tier = customer.required_plan_tier
+            customer.required_plan_tier = new_plan_tier
+            customer.save(update_fields=["required_plan_tier"])
+        else:
+            customer = self.update_or_create_customer(
+                defaults={"required_plan_tier": new_plan_tier}
+            )
+
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "old_value": previous_required_plan_tier,
+                "new_value": new_plan_tier,
+                "property": "required_plan_tier",
+            },
+        )
+        plan_tier_name = "None"
+        if new_plan_tier is not None:
+            plan_tier_name = CustomerPlan.name_from_tier(new_plan_tier)
+        return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
@@ -2718,6 +2757,10 @@ class BillingSession(ABC):
             assert support_request["minimum_licenses"] is not None
             new_minimum_license_count = support_request["minimum_licenses"]
             success_message = self.update_customer_minimum_licenses(new_minimum_license_count)
+        elif support_type == SupportType.update_required_plan_tier:
+            required_plan_tier = support_request.get("required_plan_tier")
+            assert required_plan_tier is not None
+            success_message = self.set_required_plan_tier(required_plan_tier)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
             assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
@@ -3240,6 +3283,16 @@ class RealmBillingSession(BillingSession):
         )
 
     @override
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:
+        implemented_plan_tiers = [
+            CustomerPlan.TIER_CLOUD_STANDARD,
+            CustomerPlan.TIER_CLOUD_PLUS,
+        ]
+        if plan_tier in implemented_plan_tiers:
+            return True
+        return False
+
+    @override
     def get_type_of_plan_tier_change(
         self, current_plan_tier: int, new_plan_tier: int
     ) -> PlanTierChangeType:
@@ -3629,6 +3682,16 @@ class RemoteRealmBillingSession(BillingSession):
 
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
+
+    @override
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:  # nocoverage
+        implemented_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        ]
+        if plan_tier in implemented_plan_tiers:
+            return True
+        return False
 
     @override
     def get_type_of_plan_tier_change(
@@ -4043,6 +4106,16 @@ class RemoteServerBillingSession(BillingSession):
             demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
         )
+
+    @override
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:  # nocoverage
+        implemented_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        ]
+        if plan_tier in implemented_plan_tiers:
+            return True
+        return False
 
     @override
     def get_type_of_plan_tier_change(

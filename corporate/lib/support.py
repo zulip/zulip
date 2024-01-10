@@ -49,6 +49,7 @@ class SponsorshipData:
     sponsorship_pending: bool = False
     default_discount: Optional[Decimal] = None
     minimum_licenses: Optional[int] = None
+    required_plan_tier: Optional[int] = None
     latest_sponsorship_request: Optional[SponsorshipRequestDict] = None
 
 
@@ -102,6 +103,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
     pending = customer.sponsorship_pending
     discount = customer.default_discount
     licenses = customer.minimum_licenses
+    plan_tier = customer.required_plan_tier
     sponsorship_request = None
     if pending:
         last_sponsorship_request = (
@@ -130,6 +132,7 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
         sponsorship_pending=pending,
         default_discount=discount,
         minimum_licenses=licenses,
+        required_plan_tier=plan_tier,
         latest_sponsorship_request=sponsorship_request,
     )
 
