@@ -1,3 +1,4 @@
+You can use emoji in Zulip messages and [topics](/help/streams-and-topics).
 There are several ways to use an emoji in your message:
 
 - [Enter an emoji name](/help/emoji-and-emoticons#use-an-emoji-in-your-message)
