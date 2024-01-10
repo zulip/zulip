@@ -77,8 +77,10 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
 from zerver.models.realms import get_fake_email_domain
+from zerver.models.users import is_cross_realm_bot_email
 
 
 class MessageDetailsDict(TypedDict, total=False):
@@ -1756,9 +1758,20 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[i
     user_groups = UserGroup.objects.filter(id__in=user_group_ids).select_related(
         "can_mention_group"
     )
+    sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)
 
     for group in user_groups:
         can_mention_group = group.can_mention_group
+
+        if sender_is_system_bot:
+            if can_mention_group.name == SystemGroups.EVERYONE:
+                continue
+            raise JsonableError(
+                _(
+                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
+                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+            )
+
         if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
             raise JsonableError(
                 _(
