@@ -2174,6 +2174,34 @@ class StreamMessagesTest(ZulipTestCase):
         result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
+        # Test system bots.
+        content = "Test mentioning user group @*support*"
+        members_group = UserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=iago.realm, is_system_group=True
+        )
+        support.can_mention_group = members_group
+        support.save()
+
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        system_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{members_group.name}' to mention this group.",
+        ):
+            self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
+
+        everyone_group = UserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=iago.realm, is_system_group=True
+        )
+        support.can_mention_group = everyone_group
+        support.save()
+
+        msg_id = self.send_stream_message(
+            system_bot, "test_stream", content, recipient_realm=iago.realm
+        )
+        result = self.api_get(shiva, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
     def test_stream_message_mirroring(self) -> None:
         user = self.mit_user("starnine")
         self.subscribe(user, "Verona")
