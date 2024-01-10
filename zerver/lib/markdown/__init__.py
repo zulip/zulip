@@ -474,6 +474,10 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
                         og["title"] = element.get("content")
                     elif element.get("property") == "og:description":
                         og["desc"] = element.get("content")
+                    elif element.get("property") == "og:image:width":
+                        og["width"] = element.get("content")
+                    elif element.get("property") == "og:image:height":
+                        og["height"] = element.get("content")
 
     except requests.RequestException:
         return None
@@ -707,6 +711,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             description_elm = SubElement(data_container, "div")
             description_elm.set("class", "message_embed_description")
             description_elm.text = extracted_data.description
+        if extracted_data.width and extracted_data.height:
+            img.set("style", f"background-image: url({css_escape(img_link)}); width: {extracted_data.width}px; height: {extracted_data.height}px;")
 
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview URLs to image URLs.

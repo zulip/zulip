@@ -112,4 +112,5 @@ def get_link_embed_data(
 
     if data.image:
         data.image = urljoin(response.url, data.image)
+
     return data

@@ -183,6 +183,8 @@ class OpenGraphParserTestCase(ZulipTestCase):
           <meta property="og:url" content="http://www.imdb.com/title/tt0117500/" />
           <meta property="og:image" content="http://ia.media-imdb.com/images/rock.jpg" />
           <meta property="og:description" content="The Rock film" />
+          <meta property="og:image:width" content="400" />
+          <meta property="og:image:height" content="300" />
           </head>
         </html>"""
 
@@ -190,6 +192,8 @@ class OpenGraphParserTestCase(ZulipTestCase):
         result = parser.extract_data()
         self.assertEqual(result.title, "The Rock")
         self.assertEqual(result.description, "The Rock film")
+        self.assertEqual(result.width, "400")
+        self.assertEqual(result.height, "300")
 
     def test_charset_in_header(self) -> None:
         html = """<html>

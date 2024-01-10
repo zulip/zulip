@@ -32,5 +32,9 @@ class OpenGraphParser(BaseParser):
                 except ValueError:
                     continue
                 data.image = tag["content"]
+            elif tag["property"] == "og:image:width":
+                data.width = tag["content"]
+            elif tag["property"] == "og:image:height":
+                data.height = tag["content"]
 
         return data
