@@ -1,3 +1,4 @@
+from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
@@ -60,6 +61,11 @@ class Customer(models.Model):
             return f"{self.realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
         else:
             return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
+
+    def get_discount_for_plan_tier(self, plan_tier: int) -> Optional[Decimal]:
+        if self.required_plan_tier is None or self.required_plan_tier == plan_tier:
+            return self.default_discount
+        return None  # nocoverage
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
