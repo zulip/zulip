@@ -3753,17 +3753,17 @@ class UserSignUpTest(ZulipTestCase):
                 ],
             )
             stream_ids = [self.get_stream_id(stream_name) for stream_name in streams]
-            response = self.client_post(
-                "/json/invites",
-                {
-                    "invitee_emails": email,
-                    "stream_ids": orjson.dumps(stream_ids).decode(),
-                    "invite_as": invite_as,
-                },
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client_post(
+                    "/json/invites",
+                    {
+                        "invitee_emails": email,
+                        "stream_ids": orjson.dumps(stream_ids).decode(),
+                        "invite_as": invite_as,
+                    },
+                )
             self.assert_json_success(response)
             self.logout()
-
             result = self.submit_reg_form_for_user(
                 email,
                 password,
