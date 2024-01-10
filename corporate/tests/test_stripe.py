@@ -6868,8 +6868,8 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         hamlet = self.example_user("hamlet")
 
         self.add_mock_response()
-        realm_user_count = UserProfile.objects.filter(is_bot=False, is_active=True).count()
-        self.assertEqual(realm_user_count, 18)
+        server_user_count = UserProfile.objects.filter(is_bot=False, is_active=True).count()
+        self.assertEqual(server_user_count, 18)
 
         with time_machine.travel(self.now, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -6919,10 +6919,10 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         for substring in [
             "Zulip Basic",
             "Number of licenses",
-            f"{realm_user_count} (managed automatically)",
+            f"{server_user_count} (managed automatically)",
             "February 2, 2012",
             "Your plan will automatically renew on",
-            f"${3.5 * realm_user_count - flat_discount // 100 * 1:,.2f}",
+            f"${3.5 * server_user_count - flat_discount // 100 * 1:,.2f}",
             "Visa ending in 4242",
             "Update card",
         ]:
@@ -6933,7 +6933,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 1)
 
         with time_machine.travel(self.now + timedelta(days=2), tick=False):
-            for count in range(realm_user_count, realm_user_count + 10):
+            for count in range(server_user_count, server_user_count + 10):
                 do_create_user(
                     f"email {count}",
                     f"password {count}",
