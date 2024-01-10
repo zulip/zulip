@@ -70,6 +70,72 @@ The list of supported emoticons is available
 
 {!emoji-and-emoticons-examples.md!}
 
+## Use an emoji in a topic name
+
+You can use unicode characters in topic names, including unicode
+emoji. Each platform has a different way to enter unicode
+emoji. [Custom emoji](/help/custom-emoji) cannot be used in topic
+names.
+
+{start_tabs}
+
+{tab|mac}
+
+1. [Start a new topic](/help/starting-a-new-topic).
+
+1. Press <kbd>Command ⌘</kbd> + <kbd>Control</kbd> + <kbd>Space</kbd>
+   to open the **Character Viewer**. See the
+   [macOS documentation](https://support.apple.com/guide/mac-help/use-emoji-and-symbols-on-mac-mchlp1560/mac)
+   to learn more.
+
+1. Select an emoji. You can type to search, use the arrow keys, or click on
+   an emoji with your mouse.
+
+{tab|windows}
+
+1. [Start a new topic](/help/starting-a-new-topic).
+
+1. Press <kbd>Windows</kbd> + <kbd>.</kbd>
+   to open the **emoji keyboard**. See the
+   [Windows documentation](https://support.microsoft.com/en-us/windows/windows-keyboard-tips-and-tricks-588e0b72-0fff-6d3f-aeee-6e5116097942)
+   to learn more.
+
+1. Select an emoji. You can type to search, use the arrow keys, or click on
+   an emoji with your mouse.
+
+{tab|linux}
+
+1. [Start a new topic](/help/starting-a-new-topic).
+
+1. Open the [Characters app for GNOME](https://apps.gnome.org/en/Characters/).
+
+1. Select an emoji. You can type to search, use the arrow keys, or click on
+   an emoji with your mouse.
+
+{tab|chrome}
+
+1. [Start a new topic](/help/starting-a-new-topic).
+
+1. Right-click on the text input box.
+
+1. Select **Emoji** or **Emoji & Symbols**. You will only see this option if
+   supported by your operating system.
+
+1. Select an emoji. You can type to search, use the arrow keys, or click on
+   an emoji with your mouse.
+
+{tab|via-paste}
+
+1. [Start a new topic](/help/starting-a-new-topic).
+
+1. Paste an emoji copied from outside of Zulip directly into the text input box.
+
+!!! tip ""
+
+    <https://emojipedia.org/> may be a helpful resource.
+
+{end_tabs}
+
 ## Change your emoji set
 
 Your emoji set determines how you see emoji. It has no effect on the emoji
