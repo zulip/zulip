@@ -63,13 +63,21 @@ export function get_recipient_label(message) {
     return "";
 }
 
-function update_reply_button_state(disable = false) {
+function update_reply_button_state(is_direct_message_narrow, disable = false) {
     $(".compose_reply_button").attr("disabled", disable);
+
     if (disable) {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-tooltip-template-id",
-            "compose_reply_button_disabled_tooltip_template",
-        );
+        if (is_direct_message_narrow) {
+            $("#compose_buttons .compose-reply-button-wrapper").attr(
+                "data-tooltip-template-id",
+                "compose_reply_button_disabled_tooltip_template",
+            );
+        } else {
+            $("#compose_buttons .compose-reply-button-wrapper").attr(
+                "data-tooltip-template-id",
+                "compose_reply_stream_button_disabled_tooltip_template",
+            );
+        }
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
@@ -85,20 +93,38 @@ function update_reply_button_state(disable = false) {
     }
 }
 
-function update_new_conversation_button(btn_text, is_direct_message_narrow) {
+function update_new_conversation_button(btn_text, is_direct_message_narrow, disable_reply) {
     const $new_conversation_button = $("#new_conversation_button");
+    const $new_conversation_button_container = $("#new_conversation_container");
     $new_conversation_button.text(btn_text);
+
     // In a direct-message narrow, the new conversation button should act
     // like a new direct message button
     if (is_direct_message_narrow) {
-        $new_conversation_button.addClass("compose_new_direct_message_button");
-        $new_conversation_button.removeClass("compose_new_conversation_button");
+        $new_conversation_button
+            .toggleClass("compose_new_direct_message_button", true)
+            .toggleClass("compose_new_conversation_button", false)
+            .toggleClass("disabled_compose_new_conversation_button", false)
+            .attr("disabled", false);
     } else {
         // Restore the usual new conversation button class, if it was
         // changed after a previous direct-message narrow visit
-        $new_conversation_button.addClass("compose_new_conversation_button");
-        $new_conversation_button.removeClass("compose_new_direct_message_button");
+        $new_conversation_button
+            .toggleClass("compose_new_conversation_button", !disable_reply)
+            .toggleClass(
+                "compose_new_direct_message_button",
+                is_direct_message_narrow && disable_reply,
+            )
+            .toggleClass("disabled_compose_new_conversation_button", disable_reply)
+            .attr("disabled", disable_reply);
     }
+
+    $new_conversation_button_container
+        .toggleClass("compose_new_conversation_container", !disable_reply)
+        .toggleClass(
+            "disabled_compose_new_conversation_container",
+            !is_direct_message_narrow && disable_reply,
+        );
 }
 
 function update_new_direct_message_button(btn_text) {
@@ -116,9 +142,9 @@ function toggle_direct_message_button_visibility(is_direct_message_narrow) {
 
 function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
     const text_conversation = $t({defaultMessage: "New direct message"});
-    update_new_conversation_button(text_stream, is_direct_message_narrow);
+    update_new_conversation_button(text_stream, is_direct_message_narrow, disable_reply);
     update_new_direct_message_button(text_conversation);
-    update_reply_button_state(disable_reply);
+    update_reply_button_state(is_direct_message_narrow, disable_reply);
     toggle_direct_message_button_visibility(is_direct_message_narrow);
 }
 
@@ -130,7 +156,7 @@ export function update_buttons_for_private() {
         people.user_can_direct_message(narrow_state.pm_ids_string())
     ) {
         $("#new_conversation_button").attr("data-conversation-type", "direct");
-        update_buttons(text_stream, is_direct_message_narrow);
+        update_buttons(text_stream, is_direct_message_narrow, false);
         return;
     }
     // disable the [Message X] button when in a private narrow
@@ -141,14 +167,22 @@ export function update_buttons_for_private() {
 
 export function update_buttons_for_stream_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
+    const is_direct_message_narrow = false;
+    const stream = narrow_state.stream_sub();
+    const disable_reply = stream && !stream_data.can_post_messages_in_stream(stream);
+
     $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons(text_stream);
+    update_buttons(text_stream, is_direct_message_narrow, disable_reply || false);
 }
 
 export function update_buttons_for_non_specific_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons(text_stream);
+    const is_direct_message_narrow = false;
+    const stream = narrow_state.stream_sub();
+    const disable_reply = stream && !stream_data.can_post_messages_in_stream(stream);
+
+    $("#new_conversation_button").attr("data-conversation-type", "non-stream");
+    update_buttons(text_stream, is_direct_message_narrow, disable_reply || false);
 }
 
 function set_reply_button_label(label) {
@@ -168,6 +202,16 @@ export function update_reply_recipient_label(message) {
     } else {
         set_standard_text_for_reply_button();
     }
+}
+
+export function get_stream_posting_policy_error_message() {
+    const stream = narrow_state.stream_sub();
+    if (stream && !stream_data.can_post_messages_in_stream(stream)) {
+        return $t({
+            defaultMessage: "You do not have permission to post in this stream.",
+        });
+    }
+    return "";
 }
 
 export function initialize() {
