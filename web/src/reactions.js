@@ -6,6 +6,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as emoji from "./emoji";
 import {$t} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -204,9 +205,10 @@ export function get_reaction_title_data(message_id, local_id) {
 }
 
 export function get_reaction_section(message_id) {
-    const $message_element = $(".message-list").find(`[zid='${CSS.escape(message_id)}']`);
-    const $section = $message_element.find(".message_reactions");
-    return $section;
+    const message_list_id = message_lists.current.id;
+    return $(`#message-row-${message_list_id}-${CSS.escape(message_id)}`).find(
+        ".message_reactions",
+    );
 }
 
 export function find_reaction(message_id, local_id) {

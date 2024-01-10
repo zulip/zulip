@@ -527,7 +527,7 @@ function toggle_user_card_popover_for_message(element, user, message, on_mount) 
             // This is never supposed to happen, not even for deactivated
             // users, so we'll need to debug this error if it occurs.
             blueslip.error("Bad sender in message", {
-                zid: message.id,
+                message_id: message.id,
                 sender_id: message.sender_id,
             });
             return;
