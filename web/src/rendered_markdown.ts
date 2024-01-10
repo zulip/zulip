@@ -206,37 +206,35 @@ export const update_elements = ($content: JQuery): void => {
 
     $content.find("a.stream").each(function (): void {
         const stream_id_string = $(this).attr("data-stream-id");
-        if (stream_id_string !== undefined) {
-            const stream_id = Number.parseInt(stream_id_string, 10);
-            if (stream_id && !$(this).find(".highlight").length) {
-                // Display the current name for stream if it is not
-                // being displayed in search highlight.
-                const stream_name = sub_store.maybe_get_stream_name(stream_id);
-                if (stream_name !== undefined) {
-                    // If the stream has been deleted,
-                    // sub_store.maybe_get_stream_name might return
-                    // undefined.  Otherwise, display the current stream name.
-                    $(this).text("#" + stream_name);
-                }
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
+        if (stream_id && !$(this).find(".highlight").length) {
+            // Display the current name for stream if it is not
+            // being displayed in search highlight.
+            const stream_name = sub_store.maybe_get_stream_name(stream_id);
+            if (stream_name !== undefined) {
+                // If the stream has been deleted,
+                // sub_store.maybe_get_stream_name might return
+                // undefined.  Otherwise, display the current stream name.
+                $(this).text("#" + stream_name);
             }
         }
     });
 
     $content.find("a.stream-topic").each(function (): void {
         const stream_id_string = $(this).attr("data-stream-id");
-        if (stream_id_string !== undefined) {
-            const stream_id = Number.parseInt(stream_id_string, 10);
-            if (stream_id && !$(this).find(".highlight").length) {
-                // Display the current name for stream if it is not
-                // being displayed in search highlight.
-                const stream_name = sub_store.maybe_get_stream_name(stream_id);
-                if (stream_name !== undefined) {
-                    // If the stream has been deleted,
-                    // sub_store.maybe_get_stream_name might return
-                    // undefined.  Otherwise, display the current stream name.
-                    const text = $(this).text();
-                    $(this).text("#" + stream_name + text.slice(text.indexOf(" > ")));
-                }
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
+        if (stream_id && !$(this).find(".highlight").length) {
+            // Display the current name for stream if it is not
+            // being displayed in search highlight.
+            const stream_name = sub_store.maybe_get_stream_name(stream_id);
+            if (stream_name !== undefined) {
+                // If the stream has been deleted,
+                // sub_store.maybe_get_stream_name might return
+                // undefined.  Otherwise, display the current stream name.
+                const text = $(this).text();
+                $(this).text("#" + stream_name + text.slice(text.indexOf(" > ")));
             }
         }
     });
