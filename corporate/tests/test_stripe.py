@@ -625,7 +625,8 @@ class StripeTestCase(ZulipTestCase):
             # Return early if the upgrade request failed.
             return upgrade_json_response
 
-        if invoice or not talk_to_stripe or is_free_trial_offer_enabled(False):
+        is_self_hosted_billing = not isinstance(self.billing_session, RealmBillingSession)
+        if invoice or not talk_to_stripe or is_free_trial_offer_enabled(is_self_hosted_billing):
             # Upgrade already happened for free trial, invoice realms or schedule
             # upgrade for legacy remote servers.
             return upgrade_json_response
@@ -5750,6 +5751,41 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             result,
         )
 
+        # Same result even with free trial enabled for self hosted customers since we don't
+        # offer free trial for business plan.
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/", subdomain="selfhosting"
+                )
+
+        self.assert_in_success_response(
+            [
+                "Minimum purchase for",
+                f"{min_licenses} licenses",
+                "Add card",
+                "Purchase Zulip Business",
+            ],
+            result,
+        )
+
+        # Check that cloud free trials don't affect self hosted customers.
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=30):
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/", subdomain="selfhosting"
+                )
+
+        self.assert_in_success_response(
+            [
+                "Minimum purchase for",
+                f"{min_licenses} licenses",
+                "Add card",
+                "Purchase Zulip Business",
+            ],
+            result,
+        )
+
         self.assertFalse(Customer.objects.exists())
         self.assertFalse(CustomerPlan.objects.exists())
         self.assertFalse(LicenseLedger.objects.exists())
@@ -5820,6 +5856,138 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "Update card",
         ]:
             self.assert_in_response(substring, response)
+
+    @responses.activate
+    @mock_stripe()
+    def test_upgrade_user_to_basic_plan_free_trial(self, *mocks: Mock) -> None:
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            self.login("hamlet")
+            hamlet = self.example_user("hamlet")
+
+            self.add_mock_response()
+            realm_user_count = UserProfile.objects.filter(
+                realm=hamlet.realm, is_bot=False, is_active=True
+            ).count()
+            self.assertEqual(realm_user_count, 11)
+
+            with time_machine.travel(self.now, tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+            result = self.execute_remote_billing_authentication_flow(hamlet)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], f"{self.billing_session.billing_base_url}/plans/")
+
+            # upgrade to basic plan
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                    subdomain="selfhosting",
+                )
+            self.assertEqual(result.status_code, 200)
+
+            min_licenses = self.billing_session.min_licenses_for_plan(
+                CustomerPlan.TIER_SELF_HOSTED_BASIC
+            )
+            self.assertEqual(min_licenses, 6)
+            flat_discount, flat_discounted_months = self.billing_session.get_flat_discount_info()
+            self.assertEqual(flat_discounted_months, 12)
+
+            self.assert_in_success_response(
+                [
+                    "Start free trial",
+                    "Zulip Basic",
+                    "Due",
+                    "on February 1, 2012",
+                    f"{min_licenses}",
+                    "Add card",
+                    "Start 30-day free trial",
+                ],
+                result,
+            )
+
+            self.assertFalse(Customer.objects.exists())
+            self.assertFalse(CustomerPlan.objects.exists())
+            self.assertFalse(LicenseLedger.objects.exists())
+
+            with time_machine.travel(self.now, tick=False):
+                stripe_customer = self.add_card_and_upgrade(
+                    tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+                )
+
+            self.assertEqual(PaymentIntent.objects.count(), 0)
+            customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+            plan = CustomerPlan.objects.get(customer=customer)
+            LicenseLedger.objects.get(plan=plan)
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+            for substring in [
+                "Zulip Basic",
+                "(free trial)",
+                "Number of licenses",
+                f"{realm_user_count} (managed automatically)",
+                "February 1, 2012",
+                "Your plan will automatically renew on",
+                f"${3.5 * realm_user_count - flat_discount // 100 * 1:,.2f}",
+                "Visa ending in 4242",
+                "Update card",
+            ]:
+                self.assert_in_response(substring, response)
+
+            # Verify that change in user count updates LicenseLedger.
+            audit_log_count = RemoteRealmAuditLog.objects.count()
+            self.assertEqual(LicenseLedger.objects.count(), 1)
+
+            with time_machine.travel(self.now + timedelta(days=2), tick=False):
+                for count in range(realm_user_count, min_licenses + 10):
+                    do_create_user(
+                        f"email {count}",
+                        f"password {count}",
+                        hamlet.realm,
+                        "name",
+                        role=UserProfile.ROLE_MEMBER,
+                        acting_user=None,
+                    )
+
+            with time_machine.travel(self.now + timedelta(days=3), tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+            self.assertEqual(
+                RemoteRealmAuditLog.objects.count(),
+                min_licenses + 10 - realm_user_count + audit_log_count,
+            )
+            latest_ledger = LicenseLedger.objects.last()
+            assert latest_ledger is not None
+            self.assertEqual(latest_ledger.licenses, min_licenses + 10)
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+
+            self.assertEqual(latest_ledger.licenses, min_licenses + 10)
+            for substring in [
+                "Zulip Basic",
+                "Number of licenses",
+                f"{latest_ledger.licenses} (managed automatically)",
+                "February 1, 2012",
+                "Your plan will automatically renew on",
+                f"${3.5 * latest_ledger.licenses - flat_discount // 100 * 1:,.2f}",
+                "Visa ending in 4242",
+                "Update card",
+            ]:
+                self.assert_in_response(substring, response)
+
+            # Check minimum licenses is 0 after flat discounted months is over.
+            customer.flat_discounted_months = 0
+            customer.save(update_fields=["flat_discounted_months"])
+            self.assertEqual(
+                self.billing_session.min_licenses_for_plan(CustomerPlan.TIER_SELF_HOSTED_BASIC), 1
+            )
+
+            # TODO: Add test for invoice generation once that's implemented.
 
     @responses.activate
     @mock_stripe()
@@ -6265,6 +6433,14 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["Add card", "Purchase Zulip Business"], result)
 
+        # Same result even with free trial enabled for self hosted customers since we don't
+        # offer free trial for business plan.
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(f"{billing_base_url}/upgrade/", subdomain="selfhosting")
+
+        self.assert_in_success_response(["Add card", "Purchase Zulip Business"], result)
+
         self.assertFalse(Customer.objects.exists())
         self.assertFalse(CustomerPlan.objects.exists())
         self.assertFalse(LicenseLedger.objects.exists())
@@ -6552,6 +6728,138 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
                     m.output[1],
                     f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {customer_plan.id}, status: {CustomerPlan.ACTIVE}",
                 )
+
+    @responses.activate
+    @mock_stripe()
+    def test_upgrade_user_to_basic_plan_free_trial_remote_server(self, *mocks: Mock) -> None:
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            self.login("hamlet")
+            hamlet = self.example_user("hamlet")
+
+            self.add_mock_response()
+            realm_user_count = UserProfile.objects.filter(is_bot=False, is_active=True).count()
+            self.assertEqual(realm_user_count, 18)
+
+            with time_machine.travel(self.now, tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], f"{self.billing_session.billing_base_url}/plans/")
+
+            # upgrade to basic plan
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                    subdomain="selfhosting",
+                )
+            self.assertEqual(result.status_code, 200)
+
+            min_licenses = self.billing_session.min_licenses_for_plan(
+                CustomerPlan.TIER_SELF_HOSTED_BASIC
+            )
+            self.assertEqual(min_licenses, 6)
+            flat_discount, flat_discounted_months = self.billing_session.get_flat_discount_info()
+            self.assertEqual(flat_discounted_months, 12)
+
+            self.assert_in_success_response(
+                [
+                    "Start free trial",
+                    "Zulip Basic",
+                    "Due",
+                    "on February 1, 2012",
+                    f"{min_licenses}",
+                    "Add card",
+                    "Start 30-day free trial",
+                ],
+                result,
+            )
+
+            self.assertFalse(Customer.objects.exists())
+            self.assertFalse(CustomerPlan.objects.exists())
+            self.assertFalse(LicenseLedger.objects.exists())
+
+            with time_machine.travel(self.now, tick=False):
+                stripe_customer = self.add_card_and_upgrade(
+                    tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+                )
+            self.assertEqual(PaymentIntent.objects.count(), 0)
+
+            customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+            plan = CustomerPlan.objects.get(customer=customer)
+            LicenseLedger.objects.get(plan=plan)
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+            for substring in [
+                "Zulip Basic",
+                "(free trial)",
+                "Number of licenses",
+                f"{realm_user_count} (managed automatically)",
+                "February 1, 2012",
+                "Your plan will automatically renew on",
+                f"${3.5 * realm_user_count - flat_discount // 100 * 1:,.2f}",
+                "Visa ending in 4242",
+                "Update card",
+            ]:
+                self.assert_in_response(substring, response)
+
+            # Verify that change in user count updates LicenseLedger.
+            audit_log_count = RemoteRealmAuditLog.objects.count()
+            self.assertEqual(LicenseLedger.objects.count(), 1)
+
+            with time_machine.travel(self.now + timedelta(days=2), tick=False):
+                for count in range(realm_user_count, realm_user_count + 10):
+                    do_create_user(
+                        f"email {count}",
+                        f"password {count}",
+                        hamlet.realm,
+                        "name",
+                        role=UserProfile.ROLE_MEMBER,
+                        acting_user=None,
+                    )
+
+            with time_machine.travel(self.now + timedelta(days=3), tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+            self.assertEqual(
+                RemoteRealmAuditLog.objects.count(),
+                audit_log_count + 10,
+            )
+            latest_ledger = LicenseLedger.objects.last()
+            assert latest_ledger is not None
+            self.assertEqual(latest_ledger.licenses, 28)
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+
+            self.assertEqual(latest_ledger.licenses, 28)
+            for substring in [
+                "Zulip Basic",
+                "Number of licenses",
+                f"{latest_ledger.licenses} (managed automatically)",
+                "February 1, 2012",
+                "Your plan will automatically renew on",
+                f"${3.5 * latest_ledger.licenses - flat_discount // 100 * 1:,.2f}",
+                "Visa ending in 4242",
+                "Update card",
+            ]:
+                self.assert_in_response(substring, response)
+
+            # Check minimum licenses is 0 after flat discounted months is over.
+            customer.flat_discounted_months = 0
+            customer.save(update_fields=["flat_discounted_months"])
+            self.assertEqual(
+                self.billing_session.min_licenses_for_plan(CustomerPlan.TIER_SELF_HOSTED_BASIC), 1
+            )
+
+            # TODO: Add test for invoice generation once that's implemented.
 
     @responses.activate
     @mock_stripe()
