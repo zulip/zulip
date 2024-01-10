@@ -189,7 +189,7 @@ def self_hosting_auth_redirect_endpoint(
     except ResourceNotFoundError:
         return render(request, "404.html", status=404)
     except RemoteRealmServerMismatchError:
-        return render(request, "zilencer/remote_realm_server_mismatch_error.html", status=403)
+        return render(request, "zerver/remote_realm_server_mismatch_error.html", status=403)
 
     return HttpResponseRedirect(redirect_url)
 
