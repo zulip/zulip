@@ -364,16 +364,6 @@ run_test("user-group-mention (error)", () => {
     assert.ok(!$group.hasClass("user-mention-me"));
 });
 
-run_test("user-group-mention (missing)", () => {
-    const $content = get_content_element();
-    const $group = $.create("whatever");
-    $content.set_find_results(".user-group-mention", $array([$group]));
-
-    rm.update_elements($content);
-
-    assert.ok(!$group.hasClass("user-mention-me"));
-});
-
 run_test("stream-links", () => {
     // Setup
     const $content = get_content_element();

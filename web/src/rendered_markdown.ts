@@ -57,14 +57,10 @@ export function get_user_id_for_mention_button(elem: HTMLElement): "*" | number 
     return undefined;
 }
 
-function get_user_group_id_for_mention_button(elem: HTMLElement): number | undefined {
+function get_user_group_id_for_mention_button(elem: HTMLElement): number {
     const user_group_id = $(elem).attr("data-user-group-id");
-
-    if (user_group_id) {
-        return Number.parseInt(user_group_id, 10);
-    }
-
-    return undefined;
+    assert(user_group_id !== undefined);
+    return Number.parseInt(user_group_id, 10);
 }
 
 function get_message_for_message_content($content: JQuery): Message | undefined {
@@ -177,10 +173,6 @@ export const update_elements = ($content: JQuery): void => {
     $content.find(".user-group-mention").each(function (): void {
         const user_group_id = get_user_group_id_for_mention_button(this);
         let user_group;
-        if (user_group_id === undefined) {
-            blueslip.info("Rendered undefined user group");
-            return;
-        }
         try {
             user_group = user_groups.get_user_group_from_id(user_group_id);
         } catch {
