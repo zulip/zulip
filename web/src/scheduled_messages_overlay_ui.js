@@ -50,7 +50,7 @@ export const keyboard_handling_context = {
 };
 
 function sort_scheduled_messages(scheduled_messages) {
-    const sorted_messages = Object.values(scheduled_messages).sort(
+    const sorted_messages = [...scheduled_messages.values()].sort(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
     return sorted_messages;

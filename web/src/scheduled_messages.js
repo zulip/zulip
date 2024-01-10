@@ -5,7 +5,7 @@ import * as timerender from "./timerender";
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 
 // scheduled_messages_data is a dictionary where key=scheduled_message_id and value=scheduled_messages
-export const scheduled_messages_data = {};
+export const scheduled_messages_data = new Map();
 
 let selected_send_later_timestamp;
 
@@ -35,22 +35,22 @@ function compute_send_times(now = new Date()) {
 
 export function add_scheduled_messages(scheduled_messages) {
     for (const scheduled_message of scheduled_messages) {
-        scheduled_messages_data[scheduled_message.scheduled_message_id] = scheduled_message;
+        scheduled_messages_data.set(scheduled_message.scheduled_message_id, scheduled_message);
     }
 }
 
 export function remove_scheduled_message(scheduled_message_id) {
-    if (scheduled_messages_data[scheduled_message_id] !== undefined) {
-        delete scheduled_messages_data[scheduled_message_id];
+    if (scheduled_messages_data.has(scheduled_message_id)) {
+        scheduled_messages_data.delete(scheduled_message_id);
     }
 }
 
 export function update_scheduled_message(scheduled_message) {
-    if (scheduled_messages_data[scheduled_message.scheduled_message_id] === undefined) {
+    if (!scheduled_messages_data.has(scheduled_message.scheduled_message_id)) {
         return;
     }
 
-    scheduled_messages_data[scheduled_message.scheduled_message_id] = scheduled_message;
+    scheduled_messages_data.set(scheduled_message.scheduled_message_id, scheduled_message);
 }
 
 export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
@@ -61,7 +61,7 @@ export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
 }
 
 export function get_count() {
-    return Object.keys(scheduled_messages_data).length;
+    return scheduled_messages_data.size;
 }
 
 export function get_filtered_send_opts(date) {
