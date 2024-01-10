@@ -125,10 +125,6 @@
                             </span>
                         </label>
                         <div id="due-today" class="not-editable-realm-field">
-                            {% if not manual_license_management and using_min_licenses_for_plan %}
-                            <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
-                            <br />
-                            {% endif %}
                             $<span id="pre-discount-renewal-cents"></span>
                             ($<span class="due-today-unit-price"></span> x
                             {% if not manual_license_management %}
@@ -146,12 +142,16 @@
                             {% endif %}
                             {% if page_params.flat_discounted_months > 0 %}
                             <br/>
-                            Discount: $<span class="flat-discounted-price"></span>/month off <i class="billing-page-discount">({{ page_params.flat_discounted_months }} {{ "month" if discounted_months_left == 1 else "months" }} remaining)</i>
+                            <span class="flat-discount-minus-sign">−</span>
+                            <span class="flat-discount-separator">$<span class="flat-discounted-price"></span>/month off</span> <i class="billing-page-discount">({{ page_params.flat_discounted_months }} {{ "month" if page_params.flat_discounted_months == 1 else "months" }} remaining)</i>
                             {% endif %}
                             <h1>$<span class="due-today-price"></span></h1>
                             {% if free_trial_days %}
                             <i>Your actual bill will depend on the number of
                             active users in your organization.</i>
+                            {% endif %}
+                            {% if not manual_license_management and using_min_licenses_for_plan %}
+                                <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
                             {% endif %}
                         </div>
                     </div>
