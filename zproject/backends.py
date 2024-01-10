@@ -338,6 +338,15 @@ def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
 # @decorator does this for us.
 # The usual @wraps from functools breaks signatures, so it can't be used here.
 @decorator
+def custom_auth_decorator(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+    custom_auth_wrapper_func = settings.CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION
+    if custom_auth_wrapper_func is None:
+        return auth_func(*args, **kwargs)
+    else:
+        return custom_auth_wrapper_func(auth_func, *args, **kwargs)
+
+
+@decorator
 def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
     if not settings.RATE_LIMITING_AUTHENTICATE:
         return auth_func(*args, **kwargs)
@@ -443,6 +452,9 @@ class ZulipDummyBackend(ZulipAuthMixin):
     when explicitly requested by including the use_dummy_backend kwarg.
     """
 
+    name = "dummy"
+
+    @custom_auth_decorator
     def authenticate(
         self,
         request: Optional[HttpRequest] = None,
@@ -487,6 +499,7 @@ class EmailAuthBackend(ZulipAuthMixin):
 
     @rate_limit_auth
     @log_auth_attempts
+    @custom_auth_decorator
     def authenticate(
         self,
         request: HttpRequest,
@@ -1002,6 +1015,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
     @rate_limit_auth
     @log_auth_attempts
+    @custom_auth_decorator
     def authenticate(
         self,
         request: Optional[HttpRequest] = None,
@@ -1408,6 +1422,7 @@ class ExternalAuthResult:
         *,
         user_profile: Optional[UserProfile] = None,
         data_dict: Optional[ExternalAuthDataDict] = None,
+        request: Optional[HttpRequest] = None,
         login_token: Optional[str] = None,
         delete_stored_data: bool = True,
     ) -> None:
@@ -1418,7 +1433,8 @@ class ExternalAuthResult:
             assert (not data_dict) and (
                 user_profile is None
             ), "Passing in data_dict or user_profile with login_token is disallowed."
-            self.instantiate_with_token(login_token, delete_stored_data)
+            assert request is not None, "Passing in request with login_token is required."
+            self.instantiate_with_token(request, login_token, delete_stored_data)
         else:
             self.data_dict = data_dict.copy()
             self.user_profile = user_profile
@@ -1457,7 +1473,9 @@ class ExternalAuthResult:
         token = key.split(self.LOGIN_KEY_PREFIX, 1)[1]  # remove the prefix
         return token
 
-    def instantiate_with_token(self, token: str, delete_stored_data: bool = True) -> None:
+    def instantiate_with_token(
+        self, request: HttpRequest, token: str, delete_stored_data: bool = True
+    ) -> None:
         key = self.LOGIN_KEY_FORMAT.format(token=token)
         data = get_dict_from_redis(redis_client, self.LOGIN_KEY_FORMAT, key)
         if data is None or None in [data.get("email"), data.get("subdomain")]:
@@ -1477,7 +1495,9 @@ class ExternalAuthResult:
         # more customized error messages for those unlikely races, but
         # it's likely not worth implementing.
         realm = get_realm(data["subdomain"])
-        auth_result = authenticate(username=data["email"], realm=realm, use_dummy_backend=True)
+        auth_result = authenticate(
+            request=request, username=data["email"], realm=realm, use_dummy_backend=True
+        )
         if auth_result is not None:
             assert isinstance(auth_result, UserProfile)
         self.user_profile = auth_result
@@ -1872,6 +1892,35 @@ def social_auth_finish(
                 user_profile.id,
                 str(e),
             )
+
+    if user_profile:
+        # This call to authenticate() is just to get to invoke the custom_auth_decorator logic.
+        # Social auth backends don't work via authenticate() in the same way as normal backends,
+        # so we can't just wrap their authenticate() methods. But the decorator is applied on
+        # ZulipDummyBackend.authenticate(), so we can invoke it here to trigger the custom logic.
+        #
+        # Note: We're only doing in the case where we already have a user_profile, meaning the
+        # account already exists and the user is just logging in. The new account registration case
+        # is handled in the registration codepath.
+        validated_user_profile = authenticate(
+            request=strategy.request,
+            username=user_profile.delivery_email,
+            realm=realm,
+            use_dummy_backend=True,
+        )
+        if validated_user_profile is None or validated_user_profile != user_profile:
+            # Log this as as a failure to authenticate via the social backend, since that's
+            # the correct way to think about this. ZulipDummyBackend is just an implementation
+            # tool, not an actual backend a user could be authenticating through.
+            log_auth_attempt(
+                backend.logger,
+                strategy.request,
+                realm,
+                username=email_address,
+                succeeded=False,
+                return_data={},
+            )
+            return redirect_to_login(realm)
 
     # At this point, we have now confirmed that the user has
     # demonstrated control over the target email address.

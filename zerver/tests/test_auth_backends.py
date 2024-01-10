@@ -124,6 +124,7 @@ from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     AppleAuthBackend,
+    AuthFuncT,
     AzureADAuthBackend,
     DevAuthBackend,
     EmailAuthBackend,
@@ -796,6 +797,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         alternative_start_url: Optional[str] = None,
         *,
         user_agent: Optional[str] = None,
+        extra_headers: Optional[Dict[str, Any]] = None,
     ) -> Tuple[str, Dict[str, Any]]:
         url = self.LOGIN_URL
         if alternative_start_url is not None:
@@ -822,6 +824,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             url += f"?{urlencode(params)}"
         if user_agent is not None:
             headers["HTTP_USER_AGENT"] = user_agent
+
+        if extra_headers is not None:
+            headers.update(extra_headers)
 
         return url, headers
 
@@ -859,6 +864,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         expect_choose_email_screen: bool = False,
         alternative_start_url: Optional[str] = None,
         user_agent: Optional[str] = None,
+        extra_headers: Optional[Dict[str, Any]] = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         """Main entry point for all social authentication tests.
@@ -896,6 +902,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             multiuse_object_key,
             alternative_start_url,
             user_agent=user_agent,
+            extra_headers=extra_headers,
         )
 
         result = self.client_get(url, **headers)
@@ -1047,6 +1054,84 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: subdomain=zulip;username=hamlet@zulip.com;outcome=success",
             m.output[0],
         )
+
+    def test_social_auth_custom_auth_decorator(self) -> None:
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+
+        backends_with_restriction = []
+
+        def custom_auth_wrapper(
+            auth_func: AuthFuncT, *args: Any, **kwargs: Any
+        ) -> Optional[UserProfile]:
+            nonlocal backends_with_restriction
+
+            backend = args[0]
+            backend_name = backend.name
+            request = args[1]
+            test_header_value = request.headers.get("X-Test-Auth-Header")
+
+            user_profile = auth_func(*args, **kwargs)
+            if backend_name in backends_with_restriction and test_header_value != "allowed":
+                raise JsonableError("Forbidden header value")
+
+            return user_profile
+
+        # It's the ZulipDummyBackend that runs in the social auth codepaths, causing
+        # the custom_auth_wrapper logic to be executed.
+        backends_with_restriction = ["dummy"]
+        with self.settings(CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION=custom_auth_wrapper):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=False,
+                subdomain="zulip",
+            )
+            self.assert_json_error(result, "Forbidden header value")
+
+            with self.assertLogs(self.logger_string, level="INFO") as m:
+                result = self.social_auth_test(
+                    account_data_dict,
+                    expect_choose_email_screen=False,
+                    subdomain="zulip",
+                    next="/user_uploads/image",
+                    extra_headers={"HTTP_X_TEST_AUTH_HEADER": "allowed"},
+                )
+
+            self.assertEqual(result.status_code, 302)
+            url = result["Location"]
+            self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
+
+            url = url.replace("http://zulip.testserver", "")
+
+            result = self.client_get(url, subdomain="zulip", HTTP_X_TEST_AUTH_HEADER="allowed")
+            self.assertEqual(result.status_code, 302)
+            self.assert_logged_in_user_id(self.user_profile.id)
+
+        # Test with a silly custom_auth_wrapper that always returns None, to verify
+        # logging of such failures (which doesn't run if the wrapper is throwing an exception early
+        # like above)
+
+        def custom_auth_wrapper_none(
+            auth_func: AuthFuncT, *args: Any, **kwargs: Any
+        ) -> Optional[UserProfile]:
+            return None
+
+        with self.settings(CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION=custom_auth_wrapper_none):
+            with self.assertLogs(self.logger_string, level="INFO") as m:
+                result = self.social_auth_test(
+                    account_data_dict,
+                    expect_choose_email_screen=False,
+                    subdomain="zulip",
+                )
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "http://zulip.testserver/login/")
+
+            self.assertEqual(
+                m.output,
+                [
+                    f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: "
+                    f"subdomain=zulip;username={self.email};outcome=failed;return_data={{}}"
+                ],
+            )
 
     @override_settings(SOCIAL_AUTH_SUBDOMAIN=None)
     def test_when_social_auth_subdomain_is_not_set(self) -> None:
@@ -1845,6 +1930,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         multiuse_object_key: str = "",
         user_agent: Optional[str] = None,
         extra_attributes: Mapping[str, List[str]] = {},
+        extra_headers: Optional[Dict[str, Any]] = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         url, headers = self.prepare_login_url_and_headers(
@@ -1855,6 +1941,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             next,
             multiuse_object_key,
             user_agent=user_agent,
+            extra_headers=extra_headers,
         )
 
         result = self.client_get(url, **headers)
@@ -3358,6 +3445,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         account_data_dict: Mapping[str, str] = {},
         *,
         user_agent: Optional[str] = None,
+        extra_headers: Optional[Dict[str, Any]] = None,
     ) -> Tuple[str, Dict[str, Any]]:
         url, headers = super().prepare_login_url_and_headers(
             subdomain,
@@ -3368,6 +3456,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             multiuse_object_key,
             alternative_start_url=alternative_start_url,
             user_agent=user_agent,
+            extra_headers=extra_headers,
         )
 
         params = {"native_flow": "true"}
@@ -3400,6 +3489,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         alternative_start_url: Optional[str] = None,
         skip_id_token: bool = False,
         user_agent: Optional[str] = None,
+        extra_headers: Optional[Dict[str, Any]] = None,
         **extra_data: Any,
     ) -> "TestHttpResponse":
         """In Apple's native authentication flow, the client app authenticates
@@ -3432,6 +3522,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             user_agent=user_agent,
             id_token=id_token,
             account_data_dict=account_data_dict,
+            extra_headers=extra_headers,
         )
 
         with self.apple_jwk_url_mock():
@@ -7459,3 +7550,91 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
 del SocialAuthBase
+
+
+class TestCustomAuthDecorator(ZulipTestCase):
+    def test_custom_auth_decorator(self) -> None:
+        call_count = 0
+        backends_with_restriction = []
+
+        def custom_auth_wrapper(
+            auth_func: AuthFuncT, *args: Any, **kwargs: Any
+        ) -> Optional[UserProfile]:
+            nonlocal call_count
+            nonlocal backends_with_restriction
+            call_count += 1
+
+            backend = args[0]
+            backend_name = backend.name
+            request = args[1]
+            test_header_value = request.headers.get("X-Test-Auth-Header")
+
+            user_profile = auth_func(*args, **kwargs)
+            if backend_name in backends_with_restriction and test_header_value != "allowed":
+                raise JsonableError("Forbidden header value")
+
+            return user_profile
+
+        with self.settings(CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION=custom_auth_wrapper):
+            self.login("hamlet")
+            self.assertEqual(call_count, 1)
+
+            backends_with_restriction = ["email", "dummy"]
+
+            realm = get_realm("zulip")
+            hamlet = self.example_user("hamlet")
+            password = "testpassword"
+
+            request = mock.MagicMock()
+            request.headers = {"X-Test-Auth-Header": "allowed"}
+
+            # The wrapper structurally gets executed whenever .authenticate() for a backend
+            # is called, so it doesn't matter whether e.g. auth credentials are correct or not.
+            result = EmailAuthBackend().authenticate(
+                request, username=hamlet.delivery_email, password="wrong", realm=realm
+            )
+            self.assertEqual(result, None)
+            self.assertEqual(call_count, 2)
+
+            hamlet.set_password(password)
+            hamlet.save()
+            result = EmailAuthBackend().authenticate(
+                request, username=hamlet.delivery_email, password=password, realm=realm
+            )
+            self.assertEqual(result, hamlet)
+            self.assertEqual(call_count, 3)
+
+            # But without the appropriate header value, this fails.
+            request.headers = {}
+            with self.assertRaisesRegex(JsonableError, "Forbidden header value"):
+                EmailAuthBackend().authenticate(
+                    request, username=hamlet.delivery_email, password=password, realm=realm
+                )
+
+            self.assertEqual(call_count, 4)
+
+        # Now try the registration codepath.
+        alice_email = self.nonreg_email("alice")
+        password = "password"
+        inviter = self.example_user("iago")
+        prereg_user = PreregistrationUser.objects.create(
+            email=alice_email, referred_by=inviter, realm=realm
+        )
+
+        confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+        registration_key = confirmation_link.split("/")[-1]
+
+        url = "/accounts/register/"
+        with self.settings(CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION=custom_auth_wrapper):
+            self.client_post(
+                url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
+            )
+            result = self.submit_reg_form_for_user(alice_email, password, key=registration_key)
+
+            # The account gets created, because it's the authentication layer that's wrapped
+            # with custom logic, so it doesn't affect the registration process itself - just
+            # the signing in of the user at the end. Ultimately, the user cannot acquire an
+            # authenticated session, so the objective of the functionality is accomplished.
+            self.assert_json_error(result, "Forbidden header value")
+            self.assertEqual(UserProfile.objects.latest("id").delivery_email, alice_email)
+            self.assertEqual(call_count, 5)

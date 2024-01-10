@@ -551,7 +551,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> ExternalAuthDataDict:
     assert isinstance(response, HttpResponseRedirect)
     token = response.url.rsplit("/", 1)[1]
-    data = ExternalAuthResult(login_token=token, delete_stored_data=False).data_dict
+    data = ExternalAuthResult(
+        request=mock.MagicMock(), login_token=token, delete_stored_data=False
+    ).data_dict
     assert data is not None
     return data
 
