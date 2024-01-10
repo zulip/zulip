@@ -123,7 +123,7 @@ def require_post(
                 return json_method_not_allowed(["POST"])
             else:
                 return TemplateResponse(
-                    request, "404.html", context={"status_code": 405}, status=405
+                    request, "4xx.html", context={"status_code": 405}, status=405
                 )
         return func(request, *args, **kwargs)
 
