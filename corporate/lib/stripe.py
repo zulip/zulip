@@ -1115,7 +1115,7 @@ class BillingSession(ABC):
             )
 
         next_plan = self.get_legacy_remote_server_next_plan(customer)
-        if next_plan is not None:  # nocoverage
+        if next_plan is not None:
             raise SupportRequestError(
                 f"Cannot set minimum licenses; upgrade to new plan already scheduled for {self.billing_entity_display_name}."
             )
@@ -3455,7 +3455,7 @@ class RemoteRealmBillingSession(BillingSession):
             return RemoteRealmAuditLog.STRIPE_CARD_CHANGED
         elif event_type is AuditLogEventType.CUSTOMER_PLAN_CREATED:
             return RemoteRealmAuditLog.CUSTOMER_PLAN_CREATED
-        elif event_type is AuditLogEventType.DISCOUNT_CHANGED:  # nocoverage
+        elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
         elif event_type is AuditLogEventType.CUSTOMER_PROPERTY_CHANGED:
             return RemoteRealmAuditLog.CUSTOMER_PROPERTY_CHANGED  # nocoverage
