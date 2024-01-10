@@ -390,6 +390,78 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             ["Cannot update current plan for realm-name-5 to end on 2020-01-01."], result
         )
 
+    def test_discount_support_actions_when_upgrade_scheduled(self) -> None:
+        remote_realm = RemoteRealm.objects.get(name="realm-name-4")
+        billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+        customer = billing_session.get_customer()
+        assert customer is not None
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        next_plan = billing_session.get_next_plan(plan)
+        assert next_plan is not None
+        self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        self.assertEqual(next_plan.status, CustomerPlan.NEVER_STARTED)
+
+        self.assertIsNone(customer.default_discount)
+        self.assertIsNone(plan.discount)
+        self.assertIsNone(next_plan.discount)
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        # A default discount can be added when an upgrade is scheduled.
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_realm_id": f"{remote_realm.id}", "discount": "50"},
+        )
+        self.assert_in_success_response(
+            ["Discount for realm-name-4 changed to 50% from 0%."], result
+        )
+        customer.refresh_from_db()
+        plan.refresh_from_db()
+        next_plan.refresh_from_db()
+        self.assertEqual(customer.default_discount, Decimal(50))
+        self.assertEqual(plan.discount, Decimal(50))
+        self.assertEqual(next_plan.discount, Decimal(50))
+        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(next_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
+
+        # A minimum number of licenses for a discount cannot be set when
+        # an upgrade is scheduled.
+        self.assertIsNone(customer.minimum_licenses)
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_realm_id": f"{remote_realm.id}", "minimum_licenses": "50"},
+        )
+        self.assert_in_success_response(
+            [
+                "Cannot set minimum licenses; upgrade to new plan already scheduled for realm-name-4."
+            ],
+            result,
+        )
+        customer.refresh_from_db()
+        self.assertIsNone(customer.minimum_licenses)
+
+        # A required plan tier for a customer can be set when an upgrade
+        # is scheduled, but won't change either pre-existing plan tiers.
+        self.assertIsNone(customer.required_plan_tier)
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{remote_realm.id}",
+                "required_plan_tier": f"{CustomerPlan.TIER_SELF_HOSTED_BUSINESS}",
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier for realm-name-4 set to Zulip Business."],
+            result,
+        )
+        customer.refresh_from_db()
+        next_plan.refresh_from_db()
+        self.assertEqual(customer.required_plan_tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(next_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
+
 
 class TestSupportEndpoint(ZulipTestCase):
     def create_customer_and_plan(self, realm: Realm, monthly: bool = False) -> Customer:
