@@ -21,10 +21,11 @@ from zerver.lib.email_validation import (
 )
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.invites import notify_invites_changed
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_email
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UnspecifiedValue
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 
@@ -193,6 +194,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
             )
 
 
+@transaction.atomic
 def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
@@ -200,23 +202,25 @@ def do_invite_users(
     *,
     invite_expires_in_minutes: Optional[int],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
-) -> None:
+) -> List[Tuple[str, str, bool]]:
     num_invites = len(invitee_emails)
 
-    check_invite_limit(user_profile.realm, num_invites)
+    # Lock the realm, since we need to not race with other invitations
+    realm = Realm.objects.select_for_update().get(id=user_profile.realm_id)
+    check_invite_limit(realm, num_invites)
+
     if settings.BILLING_ENABLED:
         from corporate.lib.registration import check_spare_licenses_available_for_inviting_new_users
 
         if invite_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
             check_spare_licenses_available_for_inviting_new_users(
-                user_profile.realm, extra_guests_count=num_invites
+                realm, extra_guests_count=num_invites
             )
         else:
             check_spare_licenses_available_for_inviting_new_users(
-                user_profile.realm, extra_non_guests_count=num_invites
+                realm, extra_non_guests_count=num_invites
             )
 
-    realm = user_profile.realm
     if not realm.invite_required:
         # Inhibit joining an open realm to send spam invitations.
         min_age = timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
@@ -232,7 +236,7 @@ def do_invite_users(
 
     good_emails: Set[str] = set()
     errors: List[Tuple[str, str, bool]] = []
-    validate_email_allowed_in_realm = get_realm_email_validator(user_profile.realm)
+    validate_email_allowed_in_realm = get_realm_email_validator(realm)
     for email in invitee_emails:
         if email == "":
             continue
@@ -251,7 +255,7 @@ def do_invite_users(
     but we still need to make sure they're not
     gonna conflict with existing users
     """
-    error_dict = get_existing_user_errors(user_profile.realm, good_emails)
+    error_dict = get_existing_user_errors(realm, good_emails)
 
     skipped: List[Tuple[str, str, bool]] = []
     for email in error_dict:
@@ -278,7 +282,7 @@ def do_invite_users(
     # is used for rate limiting invitations, rather than keeping track of
     # when exactly invitations were sent
     do_increment_logging_stat(
-        user_profile.realm,
+        realm,
         COUNT_STATS["invites_sent::day"],
         None,
         timezone_now(),
@@ -290,7 +294,7 @@ def do_invite_users(
     for email in validated_emails:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(
-            email=email, referred_by=user_profile, invited_as=invite_as, realm=user_profile.realm
+            email=email, referred_by=user_profile, invited_as=invite_as, realm=realm
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
@@ -299,22 +303,14 @@ def do_invite_users(
         event = {
             "prereg_id": prereg_user.id,
             "referrer_id": user_profile.id,
-            "email_language": user_profile.realm.default_language,
+            "email_language": realm.default_language,
             "invite_expires_in_minutes": invite_expires_in_minutes,
         }
-        queue_json_publish("invites", event)
+        queue_event_on_commit("invites", event)
 
-    if skipped:
-        raise InvitationError(
-            _(
-                "Some of those addresses are already using Zulip, "
-                "so we didn't send them an invitation. We did send "
-                "invitations to everyone else!"
-            ),
-            skipped,
-            sent_invitations=True,
-        )
-    notify_invites_changed(user_profile.realm, changed_invite_referrer=user_profile)
+    notify_invites_changed(realm, changed_invite_referrer=user_profile)
+
+    return skipped
 
 
 def get_invitation_expiry_date(confirmation_obj: Confirmation) -> Optional[int]:
@@ -441,12 +437,14 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
+@transaction.atomic
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
-    # These are two structurally for the caller's code path.
-    assert prereg_user.referred_by is not None
-    assert prereg_user.realm is not None
+    # Take a lock on the realm, so we can check for invitation limits without races
+    realm_id = assert_is_not_none(prereg_user.realm_id)
+    realm = Realm.objects.select_for_update().get(id=realm_id)
+    check_invite_limit(realm, 1)
 
-    check_invite_limit(prereg_user.referred_by.realm, 1)
+    assert prereg_user.referred_by is not None
 
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
@@ -460,18 +458,16 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
         invite_expires_in_minutes = (expiry_date - prereg_user.invited_at).total_seconds() / 60
     prereg_user.confirmation.clear()
 
-    do_increment_logging_stat(
-        prereg_user.realm, COUNT_STATS["invites_sent::day"], None, prereg_user.invited_at
-    )
+    do_increment_logging_stat(realm, COUNT_STATS["invites_sent::day"], None, prereg_user.invited_at)
 
     clear_scheduled_invitation_emails(prereg_user.email)
     # We don't store the custom email body, so just set it to None
     event = {
         "prereg_id": prereg_user.id,
         "referrer_id": prereg_user.referred_by.id,
-        "email_language": prereg_user.referred_by.realm.default_language,
+        "email_language": realm.default_language,
         "invite_expires_in_minutes": invite_expires_in_minutes,
     }
-    queue_json_publish("invites", event)
+    queue_event_on_commit("invites", event)
 
     return datetime_to_timestamp(prereg_user.invited_at)

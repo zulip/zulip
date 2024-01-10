@@ -709,16 +709,17 @@ class TestSupportEndpoint(ZulipTestCase):
             stream: str, invitee_email: str, realm: Optional[Realm] = None
         ) -> None:
             invite_expires_in_minutes = 10 * 24 * 60
-            self.client_post(
-                "/json/invites",
-                {
-                    "invitee_emails": [invitee_email],
-                    "stream_ids": orjson.dumps([self.get_stream_id(stream, realm)]).decode(),
-                    "invite_expires_in_minutes": invite_expires_in_minutes,
-                    "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
-                },
-                subdomain=realm.string_id if realm is not None else "zulip",
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                self.client_post(
+                    "/json/invites",
+                    {
+                        "invitee_emails": [invitee_email],
+                        "stream_ids": orjson.dumps([self.get_stream_id(stream, realm)]).decode(),
+                        "invite_expires_in_minutes": invite_expires_in_minutes,
+                        "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                    },
+                    subdomain=realm.string_id if realm is not None else "zulip",
+                )
 
         def check_hamlet_user_query_result(result: "TestHttpResponse") -> None:
             assert_user_details_in_html_response(

@@ -1138,12 +1138,13 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("iago")
         user_profile = self.example_user("cordelia")
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            user_profile,
-            ["foo@zulip.com"],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                user_profile,
+                ["foo@zulip.com"],
+                [],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
 
         with self.verify_action(num_events=2) as events:
             do_deactivate_user(user_profile, acting_user=None)
@@ -1159,12 +1160,13 @@ class NormalActionsTest(BaseAction):
         ]
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            self.user_profile,
-            ["foo@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                self.user_profile,
+                ["foo@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
         prereg_users = PreregistrationUser.objects.filter(
             referred_by__realm=self.user_profile.realm
         )
@@ -1202,12 +1204,13 @@ class NormalActionsTest(BaseAction):
         ]
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            self.user_profile,
-            ["foo@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                self.user_profile,
+                ["foo@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
         with self.verify_action(state_change_expected=True, num_events=7) as events:
@@ -1220,7 +1223,7 @@ class NormalActionsTest(BaseAction):
                 acting_user=None,
             )
 
-        check_invites_changed("events[1]", events[1])
+        check_invites_changed("events[6]", events[6])
 
     def test_typing_events(self) -> None:
         with self.verify_action(state_change_expected=False) as events:

@@ -1,5 +1,6 @@
+from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
 from unittest import mock
 
 import orjson
@@ -1640,6 +1641,23 @@ class TestLoggingCountStats(AnalyticsTestCase):
     def test_invites_sent(self) -> None:
         property = "invites_sent::day"
 
+        @contextmanager
+        def invite_context(
+            too_many_recent_realm_invites: bool = False, failure: bool = False
+        ) -> Iterator[None]:
+            managers: List[AbstractContextManager[Any]] = [
+                mock.patch(
+                    "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
+                ),
+                self.captureOnCommitCallbacks(execute=True),
+            ]
+            if failure:
+                managers.append(self.assertRaises(InvitationError))
+            with ExitStack() as stack:
+                for mgr in managers:
+                    stack.enter_context(mgr)
+                yield
+
         def assertInviteCountEquals(count: int) -> None:
             self.assertEqual(
                 count,
@@ -1652,7 +1670,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         stream, _ = self.create_stream_with_recipient()
 
         invite_expires_in_minutes = 2 * 24 * 60
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+        with invite_context():
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
@@ -1663,7 +1681,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         # We currently send emails when re-inviting users that haven't
         # turned into accounts, so count them towards the total
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+        with invite_context():
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
@@ -1673,9 +1691,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
-        with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
-        ):
+        with invite_context(failure=True):
             do_invite_users(
                 user,
                 ["user3@domain.tld", "malformed"],
@@ -1685,15 +1701,14 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(4)
 
         # Test inviting existing users
-        with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
-        ):
-            do_invite_users(
+        with invite_context():
+            skipped = do_invite_users(
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
+            self.assert_length(skipped, 1)
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit
@@ -1703,7 +1718,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+        with invite_context():
             do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 

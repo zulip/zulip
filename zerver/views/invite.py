@@ -15,7 +15,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.decorator import require_member_or_admin
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
+from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
@@ -93,13 +93,25 @@ def invite_users_backend(
     if len(streams) and not user_profile.can_subscribe_other_users():
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
-    do_invite_users(
+    skipped = do_invite_users(
         user_profile,
         invitee_emails,
         streams,
         invite_expires_in_minutes=invite_expires_in_minutes,
         invite_as=invite_as,
     )
+
+    if skipped:
+        raise InvitationError(
+            _(
+                "Some of those addresses are already using Zulip, "
+                "so we didn't send them an invitation. We did send "
+                "invitations to everyone else!"
+            ),
+            skipped,
+            sent_invitations=True,
+        )
+
     return json_success(request)
 
 
