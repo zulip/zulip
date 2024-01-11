@@ -33,7 +33,12 @@ function get_users_typing_for_narrow() {
         return [];
     }
 
-    const first_term = narrow_state.search_terms()[0];
+    const terms = narrow_state.search_terms();
+    if (terms.length === 0) {
+        return [];
+    }
+
+    const first_term = terms[0];
     if (first_term.operator === "dm") {
         // Get list of users typing in this conversation
         const narrow_emails_string = first_term.operand;
