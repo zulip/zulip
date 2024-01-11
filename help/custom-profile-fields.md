@@ -45,18 +45,18 @@ methods][authentication-production] documentation for details.
 
 There are several different types of fields available.
 
-* **Short text**: For one line responses, like
-    "Job title". Responses are limited to 50 characters.
-* **Long text**: For multiline responses, like "Biography".
-* **Date picker**: For dates, like "Birthday".
-* **Link**: For links to websites.
-* **External account**: For linking to GitHub, Twitter, etc.
-* **Pronouns**: What pronouns should people use to refer to the user? Pronouns
+- **Text (short)**: For one line responses, like
+  "Job title". Responses are limited to 50 characters.
+- **Text (long)**: For multiline responses, like "Biography".
+- **Date**: For dates, like "Birthday".
+- **Link**: For links to websites.
+- **External account**: For linking to GitHub, Twitter, etc.
+- **Pronouns**: What pronouns should people use to refer to the user? Pronouns
   are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
   suggestions.
-* **List of options**: Creates a dropdown with a list of options.
-* **Person picker**: For selecting one or more users, like "Manager" or
-    "Direct reports".
+- **List of options**: Creates a dropdown with a list of options.
+- **Users**: For selecting one or more users, like "Manager" or
+  "Direct reports".
 
 ## Display custom fields on user card
 
@@ -78,7 +78,7 @@ checkboxes will be disabled.
 
 1. Toggle **Display on user card**.
 
-4. Click **Save changes**.
+1. Click **Save changes**.
 
 !!! tip ""
 
@@ -89,7 +89,7 @@ checkboxes will be disabled.
 
 ## Related articles
 
-* [Edit your profile](/help/edit-your-profile)
-* [View someone's profile](/help/view-someones-profile)
+- [Edit your profile](/help/edit-your-profile)
+- [View someone's profile](/help/view-someones-profile)
 
 [authentication-production]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html

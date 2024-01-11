@@ -94,7 +94,7 @@ class CustomProfileField(models.Model):
         (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, gettext_lazy("Person picker"), check_valid_user_ids, orjson.loads, "USER"),
+        (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
     ]
 
     SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
@@ -106,10 +106,7 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: List[FieldElement] = [
         # Type, display name, validator, converter, keyword
-        (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, gettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
-        (DATE, gettext_lazy("Date picker"), check_date, str, "DATE"),
-        (URL, gettext_lazy("Link"), check_url, str, "URL"),
+        (DATE, gettext_lazy("Date"), check_date, str, "DATE"),
         (
             EXTERNAL_ACCOUNT,
             gettext_lazy("External account"),
@@ -117,10 +114,19 @@ class CustomProfileField(models.Model):
             str,
             "EXTERNAL_ACCOUNT",
         ),
+        (URL, gettext_lazy("Link"), check_url, str, "URL"),
         (PRONOUNS, gettext_lazy("Pronouns"), check_short_string, str, "PRONOUNS"),
+        (LONG_TEXT, gettext_lazy("Text (long)"), check_long_string, str, "LONG_TEXT"),
+        (SHORT_TEXT, gettext_lazy("Text (short)"), check_short_string, str, "SHORT_TEXT"),
     ]
 
-    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
+    ALL_FIELD_TYPES = [
+        FIELD_TYPE_DATA[0],
+        FIELD_TYPE_DATA[1],
+        *SELECT_FIELD_TYPE_DATA,
+        *FIELD_TYPE_DATA[2:],
+        *USER_FIELD_TYPE_DATA,
+    ]
 
     FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
