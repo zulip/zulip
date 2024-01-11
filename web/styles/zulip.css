@@ -1586,34 +1586,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.sender-status {
-    display: inline-block;
-    margin: 8px 0 8px -3px;
-    /* this normalizes the margin of the emoji reactions with normal messages. */
-    padding-bottom: 5px;
-    vertical-align: middle;
-
-    position: relative;
-    max-width: calc(100% - 50px);
-
-    .message_edit_notice {
-        vertical-align: middle;
-    }
-
-    &.sender-status-edit {
-        /* Hackery to place the textarea for the message edit form nicely
-           for /me messages. */
-
-        vertical-align: top;
-        line-height: 0;
-        margin-top: 4px !important;
-
-        .message_edit_notice {
-            line-height: 0;
-        }
-    }
-}
-
 .messagebox-content .message_time {
     display: block;
     font-size: 13px;
