@@ -12,8 +12,8 @@ Zulip's
 ### Should I follow this installation guide?
 
 - If you would like to try out Zulip, you can start by [checking it out in the
-  Zulip development community](https://zulip.com/try-zulip), or [create a test
-  Zulip Cloud organization](https://zulip.com/new).
+  Zulip development community](https://zulip.com/try-zulip/), or [create a test
+  Zulip Cloud organization](https://zulip.com/new/).
 
 - If you are deciding between self-hosting Zulip and signing up for [Zulip
   Cloud](https://zulip.com/plans/), our [self-hosting
