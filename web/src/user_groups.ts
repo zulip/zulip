@@ -2,8 +2,9 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
 import {page_params} from "./page_params";
+import type {User} from "./people";
 import * as settings_config from "./settings_config";
-import type {User, UserGroupUpdateEvent} from "./types";
+import type {UserGroupUpdateEvent} from "./types";
 
 export type UserGroup = {
     description: string;
