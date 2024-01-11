@@ -208,7 +208,7 @@ export function clear_search_form() {
 // to set the initial text and to see if the user has changed it.
 function get_initial_search_string() {
     let search_string = narrow_state.search_string();
-    if (search_string !== "" && !narrow_state.filter().is_keyword_search()) {
+    if (search_string !== "" && !narrow_state.filter()?.is_keyword_search()) {
         // saves the user a keystroke for quick searches
         search_string = search_string + " ";
     }
