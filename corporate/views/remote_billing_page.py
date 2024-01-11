@@ -683,8 +683,6 @@ def remote_billing_legacy_server_from_login_confirmation_link(
     remote_server = prereg_object.remote_server
     remote_server_uuid = str(remote_server.uuid)
 
-    # If this user (identified by email) already did this flow, meaning the have a RemoteServerBillingUser,
-    # then we don't re-do the ToS consent  again.
     remote_billing_user = RemoteServerBillingUser.objects.filter(
         remote_server=remote_server, email=prereg_object.email
     ).first()
