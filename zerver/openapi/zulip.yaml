@@ -14544,9 +14544,9 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           If the server expects the realm's push notifications access to end at a
-                          definite time in the future, the time at which this is expected to happen.
-                          Mobile clients should use this field to display warnings to users when the
-                          indicated timestamp is near.
+                          definite time in the future, the UNIX timestamp (UTC) at which this is
+                          expected to happen. Mobile clients should use this field to display warnings
+                          to users when the indicated timestamp is near.
 
                           **Changes**: New in Zulip 8.0 (feature level 231).
                       realm_upload_quota_mib:
