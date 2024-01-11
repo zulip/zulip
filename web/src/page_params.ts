@@ -22,6 +22,40 @@ export const page_params: {
         order: number;
         type: number;
     }[];
+    custom_profile_field_types: {
+        SHORT_TEXT: {
+            id: number;
+            name: string;
+        };
+        LONG_TEXT: {
+            id: number;
+            name: string;
+        };
+        DATE: {
+            id: number;
+            name: string;
+        };
+        CHOICE: {
+            id: number;
+            name: string;
+        };
+        URL: {
+            id: number;
+            name: string;
+        };
+        EXTERNAL_ACCOUNT: {
+            id: number;
+            name: string;
+        };
+        USER: {
+            id: number;
+            name: string;
+        };
+        PRONOUNS: {
+            id: number;
+            name: string;
+        };
+    };
     delivery_email: string;
     development_environment: boolean;
     furthest_read_time: number | null;
