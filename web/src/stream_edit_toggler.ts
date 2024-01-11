@@ -5,21 +5,11 @@ import * as components from "./components";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
 
 export let toggler: components.Toggle;
 export let select_tab = "personal";
 
 export function set_select_tab(right_side_tab: string): void {
-    select_tab = right_side_tab;
-}
-
-export function setup_subscriptions_stream_hash(
-    sub: StreamSubscription,
-    right_side_tab: string,
-): void {
-    const hash = hash_util.stream_edit_url(sub, right_side_tab);
-    browser_history.update(hash);
     select_tab = right_side_tab;
 }
 
@@ -39,7 +29,8 @@ export function setup_toggler(): void {
             const stream_id = Number.parseInt($stream_header.attr("data-stream-id") ?? "", 10);
             const sub = sub_store.get(stream_id);
             if (sub) {
-                setup_subscriptions_stream_hash(sub, select_tab);
+                const hash = hash_util.stream_edit_url(sub, select_tab);
+                browser_history.update(hash);
             }
         },
     });
