@@ -101,7 +101,7 @@ class Command(BaseCommand):
 
             logger.info("Worker %d connecting to queue %s", worker_num, queue_name)
             with log_and_exit_if_exception(logger, queue_name, threaded=False):
-                worker = get_worker(queue_name)
+                worker = get_worker(queue_name, worker_num=worker_num)
                 with configure_scope() as scope:
                     scope.set_tag("queue_worker", queue_name)
                     scope.set_tag("worker_num", worker_num)

@@ -153,6 +153,7 @@ class zulip::app_frontend_base {
   } else {
     $uwsgi_default_processes = 4
   }
+  $mobile_notification_shards = Integer(zulipconf('application_server','mobile_notification_shards', 1))
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
 
   $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
