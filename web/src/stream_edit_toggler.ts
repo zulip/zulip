@@ -10,6 +10,10 @@ import type {StreamSubscription} from "./sub_store";
 export let toggler: components.Toggle;
 export let select_tab = "personal";
 
+export function set_select_tab(right_side_tab: string): void {
+    select_tab = right_side_tab;
+}
+
 export function setup_subscriptions_stream_hash(
     sub: StreamSubscription,
     right_side_tab: string,

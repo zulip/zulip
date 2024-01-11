@@ -84,13 +84,12 @@ function get_sub_for_target(target) {
     return sub;
 }
 
-export function open_edit_panel_for_row(stream_row, right_side_tab) {
+export function open_edit_panel_for_row(stream_row) {
     const sub = get_sub_for_target(stream_row);
 
     $(".stream-row.active").removeClass("active");
     stream_settings_components.show_subs_pane.settings(sub);
     $(stream_row).addClass("active");
-    stream_edit_toggler.setup_subscriptions_stream_hash(sub, right_side_tab);
     setup_stream_settings(stream_row);
 }
 
@@ -258,7 +257,7 @@ export function show_settings_for(node) {
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
     $("#stream_settings .tab-container").prepend(stream_edit_toggler.toggler.get());
-    stream_ui_updates.update_toggler_for_sub(sub);
+    stream_ui_updates.set_up_right_panel_section(sub);
 
     const $edit_container = stream_settings_containers.get_edit_container(sub);
 
@@ -564,7 +563,7 @@ export function initialize() {
         stream_settings_components.sub_or_unsub(sub, $stream_row);
 
         if (!sub.subscribed) {
-            open_edit_panel_for_row($stream_row, stream_edit_toggler.select_tab);
+            open_edit_panel_for_row($stream_row);
         }
         stream_ui_updates.update_regular_sub_settings(sub);
 
@@ -632,7 +631,7 @@ export function initialize() {
 
     $("#streams_overlay_container").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            open_edit_panel_for_row(this, stream_edit_toggler.select_tab);
+            open_edit_panel_for_row(this);
         }
     });
 
