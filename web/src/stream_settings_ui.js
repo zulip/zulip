@@ -794,7 +794,7 @@ export function switch_rows(event) {
     const row_data = get_row_data($switch_row);
     if (row_data) {
         const stream_id = row_data.id;
-        switch_to_stream_row(stream_id, "general");
+        switch_to_stream_row(stream_id, stream_edit_toggler.select_tab);
     } else if (event === "up_arrow" && !row_data) {
         $("#search_stream_name").trigger("focus");
     }
