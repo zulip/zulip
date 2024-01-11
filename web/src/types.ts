@@ -53,10 +53,6 @@ export type UpdateMessageEvent = {
     topic?: string;
 };
 
-// TODO/typescript: Move the User and Stream placeholder
-// types to their appropriate modules.
-export type User = Record<string, never>;
-
 export type GroupPermissionSetting = {
     require_system_group: boolean;
     allow_internet_group: boolean;
