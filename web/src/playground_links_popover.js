@@ -103,9 +103,9 @@ function register_click_handlers() {
                     url_template.expand({code: extracted_code}),
                 );
             } else {
-                for (const $playground of playground_info) {
-                    const url_template = url_template_lib.parse($playground.url_template);
-                    $playground.playground_url = url_template.expand({code: extracted_code});
+                for (const playground of playground_info) {
+                    const url_template = url_template_lib.parse(playground.url_template);
+                    playground.playground_url = url_template.expand({code: extracted_code});
                 }
                 const popover_target = $view_in_playground_button.find(
                     ".playground-links-popover-container",
