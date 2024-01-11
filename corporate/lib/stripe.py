@@ -1422,7 +1422,7 @@ class BillingSession(ABC):
                 stripe.InvoiceItem.create(
                     currency="usd",
                     customer=customer.stripe_customer_id,
-                    description=f"${customer.flat_discount}/month new customer discount",
+                    description=f"${cents_to_dollar_string(customer.flat_discount)}/month new customer discount",
                     # Negative value to apply discount.
                     amount=(-1 * discount),
                 )

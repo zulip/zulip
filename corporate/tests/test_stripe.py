@@ -6163,6 +6163,53 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         zulip_realm_plan.refresh_from_db()
         self.assertEqual(zulip_realm_plan.licenses_at_next_renewal(), None)
 
+    @responses.activate
+    @mock_stripe()
+    def test_invoice_initial_remote_realm_upgrade(self, *mocks: Mock) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        realm_user_count = UserProfile.objects.filter(
+            realm=hamlet.realm, is_bot=False, is_active=True
+        ).count()
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.execute_remote_billing_authentication_flow(hamlet)
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade(
+                tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+            )
+
+        [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+
+        [invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
+        invoice_item_params = {
+            "amount": -2000,
+            "description": "$20.00/month new customer discount",
+            "quantity": 1,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item0[key], value)
+
+        invoice_item_params = {
+            "amount": realm_user_count * 3.5 * 100,
+            "description": "Zulip Basic",
+            "quantity": realm_user_count,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item1[key], value)
+
+        invoice_item_params = {
+            "amount": -1 * (realm_user_count * 3.5 * 100 - 2000),
+            "description": "Payment (Card ending in 4242)",
+            "quantity": 1,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item2[key], value)
+
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
@@ -6673,3 +6720,48 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         result = self.client_post("/serverlogin/", payload, subdomain="selfhosting")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["Your server registration has been deactivated."], result)
+
+    @responses.activate
+    @mock_stripe()
+    def test_invoice_initial_remote_server_upgrade(self, *mocks: Mock) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        server_user_count = UserProfile.objects.filter(is_bot=False, is_active=True).count()
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.execute_remote_billing_authentication_flow(hamlet.delivery_email, hamlet.full_name)
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade(
+                tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+            )
+
+        [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+
+        [invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
+        invoice_item_params = {
+            "amount": -2000,
+            "description": "$20.00/month new customer discount",
+            "quantity": 1,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item0[key], value)
+
+        invoice_item_params = {
+            "amount": server_user_count * 3.5 * 100,
+            "description": "Zulip Basic",
+            "quantity": server_user_count,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item1[key], value)
+
+        invoice_item_params = {
+            "amount": -1 * (server_user_count * 3.5 * 100 - 2000),
+            "description": "Payment (Card ending in 4242)",
+            "quantity": 1,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item2[key], value)
