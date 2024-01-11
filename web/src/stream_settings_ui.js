@@ -680,7 +680,7 @@ export function setup_page(callback) {
     }
 }
 
-export function switch_to_stream_row(stream_id, right_side_tab) {
+export function switch_to_stream_row(stream_id) {
     const $stream_row = stream_ui_updates.row_for_stream_id(stream_id);
     const $container = $(".streams-list");
 
@@ -690,7 +690,6 @@ export function switch_to_stream_row(stream_id, right_side_tab) {
     scroll_util.scroll_element_into_container($stream_row, $container);
 
     stream_edit.open_edit_panel_for_row($stream_row);
-    stream_edit_toggler.toggler.goto(right_side_tab);
 }
 
 function show_right_section() {
@@ -738,7 +737,7 @@ export function change_state(section, right_side_tab) {
         } else {
             show_right_section();
             stream_edit_toggler.set_select_tab(right_side_tab);
-            switch_to_stream_row(stream_id, right_side_tab);
+            switch_to_stream_row(stream_id);
         }
         return;
     }
@@ -795,7 +794,7 @@ export function switch_rows(event) {
     const row_data = get_row_data($switch_row);
     if (row_data) {
         const stream_id = row_data.id;
-        switch_to_stream_row(stream_id, stream_edit_toggler.select_tab);
+        switch_to_stream_row(stream_id);
     } else if (event === "up_arrow" && !row_data) {
         $("#search_stream_name").trigger("focus");
     }
