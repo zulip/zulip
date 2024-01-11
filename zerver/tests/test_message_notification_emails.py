@@ -190,7 +190,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "http://zulip.testserver/help/dm-mention-alert-notifications ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -250,7 +250,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "http://zulip.testserver/help/dm-mention-alert-notifications ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -290,7 +290,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "http://zulip.testserver/help/dm-mention-alert-notifications ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -349,7 +349,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "http://zulip.testserver/help/dm-mention-alert-notifications ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -389,7 +389,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "http://zulip.testserver/help/dm-mention-alert-notifications ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -504,7 +504,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             elif message_content_disabled_by_user:
                 verify_body_include = [
                     "This email does not include message content because you have disabled message ",
-                    "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                    "http://zulip.testserver/help/dm-mention-alert-notifications ",
                     "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
@@ -565,7 +565,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "http://zulip.testserver/help/dm-mention-alert-notifications ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
