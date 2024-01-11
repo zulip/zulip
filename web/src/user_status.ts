@@ -10,33 +10,33 @@ export type UserStatusEmojiInfo = EmojiRenderingDetails & {
     emoji_alt_code?: boolean;
 };
 
+const user_status_schema = z.intersection(
+    z.object({
+        status_text: z.string().optional(),
+        away: z.boolean().optional(),
+    }),
+    z.union([
+        z.object({
+            emoji_name: z.string(),
+            emoji_code: z.string(),
+            reaction_type: z.string(),
+        }),
+        z.object({
+            emoji_name: z.undefined(),
+        }),
+    ]),
+);
+
+const user_status_event_schema = z.intersection(
+    z.object({
+        id: z.number(),
+        type: z.literal("user_status"),
+        user_id: z.number(),
+    }),
+    user_status_schema,
+);
+
 export type UserStatusEvent = z.infer<typeof user_status_event_schema>;
-
-const user_status_event_schema = z.object({
-    id: z.number(),
-    type: z.literal("user_status"),
-    user_id: z.number(),
-    away: z.boolean().optional(),
-    status_text: z.string(),
-    emoji_name: z.string(),
-    emoji_code: z.string(),
-    reaction_type: z.string(),
-});
-
-const user_status_schema = z.union([
-    z.object({
-        status_text: z.string().optional(),
-        emoji_name: z.string(),
-        emoji_code: z.string(),
-        reaction_type: z.string(),
-        away: z.boolean().optional(),
-    }),
-    z.object({
-        emoji_name: z.undefined(),
-        status_text: z.string().optional(),
-        away: z.boolean().optional(),
-    }),
-]);
 
 const user_status_param_schema = z.record(z.string(), user_status_schema);
 
