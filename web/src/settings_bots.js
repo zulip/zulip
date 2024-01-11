@@ -8,6 +8,7 @@ import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs"
 import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import * as components from "./components";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
@@ -24,21 +25,6 @@ import * as user_profile from "./user_profile";
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
-
-const focus_tab = {
-    active_bots_tab() {
-        $("#bots_lists_navbar .active").removeClass("active");
-        $("#bots_lists_navbar .active-bots-tab").addClass("active");
-        $("#active_bots_list").show();
-        $("#inactive_bots_list").hide();
-    },
-    inactive_bots_tab() {
-        $("#bots_lists_navbar .active").removeClass("active");
-        $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").show();
-    },
-};
 
 function add_bot_row(info) {
     const $row = $(render_bot_avatar_row(info));
@@ -346,9 +332,21 @@ export function set_up() {
         );
     });
 
-    // This needs to come before render_bots() in case the user
-    // has no active bots
-    focus_tab.active_bots_tab();
+    const toggler = components.toggle({
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "Active bots"}), key: "active-bots"},
+            {label: $t({defaultMessage: "Inactive bots"}), key: "inactive-bots"},
+        ],
+        callback(_name, key) {
+            $(".bots_list").hide();
+            $(`[data-bot-settings-section="${CSS.escape(key)}"]`).show();
+        },
+    });
+
+    $("#bot-settings .tab-container").prepend(toggler.get());
+    toggler.goto("active-bots");
+
     render_bots();
 
     $("#active_bots_list").on("click", "button.deactivate_bot", (e) => {
@@ -451,18 +449,6 @@ export function set_up() {
     // Show a tippy tooltip when the bot zuliprc is copied
     clipboard.on("success", (e) => {
         show_copied_confirmation(e.trigger);
-    });
-
-    $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        focus_tab.active_bots_tab();
-    });
-
-    $("#bots_lists_navbar .inactive-bots-tab").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        focus_tab.inactive_bots_tab();
     });
 
     $("#bot-settings .add-a-new-bot").on("click", (e) => {

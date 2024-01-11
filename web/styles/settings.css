@@ -835,8 +835,15 @@ input[type="checkbox"] {
     max-height: calc(95vh - 280px);
 }
 
-#bot-settings .add-a-new-bot {
-    margin-bottom: 2px;
+#bot-settings {
+    .add-a-new-bot {
+        margin-bottom: 2px;
+    }
+
+    hr {
+        margin: 10px 0;
+        border-color: hsl(0deg 0% 85%);
+    }
 }
 
 .bots_list {
@@ -970,10 +977,6 @@ input[type="checkbox"] {
         font-weight: 600;
         color: hsl(0deg 0% 67%);
     }
-}
-
-#bots_lists_navbar .active a {
-    background-color: hsl(0deg 0% 98%);
 }
 
 #inactive_bots_list .bot_info .reactivate_bot {
