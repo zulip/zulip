@@ -167,11 +167,13 @@ contributors, and more than 75 with 100+ commits." %}
 
                 <script type="text/template" id="count-template">
                     <p class="contributor-count">
-                        <%= contributor_count %> contributors to
-                        <a href="<%= repo_url %>" target="_blank" rel="noopener noreferrer">
-                            zulip/<%= repo_name %>
+                        <%= contributor_count %> contributors
+                        (<%= hundred_plus_contributor_count %> with 100+ commits) to
+                        <% repo_list.forEach(function(repo_name, index) { %>
+                        <a href="<%= repo_url_list[index] %>" target="_blank" rel="noopener noreferrer">
+                            zulip/<%= repo_name %><% if (index < repo_list.length - 1) { %>, <% } %>
                         </a>
-                        (<%= hundred_plus_contributor_count %> with 100+ commits)
+                            <% }); %>
                     </p>
                 </script>
 
