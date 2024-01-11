@@ -154,6 +154,8 @@ def home(request: HttpRequest) -> HttpResponse:
 
         return hello_view(request)
 
+    if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
+        return redirect(settings.ROOT_DOMAIN_URI)
     realm = get_realm_from_request(request)
     if realm is None:
         return render(request, "zerver/invalid_realm.html", status=404)

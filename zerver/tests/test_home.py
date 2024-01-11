@@ -1085,6 +1085,13 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
             self._sanity_check(result)
 
+    def test_special_subdomains_homepage(self) -> None:
+        self.login("hamlet")
+        with patch("zerver.views.home.get_subdomain", return_value="auth"):
+            result = self._get_home_page()
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "http://testserver")
+
     def send_test_message(
         self,
         content: str,
