@@ -2,9 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const bot_data_params = {
@@ -27,16 +26,6 @@ const bot_data_params = {
         },
     ],
 };
-
-class ClipboardJS {
-    constructor(sel) {
-        assert.equal(sel, "#copy_zuliprc");
-    }
-    on() {
-        // do nothing.
-    }
-}
-mock_cjs("clipboard", ClipboardJS);
 
 const bot_data = zrequire("bot_data");
 const settings_bots = zrequire("settings_bots");
@@ -100,45 +89,6 @@ test("generate_botserverrc_content", () => {
         "token=abcd1234\n";
 
     assert.equal(content, expected);
-});
-
-test("test tab clicks", () => {
-    settings_bots.set_up();
-
-    function click_on_tab($tab_elem) {
-        $tab_elem.trigger("click");
-    }
-
-    const tabs = {
-        $active: $("#bots_lists_navbar .active-bots-tab"),
-        $inactive: $("#bots_lists_navbar .inactive-bots-tab"),
-    };
-
-    $("#bots_lists_navbar .active").removeClass = (cls) => {
-        assert.equal(cls, "active");
-        for (const $tab of Object.values(tabs)) {
-            $tab.removeClass("active");
-        }
-    };
-
-    const forms = {
-        $active: $("#active_bots_list"),
-        $inactive: $("#inactive_bots_list"),
-    };
-
-    click_on_tab(tabs.$active);
-    assert.ok(tabs.$active.hasClass("active"));
-    assert.ok(!tabs.$inactive.hasClass("active"));
-
-    assert.ok(forms.$active.visible());
-    assert.ok(!forms.$inactive.visible());
-
-    click_on_tab(tabs.$inactive);
-    assert.ok(!tabs.$active.hasClass("active"));
-    assert.ok(tabs.$inactive.hasClass("active"));
-
-    assert.ok(!forms.$active.visible());
-    assert.ok(forms.$inactive.visible());
 });
 
 test("can_create_new_bots", () => {

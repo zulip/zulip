@@ -21,15 +21,14 @@
         </div>
         {{/unless}}
 
-        <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
-            <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
-            <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
-        </ul>
+        <hr/>
 
-        <ol class="bots_list" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
+        <div class="tab-container"></div>
+
+        <ol id="active_bots_list" class="bots_list" data-bot-settings-section="active-bots" data-empty="{{t 'You have no active bots.' }}">
         </ol>
 
-        <ol class="bots_list" id="inactive_bots_list" data-empty="{{t 'You have no inactive bots.' }}">
+        <ol id="inactive_bots_list" class="bots_list" data-bot-settings-section="inactive-bots" data-empty="{{t 'You have no inactive bots.' }}">
         </ol>
 
     </div>
