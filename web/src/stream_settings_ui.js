@@ -689,7 +689,7 @@ export function switch_to_stream_row(stream_id, right_side_tab) {
 
     scroll_util.scroll_element_into_container($stream_row, $container);
 
-    stream_edit.open_edit_panel_for_row($stream_row, right_side_tab);
+    stream_edit.open_edit_panel_for_row($stream_row);
     stream_edit_toggler.toggler.goto(right_side_tab);
 }
 
@@ -737,6 +737,7 @@ export function change_state(section, right_side_tab) {
             toggler.goto("subscribed");
         } else {
             show_right_section();
+            stream_edit_toggler.set_select_tab(right_side_tab);
             switch_to_stream_row(stream_id, right_side_tab);
         }
         return;
