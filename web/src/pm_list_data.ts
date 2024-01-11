@@ -114,7 +114,7 @@ export function get_list_info(zoomed: boolean): {
     let more_conversations_unread_count = 0;
     function should_show_conversation(idx: number, conversation: DisplayObject): boolean {
         // We always show the active conversation; see the similar
-        // comment in topic_list_data.js.
+        // comment in topic_list_data.ts.
         if (conversation.is_active) {
             return true;
         }
