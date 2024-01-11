@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
 from zerver.actions.user_settings import do_change_tos_version, do_change_user_setting
@@ -156,6 +157,8 @@ def home(request: HttpRequest) -> HttpResponse:
 
     if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
         return redirect(settings.ROOT_DOMAIN_URI)
+    elif subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN:
+        return redirect(reverse("remote_billing_legacy_server_login"))
     realm = get_realm_from_request(request)
     if realm is None:
         return render(request, "zerver/invalid_realm.html", status=404)
