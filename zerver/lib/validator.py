@@ -49,6 +49,7 @@ from typing import (
     cast,
     overload,
 )
+from urllib.parse import urlsplit
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -386,6 +387,28 @@ def check_url(var_name: str, val: object) -> str:
         validate(s)
         return s
     except ValidationError:
+        # Try mangling it to add a ".local" domain
+        try:
+            url_parts = urlsplit(s)
+            hostname = url_parts.hostname
+            if (
+                hostname is not None
+                and hostname != ""
+                and "." not in hostname
+                and ":" not in hostname
+            ):
+                qualified = url_parts._replace(
+                    netloc=hostname
+                    + ".local"
+                    + (f":{url_parts.port}" if url_parts.port is not None else "")
+                ).geturl()
+                try:
+                    validate(qualified)
+                    return s
+                except ValidationError:
+                    pass
+        except ValueError:
+            pass
         raise ValidationError(_("{var_name} is not a URL").format(var_name=var_name))
 
 

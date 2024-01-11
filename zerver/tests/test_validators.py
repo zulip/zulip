@@ -310,19 +310,24 @@ class ValidatorTestCase(ZulipTestCase):
             check_none_or(check_int)("x", x)
 
     def test_check_url(self) -> None:
-        url: Any = "http://127.0.0.1:5002/"
-        check_url("url", url)
-
-        url = "http://zulip-bots.example.com/"
-        check_url("url", url)
-
-        url = "http://127.0.0"
+        check_url("url", "http://127.0.0.1:5002/")
+        check_url("url", "http://zulip-bots.example.com/")
+        check_url("url", "http://hostname/a/b?c=d&e=f#g")
+        check_url("url", "http://[fe80::248a:b7ff:fed7:a9af]:80/")
         with self.assertRaisesRegex(ValidationError, r"url is not a URL"):
-            check_url("url", url)
+            check_url("url", "http://127.0.0")
 
-        url = 99.3
+        with self.assertRaisesRegex(ValidationError, r"url is not a URL"):
+            check_url("url", "http://foo:baz/")
+
+        with self.assertRaisesRegex(ValidationError, r"url is not a URL"):
+            check_url("url", "//[")
+
+        with self.assertRaisesRegex(ValidationError, r"url is not a URL"):
+            check_url("url", "//example/")
+
         with self.assertRaisesRegex(ValidationError, r"url is not a string"):
-            check_url("url", url)
+            check_url("url", 99.3)
 
     def test_check_string_or_int_list(self) -> None:
         x: Any = "string"
