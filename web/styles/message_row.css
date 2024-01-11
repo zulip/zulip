@@ -484,11 +484,16 @@ $time_column_min_width: 42px; /* + padding */
 
     .message-actions-button {
         box-sizing: border-box;
+        /* Display the actions buttons as
+           flex containers for positioning
+           text and spinners. */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         height: 28px;
-        padding: 6px 10px;
+        padding: 0 10px;
         border-radius: 4px;
         border: 0;
-        margin-bottom: 0;
         line-height: 1;
     }
 
@@ -561,10 +566,7 @@ $time_column_min_width: 42px; /* + padding */
 
 .message_edit_save .loader {
     display: none;
-    vertical-align: top;
-    position: relative;
     height: 28px;
-    margin-top: -6px;
     width: 28px;
 }
 
