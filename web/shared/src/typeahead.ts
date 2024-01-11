@@ -114,7 +114,7 @@ export function triage<T>(
     query: string,
     objs: T[],
     get_item: (x: T) => string,
-    sorting_comparator?: () => number,
+    sorting_comparator?: (a: T, b: T) => number,
 ): {matches: T[]; rest: T[]} {
     /*
         We split objs into four groups:
