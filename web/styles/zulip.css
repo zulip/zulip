@@ -2254,18 +2254,7 @@ div.focused-message-list {
     }
 }
 
-#message_edit_topic {
-    margin: 0 5px 10px 0;
-}
-
-.message_edit_header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
-
-.inline_topic_edit:focus,
-#message_edit_topic:focus {
+.inline_topic_edit:focus {
     outline: none;
 }
 
@@ -2275,8 +2264,7 @@ div.focused-message-list {
     max-width: 100%;
 }
 
-.topic_move_breadcrumb_messages,
-.message_edit_breadcrumb_messages {
+.topic_move_breadcrumb_messages {
     margin: 0 5px 5px 0;
     align-self: center;
     width: 100%;
@@ -2300,10 +2288,6 @@ div.focused-message-list {
         display: inline-block;
         margin-right: 10px;
     }
-}
-
-.message_edit_breadcrumb_messages {
-    margin-bottom: 10px;
 }
 
 .message_length_controller {
