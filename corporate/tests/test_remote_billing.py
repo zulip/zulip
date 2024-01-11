@@ -467,6 +467,88 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(result.status_code, 401)
 
     @responses.activate
+    def test_remote_billing_authentication_flow_generate_two_confirmation_links_before_confirming(
+        self,
+    ) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
+        self.add_mock_response()
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona,
+            expect_tos=True,
+            confirm_tos=False,
+            first_time_login=True,
+            return_without_clicking_confirmation_link=True,
+        )
+        self.assertEqual(result.status_code, 200)
+        first_confirmation_url = self.get_confirmation_url_from_outbox(
+            desdemona.delivery_email,
+            url_pattern=(
+                f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}" + r"(\S+)"
+            ),
+        )
+        first_prereg_user = PreregistrationRemoteRealmBillingUser.objects.latest("id")
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona,
+            expect_tos=True,
+            confirm_tos=False,
+            first_time_login=True,
+            return_without_clicking_confirmation_link=True,
+        )
+        self.assertEqual(result.status_code, 200)
+        second_confirmation_url = self.get_confirmation_url_from_outbox(
+            desdemona.delivery_email,
+            url_pattern=(
+                f"{settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN}.{settings.EXTERNAL_HOST}" + r"(\S+)"
+            ),
+        )
+        second_prereg_user = PreregistrationRemoteRealmBillingUser.objects.latest("id")
+
+        self.assertNotEqual(first_confirmation_url, second_confirmation_url)
+        self.assertNotEqual(first_prereg_user.id, second_prereg_user.id)
+
+        now = timezone_now()
+        # Click the first confirmation link.
+        with time_machine.travel(now, tick=False):
+            result = self.client_get(first_confirmation_url, subdomain="selfhosting")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].startswith("/remote-billing-login/"))
+
+        # This created the RemoteRealmBillingUser entry.
+        remote_billing_user = RemoteRealmBillingUser.objects.latest("id")
+        self.assertEqual(remote_billing_user.user_uuid, desdemona.uuid)
+        self.assertEqual(remote_billing_user.email, desdemona.delivery_email)
+
+        first_prereg_user.refresh_from_db()
+        self.assertEqual(first_prereg_user.created_user, remote_billing_user)
+
+        # Now click the second confirmation link. The RemoteRealmBillingUser entry
+        # stays the same, since it's already been created, and the user is redirected
+        # normally further through the flow, while we log this event.
+        with time_machine.travel(now + timedelta(seconds=1), tick=False), self.assertLogs(
+            "corporate.stripe", "INFO"
+        ) as mock_logger:
+            result = self.client_get(second_confirmation_url, subdomain="selfhosting")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].startswith("/remote-billing-login/"))
+
+        # The RemoteRealmBillingUser entry stays the same.
+        self.assertEqual(RemoteRealmBillingUser.objects.latest("id"), remote_billing_user)
+        # The second prereg user is unused, since it wasn't needed.
+        self.assertEqual(second_prereg_user.created_user, None)
+
+        self.assertEqual(
+            mock_logger.output,
+            [
+                "INFO:corporate.stripe:Matching RemoteRealmBillingUser already exists for "
+                f"PreregistrationRemoteRealmBillingUser {second_prereg_user.id}"
+            ],
+        )
+
+    @responses.activate
     def test_transfer_legacy_plan_from_server_to_all_realms(self) -> None:
         self.login("desdemona")
         desdemona = self.example_user("desdemona")
