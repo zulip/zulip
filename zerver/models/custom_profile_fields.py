@@ -110,17 +110,11 @@ class CustomProfileField(models.Model):
         (LONG_TEXT, gettext_lazy("Text (long)"), check_long_string, str, "LONG_TEXT"),
         (DATE, gettext_lazy("Date"), check_date, str, "DATE"),
         (URL, gettext_lazy("Link"), check_url, str, "URL"),
-        (
-            EXTERNAL_ACCOUNT,
-            gettext_lazy("External account"),
-            check_short_string,
-            str,
-            "EXTERNAL_ACCOUNT",
-        ),
+        (EXTERNAL_ACCOUNT, gettext_lazy("External account"), check_short_string, str, "EXTERNAL_ACCOUNT"),
         (PRONOUNS, gettext_lazy("Pronouns"), check_short_string, str, "PRONOUNS"),
     ]
 
-    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
+    ALL_FIELD_TYPES = sorted([*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1])
 
     FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
