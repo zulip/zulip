@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import * as resolved_topic from "../shared/src/resolved_topic";
 
 import * as hash_util from "./hash_util";
@@ -11,7 +13,37 @@ import * as util from "./util";
 const max_topics = 8;
 const max_topics_with_unread = 12;
 
-function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
+type TopicInfo = {
+    topic_name: string;
+    topic_resolved_prefix: string;
+    topic_display_name: string;
+    unread: number;
+    is_zero: boolean;
+    is_muted: boolean;
+    is_followed: boolean;
+    is_unmuted_or_followed: boolean;
+    is_active_topic: boolean;
+    url: string;
+    contains_unread_mention: boolean;
+};
+
+type TopicChoiceState = {
+    active_topic: string | undefined;
+    topics_with_unread_mentions: Set<string>;
+    more_topics_unmuted_unreads: number;
+    more_topics_have_unread_mention_messages: boolean;
+    more_topics_muted_unreads: number;
+    more_topics_have_muted_unread_mention_messages: boolean;
+    topics_selected: number;
+    items: TopicInfo[];
+};
+
+function choose_topics(
+    stream_id: number,
+    topic_names: string[],
+    zoomed: boolean,
+    topic_choice_state: TopicChoiceState,
+): void {
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
@@ -29,7 +61,7 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
         );
 
         if (!zoomed) {
-            function should_show_topic(topics_selected) {
+            function should_show_topic(topics_selected: number): boolean {
                 // This function exists just for readability, to
                 // avoid long chained conditionals to determine
                 // which topics to include.
@@ -90,7 +122,7 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
             // same code we do when zoomed.
         }
 
-        const topic_info = {
+        const topic_info: TopicInfo = {
             topic_name,
             topic_resolved_prefix,
             topic_display_name,
@@ -108,8 +140,20 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
     }
 }
 
-export function get_list_info(stream_id, zoomed, search_term) {
-    const topic_choice_state = {
+type TopicListInfo = {
+    items: TopicInfo[];
+    num_possible_topics: number;
+    more_topics_unreads: number;
+    more_topics_have_unread_mention_messages: boolean;
+    more_topics_unread_count_muted: boolean;
+};
+
+export function get_list_info(
+    stream_id: number,
+    zoomed: boolean,
+    search_term: string,
+): TopicListInfo {
+    const topic_choice_state: TopicChoiceState = {
         items: [],
         topics_selected: 0,
         more_topics_muted_unreads: 0,
@@ -120,7 +164,9 @@ export function get_list_info(stream_id, zoomed, search_term) {
         topics_with_unread_mentions: unread.get_topics_with_unread_mentions(stream_id),
     };
 
-    const stream_muted = sub_store.get(stream_id).is_muted;
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+    const stream_muted = sub.is_muted;
 
     let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
     if (zoomed) {
