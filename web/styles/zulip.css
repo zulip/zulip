@@ -1703,10 +1703,6 @@ td.pointer {
         }
     }
 
-    &.sender-status-controls {
-        top: 8px;
-    }
-
     .message_failed {
         display: inline-flex;
         justify-content: space-between;
