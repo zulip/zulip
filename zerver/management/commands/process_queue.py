@@ -119,15 +119,13 @@ class ThreadedWorker(threading.Thread):
         self.logger = logger
         self.queue_name = queue_name
 
-        with log_and_exit_if_exception(logger, queue_name, threaded=True):
-            self.worker = get_worker(queue_name, threaded=True)
-
     @override
     def run(self) -> None:
         with configure_scope() as scope, log_and_exit_if_exception(
             self.logger, self.queue_name, threaded=True
         ):
-            scope.set_tag("queue_worker", self.worker.queue_name)
-            self.worker.setup()
-            logging.debug("starting consuming %s", self.worker.queue_name)
-            self.worker.start()
+            scope.set_tag("queue_worker", self.queue_name)
+            worker = get_worker(self.queue_name, threaded=True)
+            worker.setup()
+            logging.debug("starting consuming %s", self.queue_name)
+            worker.start()
