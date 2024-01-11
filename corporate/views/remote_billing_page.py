@@ -448,11 +448,18 @@ def remote_realm_billing_from_login_confirmation_link(
     # Mypy is not satisfied by the above assert, so we need to cast.
     uri_scheme = cast(Literal["http://", "https://"], uri_scheme)
 
-    remote_billing_user = RemoteRealmBillingUser.objects.create(
-        email=prereg_object.email,
+    remote_billing_user, created = RemoteRealmBillingUser.objects.get_or_create(
         remote_realm=remote_realm,
         user_uuid=prereg_object.user_uuid,
+        defaults={"email": prereg_object.email},
     )
+    if not created:
+        billing_logger.info(
+            "Matching RemoteRealmBillingUser already exists for "
+            "PreregistrationRemoteRealmBillingUser %s",
+            prereg_object.id,
+        )
+
     prereg_object.created_user = remote_billing_user
     prereg_object.save(update_fields=["created_user"])
 
