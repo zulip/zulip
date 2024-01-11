@@ -83,7 +83,7 @@ notifications.
 >  extremely efficiently, and I don’t feel stressed.”
 >
 > — Dan Allen, [Asciidoctor](https://asciidoctor.org/) open-source project lead ([case
-> study](/case-studies/asciidoctor))
+> study](/case-studies/asciidoctor/))
 
 <br />
 
@@ -100,7 +100,7 @@ discussions asynchronously without interrupting their flow.
 >
 >  — Josh Triplett, [Rust Language
 >  team](https://www.rust-lang.org/governance/teams/lang) co-lead ([case
->  study](/case-studies/rust))
+>  study](/case-studies/rust/))
 
 - **Take advantage of everyone’s expertise.**
 Zulip’s topics make it easy to pick up a conversation thread hours (or days!)
@@ -127,7 +127,7 @@ reference.
 > can meaningfully know what’s going on.”
 >
 > — Gaute Lund, co-founder of iDrift AS company ([case
-> study](/case-studies/idrift))
+> study](/case-studies/idrift/))
 
 <br />
 
@@ -172,4 +172,4 @@ from emails, docs, issue trackers, code comments, or anywhere else.
 > decisions we’ve made.”
 >
 > — Nick Bergson-Shilcock, [Recurse Center](https://www.recurse.com/) co-founder
-> and CEO ([case study](/case-studies/recurse-center))
+> and CEO ([case study](/case-studies/recurse-center/))

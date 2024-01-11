@@ -49,7 +49,7 @@ client = zulip.Client(
 If you are working on an integration that you plan to share outside
 your organization, you can get help picking a good name in
 `#integrations` in the [Zulip development
-community](https://zulip.com/development-community).
+community](https://zulip.com/development-community/).
 
 ## Rate-limiting response headers
 

@@ -166,7 +166,7 @@ integration.
 
 The list of existing webhook integrations can be found in
 `zerver/lib/integrations.py` (at `WEBHOOK_INTEGRATIONS`) or by browsing
-the [Integrations documentation](/integrations).
+the [Integrations documentation](/integrations/).
 
 Parameters accepted in the URL include:
 
