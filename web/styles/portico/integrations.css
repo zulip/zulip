@@ -227,7 +227,7 @@ $category-text: hsl(219deg 23% 33%);
                 padding: 12px 20px;
             }
 
-            .dropdown-toggle {
+            .integration-toggle-categories-dropdown {
                 cursor: pointer;
                 display: flex;
                 position: relative;
