@@ -130,6 +130,48 @@ sudo apt install zulip
 [latest]: https://github.com/zulip/zulip-desktop/releases/latest
 [release-list]: https://github.com/zulip/zulip-desktop/releases
 
+## Installing Zulip Desktop App via Flathub
+
+### Prerequisites
+
+Before you begin, ensure that you have the following:
+
+1. A Linux distribution that supports Flatpak. Common distributions like Ubuntu, Fedora, and Debian typically support Flatpak.
+
+2. Flatpak installed on your system. You can install Flatpak using your distribution's package manager. For example, on Ubuntu, you can use the following command:
+
+```bash sudo apt-get install flatpak```
+
+### Steps to Install Zulip Desktop App
+
+#### Step 1: Add Flathub Repository
+
+Ensure that the Flathub repository is added to your system. If you haven't added it yet, you can add it using the following command:
+
+```flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo```
+
+#### Step 2: Install Zulip Desktop App
+
+Now, you can install the Zulip Desktop App using Flatpak. Run the following command:
+
+```flatpak install flathub org.zulip.Zulip```
+
+#### Step 3: Launch Zulip Desktop App
+
+Once the installation is complete, you can launch the Zulip Desktop App. Either search for "Zulip" in your application launcher or run the following command:
+
+```flatpak run org.zulip.Zulip```
+
+#### Step 4: Log in to Zulip
+
+Upon launching the Zulip Desktop App, you will be prompted to log in. Enter your Zulip server information and credentials to log in.
+
+### Uninstalling Zulip Desktop App
+
+If you ever need to uninstall the Zulip Desktop App, you can use the following command:
+
+```flatpak uninstall org.zulip.Zulip```
+
 ## Related articles
 
 * [Connect through a proxy](/help/connect-through-a-proxy)
