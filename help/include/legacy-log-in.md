@@ -1,4 +1,4 @@
-1. Go to <https://selfhosting.zulip.com/serverlogin>.
+1. Go to <https://selfhosting.zulip.com/serverlogin/>.
 
 1. Fill out the requested server information, and click **Continue**.
 

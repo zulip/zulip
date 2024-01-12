@@ -790,7 +790,7 @@ class MissedMessageWorker(QueueProcessingWorker):
 class EmailSendingWorker(LoopQueueProcessingWorker):
     def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
         super().__init__(threaded, disable_timeout)
-        self.connection: BaseEmailBackend = initialize_connection(None)
+        self.connection: Optional[BaseEmailBackend] = None
 
     @retry_send_email_failures
     def send_email(self, event: Dict[str, Any]) -> None:
@@ -812,7 +812,8 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
     @override
     def stop(self) -> None:
         try:
-            self.connection.close()
+            if self.connection is not None:
+                self.connection.close()
         finally:
             super().stop()
 

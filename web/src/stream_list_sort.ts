@@ -1,16 +1,20 @@
+import assert from "minimalistic-assert";
+
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
+import type {StreamSubscription} from "./sub_store";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
-let previous_pinned;
-let previous_normal;
-let previous_dormant;
-let previous_muted_active;
-let previous_muted_pinned;
-let all_streams = [];
+let first_render_completed = false;
+let previous_pinned: number[] = [];
+let previous_normal: number[] = [];
+let previous_dormant: number[] = [];
+let previous_muted_active: number[] = [];
+let previous_muted_pinned: number[] = [];
+let all_streams: number[] = [];
 
 // Because we need to check whether we are filtering inactive streams
 // in a loop over all streams to render the left sidebar, and the
@@ -19,14 +23,14 @@ let all_streams = [];
 // to avoid making left sidebar rendering a quadratic operation.
 let filter_out_inactives = false;
 
-export function get_streams() {
+export function get_streams(): (string | undefined)[] {
     const sorted_streams = all_streams.map((stream_id) =>
         sub_store.maybe_get_stream_name(stream_id),
     );
     return sorted_streams;
 }
 
-function compare_function(a, b) {
+function compare_function(a: number, b: number): number {
     const stream_a = sub_store.get(a);
     const stream_b = sub_store.get(b);
 
@@ -36,7 +40,7 @@ function compare_function(a, b) {
     return util.strcmp(stream_name_a, stream_name_b);
 }
 
-export function set_filter_out_inactives() {
+export function set_filter_out_inactives(): void {
     if (
         user_settings.demote_inactive_streams ===
         settings_config.demote_inactive_streams_values.automatic.code
@@ -53,11 +57,11 @@ export function set_filter_out_inactives() {
 }
 
 // Exported for access by unit tests.
-export function is_filtering_inactives() {
+export function is_filtering_inactives(): boolean {
     return filter_out_inactives;
 }
 
-export function has_recent_activity(sub) {
+export function has_recent_activity(sub: StreamSubscription): boolean {
     if (!filter_out_inactives || sub.pin_to_top) {
         // If users don't want to filter inactive streams
         // to the bottom, we respect that setting and don't
@@ -71,22 +75,31 @@ export function has_recent_activity(sub) {
     return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
 }
 
-export function has_recent_activity_but_muted(sub) {
+export function has_recent_activity_but_muted(sub: StreamSubscription): boolean {
     return has_recent_activity(sub) && sub.is_muted;
 }
 
-export function sort_groups(streams, search_term) {
-    const stream_id_to_name = (stream) => sub_store.get(stream).name;
+type StreamListSortResult = {
+    same_as_before: boolean;
+    pinned_streams: number[];
+    normal_streams: number[];
+    dormant_streams: number[];
+    muted_pinned_streams: number[];
+    muted_active_streams: number[];
+};
+
+export function sort_groups(stream_ids: number[], search_term: string): StreamListSortResult {
+    const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _ and / as word separators apart from the default space character
     const word_separator_regex = /[\s/_-]/;
-    streams = util.filter_by_word_prefix_match(
-        streams,
+    stream_ids = util.filter_by_word_prefix_match(
+        stream_ids,
         search_term,
         stream_id_to_name,
         word_separator_regex,
     );
 
-    function is_normal(sub) {
+    function is_normal(sub: StreamSubscription): boolean {
         return has_recent_activity(sub);
     }
 
@@ -96,23 +109,24 @@ export function sort_groups(streams, search_term) {
     const muted_active_streams = [];
     const dormant_streams = [];
 
-    for (const stream of streams) {
-        const sub = sub_store.get(stream);
+    for (const stream_id of stream_ids) {
+        const sub = sub_store.get(stream_id);
+        assert(sub);
         const pinned = sub.pin_to_top;
         if (pinned) {
             if (!sub.is_muted) {
-                pinned_streams.push(stream);
+                pinned_streams.push(stream_id);
             } else {
-                muted_pinned_streams.push(stream);
+                muted_pinned_streams.push(stream_id);
             }
         } else if (is_normal(sub)) {
             if (!sub.is_muted) {
-                normal_streams.push(stream);
+                normal_streams.push(stream_id);
             } else {
-                muted_active_streams.push(stream);
+                muted_active_streams.push(stream_id);
             }
         } else {
-            dormant_streams.push(stream);
+            dormant_streams.push(stream_id);
         }
     }
 
@@ -123,7 +137,7 @@ export function sort_groups(streams, search_term) {
     dormant_streams.sort(compare_function);
 
     const same_as_before =
-        previous_pinned !== undefined &&
+        first_render_completed &&
         util.array_compare(previous_pinned, pinned_streams) &&
         util.array_compare(previous_normal, normal_streams) &&
         util.array_compare(previous_muted_pinned, muted_pinned_streams) &&
@@ -131,6 +145,7 @@ export function sort_groups(streams, search_term) {
         util.array_compare(previous_dormant, dormant_streams);
 
     if (!same_as_before) {
+        first_render_completed = true;
         previous_pinned = pinned_streams;
         previous_normal = normal_streams;
         previous_muted_pinned = muted_pinned_streams;
@@ -156,7 +171,7 @@ export function sort_groups(streams, search_term) {
     };
 }
 
-function maybe_get_stream_id(i) {
+function maybe_get_stream_id(i: number): number | undefined {
     if (i < 0 || i >= all_streams.length) {
         return undefined;
     }
@@ -164,11 +179,11 @@ function maybe_get_stream_id(i) {
     return all_streams[i];
 }
 
-export function first_stream_id() {
+export function first_stream_id(): number | undefined {
     return maybe_get_stream_id(0);
 }
 
-export function prev_stream_id(stream_id) {
+export function prev_stream_id(stream_id: number): number | undefined {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
@@ -178,7 +193,7 @@ export function prev_stream_id(stream_id) {
     return maybe_get_stream_id(i - 1);
 }
 
-export function next_stream_id(stream_id) {
+export function next_stream_id(stream_id: number): number | undefined {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
@@ -188,6 +203,6 @@ export function next_stream_id(stream_id) {
     return maybe_get_stream_id(i + 1);
 }
 
-export function initialize() {
+export function initialize(): void {
     set_filter_out_inactives();
 }

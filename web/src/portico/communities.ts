@@ -26,7 +26,10 @@ $(() => {
         sync_open_organizations_page_with_current_hash();
     });
 
-    $(".integration-categories-dropdown .dropdown-toggle").on("click", () => {
-        toggle_categories_dropdown();
-    });
+    $(".integration-categories-dropdown .integration-toggle-categories-dropdown").on(
+        "click",
+        () => {
+            toggle_categories_dropdown();
+        },
+    );
 });

@@ -259,6 +259,7 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
 }
 
 CLOUD_FREE_TRIAL_DAYS: Optional[int] = None
+SELF_HOSTING_FREE_TRIAL_DAYS: Optional[int] = None
 
 SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
     "zulip": {

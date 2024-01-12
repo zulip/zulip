@@ -484,11 +484,16 @@ $time_column_min_width: 42px; /* + padding */
 
     .message-actions-button {
         box-sizing: border-box;
+        /* Display the actions buttons as
+           flex containers for positioning
+           text and spinners. */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         height: 28px;
-        padding: 6px 10px;
+        padding: 0 10px;
         border-radius: 4px;
         border: 0;
-        margin-bottom: 0;
         line-height: 1;
     }
 
@@ -523,6 +528,153 @@ $time_column_min_width: 42px; /* + padding */
             background: var(--color-exit-button-background-interactive);
         }
     }
+}
+
+/* Additional message-editing UI styles. */
+
+.message_edit_content {
+    line-height: 18px;
+    resize: vertical !important;
+    max-height: 24em;
+}
+
+.message_edit_countdown_timer {
+    text-align: right;
+    display: inline;
+    color: hsl(0deg 0% 63%);
+
+    &.expired {
+        color: hsl(4deg 58% 33%);
+    }
+}
+
+.message-edit-timer {
+    display: none;
+    /* Center vertically relative to
+       buttons. */
+    align-self: center;
+    /* Use flexbox to position to far right of
+       the Save and Cancel buttons. */
+    margin-left: auto;
+}
+
+.message-edit-feature-group {
+    display: flex;
+    margin: 0;
+    align-items: baseline;
+}
+
+.message_edit_save .loader {
+    display: none;
+    height: 28px;
+    width: 28px;
+}
+
+.edit-controls {
+    .btn-wrapper {
+        cursor: not-allowed;
+    }
+
+    .disable-btn {
+        pointer-events: none;
+    }
+}
+
+.message_edit_spinner {
+    margin-right: 8px;
+    padding-top: 5px;
+}
+
+.message_edit_spinner .loading_indicator_spinner {
+    width: 20px;
+    height: 20px;
+}
+
+.message_edit {
+    display: none;
+}
+
+/* Reduce some of the heavy padding from Bootstrap. */
+.message_edit_form {
+    margin-bottom: 10px;
+    cursor: default;
+
+    .edit-controls {
+        margin-left: 0;
+        margin-top: 0;
+    }
+
+    /* Override the default border-radius to properly align
+       the button corners with `stream_header_colorblock`. */
+    .dropdown-toggle {
+        border-radius: 1px 4px 4px 1px !important;
+    }
+
+    .dropdown-list-widget,
+    .stream_header_colorblock {
+        margin-bottom: 10px;
+    }
+
+    & textarea {
+        width: 100%;
+        min-width: 206px;
+        box-sizing: border-box;
+        /* Setting resize as none hides the bottom right diagonal box
+           (which even has a background color of its own!). */
+        resize: none !important;
+        color: hsl(0deg 0% 33%);
+        background-color: hsl(0deg 0% 100%);
+        border-radius: 4px;
+        vertical-align: middle;
+        border: 1px solid hsl(0deg 0% 80%);
+        padding: 4px 6px;
+        margin-bottom: 10px;
+
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsl(206.5deg 80% 62% / 80%);
+            outline: 0;
+
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.5deg 80% 62% / 60%);
+        }
+
+        &:read-only,
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0deg 0% 93%);
+        }
+    }
+}
+
+.message_edit_notice {
+    font-size: 10px;
+    opacity: 0.5;
+    user-select: none;
+    white-space: nowrap;
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
+.fade-in-message {
+    animation-name: fadeInMessage;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+
+    .message_edit_notice {
+        animation-name: fadeInEditNotice;
+        animation-duration: 1s;
+        animation-iteration-count: 1;
+    }
+}
+
+.message_edit_notice_hover:hover {
+    opacity: 1;
 }
 
 .recipient_row {

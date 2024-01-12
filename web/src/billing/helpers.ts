@@ -148,28 +148,6 @@ export function update_discount_details(
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
-let current_page: string;
-
-function handle_hashchange(): void {
-    $(`#${CSS.escape(current_page)}-tabs.nav a[href="${CSS.escape(location.hash)}"]`).tab("show");
-    $("html").scrollTop(0);
-}
-
-export function set_tab(page: string): void {
-    const hash = location.hash;
-    if (hash) {
-        $(`#${CSS.escape(page)}-tabs.nav a[href="${CSS.escape(hash)}"]`).tab("show");
-        $("html").scrollTop(0);
-    }
-
-    $<HTMLAnchorElement>(`#${CSS.escape(page)}-tabs.nav-tabs a`).on("click", function () {
-        location.hash = this.hash;
-    });
-
-    current_page = page;
-    window.addEventListener("hashchange", handle_hashchange);
-}
-
 export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
     return elem[0].checkValidity();
 }

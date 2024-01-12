@@ -133,7 +133,7 @@ strength allowed is controlled by two settings in
     be deleted at any time by that administrator.
 
   - See
-    [Restrict message editing and deletion](https://zulip.com/help/configure-message-editing-and-deletion)
+    [Restrict message editing and deletion](https://zulip.com/help/restrict-message-editing-and-deletion)
     for more details.
 
 ## Users and bots

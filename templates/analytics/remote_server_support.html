@@ -67,6 +67,7 @@
                     {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
                     {% set remote_id = remote_server.id %}
                     {% set remote_type = "remote_server_id" %}
+                    {% set format_discount = format_discount %}
                     {% set has_fixed_price = remote_servers_support_data[remote_server.id].plan_data.has_fixed_price %}
                     {% include 'analytics/sponsorship_forms_support.html' %}
                 {% endwith %}

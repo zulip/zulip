@@ -95,7 +95,7 @@ option:
 
 Servers running Zulip releases older than Zulip 8.0 can start the plan
 management log in process at
-<https://selfhosting.zulip.com/serverlogin>. This option is also
+<https://selfhosting.zulip.com/serverlogin/>. This option is also
 available for Zulip 8.0+ servers, and makes it possible to use a
 single plan for multiple organizations on one installation. See [help
 center documentation](https://zulip.com/help/self-hosted-billing) for

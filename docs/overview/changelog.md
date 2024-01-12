@@ -1042,7 +1042,7 @@ _Released 2022-03-29_
   manage a variety of workflows, including support interactions,
   answering questions, and investigating issues.
 - Administrators may enable the option to create [web-public
-  streams](https://zulip.com/help/web-public-streams). Web-public
+  streams](https://zulip.com/help/public-access-option). Web-public
   streams can be viewed by anyone on the Internet without creating an
   account in your organization.
 - Users can now select a status emoji alongside their status
