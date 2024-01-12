@@ -39,6 +39,7 @@ from zilencer.views import update_remote_realm_data_for_server
 from zproject.config import get_secret
 
 current_time = timezone_now().strftime(TIMESTAMP_FORMAT)
+communicate_with_stripe = get_secret("stripe_secret_key") is not None
 
 
 @dataclass
@@ -267,6 +268,9 @@ class Command(BaseCommand):
 
 
 def add_card_to_customer(customer: Customer) -> None:
+    if not communicate_with_stripe:
+        return
+
     assert customer.stripe_customer_id is not None
     # Set the Stripe API key
     stripe.api_key = get_secret("stripe_secret_key")
@@ -389,8 +393,13 @@ def populate_realm(customer_profile: CustomerProfile) -> Optional[Realm]:
         return realm
 
     billing_session = RealmBillingSession(user)
-    customer = billing_session.update_or_create_stripe_customer()
-    assert customer.stripe_customer_id is not None
+    if communicate_with_stripe:
+        # This attaches stripe_customer_id to customer.
+        customer = billing_session.update_or_create_stripe_customer()
+        assert customer.stripe_customer_id is not None
+    else:
+        customer = billing_session.update_or_create_customer()
+
     if customer_profile.card:
         add_card_to_customer(customer)
 
@@ -454,6 +463,16 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
             tzinfo=timezone.utc
         )
         billing_session.migrate_customer_to_legacy_plan(renewal_date, end_date)
+
+        if not communicate_with_stripe:
+            # We need to communicate with stripe to upgrade here.
+            return {
+                "unique_id": unique_id,
+                "server_uuid": server_uuid,
+                "api_key": api_key,
+                "ERROR": "Need to communicate with stripe to populate this profile.",
+            }
+
         # Scheduled server to upgrade to business plan.
         if customer_profile.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
             # This attaches stripe_customer_id to customer.
@@ -474,8 +493,12 @@ def populate_remote_server(customer_profile: CustomerProfile) -> Dict[str, str]:
             billing_session.do_upgrade(upgrade_request)
 
     elif customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS:
-        customer = billing_session.update_or_create_stripe_customer()
-        assert customer.stripe_customer_id is not None
+        if communicate_with_stripe:
+            # This attaches stripe_customer_id to customer.
+            customer = billing_session.update_or_create_stripe_customer()
+            assert customer.stripe_customer_id is not None
+        else:
+            customer = billing_session.update_or_create_customer()
         add_card_to_customer(customer)
         create_plan_for_customer(customer, customer_profile)
 
@@ -523,8 +546,12 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
     # TODO: Save property audit log  data for server.
     remote_realm.server.last_audit_log_update = timezone_now()
     remote_realm.server.save(update_fields=["last_audit_log_update"])
-    customer = billing_session.update_or_create_stripe_customer()
-    assert customer.stripe_customer_id is not None
+    if communicate_with_stripe:
+        # This attaches stripe_customer_id to customer.
+        customer = billing_session.update_or_create_stripe_customer()
+        assert customer.stripe_customer_id is not None
+    else:
+        customer = billing_session.update_or_create_customer()
     add_card_to_customer(customer)
     if customer_profile.tier is not None:
         billing_session.do_change_plan_type(

@@ -1877,12 +1877,19 @@ class BillingSession(ABC):
             renewal_cents = renewal_cents - discount
 
         charge_automatically = plan.charge_automatically
-        assert customer.stripe_customer_id is not None  # for mypy
-        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-        if charge_automatically:
-            payment_method = payment_method_string(stripe_customer)
-        else:
-            payment_method = "Billed by invoice"
+        if customer.stripe_customer_id is not None:
+            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+            stripe_email = stripe_customer.email
+            if charge_automatically:
+                payment_method = payment_method_string(stripe_customer)
+            else:
+                payment_method = "Billed by invoice"
+        elif settings.DEVELOPMENT:  # nocoverage
+            # Allow access to billing page in development environment without a stripe_customer_id.
+            payment_method = "Payment method not populated"
+            stripe_email = "not_populated@zulip.com"
+        else:  # nocoverage
+            raise BillingError(f"stripe_customer_id is None for {customer}")
 
         fixed_price = (
             cents_to_dollar_string(plan.fixed_price) if plan.fixed_price is not None else None
@@ -1908,7 +1915,7 @@ class BillingSession(ABC):
             "renewal_amount": cents_to_dollar_string(renewal_cents),
             "payment_method": payment_method,
             "charge_automatically": charge_automatically,
-            "stripe_email": stripe_customer.email,
+            "stripe_email": stripe_email,
             "CustomerPlan": CustomerPlan,
             "billing_frequency": billing_frequency,
             "fixed_price": fixed_price,
