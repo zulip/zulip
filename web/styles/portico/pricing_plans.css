@@ -1,20 +1,3 @@
-:root {
-    --color-background-gradient-start: hsl(209deg 40% 50%);
-    --color-background-gradient-end: hsl(210deg 48% 69%);
-
-    @media (prefers-color-scheme: dark) {
-        --color-background-gradient-start: hsl(209deg 63% 40%);
-        --color-background-gradient-end: hsl(238deg 28% 50%);
-    }
-}
-
-html {
-    /* Set the background on HTML to the starting
-       color for the plans-page gradient, so that the
-       top overscroll is undetectable. */
-    background: var(--color-background-gradient-start);
-}
-
 .portico-pricing {
     --font-ss3: "Source Sans 3 VF", sans-serif;
     --font-ops: "Open Sans Variable", sans-serif;
@@ -41,15 +24,15 @@ html {
     padding: 102px 0 58px;
     background: linear-gradient(
         180deg,
-        var(--color-background-gradient-start) 0%,
-        var(--color-background-gradient-end) 100%
+        hsl(209deg 40% 50%) 0%,
+        hsl(210deg 48% 69%) 100%
     );
 
     @media (prefers-color-scheme: dark) {
         background: linear-gradient(
             180deg,
-            var(--color-background-gradient-start) 30%,
-            var(--color-background-gradient-end) 100%
+            hsl(209deg 63% 40%) 30%,
+            hsl(238deg 28% 50%) 100%
         );
     }
 
