@@ -315,9 +315,12 @@ function integration_events() {
         }
     });
 
-    $(".integration-categories-dropdown .dropdown-toggle").on("click", () => {
-        toggle_categories_dropdown();
-    });
+    $(".integration-categories-dropdown .integration-toggle-categories-dropdown").on(
+        "click",
+        () => {
+            toggle_categories_dropdown();
+        },
+    );
 
     $(".integration-instruction-block").on("click", "a .integration-category", (e) => {
         e.preventDefault();
