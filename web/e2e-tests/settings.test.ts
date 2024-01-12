@@ -394,6 +394,13 @@ async function test_default_language_setting(page: Page): Promise<void> {
     await change_language(page, chinese_language_data_code);
     // Check that the saved indicator appears
     await check_language_setting_status(page);
+    // TODO: Uncomment lines below when the translation in locale/zh_Hans/LC_MESSAGES/django.po is available.
+    // const text = await common.get_text_from_selector(
+    //     page,
+    //     "#user-preferences .general-settings-status",
+    // );
+    // assert.equal(text, "已保存。请重新加载使更改生效。");
+
     await page.click(".reload_link");
     await page.waitForSelector("#user-preferences .language_selection_button", {
         visible: true,

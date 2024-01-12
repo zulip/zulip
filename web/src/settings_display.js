@@ -7,7 +7,7 @@ import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import * as emojisets from "./emojisets";
 import * as hash_parser from "./hash_parser";
-import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
+import {$t, $t_html, get_language_list_columns, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -100,21 +100,25 @@ function user_default_language_modal_post_render() {
                 setting_value,
             );
 
-            change_display_setting(
+            const $spinner = $("#settings_content").find(".general-settings-status");
+            $spinner.fadeTo(0, 1);
+            loading.make_indicator($spinner, {text: $t({defaultMessage: "Saving"})});
+            channel.patch({
+                url: "/json/settings",
                 data,
-                $("#settings_content").find(".general-settings-status"),
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a class='reload_link'>${content_html.join("")}</a>`,
-                    },
-                ),
-                true,
-            );
+                success(response_data) {
+                    const appear_after = 500;
+                    const success_msg_html =
+                        response_data.msg || $t_html({defaultMessage: "Saved"});
+                    setTimeout(() => {
+                        ui_report.success(success_msg_html, $spinner);
+                        settings_ui.display_checkmark($spinner);
+                    }, appear_after);
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, $spinner);
+                },
+            });
         });
 }
 
