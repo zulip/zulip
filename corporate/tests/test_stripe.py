@@ -5424,10 +5424,10 @@ class TestSupportBillingHelpers(StripeTestCase):
         message = billing_session.process_support_view_request(support_view_request)
         self.assertEqual("Minimum licenses for zulip changed to 25 from 0.", message)
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED
+            event_type=RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {"old_minimum_licenses": None, "new_minimum_licenses": 25}
+        expected_extra_data = {"old_value": None, "new_value": 25, "property": "minimum_licenses"}
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
         self.login_user(user)

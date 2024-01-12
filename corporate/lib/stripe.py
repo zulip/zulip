@@ -578,8 +578,8 @@ class AuditLogEventType(Enum):
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 8
     CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 9
     BILLING_ENTITY_PLAN_TYPE_CHANGED = 10
-    MINIMUM_LICENSES_CHANGED = 11
-    CUSTOMER_PLAN_END_DATE_CHANGED = 12
+    CUSTOMER_PROPERTY_CHANGED = 11
+    CUSTOMER_PLAN_PROPERTY_CHANGED = 12
 
 
 class PlanTierChangeType(Enum):
@@ -1119,11 +1119,12 @@ class BillingSession(ABC):
         customer.save(update_fields=["minimum_licenses"])
 
         self.write_to_audit_log(
-            event_type=AuditLogEventType.MINIMUM_LICENSES_CHANGED,
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
             event_time=timezone_now(),
             extra_data={
-                "old_minimum_licenses": previous_minimum_license_count,
-                "new_minimum_licenses": new_minimum_license_count,
+                "old_value": previous_minimum_license_count,
+                "new_value": new_minimum_license_count,
+                "property": "minimum_licenses",
             },
         )
         if previous_minimum_license_count is None:
@@ -1180,13 +1181,18 @@ class BillingSession(ABC):
             if plan is not None:
                 assert plan.end_date is not None
                 assert plan.status == CustomerPlan.ACTIVE
-                old_end_date = plan.end_date.strftime("%Y-%m-%d")
+                old_end_date = plan.end_date
                 plan.end_date = new_end_date
                 plan.save(update_fields=["end_date"])
                 self.write_to_audit_log(
-                    event_type=AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED,
+                    event_type=AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED,
                     event_time=timezone_now(),
-                    extra_data={"old_end_date": old_end_date, "new_end_date": end_date_string},
+                    extra_data={
+                        "old_value": old_end_date,
+                        "new_value": new_end_date,
+                        "plan_id": plan.id,
+                        "property": "end_date",
+                    },
                 )
                 return f"Current plan for {self.billing_entity_display_name} updated to end on {end_date_string}."
         raise SupportRequestError(
@@ -3034,16 +3040,16 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RealmAuditLog.REALM_DISCOUNT_CHANGED
-        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
-            return RealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_PROPERTY_CHANGED:
+            return RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RealmAuditLog.REALM_BILLING_MODALITY_CHANGED
-        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
-            return RealmAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
+            return RealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
             return RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
@@ -3394,16 +3400,16 @@ class RemoteRealmBillingSession(BillingSession):
             return RemoteRealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:  # nocoverage
             return RemoteRealmAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
-        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
-            return RemoteRealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PROPERTY_CHANGED:
+            return RemoteRealmAuditLog.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
-        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
-            return RemoteRealmAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
+            return RemoteRealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
@@ -3808,16 +3814,16 @@ class RemoteServerBillingSession(BillingSession):
             return RemoteZulipServerAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED  # nocoverage
-        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
-            return RemoteZulipServerAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PROPERTY_CHANGED:
+            return RemoteZulipServerAuditLog.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
-        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
-            return RemoteZulipServerAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
+            return RemoteZulipServerAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (

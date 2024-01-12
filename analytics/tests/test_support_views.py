@@ -32,7 +32,12 @@ if TYPE_CHECKING:
 
 import uuid
 
-from zilencer.models import RemoteRealm, RemoteZulipServer, RemoteZulipServerAuditLog
+from zilencer.models import (
+    RemoteRealm,
+    RemoteRealmAuditLog,
+    RemoteZulipServer,
+    RemoteZulipServerAuditLog,
+)
 
 
 class TestRemoteServerSupportEndpoint(ZulipTestCase):
@@ -365,6 +370,17 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
         plan.refresh_from_db()
         self.assertEqual(plan.end_date, datetime(2040, 1, 1, tzinfo=timezone.utc))
+        audit_log = RemoteRealmAuditLog.objects.filter(
+            event_type=RemoteRealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED
+        ).last()
+        assert audit_log is not None
+        expected_extra_data = {
+            "old_value": "2050-02-01T00:00:00Z",
+            "new_value": "2040-01-01T00:00:00Z",
+            "property": "end_date",
+            "plan_id": plan.id,
+        }
+        self.assertEqual(audit_log.extra_data, expected_extra_data)
 
         result = self.client_post(
             "/activity/remote/support",
