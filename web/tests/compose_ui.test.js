@@ -498,18 +498,6 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     assert.ok(!compose_box_top_set);
 });
 
-let set_text = "";
-let wrap_selection_called = false;
-let wrap_syntax_start = "";
-let wrap_syntax_end = "";
-
-function reset_state() {
-    set_text = "";
-    wrap_selection_called = false;
-    wrap_syntax_start = "";
-    wrap_syntax_end = "";
-}
-
 const $textarea = $("textarea#compose-textarea");
 $textarea.get = () => ({
     setSelectionRange(start, end) {
@@ -522,865 +510,587 @@ $textarea.get = () => ({
     },
 });
 
-function init_textarea(val, range) {
-    $textarea.val = () => val;
-    $textarea.range = () => range;
+// The argument `text_representation` is a string representing the text
+// in the compose box, where `<` and `>` denote the start and end of any
+// selection, and `|` represents the cursor when there is no selection.
+// To work as expected, the string must contain either a `|`, or a `<`
+// followed by a `>` with some text in between.
+function init_textarea_state(text_representation) {
+    $textarea.val = () => text_representation.replaceAll(/[<>|]/g, "");
+    $textarea.range = text_representation.includes("|")
+        ? () => ({
+              start: text_representation.indexOf("|"),
+              end: text_representation.indexOf("|"),
+              text: "",
+              length: 0,
+          })
+        : () => ({
+              start: text_representation.indexOf("<"),
+              end: text_representation.indexOf(">") - 1,
+              text: text_representation.slice(
+                  text_representation.indexOf("<") + 1,
+                  text_representation.indexOf(">"),
+              ),
+              length: text_representation.indexOf(">") - text_representation.indexOf("<") - 1,
+          });
+}
+
+// Returns a string representing the text in the compose box, of the same
+// style as the argument `text_representation` of the above function.
+function get_textarea_state() {
+    const before_text = $textarea.val().slice(0, $textarea.range().start);
+    const selected_text = $textarea.range().text ? "<" + $textarea.range().text + ">" : "|";
+    const after_text = $textarea.val().slice($textarea.range().end);
+    return before_text + selected_text + after_text;
 }
 
 run_test("format_text - bold and italic", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
-        set_text = text;
+        $textarea.val = () => text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
-        wrap_selection_called = true;
-        wrap_syntax_start = syntax_start;
-        wrap_syntax_end = syntax_end || syntax_start;
-    });
-
-    const italic_syntax = "*";
-    const bold_syntax = "**";
+    override(
+        text_field_edit,
+        "wrapSelection",
+        (_field, syntax_start, syntax_end = syntax_start) => {
+            const new_val =
+                $textarea.val().slice(0, $textarea.range().start) +
+                syntax_start +
+                $textarea.val().slice($textarea.range().start, $textarea.range().end) +
+                syntax_end +
+                $textarea.val().slice($textarea.range().end);
+            $textarea.val = () => new_val;
+            const new_range = {
+                start: $textarea.range().start + syntax_start.length,
+                end: $textarea.range().end + syntax_start.length,
+                text: $textarea
+                    .val()
+                    .slice(
+                        $textarea.range().start + syntax_start.length,
+                        $textarea.range().end + syntax_start.length,
+                    ),
+                length: $textarea.range().end - $textarea.range().start,
+            };
+            $textarea.range = () => new_range;
+        },
+    );
 
     // Bold selected text
-    reset_state();
-    init_textarea("abc", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "bold");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, bold_syntax);
-    assert.equal(wrap_syntax_end, bold_syntax);
+    assert.equal(get_textarea_state(), "before **<abc>** after");
+
+    // Bold, no selection
+    init_textarea_state("|");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "**|**");
 
     // Undo bold selected text, syntax not selected
-    reset_state();
-    init_textarea("**abc**", {
-        start: 2,
-        end: 5,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before **<abc>** after");
     compose_ui.format_text($textarea, "bold");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
     // Undo bold selected text, syntax selected
-    reset_state();
-    init_textarea("**abc**", {
-        start: 0,
-        end: 7,
-        text: "**abc**",
-        length: 7,
-    });
+    init_textarea_state("before <**abc**> after");
     compose_ui.format_text($textarea, "bold");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
     // Italic selected text
-    reset_state();
-    init_textarea("abc", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "italic");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, italic_syntax);
-    assert.equal(wrap_syntax_end, italic_syntax);
+    assert.equal(get_textarea_state(), "before *<abc>* after");
+
+    // Italic, no selection
+    init_textarea_state("|");
+    compose_ui.format_text($textarea, "italic");
 
     // Undo italic selected text, syntax not selected
-    reset_state();
-    init_textarea("*abc*", {
-        start: 1,
-        end: 4,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before *<abc>* after");
     compose_ui.format_text($textarea, "italic");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
     // Undo italic selected text, syntax selected
-    reset_state();
-    init_textarea("*abc*", {
-        start: 0,
-        end: 5,
-        text: "*abc*",
-        length: 5,
-    });
+    init_textarea_state("before <*abc*> after");
     compose_ui.format_text($textarea, "italic");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
     // Undo bold selected text, text is both italic and bold, syntax not selected.
-    reset_state();
-    init_textarea("***abc***", {
-        start: 3,
-        end: 6,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before ***<abc>*** after");
     compose_ui.format_text($textarea, "bold");
-    assert.equal(set_text, "*abc*");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before *<abc>* after");
 
     // Undo bold selected text, text is both italic and bold, syntax selected.
-    reset_state();
-    init_textarea("***abc***", {
-        start: 0,
-        end: 9,
-        text: "***abc***",
-        length: 9,
-    });
+    init_textarea_state("before <***abc***> after");
     compose_ui.format_text($textarea, "bold");
-    assert.equal(set_text, "*abc*");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <*abc*> after");
 
     // Undo italic selected text, text is both italic and bold, syntax not selected.
-    reset_state();
-    init_textarea("***abc***", {
-        start: 3,
-        end: 6,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before ***<abc>*** after");
     compose_ui.format_text($textarea, "italic");
-    assert.equal(set_text, "**abc**");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before **<abc>** after");
 
     // Undo italic selected text, text is both italic and bold, syntax selected.
-    reset_state();
-    init_textarea("***abc***", {
-        start: 0,
-        end: 9,
-        text: "***abc***",
-        length: 9,
-    });
+    init_textarea_state("before <***abc***> after");
     compose_ui.format_text($textarea, "italic");
-    assert.equal(set_text, "**abc**");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <**abc**> after");
+});
 
-    // Test bulleted list addition
-    reset_state();
-    init_textarea("first_item\nsecond_item", {
-        start: 0,
-        end: 22,
-        text: "first_item\nsecond_item",
-        length: 22,
+run_test("format_text - bulleted and numbered lists", ({override}) => {
+    override(text_field_edit, "set", (_field, text) => {
+        $textarea.val = () => text;
     });
+
+    // Toggling on bulleted list
+    init_textarea_state("<first_item\nsecond_item>");
     compose_ui.format_text($textarea, "bulleted");
-    assert.equal(set_text, "- first_item\n- second_item");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<- first_item\n- second_item>");
 
-    // Test bulleted list addition with newline at start
-    reset_state();
-    init_textarea("\nfirst_item\nsecond_item", {
-        start: 0,
-        end: 23,
-        text: "\nfirst_item\nsecond_item",
-        length: 23,
-    });
+    init_textarea_state("<\nfirst_item\nsecond_item>");
     compose_ui.format_text($textarea, "bulleted");
-    assert.equal(set_text, "- \n- first_item\n- second_item");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<- \n- first_item\n- second_item>");
 
-    // Test bulleted list removal
-    reset_state();
-    init_textarea("- first_item\n- second_item", {
-        start: 0,
-        end: 26,
-        text: "- first_item\n- second_item",
-        length: 26,
-    });
+    // Toggling off bulleted list
+    init_textarea_state("<- first_item\n- second_item>");
     compose_ui.format_text($textarea, "bulleted");
-    assert.equal(set_text, "first_item\nsecond_item");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<first_item\nsecond_item>");
 
-    // Test bulleted list removal with *s
-    reset_state();
-    init_textarea("* first_item\n* second_item", {
-        start: 0,
-        end: 26,
-        text: "* first_item\n* second_item",
-        length: 26,
-    });
+    init_textarea_state("<* first_item\n* second_item>");
     compose_ui.format_text($textarea, "bulleted");
-    assert.equal(set_text, "first_item\nsecond_item");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<first_item\nsecond_item>");
 
-    // Test numbered list toggling on
-    reset_state();
-    init_textarea("first_item\nsecond_item", {
-        start: 0,
-        end: 22,
-        text: "first_item\nsecond_item",
-        length: 22,
-    });
+    // Toggling on numbered list
+    init_textarea_state("<first_item\nsecond_item>");
     compose_ui.format_text($textarea, "numbered");
-    assert.equal(set_text, "1. first_item\n2. second_item");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<1. first_item\n2. second_item>");
 
-    // Test numbered list toggling off
-    reset_state();
-    init_textarea("1. first_item\n2. second_item", {
-        start: 0,
-        end: 28,
-        text: "1. first_item\n2. second_item",
-        length: 28,
-    });
+    init_textarea_state("<first_item\nsecond_item\n>");
     compose_ui.format_text($textarea, "numbered");
-    assert.equal(set_text, "first_item\nsecond_item");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<1. first_item\n2. second_item>\n");
 
-    // Test numbered list toggling with newline at end
-    reset_state();
-    init_textarea("first_item\nsecond_item\n", {
-        start: 0,
-        end: 23,
-        text: "first_item\nsecond_item\n",
-        length: 23,
-    });
+    init_textarea_state("before_first\nfirst_<item\nsecond>_item\nafter_last");
     compose_ui.format_text($textarea, "numbered");
-    assert.equal(set_text, "1. first_item\n2. second_item\n");
-    assert.equal(wrap_selection_called, false);
+    // // Notice the blank lines inserted right before and after the list to visually demarcate it.
+    // // Had the blank line after `second_item` not been inserted, `after_last` would have been
+    // // (wrongly) indented as part of the list's last item too.
+    assert.equal(
+        get_textarea_state(),
+        "before_first\n\n<1. first_item\n2. second_item>\n\nafter_last",
+    );
 
-    // Test numbered list toggling on with partially selected lines
-    reset_state();
-    init_textarea("before_first\nfirst_item\nsecond_item\nafter_last", {
-        start: 15,
-        end: 33,
-        text: "rst_item\nsecond_it",
-        length: 18,
-    });
+    // Toggling off numbered list
+    init_textarea_state("<1. first_item\n2. second_item>");
     compose_ui.format_text($textarea, "numbered");
-    // Notice the blank lines inserted right before and after the list to visually demarcate it.
-    // Had the blank line after `second_item` not been inserted, `after_last` would have been
-    // (wrongly) indented as part of the list's last item too.
-    assert.equal(set_text, "before_first\n\n1. first_item\n2. second_item\n\nafter_last");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<first_item\nsecond_item>");
+
+    init_textarea_state("1. first_<item\n2. second>_item");
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(get_textarea_state(), "<first_item\nsecond_item>");
 });
 
 run_test("format_text - strikethrough", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
-        set_text = text;
+        $textarea.val = () => text;
     });
     override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
-        wrap_selection_called = true;
-        wrap_syntax_start = syntax_start;
-        wrap_syntax_end = syntax_end;
+        const new_val =
+            $textarea.val().slice(0, $textarea.range().start) +
+            syntax_start +
+            $textarea.val().slice($textarea.range().start, $textarea.range().end) +
+            syntax_end +
+            $textarea.val().slice($textarea.range().end);
+        $textarea.val = () => new_val;
+        const new_range = {
+            start: $textarea.range().start + syntax_start.length,
+            end: $textarea.range().end + syntax_start.length,
+            text: $textarea
+                .val()
+                .slice(
+                    $textarea.range().start + syntax_start.length,
+                    $textarea.range().end + syntax_start.length,
+                ),
+            length: $textarea.range().end - $textarea.range().start,
+        };
+        $textarea.range = () => new_range;
     });
-
-    const strikethrough_syntax = "~~";
 
     // Strikethrough selected text
-    reset_state();
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "strikethrough");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, strikethrough_syntax);
-    assert.equal(wrap_syntax_end, strikethrough_syntax);
+    assert.equal(get_textarea_state(), "before ~~<abc>~~ after");
+
+    // Strikethrough, no selection
+    init_textarea_state("|");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "~~|~~");
 
     // Undo strikethrough selected text, syntax not selected
-    reset_state();
-    init_textarea("~~abc~~", {
-        start: 2,
-        end: 5,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before ~~<abc>~~ after");
     compose_ui.format_text($textarea, "strikethrough");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
-    // Undo strikethrough selected text, syntax selected
-    reset_state();
-    init_textarea("~~abc~~", {
-        start: 0,
-        end: 7,
-        text: "~~abc~~",
-        length: 7,
-    });
+    // // Undo strikethrough selected text, syntax selected
+    init_textarea_state("before <~~abc~~> after");
     compose_ui.format_text($textarea, "strikethrough");
-    assert.equal(set_text, "abc");
+    assert.equal(get_textarea_state(), "before <abc> after");
 });
 
 run_test("format_text - latex", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
-        set_text = text;
+        $textarea.val = () => text;
     });
     override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
-        wrap_selection_called = true;
-        wrap_syntax_start = syntax_start;
-        wrap_syntax_end = syntax_end;
+        const new_val =
+            $textarea.val().slice(0, $textarea.range().start) +
+            syntax_start +
+            $textarea.val().slice($textarea.range().start, $textarea.range().end) +
+            syntax_end +
+            $textarea.val().slice($textarea.range().end);
+        $textarea.val = () => new_val;
+        const new_range = {
+            start: $textarea.range().start + syntax_start.length,
+            end: $textarea.range().end + syntax_start.length,
+            text: $textarea
+                .val()
+                .slice(
+                    $textarea.range().start + syntax_start.length,
+                    $textarea.range().end + syntax_start.length,
+                ),
+            length: $textarea.range().end - $textarea.range().start,
+        };
+        $textarea.range = () => new_range;
     });
-
-    const latex_syntax = "$$";
-    const block_latex_syntax_start = "```math\n";
-    const block_latex_syntax_end = "\n```";
 
     // Latex selected text
-    reset_state();
-    init_textarea("abc", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, latex_syntax);
-    assert.equal(wrap_syntax_end, latex_syntax);
+    assert.equal(get_textarea_state(), "before $$<abc>$$ after");
 
-    reset_state();
-    init_textarea("Before\nBefore this should\nbe math After\nAfter", {
-        start: 14,
-        end: 33,
-        text: "this should\nbe math",
-        length: 19,
-    });
+    init_textarea_state("Before\nBefore <this should\nbe math> After\nAfter");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, "\n" + block_latex_syntax_start);
-    assert.equal(wrap_syntax_end, block_latex_syntax_end + "\n");
+    assert.equal(
+        get_textarea_state(),
+        "Before\nBefore \n```math\n<this should\nbe math>\n```\n After\nAfter",
+    );
 
-    reset_state();
-    init_textarea("abc\ndef", {
-        start: 0,
-        end: 7,
-        text: "abc\ndef",
-        length: 7,
-    });
+    init_textarea_state("<abc\ndef>");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, block_latex_syntax_start);
-    assert.equal(wrap_syntax_end, block_latex_syntax_end);
+    assert.equal(get_textarea_state(), "```math\n<abc\ndef>\n```");
 
-    // No text selected
-    reset_state();
-    init_textarea("", {
-        start: 0,
-        end: 0,
-        text: "",
-        length: 0,
-    });
+    // No selection
+    init_textarea_state("|");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
+    assert.equal(get_textarea_state(), "```math\n|\n```");
 
     // Undo latex selected text, syntax not selected
-    reset_state();
-    init_textarea("$$abc$$", {
-        start: 2,
-        end: 5,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before $$<abc>$$ after");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
-    reset_state();
-    init_textarea("```math\nabc\ndef\n```", {
-        start: 8,
-        end: 15,
-        text: "abc\ndef",
-        length: 7,
-    });
+    init_textarea_state("Before\n```math\n<abc\ndef>\n```\nAfter");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "abc\ndef");
-    assert.equal(wrap_selection_called, false);
-
-    reset_state();
-    init_textarea("abc\n```math\nde\nf\n```\nghi", {
-        start: 12,
-        end: 16,
-        text: "de\nf",
-        length: 4,
-    });
-    compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "abc\nde\nf\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "Before\n<abc\ndef>\nAfter");
 
     // Undo latex selected text, syntax selected
-    reset_state();
-    init_textarea("$$abc$$", {
-        start: 0,
-        end: 7,
-        text: "$$abc$$",
-        length: 7,
-    });
+    init_textarea_state("before <$$abc$$> after");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
-    reset_state();
-    init_textarea("```math\nabc\ndef\n```", {
-        start: 0,
-        end: 19,
-        text: "```math\nabc\ndef\n```",
-        length: 19,
-    });
+    init_textarea_state("Before\n<```math\nabc\ndef\n```>\nAfter");
     compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "abc\ndef");
-    assert.equal(wrap_selection_called, false);
-
-    reset_state();
-    init_textarea("abc\n```math\nde\nf\n```\nghi", {
-        start: 4,
-        end: 20,
-        text: "```math\nde\nf\n```",
-        length: 16,
-    });
-    compose_ui.format_text($textarea, "latex");
-    assert.equal(set_text, "abc\nde\nf\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "Before\n<abc\ndef>\nAfter");
 });
 
 run_test("format_text - code", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
-        set_text = text;
+        $textarea.val = () => text;
     });
     override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
-        wrap_selection_called = true;
-        wrap_syntax_start = syntax_start;
-        wrap_syntax_end = syntax_end;
+        const new_val =
+            $textarea.val().slice(0, $textarea.range().start) +
+            syntax_start +
+            $textarea.val().slice($textarea.range().start, $textarea.range().end) +
+            syntax_end +
+            $textarea.val().slice($textarea.range().end);
+        $textarea.val = () => new_val;
+        const new_range = {
+            start: $textarea.range().start + syntax_start.length,
+            end: $textarea.range().end + syntax_start.length,
+            text: $textarea
+                .val()
+                .slice(
+                    $textarea.range().start + syntax_start.length,
+                    $textarea.range().end + syntax_start.length,
+                ),
+            length: $textarea.range().end - $textarea.range().start,
+        };
+        $textarea.range = () => new_range;
     });
-
-    const code_syntax = "`";
-    const code_block_syntax_start = "```\n";
-    const code_block_syntax_end = "\n```";
 
     // Code selected text
-    reset_state();
-    init_textarea("abc def", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, code_syntax);
-    assert.equal(wrap_syntax_end, code_syntax);
+    assert.equal(get_textarea_state(), "before `<abc>` after");
 
-    reset_state();
-    init_textarea("abc", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("Before\nBefore <this should\nbe code> After\nAfter");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, code_syntax);
-    assert.equal(wrap_syntax_end, code_syntax);
+    assert.equal(
+        get_textarea_state(),
+        "Before\nBefore \n```\n<this should\nbe code>\n```\n After\nAfter",
+    );
 
-    reset_state();
-    init_textarea("abc\ndef\nghi\njkl", {
-        start: 4,
-        end: 11,
-        text: "def\nghi",
-        length: 7,
-    });
+    init_textarea_state("<abc\ndef>");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, code_block_syntax_start);
-    assert.equal(wrap_syntax_end, code_block_syntax_end);
+    assert.equal(get_textarea_state(), "```\n<abc\ndef>\n```");
 
-    // No text selected
-    reset_state();
-    init_textarea("", {
-        start: 0,
-        end: 0,
-        text: "",
-        length: 0,
-    });
+    // Code, no selection
+    init_textarea_state("|");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
+    assert.equal(get_textarea_state(), "```\n|\n```");
 
     // Undo code selected text, syntax not selected
-    reset_state();
-    init_textarea("`abc`", {
-        start: 1,
-        end: 4,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before `<abc>` after");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
-    reset_state();
-    init_textarea("```\nabc\n```", {
-        start: 4,
-        end: 7,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("Before\n```\n<abc\ndef>\n```\nAfter");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
-
-    reset_state();
-    init_textarea("abc\n```\ndef\n```\nghi", {
-        start: 8,
-        end: 11,
-        text: "abc",
-        length: 3,
-    });
-    compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "abc\ndef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "Before\n<abc\ndef>\nAfter");
 
     // Undo code selected text, syntax selected
-    reset_state();
-    init_textarea("`abc` def", {
-        start: 0,
-        end: 5,
-        text: "`abc`",
-        length: 5,
-    });
+    init_textarea_state("before <`abc`> after");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "abc def");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc> after");
 
-    reset_state();
-    init_textarea("```\nabc\ndef\n```", {
-        start: 0,
-        end: 15,
-        text: "```\nabc\ndef\n```",
-        length: 15,
-    });
+    init_textarea_state("before\n<```\nabc\ndef\n```>\nafter");
     compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "abc\ndef");
-    assert.equal(wrap_selection_called, false);
-
-    reset_state();
-    init_textarea("abc\n```\ndef\n```\nghi", {
-        start: 3,
-        end: 16,
-        text: "\n```\ndef\n```\n",
-        length: 13,
-    });
-    compose_ui.format_text($textarea, "code");
-    assert.equal(set_text, "abc\ndef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
 run_test("format_text - quote", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
-        set_text = text;
+        $textarea.val = () => text;
     });
     override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
-        wrap_selection_called = true;
-        wrap_syntax_start = syntax_start;
-        wrap_syntax_end = syntax_end;
+        const new_val =
+            $textarea.val().slice(0, $textarea.range().start) +
+            syntax_start +
+            $textarea.val().slice($textarea.range().start, $textarea.range().end) +
+            syntax_end +
+            $textarea.val().slice($textarea.range().end);
+        $textarea.val = () => new_val;
+        const new_range = {
+            start: $textarea.range().start + syntax_start.length,
+            end: $textarea.range().end + syntax_start.length,
+            text: $textarea
+                .val()
+                .slice(
+                    $textarea.range().start + syntax_start.length,
+                    $textarea.range().end + syntax_start.length,
+                ),
+            length: $textarea.range().end - $textarea.range().start,
+        };
+        $textarea.range = () => new_range;
     });
-
-    const quote_syntax_start = "```quote\n";
-    const quote_syntax_end = "\n```";
 
     // Quote selected text
-    reset_state();
-    init_textarea("abc", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "quote");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, quote_syntax_start);
-    assert.equal(wrap_syntax_end, quote_syntax_end);
+    assert.equal(get_textarea_state(), "before \n```quote\n<abc>\n```\n after");
 
-    reset_state();
-    init_textarea("abc\ndef\nghi", {
-        start: 4,
-        end: 7,
-        text: "def",
-        length: 3,
-    });
+    init_textarea_state("<abc\ndef>");
     compose_ui.format_text($textarea, "quote");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, quote_syntax_start);
-    assert.equal(wrap_syntax_end, quote_syntax_end);
+    assert.equal(get_textarea_state(), "```quote\n<abc\ndef>\n```");
+
+    // Quote, no selection
+    init_textarea_state("|");
+    compose_ui.format_text($textarea, "quote");
+    assert.equal(get_textarea_state(), "```quote\n|\n```");
 
     // Undo quote selected text, syntax not selected
-    reset_state();
-    init_textarea("```quote\nabc\n```", {
-        start: 9,
-        end: 12,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("```quote\n<abc>\n```");
     compose_ui.format_text($textarea, "quote");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<abc>");
 
-    reset_state();
-    init_textarea("abc\n```quote\ndef\n```\nghi", {
-        start: 13,
-        end: 16,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before\n```quote\n<abc\ndef>\n```\nafter");
     compose_ui.format_text($textarea, "quote");
-    assert.equal(set_text, "abc\ndef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 
     // Undo quote selected text, syntax selected
-    reset_state();
-    init_textarea("```quote\nabc\n```", {
-        start: 0,
-        end: 16,
-        text: "```quote\nabc\n```",
-        length: 16,
-    });
+    init_textarea_state("<```quote\nabc\n```>");
     compose_ui.format_text($textarea, "quote");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "<abc>");
 
-    reset_state();
-    init_textarea("abc\n```quote\ndef\n```\nghi", {
-        start: 4,
-        end: 20,
-        text: "```quote\ndef\n```",
-        length: 16,
-    });
+    init_textarea_state("before\n<```quote\nabc\ndef\n```>\nafter");
     compose_ui.format_text($textarea, "quote");
-    assert.equal(set_text, "abc\ndef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
 run_test("format_text - spoiler", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
-        set_text = text;
+        $textarea.val = () => text;
     });
     override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
-        wrap_selection_called = true;
-        wrap_syntax_start = syntax_start;
-        wrap_syntax_end = syntax_end;
+        const new_val =
+            $textarea.val().slice(0, $textarea.range().start) +
+            syntax_start +
+            $textarea.val().slice($textarea.range().start, $textarea.range().end) +
+            syntax_end +
+            $textarea.val().slice($textarea.range().end);
+        $textarea.val = () => new_val;
+        // Since, the original selection is not retained for spoiler,
+        // resetting range on wrapping selection is not required.
     });
-
-    const spoiler_syntax_start_with_header = "```spoiler Header\n";
-    const spoiler_syntax_end = "\n```";
 
     // Spoiler selected text
-    reset_state();
-    init_textarea("abc", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, spoiler_syntax_start_with_header);
-    assert.equal(wrap_syntax_end, spoiler_syntax_end);
+    assert.equal(get_textarea_state(), "before \n```spoiler <Header>\nabc\n```\n after");
 
-    // Undo spoiler, header selected
-    reset_state();
-    init_textarea("```spoiler Header\nabc\n```", {
-        start: 11,
-        end: 17,
-        text: "Header",
-        length: 6,
-    });
+    init_textarea_state("before <abc\ndef> after");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "Header\nabc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before \n```spoiler <Header>\nabc\ndef\n```\n after");
 
-    reset_state();
-    init_textarea("abc\n```spoiler \ndef\n```\nghi", {
-        start: 15,
-        end: 15,
-        text: "",
-        length: 0,
-    });
+    // Spoiler, no selection
+    init_textarea_state("before | after");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc\ndef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before \n```spoiler <Header>\n\n```\n after");
 
-    // Undo spoiler selected text, only content selected
-    reset_state();
-    init_textarea("```spoiler \nabc\n```", {
-        start: 12,
-        end: 15,
-        text: "abc",
-        length: 3,
-    });
+    // Undo spoiler, only header selected
+    init_textarea_state("before\n```spoiler <Header>\nabc\n```\nafter");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<Header\nabc>\nafter");
 
-    reset_state();
-    init_textarea("```spoiler abc\ndef\n```", {
-        start: 15,
-        end: 18,
-        text: "def",
-        length: 3,
-    });
+    init_textarea_state("before\n```spoiler |\nabc\n```\nafter");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc\ndef");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 
-    reset_state();
-    init_textarea("abc\n```spoiler d\nef\n```\nghi", {
-        start: 17,
-        end: 19,
-        text: "ef",
-        length: 2,
-    });
+    // Undo spoiler, only content selected
+    init_textarea_state("before\n```spoiler Header\n<abc>\n```\nafter");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc\nd\nef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<Header\nabc>\nafter");
 
-    // Undo spoiler selected text, content and title selected
-    reset_state();
-    init_textarea("```spoiler abc\ndef\n```", {
-        start: 11,
-        end: 18,
-        text: "abc\ndef",
-        length: 7,
-    });
+    init_textarea_state("before\n```spoiler \n<abc>\n```\nafter");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc\ndef");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 
-    reset_state();
-    init_textarea("abc\n```spoiler d\nef\n```\nghi", {
-        start: 15,
-        end: 19,
-        text: "d\nef",
-        length: 4,
-    });
+    // Undo spoiler, content and header selected
+    init_textarea_state("before\n```spoiler <Header\nabc>\n```\nafter");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc\nd\nef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<Header\nabc>\nafter");
 
-    // Undo spoiler selected text, syntax selected
-    reset_state();
-    init_textarea("```spoiler abc\ndef\n```", {
-        start: 0,
-        end: 22,
-        text: "```spoiler abc\ndef\n```",
-        length: 22,
-    });
+    init_textarea_state("before\n```spoiler <\nabc>\n```\nafter");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc\ndef");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 
-    reset_state();
-    init_textarea("abc\n```spoiler d\nef\n```\nghi", {
-        start: 4,
-        end: 23,
-        text: "```spoiler d\nef\n```",
-        length: 19,
-    });
+    // Undo spoiler, syntax selected
+    init_textarea_state("before\n<```spoiler Header\nabc\n```>\nafter");
     compose_ui.format_text($textarea, "spoiler");
-    assert.equal(set_text, "abc\nd\nef\nghi");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before\n<Header\nabc>\nafter");
+
+    init_textarea_state("before\n<```spoiler \nabc\n```>\nafter");
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 });
 
 run_test("format_text - link", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
-        set_text = text;
+        $textarea.val = () => text;
     });
     override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
-        wrap_selection_called = true;
-        wrap_syntax_start = syntax_start;
-        wrap_syntax_end = syntax_end;
+        const new_val =
+            $textarea.val().slice(0, $textarea.range().start) +
+            syntax_start +
+            $textarea.val().slice($textarea.range().start, $textarea.range().end) +
+            syntax_end +
+            $textarea.val().slice($textarea.range().end);
+        $textarea.val = () => new_val;
+        // Since, the original selection is not retained for spoiler,
+        // resetting range on wrapping selection is not required.
     });
-
-    const link_syntax_start = "[";
-    const link_syntax_end = "](url)";
 
     // Link selected text
-    reset_state();
-    init_textarea("abc", {
-        start: 0,
-        end: 3,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "link");
-    assert.equal(set_text, "");
-    assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax_start, link_syntax_start);
-    assert.equal(wrap_syntax_end, link_syntax_end);
+    assert.equal(get_textarea_state(), "before [abc](<url>) after");
 
-    // Undo link selected text, url selected
-    reset_state();
-    init_textarea("[abc](def)", {
-        start: 6,
-        end: 9,
-        text: "def",
-        length: 3,
-    });
+    // Link, no selection
+    init_textarea_state("|");
     compose_ui.format_text($textarea, "link");
-    assert.equal(set_text, "abc def");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "[](<url>)");
 
-    reset_state();
-    init_textarea("[abc](url)", {
-        start: 6,
-        end: 9,
-        text: "url",
-        length: 3,
-    });
+    // Undo link, url selected
+    init_textarea_state("before [](<url>) after");
     compose_ui.format_text($textarea, "link");
-    assert.equal(set_text, "abc");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before | after");
 
-    // Undo link selected text, description selected
-    reset_state();
-    init_textarea("[abc](def)", {
-        start: 1,
-        end: 4,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before [](|) after");
     compose_ui.format_text($textarea, "link");
-    assert.equal(set_text, "abc def");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before | after");
 
-    // Undo link selected text, description selected, without disturbing other links
-    reset_state();
-    init_textarea("[xyz](uvw) [abc](def)", {
-        start: 12,
-        end: 15,
-        text: "abc",
-        length: 3,
-    });
+    init_textarea_state("before [](<def>) after");
     compose_ui.format_text($textarea, "link");
-    assert.equal(set_text, "[xyz](uvw) abc def");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <def> after");
+
+    init_textarea_state("before [abc](<url>) after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before abc| after");
+
+    init_textarea_state("before [abc](|) after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before abc| after");
+
+    init_textarea_state("before [abc](<def>) after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before abc <def> after");
+
+    // Undo link, description selected
+    init_textarea_state("before [|](def) after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before |def after");
+
+    init_textarea_state("before [|](url) after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before | after");
+
+    init_textarea_state("before [|]() after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before | after");
+
+    init_textarea_state("before [<abc>](def) after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before <abc> def after");
+
+    init_textarea_state("before [<abc>](url) after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before <abc> after");
+
+    init_textarea_state("before [<abc>]() after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before <abc> after");
 
     // Undo link selected text, syntax selected
-    reset_state();
-    init_textarea("[abc](def)", {
-        start: 0,
-        end: 10,
-        text: "[abc](def)",
-        length: 10,
-    });
+    init_textarea_state("before <[abc](def)> after");
     compose_ui.format_text($textarea, "link");
-    assert.equal(set_text, "abc def");
-    assert.equal(wrap_selection_called, false);
+    assert.equal(get_textarea_state(), "before <abc def> after");
+
+    init_textarea_state("before <[abc](url)> after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before <abc> after");
+
+    init_textarea_state("before <[abc]()> after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before <abc> after");
+
+    init_textarea_state("before <[](def)> after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before <def> after");
+
+    init_textarea_state("before <[](url)> after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before | after");
+
+    init_textarea_state("before <[]()> after");
+    compose_ui.format_text($textarea, "link");
+    assert.equal(get_textarea_state(), "before | after");
 });
 
 run_test("markdown_shortcuts", ({override_rewire}) => {
