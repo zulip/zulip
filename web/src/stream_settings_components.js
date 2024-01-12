@@ -7,6 +7,7 @@ import render_selected_stream_title from "../templates/stream_settings/selected_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dropdown_widget from "./dropdown_widget";
+import * as group_permission_settings from "./group_permission_settings";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -64,7 +65,7 @@ export function dropdown_setup() {
     new_stream_can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "new_stream_can_remove_subscribers_group",
         get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
                 "can_remove_subscribers_group",
                 "stream",
             ),

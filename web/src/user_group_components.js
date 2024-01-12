@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as dropdown_widget from "./dropdown_widget";
+import * as group_permission_settings from "./group_permission_settings";
 import * as settings_components from "./settings_components";
 import * as user_groups from "./user_groups";
 
@@ -18,7 +19,7 @@ export function setup_permissions_dropdown(group, for_group_creation) {
     const can_mention_group_widget = new dropdown_widget.DropdownWidget({
         widget_name,
         get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
                 "can_mention_group",
                 "group",
             ),

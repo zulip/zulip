@@ -1,8 +1,6 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
-import * as group_permission_settings from "./group_permission_settings";
 import {page_params} from "./page_params";
-import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
 export type UserGroup = {
@@ -18,11 +16,6 @@ export type UserGroup = {
 // The members field is a number array which we convert
 // to a Set in the initialize function.
 type UserGroupRaw = Omit<UserGroup, "members"> & {members: number[]};
-
-type UserGroupForDropdownListWidget = {
-    name: string;
-    unique_id: number;
-};
 
 let user_group_name_dict: FoldDict<UserGroup>;
 let user_group_by_id_dict: Map<number, UserGroup>;
@@ -218,73 +211,4 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
         }
     }
     return false;
-}
-
-export function get_realm_user_groups_for_dropdown_list_widget(
-    setting_name: string,
-    setting_type: "realm" | "stream" | "group",
-): UserGroupForDropdownListWidget[] {
-    const group_setting_config = group_permission_settings.get_group_permission_setting_config(
-        setting_name,
-        setting_type,
-    );
-
-    if (group_setting_config === undefined) {
-        return [];
-    }
-
-    const {
-        require_system_group,
-        allow_internet_group,
-        allow_owners_group,
-        allow_nobody_group,
-        allow_everyone_group,
-        allowed_system_groups,
-    } = group_setting_config;
-
-    const system_user_groups = settings_config.system_user_groups_list
-        .filter((group) => {
-            if (!allow_internet_group && group.name === "role:internet") {
-                return false;
-            }
-
-            if (!allow_owners_group && group.name === "role:owners") {
-                return false;
-            }
-
-            if (!allow_nobody_group && group.name === "role:nobody") {
-                return false;
-            }
-
-            if (!allow_everyone_group && group.name === "role:everyone") {
-                return false;
-            }
-
-            if (allowed_system_groups.length && !allowed_system_groups.includes(group.name)) {
-                return false;
-            }
-
-            return true;
-        })
-        .map((group) => {
-            const user_group = get_user_group_from_name(group.name);
-            if (!user_group) {
-                throw new Error(`Unknown group name: ${group.name}`);
-            }
-            return {
-                name: group.display_name,
-                unique_id: user_group.id,
-            };
-        });
-
-    if (require_system_group) {
-        return system_user_groups;
-    }
-
-    const user_groups_excluding_system_groups = get_realm_user_groups().map((group) => ({
-        name: group.name,
-        unique_id: group.id,
-    }));
-
-    return [...system_user_groups, ...user_groups_excluding_system_groups];
 }

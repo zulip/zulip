@@ -15,6 +15,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
+import * as group_permission_settings from "./group_permission_settings";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
@@ -34,7 +35,6 @@ import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
-import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -194,7 +194,7 @@ function setup_dropdown(sub, slim_sub) {
     const can_remove_subscribers_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "can_remove_subscribers_group",
         get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
                 "can_remove_subscribers_group",
                 "stream",
             ),
