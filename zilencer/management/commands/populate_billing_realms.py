@@ -229,6 +229,17 @@ class Command(BaseCommand):
                 is_sponsored=True,
                 is_remote_realm=True,
             ),
+            CustomerProfile(
+                unique_id="basic-remote-realm",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                is_remote_realm=True,
+            ),
+            CustomerProfile(
+                unique_id="basic-remote-free-trial",
+                tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                status=CustomerPlan.FREE_TRIAL,
+                is_remote_realm=True,
+            ),
         ]
 
         servers = []
