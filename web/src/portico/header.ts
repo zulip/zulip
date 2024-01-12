@@ -87,8 +87,8 @@ $(() => {
         return false;
     });
 
-    $(".portico-header .dropdown").on("click", (e) => {
-        const $user_dropdown = $(e.target).closest(".dropdown");
+    $(".portico-header .portico-header-dropdown").on("click", (e) => {
+        const $user_dropdown = $(e.target).closest(".portico-header-dropdown");
         const dropdown_is_shown = $user_dropdown.hasClass("show");
 
         if (!dropdown_is_shown) {
