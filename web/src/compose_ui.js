@@ -732,6 +732,20 @@ export function format_text($textarea, type, inserted_content) {
         const link_syntax_start = "[";
         const link_syntax_end = "](url)";
 
+        const space_between_description_and_url = (descr, url) => {
+            if (descr === "" || url === "" || url === "url") {
+                return "";
+            }
+            return " ";
+        };
+
+        const url_to_retain = (url) => {
+            if (url === "" || url === "url") {
+                return "";
+            }
+            return url;
+        };
+
         // Captures:
         // [<description>](<url>)
         // with just <url> selected
@@ -744,14 +758,22 @@ export function format_text($textarea, type, inserted_content) {
 
         if (is_selection_url()) {
             const beginning = text.lastIndexOf("[", range.start);
-            const url = selected_text === "url" ? "" : " " + selected_text;
+            const description = text.slice(beginning + 1, range.start - 2);
+            const url = url_to_retain(selected_text);
             text =
                 text.slice(0, beginning) +
-                text.slice(beginning + 1, text.indexOf("]", beginning)) +
+                description +
+                space_between_description_and_url(description, url) +
                 url +
                 text.slice(range.end + 1);
             set(field, text);
-            field.setSelectionRange(range.start - 2, range.start - 3 + url.length);
+            field.setSelectionRange(
+                range.start - 3 + space_between_description_and_url(description, url).length,
+                range.start -
+                    3 +
+                    space_between_description_and_url(description, url).length +
+                    url.length,
+            );
             return;
         }
 
@@ -770,10 +792,11 @@ export function format_text($textarea, type, inserted_content) {
 
         if (is_selection_description_of_link()) {
             let url = text.slice(range.end + 2, text.indexOf(")", range.end));
-            url = url === "url" ? "" : " " + url;
+            url = url_to_retain(url);
             text =
                 text.slice(0, range.start - 1) +
-                text.slice(range.start, range.end) +
+                selected_text +
+                space_between_description_and_url(selected_text, url) +
                 url +
                 text.slice(text.indexOf(")", range.end) + 1);
             set(field, text);
@@ -793,11 +816,21 @@ export function format_text($textarea, type, inserted_content) {
         if (is_selection_link()) {
             const description = selected_text.split("](")[0].slice(1);
             let url = selected_text.split("](")[1].slice(0, -1);
-            url = url === "url" ? "" : " " + url;
-            text = text.slice(0, range.start) + description + url + text.slice(range.end);
+            url = url_to_retain(url);
+            text =
+                text.slice(0, range.start) +
+                description +
+                space_between_description_and_url(description, url) +
+                url +
+                text.slice(range.end);
             set(field, text);
-            const new_range_end = url === "" ? range.end - "url".length : range.end;
-            field.setSelectionRange(range.start, new_range_end - "[](".length);
+            field.setSelectionRange(
+                range.start,
+                range.start +
+                    description.length +
+                    space_between_description_and_url(description, url).length +
+                    url.length,
+            );
             return;
         }
 
