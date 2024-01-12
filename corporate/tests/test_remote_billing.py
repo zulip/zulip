@@ -23,6 +23,7 @@ from corporate.models import (
     get_customer_by_remote_server,
 )
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
+from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -575,6 +576,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # <Realm: zulipinternal 1>, <Realm: zephyr 3>, <Realm: lear 4>, <Realm: zulip 2>
         self.assert_length(Realm.objects.all(), 4)
 
+        # Make lear deactivated, to have verification for that case.
+        do_deactivate_realm(Realm.objects.get(string_id="lear"), acting_user=None)
+
         # Delete any existing remote realms.
         RemoteRealm.objects.all().delete()
 
@@ -618,9 +622,11 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertIsNone(get_current_plan_by_customer(server_customer))
 
         # Check legacy CustomerPlan exists for all realms except bot realm.
+        no_customer_plan_realms = set()
         for remote_realm in RemoteRealm.objects.all():
-            if remote_realm.is_system_bot_realm:
+            if remote_realm.is_system_bot_realm or remote_realm.realm_deactivated:
                 self.assertIsNone(get_customer_by_remote_realm(remote_realm))
+                no_customer_plan_realms.add(remote_realm.host.split(".")[0])
                 continue
 
             customer = get_customer_by_remote_realm(remote_realm)
@@ -632,6 +638,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             self.assertEqual(plan.status, CustomerPlan.ACTIVE)
             self.assertEqual(plan.billing_cycle_anchor, start_date)
             self.assertEqual(plan.end_date, end_date)
+        self.assertEqual(no_customer_plan_realms, {"zulipinternal", "lear"})
 
     @responses.activate
     def test_transfer_legacy_plan_scheduled_for_upgrade_from_server_to_realm(

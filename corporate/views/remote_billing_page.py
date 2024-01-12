@@ -47,11 +47,7 @@ from zerver.lib.exceptions import (
     RemoteBillingAuthenticationError,
     RemoteRealmServerMismatchError,
 )
-from zerver.lib.remote_server import (
-    RealmDataForAnalytics,
-    UserDataForRemoteBilling,
-    get_realms_info_for_push_bouncer,
-)
+from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -200,9 +196,7 @@ def remote_realm_billing_finalize_login(
         raise AssertionError
 
     try:
-        handle_customer_migration_from_server_to_realms(
-            server=remote_server, realms=get_realms_info_for_push_bouncer()
-        )
+        handle_customer_migration_from_server_to_realms(server=remote_server)
     except Exception:  # nocoverage
         billing_logger.exception(
             "%s: Failed to migrate customer from server (id: %s) to realms",
