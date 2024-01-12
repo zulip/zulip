@@ -581,8 +581,8 @@ export function format_text($textarea, type, inserted_content) {
     };
 
     const format_spoiler = () => {
-        let spoiler_syntax_start = "```spoiler \n";
-        const spoiler_syntax_start_without_break = "```spoiler ";
+        const spoiler_syntax_start = "```spoiler \n";
+        let spoiler_syntax_start_without_break = "```spoiler ";
         let spoiler_syntax_end = "\n```";
 
         // For when the entire spoiler block (with no header) is selected.
@@ -708,7 +708,7 @@ export function format_text($textarea, type, inserted_content) {
         }
 
         if (range.start > 0 && text[range.start - 1] !== "\n") {
-            spoiler_syntax_start = "\n" + spoiler_syntax_start;
+            spoiler_syntax_start_without_break = "\n" + spoiler_syntax_start_without_break;
         }
         if (range.end < text.length && text[range.end] !== "\n") {
             spoiler_syntax_end = spoiler_syntax_end + "\n";
@@ -720,7 +720,7 @@ export function format_text($textarea, type, inserted_content) {
         wrapSelection(field, spoiler_syntax_start_with_header, spoiler_syntax_end);
 
         field.setSelectionRange(
-            range.start + spoiler_syntax_start.length - 1,
+            range.start + spoiler_syntax_start_without_break.length,
             range.start + spoiler_syntax_start_with_header.length - 1,
         );
     };
