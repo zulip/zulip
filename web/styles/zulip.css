@@ -826,6 +826,11 @@ strong {
                 right: 8px;
                 display: inline-block;
             }
+
+            i.zulip-icon-bot {
+                font-size: 13px;
+                margin-top: 3px;
+            }
         }
     }
 
@@ -1852,6 +1857,10 @@ div.focused-message-list {
             margin-right: -12px;
             font-size: 0.8em;
             color: hsl(96deg 7% 73%);
+        }
+
+        & a i {
+            color: hsl(0deg 0% 100%);
         }
     }
 
