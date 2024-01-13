@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 
@@ -36,6 +37,10 @@ const FOLLOWUP_BATCH_SIZE = 1000;
 // case after a server-initiated reload.
 let window_focused = document.hasFocus && document.hasFocus();
 
+// Since there's a database index on is:unread, it's a fast
+// search query and thus worth including here as an optimization.),
+const all_unread_messages_narrow = [{operator: "is", operand: "unread", negated: false}];
+
 export function is_window_focused() {
     return window_focused;
 }
@@ -51,7 +56,7 @@ export function confirm_mark_all_as_read() {
     });
 }
 
-export function mark_all_as_read(args = {}) {
+function bulk_mark_messages_as_read(narrow, args = {}) {
     args = {
         // We use an anchor of "oldest", not "first_unread", because
         // "first_unread" will be the oldest non-muted unread message,
@@ -73,9 +78,7 @@ export function mark_all_as_read(args = {}) {
         num_after: args.num_after,
         op: "add",
         flag: "read",
-        // Since there's a database index on is:unread, it's a fast
-        // search query and thus worth including here as an optimization.
-        narrow: JSON.stringify([{operator: "is", operand: "unread", negated: false}]),
+        narrow: JSON.stringify(narrow),
     };
     channel.post({
         url: "/json/messages/flags/narrow",
@@ -104,7 +107,8 @@ export function mark_all_as_read(args = {}) {
                     loading_indicator_displayed = true;
                 }
 
-                mark_all_as_read({
+                bulk_mark_messages_as_read(narrow, {
+                    ...args,
                     anchor: data.last_processed_id,
                     messages_read_till_now,
                     num_after: FOLLOWUP_BATCH_SIZE,
@@ -126,7 +130,7 @@ export function mark_all_as_read(args = {}) {
                     loading_indicator_displayed = false;
                 }
 
-                if (unread.old_unreads_missing) {
+                if (_.isEqual(narrow, all_unread_messages_narrow) && unread.old_unreads_missing) {
                     // In the rare case that the user had more than
                     // 50K total unreads on the server, the client
                     // won't have known about all of them; this was
@@ -148,7 +152,7 @@ export function mark_all_as_read(args = {}) {
             } else if (xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
                 // If we hit the rate limit, just continue without showing any error.
                 const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
-                setTimeout(() => mark_all_as_read(args), milliseconds_to_wait);
+                setTimeout(() => bulk_mark_messages_as_read(narrow, args), milliseconds_to_wait);
             } else {
                 // TODO: Ideally this would be a ui_report.error();
                 // the user needs to know that our operation failed.
@@ -446,20 +450,34 @@ export function mark_current_list_as_read(options) {
     notify_server_messages_read(message_lists.current.all_messages(), options);
 }
 
-export function mark_stream_as_read(stream_id, cont) {
-    channel.post({
-        url: "/json/mark_stream_as_read",
-        data: {stream_id},
-        success: cont,
-    });
+export function mark_stream_as_read(stream_id) {
+    bulk_mark_messages_as_read(
+        [
+            {operator: "is", operand: "unread", negated: false},
+            {operator: "stream", operand: stream_id},
+        ],
+        {
+            stream_id,
+        },
+    );
 }
 
-export function mark_topic_as_read(stream_id, topic, cont) {
-    channel.post({
-        url: "/json/mark_topic_as_read",
-        data: {stream_id, topic_name: topic},
-        success: cont,
-    });
+export function mark_topic_as_read(stream_id, topic) {
+    bulk_mark_messages_as_read(
+        [
+            {operator: "is", operand: "unread", negated: false},
+            {operator: "stream", operand: stream_id},
+            {operator: "topic", operand: topic},
+        ],
+        {
+            stream_id,
+            topic,
+        },
+    );
+}
+
+export function mark_all_as_read() {
+    bulk_mark_messages_as_read(all_unread_messages_narrow);
 }
 
 export function mark_pm_as_read(user_ids_string) {
