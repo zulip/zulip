@@ -51,7 +51,7 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
-const pygments_data = zrequire("../generated/pygments_data.json");
+const pygments_data = zrequire("pygments_data");
 
 const ct = composebox_typeahead;
 

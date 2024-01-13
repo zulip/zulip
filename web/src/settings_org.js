@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import pygments_data from "../generated/pygments_data.json";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
 
@@ -14,6 +13,7 @@ import {$t, $t_html, get_language_name} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
+import * as pygments_data from "./pygments_data";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";

@@ -49,11 +49,11 @@ mock_esm("../src/settings_data", {
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const linkifiers = zrequire("linkifiers");
-const pygments_data = zrequire("../generated/pygments_data.json");
 const fenced_code = zrequire("../shared/src/fenced_code");
 const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
 const people = zrequire("people");
+const pygments_data = zrequire("pygments_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 

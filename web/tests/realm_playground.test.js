@@ -5,9 +5,8 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
-const pygments_data = zrequire("../generated/pygments_data.json");
-
 const {$t} = zrequire("i18n");
+const pygments_data = zrequire("pygments_data");
 const realm_playground = zrequire("realm_playground");
 const typeahead_helper = zrequire("typeahead_helper");
 
