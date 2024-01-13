@@ -2113,7 +2113,7 @@ class EditMessageTest(EditMessageTestCase):
         do_set_user_topic_visibility_policy(
             user_profile=hamlet,
             stream=get_stream(stream_name, cordelia.realm),
-            topic="test",
+            topic_name="test",
             visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
@@ -2171,7 +2171,7 @@ class EditMessageTest(EditMessageTestCase):
         do_set_user_topic_visibility_policy(
             user_profile=hamlet,
             stream=get_stream(stream_name, cordelia.realm),
-            topic="test",
+            topic_name="test",
             visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")

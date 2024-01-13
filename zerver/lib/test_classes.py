@@ -1129,7 +1129,7 @@ Output:
             sender=sender,
             client=sending_client,
             stream_name=stream_name,
-            topic=topic_name,
+            topic_name=topic_name,
             body=content,
             realm=recipient_realm,
             read_by_sender=read_by_sender,

@@ -415,7 +415,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         do_set_user_topic_visibility_policy(
             user_profile=cordelia,
             stream=get_stream("Scotland", cordelia.realm),
-            topic="test",
+            topic_name="test",
             visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
 
@@ -465,7 +465,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         do_set_user_topic_visibility_policy(
             user_profile=cordelia,
             stream=get_stream("Scotland", cordelia.realm),
-            topic="test",
+            topic_name="test",
             visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
 

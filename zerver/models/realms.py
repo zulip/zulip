@@ -334,7 +334,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
-    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy("stream events")
+    STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("stream events")
     notifications_stream = models.ForeignKey(
         "Stream",
         related_name="+",

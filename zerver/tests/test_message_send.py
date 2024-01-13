@@ -1588,7 +1588,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
-                topic=topic_name,
+                topic_name=topic_name,
                 body=content,
             )
 
@@ -1608,7 +1608,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
-                topic="new topic",
+                topic_name="new topic",
                 body=content,
             )
 
@@ -1628,7 +1628,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
-                topic="topic 2",
+                topic_name="topic 2",
                 body=content,
             )
         # If the topic is already FOLLOWED, there will be an increase in the query
@@ -1639,7 +1639,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
-                topic="topic 2",
+                topic_name="topic 2",
                 body=content,
             )
 
@@ -1664,7 +1664,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
-                topic="topic 2",
+                topic_name="topic 2",
                 body="@**" + user.full_name + "**",
             )
         # If the topic is already FOLLOWED, there will be an increase in the query
@@ -1677,7 +1677,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
-                topic="topic 2",
+                topic_name="topic 2",
                 body="@**" + user.full_name + "**",
             )
 
@@ -1687,7 +1687,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
-                topic="topic 2",
+                topic_name="topic 2",
                 body="@**all**",
             )
 
@@ -2537,7 +2537,7 @@ class InternalPrepTest(ZulipTestCase):
         with self.assertLogs(level="ERROR") as m:
             internal_send_stream_message(
                 sender=cordelia,
-                topic="whatever",
+                topic_name="whatever",
                 content=bad_content,
                 stream=stream,
             )
@@ -2554,7 +2554,7 @@ class InternalPrepTest(ZulipTestCase):
                 realm=realm,
                 sender=cordelia,
                 stream_name=stream.name,
-                topic="whatever",
+                topic_name="whatever",
                 content=bad_content,
             )
 
@@ -2598,11 +2598,15 @@ class InternalPrepTest(ZulipTestCase):
         realm = get_realm("zulip")
         sender = self.example_user("cordelia")
         stream_name = "test_stream"
-        topic = "whatever"
+        topic_name = "whatever"
         content = "hello"
 
         internal_prep_stream_message_by_name(
-            realm=realm, sender=sender, stream_name=stream_name, topic=topic, content=content
+            realm=realm,
+            sender=sender,
+            stream_name=stream_name,
+            topic_name=topic_name,
+            content=content,
         )
 
         # This would throw an error if the stream

@@ -174,11 +174,11 @@ def edit_scheduled_message(
 
             # Update topic name if changed.
             if topic_name is not None:
-                updated_topic = topic_name
+                updated_topic_name = topic_name
             else:
                 # This will be ignored in Addressee.legacy_build if type
                 # is being changed from stream to direct.
-                updated_topic = scheduled_message_object.topic_name()
+                updated_topic_name = scheduled_message_object.topic_name()
 
             # Update message content if changed.
             if message_content is not None:
@@ -188,7 +188,7 @@ def edit_scheduled_message(
 
             # Check message again.
             addressee = Addressee.legacy_build(
-                sender, updated_recipient_type_name, updated_recipient, updated_topic
+                sender, updated_recipient_type_name, updated_recipient, updated_topic_name
             )
             send_request = check_message(
                 sender,
