@@ -8,6 +8,7 @@ import render_input_pill from "../templates/input_pill.hbs";
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
+import {user_is_bot} from "./people";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -19,6 +20,7 @@ export type InputPillItem<T> = {
     deactivated?: boolean;
     status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean}; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
+    user_id?: number;
 } & T;
 
 export type InputPillConfig = {
@@ -60,6 +62,7 @@ type InputPillRenderingDetails = {
     img_src?: string;
     deactivated?: boolean;
     has_status?: boolean;
+    user_is_bot?: boolean;
     status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean};
     should_add_guest_user_indicator?: boolean;
 };
@@ -144,9 +147,13 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             const has_image = item.img_src !== undefined;
 
+            // For compose pills to differentiate among users and bots.
+            const is_bot = item.user_id ? user_is_bot(item.user_id) : false;
+
             const opts: InputPillRenderingDetails = {
                 display_value: item.display_value,
                 has_image,
+                user_is_bot: is_bot,
                 deactivated: item.deactivated,
                 should_add_guest_user_indicator: item.should_add_guest_user_indicator,
             };
