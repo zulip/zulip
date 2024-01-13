@@ -297,8 +297,7 @@ li.show-more-topics {
                 color: inherit;
             }
 
-            .fa-group,
-            .zulip-icon {
+            .fa-group {
                 opacity: 0.7;
             }
         }
@@ -756,6 +755,11 @@ li.top_left_scheduled_messages {
     margin-right: 3px;
 }
 
+.conversation-partners i.conversation_bot_icon {
+    /* Prevents bot emoji from colliding with unread counts. */
+    margin: 0 var(--margin-lefthand-bot-icon-offset);
+}
+
 /* New .topic-box grid definitions here. */
 #views-label-container,
 .top_left_row,
@@ -1110,8 +1114,7 @@ li.topic-list-item {
     }
 
     .zulip-icon.zulip-icon-bot {
-        font-size: 90%; /* Reduce the bulkiness of this icon */
-        padding: 3px 0 3px 1px; /* Shift reduced icon a pixel left to maintain horizontal centering. */
+        font-size: 12px; /* Reduce the bulkiness of this icon */
     }
 
     .unread_count {
