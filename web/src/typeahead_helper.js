@@ -1,7 +1,6 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
-import pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
@@ -10,6 +9,7 @@ import * as compose_state from "./compose_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as pygments_data from "./pygments_data";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";

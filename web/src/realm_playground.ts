@@ -1,7 +1,9 @@
-import generated_pygments_data from "../generated/pygments_data.json";
+import assert from "minimalistic-assert";
+
 import * as typeahead from "../shared/src/typeahead";
 
 import {$t} from "./i18n";
+import * as pygments_data from "./pygments_data";
 
 type RealmPlayground = {
     id: number;
@@ -42,10 +44,12 @@ export function get_playground_info_for_languages(
 function sort_pygments_pretty_names_by_priority(
     comparator_func: (a: string, b: string) => number,
 ): void {
-    const priority_sorted_pygments_data = Object.entries(generated_pygments_data.langs).sort(
-        ([a], [b]) => comparator_func(a, b),
+    const priority_sorted_pygments_data = Object.entries(pygments_data.langs).sort(([a], [b]) =>
+        comparator_func(a, b),
     );
-    for (const [alias, {pretty_name}] of priority_sorted_pygments_data) {
+    for (const [alias, data] of priority_sorted_pygments_data) {
+        assert(data !== undefined);
+        const pretty_name = data.pretty_name;
         // JS Map remembers the original order of insertion of keys.
         if (map_pygments_pretty_name_to_aliases.has(pretty_name)) {
             map_pygments_pretty_name_to_aliases.get(pretty_name)!.push(alias);
@@ -64,9 +68,9 @@ function sort_pygments_pretty_names_by_priority(
 // deduplicate them.
 export function get_pygments_typeahead_list_for_composebox(): string[] {
     const playground_pygment_langs = [...map_language_to_playground_info.keys()];
-    const generated_pygment_langs = Object.keys(generated_pygments_data.langs);
+    const pygment_langs = Object.keys(pygments_data.langs);
 
-    return [...playground_pygment_langs, ...generated_pygment_langs];
+    return [...playground_pygment_langs, ...pygment_langs];
 }
 
 // This gets the candidate list for showing autocomplete in settings when
