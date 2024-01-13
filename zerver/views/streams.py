@@ -773,7 +773,7 @@ def send_messages_for_new_subscribers(
                     content = _("{user_name} created the following streams: {stream_str}.")
                 else:
                     content = _("{user_name} created a new stream {stream_str}.")
-                topic = _("new streams")
+                topic_name = _("new streams")
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),
@@ -786,7 +786,7 @@ def send_messages_for_new_subscribers(
                 internal_prep_stream_message(
                     sender=sender,
                     stream=notifications_stream,
-                    topic=topic,
+                    topic_name=topic_name,
                     content=content,
                 ),
             )
@@ -803,7 +803,7 @@ def send_messages_for_new_subscribers(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
-                        topic=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC),
+                        topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
                         content=_(
                             "**{policy}** stream created by {user_name}. **Description:**"
                         ).format(

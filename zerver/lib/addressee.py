@@ -52,17 +52,17 @@ class Addressee:
         stream: Optional[Stream] = None,
         stream_name: Optional[str] = None,
         stream_id: Optional[int] = None,
-        topic: Optional[str] = None,
+        topic_name: Optional[str] = None,
     ) -> None:
         assert msg_type in ["stream", "private"]
-        if msg_type == "stream" and topic is None:
+        if msg_type == "stream" and topic_name is None:
             raise JsonableError(_("Missing topic"))
         self._msg_type = msg_type
         self._user_profiles = user_profiles
         self._stream = stream
         self._stream_name = stream_name
         self._stream_id = stream_id
-        self._topic = topic
+        self._topic_name = topic_name
 
     def is_stream(self) -> bool:
         return self._msg_type == "stream"
@@ -87,10 +87,10 @@ class Addressee:
         assert self.is_stream()
         return self._stream_id
 
-    def topic(self) -> str:
+    def topic_name(self) -> str:
         assert self.is_stream()
-        assert self._topic is not None
-        return self._topic
+        assert self._topic_name is not None
+        return self._topic_name
 
     @staticmethod
     def legacy_build(
@@ -143,33 +143,33 @@ class Addressee:
             raise JsonableError(_("Invalid message type"))
 
     @staticmethod
-    def for_stream(stream: Stream, topic: str) -> "Addressee":
-        topic = topic.strip()
-        check_stream_topic(topic)
+    def for_stream(stream: Stream, topic_name: str) -> "Addressee":
+        topic_name = topic_name.strip()
+        check_stream_topic(topic_name)
         return Addressee(
             msg_type="stream",
             stream=stream,
-            topic=topic,
+            topic_name=topic_name,
         )
 
     @staticmethod
-    def for_stream_name(stream_name: str, topic: str) -> "Addressee":
-        topic = topic.strip()
-        check_stream_topic(topic)
+    def for_stream_name(stream_name: str, topic_name: str) -> "Addressee":
+        topic_name = topic_name.strip()
+        check_stream_topic(topic_name)
         return Addressee(
             msg_type="stream",
             stream_name=stream_name,
-            topic=topic,
+            topic_name=topic_name,
         )
 
     @staticmethod
-    def for_stream_id(stream_id: int, topic: str) -> "Addressee":
-        topic = topic.strip()
-        check_stream_topic(topic)
+    def for_stream_id(stream_id: int, topic_name: str) -> "Addressee":
+        topic_name = topic_name.strip()
+        check_stream_topic(topic_name)
         return Addressee(
             msg_type="stream",
             stream_id=stream_id,
-            topic=topic,
+            topic_name=topic_name,
         )
 
     @staticmethod

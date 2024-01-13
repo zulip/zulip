@@ -78,7 +78,7 @@ def do_add_submessage(
                 do_set_user_topic_visibility_policy(
                     user_profile=sender,
                     stream=stream,
-                    topic=submessage.message.topic_name(),
+                    topic_name=submessage.message.topic_name(),
                     visibility_policy=new_visibility_policy,
                 )
 

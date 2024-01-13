@@ -969,7 +969,7 @@ def do_send_messages(
                     do_set_user_topic_visibility_policy(
                         user_profile=sender,
                         stream=send_request.stream,
-                        topic=send_request.message.topic_name(),
+                        topic_name=send_request.message.topic_name(),
                         visibility_policy=new_visibility_policy,
                     )
                     send_request.automatic_new_visibility_policy = new_visibility_policy
@@ -1011,7 +1011,7 @@ def do_send_messages(
                     bulk_do_set_user_topic_visibility_policy(
                         user_profiles=to_follow_users,
                         stream=send_request.stream,
-                        topic=send_request.message.topic_name(),
+                        topic_name=send_request.message.topic_name(),
                         visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
                     )
 
@@ -1327,13 +1327,13 @@ def check_send_stream_message(
     sender: UserProfile,
     client: Client,
     stream_name: str,
-    topic: str,
+    topic_name: str,
     body: str,
     *,
     realm: Optional[Realm] = None,
     read_by_sender: bool = False,
 ) -> int:
-    addressee = Addressee.for_stream_name(stream_name, topic)
+    addressee = Addressee.for_stream_name(stream_name, topic_name)
     message = check_message(sender, client, addressee, body, realm)
     sent_message_result = do_send_messages(
         [message], mark_as_read=[sender.id] if read_by_sender else []
@@ -1345,11 +1345,11 @@ def check_send_stream_message_by_id(
     sender: UserProfile,
     client: Client,
     stream_id: int,
-    topic: str,
+    topic_name: str,
     body: str,
     realm: Optional[Realm] = None,
 ) -> int:
-    addressee = Addressee.for_stream_id(stream_id, topic)
+    addressee = Addressee.for_stream_id(stream_id, topic_name)
     message = check_message(sender, client, addressee, body, realm)
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
@@ -1638,7 +1638,7 @@ def check_message(
 
     recipients_for_user_creation_events = None
     if addressee.is_stream():
-        topic_name = addressee.topic()
+        topic_name = addressee.topic_name()
         topic_name = truncate_topic(topic_name)
 
         stream_name = addressee.stream_name()
@@ -1840,7 +1840,7 @@ def _internal_prep_message(
 def internal_prep_stream_message(
     sender: UserProfile,
     stream: Stream,
-    topic: str,
+    topic_name: str,
     content: str,
     *,
     email_gateway: bool = False,
@@ -1850,7 +1850,7 @@ def internal_prep_stream_message(
     See _internal_prep_message for details of how this works.
     """
     realm = stream.realm
-    addressee = Addressee.for_stream(stream, topic)
+    addressee = Addressee.for_stream(stream, topic_name)
 
     return _internal_prep_message(
         realm=realm,
@@ -1866,13 +1866,13 @@ def internal_prep_stream_message_by_name(
     realm: Realm,
     sender: UserProfile,
     stream_name: str,
-    topic: str,
+    topic_name: str,
     content: str,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
     """
-    addressee = Addressee.for_stream_name(stream_name, topic)
+    addressee = Addressee.for_stream_name(stream_name, topic_name)
 
     return _internal_prep_message(
         realm=realm,
@@ -1931,7 +1931,7 @@ def internal_send_private_message(
 def internal_send_stream_message(
     sender: UserProfile,
     stream: Stream,
-    topic: str,
+    topic_name: str,
     content: str,
     *,
     email_gateway: bool = False,
@@ -1940,7 +1940,7 @@ def internal_send_stream_message(
     message = internal_prep_stream_message(
         sender,
         stream,
-        topic,
+        topic_name,
         content,
         email_gateway=email_gateway,
         limit_unread_user_ids=limit_unread_user_ids,
@@ -1957,14 +1957,14 @@ def internal_send_stream_message_by_name(
     realm: Realm,
     sender: UserProfile,
     stream_name: str,
-    topic: str,
+    topic_name: str,
     content: str,
 ) -> Optional[int]:
     message = internal_prep_stream_message_by_name(
         realm,
         sender,
         stream_name,
-        topic,
+        topic_name,
         content,
     )
 

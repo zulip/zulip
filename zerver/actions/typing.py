@@ -66,7 +66,7 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
 
 
 def do_send_stream_typing_notification(
-    sender: UserProfile, operator: str, stream: Stream, topic: str
+    sender: UserProfile, operator: str, stream: Stream, topic_name: str
 ) -> None:
     sender_dict = {"user_id": sender.id, "email": sender.email}
 
@@ -76,7 +76,7 @@ def do_send_stream_typing_notification(
         op=operator,
         sender=sender_dict,
         stream_id=stream.id,
-        topic=topic,
+        topic=topic_name,
     )
 
     # We don't notify long_term_idle subscribers.
