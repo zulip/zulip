@@ -45,17 +45,17 @@ methods][authentication-production] documentation for details.
 
 There are several different types of fields available.
 
-* **Short text**: For one line responses, like
+* **Text (short)**: For one line responses, like
     "Job title". Responses are limited to 50 characters.
-* **Long text**: For multiline responses, like "Biography".
-* **Date picker**: For dates, like "Birthday".
+* **Text (long)**: For multiline responses, like "Biography".
+* **Date**: For dates, like "Birthday".
 * **Link**: For links to websites.
 * **External account**: For linking to GitHub, Twitter, etc.
 * **Pronouns**: What pronouns should people use to refer to the user? Pronouns
   are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
   suggestions.
 * **List of options**: Creates a dropdown with a list of options.
-* **Person picker**: For selecting one or more users, like "Manager" or
+* **Users**: For selecting one or more users, like "Manager" or
     "Direct reports".
 
 ## Display custom fields on user card
