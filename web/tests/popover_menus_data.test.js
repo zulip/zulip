@@ -175,7 +175,6 @@ test("my_message_all_actions", () => {
     assert.equal(response.should_display_add_reaction_option, true);
     assert.equal(response.should_display_hide_option, false);
     assert.equal(response.conversation_time_url, "conversation_and_time_url");
-    assert.equal(response.narrowed, false);
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);
     assert.equal(response.should_display_quote_and_reply, true);

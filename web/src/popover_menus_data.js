@@ -10,7 +10,6 @@ import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
-import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
@@ -109,7 +108,6 @@ export function get_actions_popover_content_context(message_id) {
         should_display_add_reaction_option,
         should_display_hide_option,
         conversation_time_url,
-        narrowed: narrow_state.active(),
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_and_reply,
