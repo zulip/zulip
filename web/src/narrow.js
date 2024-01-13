@@ -425,7 +425,6 @@ export function activate(raw_terms, opts) {
         // Show the new set of messages.  It is important to set message_lists.current to
         // the view right as it's being shown, because we rely on message_lists.current
         // being shown for deciding when to condense messages.
-        $("body").addClass("narrowed_view");
         msg_list.view.$list.addClass("focused-message-list");
         message_lists.home.view.$list.removeClass("focused-message-list");
 
@@ -1078,7 +1077,6 @@ export function deactivate() {
         narrow_state.reset_current_filter();
         narrow_state.set_has_shown_message_list_view();
 
-        $("body").removeClass("narrowed_view");
         message_lists.home.view.$list.addClass("focused-message-list");
         // Remove old message list from DOM.
         if (message_lists.current !== message_lists.home) {
