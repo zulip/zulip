@@ -34,7 +34,7 @@ def fill_edit_history_entries(
     """
     prev_content = message.content
     prev_rendered_content = message.rendered_content
-    prev_topic = message.topic_name()
+    prev_topic_name = message.topic_name()
 
     # Make sure that the latest entry in the history corresponds to the
     # message's last edit time
@@ -48,13 +48,13 @@ def fill_edit_history_entries(
             "content": prev_content,
             "rendered_content": prev_rendered_content,
             "timestamp": edit_history_event["timestamp"],
-            "topic": prev_topic,
+            "topic": prev_topic_name,
             "user_id": edit_history_event["user_id"],
         }
 
         if "prev_topic" in edit_history_event:
-            prev_topic = edit_history_event["prev_topic"]
-            formatted_entry["prev_topic"] = prev_topic
+            prev_topic_name = edit_history_event["prev_topic"]
+            formatted_entry["prev_topic"] = prev_topic_name
 
         # Fill current values for content/rendered_content.
         if "prev_content" in edit_history_event:
@@ -79,7 +79,7 @@ def fill_edit_history_entries(
         "content": prev_content,
         "rendered_content": prev_rendered_content,
         "timestamp": datetime_to_timestamp(message.date_sent),
-        "topic": prev_topic,
+        "topic": prev_topic_name,
         "user_id": message.sender_id,
     }
 
