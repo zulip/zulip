@@ -14,14 +14,14 @@ class Migration(migrations.Migration):
             name="field_type",
             field=models.PositiveSmallIntegerField(
                 choices=[
-                    (1, "Short text"),
-                    (2, "Long text"),
-                    (4, "Date picker"),
+                    (1, "Text (short)"),
+                    (2, "Text (long)"),
+                    (4, "Date"),
                     (5, "Link"),
                     (7, "External account"),
                     (8, "Pronouns"),
                     (3, "List of options"),
-                    (6, "Person picker"),
+                    (6, "Users"),
                 ],
                 default=1,
             ),

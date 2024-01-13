@@ -31,7 +31,7 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
-        "Short text",
+        "Text (short)",
     );
 }
 
@@ -57,7 +57,7 @@ async function test_edit_profile_field(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
-        "Short text",
+        "Text (short)",
     );
 }
 
