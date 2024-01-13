@@ -137,7 +137,7 @@ def build_page_params_for_home_page_load(
     insecure_desktop_app: bool,
     narrow: List[NarrowTerm],
     narrow_stream: Optional[Stream],
-    narrow_topic: Optional[str],
+    narrow_topic_name: Optional[str],
     first_in_realm: bool,
     prompt_for_invites: bool,
     needs_tutorial: bool,
@@ -255,8 +255,8 @@ def build_page_params_for_home_page_load(
         if max_message:
             page_params["max_message_id"] = max_message.id
         page_params["narrow_stream"] = narrow_stream.name
-        if narrow_topic is not None:
-            page_params["narrow_topic"] = narrow_topic
+        if narrow_topic_name is not None:
+            page_params["narrow_topic"] = narrow_topic_name
         page_params["narrow"] = [
             dict(operator=term.operator, operand=term.operand) for term in narrow
         ]
