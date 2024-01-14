@@ -141,6 +141,8 @@ export const page_params: {
         stream: Record<string, GroupPermissionSetting>;
         group: Record<string, GroupPermissionSetting>;
     };
+    server_typing_started_wait_period_milliseconds: number;
+    server_typing_stopped_wait_period_milliseconds: number;
     server_web_public_streams_enabled: boolean;
     show_billing: boolean;
     show_plans: boolean;
