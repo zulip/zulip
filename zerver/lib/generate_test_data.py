@@ -23,14 +23,14 @@ def generate_topics(num_topics: int) -> List[str]:
     # Single word topics are most common, thus
     # it is important we test on it.
     num_single_word_topics = num_topics // 3
-    topics = random.choices(config["nouns"], k=num_single_word_topics)
+    topic_names = random.choices(config["nouns"], k=num_single_word_topics)
 
     sentence = ["adjectives", "nouns", "connectors", "verbs", "adverbs"]
     for pos in sentence:
         # Add an empty string so that we can generate variable length topics.
         config[pos].append("")
 
-    topics.extend(
+    topic_names.extend(
         " ".join(word for pos in sentence if (word := random.choice(config[pos])) != "")
         for _ in range(num_topics - num_single_word_topics)
     )
@@ -45,8 +45,10 @@ def generate_topics(num_topics: int) -> List[str]:
         resolved_topic_probability = 0.05
 
     return [
-        RESOLVED_TOPIC_PREFIX + topic if random.random() < resolved_topic_probability else topic
-        for topic in topics
+        RESOLVED_TOPIC_PREFIX + topic_name
+        if random.random() < resolved_topic_probability
+        else topic_name
+        for topic_name in topic_names
     ]
 
 

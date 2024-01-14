@@ -238,8 +238,8 @@ def normalize_body(body: str) -> str:
     return truncate_content(body, settings.MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 
-def truncate_topic(topic: str) -> str:
-    return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
+def truncate_topic(topic_name: str) -> str:
+    return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, "...")
 
 
 def messages_for_ids(
@@ -1175,9 +1175,9 @@ def extract_unread_data_from_um_rows(
 
     get_topic_visibility_policy = build_get_topic_visibility_policy(user_profile)
 
-    def is_row_muted(stream_id: int, recipient_id: int, topic: str) -> bool:
+    def is_row_muted(stream_id: int, recipient_id: int, topic_name: str) -> bool:
         stream_muted = stream_id in muted_stream_ids
-        visibility_policy = get_topic_visibility_policy(recipient_id, topic)
+        visibility_policy = get_topic_visibility_policy(recipient_id, topic_name)
 
         if stream_muted and visibility_policy in [
             UserTopic.VisibilityPolicy.UNMUTED,
@@ -1216,12 +1216,12 @@ def extract_unread_data_from_um_rows(
 
         if msg_type == Recipient.STREAM:
             stream_id = row["message__recipient__type_id"]
-            topic = row[MESSAGE__TOPIC]
+            topic_name = row[MESSAGE__TOPIC]
             stream_dict[message_id] = dict(
                 stream_id=stream_id,
-                topic=topic,
+                topic=topic_name,
             )
-            if not is_row_muted(stream_id, recipient_id, topic):
+            if not is_row_muted(stream_id, recipient_id, topic_name):
                 unmuted_stream_msgs.add(message_id)
 
         elif msg_type == Recipient.PERSONAL:
@@ -1253,8 +1253,8 @@ def extract_unread_data_from_um_rows(
         if is_stream_wildcard_mentioned or is_topic_wildcard_mentioned:
             if msg_type == Recipient.STREAM:
                 stream_id = row["message__recipient__type_id"]
-                topic = row[MESSAGE__TOPIC]
-                if not is_row_muted(stream_id, recipient_id, topic):
+                topic_name = row[MESSAGE__TOPIC]
+                if not is_row_muted(stream_id, recipient_id, topic_name):
                     mentions.add(message_id)
             else:  # nocoverage # TODO: Test wildcard mentions in direct messages.
                 mentions.add(message_id)
@@ -1271,12 +1271,12 @@ def aggregate_streams(*, input_dict: Dict[int, RawUnreadStreamDict]) -> List[Unr
     lookup_dict: Dict[Tuple[int, str], UnreadStreamInfo] = {}
     for message_id, attribute_dict in input_dict.items():
         stream_id = attribute_dict["stream_id"]
-        topic = attribute_dict["topic"]
-        lookup_key = (stream_id, topic)
+        topic_name = attribute_dict["topic"]
+        lookup_key = (stream_id, topic_name)
         if lookup_key not in lookup_dict:
             obj = UnreadStreamInfo(
                 stream_id=stream_id,
-                topic=topic,
+                topic=topic_name,
                 unread_message_ids=[],
             )
             lookup_dict[lookup_key] = obj
@@ -1387,14 +1387,14 @@ def apply_unread_message_event(
 
     if recipient_type == "stream":
         stream_id = message["stream_id"]
-        topic = message[TOPIC_NAME]
+        topic_name = message[TOPIC_NAME]
         state["stream_dict"][message_id] = RawUnreadStreamDict(
             stream_id=stream_id,
-            topic=topic,
+            topic=topic_name,
         )
 
         stream_muted = stream_id in state["muted_stream_ids"]
-        visibility_policy = get_topic_visibility_policy(user_profile, stream_id, topic)
+        visibility_policy = get_topic_visibility_policy(user_profile, stream_id, topic_name)
         # A stream message is unmuted if it belongs to:
         # * a not muted topic in a normal stream
         # * an unmuted or followed topic in a muted stream
