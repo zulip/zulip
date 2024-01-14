@@ -4248,11 +4248,7 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post(
             "/accounts/find/", dict(emails="iago@zulip.com,cordeliA@zulip.com")
         )
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(
-            result["Location"], "/accounts/find/?emails=iago%40zulip.com%2CcordeliA%40zulip.com"
-        )
-        result = self.client_get(result["Location"])
+        self.assertEqual(result.status_code, 200)
         content = result.content.decode()
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn("iago@zulip.com", content)
@@ -4271,12 +4267,7 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post(
             "/accounts/find/", dict(emails="iago@zulip.com,invalid_email@zulip.com")
         )
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(
-            result["Location"],
-            "/accounts/find/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com",
-        )
-        result = self.client_get(result["Location"])
+        self.assertEqual(result.status_code, 200)
         content = result.content.decode()
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
@@ -4309,8 +4300,7 @@ class TestFindMyTeam(ZulipTestCase):
     def test_find_team_one_email(self) -> None:
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/find/?emails=hamlet%40zulip.com")
+        self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -4319,8 +4309,7 @@ class TestFindMyTeam(ZulipTestCase):
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/find/?emails=hamlet%40zulip.com")
+        self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
@@ -4329,8 +4318,7 @@ class TestFindMyTeam(ZulipTestCase):
         do_deactivate_realm(get_realm("zulip"), acting_user=None)
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/find/?emails=hamlet%40zulip.com")
+        self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
@@ -4338,8 +4326,7 @@ class TestFindMyTeam(ZulipTestCase):
     def test_find_team_bot_email(self) -> None:
         data = {"emails": self.example_email("webhook_bot")}
         result = self.client_post("/accounts/find/", data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/find/?emails=webhook-bot%40zulip.com")
+        self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
