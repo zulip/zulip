@@ -529,7 +529,7 @@
     color: hsl(200deg 100% 40%);
 }
 
-#inbox-filter_widget {
+#inbox-filter-widget {
     margin-right: 5px;
     height: 30px;
     max-width: var(--width-inbox-filters-dropdown);
