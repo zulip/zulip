@@ -1309,10 +1309,10 @@ def apply_event(
 
         if "raw_unread_msgs" in state and TOPIC_NAME in event:
             stream_dict = state["raw_unread_msgs"]["stream_dict"]
-            topic = event[TOPIC_NAME]
+            topic_name = event[TOPIC_NAME]
             for message_id in event["message_ids"]:
                 if message_id in stream_dict:
-                    stream_dict[message_id]["topic"] = topic
+                    stream_dict[message_id]["topic"] = topic_name
     elif event["type"] == "delete_message":
         if "message_id" in event:
             message_ids = [event["message_id"]]

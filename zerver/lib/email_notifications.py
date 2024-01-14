@@ -285,7 +285,7 @@ def build_message_list(
             narrow_link = topic_narrow_url(
                 realm=user.realm,
                 stream=stream,
-                topic=message.topic_name(),
+                topic_name=message.topic_name(),
             )
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
@@ -525,7 +525,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         narrow_url = topic_narrow_url(
             realm=user_profile.realm,
             stream=stream,
-            topic=message.topic_name(),
+            topic_name=message.topic_name(),
         )
         context.update(narrow_url=narrow_url)
         topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())

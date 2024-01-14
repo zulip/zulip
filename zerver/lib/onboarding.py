@@ -267,7 +267,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
     with override_language(realm.default_language):
-        content_of_private_streams_topic = (
+        content_of_private_streams_topic_name = (
             _("This is a private stream, as indicated by the lock icon next to the stream name.")
             + " "
             + _("Private streams are only visible to stream members.")
@@ -282,20 +282,20 @@ def send_initial_realm_messages(realm: Realm) -> None:
             initial_private_stream_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
         )
 
-        content1_of_topic_demonstration_topic = (
+        content1_of_topic_demonstration_topic_name = (
             _(
                 "This is a message on stream #**{default_notification_stream_name}** with the "
                 "topic `topic demonstration`."
             )
         ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
 
-        content2_of_topic_demonstration_topic = (
+        content2_of_topic_demonstration_topic_name = (
             _("Topics are a lightweight tool to keep conversations organized.")
             + " "
             + _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
         ).format(about_topics_help_url="/help/streams-and-topics")
 
-        content_of_swimming_turtles_topic = (
+        content_of_swimming_turtles_topic_name = (
             _(
                 "This is a message on stream #**{default_notification_stream_name}** with the "
                 "topic `swimming turtles`."
@@ -317,23 +317,23 @@ def send_initial_realm_messages(realm: Realm) -> None:
     welcome_messages: List[Dict[str, str]] = [
         {
             "stream": Realm.INITIAL_PRIVATE_STREAM_NAME,
-            "topic": "private streams",
-            "content": content_of_private_streams_topic,
+            "topic_name": "private streams",
+            "content": content_of_private_streams_topic_name,
         },
         {
             "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic": "topic demonstration",
-            "content": content1_of_topic_demonstration_topic,
+            "topic_name": "topic demonstration",
+            "content": content1_of_topic_demonstration_topic_name,
         },
         {
             "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic": "topic demonstration",
-            "content": content2_of_topic_demonstration_topic,
+            "topic_name": "topic demonstration",
+            "content": content2_of_topic_demonstration_topic_name,
         },
         {
             "stream": realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic": "swimming turtles",
-            "content": content_of_swimming_turtles_topic,
+            "topic_name": "swimming turtles",
+            "content": content_of_swimming_turtles_topic_name,
         },
     ]
 
@@ -342,7 +342,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
             realm,
             welcome_bot,
             message["stream"],
-            message["topic"],
+            message["topic_name"],
             message["content"],
         )
         for message in welcome_messages
