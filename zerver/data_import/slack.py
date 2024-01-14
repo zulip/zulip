@@ -57,6 +57,7 @@ from zerver.models import (
     Recipient,
     UserProfile,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 SlackToZulipUserIDT: TypeAlias = Dict[str, int]
 AddedChannelsT: TypeAlias = Dict[str, Tuple[str, int]]
@@ -976,20 +977,23 @@ def channel_message_to_zerver_message(
 
         # Slack's unthreaded messages go into a single topic, while
         # threads each generate a unique topic labeled by the date and
-        # a counter among topics on that day.
+        # message content.
         topic_name = "imported from Slack"
         if convert_slack_threads and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
-            # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
-            # threads with the same date.
+            thread_message = content[: min(MAX_TOPIC_NAME_LENGTH, len(content))]
+
+            # The topic name is "2015-08-18 content[:49]" or "2015-08-18 content[:48]…"
+            # using the unicode ellipsis character (…) -- it's only one character long
             if thread_ts_str in thread_map:
                 topic_name = thread_map[thread_ts_str]
             else:
                 thread_date = thread_ts.strftime(r"%Y-%m-%d")
                 thread_counter[thread_date] += 1
-                count = thread_counter[thread_date]
-                topic_name = f"{thread_date} Slack thread {count}"
+                topic_name = f"{thread_date} {thread_message}"
+                if len(topic_name) > MAX_TOPIC_NAME_LENGTH:
+                    topic_name = topic_name[: (MAX_TOPIC_NAME_LENGTH - 1)] + "…"
                 thread_map[thread_ts_str] = topic_name
 
         zulip_message = build_message(
