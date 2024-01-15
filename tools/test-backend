@@ -59,7 +59,6 @@ not_yet_fully_covered = [
     "corporate/views/remote_billing_page.py",
     "corporate/lib/remote_billing_util.py",
     # Major lib files should have 100% coverage
-    "zerver/actions/presence.py",
     "zerver/lib/addressee.py",
     "zerver/lib/markdown/__init__.py",
     "zerver/lib/cache.py",
