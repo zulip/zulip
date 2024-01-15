@@ -482,6 +482,7 @@ run_test("get_full_datetime", () => {
 run_test("last_seen_status_from_date", () => {
     // Set base_date to March 1 2016 12.30 AM (months are zero based)
     let base_date = new Date(2016, 2, 1, 0, 30);
+    MockDate.set(base_date.getTime());
 
     function assert_same(duration, expected_status) {
         const past_date = add(base_date, duration);
@@ -513,11 +514,13 @@ run_test("last_seen_status_from_date", () => {
 
     // Set base_date to May 1 2016 12.30 AM (months are zero based)
     base_date = new Date(2016, 4, 1, 0, 30);
+    MockDate.set(base_date.getTime());
 
     assert_same({days: -91}, $t({defaultMessage: "Active Jan 31"}));
 
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);
+    MockDate.set(base_date.getTime());
 
     assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
 
@@ -526,6 +529,8 @@ run_test("last_seen_status_from_date", () => {
     assert_same({hours: -12}, $t({defaultMessage: "Active 12 hours ago"}));
 
     assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+
+    MockDate.reset();
 });
 
 run_test("relative_time_string_from_date", () => {
