@@ -1036,10 +1036,6 @@ export function deactivate() {
         recent_view_ui.hide();
     } else if (coming_from_inbox) {
         inbox_ui.hide();
-    } else if (narrow_state.filter() === undefined && has_visited_all_messages) {
-        // If we're already looking at the All messages view, exit without
-        // doing any work.
-        return;
     } else {
         // We must instead be switching from another message view.
         // Save the scroll position in that message list, so that
