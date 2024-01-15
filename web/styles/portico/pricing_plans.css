@@ -1,3 +1,13 @@
+:root {
+    --color-background-gradient-start: hsl(209deg 40% 50%);
+    --color-background-gradient-end: hsl(210deg 48% 69%);
+
+    @media (prefers-color-scheme: dark) {
+        --color-background-gradient-start: hsl(209deg 63% 40%);
+        --color-background-gradient-end: hsl(238deg 28% 50%);
+    }
+}
+
 .portico-pricing {
     --font-ss3: "Source Sans 3 VF", sans-serif;
     --font-ops: "Open Sans Variable", sans-serif;
