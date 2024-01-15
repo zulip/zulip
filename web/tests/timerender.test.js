@@ -531,13 +531,11 @@ run_test("last_seen_status_from_date", () => {
 run_test("relative_time_string_from_date", () => {
     // Set base_date to March 1 2016 12.30 AM (months are zero based)
     let base_date = new Date(2016, 2, 1, 0, 30);
+    MockDate.set(base_date.getTime());
 
     function assert_same(duration, expected_status) {
         const past_date = add(base_date, duration);
-        const actual_status = timerender.relative_time_string_from_date({
-            date: past_date,
-            current_date: base_date,
-        });
+        const actual_status = timerender.relative_time_string_from_date(past_date);
         assert.equal(actual_status, expected_status);
     }
 
@@ -571,11 +569,13 @@ run_test("relative_time_string_from_date", () => {
 
     // Set base_date to May 1 2016 12.30 AM (months are zero based)
     base_date = new Date(2016, 4, 1, 0, 30);
+    MockDate.set(base_date.getTime());
 
     assert_same({days: -91}, "Jan 31");
 
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);
+    MockDate.set(base_date.getTime());
 
     assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
 
@@ -584,6 +584,8 @@ run_test("relative_time_string_from_date", () => {
     assert_same({hours: -12}, $t({defaultMessage: "12 hours ago"}));
 
     assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
+
+    MockDate.reset();
 });
 
 run_test("set_full_datetime", () => {

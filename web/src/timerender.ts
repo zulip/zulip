@@ -213,15 +213,8 @@ export function render_now(time: Date, today = new Date()): TimeRender {
 }
 
 // Relative time rendering for use in most screens like Recent conversations.
-//
-// Current date is passed as an argument for unit testing
-export function relative_time_string_from_date({
-    date,
-    current_date = new Date(),
-}: {
-    date: Date;
-    current_date?: Date;
-}): string {
+export function relative_time_string_from_date(date: Date): string {
+    const current_date = new Date();
     const minutes = differenceInMinutes(current_date, date);
     if (minutes <= 2) {
         return $t({defaultMessage: "Just now"});
