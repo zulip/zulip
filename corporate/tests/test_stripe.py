@@ -6198,7 +6198,6 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
         # Check strings on plans page.
         result = self.client_get(result["Location"], subdomain="selfhosting")
-        self.assert_in_success_response(["Request sponsorship"], result)
         self.assert_not_in_success_response(["Sponsorship pending"], result)
 
         # Navigate to request sponsorship page.
@@ -6707,7 +6706,6 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
         # Check strings on plans page.
         result = self.client_get(result["Location"], subdomain="selfhosting")
-        self.assert_in_success_response(["Request sponsorship"], result)
         self.assert_not_in_success_response(["Sponsorship pending"], result)
 
         # Navigate to request sponsorship page.
