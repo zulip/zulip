@@ -96,8 +96,8 @@
                     </div>
                     {% else %}
                     <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select">
-                        <option value="Monthly" {% if billing_frequency == "Monthly" %}selected{% endif %}>Monthly</option>
-                        <option value="Annual" {% if billing_frequency == "Annual" %}selected{% endif %}>Annual</option>
+                        <option value="Monthly" {% if billing_frequency =="Monthly" %}selected{% endif %}>Monthly</option>
+                        <option value="Annual" {% if billing_frequency =="Annual" %}selected{% endif %}>Annual</option>
                     </select>
                     {% endif %}
                     <button id="org-billing-frequency-confirm-button" class="hide">
@@ -272,18 +272,19 @@
                             </button>
                         </div>
                     {% elif downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial %}
-                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
-                            <button class="reactivate-current-plan-button plan-toggle-action-button">
-                                <span class="billing-button-text">
-                                    {% if downgrade_at_end_of_free_trial %}
-                                    Cancel downgrade
-                                    {% else %}
-                                    Reactivate subscription
-                                    {% endif %}
-                                </span>
-                                <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
-                            </button>
-                        </div>
+                       <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
+    <button class="reactivate-current-plan-button plan-toggle-action-button" style="background-color:green;">
+        <span class="billing-button-text">
+            {% if downgrade_at_end_of_free_trial %}
+            Cancel downgrade
+            {% else %}
+            Reactivate subscription
+            {% endif %}
+        </span>
+        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+    </button>
+</div>
+
                     {% elif is_server_on_legacy_plan %}
                         <div class="plan-toggle-action input-box billing-page-field no-validation" id="cancel-legacy-server-upgrade">
                             <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
