@@ -1096,9 +1096,9 @@ class HomeTest(ZulipTestCase):
         return self.send_stream_message(sender, stream_name, content=content, topic_name=topic_name)
 
     def soft_activate_and_get_unread_count(
-        self, stream: str = "Denmark", topic: str = "foo"
+        self, stream: str = "Denmark", topic_name: str = "foo"
     ) -> int:
-        stream_narrow = self._get_home_page(stream=stream, topic=topic)
+        stream_narrow = self._get_home_page(stream=stream, topic=topic_name)
         page_params = self._get_page_params(stream_narrow)
         return page_params["unread_msgs"]["count"]
 

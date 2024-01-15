@@ -169,14 +169,14 @@ class WebhookURLConfigurationTestCase(WebhookTestCase):
             self.test_user, self.url, payload, content_type="application/json"
         )
 
-        expected_topic = "Hello World"
+        expected_topic_name = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
         msg = self.get_last_message()
         self.assert_stream_message(
             message=msg,
             stream_name="helloworld_renamed",
-            topic_name=expected_topic,
+            topic_name=expected_topic_name,
             content=expected_message,
         )
 

@@ -1281,8 +1281,8 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_stream_topics(r: Realm) -> Set[str]:
             messages = get_stream_messages(r)
-            topics = {m.topic_name() for m in messages}
-            return topics
+            topic_names = {m.topic_name() for m in messages}
+            return topic_names
 
         # test usermessages
         @getter

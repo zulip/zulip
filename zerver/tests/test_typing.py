@@ -133,7 +133,7 @@ class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
     def test_stream_doesnt_exist(self) -> None:
         sender = self.example_user("hamlet")
         stream_id = self.INVALID_STREAM_ID
-        topic = "some topic"
+        topic_name = "some topic"
 
         result = self.api_post(
             sender,
@@ -142,7 +142,7 @@ class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
                 "type": "stream",
                 "op": "start",
                 "stream_id": str(stream_id),
-                "topic": topic,
+                "topic": topic_name,
             },
         )
         self.assert_json_error(result, "Invalid stream ID")
@@ -371,7 +371,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
         stream_id = self.get_stream_id(stream_name)
-        topic = "Some topic"
+        topic_name = "Some topic"
 
         expected_user_ids = self.not_long_term_idle_subscriber_ids(stream_name, sender.realm)
 
@@ -379,7 +379,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             type="stream",
             op="start",
             stream_id=str(stream_id),
-            topic=topic,
+            topic=topic_name,
         )
 
         with self.assert_database_query_count(6):
@@ -394,7 +394,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         self.assertEqual(expected_user_ids, event_user_ids)
         self.assertEqual(sender.email, event["sender"]["email"])
         self.assertEqual(stream_id, event["stream_id"])
-        self.assertEqual(topic, event["topic"])
+        self.assertEqual(topic_name, event["topic"])
         self.assertEqual("typing", event["type"])
         self.assertEqual("start", event["op"])
 
@@ -402,7 +402,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
         stream_id = self.get_stream_id(stream_name)
-        topic = "Some topic"
+        topic_name = "Some topic"
 
         expected_user_ids = self.not_long_term_idle_subscriber_ids(stream_name, sender.realm)
 
@@ -410,7 +410,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             type="stream",
             op="stop",
             stream_id=str(stream_id),
-            topic=topic,
+            topic=topic_name,
         )
 
         with self.assert_database_query_count(6):
@@ -425,7 +425,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         self.assertEqual(expected_user_ids, event_user_ids)
         self.assertEqual(sender.email, event["sender"]["email"])
         self.assertEqual(stream_id, event["stream_id"])
-        self.assertEqual(topic, event["topic"])
+        self.assertEqual(topic_name, event["topic"])
         self.assertEqual("typing", event["type"])
         self.assertEqual("stop", event["op"])
 
@@ -433,7 +433,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
         stream_id = self.get_stream_id(stream_name)
-        topic = "Some topic"
+        topic_name = "Some topic"
 
         for name in ["aaron", "iago", "cordelia", "prospero", "othello", "polonius"]:
             user = self.example_user(name)
@@ -443,7 +443,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             type="stream",
             op="start",
             stream_id=str(stream_id),
-            topic=topic,
+            topic=topic_name,
         )
         with self.settings(MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS=5):
             with self.assert_database_query_count(5):
@@ -456,7 +456,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
         stream_id = self.get_stream_id(stream_name)
-        topic = "Some topic"
+        topic_name = "Some topic"
 
         aaron = self.example_user("aaron")
         iago = self.example_user("iago")
@@ -474,7 +474,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             type="stream",
             op="start",
             stream_id=str(stream_id),
-            topic=topic,
+            topic=topic_name,
         )
 
         with self.assert_database_query_count(6):
@@ -492,7 +492,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
 
         self.assertEqual(sender.email, event["sender"]["email"])
         self.assertEqual(stream_id, event["stream_id"])
-        self.assertEqual(topic, event["topic"])
+        self.assertEqual(topic_name, event["topic"])
         self.assertEqual("typing", event["type"])
         self.assertEqual("start", event["op"])
 
@@ -535,7 +535,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
         stream_id = self.get_stream_id(stream_name)
-        topic = "Some topic"
+        topic_name = "Some topic"
 
         expected_user_ids = self.not_long_term_idle_subscriber_ids(stream_name, sender.realm)
 
@@ -543,7 +543,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
             type="stream",
             op="start",
             stream_id=str(stream_id),
-            topic=topic,
+            topic=topic_name,
         )
 
         # Test typing events sent when `send_stream_typing_notifications` set to `True`.

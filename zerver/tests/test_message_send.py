@@ -1138,12 +1138,12 @@ class MessagePOSTTest(ZulipTestCase):
         succeeds, but the topic is truncated.
         """
         self.login("hamlet")
-        long_topic = "A" * (MAX_TOPIC_NAME_LENGTH + 1)
+        long_topic_name = "A" * (MAX_TOPIC_NAME_LENGTH + 1)
         post_data = {
             "type": "stream",
             "to": orjson.dumps("Verona").decode(),
             "content": "test content",
-            "topic": long_topic,
+            "topic": long_topic_name,
         }
         result = self.client_post("/json/messages", post_data)
         self.assert_json_success(result)
