@@ -1138,7 +1138,7 @@ def generate_and_send_messages(
         huddle_members[h] = [s.user_profile.id for s in Subscription.objects.filter(recipient_id=h)]
 
     # Generate different topics for each stream
-    possible_topics = {}
+    possible_topic_names = {}
     for stream_id in recipient_streams:
         # We want the test suite to have a predictable database state,
         # since some tests depend on it; but for actual development,
@@ -1149,7 +1149,7 @@ def generate_and_send_messages(
         else:
             num_topics = options["max_topics"]
 
-        possible_topics[stream_id] = generate_topics(num_topics)
+        possible_topic_names[stream_id] = generate_topics(num_topics)
 
     message_batch_size = options["batch_size"]
     num_messages = 0
@@ -1206,7 +1206,7 @@ def generate_and_send_messages(
             message.sender = random.choice(
                 list(Subscription.objects.filter(recipient=message.recipient))
             ).user_profile
-            message.subject = random.choice(possible_topics[message.recipient.id])
+            message.subject = random.choice(possible_topic_names[message.recipient.id])
             saved_data["subject"] = message.subject
 
         message.date_sent = choose_date_sent(
