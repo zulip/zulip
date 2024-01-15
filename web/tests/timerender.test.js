@@ -394,29 +394,35 @@ run_test("absolute_time_12_hour", () => {
     let timestamp = date_2019.getTime();
 
     let today = date_2019;
+    MockDate.set(today.getTime());
     let expected = "Apr 12, 5:52 PM";
-    let actual = timerender.absolute_time(timestamp, today);
+    let actual = timerender.absolute_time(timestamp);
     assert.equal(actual, expected);
 
     // timestamp with hour > 12, different year
     let next_year = add(today, {years: 1});
+    MockDate.set(next_year.getTime());
     expected = "Apr 12, 2019, 5:52 PM";
-    actual = timerender.absolute_time(timestamp, next_year);
+    actual = timerender.absolute_time(timestamp);
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, same year
     timestamp = date_2017.getTime();
 
     today = date_2017;
+    MockDate.set(today.getTime());
     expected = "May 18, 7:12 AM";
-    actual = timerender.absolute_time(timestamp, today);
+    actual = timerender.absolute_time(timestamp);
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, different year
     next_year = add(today, {years: 1});
+    MockDate.set(next_year.getTime());
     expected = "May 18, 2017, 7:12 AM";
-    actual = timerender.absolute_time(timestamp, next_year);
+    actual = timerender.absolute_time(timestamp);
     assert.equal(actual, expected);
+
+    MockDate.reset();
 });
 
 run_test("absolute_time_24_hour", () => {
@@ -424,28 +430,33 @@ run_test("absolute_time_24_hour", () => {
 
     // date with hour > 12, same year
     let today = date_2019;
+    MockDate.set(today.getTime());
     let expected = "Apr 12, 17:52";
-    let actual = timerender.absolute_time(date_2019.getTime(), today);
+    let actual = timerender.absolute_time(date_2019.getTime());
     assert.equal(actual, expected);
 
     // date with hour > 12, different year
     let next_year = add(today, {years: 1});
-
+    MockDate.set(next_year.getTime());
     expected = "Apr 12, 2019, 17:52";
-    actual = timerender.absolute_time(date_2019.getTime(), next_year);
+    actual = timerender.absolute_time(date_2019.getTime());
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, same year
     today = date_2017;
+    MockDate.set(today.getTime());
     expected = "May 18, 07:12";
-    actual = timerender.absolute_time(date_2017.getTime(), today);
+    actual = timerender.absolute_time(date_2017.getTime());
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, different year
     next_year = add(today, {years: 1});
+    MockDate.set(next_year.getTime());
     expected = "May 18, 2017, 07:12";
-    actual = timerender.absolute_time(date_2017.getTime(), next_year);
+    actual = timerender.absolute_time(date_2017.getTime());
     assert.equal(actual, expected);
+
+    MockDate.reset();
 });
 
 run_test("get_full_datetime", () => {
