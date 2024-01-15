@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
@@ -70,7 +70,7 @@ function test(label, f) {
 test("videos", ({override}) => {
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
 
-    override(upload, "feature_check", () => {});
+    override(upload, "feature_check", noop);
 
     stub_out_video_calls();
 
@@ -247,7 +247,7 @@ test("videos", ({override}) => {
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
-    override(upload, "feature_check", () => {});
+    override(upload, "feature_check", noop);
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
     compose_setup.initialize();
@@ -255,7 +255,7 @@ test("test_video_chat_button_toggle disabled", ({override}) => {
 });
 
 test("test_video_chat_button_toggle no url", ({override}) => {
-    override(upload, "feature_check", () => {});
+    override(upload, "feature_check", noop);
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = null;
@@ -264,7 +264,7 @@ test("test_video_chat_button_toggle no url", ({override}) => {
 });
 
 test("test_video_chat_button_toggle enabled", ({override}) => {
-    override(upload, "feature_check", () => {});
+    override(upload, "feature_check", noop);
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.realm_jitsi_server_url = "https://meet.jit.si";

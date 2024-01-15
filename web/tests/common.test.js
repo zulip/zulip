@@ -3,10 +3,8 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-
-const noop = () => {};
 
 mock_esm("tippy.js", {
     default(arg) {
@@ -224,7 +222,7 @@ run_test("adjust_mac_tooltip_keys mac random", ({override}) => {
 run_test("show password", () => {
     const password_selector = "#id_password ~ .password_visibility_toggle";
 
-    $(password_selector)[0] = () => {};
+    $(password_selector)[0] = noop;
 
     function set_attribute(type) {
         $("#id_password").attr("type", type);

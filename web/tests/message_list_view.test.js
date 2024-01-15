@@ -5,12 +5,10 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 set_global("document", "document-stub");
-
-const noop = () => {};
 
 // timerender calls setInterval when imported
 mock_esm("../src/timerender", {
@@ -445,8 +443,8 @@ test("merge_message_groups", () => {
 
         const view = new MessageListView(list, table_name, true);
         view._message_groups = message_groups;
-        view.list.unsubscribed_bookend_content = () => {};
-        view.list.subscribed_bookend_content = () => {};
+        view.list.unsubscribed_bookend_content = noop;
+        view.list.subscribed_bookend_content = noop;
         return view;
     }
 

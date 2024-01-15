@@ -655,7 +655,7 @@ export function initialize_everything() {
     navbar_help_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
-   settings_preferences.initialize();
+    settings_preferences.initialize();
     settings_notifications.initialize();
     settings_realm_user_settings_defaults.initialize();
     settings_panel_menu.initialize();

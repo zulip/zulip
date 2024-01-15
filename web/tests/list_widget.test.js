@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
@@ -45,8 +45,8 @@ const ListWidget = zrequire("list_widget");
 
 function make_container() {
     const $container = {};
-    $container.empty = () => {};
-    $container.data = () => {};
+    $container.empty = noop;
+    $container.data = noop;
 
     // Make our append function just set a field we can
     // check in our tests.

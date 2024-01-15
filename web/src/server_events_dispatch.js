@@ -791,16 +791,16 @@ export function dispatch_normal_event(event) {
                 // reload.
             }
             if (event.property === "emojiset") {
-                settings_preferences.report_emojiset_change(settings_preferences.user_settings_panel);
-
+                settings_preferences.report_emojiset_change(
+                    settings_preferences.user_settings_panel,
+                );
                 // Rerender the whole message list UI
-                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
                 }
                 // Rerender buddy list status emoji
                 activity_ui.build_user_sidebar();
             }
-
             if (event.property === "display_emoji_reaction_users") {
                 message_live_update.rerender_messages_view();
             }

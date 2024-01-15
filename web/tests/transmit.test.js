@@ -3,11 +3,9 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
-
-const noop = () => {};
 
 const channel = mock_esm("../src/channel");
 const reload = mock_esm("../src/reload");
