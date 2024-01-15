@@ -312,7 +312,7 @@ eligibility prior to setting up a server, contact
 {!self-hosted-log-in.md!}
 
 1. On the page listing Zulip's self-hosted plans, scroll down to the
-   **Sponsorship and discounts** area, and click **Request sponsorship**.
+   **Sponsorship and discounts** area, and click **Apply here**.
 
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for Community plan eligibility.
@@ -326,7 +326,7 @@ eligibility prior to setting up a server, contact
 {!legacy-log-in.md!}
 
 1. On the page listing Zulip's self-hosted plans, scroll down to the
-   **Sponsorship and discounts** area, and click **Request sponsorship**.
+   **Sponsorship and discounts** area, and click **Apply here**.
 
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for Community plan eligibility.
@@ -419,7 +419,7 @@ eligibility prior to setting up a server, contact
 {!self-hosted-log-in.md!}
 
 1. On the page listing Zulip's self-hosted plans, scroll down to the
-   **Sponsorship and discounts** area, and click **Request sponsorship**.
+   **Sponsorship and discounts** area, and click **Apply here**.
 
 1. Select your preferred option from the **Plan** dropdown.
 
@@ -435,7 +435,7 @@ eligibility prior to setting up a server, contact
 {!legacy-log-in.md!}
 
 1. On the page listing Zulip's self-hosted plans, scroll down to the
-   **Sponsorship and discounts** area, and click **Request sponsorship**.
+   **Sponsorship and discounts** area, and click **Apply here**.
 
 1. Select your preferred option from the **Plan** dropdown.
 
