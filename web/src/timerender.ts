@@ -364,10 +364,10 @@ function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-export function render_date(time: Date, today: Date): JQuery {
+export function render_date(time: Date): JQuery {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
-    const rendered_time = render_now(time, today);
+    const rendered_time = render_now(time);
     let $node = $("<span>").attr("class", className);
     $node = render_date_span($node, rendered_time);
     maybe_add_update_list_entry({
