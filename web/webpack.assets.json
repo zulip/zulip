@@ -52,6 +52,11 @@
     "landing-page": [
         "./src/bundles/portico",
         "./src/portico/landing-page",
+        "./styles/portico/landing_page.css"
+    ],
+    "landing-page-with-pricing": [
+        "./src/bundles/portico",
+        "./src/portico/landing-page",
         "./styles/portico/landing_page.css",
         "./styles/portico/pricing_plans.css"
     ],
