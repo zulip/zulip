@@ -256,10 +256,8 @@ export function relative_time_string_from_date(date: Date): string {
 // word order.
 //
 // Current date is passed as an argument for unit testing
-export function last_seen_status_from_date(
-    last_active_date: Date,
-    current_date = new Date(),
-): string {
+export function last_seen_status_from_date(last_active_date: Date): string {
+    const current_date = new Date();
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes < 60) {
         return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
