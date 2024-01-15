@@ -190,62 +190,70 @@ run_test("get_tz_with_UTC_offset", () => {
 });
 
 run_test("render_now_returns_today", () => {
-    const today = date_2019;
+    MockDate.set(date_2019.getTime());
 
     const expected = {
         time_str: $t({defaultMessage: "Today"}),
         formal_time_str: "Friday, April 12, 2019",
         needs_update: true,
     };
-    const actual = timerender.render_now(today, today);
+    const actual = timerender.render_now(date_2019);
     assert.equal(actual.time_str, expected.time_str);
     assert.equal(actual.formal_time_str, expected.formal_time_str);
     assert.equal(actual.needs_update, expected.needs_update);
+
+    MockDate.reset();
 });
 
 run_test("render_now_returns_yesterday", () => {
-    const today = date_2019;
+    MockDate.set(date_2019.getTime());
 
-    const yesterday = add(today, {days: -1});
+    const yesterday = add(date_2019, {days: -1});
     const expected = {
         time_str: $t({defaultMessage: "Yesterday"}),
         formal_time_str: "Thursday, April 11, 2019",
         needs_update: true,
     };
-    const actual = timerender.render_now(yesterday, today);
+    const actual = timerender.render_now(yesterday);
     assert.equal(actual.time_str, expected.time_str);
     assert.equal(actual.formal_time_str, expected.formal_time_str);
     assert.equal(actual.needs_update, expected.needs_update);
+
+    MockDate.reset();
 });
 
 run_test("render_now_returns_year", () => {
-    const today = date_2019;
+    MockDate.set(date_2019.getTime());
 
-    const year_ago = add(today, {years: -1});
+    const year_ago = add(date_2019, {years: -1});
     const expected = {
         time_str: "Apr 12, 2018",
         formal_time_str: "Thursday, April 12, 2018",
         needs_update: false,
     };
-    const actual = timerender.render_now(year_ago, today);
+    const actual = timerender.render_now(year_ago);
     assert.equal(actual.time_str, expected.time_str);
     assert.equal(actual.formal_time_str, expected.formal_time_str);
     assert.equal(actual.needs_update, expected.needs_update);
+
+    MockDate.reset();
 });
 
 run_test("render_now_returns_month_and_day", () => {
-    const today = date_2019;
+    MockDate.set(date_2019.getTime());
 
-    const three_months_ago = add(today, {months: -3});
+    const three_months_ago = add(date_2019, {months: -3});
     const expected = {
         time_str: "Jan 12",
         formal_time_str: "Saturday, January 12, 2019",
         needs_update: false,
     };
-    const actual = timerender.render_now(three_months_ago, today);
+    const actual = timerender.render_now(three_months_ago);
     assert.equal(actual.time_str, expected.time_str);
     assert.equal(actual.formal_time_str, expected.formal_time_str);
     assert.equal(actual.needs_update, expected.needs_update);
+
+    MockDate.reset();
 });
 
 run_test("format_time_modern", () => {
@@ -319,18 +327,20 @@ run_test("format_time_modern_different_timezones", () => {
 });
 
 run_test("render_now_returns_year_with_year_boundary", () => {
-    const today = date_2019;
+    MockDate.set(date_2019.getTime());
 
-    const six_months_ago = add(today, {months: -6});
+    const six_months_ago = add(date_2019, {months: -6});
     const expected = {
         time_str: "Oct 12, 2018",
         formal_time_str: "Friday, October 12, 2018",
         needs_update: false,
     };
-    const actual = timerender.render_now(six_months_ago, today);
+    const actual = timerender.render_now(six_months_ago);
     assert.equal(actual.time_str, expected.time_str);
     assert.equal(actual.formal_time_str, expected.formal_time_str);
     assert.equal(actual.needs_update, expected.needs_update);
+
+    MockDate.reset();
 });
 
 run_test("render_date_renders_time_html", () => {
