@@ -117,8 +117,7 @@ function analyze_edit_history(message, last_edit_timestr) {
 
 function render_group_display_date(group, message_container) {
     const time = new Date(message_container.msg.timestamp * 1000);
-    const today = new Date();
-    const date_element = timerender.render_date(time, today)[0];
+    const date_element = timerender.render_date(time)[0];
 
     group.date = date_element.outerHTML;
 }
@@ -150,10 +149,9 @@ function update_message_date_divider(opts) {
     }
 
     const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
-    const today = new Date();
 
     curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html = timerender.render_date(curr_time, today)[0].outerHTML;
+    curr_msg_container.date_divider_html = timerender.render_date(curr_time)[0].outerHTML;
 }
 
 function set_timestr(message_container) {
@@ -321,8 +319,7 @@ export class MessageListView {
         }
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
-            const today = new Date();
-            let date = timerender.render_date(last_edit_time, today)[0].textContent;
+            let date = timerender.render_date(last_edit_time)[0].textContent;
             // If the date is today or yesterday, we don't want to show the date as capitalized.
             // Thus, we need to check if the date string contains a digit or not using regex,
             // since any other date except today/yesterday will contain a digit.
@@ -1641,8 +1638,7 @@ export class MessageListView {
         }
         this.sticky_recipient_message_id = message.id;
         const time = new Date(message.timestamp * 1000);
-        const today = new Date();
-        const rendered_date = timerender.render_date(time, undefined, today);
+        const rendered_date = timerender.render_date(time);
         $sticky_header.find(".recipient_row_date").html(rendered_date);
 
         // The following prevents a broken looking situation where

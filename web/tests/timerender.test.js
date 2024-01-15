@@ -337,6 +337,7 @@ run_test("render_date_renders_time_html", () => {
     timerender.clear_for_testing();
 
     const today = date_2019;
+    MockDate.set(today.getTime());
 
     const message_time = today;
     const expected_html = $t({defaultMessage: "Today"});
@@ -354,10 +355,12 @@ run_test("render_date_renders_time_html", () => {
         return $span_stub;
     };
 
-    const $actual = timerender.render_date(message_time, today);
+    const $actual = timerender.render_date(message_time);
     assert.equal($actual.html(), expected_html);
     assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
+
+    MockDate.reset();
 });
 
 run_test("get_full_time", () => {
