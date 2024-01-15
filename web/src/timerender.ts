@@ -465,7 +465,8 @@ export function format_time_modern(time: number | Date, today = new Date()): str
 
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
-export function absolute_time(timestamp: number, today = new Date()): string {
+export function absolute_time(timestamp: number): string {
+    const today = new Date();
     const date = new Date(timestamp);
     const is_older_year = today.getFullYear() - date.getFullYear() > 0;
 
