@@ -1,6 +1,7 @@
 import itertools
+import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Collection, Dict, List, Optional, Set, Tuple
 
 from django.db import connection
 from django.db.models import QuerySet
@@ -11,7 +12,6 @@ from psycopg2.sql import SQL
 
 from analytics.views.activity_common import (
     format_date_for_activity_reports,
-    get_user_activity_summary,
     make_table,
     realm_stats_link,
     user_activity_link,
@@ -38,6 +38,60 @@ def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet[Us
     records = records.order_by("user_profile__delivery_email", "-last_visit")
     records = records.select_related("user_profile", "client").only(*fields)
     return records
+
+
+def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, Any]:
+    #: The type annotation used above is clearly overly permissive.
+    #: We should perhaps use TypedDict to clearly lay out the schema
+    #: for the user activity summary.
+    summary: Dict[str, Any] = {}
+
+    def update(action: str, record: UserActivity) -> None:
+        if action not in summary:
+            summary[action] = dict(
+                count=record.count,
+                last_visit=record.last_visit,
+            )
+        else:
+            summary[action]["count"] += record.count
+            summary[action]["last_visit"] = max(
+                summary[action]["last_visit"],
+                record.last_visit,
+            )
+
+    if records:
+        first_record = next(iter(records))
+        summary["name"] = first_record.user_profile.full_name
+        summary["user_profile_id"] = first_record.user_profile.id
+
+    for record in records:
+        client = record.client.name
+        query = str(record.query)
+
+        update("use", record)
+
+        if client == "API":
+            m = re.match("/api/.*/external/(.*)", query)
+            if m:
+                client = m.group(1)
+                update(client, record)
+
+        if client.startswith("desktop"):
+            update("desktop", record)
+        if client == "website":
+            update("website", record)
+        if ("send_message" in query) or re.search("/api/.*/external/.*", query):
+            update("send", record)
+        if query in [
+            "/json/update_pointer",
+            "/json/users/me/pointer",
+            "/api/v1/update_pointer",
+            "update_pointer_backend",
+        ]:
+            update("pointer", record)
+        update(client, record)
+
+    return summary
 
 
 def realm_user_summary_table(
