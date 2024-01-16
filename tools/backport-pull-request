@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+    cat >&2 <<EOF
+usage: $0 PULL_REQUEST_ID COMMIT_COUNT [REMOTE]
+
+Fetch the given GitHub pull request branch and backport it to
+the current branch using 'git cherry-pick -x'.
+
+Typical usage is:
+  git fetch upstream
+  git checkout -b 8.x upstream/8.x
+  $0 FIRST_PR_ID FIRST_PR_COMMIT_COUNT
+  $0 SECOND_PR_ID SECOND_PR_COMMIT_COUNT
+  git push origin +HEAD:backport-changes
+EOF
+    exit 1
+}
+
+remote_default="$(git config zulip.zulipRemote || echo upstream)"
+
+request_id="$1"
+commit_count="$2"
+
+if [ -z "$request_id" ] || [ -z "$commit_count" ]; then
+    usage
+fi
+
+remote=${3:-"$remote_default"}
+
+set -x
+
+git fetch "$remote" "pull/$request_id/head"
+git cherry-pick -x FETCH_HEAD~"$commit_count"..FETCH_HEAD
