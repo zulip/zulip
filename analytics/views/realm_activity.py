@@ -3,12 +3,10 @@ import re
 from datetime import datetime
 from typing import Any, Collection, Dict, List, Optional, Set, Tuple
 
-from django.db import connection
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
-from psycopg2.sql import SQL
 
 from analytics.views.activity_common import (
     format_date_for_activity_reports,
@@ -162,105 +160,6 @@ def realm_user_summary_table(
     return user_records, content
 
 
-def realm_client_table(user_summaries: Dict[str, Dict[str, Any]]) -> str:
-    exclude_keys = [
-        "internal",
-        "name",
-        "user_profile_id",
-        "use",
-        "send",
-        "pointer",
-        "website",
-        "desktop",
-    ]
-
-    rows = []
-    for email, user_summary in user_summaries.items():
-        email_link = user_activity_link(email, user_summary["user_profile_id"])
-        name = user_summary["name"]
-        for k, v in user_summary.items():
-            if k in exclude_keys:
-                continue
-            client = k
-            count = v["count"]
-            last_visit = v["last_visit"]
-            row = [
-                format_date_for_activity_reports(last_visit),
-                client,
-                name,
-                email_link,
-                count,
-            ]
-            rows.append(row)
-
-    rows = sorted(rows, key=lambda r: r[0], reverse=True)
-
-    cols = [
-        "Last visit",
-        "Client",
-        "Name",
-        "Email",
-        "Count",
-    ]
-
-    title = "Clients"
-
-    return make_table(title, cols, rows)
-
-
-def sent_messages_report(realm: str) -> str:
-    title = "Recently sent messages for " + realm
-
-    cols = [
-        "Date",
-        "Humans",
-        "Bots",
-    ]
-
-    # Uses index: zerver_message_realm_date_sent
-    query = SQL(
-        """
-        select
-            series.day::date,
-            user_messages.humans,
-            user_messages.bots
-        from (
-            select generate_series(
-                (now()::date - interval '2 week'),
-                now()::date,
-                interval '1 day'
-            ) as day
-        ) as series
-        left join (
-            select
-                date_sent::date date_sent,
-                count(*) filter (where not up.is_bot) as humans,
-                count(*) filter (where up.is_bot) as bots
-            from zerver_message m
-            join zerver_userprofile up on up.id = m.sender_id
-            join zerver_realm r on r.id = up.realm_id
-            where
-                r.string_id = %s
-            and
-                date_sent > now() - interval '2 week'
-            and
-                m.realm_id = r.id
-            group by
-                date_sent::date
-            order by
-                date_sent::date
-        ) user_messages on
-            series.day = user_messages.date_sent
-    """
-    )
-    cursor = connection.cursor()
-    cursor.execute(query, [realm])
-    rows = cursor.fetchall()
-    cursor.close()
-
-    return make_table(title, cols, rows)
-
-
 @require_server_admin
 def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     data: List[Tuple[str, str]] = []
@@ -280,14 +179,6 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
         all_user_records.update(user_records)
 
         data += [(page_title, content)]
-
-    page_title = "Clients"
-    content = realm_client_table(all_user_records)
-    data += [(page_title, content)]
-
-    page_title = "History"
-    content = sent_messages_report(realm_str)
-    data += [(page_title, content)]
 
     title = realm_str
     realm_stats = realm_stats_link(realm_str)
