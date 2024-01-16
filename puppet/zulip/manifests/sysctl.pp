@@ -2,7 +2,7 @@
 define zulip::sysctl (
   $source = undef,
   $content = undef,
-  $skip_docker = False,
+  $skip_docker = false,
 ) {
   file { "/etc/sysctl.d/40-${name}.conf":
     ensure  => file,

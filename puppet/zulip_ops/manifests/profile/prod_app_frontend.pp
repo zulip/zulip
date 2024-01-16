@@ -5,7 +5,7 @@ class zulip_ops::profile::prod_app_frontend {
 
   $conntrack_max = zulipconf('application_server', 'conntrack_max', 262144)
   zulip::sysctl { 'conntrack':
-    content => template('zulip/sysctl.d/40-conntrack.conf.erb'),
+    content => template('zulip_ops/sysctl.d/40-conntrack.conf.erb'),
   }
 
   file { '/etc/nginx/sites-available/zulip':
