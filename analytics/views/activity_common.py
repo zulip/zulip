@@ -1,7 +1,6 @@
-import re
 import sys
 from datetime import datetime
-from typing import Any, Callable, Collection, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -14,7 +13,7 @@ from psycopg2.sql import Composable
 
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_encoding import append_url_query_string
-from zerver.models import Realm, UserActivity
+from zerver.models import Realm
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo
@@ -132,57 +131,3 @@ def remote_installation_support_link(hostname: str) -> Markup:
     query = urlencode({"q": hostname})
     url = append_url_query_string(support_url, query)
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
-
-
-def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, Any]:
-    #: The type annotation used above is clearly overly permissive.
-    #: We should perhaps use TypedDict to clearly lay out the schema
-    #: for the user activity summary.
-    summary: Dict[str, Any] = {}
-
-    def update(action: str, record: UserActivity) -> None:
-        if action not in summary:
-            summary[action] = dict(
-                count=record.count,
-                last_visit=record.last_visit,
-            )
-        else:
-            summary[action]["count"] += record.count
-            summary[action]["last_visit"] = max(
-                summary[action]["last_visit"],
-                record.last_visit,
-            )
-
-    if records:
-        first_record = next(iter(records))
-        summary["name"] = first_record.user_profile.full_name
-        summary["user_profile_id"] = first_record.user_profile.id
-
-    for record in records:
-        client = record.client.name
-        query = str(record.query)
-
-        update("use", record)
-
-        if client == "API":
-            m = re.match("/api/.*/external/(.*)", query)
-            if m:
-                client = m.group(1)
-                update(client, record)
-
-        if client.startswith("desktop"):
-            update("desktop", record)
-        if client == "website":
-            update("website", record)
-        if ("send_message" in query) or re.search("/api/.*/external/.*", query):
-            update("send", record)
-        if query in [
-            "/json/update_pointer",
-            "/json/users/me/pointer",
-            "/api/v1/update_pointer",
-            "update_pointer_backend",
-        ]:
-            update("pointer", record)
-        update(client, record)
-
-    return summary
