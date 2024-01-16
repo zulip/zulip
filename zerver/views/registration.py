@@ -1145,7 +1145,7 @@ def find_account(
     return render(
         request,
         "zerver/find_account.html",
-        context={"form": form, "current_url": lambda: url, "emails": emails},
+        context={"form": form, "current_url": url, "emails": emails},
     )
 
 

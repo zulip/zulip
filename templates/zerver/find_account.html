@@ -29,6 +29,11 @@
                     {% endfor %}
                 </ul>
 
+                {% trans %}
+                If you don't receive an email, you can
+                <a href="{{ current_url }}">find accounts for another email address</a>.
+                {% endtrans %}
+
                 {% include 'zerver/dev_env_email_access_details.html' %}
 
             </div>
@@ -43,7 +48,7 @@
                     {% endtrans %}
                 </p>
                 <form class="form-inline" id="find_account" name="email_form"
-                  action="{{ current_url() }}" method="post">
+                  action="{{ current_url }}" method="post">
                     {{ csrf_input }}
                     <div class="input-box moving-label horizontal">
                         <div class="inline-block relative">
