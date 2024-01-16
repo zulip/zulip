@@ -28,7 +28,8 @@
                     <li>{{ email }}</li>
                     {% endfor %}
                 </ul>
-
+                If you don't receive an email, you can
+                <a href = "{{current_url()}}" >find accounts for another email address</a>.
                 {% include 'zerver/dev_env_email_access_details.html' %}
 
             </div>

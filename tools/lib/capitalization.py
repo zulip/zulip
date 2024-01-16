@@ -83,6 +83,7 @@ IGNORED_PHRASES = [
     r"user",
     r"an unknown operating system",
     r"Go to Settings",
+    r"find accounts for another email address"
     # SPECIAL CASES
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
