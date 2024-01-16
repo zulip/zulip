@@ -1,6 +1,11 @@
 <tr data-subscriber-id="{{user_id}}">
     <td class="subscriber-name">
-        <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">{{name}}</a>
+        <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">
+            {{name}}
+            {{#if is_bot}}
+                <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+            {{/if}}
+        </a>
         {{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
     </td>
     {{#if email}}

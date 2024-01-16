@@ -14,6 +14,7 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import {user_is_bot} from "./people";
 import * as scroll_util from "./scroll_util";
 import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -34,6 +35,7 @@ function format_member_list_elem(person, user_can_remove_subscribers) {
         email: person.delivery_email,
         can_remove_subscribers: user_can_remove_subscribers,
         for_user_group_members: false,
+        is_bot: user_is_bot(person.user_id),
     });
 }
 
