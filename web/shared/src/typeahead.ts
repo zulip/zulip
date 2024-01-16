@@ -155,7 +155,7 @@ export function triage<T>(
             ...beginswithCaseInsensitive,
         ].sort(sorting_comparator);
         return {
-            matches: [...exactMatch, ...non_exact_sorted_matches],
+            matches: [...exactMatch.sort(sorting_comparator), ...non_exact_sorted_matches],
             rest: noMatch.sort(sorting_comparator),
         };
     }
