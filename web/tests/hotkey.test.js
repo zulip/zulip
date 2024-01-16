@@ -159,12 +159,13 @@ run_test("mappings", () => {
         });
     }
 
-    function map_down(which, shiftKey, ctrlKey, metaKey) {
+    function map_down(which, shiftKey, ctrlKey, metaKey, altKey) {
         return hotkey.get_keydown_hotkey({
             which,
             shiftKey,
             ctrlKey,
             metaKey,
+            altKey,
         });
     }
 
@@ -193,6 +194,8 @@ run_test("mappings", () => {
     assert.equal(map_down(75, false, true).name, "search_with_k"); // Ctrl + K
     assert.equal(map_down(83, false, true).name, "star_message"); // Ctrl + S
     assert.equal(map_down(190, false, true).name, "narrow_to_compose_target"); // Ctrl + .
+
+    assert.equal(map_down(80, false, false, false, true).name, "toggle_compose_preview"); // Alt + P
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
