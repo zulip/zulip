@@ -139,7 +139,7 @@ class ActivityTest(ZulipTestCase):
             result = self.client_get("/activity/integrations")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(6):
             result = self.client_get("/realm_activity/zulip/")
             self.assertEqual(result.status_code, 200)
 
