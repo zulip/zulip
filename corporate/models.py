@@ -1,3 +1,4 @@
+from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
@@ -29,6 +30,9 @@ class Customer(models.Model):
     # A percentage, like 85.
     default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)
     minimum_licenses = models.PositiveIntegerField(null=True)
+    # Used for limiting a default_discount or a fixed_price
+    # to be used only for a particular CustomerPlan tier.
+    required_plan_tier = models.SmallIntegerField(null=True)
     # Some non-profit organizations on manual license management pay
     # only for their paid employees.  We don't prevent these
     # organizations from adding more users than the number of licenses
@@ -57,6 +61,11 @@ class Customer(models.Model):
             return f"{self.realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
         else:
             return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
+
+    def get_discount_for_plan_tier(self, plan_tier: int) -> Optional[Decimal]:
+        if self.required_plan_tier is None or self.required_plan_tier == plan_tier:
+            return self.default_discount
+        return None
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
@@ -248,6 +257,11 @@ class CustomerPlan(models.Model):
     # invoice will be generated the first time the cron job runs after
     # next_invoice_date.
     next_invoice_date = models.DateTimeField(db_index=True, null=True)
+
+    # Flag to track if an email has been sent to Zulip team for
+    # invoice overdue by >= one day. Helps to send an email only once
+    # and not every time when cron run.
+    invoice_overdue_email_sent = models.BooleanField(default=False)
 
     # On next_invoice_date, we go through ledger entries that were
     # created after invoiced_through and process them by generating

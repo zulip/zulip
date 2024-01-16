@@ -617,7 +617,7 @@ class NormalActionsTest(BaseAction):
             do_change_subscription_property(hamlet, sub, stream, "is_muted", True, acting_user=None)
 
         def verify_events_generated_and_reset_visibility_policy(
-            events: List[Dict[str, Any]], stream_name: str, topic: str
+            events: List[Dict[str, Any]], stream_name: str, topic_name: str
         ) -> None:
             # event-type: muted_topics
             check_muted_topics("events[0]", events[0])
@@ -634,7 +634,7 @@ class NormalActionsTest(BaseAction):
             do_set_user_topic_visibility_policy(
                 hamlet,
                 get_stream(stream_name, hamlet.realm),
-                topic,
+                topic_name,
                 visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
             )
 
@@ -874,7 +874,7 @@ class NormalActionsTest(BaseAction):
         )
 
         # Verify stream message editing - topic only
-        topic = "new_topic"
+        topic_name = "new_topic"
         propagate_mode = "change_all"
 
         events = self.verify_action(
@@ -882,7 +882,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 message,
                 None,
-                topic,
+                topic_name,
                 propagate_mode,
                 False,
                 False,
@@ -1319,14 +1319,14 @@ class NormalActionsTest(BaseAction):
 
     def test_stream_typing_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
-        topic = "streams typing"
+        topic_name = "streams typing"
 
         events = self.verify_action(
             lambda: do_send_stream_typing_notification(
                 self.user_profile,
                 "start",
                 stream,
-                topic,
+                topic_name,
             ),
             state_change_expected=False,
         )
@@ -1337,7 +1337,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 "stop",
                 stream,
-                topic,
+                topic_name,
             ),
             state_change_expected=False,
         )
@@ -1350,7 +1350,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 "start",
                 stream,
-                topic,
+                topic_name,
             ),
             state_change_expected=False,
             stream_typing_notifications=False,
@@ -1363,7 +1363,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 "stop",
                 stream,
-                topic,
+                topic_name,
             ),
             state_change_expected=False,
             stream_typing_notifications=False,

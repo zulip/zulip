@@ -733,7 +733,7 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
         return HttpResponse(status=400)
 
     try:
-        result = ExternalAuthResult(login_token=token)
+        result = ExternalAuthResult(request=request, login_token=token)
     except ExternalAuthResult.InvalidTokenError:
         logging.warning("log_into_subdomain: Invalid token given: %s", token)
         return render(request, "zerver/log_into_subdomain_token_invalid.html", status=400)

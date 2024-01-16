@@ -113,20 +113,17 @@ def do_update_user_presence(
         defaults=defaults,
     )
 
+    # We initialize these values as a large delta so that if the user
+    # was never active, we always treat the user as newly online.
+    time_since_last_active_for_comparison = timedelta(days=1)
+    time_since_last_connected_for_comparison = timedelta(days=1)
     if presence.last_active_time is not None:
-        time_since_last_active = log_time - presence.last_active_time
-    else:
-        # The user was never active, so let's consider this large to go over any thresholds
-        # we may have.
-        time_since_last_active = timedelta(days=1)
+        time_since_last_active_for_comparison = log_time - presence.last_active_time
     if presence.last_connected_time is not None:
-        time_since_last_connected = log_time - presence.last_connected_time
-    else:
-        # Same approach as above.
-        time_since_last_connected = timedelta(days=1)
+        time_since_last_connected_for_comparison = log_time - presence.last_connected_time
 
     assert (3 * settings.PRESENCE_PING_INTERVAL_SECS + 20) <= settings.OFFLINE_THRESHOLD_SECS
-    now_online = time_since_last_active > timedelta(
+    now_online = time_since_last_active_for_comparison > timedelta(
         # Here, we decide whether the user is newly online, and we need to consider
         # sending an immediate presence update via the events system that this user is now online,
         # rather than waiting for other clients to poll the presence update.
@@ -148,7 +145,7 @@ def do_update_user_presence(
     # times per minute with multiple connected browser windows.
     # We also need to be careful not to wrongly "update" the timestamp if we actually already
     # have newer presence than the reported log_time.
-    if not created and time_since_last_connected > timedelta(
+    if not created and time_since_last_connected_for_comparison > timedelta(
         seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
     ):
         presence.last_connected_time = log_time
@@ -156,7 +153,8 @@ def do_update_user_presence(
     if (
         not created
         and status == UserPresence.LEGACY_STATUS_ACTIVE_INT
-        and time_since_last_active > timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS)
+        and time_since_last_active_for_comparison
+        > timedelta(seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS)
     ):
         presence.last_active_time = log_time
         update_fields.append("last_active_time")

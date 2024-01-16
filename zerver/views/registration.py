@@ -636,6 +636,7 @@ def registration_helper(
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
         auth_result = authenticate(
+            request=request,
             username=user_profile.delivery_email,
             realm=realm,
             return_data=return_data,

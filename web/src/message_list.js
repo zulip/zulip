@@ -63,14 +63,7 @@ export class MessageList {
 
         // Whether this is a narrowed message list. The only message
         // list that is not is the home_msg_list global.
-        //
-        // TODO: It would probably be more readable to replace this
-        // with another property with an inverted meaning, since
-        // home_msg_list is the message list that is special/unique.
-        this.narrowed = this.table_name === "zfilt";
-
-        // TODO: This appears to be unused and can be deleted.
-        this.num_appends = 0;
+        this.narrowed = !this.data.filter.is_in_home();
 
         // Keeps track of whether the user has done a UI interaction,
         // such as "Mark as unread", that should disable marking
@@ -372,7 +365,6 @@ export class MessageList {
     }
 
     append_to_view(messages, {messages_are_new = false} = {}) {
-        this.num_appends += 1;
         const render_info = this.view.append(messages, messages_are_new);
         return render_info;
     }
@@ -474,11 +466,10 @@ export class MessageList {
         // all_messages_data, since otherwise unmuting a previously
         // muted stream won't work.
         //
-        // TODO: The zhome conditional is a bit awkward, but a check
-        // for whether the filter excludes muted streams wouldn't be
-        // correct, because other narrows can't pull from
-        // all_messages.
-        if (this.table_name === "zhome") {
+        // "in-home" filter doesn't included muted stream messages, so we
+        // need to repopulate the message list with all messages to include
+        // the previous messages in muted streams so that update_items_for_muting works.
+        if (this.data.filter.is_in_home()) {
             this.data.clear();
             this.data.add_messages(all_messages_data.all_messages());
         }

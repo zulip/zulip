@@ -21,7 +21,9 @@
 {% endif %}
 
 <form method="POST" class="remote-form">
-    <b>Discount</b>:<br />
+    <b>Discount percentage</b>:<br />
+    <i>Updates will change pre-existing plans and scheduled upgrades.</i><br />
+    <i>Any prorated licenses for the current billing cycle will be billed at the updated discounted rate.</i><br />
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     {% if has_fixed_price %}
@@ -43,6 +45,22 @@
 </form>
 {% endif %}
 
+<form method="POST" class="remote-form">
+    <b>Required plan tier for discounts and fixed prices</b>:<br />
+    <i>Updates will not change any pre-existing plans or scheduled upgrades.</i><br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <select name="required_plan_tier">
+        {% for plan_tier in REMOTE_PLAN_TIERS %}
+            {% if sponsorship_data.required_plan_tier == plan_tier.value %}
+                <option value="{{ plan_tier.value }}" selected>{{ plan_tier.name }}</option>
+            {% else %}
+                <option value="{{ plan_tier.value }}">{{ plan_tier.name }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
 
 {% if sponsorship_data.sponsorship_pending %}
 <div class="">

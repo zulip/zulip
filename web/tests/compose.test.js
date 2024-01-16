@@ -564,7 +564,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
         update_narrow_to_recipient_visibility_called = true;
     });
 
-    compose_state.set_message_type(false);
+    compose_state.set_message_type(undefined);
     compose_recipient.update_on_recipient_change();
     assert.ok(!set_focused_recipient_checked);
     assert.ok(!update_all_called);

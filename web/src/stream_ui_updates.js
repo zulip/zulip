@@ -137,10 +137,7 @@ export function initialize_cant_subscribe_popover() {
     initialize_disable_btn_hint_popover($button_wrapper);
 }
 
-export function update_toggler_for_sub(sub) {
-    if (!hash_parser.is_editing_stream(sub.stream_id)) {
-        return;
-    }
+export function set_up_right_panel_section(sub) {
     if (sub.subscribed) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
@@ -156,6 +153,14 @@ export function update_toggler_for_sub(sub) {
         stream_edit_toggler.toggler.disable_tab("personal");
     }
     enable_or_disable_subscribers_tab(sub);
+}
+
+export function update_toggler_for_sub(sub) {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    set_up_right_panel_section(sub);
 }
 
 export function enable_or_disable_subscribers_tab(sub) {

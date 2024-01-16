@@ -123,8 +123,8 @@ def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
     stream: Stream,
-    old_topic: str,
-    new_topic: str,
+    old_topic_name: str,
+    new_topic_name: str,
     changed_messages: List[Message],
 ) -> Optional[int]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
@@ -132,12 +132,12 @@ def maybe_send_resolve_topic_notifications(
     #
     # This logic is designed to treat removing a weird "✔ ✔✔ "
     # prefix as unresolving the topic.
-    topic_resolved: bool = new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
+    topic_resolved: bool = new_topic_name.startswith(
         RESOLVED_TOPIC_PREFIX
-    )
-    topic_unresolved: bool = old_topic.startswith(
+    ) and not old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+    topic_unresolved: bool = old_topic_name.startswith(
         RESOLVED_TOPIC_PREFIX
-    ) and not new_topic.startswith(RESOLVED_TOPIC_PREFIX)
+    ) and not new_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
 
     if not topic_resolved and not topic_unresolved:
         # If there's some other weird topic that does not toggle the
@@ -174,7 +174,7 @@ def maybe_send_resolve_topic_notifications(
         resolved_topic_message_id = internal_send_stream_message(
             sender,
             stream,
-            new_topic,
+            new_topic_name,
             notification_string.format(
                 user=user_mention,
             ),
@@ -188,10 +188,10 @@ def send_message_moved_breadcrumbs(
     target_message: Message,
     user_profile: UserProfile,
     old_stream: Stream,
-    old_topic: str,
+    old_topic_name: str,
     old_thread_notification_string: Optional[StrPromise],
     new_stream: Stream,
-    new_topic: Optional[str],
+    new_topic_name: Optional[str],
     new_thread_notification_string: Optional[StrPromise],
     changed_messages_count: int,
 ) -> None:
@@ -200,17 +200,17 @@ def send_message_moved_breadcrumbs(
     # happened.
     sender = get_system_bot(settings.NOTIFICATION_BOT, old_stream.realm_id)
 
-    if new_topic is None:
-        new_topic = old_topic
+    if new_topic_name is None:
+        new_topic_name = old_topic_name
 
     user_mention = silent_mention_syntax_for_user(user_profile)
-    old_topic_link = f"#**{old_stream.name}>{old_topic}**"
-    new_topic_link = f"#**{new_stream.name}>{new_topic}**"
+    old_topic_link = f"#**{old_stream.name}>{old_topic_name}**"
+    new_topic_link = f"#**{new_stream.name}>{new_topic_name}**"
     message = {
         "id": target_message.id,
         "stream_id": new_stream.id,
         "display_recipient": new_stream.name,
-        "topic": new_topic,
+        "topic": new_topic_name,
     }
     moved_message_link = near_stream_message_url(target_message.realm, message)
 
@@ -219,7 +219,7 @@ def send_message_moved_breadcrumbs(
             internal_send_stream_message(
                 sender,
                 new_stream,
-                new_topic,
+                new_topic_name,
                 new_thread_notification_string.format(
                     message_link=moved_message_link,
                     old_location=old_topic_link,
@@ -234,7 +234,7 @@ def send_message_moved_breadcrumbs(
             internal_send_stream_message(
                 sender,
                 old_stream,
-                old_topic,
+                old_topic_name,
                 old_thread_notification_string.format(
                     user=user_mention,
                     new_location=new_topic_link,
@@ -619,11 +619,11 @@ def do_update_message(
         assert orig_topic_name is not None
 
         target_stream: Stream = new_stream if new_stream is not None else stream_being_edited
-        target_topic: str = topic_name if topic_name is not None else orig_topic_name
+        target_topic_name: str = topic_name if topic_name is not None else orig_topic_name
 
         assert target_stream.recipient_id is not None
         target_topic_has_messages = messages_for_topic(
-            realm.id, target_stream.recipient_id, target_topic
+            realm.id, target_stream.recipient_id, target_topic_name
         ).exists()
 
     if propagate_mode in ["change_later", "change_all"]:
@@ -837,7 +837,7 @@ def do_update_message(
     if moved_all_visible_messages:
         assert stream_being_edited is not None
         assert target_stream is not None
-        assert target_topic is not None
+        assert target_topic_name is not None
 
         stream_inaccessible_to_user_profiles: List[UserProfile] = []
         orig_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
@@ -853,7 +853,7 @@ def do_update_message(
                 ] = user_topic.visibility_policy
 
         for user_topic in get_users_with_user_topic_visibility_policy(
-            target_stream.id, target_topic
+            target_stream.id, target_topic_name
         ):
             target_topic_user_profile_to_visibility_policy[
                 user_topic.user_profile
@@ -950,7 +950,7 @@ def do_update_message(
                 bulk_do_set_user_topic_visibility_policy(
                     user_profiles,
                     target_stream,
-                    target_topic,
+                    target_topic_name,
                     visibility_policy=new_visibility_policy,
                 )
             else:
@@ -965,7 +965,7 @@ def do_update_message(
                 bulk_do_set_user_topic_visibility_policy(
                     user_profiles,
                     target_stream,
-                    target_topic,
+                    target_topic_name,
                     visibility_policy=new_visibility_policy,
                 )
 
@@ -985,8 +985,8 @@ def do_update_message(
         resolved_topic_message_id = maybe_send_resolve_topic_notifications(
             user_profile=user_profile,
             stream=stream_to_send_resolve_topic_notification,
-            old_topic=orig_topic_name,
-            new_topic=topic_name,
+            old_topic_name=orig_topic_name,
+            new_topic_name=topic_name,
             changed_messages=changed_messages,
         )
 
@@ -1035,7 +1035,7 @@ def do_update_message(
             stream_for_new_topic = new_stream if new_stream is not None else stream_being_edited
             assert stream_for_new_topic.recipient_id is not None
 
-            new_topic = topic_name if topic_name is not None else orig_topic_name
+            new_topic_name = topic_name if topic_name is not None else orig_topic_name
 
             changed_message_ids = [changed_message.id for changed_message in changed_messages]
 
@@ -1054,7 +1054,7 @@ def do_update_message(
             # it reuses existing logic, which is good for keeping it
             # correct as we maintain the codebase.
             preexisting_topic_messages = messages_for_topic(
-                realm.id, stream_for_new_topic.recipient_id, new_topic
+                realm.id, stream_for_new_topic.recipient_id, new_topic_name
             ).exclude(id__in=[*changed_message_ids, resolved_topic_message_id])
 
             visible_preexisting_messages = bulk_access_messages(

@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const {page_params} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
@@ -145,6 +146,12 @@ test("terms", () => {
     narrow_state.reset_current_filter();
     result = narrow_state.search_terms();
     assert.equal(result.length, 0);
+
+    page_params.narrow = [{operator: "stream", operand: "Foo"}];
+    result = narrow_state.search_terms();
+    assert.equal(result.length, 1);
+    assert.equal(result[0].operator, "stream");
+    assert.equal(result[0].operand, "Foo");
 });
 
 test("excludes_muted_topics", () => {

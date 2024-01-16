@@ -5,9 +5,9 @@ import {$t} from "./i18n";
 import * as people from "./people";
 import * as sub_store from "./sub_store";
 
-let message_type: "stream" | "private" | false = false;
+let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
-let last_focused_compose_type_input: HTMLInputElement | false = false; // an HTML input element or false-y
+let last_focused_compose_type_input: HTMLInputElement | undefined;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -29,15 +29,15 @@ export function set_last_focused_compose_type_input(element: HTMLInputElement): 
     last_focused_compose_type_input = element;
 }
 
-export function get_last_focused_compose_type_input(): HTMLInputElement | false {
+export function get_last_focused_compose_type_input(): HTMLInputElement | undefined {
     return last_focused_compose_type_input;
 }
 
-export function set_message_type(msg_type: "stream" | "private" | false): void {
+export function set_message_type(msg_type: "stream" | "private" | undefined): void {
     message_type = msg_type;
 }
 
-export function get_message_type(): "stream" | "private" | false {
+export function get_message_type(): "stream" | "private" | undefined {
     return message_type;
 }
 

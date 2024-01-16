@@ -554,6 +554,7 @@ class SupportType(Enum):
     modify_plan = 5
     update_minimum_licenses = 6
     update_plan_end_date = 7
+    update_required_plan_tier = 8
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -565,6 +566,7 @@ class SupportViewRequest(TypedDict, total=False):
     new_plan_tier: Optional[int]
     minimum_licenses: Optional[int]
     plan_end_date: Optional[str]
+    required_plan_tier: Optional[int]
 
 
 class AuditLogEventType(Enum):
@@ -578,8 +580,8 @@ class AuditLogEventType(Enum):
     CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN = 8
     CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN = 9
     BILLING_ENTITY_PLAN_TYPE_CHANGED = 10
-    MINIMUM_LICENSES_CHANGED = 11
-    CUSTOMER_PLAN_END_DATE_CHANGED = 12
+    CUSTOMER_PROPERTY_CHANGED = 11
+    CUSTOMER_PLAN_PROPERTY_CHANGED = 12
 
 
 class PlanTierChangeType(Enum):
@@ -790,6 +792,10 @@ class BillingSession(ABC):
     def get_upgrade_page_session_type_specific_context(
         self,
     ) -> UpgradePageSessionTypeSpecificContext:
+        pass
+
+    @abstractmethod
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:
         pass
 
     @abstractmethod
@@ -1109,7 +1115,7 @@ class BillingSession(ABC):
             )
 
         next_plan = self.get_legacy_remote_server_next_plan(customer)
-        if next_plan is not None:  # nocoverage
+        if next_plan is not None:
             raise SupportRequestError(
                 f"Cannot set minimum licenses; upgrade to new plan already scheduled for {self.billing_entity_display_name}."
             )
@@ -1119,16 +1125,50 @@ class BillingSession(ABC):
         customer.save(update_fields=["minimum_licenses"])
 
         self.write_to_audit_log(
-            event_type=AuditLogEventType.MINIMUM_LICENSES_CHANGED,
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
             event_time=timezone_now(),
             extra_data={
-                "old_minimum_licenses": previous_minimum_license_count,
-                "new_minimum_licenses": new_minimum_license_count,
+                "old_value": previous_minimum_license_count,
+                "new_value": new_minimum_license_count,
+                "property": "minimum_licenses",
             },
         )
         if previous_minimum_license_count is None:
             previous_minimum_license_count = 0
         return f"Minimum licenses for {self.billing_entity_display_name} changed to {new_minimum_license_count} from {previous_minimum_license_count}."
+
+    def set_required_plan_tier(self, required_plan_tier: int) -> str:
+        previous_required_plan_tier = None
+        new_plan_tier = None
+        if required_plan_tier != 0:
+            new_plan_tier = required_plan_tier
+        customer = self.get_customer()
+
+        if new_plan_tier is not None and not self.check_plan_tier_is_billable(required_plan_tier):
+            raise SupportRequestError(f"Invalid plan tier for {self.billing_entity_display_name}.")
+
+        if customer is not None:
+            previous_required_plan_tier = customer.required_plan_tier
+            customer.required_plan_tier = new_plan_tier
+            customer.save(update_fields=["required_plan_tier"])
+        else:
+            customer = self.update_or_create_customer(
+                defaults={"required_plan_tier": new_plan_tier}
+            )
+
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "old_value": previous_required_plan_tier,
+                "new_value": new_plan_tier,
+                "property": "required_plan_tier",
+            },
+        )
+        plan_tier_name = "None"
+        if new_plan_tier is not None:
+            plan_tier_name = CustomerPlan.name_from_tier(new_plan_tier)
+        return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
@@ -1180,13 +1220,18 @@ class BillingSession(ABC):
             if plan is not None:
                 assert plan.end_date is not None
                 assert plan.status == CustomerPlan.ACTIVE
-                old_end_date = plan.end_date.strftime("%Y-%m-%d")
+                old_end_date = plan.end_date
                 plan.end_date = new_end_date
                 plan.save(update_fields=["end_date"])
                 self.write_to_audit_log(
-                    event_type=AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED,
+                    event_type=AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED,
                     event_time=timezone_now(),
-                    extra_data={"old_end_date": old_end_date, "new_end_date": end_date_string},
+                    extra_data={
+                        "old_value": old_end_date,
+                        "new_value": new_end_date,
+                        "plan_id": plan.id,
+                        "property": "end_date",
+                    },
                 )
                 return f"Current plan for {self.billing_entity_display_name} updated to end on {end_date_string}."
         raise SupportRequestError(
@@ -1204,9 +1249,8 @@ class BillingSession(ABC):
     ) -> str:
         customer = self.update_or_create_stripe_customer()
         assert customer is not None  # for mypy
-        price_per_license = get_price_per_license(
-            plan_tier, billing_schedule, customer.default_discount
-        )
+        discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
+        price_per_license = get_price_per_license(plan_tier, billing_schedule, discount_for_plan)
         general_metadata = {
             "billing_modality": billing_modality,
             "billing_schedule": billing_schedule,
@@ -1280,7 +1324,7 @@ class BillingSession(ABC):
         if should_schedule_upgrade_for_legacy_remote_server:
             assert remote_server_legacy_plan is not None
             billing_cycle_anchor = remote_server_legacy_plan.end_date
-
+        discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
         (
             billing_cycle_anchor,
             next_invoice_date,
@@ -1290,7 +1334,7 @@ class BillingSession(ABC):
             plan_tier,
             automanage_licenses,
             billing_schedule,
-            customer.default_discount,
+            discount_for_plan,
             free_trial,
             billing_cycle_anchor,
             is_self_hosted_billing,
@@ -1310,7 +1354,7 @@ class BillingSession(ABC):
                 "automanage_licenses": automanage_licenses,
                 "charge_automatically": charge_automatically,
                 "price_per_license": price_per_license,
-                "discount": customer.default_discount,
+                "discount": discount_for_plan,
                 "billing_cycle_anchor": billing_cycle_anchor,
                 "billing_schedule": billing_schedule,
                 "tier": plan_tier,
@@ -1538,12 +1582,12 @@ class BillingSession(ABC):
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
 
-        discount = plan.customer.default_discount or plan.discount
+        discount_for_current_plan = plan.discount
         _, _, _, price_per_license = compute_plan_parameters(
             tier=plan.tier,
             automanage_licenses=plan.automanage_licenses,
             billing_schedule=schedule,
-            discount=plan.discount,
+            discount=discount_for_current_plan,
         )
 
         new_plan = CustomerPlan.objects.create(
@@ -1552,7 +1596,7 @@ class BillingSession(ABC):
             automanage_licenses=plan.automanage_licenses,
             charge_automatically=plan.charge_automatically,
             price_per_license=price_per_license,
-            discount=discount,
+            discount=discount_for_current_plan,
             billing_cycle_anchor=plan.billing_cycle_anchor,
             tier=plan.tier,
             status=CustomerPlan.FREE_TRIAL,
@@ -1673,12 +1717,12 @@ class BillingSession(ABC):
                 plan.status = CustomerPlan.ENDED
                 plan.save(update_fields=["status"])
 
-                discount = plan.customer.default_discount or plan.discount
+                discount_for_current_plan = plan.discount
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
                     automanage_licenses=plan.automanage_licenses,
                     billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-                    discount=plan.discount,
+                    discount=discount_for_current_plan,
                 )
 
                 new_plan = CustomerPlan.objects.create(
@@ -1687,7 +1731,7 @@ class BillingSession(ABC):
                     automanage_licenses=plan.automanage_licenses,
                     charge_automatically=plan.charge_automatically,
                     price_per_license=price_per_license,
-                    discount=discount,
+                    discount=discount_for_current_plan,
                     billing_cycle_anchor=next_billing_cycle,
                     tier=plan.tier,
                     status=CustomerPlan.ACTIVE,
@@ -1722,12 +1766,12 @@ class BillingSession(ABC):
                 plan.status = CustomerPlan.ENDED
                 plan.save(update_fields=["status"])
 
-                discount = plan.customer.default_discount or plan.discount
+                discount_for_current_plan = plan.discount
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
                     automanage_licenses=plan.automanage_licenses,
                     billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                    discount=plan.discount,
+                    discount=discount_for_current_plan,
                 )
 
                 new_plan = CustomerPlan.objects.create(
@@ -1736,7 +1780,7 @@ class BillingSession(ABC):
                     automanage_licenses=plan.automanage_licenses,
                     charge_automatically=plan.charge_automatically,
                     price_per_license=price_per_license,
-                    discount=discount,
+                    discount=discount_for_current_plan,
                     billing_cycle_anchor=next_billing_cycle,
                     tier=plan.tier,
                     status=CustomerPlan.ACTIVE,
@@ -1840,18 +1884,19 @@ class BillingSession(ABC):
             )
 
         billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
+        discount_for_current_plan = plan.discount
 
         if switch_to_annual_at_end_of_cycle:
             num_months_next_cycle = 12
             annual_price_per_license = get_price_per_license(
-                plan.tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, customer.default_discount
+                plan.tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, discount_for_current_plan
             )
             renewal_cents = annual_price_per_license * licenses_at_next_renewal
             price_per_license = format_money(annual_price_per_license / 12)
         elif switch_to_monthly_at_end_of_cycle:
             num_months_next_cycle = 1
             monthly_price_per_license = get_price_per_license(
-                plan.tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, customer.default_discount
+                plan.tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY, discount_for_current_plan
             )
             renewal_cents = monthly_price_per_license * licenses_at_next_renewal
             price_per_license = format_money(monthly_price_per_license)
@@ -1924,7 +1969,7 @@ class BillingSession(ABC):
             "sponsorship_plan_name": self.get_sponsorship_plan_name(
                 customer, is_self_hosted_billing
             ),
-            "discount_percent": format_discount_percentage(customer.default_discount),
+            "discount_percent": format_discount_percentage(discount_for_current_plan),
             "is_self_hosted_billing": is_self_hosted_billing,
             "is_server_on_legacy_plan": remote_server_legacy_plan_end_date is not None,
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
@@ -2014,10 +2059,6 @@ class BillingSession(ABC):
             if customer_plan is not None:
                 return f"{self.billing_session_url}/billing", None
 
-        percent_off = Decimal(0)
-        if customer is not None and customer.default_discount is not None:
-            percent_off = customer.default_discount
-
         exempt_from_license_number_check = (
             customer is not None and customer.exempt_from_license_number_check
         )
@@ -2032,6 +2073,13 @@ class BillingSession(ABC):
             current_payment_method = None if "ending in" not in payment_method else payment_method
 
         tier = initial_upgrade_request.tier
+
+        percent_off = Decimal(0)
+        if customer is not None:
+            discount_for_plan_tier = customer.get_discount_for_plan_tier(tier)
+            if discount_for_plan_tier is not None:
+                percent_off = discount_for_plan_tier
+
         customer_specific_context = self.get_upgrade_page_session_type_specific_context()
         min_licenses_for_plan = self.min_licenses_for_plan(tier)
         seat_count = self.current_count_for_billed_licenses()
@@ -2320,8 +2368,9 @@ class BillingSession(ABC):
         current_plan.status = CustomerPlan.ENDED
         current_plan.save(update_fields=["status", "end_date"])
 
+        discount_for_new_plan_tier = current_plan.customer.get_discount_for_plan_tier(new_plan_tier)
         new_price_per_license = get_price_per_license(
-            new_plan_tier, current_plan.billing_schedule, current_plan.customer.default_discount
+            new_plan_tier, current_plan.billing_schedule, discount_for_new_plan_tier
         )
 
         new_plan_billing_cycle_anchor = current_plan.end_date.replace(microsecond=0)
@@ -2332,7 +2381,7 @@ class BillingSession(ABC):
             automanage_licenses=current_plan.automanage_licenses,
             charge_automatically=current_plan.charge_automatically,
             price_per_license=new_price_per_license,
-            discount=current_plan.customer.default_discount,
+            discount=discount_for_new_plan_tier,
             billing_schedule=current_plan.billing_schedule,
             tier=new_plan_tier,
             billing_cycle_anchor=new_plan_billing_cycle_anchor,
@@ -2445,6 +2494,23 @@ class BillingSession(ABC):
             licenses_base = ledger_entry.licenses
 
         if invoice_item_created:
+            flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
+            if flat_discounted_months > 0:
+                num_months = (
+                    12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+                )
+                flat_discounted_months = min(flat_discounted_months, num_months)
+                discount = flat_discount * flat_discounted_months
+                plan.customer.flat_discounted_months -= flat_discounted_months
+                plan.customer.save(update_fields=["flat_discounted_months"])
+                stripe.InvoiceItem.create(
+                    currency="usd",
+                    customer=plan.customer.stripe_customer_id,
+                    description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
+                    # Negative value to apply discount.
+                    amount=(-1 * discount),
+                )
+
             if plan.charge_automatically:
                 collection_method = "charge_automatically"
                 days_until_due = None
@@ -2461,7 +2527,8 @@ class BillingSession(ABC):
             stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.next_invoice_date = next_invoice_date(plan)
-        plan.save(update_fields=["next_invoice_date"])
+        plan.invoice_overdue_email_sent = False
+        plan.save(update_fields=["next_invoice_date", "invoice_overdue_email_sent"])
 
     def do_change_plan_to_new_tier(self, new_plan_tier: int) -> str:
         customer = self.get_customer()
@@ -2690,6 +2757,10 @@ class BillingSession(ABC):
             assert support_request["minimum_licenses"] is not None
             new_minimum_license_count = support_request["minimum_licenses"]
             success_message = self.update_customer_minimum_licenses(new_minimum_license_count)
+        elif support_type == SupportType.update_required_plan_tier:
+            required_plan_tier = support_request.get("required_plan_tier")
+            assert required_plan_tier is not None
+            success_message = self.set_required_plan_tier(required_plan_tier)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
             assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
@@ -3016,16 +3087,16 @@ class RealmBillingSession(BillingSession):
             return RealmAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RealmAuditLog.REALM_DISCOUNT_CHANGED
-        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
-            return RealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_PROPERTY_CHANGED:
+            return RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RealmAuditLog.REALM_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RealmAuditLog.REALM_BILLING_MODALITY_CHANGED
-        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
-            return RealmAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
+            return RealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN:
             return RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         elif event_type is AuditLogEventType.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN:
@@ -3212,6 +3283,16 @@ class RealmBillingSession(BillingSession):
         )
 
     @override
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:
+        implemented_plan_tiers = [
+            CustomerPlan.TIER_CLOUD_STANDARD,
+            CustomerPlan.TIER_CLOUD_PLUS,
+        ]
+        if plan_tier in implemented_plan_tiers:
+            return True
+        return False
+
+    @override
     def get_type_of_plan_tier_change(
         self, current_plan_tier: int, new_plan_tier: int
     ) -> PlanTierChangeType:
@@ -3374,18 +3455,18 @@ class RemoteRealmBillingSession(BillingSession):
             return RemoteRealmAuditLog.STRIPE_CARD_CHANGED
         elif event_type is AuditLogEventType.CUSTOMER_PLAN_CREATED:
             return RemoteRealmAuditLog.CUSTOMER_PLAN_CREATED
-        elif event_type is AuditLogEventType.DISCOUNT_CHANGED:  # nocoverage
+        elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED
-        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
-            return RemoteRealmAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PROPERTY_CHANGED:
+            return RemoteRealmAuditLog.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
-        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
-            return RemoteRealmAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
+            return RemoteRealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteRealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
@@ -3603,6 +3684,16 @@ class RemoteRealmBillingSession(BillingSession):
         plan.save(update_fields=["status"])
 
     @override
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:  # nocoverage
+        implemented_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        ]
+        if plan_tier in implemented_plan_tiers:
+            return True
+        return False
+
+    @override
     def get_type_of_plan_tier_change(
         self, current_plan_tier: int, new_plan_tier: int
     ) -> PlanTierChangeType:  # nocoverage
@@ -3790,16 +3881,16 @@ class RemoteServerBillingSession(BillingSession):
             return RemoteZulipServerAuditLog.CUSTOMER_PLAN_CREATED
         elif event_type is AuditLogEventType.DISCOUNT_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_DISCOUNT_CHANGED  # nocoverage
-        elif event_type is AuditLogEventType.MINIMUM_LICENSES_CHANGED:
-            return RemoteZulipServerAuditLog.CUSTOMER_MINIMUM_LICENSES_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PROPERTY_CHANGED:
+            return RemoteZulipServerAuditLog.CUSTOMER_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.SPONSORSHIP_APPROVED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_APPROVED
         elif event_type is AuditLogEventType.SPONSORSHIP_PENDING_STATUS_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_SPONSORSHIP_PENDING_STATUS_CHANGED
         elif event_type is AuditLogEventType.BILLING_MODALITY_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_BILLING_MODALITY_CHANGED  # nocoverage
-        elif event_type is AuditLogEventType.CUSTOMER_PLAN_END_DATE_CHANGED:
-            return RemoteZulipServerAuditLog.CUSTOMER_PLAN_END_DATE_CHANGED  # nocoverage
+        elif event_type is AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED:
+            return RemoteZulipServerAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED  # nocoverage
         elif event_type is AuditLogEventType.BILLING_ENTITY_PLAN_TYPE_CHANGED:
             return RemoteZulipServerAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
         elif (
@@ -4015,6 +4106,16 @@ class RemoteServerBillingSession(BillingSession):
             demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
         )
+
+    @override
+    def check_plan_tier_is_billable(self, plan_tier: int) -> bool:  # nocoverage
+        implemented_plan_tiers = [
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        ]
+        if plan_tier in implemented_plan_tiers:
+            return True
+        return False
 
     @override
     def get_type_of_plan_tier_change(
@@ -4324,11 +4425,44 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
 def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
     if event_time is None:  # nocoverage
         event_time = timezone_now()
-    # TODO: Add RemoteRealmBillingSession and RemoteServerBillingSession cases.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
+        remote_server: Optional[RemoteZulipServer] = None
         if plan.customer.realm is not None:
-            RealmBillingSession(realm=plan.customer.realm).invoice_plan(plan, event_time)
-        # TODO: Assert that we never invoice legacy plans.
+            billing_session: BillingSession = RealmBillingSession(realm=plan.customer.realm)
+        elif plan.customer.remote_realm is not None:
+            remote_realm = plan.customer.remote_realm
+            remote_server = remote_realm.server
+            billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+        elif plan.customer.remote_server is not None:
+            remote_server = plan.customer.remote_server
+            billing_session = RemoteServerBillingSession(remote_server=remote_server)
+
+        if remote_server:
+            assert remote_server.last_audit_log_update is not None
+            assert plan.next_invoice_date is not None
+            if plan.next_invoice_date > remote_server.last_audit_log_update:
+                if (
+                    plan.next_invoice_date - remote_server.last_audit_log_update
+                    >= timedelta(days=1)
+                    and not plan.invoice_overdue_email_sent
+                ):
+                    context = {
+                        "support_url": billing_session.support_url(),
+                        "last_audit_log_update": remote_server.last_audit_log_update.strftime(
+                            "%Y-%m-%d"
+                        ),
+                    }
+                    send_email(
+                        "zerver/emails/invoice_overdue",
+                        to_emails=[BILLING_SUPPORT_EMAIL],
+                        from_address=FromAddress.tokenized_no_reply_address(),
+                        context=context,
+                    )
+                    plan.invoice_overdue_email_sent = True
+                    plan.save(update_fields=["invoice_overdue_email_sent"])
+                continue
+
+        billing_session.invoice_plan(plan, event_time)
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:

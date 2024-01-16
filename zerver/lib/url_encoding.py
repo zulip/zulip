@@ -41,9 +41,9 @@ def stream_narrow_url(realm: Realm, stream: Stream) -> str:
     return base_url + encode_stream(stream.id, stream.name)
 
 
-def topic_narrow_url(*, realm: Realm, stream: Stream, topic: str) -> str:
+def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
     base_url = f"{realm.uri}/#narrow/stream/"
-    return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic)}"
+    return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
 
 
 def near_message_url(realm: Realm, message: Dict[str, Any]) -> str:
@@ -66,7 +66,7 @@ def near_stream_message_url(realm: Realm, message: Dict[str, Any]) -> str:
     stream_id = message["stream_id"]
     stream_name = message["display_recipient"]
     topic_name = get_topic_from_message_info(message)
-    encoded_topic = hash_util_encode(topic_name)
+    encoded_topic_name = hash_util_encode(topic_name)
     encoded_stream = encode_stream(stream_id=stream_id, stream_name=stream_name)
 
     parts = [
@@ -75,7 +75,7 @@ def near_stream_message_url(realm: Realm, message: Dict[str, Any]) -> str:
         "stream",
         encoded_stream,
         "topic",
-        encoded_topic,
+        encoded_topic_name,
         "near",
         message_id,
     ]

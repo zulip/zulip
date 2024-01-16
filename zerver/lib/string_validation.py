@@ -56,11 +56,11 @@ def check_stream_name(stream_name: str) -> None:
         )
 
 
-def check_stream_topic(topic: str) -> None:
-    if topic.strip() == "":
+def check_stream_topic(topic_name: str) -> None:
+    if topic_name.strip() == "":
         raise JsonableError(_("Topic can't be empty!"))
 
-    invalid_character_pos = check_string_is_printable(topic)
+    invalid_character_pos = check_string_is_printable(topic_name)
     if invalid_character_pos is not None:
         raise JsonableError(
             _("Invalid character in topic, at position {position}!").format(

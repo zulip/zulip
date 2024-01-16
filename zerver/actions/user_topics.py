@@ -15,7 +15,7 @@ from zerver.tornado.django_api import send_event
 def bulk_do_set_user_topic_visibility_policy(
     user_profiles: List[UserProfile],
     stream: Stream,
-    topic: str,
+    topic_name: str,
     *,
     visibility_policy: int,
     last_updated: Optional[datetime] = None,
@@ -27,7 +27,7 @@ def bulk_do_set_user_topic_visibility_policy(
     user_profiles_with_changed_user_topic_rows = bulk_set_user_topic_visibility_policy_in_database(
         user_profiles,
         stream.id,
-        topic,
+        topic_name,
         visibility_policy=visibility_policy,
         recipient_id=stream.recipient_id,
         last_updated=last_updated,
@@ -52,7 +52,7 @@ def bulk_do_set_user_topic_visibility_policy(
         user_topic_event: Dict[str, Any] = {
             "type": "user_topic",
             "stream_id": stream.id,
-            "topic_name": topic,
+            "topic_name": topic_name,
             "last_updated": datetime_to_timestamp(last_updated),
             "visibility_policy": visibility_policy,
         }
@@ -63,7 +63,7 @@ def bulk_do_set_user_topic_visibility_policy(
 def do_set_user_topic_visibility_policy(
     user_profile: UserProfile,
     stream: Stream,
-    topic: str,
+    topic_name: str,
     *,
     visibility_policy: int,
     last_updated: Optional[datetime] = None,
@@ -75,7 +75,7 @@ def do_set_user_topic_visibility_policy(
     bulk_do_set_user_topic_visibility_policy(
         [user_profile],
         stream,
-        topic,
+        topic_name,
         visibility_policy=visibility_policy,
         last_updated=last_updated,
         skip_muted_topics_event=skip_muted_topics_event,

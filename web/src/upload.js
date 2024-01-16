@@ -117,7 +117,11 @@ export function get_item(key, config, file_id) {
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
-                return $(`#zfilt${CSS.escape(config.row)} .message_edit_form`);
+                return $(
+                    `#${message_lists.current.table_name}${CSS.escape(
+                        config.row,
+                    )} .message_edit_form`,
+                );
             case "markdown_preview_hide_button":
                 return $(`#edit_form_${CSS.escape(config.row)} .undo_markdown_preview`);
             default:

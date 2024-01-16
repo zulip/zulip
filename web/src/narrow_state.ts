@@ -33,7 +33,10 @@ export function filter(): Filter | undefined {
 
 export function search_terms(): Term[] {
     if (current_filter === undefined) {
-        return new Filter(page_params.narrow).terms();
+        if (page_params.narrow !== undefined) {
+            return new Filter(page_params.narrow).terms();
+        }
+        return new Filter([]).terms();
     }
     return current_filter.terms();
 }

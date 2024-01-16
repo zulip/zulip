@@ -1,6 +1,6 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
 
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 
@@ -11,6 +11,8 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
+
+    from zerver.models.users import UserProfile
 
 if PRODUCTION:  # nocoverage
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
@@ -619,3 +621,5 @@ CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
 # General expiry time for signed tokens we may generate
 # in some places through the codebase.
 SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
+
+CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Optional["UserProfile"]]] = None

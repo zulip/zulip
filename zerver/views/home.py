@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
 from zerver.actions.user_settings import do_change_tos_version, do_change_user_setting
@@ -110,7 +111,7 @@ def detect_narrowed_window(
 
     narrow: List[NarrowTerm] = []
     narrow_stream = None
-    narrow_topic = request.GET.get("topic")
+    narrow_topic_name = request.GET.get("topic")
 
     if "stream" in request.GET:
         try:
@@ -121,9 +122,9 @@ def detect_narrowed_window(
             narrow = [NarrowTerm(operator="stream", operand=narrow_stream.name)]
         except Exception:
             logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))
-        if narrow_stream is not None and narrow_topic is not None:
-            narrow.append(NarrowTerm(operator="topic", operand=narrow_topic))
-    return narrow, narrow_stream, narrow_topic
+        if narrow_stream is not None and narrow_topic_name is not None:
+            narrow.append(NarrowTerm(operator="topic", operand=narrow_topic_name))
+    return narrow, narrow_stream, narrow_topic_name
 
 
 def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
@@ -154,6 +155,10 @@ def home(request: HttpRequest) -> HttpResponse:
 
         return hello_view(request)
 
+    if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
+        return redirect(settings.ROOT_DOMAIN_URI)
+    elif subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN:
+        return redirect(reverse("remote_billing_legacy_server_login"))
     realm = get_realm_from_request(request)
     if realm is None:
         return render(request, "zerver/invalid_realm.html", status=404)
@@ -207,7 +212,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if need_accept_tos(user_profile):
         return accounts_accept_terms(request)
 
-    narrow, narrow_stream, narrow_topic = detect_narrowed_window(request, user_profile)
+    narrow, narrow_stream, narrow_topic_name = detect_narrowed_window(request, user_profile)
 
     if user_profile is not None:
         first_in_realm = realm_user_count(user_profile.realm) == 1
@@ -232,7 +237,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         insecure_desktop_app=insecure_desktop_app,
         narrow=narrow,
         narrow_stream=narrow_stream,
-        narrow_topic=narrow_topic,
+        narrow_topic_name=narrow_topic_name,
         first_in_realm=first_in_realm,
         prompt_for_invites=prompt_for_invites,
         needs_tutorial=needs_tutorial,

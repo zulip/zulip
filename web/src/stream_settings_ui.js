@@ -680,7 +680,7 @@ export function setup_page(callback) {
     }
 }
 
-export function switch_to_stream_row(stream_id, right_side_tab) {
+export function switch_to_stream_row(stream_id) {
     const $stream_row = stream_ui_updates.row_for_stream_id(stream_id);
     const $container = $(".streams-list");
 
@@ -689,8 +689,7 @@ export function switch_to_stream_row(stream_id, right_side_tab) {
 
     scroll_util.scroll_element_into_container($stream_row, $container);
 
-    stream_edit.open_edit_panel_for_row($stream_row, right_side_tab);
-    stream_edit_toggler.toggler.goto(right_side_tab);
+    stream_edit.open_edit_panel_for_row($stream_row);
 }
 
 function show_right_section() {
@@ -707,17 +706,20 @@ export function change_state(section, right_side_tab) {
             show_right_section();
         } else {
             toggler.goto("subscribed");
+            stream_edit.empty_right_panel();
         }
         return;
     }
 
     if (section === "all") {
         toggler.goto("all-streams");
+        stream_edit.empty_right_panel();
         return;
     }
 
     if (section === "subscribed") {
         toggler.goto("subscribed");
+        stream_edit.empty_right_panel();
         return;
     }
 
@@ -735,15 +737,18 @@ export function change_state(section, right_side_tab) {
         // In all these cases we redirect the user to 'subscribed' tab.
         if (!sub || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
             toggler.goto("subscribed");
+            stream_edit.empty_right_panel();
         } else {
             show_right_section();
-            switch_to_stream_row(stream_id, right_side_tab);
+            stream_edit_toggler.set_select_tab(right_side_tab);
+            switch_to_stream_row(stream_id);
         }
         return;
     }
 
     blueslip.warn("invalid section for streams: " + section);
     toggler.goto("subscribed");
+    stream_edit.empty_right_panel();
 }
 
 export function launch(section, right_side_tab) {
@@ -794,7 +799,7 @@ export function switch_rows(event) {
     const row_data = get_row_data($switch_row);
     if (row_data) {
         const stream_id = row_data.id;
-        switch_to_stream_row(stream_id, "general");
+        switch_to_stream_row(stream_id);
     } else if (event === "up_arrow" && !row_data) {
         $("#search_stream_name").trigger("focus");
     }

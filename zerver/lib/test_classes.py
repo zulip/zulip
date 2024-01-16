@@ -1129,7 +1129,7 @@ Output:
             sender=sender,
             client=sending_client,
             stream_name=stream_name,
-            topic=topic_name,
+            topic_name=topic_name,
             body=content,
             realm=recipient_realm,
             read_by_sender=read_by_sender,
@@ -2178,7 +2178,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
     def check_webhook(
         self,
         fixture_name: str,
-        expected_topic: Optional[str] = None,
+        expected_topic_name: Optional[str] = None,
         expected_message: Optional[str] = None,
         content_type: Optional[str] = "application/json",
         expect_noop: bool = False,
@@ -2193,7 +2193,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         fixtures.  Then we verify that a message gets sent to a stream:
 
             self.STREAM_NAME: stream name
-            expected_topic: topic
+            expected_topic_name: topic name
             expected_message: content
 
         We simulate the delivery of the payload with `content_type`,
@@ -2237,12 +2237,12 @@ your test code triggered an endpoint that did write
 one or more new messages.
 """.strip()
             )
-        assert expected_message is not None and expected_topic is not None
+        assert expected_message is not None and expected_topic_name is not None
 
         self.assert_stream_message(
             message=msg,
             stream_name=self.STREAM_NAME,
-            topic_name=expected_topic,
+            topic_name=expected_topic_name,
             content=expected_message,
         )
 

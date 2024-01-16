@@ -112,7 +112,7 @@ def do_add_reaction(
                 do_set_user_topic_visibility_policy(
                     user_profile=user_profile,
                     stream=stream,
-                    topic=message.topic_name(),
+                    topic_name=message.topic_name(),
                     visibility_policy=new_visibility_policy,
                 )
 

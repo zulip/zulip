@@ -12,6 +12,7 @@ from zerver.lib.exceptions import (
     MissingRemoteRealmError,
     OrganizationOwnerRequiredError,
     RemoteRealmServerMismatchError,
+    ResourceNotFoundError,
 )
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
@@ -118,32 +119,25 @@ def send_test_push_notification_api(
     return json_success(request)
 
 
-@zulip_login_required
-@typed_endpoint
-def self_hosting_auth_redirect(
-    request: HttpRequest,
-    *,
-    next_page: Optional[str] = None,
-) -> HttpResponse:
-    if not uses_notification_bouncer():  # nocoverage
-        return render(request, "404.html", status=404)
+def self_hosting_auth_view_common(
+    request: HttpRequest, user_profile: UserProfile, next_page: Optional[str] = None
+) -> str:
+    if not uses_notification_bouncer():
+        raise ResourceNotFoundError(_("Server doesn't use the push notification service"))
 
-    user = request.user
-    assert user.is_authenticated
-    assert isinstance(user, UserProfile)
-    if not user.has_billing_access:  # nocoverage
+    if not user_profile.has_billing_access:  # nocoverage
         # We may want to replace this with an html error page at some point,
         # but this endpoint shouldn't be accessible via the UI to an unauthorized
-        # user - and they need to directly enter the URL in their browser. So a json
+        # user_profile - and they need to directly enter the URL in their browser. So a json
         # error may be sufficient.
         raise OrganizationOwnerRequiredError
 
-    realm_info = get_realms_info_for_push_bouncer(user.realm_id)[0]
+    realm_info = get_realms_info_for_push_bouncer(user_profile.realm_id)[0]
 
     user_info = UserDataForRemoteBilling(
-        uuid=user.uuid,
-        email=user.delivery_email,
-        full_name=user.full_name,
+        uuid=user_profile.uuid,
+        email=user_profile.delivery_email,
+        full_name=user_profile.full_name,
     )
 
     post_data = {
@@ -164,12 +158,55 @@ def self_hosting_auth_redirect(
         # Upload realm info and re-try. It should work now.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
         result = send_to_push_bouncer("POST", "server/billing", post_data)
-    except RemoteRealmServerMismatchError:  # nocoverage
-        return render(request, "zilencer/remote_realm_server_mismatch_error.html", status=403)
 
     if result["result"] != "success":  # nocoverage
         raise JsonableError(_("Error returned by the bouncer: {result}").format(result=result))
 
     redirect_url = result["billing_access_url"]
     assert isinstance(redirect_url, str)
+    return redirect_url
+
+
+@zulip_login_required
+@typed_endpoint
+def self_hosting_auth_redirect_endpoint(
+    request: HttpRequest,
+    *,
+    next_page: Optional[str] = None,
+) -> HttpResponse:
+    """
+    This endpoint is used by the web app running in the browser. We serve HTML
+    error pages, and in case of success a simple redirect to the remote billing
+    access link received from the bouncer.
+    """
+
+    user = request.user
+    assert user.is_authenticated
+    assert isinstance(user, UserProfile)
+
+    try:
+        redirect_url = self_hosting_auth_view_common(request, user, next_page)
+    except ResourceNotFoundError:
+        return render(request, "404.html", status=404)
+    except RemoteRealmServerMismatchError:
+        return render(request, "zerver/remote_realm_server_mismatch_error.html", status=403)
+
     return HttpResponseRedirect(redirect_url)
+
+
+@typed_endpoint
+def self_hosting_auth_json_endpoint(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    next_page: Optional[str] = None,
+) -> HttpResponse:
+    """
+    This endpoint is used by the desktop application. It makes an API request here,
+    expecting a JSON response with either the billing access link, or appropriate
+    error information.
+    """
+
+    redirect_url = self_hosting_auth_view_common(request, user_profile, next_page)
+
+    return json_success(request, data={"billing_access_url": redirect_url})

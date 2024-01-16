@@ -1492,6 +1492,8 @@ strong {
    on :focus. */
 .typeahead-menu {
     & li {
+        word-break: break-word;
+
         & a {
             display: block;
             padding: 3px 20px;
@@ -2102,9 +2104,14 @@ td.pointer {
     }
 }
 
-.sender_name_hovered {
+.sender_info_hovered {
     .sender_name {
+        cursor: pointer;
         color: hsl(200deg 100% 40%);
+    }
+
+    .message-avatar {
+        cursor: pointer;
     }
 }
 

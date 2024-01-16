@@ -1,4 +1,5 @@
 from contextlib import suppress
+from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
 from typing import Any, Dict, Iterable, List, Optional, Union
@@ -138,6 +139,27 @@ def get_confirmations(
             }
         )
     return confirmation_dicts
+
+
+@dataclass
+class PlanTierOption:
+    name: str
+    value: int
+
+
+def get_remote_plan_tier_options() -> List[PlanTierOption]:
+    remote_plan_tiers = [
+        PlanTierOption("None", 0),
+        PlanTierOption(
+            CustomerPlan.name_from_tier(CustomerPlan.TIER_SELF_HOSTED_BASIC),
+            CustomerPlan.TIER_SELF_HOSTED_BASIC,
+        ),
+        PlanTierOption(
+            CustomerPlan.name_from_tier(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+        ),
+    ]
+    return remote_plan_tiers
 
 
 VALID_MODIFY_PLAN_METHODS = [
@@ -417,6 +439,7 @@ def remote_servers_support(
     remote_realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
     minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
     billing_modality: Optional[str] = REQ(
@@ -471,6 +494,11 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.update_minimum_licenses,
                 minimum_licenses=minimum_licenses,
+            )
+        elif required_plan_tier is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_required_plan_tier,
+                required_plan_tier=required_plan_tier,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(
@@ -555,6 +583,7 @@ def remote_servers_support(
     context["format_discount"] = format_discount_percentage
     context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link
+    context["REMOTE_PLAN_TIERS"] = get_remote_plan_tier_options()
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
 
     return render(

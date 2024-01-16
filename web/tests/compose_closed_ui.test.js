@@ -40,7 +40,7 @@ function test_reply_label(expected_label) {
 
 run_test("reply_label", () => {
     // Mocking up a test message list
-    const filter = new Filter();
+    const filter = new Filter([]);
     const list = new MessageList({
         filter,
     });

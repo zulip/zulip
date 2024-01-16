@@ -92,7 +92,8 @@ from zerver.views.push_notifications import (
     add_apns_device_token,
     remove_android_reg_id,
     remove_apns_device_token,
-    self_hosting_auth_redirect,
+    self_hosting_auth_json_endpoint,
+    self_hosting_auth_redirect_endpoint,
     send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
@@ -822,7 +823,15 @@ urls += [
 ]
 
 urls += [
-    path("self-hosted-billing/", self_hosting_auth_redirect, name="self_hosting_auth_redirect"),
+    path(
+        "self-hosted-billing/",
+        self_hosting_auth_redirect_endpoint,
+        name="self_hosting_auth_redirect_endpoint",
+    ),
+    rest_path(
+        "json/self-hosted-billing",
+        GET=self_hosting_auth_json_endpoint,
+    ),
 ]
 
 if not settings.CORPORATE_ENABLED:  # nocoverage

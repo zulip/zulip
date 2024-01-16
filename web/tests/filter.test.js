@@ -527,7 +527,7 @@ test("show_first_unread", () => {
     filter = new Filter(terms);
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
 
-    filter = new Filter();
+    filter = new Filter([]);
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.allow_use_first_unread_when_narrowing());
 
@@ -987,7 +987,7 @@ test("predicate_edge_cases", () => {
     let predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
-    predicate = new Filter().predicate();
+    predicate = new Filter([]).predicate();
     assert.ok(predicate({}));
 
     // Upstream code should prevent Filter.predicate from being called with
@@ -1499,8 +1499,8 @@ test("navbar_helpers", () => {
     }
 
     function test_redirect_url_with_search(test_case) {
-        test_case.terms.push({operator: "search", operand: "fizzbuzz"});
-        const filter = new Filter(test_case.terms);
+        const terms = [...test_case.terms, {operator: "search", operand: "fizzbuzz"}];
+        const filter = new Filter(terms);
         assert.equal(filter.generate_redirect_url(), test_case.redirect_url_with_search);
     }
 
@@ -1811,14 +1811,14 @@ test("navbar_helpers", () => {
     page_params.realm_enable_guest_user_indicator = false;
     const guest_user_test_cases_without_indicator = [
         {
-            operator: guest_sender,
+            terms: guest_sender,
             is_common_narrow: true,
             icon: undefined,
             title: "translated: Messages sent by alice",
             redirect_url_with_search: "/#narrow/sender/" + alice.user_id + "-alice",
         },
         {
-            operator: dm_with_guest,
+            terms: dm_with_guest,
             is_common_narrow: true,
             icon: "envelope",
             title: properly_separated_names([alice.full_name]),
@@ -1826,16 +1826,17 @@ test("navbar_helpers", () => {
                 "/#narrow/dm/" + alice.user_id + "-" + parseOneAddress(alice.email).local,
         },
         {
-            operator: dm_group_including_guest,
+            terms: dm_group_including_guest,
             is_common_narrow: true,
             icon: "envelope",
             title: properly_separated_names([alice.full_name, joe.full_name]),
-            redirect_url_with_search:
-                "/#narrow/dm/" + Number(alice.user_id) + "," + joe.user_id + "-group",
+            redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
         },
     ];
 
-    test_get_title(guest_user_test_cases_without_indicator);
+    for (const test_case of guest_user_test_cases_without_indicator) {
+        test_helpers(test_case);
+    }
 
     // this is actually wrong, but the code is currently not robust enough to throw an error here
     // also, used as an example of triggering last return statement.
@@ -1899,4 +1900,19 @@ run_test("is_spectator_compatible", () => {
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
     );
+});
+
+run_test("is_in_home", () => {
+    const filter = new Filter([{operator: "in", operand: "home"}]);
+    assert.ok(filter.is_in_home());
+
+    const filter2 = new Filter([{operator: "in", operand: "all"}]);
+    assert.ok(!filter2.is_in_home());
+
+    // Test home with additional terms is not all messages.
+    const filter3 = new Filter([
+        {operator: "in", operand: "home"},
+        {operator: "topic", operand: "foo"},
+    ]);
+    assert.ok(!filter3.is_in_home());
 });

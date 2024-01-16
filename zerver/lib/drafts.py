@@ -52,12 +52,12 @@ def further_validated_draft_dict(
         raise JsonableError(_("Timestamp must not be negative."))
     last_edit_time = timestamp_to_datetime(timestamp)
 
-    topic = ""
+    topic_name = ""
     recipient_id = None
     to = draft_dict.to
     if draft_dict.type == "stream":
-        topic = truncate_topic(draft_dict.topic)
-        if "\0" in topic:
+        topic_name = truncate_topic(draft_dict.topic)
+        if "\0" in topic_name:
             raise JsonableError(_("Topic must not contain null bytes"))
         if len(to) != 1:
             raise JsonableError(_("Must specify exactly 1 stream ID for stream messages"))
@@ -72,7 +72,7 @@ def further_validated_draft_dict(
 
     return {
         "recipient_id": recipient_id,
-        "topic": topic,
+        "topic": topic_name,
         "content": content,
         "last_edit_time": last_edit_time,
     }

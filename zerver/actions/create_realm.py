@@ -319,7 +319,7 @@ def do_create_realm(
             support_link=support_url,
             type=organization_type,
         )
-        topic = "new organizations"
+        topic_name = "new organizations"
 
         try:
             signups_stream = get_signups_stream(admin_realm)
@@ -327,7 +327,7 @@ def do_create_realm(
             internal_send_stream_message(
                 sender,
                 signups_stream,
-                topic,
+                topic_name,
                 message,
             )
         except Stream.DoesNotExist:  # nocoverage
