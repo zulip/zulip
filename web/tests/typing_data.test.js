@@ -24,6 +24,7 @@ test("basics", () => {
     const stream_id = 1;
     const topic = "typing notifications";
     const topic_typing_key = typing_data.get_topic_key(stream_id, topic);
+    let status;
 
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 15);
     assert.deepEqual(typing_data.get_group_typists([15, 10, 5]), [15]);
@@ -82,6 +83,23 @@ test("basics", () => {
     // test duplicate ids in a groups
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([20, 40, 20]), 20);
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
+
+    // test that you can add a message_id to messages editing state
+    typing_data.add_edit_message_typing_id(3);
+    assert.deepEqual(typing_data.is_message_editing(3), true);
+
+    typing_data.add_edit_message_typing_id(7);
+    assert.deepEqual(typing_data.is_message_editing(7), true);
+
+    // test removing a message from editing state
+    status = typing_data.remove_edit_message_typing_id(3);
+    assert.deepEqual(status, true);
+    assert.deepEqual(typing_data.is_message_editing(3), false);
+
+    // test removing message_id that doesn't exist from editing
+    assert.deepEqual(typing_data.is_message_editing(3), false);
+    status = typing_data.remove_edit_message_typing_id(3);
+    assert.deepEqual(status, false);
 });
 
 test("muted_typists_excluded", () => {
