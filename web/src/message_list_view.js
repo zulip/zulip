@@ -37,6 +37,7 @@ import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import {is_same_day} from "./time_zone_util";
 import * as timerender from "./timerender";
+import {is_message_editing} from "./typing_data";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -451,6 +452,7 @@ export class MessageListView {
     set_calculated_message_container_variables(message_container, is_revealed) {
         set_timestr(message_container);
 
+        message_container.is_typing = is_message_editing(message_container.msg.id);
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:

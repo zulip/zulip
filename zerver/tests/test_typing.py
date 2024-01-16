@@ -37,6 +37,16 @@ class TypingValidateOperatorTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid op")
 
+    def test_invalid_parameter_message_edit(self) -> None:
+        sender = self.example_user("hamlet")
+
+        params = dict(
+            op="foo",
+            message_id=7,
+        )
+        result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+        self.assert_json_error(result, "Invalid op")
+
 
 class TypingMessagetypeTest(ZulipTestCase):
     def test_invalid_type(self) -> None:
@@ -93,8 +103,23 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": invalid})
         self.assert_json_error(result, "Invalid user ID 9999999")
 
+    def test_message_edit_typing_notifications_for_other_user_message(self) -> None:
+        sender = self.example_user("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("iago"), "Denmark", topic_name="editing", content="before edit"
+        )
+        result = self.api_post(
+            sender,
+            "/api/v1/message_edit_typing",
+            {
+                "op": "start",
+                "message_id": str(msg_id),
+            },
+        )
+        self.assert_json_error(result, "You don't have permission to edit this message")
 
-class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
+
+class TypingValidateStreamIdTopicMessageIdArgumentsTest(ZulipTestCase):
     def test_missing_stream_id(self) -> None:
         """
         Sending stream typing notifications without 'stream_id' fails.
@@ -472,6 +497,28 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             self.assert_json_success(result)
             self.assert_length(events, 0)
 
+    def test_max_stream_size_for_typing_notifications_setting_message_edit(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = "Denmark"
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
+        )
+
+        for name in ["aaron", "iago", "cordelia", "prospero", "othello", "polonius"]:
+            user = self.example_user(name)
+            self.subscribe(user, stream_name)
+
+        params = dict(
+            op="start",
+            message_id=msg_id,
+        )
+        with self.settings(MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS=5):
+            with self.assert_database_query_count(5):
+                with self.capture_send_event_calls(expected_num_events=0) as events:
+                    result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            self.assert_json_success(result)
+            self.assert_length(events, 0)
+
     def test_notify_not_long_term_idle_subscribers_only(self) -> None:
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
@@ -620,3 +667,104 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         # notifications.
         self.assertNotIn(aaron.id, event_user_ids)
         self.assertIn(iago.id, event_user_ids)
+
+    def test_send_stream_message_edit_typing_notifications_setting(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = "Denmark"
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), stream_name, topic_name="editing", content="before edit"
+        )
+        expected_user_ids = self.not_long_term_idle_subscriber_ids(stream_name, sender.realm)
+
+        params = dict(
+            op="start",
+            message_id=msg_id,
+        )
+
+        # Test typing events sent when `send_stream_typing_notifications` set to `True`.
+        self.assertTrue(sender.send_stream_typing_notifications)
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        self.assertEqual(orjson.loads(result.content)["msg"], "")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(expected_user_ids, event_user_ids)
+
+        sender.send_stream_typing_notifications = False
+        sender.save()
+
+        # No events should be sent now
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+        self.assert_json_error(result, "User has disabled typing notifications for stream messages")
+        self.assertEqual(events, [])
+
+    def test_send_direct_message_edit_typing_notifications_setting(self) -> None:
+        sender = self.example_user("hamlet")
+        recipient_user = self.example_user("othello")
+        msg_id = self.send_personal_message(sender, recipient_user)
+        expected_recipient_ids = {recipient_user.id}
+
+        params = dict(
+            op="start",
+            message_id=msg_id,
+        )
+
+        # Test typing events sent when `send_private_typing_notifications` set to `True`.
+        self.assertTrue(sender.send_private_typing_notifications)
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(expected_recipient_ids, event_user_ids)
+        self.assertEqual(orjson.loads(result.content)["msg"], "")
+
+        sender.send_private_typing_notifications = False
+        sender.save()
+
+        # No events should be sent now
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+
+        self.assert_json_error(result, "User has disabled typing notifications for direct messages")
+        self.assertEqual(events, [])
+
+    def test_group_personal_message_edit_typing_notifications_setting(self) -> None:
+        users = [
+            self.example_user("hamlet"),
+            self.example_user("cordelia"),
+            self.example_user("iago"),
+        ]
+        sender = users[0]
+        msg_id = self.send_huddle_message(sender, users, "test content")
+        expected_recipient_ids = {users[1].id, users[2].id}
+
+        params = dict(
+            op="start",
+            message_id=str(msg_id),
+        )
+        # Test typing events sent when `send_private_typing_notifications` set to `True`.
+        self.assertTrue(sender.send_private_typing_notifications)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(expected_recipient_ids, event_user_ids)
+        self.assertEqual(orjson.loads(result.content)["msg"], "")
+
+        sender.send_private_typing_notifications = False
+        sender.save()
+
+        # No events should be sent now
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+
+        self.assert_json_error(result, "User has disabled typing notifications for direct messages")
+        self.assertEqual(events, [])

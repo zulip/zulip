@@ -101,3 +101,57 @@ def do_send_stream_typing_notification(
     )
 
     send_event(sender.realm, event, user_ids_to_notify)
+
+
+def do_send_stream_message_edit_typing_notification(
+    sender: UserProfile, stream_id: int, message_id: int, operator: str
+) -> None:
+    sender_dict = {"user_id": sender.id, "email": sender.email}
+
+    event = dict(
+        type="typing_edit_message",
+        op=operator,
+        sender=sender_dict,
+        message_id=message_id,
+    )
+
+    # We don't notify long_term_idle subscribers.
+    subscriptions_query = get_active_subscriptions_for_stream_id(
+        stream_id, include_deactivated_users=False
+    )
+
+    total_subscriptions = subscriptions_query.count()
+    if total_subscriptions > settings.MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS:
+        # TODO: Stream typing notifications are disabled in streams
+        # with too many subscribers for performance reasons.
+        return
+
+    user_ids_to_notify = set(
+        subscriptions_query.exclude(user_profile__long_term_idle=True).values_list(
+            "user_profile_id", flat=True
+        )
+    )
+    send_event(sender.realm, event, user_ids_to_notify)
+
+
+def do_send_direct_message_edit_typing_notification(
+    sender: UserProfile, user_ids: List[int], message_id: int, operator: str
+) -> None:
+    sender_dict = {"user_id": sender.id, "email": sender.email}
+
+    event = dict(
+        type="typing_edit_message",
+        op=operator,
+        sender=sender_dict,
+        message_id=message_id,
+    )
+
+    recipient_user_profiles = []
+    for user_id in user_ids:
+        if user_id != sender.id:
+            user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, sender.realm)
+            recipient_user_profiles.append(user_profile)
+
+    # Only deliver the notification to active user recipients
+    user_ids_to_notify = [user.id for user in recipient_user_profiles if user.is_active]
+    send_event(sender.realm, event, user_ids_to_notify)

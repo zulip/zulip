@@ -177,6 +177,20 @@ exports.fixtures = {
         type: "invites_changed",
     },
 
+    message_edit_typing__start: {
+        type: "typing_edit_message",
+        op: "start",
+        sender: typing_person1,
+        recipients: [typing_person2],
+    },
+
+    message_edit_typing__stop: {
+        type: "typing_edit_message",
+        op: "stop",
+        sender: typing_person1,
+        recipients: [typing_person2],
+    },
+
     muted_users: {
         type: "muted_users",
         muted_users: [

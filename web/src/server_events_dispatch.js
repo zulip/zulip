@@ -670,6 +670,24 @@ export function dispatch_normal_event(event) {
                     break;
             }
             break;
+        case "typing_edit_message":
+            if (event.sender.user_id === current_user.user_id) {
+                // typing notifications are sent to the user who is typing
+                // as well as recipients; we ignore such self-generated events.
+                return;
+            }
+            switch (event.op) {
+                case "start":
+                    typing_events.display_message_edit_notification(event);
+                    break;
+                case "stop":
+                    typing_events.hide_message_edit_notification(event);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type typing_edit_message/" + event.op);
+                    break;
+            }
+            break;
 
         case "user_settings": {
             const notification_name = event.property;

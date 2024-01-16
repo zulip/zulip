@@ -1519,6 +1519,47 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
 
+@openapi_test_function("/message_edit_typing:post")
+def set_message_edit_typing_status(client: Client) -> None:
+    # {code_example|start}
+    # The user has started typing while editing a message
+    message = {"type": "stream", "to": "Verona", "topic": "test_topic", "content": "test content"}
+    response = client.send_message(message)
+    message_id = response["id"]
+
+    request = {
+        "op": "start",
+        "message_id": message_id,
+    }
+    result = client.call_endpoint(
+        "message_edit_typing",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/message_edit_typing", "post", "200")
+
+    # {code_example|start}
+    # The user has stopped typing while editing a message
+    message = {"type": "stream", "to": "Verona", "topic": "test_topic", "content": "test content"}
+    response = client.send_message(message)
+    message_id = response["id"]
+
+    request = {
+        "op": "stop",
+        "message_id": message_id,
+    }
+    result = client.call_endpoint(
+        "message_edit_typing",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/message_edit_typing", "post", "200")
+
+
 @openapi_test_function("/realm/emoji/{emoji_name}:post")
 def upload_custom_emoji(client: Client) -> None:
     emoji_path = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
@@ -1675,6 +1716,7 @@ def test_invalid_stream_error(client: Client) -> None:
 def test_messages(client: Client, nonadmin_client: Client) -> None:
     render_message(client)
     message_id = send_message(client)
+    set_message_edit_typing_status(client)
     add_reaction(client, message_id)
     remove_reaction(client, message_id)
     update_message(client, message_id)

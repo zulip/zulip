@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 264**
+
+* [`POST /message_edit_typing`](/api/set-typing-status-for-message-edit):
+  Added a new endpoint for sending typing notification when a message is
+  being edited both in streams and direct messages.
+
+* [`GET /events`](/api/get-events): The new `typing_edit_message` event
+  is sent when a user starts editing a message.
+
 **Feature level 263**:
 
 * [`POST /users/me/presence`](/api/update-presence):

@@ -46,6 +46,7 @@ import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import {stop_message_edit_notifications} from "./typing";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -795,6 +796,7 @@ export function end_message_row_edit($row) {
     upload.deactivate_upload(upload.edit_config(row_id));
 
     const message = message_lists.current.get(row_id);
+    stop_message_edit_notifications(message.id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         currently_editing_messages.delete(message.id);
         message_lists.current.hide_edit_message($row);

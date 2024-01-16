@@ -2877,6 +2877,112 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent when a user starts editing a message.
+
+                                Sent to all clients for users who would receive the message
+                                that was previously being typed, with the additional rule
+                                that typing notifications for stream messages are only sent to
+                                clients that included `stream_typing_notifications` in their
+                                [client capabilities][client-capabilities] when registering
+                                the event queue.
+
+                                **Changes**: New in Zulip 9.0 (feature level 251).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing_edit_message
+                                op:
+                                  type: string
+                                  enum:
+                                    - start
+                                sender:
+                                  additionalProperties: false
+                                  type: object
+                                  description: |
+                                    Object describing the user who was previously editing the message.
+                                  properties:
+                                    user_id:
+                                      type: integer
+                                      description: |
+                                        The user's ID.
+                                    email:
+                                      type: string
+                                      description: |
+                                        The Zulip API email address for the user.
+                                message_id:
+                                  type: integer
+                                  description: |
+                                    Indicates the message id of the message that is being edited.
+                              example:
+                                {
+                                  "type": typing_edit_message,
+                                  "op": "start",
+                                  "sender":
+                                    {
+                                      "user_id": 10,
+                                      "email": "user10@zulip.testserver",
+                                    },
+                                  "message_id": 7,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent when a user stops editing the message.
+
+                                Sent to all clients for users who would receive the message
+                                that was previously being typed, with the additional rule
+                                that typing notifications for stream messages are only sent to
+                                clients that included `stream_typing_notifications` in their
+                                [client capabilities][client-capabilities] when registering
+                                the event queue.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing_edit_message
+                                op:
+                                  type: string
+                                  enum:
+                                    - stop
+                                sender:
+                                  additionalProperties: false
+                                  type: object
+                                  description: |
+                                    Object describing the user who was previously editing the message.
+                                  properties:
+                                    user_id:
+                                      type: integer
+                                      description: |
+                                        The user's ID.
+                                    email:
+                                      type: string
+                                      description: |
+                                        The Zulip API email address for the user.
+                                message_id:
+                                  type: integer
+                                  description: |
+                                    Indicates the message id of the message that is being edited.
+                              example:
+                                {
+                                  "type": typing_edit_message,
+                                  "op": "stop",
+                                  "sender":
+                                    {
+                                      "user_id": 10,
+                                      "email": "user10@zulip.testserver",
+                                    },
+                                  "message_id": 7,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user when [message flags][message-flags] are added
                                 to messages.
 
@@ -18898,6 +19004,45 @@ paths:
                     description: |
                       An example JSON error response when the user composes a channel message
                       and `stream_id` is not specified:
+  /message_edit_typing:
+    post:
+      operationId: set-typing-status-for-message-edit
+      summary: Set "typing" status for message editing
+      tags: ["users"]
+      description: |
+        Notify other users whether the current user is
+        [typing a message][help-typing].
+
+        It follows a similar protocol to set-typing-status.
+
+        **Changes**: New in Zulip 9.0 (feature level 264)
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                op:
+                  description: |
+                    Whether the user has started (`"start"`) or stopped (`"stop"`) editing.
+                  type: string
+                  enum:
+                    - start
+                    - stop
+                  example: start
+                message_id:
+                  description: |
+                    Describes the message id of the message being edited.
+                  type: integer
+                  example: 7
+              required:
+                - op
+                - message_id
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
   /user_groups/create:
     post:
       operationId: create-user-group

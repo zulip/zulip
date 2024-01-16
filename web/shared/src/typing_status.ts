@@ -14,11 +14,21 @@ export type Recipient =
     | (StreamTopic & {
           message_type: "stream";
           notification_event_type: "typing";
-      });
+      })
+    | {
+          notification_event_type: "typing_message_edit";
+          id: number;
+      };
 type TypingStatusWorker = {
     get_current_time: () => number;
     notify_server_start: (recipient: Recipient) => void;
     notify_server_stop: (recipient: Recipient) => void;
+};
+
+export type EditingStatusWorker = {
+    get_current_time: () => number;
+    notify_server_editing_start: (recipient: Recipient) => void;
+    notify_server_editing_stop: (recipient: Recipient) => void;
 };
 
 type TypingStatusState = {
@@ -41,12 +51,14 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
         return false;
     }
 
-    if (a.message_type === "direct" && b.message_type === "direct") {
-        // direct message recipients
-        return _.isEqual(a.ids, b.ids);
-    } else if (a.message_type === "stream" && b.message_type === "stream") {
-        // stream recipients
-        return same_stream_and_topic(a, b);
+    if (a.notification_event_type === "typing" && b.notification_event_type === "typing") {
+        if (a.message_type === "direct" && b.message_type === "direct") {
+            // direct message recipients
+            return _.isEqual(a.ids, b.ids);
+        } else if (a.message_type === "stream" && b.message_type === "stream") {
+            // stream recipients
+            return same_stream_and_topic(a, b);
+        }
     }
 
     return false;
@@ -54,6 +66,7 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
 
 /** Exported only for tests. */
 export let state: TypingStatusState | null = null;
+export const editing_state = new Map<number, TypingStatusState>();
 
 /** Exported only for tests. */
 export function stop_last_notification(worker: TypingStatusWorker): void {
@@ -61,6 +74,18 @@ export function stop_last_notification(worker: TypingStatusWorker): void {
     clearTimeout(state.idle_timer);
     worker.notify_server_stop(state.current_recipient);
     state = null;
+}
+
+export function stop_notification_for_message_edit(
+    worker: EditingStatusWorker,
+    message_id: number,
+): void {
+    const state = editing_state.get(message_id);
+    if (state !== undefined) {
+        clearTimeout(state.idle_timer);
+        worker.notify_server_editing_stop(state.current_recipient);
+        editing_state.delete(message_id);
+    }
 }
 
 /** Exported only for tests. */
@@ -82,9 +107,40 @@ export function start_or_extend_idle_timer(
     return setTimeout(on_idle_timeout, typing_stopped_wait_period);
 }
 
+export function start_or_extend_idle_timer_for_message_edit(
+    worker: EditingStatusWorker,
+    message_id: number,
+    typing_stopped_wait_period: number,
+): ReturnType<typeof setTimeout> {
+    function on_idle_timeout(): void {
+        // We don't do any real error checking here, because
+        // if we've been idle, we need to tell folks, and if
+        // our current recipients has changed, previous code will
+        // have stopped the timer.
+        stop_notification_for_message_edit(worker, message_id);
+    }
+    const state = editing_state.get(message_id);
+    if (state?.idle_timer) {
+        clearTimeout(state.idle_timer);
+    }
+
+    return setTimeout(on_idle_timeout, typing_stopped_wait_period);
+}
+
 function set_next_start_time(current_time: number, typing_started_wait_period: number): void {
     assert(state !== null, "State object should not be null here.");
     state.next_send_start_time = current_time + typing_started_wait_period;
+}
+
+function set_next_start_time_for_message_edit(
+    current_time: number,
+    typing_started_wait_period: number,
+    recipient_id: number,
+): void {
+    const state = editing_state.get(recipient_id);
+    assert(state !== undefined);
+    state.next_send_start_time = current_time + typing_started_wait_period;
+    editing_state.set(recipient_id, state);
 }
 
 function actually_ping_server(
@@ -97,6 +153,17 @@ function actually_ping_server(
     set_next_start_time(current_time, typing_started_wait_period);
 }
 
+function actually_ping_server_for_message_edit(
+    worker: EditingStatusWorker,
+    message_id: number,
+    current_time: number,
+    typing_started_wait_period: number,
+): void {
+    const state = editing_state.get(message_id)!;
+    worker.notify_server_editing_start(state.current_recipient);
+    set_next_start_time_for_message_edit(current_time, typing_started_wait_period, message_id);
+}
+
 /** Exported only for tests. */
 export function maybe_ping_server(
     worker: TypingStatusWorker,
@@ -107,6 +174,24 @@ export function maybe_ping_server(
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
         actually_ping_server(worker, recipient, current_time, typing_started_wait_period);
+    }
+}
+
+export function maybe_ping_server_for_message_edit(
+    worker: EditingStatusWorker,
+    message_id: number,
+    typing_started_wait_period: number,
+): void {
+    const state = editing_state.get(message_id);
+    assert(state !== undefined);
+    const current_time = worker.get_current_time();
+    if (current_time > state.next_send_start_time) {
+        actually_ping_server_for_message_edit(
+            worker,
+            message_id,
+            current_time,
+            typing_started_wait_period,
+        );
     }
 }
 
@@ -173,4 +258,48 @@ export function update(
     };
     const current_time = worker.get_current_time();
     actually_ping_server(worker, new_recipient, current_time, typing_started_wait_period);
+}
+
+export function update_editing_status(
+    edit_box_worker: EditingStatusWorker,
+    new_recipient: Recipient,
+    new_status: "start" | "stop",
+    typing_started_wait_period: number,
+    typing_stopped_wait_period: number,
+): void {
+    assert(new_recipient.notification_event_type === "typing_message_edit");
+    const message_id = new_recipient.id;
+    if (new_status === "start" && editing_state.has(message_id)) {
+        const state = editing_state.get(message_id)!;
+        state.idle_timer = start_or_extend_idle_timer_for_message_edit(
+            edit_box_worker,
+            message_id,
+            typing_stopped_wait_period,
+        );
+        editing_state.set(message_id, state);
+        maybe_ping_server_for_message_edit(edit_box_worker, message_id, typing_started_wait_period);
+        return;
+    }
+
+    if (new_status === "stop") {
+        stop_notification_for_message_edit(edit_box_worker, message_id);
+        return;
+    }
+    const edit_state: TypingStatusState = {
+        current_recipient: new_recipient,
+        next_send_start_time: 0,
+        idle_timer: start_or_extend_idle_timer_for_message_edit(
+            edit_box_worker,
+            message_id,
+            typing_stopped_wait_period,
+        ),
+    };
+    editing_state.set(message_id, edit_state);
+    const current_time = edit_box_worker.get_current_time();
+    actually_ping_server_for_message_edit(
+        edit_box_worker,
+        message_id,
+        current_time,
+        typing_started_wait_period,
+    );
 }

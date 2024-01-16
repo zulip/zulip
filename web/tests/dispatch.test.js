@@ -889,6 +889,37 @@ run_test("stream_typing", ({override}) => {
     }
 });
 
+run_test("message_edit_typing", ({override}) => {
+    // Simulate that we are not typing.
+    realm.user_id = typing_person1.user_id + 1;
+
+    let event = event_fixtures.message_edit_typing__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender.user_id, typing_person1.user_id);
+    }
+
+    event = event_fixtures.message_edit_typing__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender.user_id, typing_person1.user_id);
+    }
+
+    // Get line coverage--we ignore our own typing events.
+    current_user.user_id = typing_person1.user_id;
+    event = event_fixtures.message_edit_typing__start;
+    dispatch(event);
+    realm.user_id = undefined; // above change shouldn't effect stream_typing tests below
+});
+
 run_test("user_settings", ({override}) => {
     settings_preferences.set_default_language_name = () => {};
     let event = event_fixtures.user_settings__default_language;
@@ -1273,6 +1304,12 @@ run_test("server_event_dispatch_op_errors", () => {
     blueslip.expect("error", "Unexpected event type typing/other");
     server_events_dispatch.dispatch_normal_event({
         type: "typing",
+        sender: {user_id: 5},
+        op: "other",
+    });
+    blueslip.expect("error", "Unexpected event type typing_edit_message/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "typing_edit_message",
         sender: {user_id: 5},
         op: "other",
     });
