@@ -387,8 +387,8 @@ async function test_i18n_language_precedence(page: Page): Promise<void> {
 }
 
 async function test_default_language_setting(page: Page): Promise<void> {
-    const display_settings_section = '[data-section="preferences"]';
-    await page.click(display_settings_section);
+    const preferences_section = '[data-section="preferences"]';
+    await page.click(preferences_section);
 
     const chinese_language_data_code = "zh-hans";
     await change_language(page, chinese_language_data_code);
@@ -400,8 +400,8 @@ async function test_default_language_setting(page: Page): Promise<void> {
     });
     await assert_language_changed_to_chinese(page);
     await test_i18n_language_precedence(page);
-    await page.waitForSelector(display_settings_section, {visible: true});
-    await page.click(display_settings_section);
+    await page.waitForSelector(preferences_section, {visible: true});
+    await page.click(preferences_section);
 
     // Change the language back to English so that subsequent tests pass.
     await change_language(page, "en");
@@ -409,8 +409,8 @@ async function test_default_language_setting(page: Page): Promise<void> {
     // Check that the saved indicator appears
     await check_language_setting_status(page);
     await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
-    await page.waitForSelector(display_settings_section, {visible: true});
-    await page.click(display_settings_section);
+    await page.waitForSelector(preferences_section, {visible: true});
+    await page.click(preferences_section);
     await page.waitForSelector("#user-preferences .general-settings-status", {
         visible: true,
     });
