@@ -343,7 +343,7 @@ def users_to_zerver_userprofile(
         if not user.get("is_primary_owner", False):
             user_id_count += 1
 
-        logging.info("%s -> %s", user["name"], userprofile_dict["email"])
+        logging.info("%s: %s -> %s", slack_user_id, user["name"], userprofile_dict["email"])
 
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info("######### IMPORTING USERS FINISHED #########\n")
