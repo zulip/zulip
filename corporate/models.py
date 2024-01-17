@@ -215,25 +215,77 @@ class PaymentIntent(models.Model):
         return payment_intent_dict
 
 
-class CustomerPlan(models.Model):
+class AbstractCustomerPlan(models.Model):
+    # A customer can only have one ACTIVE / CONFIGURED plan,
+    # but old, inactive / processed plans are preserved to allow
+    # auditing - so there can be multiple CustomerPlan / CustomerPlanOffer
+    # objects pointing to one Customer.
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)
+
+    fixed_price = models.IntegerField(null=True)
+
+    class Meta:
+        abstract = True
+
+
+class CustomerPlanOffer(AbstractCustomerPlan):
+    """
+    This is for storing offers configured via /support which
+    the customer is yet to buy or schedule a purchase.
+
+    Once customer buys or schedules a purchase, we create a
+    CustomerPlan record. The record in this table stays for
+    audit purpose with status=PROCESSED.
+    """
+
+    TIER_SELF_HOSTED_BASIC = 103
+    TIER_SELF_HOSTED_BUSINESS = 104
+    tier = models.SmallIntegerField()
+
+    # Whether the offer is:
+    # * only configured
+    # * processed by the customer to buy or schedule a purchase.
+    CONFIGURED = 1
+    PROCESSED = 2
+    status = models.SmallIntegerField()
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.name} (status: {self.get_plan_status_as_text()})"
+
+    def get_plan_status_as_text(self) -> str:
+        return {
+            self.CONFIGURED: "Configured",
+            self.PROCESSED: "Processed",
+        }[self.status]
+
+    @staticmethod
+    def name_from_tier(tier: int) -> str:  # nocoverage
+        return {
+            CustomerPlanOffer.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
+            CustomerPlanOffer.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
+        }[tier]
+
+    @property
+    def name(self) -> str:  # nocoverage
+        # TODO: This is used in `check_customer_not_on_paid_plan` as
+        # 'next_plan.name'. Related to sponsorship, add coverage.
+        return self.name_from_tier(self.tier)
+
+
+class CustomerPlan(AbstractCustomerPlan):
     """
     This is for storing most of the fiddly details
     of the customer's plan.
     """
 
-    # A customer can only have one ACTIVE plan, but old, inactive plans
-    # are preserved to allow auditing - so there can be multiple
-    # CustomerPlan objects pointing to one Customer.
-    customer = models.ForeignKey(Customer, on_delete=CASCADE)
-
     automanage_licenses = models.BooleanField(default=False)
     charge_automatically = models.BooleanField(default=False)
 
-    # Both of these are in cents. Exactly one of price_per_license or
-    # fixed_price should be set. fixed_price is only for manual deals, and
+    # Both of the price_per_license and fixed_price are in cents. Exactly
+    # one of them should be set. fixed_price is only for manual deals, and
     # can't be set via the self-serve billing system.
     price_per_license = models.IntegerField(null=True)
-    fixed_price = models.IntegerField(null=True)
 
     # Discount that was applied. For display purposes only.
     discount = models.DecimalField(decimal_places=4, max_digits=6, null=True)

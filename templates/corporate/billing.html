@@ -74,7 +74,7 @@
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
                     <label for="org-billing-frequency">Billing frequency</label>
-                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan %}
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan or fixed_price_plan %}
                     <div class="not-editable-realm-field">
                         {{ billing_frequency }}
                     </div>
@@ -106,7 +106,7 @@
                     </button>
                     <div id="org-billing-frequency-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
-                {% if is_server_on_legacy_plan %}
+                {% if is_server_on_legacy_plan or fixed_price_plan %}
                 {% elif automanage_licenses %}
                 <div class="input-box billing-page-field no-validation">
                     <label for="automatic-license-count" class="inline-block label-title">
@@ -227,6 +227,9 @@
                             <a href="{{ billing_base_url }}/plans/">other features</a> of your current plan.
                             {% endif %}
                             {% else %}
+                            {% if fixed_price_plan %}
+                            This is a fixed-price plan.
+                            {% endif %}
                             {% if charge_automatically %}
                             {% if is_server_on_legacy_plan %}
                             Your plan will automatically upgrade to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
@@ -239,7 +242,7 @@
                             <br />
                             <div class="input-box billing-page-field">
                                 <label for="expected-charge">Expected next charge</label>
-                                {% if not fixed_price %}
+                                {% if not fixed_price_plan %}
                                 <div class="not-editable-realm-field">
                                     ${{ pre_discount_renewal_cents }} (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
                                     {% if switch_to_annual_at_end_of_cycle %}
@@ -261,8 +264,9 @@
                                 </div>
                                 {% endif %}
                             </div>
+                            <br />
                             <h1>${{ renewal_amount }}</h1>
-                            {% if not fixed_price and using_min_licenses_for_plan %}
+                            {% if not fixed_price_plan and using_min_licenses_for_plan %}
                             <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
                             {% endif %}
                             {% endif %}

@@ -44,6 +44,16 @@ function update_due_today(schedule: string): void {
     if (schedule === "monthly") {
         num_months = 1;
     }
+
+    if (page_params.fixed_price !== null) {
+        let due_today = page_params.fixed_price;
+        if (schedule === "monthly") {
+            due_today = page_params.fixed_price / 12;
+        }
+        $(".due-today-price").text(helpers.format_money(due_today));
+        return;
+    }
+
     $("#due-today .due-today-duration").text(num_months === 1 ? "1 month" : "12 months");
     const schedule_typed = helpers.schedule_schema.parse(schedule);
     const pre_flat_discount_price = prices[schedule_typed] * current_license_count;

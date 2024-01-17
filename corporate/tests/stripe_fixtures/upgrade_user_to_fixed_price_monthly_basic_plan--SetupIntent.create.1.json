@@ -1,0 +1,34 @@
+{
+  "application": null,
+  "automatic_payment_methods": null,
+  "cancellation_reason": null,
+  "client_secret": "seti_1Oc9VUDEQaroqDjsNBbyZEoB_secret_PR1YsIl9hSYpd6FDQq9T2nPS5mR3cMQ",
+  "created": 1706114456,
+  "customer": "cus_PR1YvTbJ32gEOi",
+  "description": null,
+  "flow_directions": null,
+  "id": "seti_1Oc9VUDEQaroqDjsNBbyZEoB",
+  "last_setup_error": null,
+  "latest_attempt": "setatt_1Oc9VUDEQaroqDjsJeMjWEIe",
+  "livemode": false,
+  "mandate": null,
+  "metadata": {},
+  "next_action": null,
+  "object": "setup_intent",
+  "on_behalf_of": null,
+  "payment_method": "pm_1Oc9VUDEQaroqDjsMvuKOumG",
+  "payment_method_configuration_details": null,
+  "payment_method_options": {
+    "card": {
+      "mandate_options": null,
+      "network": null,
+      "request_three_d_secure": "automatic"
+    }
+  },
+  "payment_method_types": [
+    "card"
+  ],
+  "single_use_mandate": null,
+  "status": "succeeded",
+  "usage": "off_session"
+}

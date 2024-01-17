@@ -29,6 +29,7 @@ from typing_extensions import ParamSpec, override
 from corporate.models import (
     Customer,
     CustomerPlan,
+    CustomerPlanOffer,
     LicenseLedger,
     PaymentIntent,
     Session,
@@ -118,6 +119,13 @@ def format_money(cents: float) -> str:
     dollars = cents / 100
     # Format the number as a string with the correct number of decimal places
     return f"{dollars:.{precision}f}"
+
+
+def get_amount_due_fixed_price_plan(fixed_price: int, billing_schedule: int) -> int:
+    amount_due = fixed_price
+    if billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+        amount_due = int(float(format_money(fixed_price / 12)) * 100)
+    return amount_due
 
 
 def format_discount_percentage(discount: Optional[Decimal]) -> Optional[str]:
@@ -371,6 +379,23 @@ def build_support_url(support_view: str, query_text: str) -> str:
     return support_url
 
 
+def get_configured_fixed_price_plan_offer(
+    customer: Customer, plan_tier: int
+) -> Optional[CustomerPlanOffer]:
+    """
+    Fixed price plan offer configured via /support which the
+    customer is yet to buy or schedule a purchase.
+    """
+    if plan_tier == customer.required_plan_tier:
+        return CustomerPlanOffer.objects.filter(
+            customer=customer,
+            tier=plan_tier,
+            fixed_price__isnull=False,
+            status=CustomerPlanOffer.CONFIGURED,
+        ).first()
+    return None
+
+
 class BillingError(JsonableError):
     data_fields = ["error_description"]
     # error messages
@@ -555,6 +580,7 @@ class SupportType(Enum):
     update_minimum_licenses = 6
     update_plan_end_date = 7
     update_required_plan_tier = 8
+    configure_fixed_price_plan = 9
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -567,6 +593,7 @@ class SupportViewRequest(TypedDict, total=False):
     minimum_licenses: Optional[int]
     plan_end_date: Optional[str]
     required_plan_tier: Optional[int]
+    fixed_price: Optional[int]
 
 
 class AuditLogEventType(Enum):
@@ -605,6 +632,7 @@ class UpgradePageParams(TypedDict):
     tier: int
     flat_discount: int
     flat_discounted_months: int
+    fixed_price: Optional[int]
 
 
 class UpgradePageSessionTypeSpecificContext(TypedDict):
@@ -644,6 +672,7 @@ class UpgradePageContext(TypedDict):
     page_params: UpgradePageParams
     payment_method: Optional[str]
     plan: str
+    fixed_price_plan: bool
     remote_server_legacy_plan_end_date: Optional[str]
     salt: str
     seat_count: int
@@ -725,7 +754,8 @@ class BillingSession(ABC):
     def get_data_for_stripe_payment_intent(
         self,
         customer: Customer,
-        price_per_license: int,
+        price_per_license: Optional[int],
+        fixed_price: Optional[int],
         licenses: int,
         plan_tier: int,
         billing_schedule: int,
@@ -737,11 +767,17 @@ class BillingSession(ABC):
                 "Support requests do not set any stripe billing information.",
             )
 
-        amount = price_per_license * licenses
-
         plan_name = CustomerPlan.name_from_tier(plan_tier)
-        description = f"Upgrade to {plan_name}, ${price_per_license/100} x {licenses}"
-        if customer.flat_discounted_months > 0:
+        assert price_per_license is None or fixed_price is None
+        if price_per_license is not None:
+            amount = price_per_license * licenses
+            description = f"Upgrade to {plan_name}, ${price_per_license/100} x {licenses}"
+        else:
+            assert fixed_price is not None
+            amount = get_amount_due_fixed_price_plan(fixed_price, billing_schedule)
+            description = plan_name
+
+        if fixed_price is None and customer.flat_discounted_months > 0:
             num_months = 12 if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
             flat_discounted_months = min(customer.flat_discounted_months, num_months)
             amount -= customer.flat_discount * flat_discounted_months
@@ -942,15 +978,17 @@ class BillingSession(ABC):
         return customer
 
     def create_stripe_payment_intent(
-        self, price_per_license: int, licenses: int, metadata: Dict[str, Any]
+        self,
+        metadata: Dict[str, Any],
     ) -> str:
         # NOTE: This charges users immediately.
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
         payment_intent_data = self.get_data_for_stripe_payment_intent(
             customer,
-            price_per_license,
-            licenses,
+            metadata["price_per_license"],
+            metadata["fixed_price"],
+            metadata["licenses"],
             metadata["plan_tier"],
             metadata["billing_schedule"],
             self.get_email(),
@@ -1169,6 +1207,65 @@ class BillingSession(ABC):
             plan_tier_name = CustomerPlan.name_from_tier(new_plan_tier)
         return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
+    def configure_fixed_price_plan(self, fixed_price: int) -> str:
+        customer = self.get_customer()
+        if customer is None:
+            customer = self.update_or_create_customer()
+
+        if customer.required_plan_tier is None:
+            raise SupportRequestError("Required plan tier should not be set to None")
+        required_plan_tier_name = CustomerPlan.name_from_tier(customer.required_plan_tier)
+
+        fixed_price_cents = fixed_price * 100
+        fixed_price_plan_params: Dict[str, Any] = {
+            "fixed_price": fixed_price_cents,
+            "tier": customer.required_plan_tier,
+            "status": CustomerPlan.NEVER_STARTED,
+        }
+
+        current_plan = get_current_plan_by_customer(customer)
+        if current_plan is not None and self.check_plan_tier_is_billable(current_plan.tier):
+            if current_plan.end_date is None:
+                raise SupportRequestError(
+                    f"Configure {self.billing_entity_display_name} current plan end-date, before scheduling a new plan."
+                )
+            fixed_price_plan_params["billing_cycle_anchor"] = current_plan.end_date
+            fixed_price_plan_params["next_invoice_date"] = current_plan.end_date
+            fixed_price_plan_params[
+                "invoicing_status"
+            ] = CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+            fixed_price_plan_params["billing_schedule"] = current_plan.billing_schedule
+            fixed_price_plan_params["charge_automatically"] = current_plan.charge_automatically
+            # Manual license management is not available for fixed price plan.
+            fixed_price_plan_params["automanage_licenses"] = True
+
+            CustomerPlan.objects.create(
+                customer=customer,
+                **fixed_price_plan_params,
+            )
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=timezone_now(),
+                extra_data=fixed_price_plan_params,
+            )
+
+            current_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            current_plan.next_invoice_date = current_plan.end_date
+            current_plan.save(update_fields=["status", "next_invoice_date"])
+            return f"Fixed price {required_plan_tier_name} plan scheduled to start on {current_plan.end_date.date()}."
+
+        fixed_price_plan_params["status"] = CustomerPlanOffer.CONFIGURED
+        CustomerPlanOffer.objects.create(
+            customer=customer,
+            **fixed_price_plan_params,
+        )
+        self.write_to_audit_log(
+            event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+            event_time=timezone_now(),
+            extra_data=fixed_price_plan_params,
+        )
+        return f"Customer can now buy a fixed price {required_plan_tier_name} plan."
+
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
         if customer is None:
@@ -1248,24 +1345,30 @@ class BillingSession(ABC):
     ) -> str:
         customer = self.update_or_create_stripe_customer()
         assert customer is not None  # for mypy
-        discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
-        price_per_license = get_price_per_license(plan_tier, billing_schedule, discount_for_plan)
+        fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
         general_metadata = {
             "billing_modality": billing_modality,
             "billing_schedule": billing_schedule,
             "licenses": licenses,
             "license_management": license_management,
-            "price_per_license": price_per_license,
+            "price_per_license": None,
+            "fixed_price": None,
             "seat_count": seat_count,
             "type": "upgrade",
             "plan_tier": plan_tier,
         }
+        if fixed_price_plan_offer is None:
+            discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
+            price_per_license = get_price_per_license(
+                plan_tier, billing_schedule, discount_for_plan
+            )
+            general_metadata["price_per_license"] = price_per_license
+        else:
+            general_metadata["fixed_price"] = fixed_price_plan_offer.fixed_price
         updated_metadata = self.update_data_for_checkout_session_and_payment_intent(
             general_metadata
         )
-        stripe_payment_intent_id = self.create_stripe_payment_intent(
-            price_per_license, licenses, updated_metadata
-        )
+        stripe_payment_intent_id = self.create_stripe_payment_intent(updated_metadata)
         return stripe_payment_intent_id
 
     def ensure_current_plan_is_upgradable(self, customer: Customer, new_plan_tier: int) -> None:
@@ -1323,7 +1426,14 @@ class BillingSession(ABC):
         if should_schedule_upgrade_for_legacy_remote_server:
             assert remote_server_legacy_plan is not None
             billing_cycle_anchor = remote_server_legacy_plan.end_date
-        discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
+
+        discount_for_plan = None
+        fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
+        if fixed_price_plan_offer is None:
+            discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
+        else:
+            assert automanage_licenses is True
+
         (
             billing_cycle_anchor,
             next_invoice_date,
@@ -1353,12 +1463,15 @@ class BillingSession(ABC):
             plan_params = {
                 "automanage_licenses": automanage_licenses,
                 "charge_automatically": charge_automatically,
-                "price_per_license": price_per_license,
-                "discount": discount_for_plan,
                 "billing_cycle_anchor": billing_cycle_anchor,
                 "billing_schedule": billing_schedule,
                 "tier": plan_tier,
             }
+
+            if fixed_price_plan_offer is None:
+                plan_params["price_per_license"] = price_per_license
+                plan_params["discount"] = discount_for_plan
+
             if free_trial:
                 plan_params["status"] = CustomerPlan.FREE_TRIAL
 
@@ -1420,6 +1533,13 @@ class BillingSession(ABC):
                 remote_server_legacy_plan.status = CustomerPlan.ENDED
                 remote_server_legacy_plan.save(update_fields=["status"])
 
+            if fixed_price_plan_offer is not None:
+                # Manual license management is not available for fixed price plan.
+                assert automanage_licenses is True
+                plan_params["fixed_price"] = fixed_price_plan_offer.fixed_price
+                fixed_price_plan_offer.status = CustomerPlanOffer.PROCESSED
+                fixed_price_plan_offer.save(update_fields=["status"])
+
             plan = CustomerPlan.objects.create(
                 customer=customer, next_invoice_date=next_invoice_date, **plan_params
             )
@@ -1445,6 +1565,16 @@ class BillingSession(ABC):
 
         if not (free_trial or should_schedule_upgrade_for_legacy_remote_server):
             assert plan is not None
+            price_args: PriceArgs = {}
+            if plan.fixed_price is None:
+                price_args = {
+                    "quantity": billed_licenses,
+                    "unit_amount": price_per_license,
+                }
+            else:
+                assert plan.fixed_price is not None
+                amount_due = get_amount_due_fixed_price_plan(plan.fixed_price, billing_schedule)
+                price_args = {"amount": amount_due}
             stripe.InvoiceItem.create(
                 currency="usd",
                 customer=customer.stripe_customer_id,
@@ -1454,11 +1584,10 @@ class BillingSession(ABC):
                     "start": datetime_to_timestamp(billing_cycle_anchor),
                     "end": datetime_to_timestamp(period_end),
                 },
-                quantity=billed_licenses,
-                unit_amount=price_per_license,
+                **price_args,
             )
 
-            if customer.flat_discounted_months > 0:
+            if plan.fixed_price is None and customer.flat_discounted_months > 0:
                 num_months = 12 if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
                 flat_discounted_months = min(customer.flat_discounted_months, num_months)
                 discount = customer.flat_discount * flat_discounted_months
@@ -1703,8 +1832,6 @@ class BillingSession(ABC):
                 )
 
             if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
-                # Only plan tier we do this for right now.
-                assert plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
                 plan.status = CustomerPlan.ENDED
                 plan.save(update_fields=["status"])
 
@@ -1834,14 +1961,23 @@ class BillingSession(ABC):
             return None, None
         return None, last_ledger_entry
 
-    def get_next_plan(self, plan: CustomerPlan) -> Optional[CustomerPlan]:
+    def get_next_plan(self, plan: CustomerPlan) -> Union[CustomerPlan, CustomerPlanOffer, None]:
+        customer = plan.customer
         if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
             assert plan.end_date is not None
             return CustomerPlan.objects.filter(
-                customer=plan.customer,
+                customer=customer,
                 billing_cycle_anchor=plan.end_date,
                 status=CustomerPlan.NEVER_STARTED,
             ).first()
+        elif customer.required_plan_tier is not None:
+            # Currently, the only case when a next_plan is scheduled with the
+            # current_plan.status NOT SET to SWITCH_PLAN_TIER_AT_PLAN_END is a
+            # fixed price plan configured via /support which the customer is yet
+            # to buy or schedule a purchase.
+            return get_configured_fixed_price_plan_offer(
+                customer=customer, plan_tier=customer.required_plan_tier
+            )
         return None
 
     def get_customer_plan_renewal_amount(
@@ -1850,7 +1986,7 @@ class BillingSession(ABC):
         last_ledger_entry: LicenseLedger,
     ) -> int:
         if plan.fixed_price is not None:
-            return plan.fixed_price
+            return get_amount_due_fixed_price_plan(plan.fixed_price, plan.billing_schedule)
         if last_ledger_entry.licenses_at_next_renewal is None:
             return 0  # nocoverage
         assert plan.price_per_license is not None  # for mypy
@@ -1923,7 +2059,7 @@ class BillingSession(ABC):
         # TODO: Do this calculation in `invoice_plan` too.
         pre_discount_renewal_cents = renewal_cents
         flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
-        if flat_discounted_months > 0:
+        if plan.fixed_price is None and flat_discounted_months > 0:
             flat_discounted_months = min(flat_discounted_months, num_months_next_cycle)
             discount = flat_discount * flat_discounted_months
             renewal_cents = renewal_cents - discount
@@ -1943,9 +2079,6 @@ class BillingSession(ABC):
         else:  # nocoverage
             raise BillingError(f"stripe_customer_id is None for {customer}")
 
-        fixed_price = (
-            cents_to_dollar_string(plan.fixed_price) if plan.fixed_price is not None else None
-        )
         remote_server_legacy_plan_end_date = self.get_formatted_remote_server_legacy_plan_end_date(
             customer, status=CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
         )
@@ -1970,7 +2103,7 @@ class BillingSession(ABC):
             "stripe_email": stripe_email,
             "CustomerPlan": CustomerPlan,
             "billing_frequency": billing_frequency,
-            "fixed_price": fixed_price,
+            "fixed_price_plan": plan.fixed_price is not None,
             "price_per_license": price_per_license,
             "is_sponsorship_pending": customer.sponsorship_pending,
             "sponsorship_plan_name": self.get_sponsorship_plan_name(
@@ -2006,6 +2139,7 @@ class BillingSession(ABC):
 
         next_plan = self.get_next_plan(plan)
         if next_plan is not None:
+            assert type(next_plan) is CustomerPlan
             next_plan_context = self.get_billing_context_from_plan(
                 customer, next_plan, last_ledger_entry, now
             )
@@ -2017,7 +2151,7 @@ class BillingSession(ABC):
                 "payment_method",
                 "charge_automatically",
                 "billing_frequency",
-                "fixed_price",
+                "fixed_price_plan",
                 "price_per_license",
                 "discount_percent",
                 "using_min_licenses_for_plan",
@@ -2079,6 +2213,13 @@ class BillingSession(ABC):
 
         tier = initial_upgrade_request.tier
 
+        fixed_price = None
+        if customer is not None:
+            fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, tier)
+            if fixed_price_plan_offer:
+                assert fixed_price_plan_offer.fixed_price is not None
+                fixed_price = fixed_price_plan_offer.fixed_price
+
         percent_off = Decimal(0)
         if customer is not None:
             discount_for_plan_tier = customer.get_discount_for_plan_tier(tier)
@@ -2139,11 +2280,13 @@ class BillingSession(ABC):
                 "tier": tier,
                 "flat_discount": flat_discount,
                 "flat_discounted_months": flat_discounted_months,
+                "fixed_price": fixed_price,
             },
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "min_licenses_for_plan": min_licenses_for_plan,
             "payment_method": current_payment_method,
             "plan": CustomerPlan.name_from_tier(tier),
+            "fixed_price_plan": fixed_price is not None,
             "salt": salt,
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
@@ -2254,8 +2397,9 @@ class BillingSession(ABC):
                     # Switch to a different plan was cancelled. We end the next plan
                     # and set the current one as active.
                     if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+                        assert type(plan) is CustomerPlan
                         next_plan = self.get_next_plan(plan)
-                        assert next_plan is not None
+                        assert type(next_plan) is CustomerPlan
                         do_change_plan_status(next_plan, CustomerPlan.ENDED)
                     do_change_plan_status(plan, status)
             elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
@@ -2442,7 +2586,10 @@ class BillingSession(ABC):
             price_args: PriceArgs = {}
             if ledger_entry.is_renewal:
                 if plan.fixed_price is not None:
-                    price_args = {"amount": plan.fixed_price}
+                    amount_due = get_amount_due_fixed_price_plan(
+                        plan.fixed_price, plan.billing_schedule
+                    )
+                    price_args = {"amount": amount_due}
                 else:
                     assert plan.price_per_license is not None  # needed for mypy
                     price_args = {
@@ -2504,7 +2651,7 @@ class BillingSession(ABC):
 
         if invoice_item_created:
             flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
-            if flat_discounted_months > 0:
+            if plan.fixed_price is None and flat_discounted_months > 0:
                 num_months = (
                     12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
                 )
@@ -2770,6 +2917,10 @@ class BillingSession(ABC):
             required_plan_tier = support_request.get("required_plan_tier")
             assert required_plan_tier is not None
             success_message = self.set_required_plan_tier(required_plan_tier)
+        elif support_type == SupportType.configure_fixed_price_plan:
+            assert support_request["fixed_price"] is not None
+            new_fixed_price = support_request["fixed_price"]
+            success_message = self.configure_fixed_price_plan(new_fixed_price)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
             assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES

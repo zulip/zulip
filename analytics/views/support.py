@@ -440,6 +440,7 @@ def remote_servers_support(
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
     minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    fixed_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
     billing_modality: Optional[str] = REQ(
@@ -499,6 +500,11 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.update_required_plan_tier,
                 required_plan_tier=required_plan_tier,
+            )
+        elif fixed_price is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.configure_fixed_price_plan,
+                fixed_price=fixed_price,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(

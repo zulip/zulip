@@ -11,6 +11,7 @@ export const page_params: {
     tier: number;
     flat_discount: number;
     flat_discounted_months: number;
+    fixed_price: number | null;
 } = $("#page-params").data("params");
 
 if (!page_params) {

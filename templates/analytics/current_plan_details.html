@@ -21,7 +21,7 @@
     {% if plan_data.current_plan.price_per_license %}
         <b>Price per license</b>: ${{ dollar_amount(plan_data.current_plan.price_per_license) }}<br />
     {% elif plan_data.current_plan.fixed_price %}
-        <b>Plan has a fixed price.</b>
+        <b>Plan has a fixed price.</b><br />
     {% endif %}
     <b>Annual recurring revenue</b>: ${{ dollar_amount(plan_data.annual_recurring_revenue) }}<br />
     <b>Start of next billing cycle</b>: {{ plan_data.next_billing_cycle_start.strftime('%d %B %Y') }}<br />
