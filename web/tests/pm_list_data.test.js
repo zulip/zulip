@@ -157,7 +157,7 @@ test("get_conversations bot", ({override}) => {
             is_active: false,
             url: "#narrow/dm/314-Outgoing-webhook",
             status_emoji_info: undefined,
-            user_circle_class: "user_circle_empty",
+            user_circle_class: "user_circle_green",
             is_group: false,
             is_bot: true,
         },
