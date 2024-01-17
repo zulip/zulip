@@ -42,8 +42,7 @@ export function set_focused_recipient(msg_type) {
 }
 
 function display_messages_normally() {
-    const $table = rows.get_table(message_lists.current.table_name);
-    $table.find(".recipient_row").removeClass("message-fade");
+    message_lists.current.view.$list.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
 }
@@ -77,9 +76,7 @@ function fade_messages() {
     // Defer updating all message groups so that the compose box can open sooner
     setTimeout(
         (expected_msg_list, expected_recipient) => {
-            const all_groups = rows
-                .get_table(message_lists.current.table_name)
-                .find(".recipient_row");
+            const $all_groups = message_lists.current.view.$list.find(".recipient_row");
 
             if (
                 message_lists.current !== expected_msg_list ||
@@ -93,8 +90,8 @@ function fade_messages() {
 
             // Note: The below algorithm relies on the fact that all_elts is
             // sorted as it would be displayed in the message view
-            for (i = 0; i < all_groups.length; i += 1) {
-                const $group_elt = $(all_groups[i]);
+            for (i = 0; i < $all_groups.length; i += 1) {
+                const $group_elt = $($all_groups[i]);
                 should_fade_group = compose_fade_helper.should_fade_message(
                     rows.recipient_from_group($group_elt),
                 );

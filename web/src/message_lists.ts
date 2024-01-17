@@ -1,4 +1,3 @@
-import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
@@ -15,11 +14,12 @@ type MessageListView = {
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
+    $list: JQuery;
 };
 
 export type RenderInfo = {need_user_to_scroll: boolean};
 export type MessageList = {
-    table_name: string;
+    id: number;
     view: MessageListView;
     selected_id: () => number;
     selected_row: () => JQuery;
@@ -61,7 +61,7 @@ export function all_rendered_message_lists(): MessageList[] {
 
 export function all_current_message_rows(): JQuery {
     assert(current !== undefined);
-    return $(`#${CSS.escape(current.table_name)}.message-list .message_row`);
+    return current.view.$list.find(".message_row");
 }
 
 export function update_recipient_bar_background_color(): void {

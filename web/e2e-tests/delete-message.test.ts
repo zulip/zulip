@@ -5,7 +5,7 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common";
 
 async function click_delete_and_return_last_msg_id(page: Page): Promise<string> {
-    const msg = (await page.$$("#zhome .message_row")).at(-1);
+    const msg = (await page.$$(".message-list .message_row")).at(-1);
     assert.ok(msg !== undefined);
     const id = await (await msg.getProperty("id")).jsonValue();
     await msg.hover();
@@ -23,8 +23,14 @@ async function click_delete_and_return_last_msg_id(page: Page): Promise<string> 
 async function delete_message_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
-    const messages_quantity = (await page.$$("#zhome .message_row")).length;
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(
+        `.message-list[data-message-list-id='${message_list_id}'] .message_row`,
+        {visible: true},
+    );
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
+    const messages_quantity = (await page.$$(".message-list .message_row")).length;
     const last_message_id = await click_delete_and_return_last_msg_id(page);
 
     await common.wait_for_micromodal_to_open(page);
@@ -34,7 +40,7 @@ async function delete_message_test(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(`#${CSS.escape(last_message_id)}`, {hidden: true});
-    assert.equal((await page.$$("#zhome .message_row")).length, messages_quantity - 1);
+    assert.equal((await page.$$(".message-list .message_row")).length, messages_quantity - 1);
 }
 
 common.run_test(delete_message_test);

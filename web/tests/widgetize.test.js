@@ -54,7 +54,7 @@ const fake_poll_widget = {
     },
 };
 
-const message_lists = mock_esm("../src/message_lists", {current: {}});
+const message_lists = mock_esm("../src/message_lists", {current: {}, home: {id: 1}});
 const narrow_state = mock_esm("../src/narrow_state");
 mock_esm("../src/poll_widget", fake_poll_widget);
 
@@ -80,8 +80,8 @@ test("activate", ({override}) => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
     const $row = $.create("<stub message row>");
-    $row.attr("id", "zhome2909");
-    const $message_content = $.create("#zhome2909");
+    $row.attr("id", "message-row-1-2909");
+    const $message_content = $.create("#message-row-1-2909");
     $row.set_find_results(".message_content", $message_content);
 
     let narrow_active;

@@ -71,7 +71,10 @@ async function test_reload_hash(page: Page): Promise<void> {
 
     await page.evaluate(() => zulip_test.initiate_reload({immediate: true}));
     await page.waitForNavigation();
-    await page.waitForSelector("#zfilt", {visible: true});
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
 
     const page_load_time = await page.evaluate(() => zulip_test.page_load_time);
     assert.ok(page_load_time > initial_page_load_time, "Page not reloaded.");

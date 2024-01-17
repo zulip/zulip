@@ -10,7 +10,7 @@
             {{> recipient_row use_match_properties=../use_match_properties}}
             {{#each message_containers}}
                 {{#with this}}
-                {{> single_message use_match_properties=../../use_match_properties table_name=../../table_name}}
+                {{> single_message use_match_properties=../../use_match_properties message_list_id=../../message_list_id}}
                 {{/with}}
             {{/each}}
         </div>

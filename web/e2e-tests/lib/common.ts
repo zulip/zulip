@@ -26,6 +26,8 @@ export const is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
 let realm_url = "http://zulip.zulipdev.com:9981/";
 const gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
 
+let last_current_msg_list_id: number | null = null;
+
 export const pm_recipient = {
     async set(page: Page, recipient: string): Promise<void> {
         // Without using the delay option here there seems to be
@@ -483,9 +485,11 @@ export async function send_multiple_messages(page: Page, msgs: Message[]): Promi
  */
 export async function get_rendered_messages(
     page: Page,
-    table = "zhome",
+    message_list_id: number,
 ): Promise<[string, string[]][]> {
-    const recipient_rows = await page.$$(`#${CSS.escape(table)} .recipient_row`);
+    const recipient_rows = await page.$$(
+        `.message-list[data-message-list-id='${message_list_id}'] .recipient_row`,
+    );
     return Promise.all(
         recipient_rows.map(async (element): Promise<[string, string[]]> => {
             const stream_label = await element.$(".stream_label");
@@ -519,11 +523,13 @@ export async function get_rendered_messages(
 // messages array passed exist in the order they are passed.
 export async function check_messages_sent(
     page: Page,
-    table: string,
+    message_list_id: number,
     messages: [string, string[]][],
 ): Promise<void> {
-    await page.waitForSelector(`#${CSS.escape(table)}`, {visible: true});
-    const rendered_messages = await get_rendered_messages(page, table);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    const rendered_messages = await get_rendered_messages(page, message_list_id);
 
     // We only check the last n messages because if we run
     // the test with --interactive there will be duplicates.
@@ -713,4 +719,24 @@ export function run_test(test_function: (page: Page) => Promise<void>): void {
         console.error(error);
         process.exit(1);
     });
+}
+
+export async function get_current_msg_list_id(
+    page: Page,
+    wait_for_change = false,
+): Promise<number> {
+    if (wait_for_change) {
+        // Wait for the current_msg_list to change if the in the middle of switching narrows.
+        // Also works as a way to verify that the current message list did change.
+        // NOTE: This only checks if the current message list id changed from the last call to this function,
+        // so, make sure to have a call to this function before changing to the narrow that you want to check.
+        await page.waitForFunction(
+            (last_current_msg_list_id) =>
+                zulip_test.current_msg_list.id !== last_current_msg_list_id,
+            {},
+            last_current_msg_list_id,
+        );
+    }
+    last_current_msg_list_id = await page.evaluate(() => zulip_test.current_msg_list.id);
+    return last_current_msg_list_id!;
 }

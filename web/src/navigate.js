@@ -1,6 +1,5 @@
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
-import * as rows from "./rows";
 import * as unread_ops from "./unread_ops";
 
 function go_to_row(msg_id) {
@@ -23,9 +22,9 @@ export function down(with_centering) {
         if (with_centering) {
             // At the last message, scroll to the bottom so we have
             // lots of nice whitespace for new messages coming in.
-            const $current_msg_table = rows.get_table(message_lists.current.table_name);
+            const $current_msg_list = message_lists.current.view.$list;
             message_viewport.scrollTop(
-                ($current_msg_table.outerHeight(true) ?? 0) - message_viewport.height() * 0.1,
+                ($current_msg_list.outerHeight(true) ?? 0) - message_viewport.height() * 0.1,
             );
             unread_ops.process_scrolled_to_bottom();
         }

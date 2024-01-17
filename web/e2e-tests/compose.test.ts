@@ -28,14 +28,14 @@ function get_message_selector(text: string): string {
 }
 
 async function test_send_messages(page: Page): Promise<void> {
-    const initial_msgs_count = (await page.$$("#zhome .message_row")).length;
+    const initial_msgs_count = (await page.$$(".message-list .message_row")).length;
 
     await common.send_multiple_messages(page, [
         {stream_name: "Verona", topic: "Reply test", content: "Compose stream reply test"},
         {recipient: "cordelia@zulip.com", content: "Compose direct message reply test"},
     ]);
 
-    assert.equal((await page.$$("#zhome .message_row")).length, initial_msgs_count + 2);
+    assert.equal((await page.$$(".message-list .message_row")).length, initial_msgs_count + 2);
 }
 
 async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> {
@@ -138,7 +138,9 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     // Go back to all messages view and make sure all messages are loaded.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
 
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
     const pm = await page.waitForSelector(
         `xpath/(//*[${common.has_class_x(
             "messagebox",
@@ -217,7 +219,7 @@ async function test_markdown_preview(page: Page): Promise<void> {
 async function compose_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
     await test_send_messages(page);
     await test_keyboard_shortcuts(page);
     await test_reply_by_click_prepopulates_stream_topic_names(page);

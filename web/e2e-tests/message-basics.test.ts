@@ -10,7 +10,8 @@ async function get_stream_li(page: Page, stream_name: string): Promise<string> {
 }
 
 async function expect_home(page: Page): Promise<void> {
-    await common.check_messages_sent(page, "zhome", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await common.check_messages_sent(page, message_list_id, [
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Verona > other topic", ["verona other topic c"]],
         ["Denmark > test", ["denmark message"]],
@@ -26,8 +27,11 @@ async function expect_home(page: Page): Promise<void> {
 }
 
 async function expect_verona_stream(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Verona > other topic", ["verona other topic c"]],
         ["Verona > test", ["verona test d"]],
@@ -36,8 +40,11 @@ async function expect_verona_stream(page: Page): Promise<void> {
 }
 
 async function expect_verona_stream_test_topic(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
         ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
     ]);
     assert.strictEqual(
@@ -47,15 +54,21 @@ async function expect_verona_stream_test_topic(page: Page): Promise<void> {
 }
 
 async function expect_verona_other_topic(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
         ["Verona > other topic", ["verona other topic c"]],
     ]);
 }
 
 async function expect_test_topic(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Denmark > test", ["denmark message"]],
         ["Verona > test", ["verona test d"]],
@@ -63,8 +76,11 @@ async function expect_test_topic(page: Page): Promise<void> {
 }
 
 async function expect_group_direct_messages(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
         [
             "You and Cordelia, Lear's daughter, King Hamlet",
             ["group direct message a", "group direct message b", "group direct message d"],
@@ -77,8 +93,11 @@ async function expect_group_direct_messages(page: Page): Promise<void> {
 }
 
 async function expect_cordelia_direct_messages(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
         ["You and Cordelia, Lear's daughter", ["direct message c", "direct message e"]],
     ]);
 }
@@ -88,7 +107,9 @@ async function un_narrow(page: Page): Promise<void> {
         await page.keyboard.press("Escape");
     }
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
     assert.strictEqual(await page.title(), "All messages - Zulip Dev - Zulip");
 }
 
@@ -104,7 +125,7 @@ async function expect_recent_view(page: Page): Promise<void> {
 async function test_navigations_from_home(page: Page): Promise<void> {
     return; // No idea why this is broken.
     console.log("Narrowing by clicking stream");
-    await page.click(`#zhome [title='Narrow to stream "Verona"']`);
+    await page.click(`.focused-message-list [title='Narrow to stream "Verona"']`);
     await expect_verona_stream(page);
 
     assert.strictEqual(await page.title(), "#Verona - Zulip Dev - Zulip");
@@ -112,7 +133,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await expect_home(page);
 
     console.log("Narrowing by clicking topic");
-    await page.click(`#zhome [title='Narrow to stream "Verona", topic "test"']`);
+    await page.click(`.focused-message-list [title='Narrow to stream "Verona", topic "test"']`);
     await expect_verona_stream_test_topic(page);
 
     await un_narrow(page);
@@ -121,7 +142,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     return; // TODO: rest of this test seems nondeterministically broken
     console.log("Narrowing by clicking group personal header");
     await page.click(
-        `#zhome [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
+        `.focused-message-list [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
     await expect_group_direct_messages(page);
 
@@ -129,7 +150,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await expect_home(page);
 
     await page.click(
-        `#zhome [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
+        `.focused-message-list [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
     await un_narrow_by_clicking_org_icon(page);
     await expect_recent_view(page);
@@ -161,11 +182,13 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
         await common.get_text_from_selector(page, ".empty_feed_notice"),
         expect_message,
     );
+    await common.get_current_msg_list_id(page, true);
     await un_narrow(page);
     await expect_home(page);
 }
 
 async function expect_non_existing_user(page: Page): Promise<void> {
+    await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(".empty_feed_notice", {visible: true});
     const expected_message = "This user does not exist!";
     assert.strictEqual(
@@ -175,6 +198,7 @@ async function expect_non_existing_user(page: Page): Promise<void> {
 }
 
 async function expect_non_existing_users(page: Page): Promise<void> {
+    await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(".empty_feed_notice", {visible: true});
     const expected_message = "One or more of these users do not exist!";
     assert.strictEqual(
@@ -263,8 +287,11 @@ async function search_tests(page: Page): Promise<void> {
 }
 
 async function expect_all_direct_messages(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
         [
             "You and Cordelia, Lear's daughter, King Hamlet",
             ["group direct message a", "group direct message b"],
@@ -477,18 +504,34 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
     await page.click(".subscriptions-header .exit-sign");
     await page.waitForSelector("#subscription_overlay", {hidden: true});
     await page.goto(`http://zulip.zulipdev.com:9981/#narrow/stream/${stream_id}-Denmark`);
-    await page.waitForSelector("#zfilt .recipient_row ~ .recipient_row ~ .recipient_row");
-    assert.ok((await page.$("#zfilt .stream-status")) !== null);
+    let message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(
+        `.message-list[data-message-list-id='${message_list_id}'] .recipient_row ~ .recipient_row ~ .recipient_row`,
+    );
+    assert.ok(
+        (await page.$(
+            `.message-list[data-message-list-id='${message_list_id}'] .stream-status`,
+        )) !== null,
+    );
 
     await page.goto("http://zulip.zulipdev.com:9981/#narrow/streams/public");
-    await page.waitForSelector("#zfilt .recipient_row ~ .recipient_row ~ .recipient_row");
-    assert.ok((await page.$("#zfilt .stream-status")) === null);
+    message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(
+        `.message-list[data-message-list-id='${message_list_id}'] .recipient_row ~ .recipient_row ~ .recipient_row`,
+    );
+    assert.ok(
+        (await page.$(
+            `.message-list[data-message-list-id='${message_list_id}'] .stream-status`,
+        )) === null,
+    );
 }
 
 async function message_basic_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
 
     console.log("Sending messages");
     await common.send_multiple_messages(page, [

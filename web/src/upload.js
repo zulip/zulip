@@ -118,7 +118,7 @@ export function get_item(key, config, file_id) {
                 return "message-edit-file-input";
             case "drag_drop_container":
                 return $(
-                    `#${message_lists.current.table_name}${CSS.escape(
+                    `#message-row-${message_lists.current.id}-${CSS.escape(
                         config.row,
                     )} .message_edit_form`,
                 );

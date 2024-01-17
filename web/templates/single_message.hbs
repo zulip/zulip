@@ -1,4 +1,4 @@
-<div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
+<div zid="{{msg/id}}" id="message-row-{{message_list_id}}-{{msg/id}}"
   class="message_row{{#unless msg/is_stream}} private-message{{/unless}}{{#include_sender}} include-sender{{/include_sender}}{{#if mention_classname}} {{mention_classname}}{{/if}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}locally-echoed{{/if}} selectable_row"
   role="listitem">
     {{#if want_date_divider}}

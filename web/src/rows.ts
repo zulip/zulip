@@ -112,16 +112,6 @@ export function local_echo_id($message_row: JQuery): string | undefined {
     return zid;
 }
 
-const valid_table_names = new Set(["zhome", "zfilt"]);
-
-export function get_table(table_name: string): JQuery {
-    if (!valid_table_names.has(table_name)) {
-        return $();
-    }
-
-    return $(`#${CSS.escape(table_name)}`);
-}
-
 export function get_message_id(elem: string): number | undefined {
     // Gets the message_id for elem, where elem is a DOM
     // element inside a message.  This is typically used

@@ -7,12 +7,12 @@ import * as common from "./lib/common";
 const message = "test star";
 
 async function stars_count(page: Page): Promise<number> {
-    return (await page.$$("#zhome .zulip-icon-star-filled:not(.empty-star)")).length;
+    return (await page.$$(".message-list .zulip-icon-star-filled:not(.empty-star)")).length;
 }
 
 async function toggle_test_star_message(page: Page): Promise<void> {
     const messagebox = await page.waitForSelector(
-        `xpath/(//*[@id="zhome"]//*[${common.has_class_x(
+        `xpath/(//*[${common.has_class_x("message-list")}]//*[${common.has_class_x(
             "message_content",
         )} and normalize-space()="${message}"])[last()]/ancestor::*[${common.has_class_x(
             "messagebox",
@@ -29,17 +29,24 @@ async function toggle_test_star_message(page: Page): Promise<void> {
 
 async function test_narrow_to_starred_messages(page: Page): Promise<void> {
     await page.click('#left-sidebar-navigation-list a[href^="#narrow/is/starred"]');
-    await common.check_messages_sent(page, "zfilt", [["Verona > stars", [message]]]);
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await common.check_messages_sent(page, message_list_id, [["Verona > stars", [message]]]);
 
     // Go back to all messages narrow.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
 }
 
 async function stars_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(
+        `.message-list[data-message-list-id='${message_list_id}'] .message_row`,
+        {visible: true},
+    );
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
     await common.send_message(page, "stream", {
         stream_name: "Verona",
         topic: "stars",
@@ -49,7 +56,10 @@ async function stars_test(page: Page): Promise<void> {
     assert.strictEqual(await stars_count(page), 0, "Unexpected already starred message(s).");
 
     await toggle_test_star_message(page);
-    await page.waitForSelector("#zhome .zulip-icon-star-filled", {visible: true});
+    await page.waitForSelector(
+        `.message-list[data-message-list-id='${message_list_id}'] .zulip-icon-star-filled`,
+        {visible: true},
+    );
     assert.strictEqual(
         await stars_count(page),
         1,

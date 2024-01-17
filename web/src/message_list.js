@@ -17,6 +17,7 @@ import * as stream_data from "./stream_data";
 import {user_settings} from "./user_settings";
 
 export class MessageList {
+    static id_counter = 0;
     // A MessageList is the main interface for a message feed that is
     // rendered in the DOM. Code outside the message feed rendering
     // internals will directly call this module in order to manipulate
@@ -30,6 +31,8 @@ export class MessageList {
     // is not particularly well-defined; it could be nice to figure
     // out a good rule.
     constructor(opts) {
+        MessageList.id_counter += 1;
+        this.id = MessageList.id_counter;
         // The MessageListData keeps track of the actual sequence of
         // messages displayed by this MessageList. Most
         // configuration/logic questions in this module will be
@@ -46,11 +49,6 @@ export class MessageList {
             });
         }
 
-        // The table_name is the outer HTML element for this message
-        // list in the DOM.
-        const table_name = opts.table_name;
-        this.table_name = table_name;
-
         // TODO: This property should likely just be inlined into
         // having the MessageListView code that needs to access it
         // query .data.filter directly.
@@ -59,7 +57,7 @@ export class MessageList {
         // The MessageListView object that is responsible for
         // maintaining this message feed's HTML representation in the
         // DOM.
-        this.view = new MessageListView(this, table_name, collapse_messages);
+        this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
 
         // Whether this is a narrowed message list. The only message
         // list that is not is the home_msg_list global.
@@ -266,7 +264,7 @@ export class MessageList {
         // false.
         if (!opts.use_closest && closest_id !== id) {
             error_data = {
-                table_name: this.table_name,
+                filter_terms: this.filter.terms(),
                 id,
                 closest_id,
             };
@@ -275,7 +273,7 @@ export class MessageList {
 
         if (closest_id === -1 && !opts.empty_ok) {
             error_data = {
-                table_name: this.table_name,
+                filter_terms: this.filter.terms(),
                 id,
                 items_length: this.data.num_items(),
             };
@@ -526,7 +524,6 @@ export class MessageList {
 export function initialize() {
     /* Create home_msg_list and register it. */
     const home_msg_list = new MessageList({
-        table_name: "zhome",
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });

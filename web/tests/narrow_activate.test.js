@@ -21,8 +21,23 @@ const compose_recipient = mock_esm("../src/compose_recipient");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
 const message_lists = mock_esm("../src/message_lists", {
-    home: {},
-    current: {},
+    home: {
+        view: {
+            $list: {
+                removeClass: noop,
+                addClass: noop,
+            },
+        },
+    },
+    current: {
+        view: {
+            $list: {
+                remove: noop,
+                removeClass: noop,
+                addClass: noop,
+            },
+        },
+    },
     set_current(msg_list) {
         message_lists.current = msg_list;
     },
@@ -116,6 +131,12 @@ function stub_message_list() {
         view = {
             set_message_offset(offset) {
                 this.offset = offset;
+            },
+
+            $list: {
+                remove: noop,
+                removeClass: noop,
+                addClass: noop,
             },
         };
 

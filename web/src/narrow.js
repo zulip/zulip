@@ -420,16 +420,19 @@ export function activate(raw_terms, opts) {
 
         const msg_list = new message_list.MessageList({
             data: msg_data,
-            table_name: "zfilt",
         });
 
         // Show the new set of messages.  It is important to set message_lists.current to
         // the view right as it's being shown, because we rely on message_lists.current
         // being shown for deciding when to condense messages.
         $("body").addClass("narrowed_view");
-        $("#zfilt").addClass("focused-message-list");
-        $("#zhome").removeClass("focused-message-list");
+        msg_list.view.$list.addClass("focused-message-list");
+        message_lists.home.view.$list.removeClass("focused-message-list");
 
+        // Remove old message list from DOM.
+        if (message_lists.current !== message_lists.home) {
+            message_lists.current?.view.$list.remove();
+        }
         message_lists.set_current(msg_list);
 
         let then_select_offset;
@@ -1003,7 +1006,7 @@ function handle_post_narrow_deactivate_processes(msg_list) {
     message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 
     // We may need to scroll to the selected message after swapping
-    // the currently displayed center panel to zhome.
+    // the currently displayed center panel to All messages.
     message_viewport.maybe_scroll_to_selected();
 }
 
@@ -1076,11 +1079,14 @@ export function deactivate() {
         narrow_state.set_has_shown_message_list_view();
 
         $("body").removeClass("narrowed_view");
-        $("#zfilt").removeClass("focused-message-list");
-        $("#zhome").addClass("focused-message-list");
+        message_lists.home.view.$list.addClass("focused-message-list");
+        // Remove old message list from DOM.
+        if (message_lists.current !== message_lists.home) {
+            message_lists.current?.view.$list.remove();
+        }
         message_lists.set_current(message_lists.home);
         message_lists.current.resume_reading();
-        condense.condense_and_collapse($("#zhome div.message_row"));
+        condense.condense_and_collapse(message_lists.home.view.$list.find(".message_row"));
 
         reset_ui_state();
         compose_recipient.handle_middle_pane_transition();

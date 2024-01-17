@@ -5,6 +5,7 @@ import * as resolved_topic from "../shared/src/resolved_topic";
 import render_bookend from "../templates/bookend.hbs";
 import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
 import render_message_group from "../templates/message_group.hbs";
+import render_message_list from "../templates/message_list.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
@@ -260,9 +261,12 @@ export class MessageListView {
     // Logic to compute context, render templates, insert them into
     // the DOM, and generally
 
-    constructor(list, table_name, collapse_messages) {
+    constructor(list, collapse_messages, is_node_test = false) {
         // The MessageList that this MessageListView is responsible for rendering.
         this.list = list;
+        this._add_message_list_to_DOM();
+        // The jQuery element for the rendered list element.
+        this.$list = $(`.message-list[data-message-list-id="${this.list.id}"]`);
 
         // TODO: Access this via .list.data.
         this.collapse_messages = collapse_messages;
@@ -285,12 +289,10 @@ export class MessageListView {
         this.message_containers = new Map();
         this._message_groups = [];
 
-        // TODO: Should this be just accessing .list.table_name?
-        this.table_name = table_name;
-        if (this.table_name) {
+        if (!is_node_test) {
+            // Skip running this in node tests.
             this.clear_table();
         }
-
         // For performance reasons, this module renders at most
         // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
         // will transparently adjust which messages are rendered
@@ -311,6 +313,10 @@ export class MessageListView {
     // Number of messages away from edge of render window at which we
     // trigger a re-render
     _RENDER_THRESHOLD = 50;
+
+    _add_message_list_to_DOM() {
+        $("#message-lists-container").append(render_message_list({message_list_id: this.list.id}));
+    }
 
     _get_msg_timestring(message_container) {
         let last_edit_timestamp;
@@ -782,7 +788,7 @@ export class MessageListView {
         message_container.msg.message_reactions = msg_reactions;
         const msg_to_render = {
             ...message_container,
-            table_name: this.table_name,
+            message_list_id: this.list.id,
         };
         return render_single_message(msg_to_render);
     }
@@ -790,13 +796,12 @@ export class MessageListView {
     _render_group(opts) {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
-        const table_name = opts.table_name;
 
         return $(
             render_message_group({
                 message_groups,
                 use_match_properties,
-                table_name,
+                message_list_id: this.list.id,
             }),
         );
     }
@@ -810,8 +815,6 @@ export class MessageListView {
         }
 
         const list = this.list; // for convenience
-        const table_name = this.table_name;
-        const $table = rows.get_table(table_name);
         let orig_scrolltop_offset;
 
         // If we start with the message feed scrolled up (i.e.
@@ -857,7 +860,7 @@ export class MessageListView {
             return undefined;
         }
 
-        const new_message_groups = this.build_message_groups(message_containers, this.table_name);
+        const new_message_groups = this.build_message_groups(message_containers);
         const message_actions = this.merge_message_groups(new_message_groups, where);
         const new_dom_elements = [];
         let $rendered_groups;
@@ -876,7 +879,6 @@ export class MessageListView {
             $rendered_groups = this._render_group({
                 message_groups: message_actions.prepend_groups,
                 use_match_properties: this.list.is_keyword_search(),
-                table_name: this.table_name,
             });
 
             $dom_messages = $rendered_groups.find(".message_row");
@@ -886,8 +888,8 @@ export class MessageListView {
 
             // The date row will be included in the message groups or will be
             // added in a rerendered in the group below
-            $table.find(".recipient_row").first().prev(".date_row").remove();
-            $table.prepend($rendered_groups);
+            this.$list.find(".recipient_row").first().prev(".date_row").remove();
+            this.$list.prepend($rendered_groups);
             condense.condense_and_collapse($dom_messages);
         }
 
@@ -903,7 +905,6 @@ export class MessageListView {
                 $rendered_groups = this._render_group({
                     message_groups: [message_group],
                     use_match_properties: this.list.is_keyword_search(),
-                    table_name: this.table_name,
                 });
 
                 $dom_messages = $rendered_groups.find(".message_row");
@@ -917,7 +918,7 @@ export class MessageListView {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            $last_message_row = $table.find(".message_row").last().expectOne();
+            $last_message_row = this.$list.find(".message_row").last().expectOne();
             $last_group_row = rows.get_message_recipient_row($last_message_row);
             $dom_messages = $(
                 message_actions.append_messages
@@ -940,7 +941,6 @@ export class MessageListView {
             $rendered_groups = this._render_group({
                 message_groups: message_actions.append_groups,
                 use_match_properties: this.list.is_keyword_search(),
-                table_name: this.table_name,
             });
 
             $dom_messages = $rendered_groups.find(".message_row");
@@ -962,7 +962,7 @@ export class MessageListView {
             // this next line seems to prevent the Chrome bug from firing.
             message_viewport.scrollTop();
 
-            $table.append($rendered_groups);
+            this.$list.append($rendered_groups);
             condense.condense_and_collapse($dom_messages);
         }
 
@@ -1436,7 +1436,7 @@ export class MessageListView {
         // We do not want to call .empty() because that also clears
         // jQuery data.  This does mean, however, that we need to be
         // mindful of memory leaks.
-        rows.get_table(this.table_name).children().detach();
+        this.$list.children().detach();
         this._rows.clear();
         this._message_groups = [];
         this.message_containers.clear();
@@ -1455,7 +1455,7 @@ export class MessageListView {
     }
 
     clear_trailing_bookend() {
-        const $trailing_bookend = rows.get_table(this.table_name).find(".trailing_bookend");
+        const $trailing_bookend = this.$list.find(".trailing_bookend");
         $trailing_bookend.remove();
     }
 
@@ -1484,7 +1484,7 @@ export class MessageListView {
                 is_web_public,
             }),
         );
-        rows.get_table(this.table_name).append($rendered_trailing_bookend);
+        this.$list.append($rendered_trailing_bookend);
     }
 
     selected_row() {
@@ -1501,7 +1501,7 @@ export class MessageListView {
             this._rows.delete(old_id);
 
             $row.attr("zid", new_id);
-            $row.attr("id", this.table_name + new_id);
+            $row.attr("id", `message-row-${this.list.id}-` + new_id);
             $row.removeClass("local");
             this._rows.set(new_id, $row);
         }
@@ -1570,8 +1570,7 @@ export class MessageListView {
             return 0;
         }
 
-        const $table = rows.get_table(this.table_name);
-        const $headers = $table.find(".message_header");
+        const $headers = this.$list.find(".message_header");
         const iterable_headers = $headers.toArray();
         let start = 0;
         let end = iterable_headers.length - 1;
@@ -1670,8 +1669,7 @@ export class MessageListView {
     }
 
     update_recipient_bar_background_color() {
-        const $table = rows.get_table(this.table_name);
-        const $stream_headers = $table.find(".message_header_stream");
+        const $stream_headers = this.$list.find(".message_header_stream");
         for (const stream_header of $stream_headers) {
             const $stream_header = $(stream_header);
             stream_color.update_stream_recipient_color($stream_header);
@@ -1689,8 +1687,7 @@ export class MessageListView {
     }
 
     show_messages_as_unread(message_ids) {
-        const $table = rows.get_table(this.table_name);
-        const $rows_to_show_as_unread = $table.find(".message_row").filter((_index, $row) => {
+        const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
             const message_id = Number.parseFloat($row.getAttribute("zid"));
             return message_ids.includes(message_id);
         });
