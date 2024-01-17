@@ -56,21 +56,19 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
 def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # nocoverage
     remote_server_plan_data: Dict[int, RemoteActivityPlanData] = {}
     for plan in CustomerPlan.objects.filter(
-        status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD, customer__realm__isnull=True
-    ).select_related("customer__remote_server", "customer__remote_realm"):
+        status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD,
+        customer__realm__isnull=True,
+        customer__remote_realm__isnull=True,
+        customer__remote_server__deactivated=False,
+    ).select_related("customer__remote_server"):
         renewal_cents = 0
         server_id = None
 
-        if plan.customer.remote_server is not None:
-            server_id = plan.customer.remote_server.id
-            renewal_cents = RemoteServerBillingSession(
-                remote_server=plan.customer.remote_server
-            ).get_customer_plan_renewal_amount(plan, timezone_now())
-        elif plan.customer.remote_realm is not None:
-            server_id = plan.customer.remote_realm.server.id
-            renewal_cents = RemoteRealmBillingSession(
-                remote_realm=plan.customer.remote_realm
-            ).get_customer_plan_renewal_amount(plan, timezone_now())
+        assert plan.customer.remote_server is not None
+        server_id = plan.customer.remote_server.id
+        renewal_cents = RemoteServerBillingSession(
+            remote_server=plan.customer.remote_server
+        ).get_customer_plan_renewal_amount(plan, timezone_now())
 
         assert server_id is not None
 
@@ -80,9 +78,12 @@ def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # no
         current_data = remote_server_plan_data.get(server_id)
         if current_data is not None:
             current_revenue = remote_server_plan_data[server_id].annual_revenue
+            current_plans = remote_server_plan_data[server_id].current_plan_name
+            # There should only ever be one CustomerPlan for a remote server with
+            # a status that is less than the CustomerPlan.LIVE_STATUS_THRESHOLD.
             remote_server_plan_data[server_id] = RemoteActivityPlanData(
-                current_status="Multiple plans",
-                current_plan_name="See support view",
+                current_status="ERROR: MULTIPLE PLANS",
+                current_plan_name=f"{current_plans}, {plan.name}",
                 annual_revenue=current_revenue + renewal_cents,
             )
         else:
@@ -92,3 +93,57 @@ def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # no
                 annual_revenue=renewal_cents,
             )
     return remote_server_plan_data
+
+
+def get_plan_data_by_remote_realm() -> Dict[int, Dict[int, RemoteActivityPlanData]]:  # nocoverage
+    remote_server_plan_data_by_realm: Dict[int, Dict[int, RemoteActivityPlanData]] = {}
+    for plan in CustomerPlan.objects.filter(
+        status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD,
+        customer__realm__isnull=True,
+        customer__remote_server__isnull=True,
+        customer__remote_realm__is_system_bot_realm=False,
+        customer__remote_realm__realm_deactivated=False,
+    ).select_related("customer__remote_realm"):
+        renewal_cents = 0
+        server_id = None
+
+        assert plan.customer.remote_realm is not None
+        server_id = plan.customer.remote_realm.server.id
+        renewal_cents = RemoteRealmBillingSession(
+            remote_realm=plan.customer.remote_realm
+        ).get_customer_plan_renewal_amount(plan, timezone_now())
+
+        assert server_id is not None
+
+        if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+            renewal_cents *= 12
+
+        plan_data = RemoteActivityPlanData(
+            current_status=plan.get_plan_status_as_text(),
+            current_plan_name=plan.name,
+            annual_revenue=renewal_cents,
+        )
+
+        current_server_data = remote_server_plan_data_by_realm.get(server_id)
+        realm_id = plan.customer.remote_realm.id
+
+        if current_server_data is None:
+            realm_dict = {realm_id: plan_data}
+            remote_server_plan_data_by_realm[server_id] = realm_dict
+        else:
+            assert current_server_data is not None
+            current_realm_data = current_server_data.get(realm_id)
+            if current_realm_data is not None:
+                # There should only ever be one CustomerPlan for a remote realm with
+                # a status that is less than the CustomerPlan.LIVE_STATUS_THRESHOLD.
+                current_revenue = current_realm_data.annual_revenue
+                current_plans = current_realm_data.current_plan_name
+                current_server_data[realm_id] = RemoteActivityPlanData(
+                    current_status="ERROR: MULTIPLE PLANS",
+                    current_plan_name=f"{current_plans}, {plan.name}",
+                    annual_revenue=current_revenue + renewal_cents,
+                )
+            else:
+                current_server_data[realm_id] = plan_data
+
+    return remote_server_plan_data_by_realm

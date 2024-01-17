@@ -131,7 +131,7 @@ class ActivityTest(ZulipTestCase):
             hostname="demo.example.com",
             contact_email="email@example.com",
         )
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(15):
             result = self.client_get("/activity/remote")
             self.assertEqual(result.status_code, 200)
 
