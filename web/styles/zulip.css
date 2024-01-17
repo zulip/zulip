@@ -1294,16 +1294,7 @@ label {
     line-height: inherit;
 }
 
-/* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
-a:not(:active):focus,
-button:focus,
-.new-style label.checkbox input[type="checkbox"]:focus ~ span,
-i.fa:focus,
-i.zulip-icon:focus-visible,
-[role="button"]:focus {
-    outline: 2px solid var(--color-outline-focus);
-    /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
-}
+
 
 /* List of text-like input types taken from Bootstrap */
 input {
