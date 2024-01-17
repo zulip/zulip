@@ -208,9 +208,6 @@ const Typeahead = function (element, options) {
     if (this.fixed) {
         this.$container.css("position", "fixed");
     }
-    // The naturalSearch option causes arrow keys to immediately
-    // update the search box with the underlying values from the
-    // search suggestions.
     this.listen();
 };
 
@@ -407,10 +404,6 @@ Typeahead.prototype = {
         }
 
         $next.addClass("active");
-
-        if (this.options.naturalSearch) {
-            this.set_value();
-        }
     },
 
     prev() {
@@ -429,10 +422,6 @@ Typeahead.prototype = {
         }
 
         $prev.addClass("active");
-
-        if (this.options.naturalSearch) {
-            this.set_value();
-        }
     },
 
     listen() {
