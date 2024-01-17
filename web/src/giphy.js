@@ -198,12 +198,26 @@ function toggle_giphy_popover(target) {
                 $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
                 $popper.on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
 
+                const $search_input = $("#giphy-search-query");
+                const $clear_button = $("#giphy_search_clear");
+                $popper.on("input", "#giphy-search-query", () => {
+                    if ($search_input.val().trim() === "") {
+                        $clear_button.css("display", "none");
+                    } else {
+                        $clear_button.css("display", "block");
+                    }
+                });
+
                 $popper.on("click", "#giphy_search_clear", async (e) => {
                     e.stopPropagation();
                     $("#giphy-search-query").val("");
                     await update_grid_with_search_term();
+                    $clear_button.css("display", "none");
                 });
 
+                // Tabindex of simplebar-content-wrapper is being set to -1 to avoid
+                // focus on it while navigating through tab.
+                $("#giphy_grid_in_popover .simplebar-content-wrapper").attr("tabindex", "-1");
                 // Focus on search box by default.
                 // This is specially helpful for users
                 // navigating via keyboard.

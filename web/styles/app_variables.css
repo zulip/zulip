@@ -197,6 +197,13 @@
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
     --color-background-popover: hsl(0deg 0% 100%);
     --color-background-alert-word: hsl(18deg 100% 84%);
+    --color-background-giphy-search: hsl(0deg 0% 100%);
+    --color-background-giphy-search-focus: hsl(0deg 0% 100%);
+    --color-border-giphy-search-focus: hsl(229.09deg 21.57% 10% / 80%);
+    --color-box-shadow-giphy-search-focus: hsl(228deg 9.8% 20% / 30%);
+    --color-background-emoji-filter-focus: hsl(0deg 0% 100%);
+    --color-border-emoji-filter-focus: hsl(229.09deg 21.57% 10% / 80%);
+    --color-box-shadow-emoji-filter-focus: hsl(228deg 9.8% 20% / 30%);
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
 
     /* Compose box colors */
@@ -248,6 +255,7 @@
     --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
     --color-text-sidebar-heading: hsl(0deg 0% 43%);
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
+    --color-text-giphy-search: hsl(0deg 0% 13.33%);
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
 
@@ -543,6 +551,7 @@
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
     --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
     --color-text-sidebar-popover-menu: hsl(236deg 33% 90%);
+    --color-text-giphy-search: hsl(0deg 0% 75%);
     /* 75% opacity of --color-text-default against --color-background.
        We use color-mix here to avoid defining a separate, compounding
        `opacity` property, and also to preserve a record of the
@@ -704,6 +713,15 @@
     --color-exit-button-border: hsl(0deg 0% 0% / 60%);
     --color-exit-button-background: hsl(211deg 29% 14%);
     --color-exit-button-background-interactive: hsl(211deg 29% 17%);
+
+    /* Giphy and emoji popover search box */
+    --color-background-giphy-search: hsl(225deg 6% 10%);
+    --color-border-giphy-search-focus: hsl(0deg 0% 100% / 50%);
+    --color-box-shadow-giphy-search-focus: hsl(0deg 0% 100% / 40%);
+    --color-background-giphy-search-focus: hsl(225deg 6% 7%);
+    --color-background-emoji-filter-focus: hsl(225deg 6% 7%);
+    --color-border-emoji-filter-focus: hsl(0deg 0% 100% / 50%);
+    --color-box-shadow-emoji-filter-focus: hsl(0deg 0% 100% / 40%);
 }
 
 @media screen {

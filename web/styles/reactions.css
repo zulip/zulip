@@ -206,6 +206,12 @@
                 width: calc(100% - 22px - 8px);
                 font-size: 90%;
             }
+
+            .emoji-popover-filter:focus {
+                background: var(--color-background-emoji-filter-focus);
+                border: 1px solid var(--color-border-emoji-filter-focus);
+                box-shadow: 0 0 5px var(--color-box-shadow-emoji-filter-focus);
+            }
         }
 
         .emoji-popover-category-tabs {
