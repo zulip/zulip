@@ -44,14 +44,17 @@ from corporate.models import (
 from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
+    RateLimitedError,
     RemoteBillingAuthenticationError,
     RemoteRealmServerMismatchError,
 )
+from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zilencer.auth import rate_limit_remote_server
 from zilencer.models import (
     PreregistrationRemoteRealmBillingUser,
     PreregistrationRemoteServerBillingUser,
@@ -374,6 +377,10 @@ def remote_realm_billing_confirm_email(
     except ObjectDoesNotExist:
         raise AssertionError
 
+    rate_limit_error_response = check_rate_limits(request, remote_server)
+    if rate_limit_error_response is not None:
+        return rate_limit_error_response
+
     obj = PreregistrationRemoteRealmBillingUser.objects.create(
         email=email,
         remote_realm=remote_realm,
@@ -600,6 +607,10 @@ def remote_billing_legacy_server_confirm_login(
             reverse("remote_billing_legacy_server_login") + f"?next_page={next_page}"
         )
 
+    rate_limit_error_response = check_rate_limits(request, remote_server)
+    if rate_limit_error_response is not None:
+        return rate_limit_error_response
+
     obj = PreregistrationRemoteServerBillingUser.objects.create(
         email=email,
         remote_server=remote_server,
@@ -796,3 +807,36 @@ def generate_confirmation_link_for_server_deactivation(
         validity_in_minutes=validity_in_minutes,
     )
     return url
+
+
+def check_rate_limits(
+    request: HttpRequest, remote_server: RemoteZulipServer
+) -> Optional[HttpResponse]:
+    try:
+        rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+    except RateLimitedError as e:
+        # Our generic error response is good enough here, since this is
+        # about the user's IP address, not their entire server.
+        assert e.secs_to_freedom is not None
+        return render(
+            request,
+            "zerver/rate_limit_exceeded.html",
+            context={"retry_after": int(e.secs_to_freedom)},
+            status=429,
+        )
+
+    try:
+        rate_limit_remote_server(request, remote_server, "sends_email_by_remote_server")
+    except RateLimitedError as e:
+        # In this case it's the limit for the entire server the user belongs to
+        # that was exceeded, so we need to show an error page explaining
+        # that specific situation.
+        assert e.secs_to_freedom is not None
+        return render(
+            request,
+            "corporate/remote_server_rate_limit_exceeded.html",
+            context={"retry_after": int(e.secs_to_freedom)},
+            status=429,
+        )
+
+    return None
