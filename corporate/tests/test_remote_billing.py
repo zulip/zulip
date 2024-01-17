@@ -25,13 +25,16 @@ from corporate.models import (
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.exceptions import RemoteRealmServerMismatchError
+from zerver.lib.rate_limiter import RateLimitedIPAddr
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import BouncerTestCase
+from zerver.lib.test_helpers import ratelimit_rule
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Realm, UserProfile
 from zilencer.models import (
     PreregistrationRemoteRealmBillingUser,
     PreregistrationRemoteServerBillingUser,
+    RateLimitedRemoteZulipServer,
     RemoteRealm,
     RemoteRealmBillingUser,
     RemoteServerBillingUser,
@@ -92,6 +95,11 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
                     {"email": user.delivery_email},
                     subdomain="selfhosting",
                 )
+            if result.status_code == 429:
+                # Return rate limit errors early, since they occur in rate limiting tests
+                # that want to verify them.
+                return result
+
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(
                 [
@@ -249,6 +257,55 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # some basic expected content.
         result = self.client_get(result["Location"], subdomain="selfhosting")
         self.assert_in_success_response(["showing-self-hosted", "Retain full control"], result)
+
+    @ratelimit_rule(10, 3, domain="sends_email_by_remote_server")
+    @ratelimit_rule(10, 2, domain="sends_email_by_ip")
+    @responses.activate
+    def test_remote_billing_authentication_flow_rate_limited(self) -> None:
+        RateLimitedIPAddr("127.0.0.1", domain="sends_email_by_ip").clear_history()
+        RateLimitedRemoteZulipServer(
+            self.server, domain="sends_email_by_remote_server"
+        ).clear_history()
+
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        for i in range(2):
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona, return_without_clicking_confirmation_link=True
+            )
+            self.assertEqual(result.status_code, 200)
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, return_without_clicking_confirmation_link=True
+        )
+        self.assertEqual(result.status_code, 429)
+        self.assert_in_response("You have exceeded the limit", result)
+
+        # Reset the IP rate limit so that we trigger the server-based one.
+        RateLimitedIPAddr("127.0.0.1", domain="sends_email_by_ip").clear_history()
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, return_without_clicking_confirmation_link=True
+        )
+        self.assertEqual(result.status_code, 200)
+
+        with self.assertLogs("zilencer.auth", "WARN") as mock_log:
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona, return_without_clicking_confirmation_link=True
+            )
+            self.assertEqual(result.status_code, 429)
+            self.assert_in_response("Your server has exceeded the limit", result)
+        self.assertEqual(
+            mock_log.output,
+            [
+                f"WARNING:zilencer.auth:Remote server {self.server.hostname} {str(self.server.uuid)[:12]} exceeded "
+                "rate limits on domain sends_email_by_remote_server"
+            ],
+        )
 
     @responses.activate
     def test_remote_billing_authentication_flow_realm_not_registered(self) -> None:
@@ -1042,6 +1099,11 @@ class RemoteServerTestCase(BouncerTestCase):
                 payload,
                 subdomain="selfhosting",
             )
+        if result.status_code == 429:
+            # Return rate limit errors early, since they occur in rate limiting tests
+            # that want to verify them.
+            return result
+
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(
             ["We have sent", "a log in", "link will expire in", email],
@@ -1101,6 +1163,59 @@ class RemoteServerTestCase(BouncerTestCase):
 
 
 class LegacyServerLoginTest(RemoteServerTestCase):
+    @ratelimit_rule(10, 3, domain="sends_email_by_remote_server")
+    @ratelimit_rule(10, 2, domain="sends_email_by_ip")
+    def test_remote_billing_authentication_flow_rate_limited(self) -> None:
+        RateLimitedIPAddr("127.0.0.1", domain="sends_email_by_ip").clear_history()
+        RateLimitedRemoteZulipServer(
+            self.server, domain="sends_email_by_remote_server"
+        ).clear_history()
+
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
+        for i in range(2):
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona.delivery_email,
+                desdemona.full_name,
+                return_without_clicking_confirmation_link=True,
+            )
+            self.assertEqual(result.status_code, 200)
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona.delivery_email,
+            desdemona.full_name,
+            return_without_clicking_confirmation_link=True,
+        )
+        self.assertEqual(result.status_code, 429)
+        self.assert_in_response("You have exceeded the limit", result)
+
+        # Reset the IP rate limit so that we trigger the server-based one.
+        RateLimitedIPAddr("127.0.0.1", domain="sends_email_by_ip").clear_history()
+
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona.delivery_email,
+            desdemona.full_name,
+            return_without_clicking_confirmation_link=True,
+        )
+        self.assertEqual(result.status_code, 200)
+
+        with self.assertLogs("zilencer.auth", "WARN") as mock_log:
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona.delivery_email,
+                desdemona.full_name,
+                return_without_clicking_confirmation_link=True,
+            )
+            self.assertEqual(result.status_code, 429)
+            self.assert_in_response("Your server has exceeded the limit", result)
+        self.assertEqual(
+            mock_log.output,
+            [
+                f"WARNING:zilencer.auth:Remote server {self.server.hostname} {str(self.server.uuid)[:12]} exceeded "
+                "rate limits on domain sends_email_by_remote_server"
+            ],
+        )
+
     def test_server_login_get(self) -> None:
         result = self.client_get("/serverlogin/", subdomain="selfhosting")
         self.assertEqual(result.status_code, 200)

@@ -291,6 +291,12 @@ DEFAULT_RATE_LIMITING_RULES = {
         # 1000 per day per file
         (86400, 1000),
     ],
+    # A zilencer-only limit that applies to requests to the
+    # remote billing system that trigger the sending of an email.
+    "sends_email_by_remote_server": [
+        # 10 emails per day
+        (86400, 10),
+    ],
 }
 # Rate limiting defaults can be individually overridden by adding
 # entries in this object, which is merged with
