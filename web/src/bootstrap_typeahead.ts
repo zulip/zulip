@@ -252,7 +252,6 @@ export class Typeahead<ItemType extends string | object> {
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
-    naturalSearch: boolean;
     stopAdvance: boolean;
     advanceKeyCodes: number[];
     non_tippy_parent_element: string | undefined;
@@ -301,7 +300,6 @@ export class Typeahead<ItemType extends string | object> {
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
-        this.naturalSearch = options.naturalSearch ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
         this.requireHighlight = options.requireHighlight ?? true;
@@ -309,9 +307,6 @@ export class Typeahead<ItemType extends string | object> {
         this.updateElementContent = options.updateElementContent ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
 
-        // The naturalSearch option causes arrow keys to immediately
-        // update the search box with the underlying values from the
-        // search suggestions.
         this.listen();
     }
 
@@ -536,10 +531,6 @@ export class Typeahead<ItemType extends string | object> {
         }
 
         $next.addClass("active");
-
-        if (this.naturalSearch) {
-            this.set_value();
-        }
     }
 
     prev(): void {
@@ -558,10 +549,6 @@ export class Typeahead<ItemType extends string | object> {
         }
 
         $prev.addClass("active");
-
-        if (this.naturalSearch) {
-            this.set_value();
-        }
     }
 
     listen(): void {
@@ -827,7 +814,6 @@ type TypeaheadOptions<ItemType> = {
     header_html?: () => string | false;
     helpOnEmptyStrings?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;
-    naturalSearch?: boolean;
     on_escape?: () => void;
     openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
