@@ -1908,7 +1908,7 @@ class StripeTest(StripeTestCase):
         for message in outbox:
             self.assert_length(message.to, 1)
             self.assertEqual(message.to[0], "sales@zulip.com")
-            self.assertEqual(message.subject, "Sponsorship request (Open-source project) for zulip")
+            self.assertEqual(message.subject, "Sponsorship request for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
@@ -6239,7 +6239,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assert_length(outbox, 2)
         self.assert_length(message.to, 1)
         self.assertEqual(message.to[0], "sales@zulip.com")
-        self.assertEqual(message.subject, "Sponsorship request (Open-source project) for Zulip Dev")
+        self.assertEqual(message.subject, "Sponsorship request for Zulip Dev")
         self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
@@ -6748,9 +6748,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assert_length(outbox, 2)
         self.assert_length(message.to, 1)
         self.assertEqual(message.to[0], "sales@zulip.com")
-        self.assertEqual(
-            message.subject, "Sponsorship request (Open-source project) for demo.example.com"
-        )
+        self.assertEqual(message.subject, "Sponsorship request for demo.example.com")
         self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
