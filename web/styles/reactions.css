@@ -183,7 +183,7 @@
             .fa-search {
                 position: absolute;
                 color: hsl(0deg 0% 73%);
-                top: 15px;
+                top: 14px;
                 left: 17px;
                 z-index: 3;
             }
@@ -193,6 +193,12 @@
                 padding-left: 22px;
                 width: calc(100% - 22px - 8px);
                 font-size: 90%;
+            }
+
+            .emoji-popover-filter:focus {
+                background: var(--color-background-emoji-filter-focus);
+                border: 1px solid var(--color-border-popover-search-focus);
+                box-shadow: 0 0 5px var(--color-box-shadow-popover-search-focus);
             }
         }
 
