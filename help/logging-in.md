@@ -21,14 +21,15 @@ Here are some ways to find the URL for your Zulip organization.
 
 {tab|logged-out}
 
-* If your organization is hosted on [Zulip Cloud](https://zulip.com/plans/), go
-  to the [**Find your accounts**](https://zulip.com/accounts/find/) page and enter
-  the email address that you signed up with. You will receive an email with the
-  sign-in information for any Zulip organization(s) associated with your email
-  address.
+* If your organization is hosted on [Zulip Cloud](https://zulip.com/plans/)
+  (usually at `*.zulipchat.com`), go to the [**Find your
+  accounts**](https://zulip.com/accounts/find/) page and enter the email address
+  that you signed up with. You will receive an email with the sign-in
+  information for any Zulip organizations associated with your email address.
 
-* Find an email in your inbox with a subject that contains the phrase: `Zulip:
-  Your new account details`. This email provides your organization's log in URL.
+* Search your email account for a registration email from Zulip. The subject
+  line will include `Zulip: Your new account details` or `Zulip: Your new
+  organization details`. This email provides your organization's log in URL.
 
 * If you have visited your organization's log in page in the past, try reviewing
   your browser's history. Searching for `zulipchat.com` should find the right
