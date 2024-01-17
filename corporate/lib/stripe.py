@@ -1012,7 +1012,7 @@ class BillingSession(ABC):
             metadata=metadata,
             mode="setup",
             payment_method_types=["card"],
-            success_url=f"{self.billing_session_url}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+            success_url=f"{self.billing_session_url}/billing/event_status/?stripe_session_id={{CHECKOUT_SESSION_ID}}",
         )
         Session.objects.create(
             stripe_session_id=stripe_session.id,
@@ -1036,7 +1036,7 @@ class BillingSession(ABC):
             metadata=metadata,
             mode="setup",
             payment_method_types=["card"],
-            success_url=f"{self.billing_session_url}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+            success_url=f"{self.billing_session_url}/billing/event_status/?stripe_session_id={{CHECKOUT_SESSION_ID}}",
         )
         Session.objects.create(
             stripe_session_id=stripe_session.id,
