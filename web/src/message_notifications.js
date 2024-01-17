@@ -123,7 +123,7 @@ function get_notification_title(message, content, msg_count) {
             break;
         case "stream": {
             const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-            title += " (to " + stream_name + " > " + message.topic + ")";
+            title += " (#" + stream_name + " > " + message.topic + ")";
             break;
         }
     }
