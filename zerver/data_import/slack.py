@@ -277,6 +277,7 @@ def users_to_zerver_userprofile(
     primary_owner_id = user_id_count
     user_id_count += 1
 
+    found_emails: Dict[str, int] = {}
     for user in users:
         slack_user_id = user["id"]
 
@@ -286,6 +287,12 @@ def users_to_zerver_userprofile(
             user_id = user_id_count
 
         email = get_user_email(user, domain_name)
+        if email.lower() in found_emails:
+            slack_user_id_to_zulip_user_id[slack_user_id] = found_emails[email.lower()]
+            logging.info("%s: %s MERGED", slack_user_id, email)
+            continue
+        found_emails[email.lower()] = user_id
+
         # ref: https://zulip.com/help/change-your-profile-picture
         avatar_url = build_avatar_url(
             slack_user_id, user["team_id"], user["profile"]["avatar_hash"]
@@ -625,9 +632,18 @@ def channels_to_zerver_stream(
         mpims = []
     process_mpims(mpims)
 
+    # This may have duplicated zulip user_ids, since we merge multiple
+    # Slack same-email shared-channel users into one Zulip dummy user
+    zulip_user_to_recipient: Dict[int, int] = {}
     for slack_user_id, zulip_user_id in slack_user_id_to_zulip_user_id.items():
+        if zulip_user_id in zulip_user_to_recipient:
+            slack_recipient_name_to_zulip_recipient_id[slack_user_id] = zulip_user_to_recipient[
+                zulip_user_id
+            ]
+            continue
         recipient = build_recipient(zulip_user_id, recipient_id_count, Recipient.PERSONAL)
         slack_recipient_name_to_zulip_recipient_id[slack_user_id] = recipient_id_count
+        zulip_user_to_recipient[zulip_user_id] = recipient_id_count
         sub = build_subscription(recipient_id_count, zulip_user_id, subscription_id_count)
         realm["zerver_recipient"].append(recipient)
         realm["zerver_subscription"].append(sub)
