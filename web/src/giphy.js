@@ -109,14 +109,6 @@ async function renderGIPHYGrid(targetEl) {
                     );
                     hide_giphy_popover();
                 },
-                onGifVisible(_gif, e) {
-                    // Set tabindex for all the GIFs that
-                    // are visible to the user. This allows
-                    // user to navigate the GIFs using tab.
-                    // TODO: Remove this after https://github.com/Giphy/giphy-js/issues/174
-                    // is closed.
-                    e.target.tabIndex = 0;
-                },
             },
             targetEl,
         );
