@@ -481,7 +481,7 @@ input[type="checkbox"] {
     }
 }
 
-.display-settings-form,
+.preferences-settings-form,
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
@@ -1427,7 +1427,7 @@ $option_title_width: 180px;
         }
     }
 
-    .display-settings-form select {
+    .preferences-settings-form select {
         width: 245px;
     }
 }
