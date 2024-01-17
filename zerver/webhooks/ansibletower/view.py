@@ -30,9 +30,9 @@ def api_ansibletower_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     body = get_body(payload)
-    topic = payload["name"].tame(check_string)
+    topic_name = payload["name"].tame(check_string)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)
 
 

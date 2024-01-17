@@ -31,16 +31,18 @@ def api_zapier_webhook(
             },
         )
 
-    topic = payload.get("topic").tame(check_none_or(check_string))
+    topic_name = payload.get("topic").tame(check_none_or(check_string))
     content = payload.get("content").tame(check_none_or(check_string))
 
-    if topic is None:
-        topic = payload.get("subject").tame(check_none_or(check_string))  # Backwards-compatibility
-        if topic is None:
+    if topic_name is None:
+        topic_name = payload.get("subject").tame(
+            check_none_or(check_string)
+        )  # Backwards-compatibility
+        if topic_name is None:
             raise JsonableError(_("Topic can't be empty"))
 
     if content is None:
         raise JsonableError(_("Content can't be empty"))
 
-    check_send_webhook_message(request, user_profile, topic, content)
+    check_send_webhook_message(request, user_profile, topic_name, content)
     return json_success(request)

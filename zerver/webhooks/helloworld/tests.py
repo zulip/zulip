@@ -13,25 +13,25 @@ class HelloWorldHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
-        expected_topic = "Hello World"
+        expected_topic_name = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
         # use fixture named helloworld_hello
         self.check_webhook(
             "hello",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_goodbye_message(self) -> None:
-        expected_topic = "Hello World"
+        expected_topic_name = "Hello World"
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
         # use fixture named helloworld_goodbye
         self.check_webhook(
             "goodbye",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -64,13 +64,13 @@ class HelloWorldHookTests(WebhookTestCase):
 
     def test_custom_topic(self) -> None:
         # Note that this is really just a test for check_send_webhook_message
-        expected_topic = "Custom Topic"
-        self.url = self.build_webhook_url(topic=expected_topic)
+        expected_topic_name = "Custom Topic"
+        self.url = self.build_webhook_url(topic=expected_topic_name)
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
         self.check_webhook(
             "goodbye",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

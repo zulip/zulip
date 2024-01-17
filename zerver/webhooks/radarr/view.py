@@ -53,10 +53,10 @@ def api_radarr_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    topic = get_topic_for_http_request(payload)
+    topic_name = get_topic_for_http_request(payload)
 
     check_send_webhook_message(
-        request, user_profile, topic, body, payload["eventType"].tame(check_string)
+        request, user_profile, topic_name, body, payload["eventType"].tame(check_string)
     )
     return json_success(request)
 

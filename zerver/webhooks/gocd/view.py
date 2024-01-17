@@ -49,8 +49,8 @@ def api_gocd_webhook(
         modifications["comment"].tame(check_string),
     )
     branch = material["description"].tame(check_string).split(",")
-    topic = branch[0].split(" ")[1]
+    topic_name = branch[0].split(" ")[1]
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)

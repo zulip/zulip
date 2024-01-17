@@ -10,7 +10,7 @@ class GreenhouseHookTests(WebhookTestCase):
     CONTENT_TYPE = "application/x-www-form-urlencoded"
 
     def test_message_candidate_hired(self) -> None:
-        expected_topic = "Hire Candidate - 19"
+        expected_topic_name = "Hire Candidate - 19"
         expected_message = """
 Hire Candidate Johnny Smith (ID: 19), applying for:
 * **Role**: Developer
@@ -19,11 +19,11 @@ Hire Candidate Johnny Smith (ID: 19), applying for:
 """.strip()
 
         self.check_webhook(
-            "candidate_hired", expected_topic, expected_message, content_type=self.CONTENT_TYPE
+            "candidate_hired", expected_topic_name, expected_message, content_type=self.CONTENT_TYPE
         )
 
     def test_message_candidate_rejected(self) -> None:
-        expected_topic = "Reject Candidate - 265788"
+        expected_topic_name = "Reject Candidate - 265788"
         expected_message = """
 Reject Candidate Hector Porter (ID: 265788), applying for:
 * **Role**: Designer
@@ -32,11 +32,14 @@ Reject Candidate Hector Porter (ID: 265788), applying for:
 """.strip()
 
         self.check_webhook(
-            "candidate_rejected", expected_topic, expected_message, content_type=self.CONTENT_TYPE
+            "candidate_rejected",
+            expected_topic_name,
+            expected_message,
+            content_type=self.CONTENT_TYPE,
         )
 
     def test_message_candidate_stage_change(self) -> None:
-        expected_topic = "Candidate Stage Change - 265772"
+        expected_topic_name = "Candidate Stage Change - 265772"
         expected_message = """
 Candidate Stage Change Giuseppe Hurley (ID: 265772), applying for:
 * **Role**: Designer
@@ -46,13 +49,13 @@ Candidate Stage Change Giuseppe Hurley (ID: 265772), applying for:
 
         self.check_webhook(
             "candidate_stage_change",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type=self.CONTENT_TYPE,
         )
 
     def test_message_prospect_created(self) -> None:
-        expected_topic = "New Prospect Application - 968190"
+        expected_topic_name = "New Prospect Application - 968190"
         expected_message = """
 New Prospect Application Trisha Troy (ID: 968190), applying for:
 * **Role**: Designer
@@ -61,7 +64,10 @@ New Prospect Application Trisha Troy (ID: 968190), applying for:
 """.strip()
 
         self.check_webhook(
-            "prospect_created", expected_topic, expected_message, content_type=self.CONTENT_TYPE
+            "prospect_created",
+            expected_topic_name,
+            expected_message,
+            content_type=self.CONTENT_TYPE,
         )
 
     @patch("zerver.webhooks.greenhouse.view.check_send_webhook_message")

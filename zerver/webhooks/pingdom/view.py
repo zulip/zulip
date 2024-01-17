@@ -49,12 +49,12 @@ def api_pingdom_webhook(
     check_type = get_check_type(payload)
 
     if check_type in SUPPORTED_CHECK_TYPES:
-        topic = get_topic_for_http_request(payload)
+        topic_name = get_topic_for_http_request(payload)
         body = get_body_for_http_request(payload)
     else:
         raise UnsupportedWebhookEventTypeError(check_type)
 
-    check_send_webhook_message(request, user_profile, topic, body, check_type)
+    check_send_webhook_message(request, user_profile, topic_name, body, check_type)
     return json_success(request)
 
 

@@ -25,9 +25,9 @@ def api_json_webhook(
     payload: JsonBodyPayload[Dict[str, Any]],
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    topic = get_topic_for_http_request(payload)
+    topic_name = get_topic_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)
 
 

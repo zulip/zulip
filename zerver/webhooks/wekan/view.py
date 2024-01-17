@@ -44,7 +44,7 @@ def api_wekan_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    topic = "Wekan Notification"
+    topic_name = "Wekan Notification"
     body = get_message_body(payload)
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)

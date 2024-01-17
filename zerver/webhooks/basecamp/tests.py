@@ -1,6 +1,6 @@
 from zerver.lib.test_classes import WebhookTestCase
 
-TOPIC = "Zulip HQ"
+TOPIC_NAME = "Zulip HQ"
 
 
 class BasecampHookTests(WebhookTestCase):
@@ -137,4 +137,4 @@ class BasecampHookTests(WebhookTestCase):
         self._send_and_test_message("comment_created", expected_message)
 
     def _send_and_test_message(self, fixture_name: str, expected_message: str) -> None:
-        self.check_webhook(fixture_name, TOPIC, expected_message)
+        self.check_webhook(fixture_name, TOPIC_NAME, expected_message)

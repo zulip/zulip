@@ -76,11 +76,11 @@ def ping_handler(
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     if include_title:
-        topic = include_title
+        topic_name = include_title
     else:
-        topic = "Bitbucket Server Ping"
+        topic_name = "Bitbucket Server Ping"
     body = "Congratulations! The Bitbucket Server webhook was configured successfully!"
-    return [{"topic": topic, "body": body}]
+    return [{"topic": topic_name, "body": body}]
 
 
 def repo_comment_handler(
@@ -90,7 +90,7 @@ def repo_comment_handler(
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["name"].tame(check_string)
-    topic = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
+    topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"].tame(check_string)
     commit_url = payload["repository"]["links"]["self"][0]["href"].tame(check_string)[
         : -len("browse")
@@ -106,7 +106,7 @@ def repo_comment_handler(
         sha=sha,
         message=message,
     )
-    return [{"topic": topic, "body": body}]
+    return [{"topic": topic_name, "body": body}]
 
 
 def repo_forked_handler(
@@ -115,14 +115,14 @@ def repo_forked_handler(
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["origin"]["name"].tame(check_string)
-    topic = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
+    topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = BITBUCKET_FORK_BODY.format(
         display_name=payload["actor"]["displayName"].tame(check_string),
         username=get_user_name(payload),
         fork_name=payload["repository"]["name"].tame(check_string),
         fork_url=payload["repository"]["links"]["self"][0]["href"].tame(check_string),
     )
-    return [{"topic": topic, "body": body}]
+    return [{"topic": topic_name, "body": body}]
 
 
 def repo_modified_handler(
@@ -130,7 +130,7 @@ def repo_modified_handler(
     branches: Optional[str],
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
-    topic_new = BITBUCKET_TOPIC_TEMPLATE.format(
+    topic_name_new = BITBUCKET_TOPIC_TEMPLATE.format(
         repository_name=payload["new"]["name"].tame(check_string)
     )
     new_name = payload["new"]["name"].tame(check_string)
@@ -143,7 +143,7 @@ def repo_modified_handler(
     )  # As of writing this, the only change we'd be notified about is a name change.
     punctuation = "." if new_name[-1] not in string.punctuation else ""
     body = f"{body}{punctuation}"
-    return [{"topic": topic_new, "body": body}]
+    return [{"topic": topic_name_new, "body": body}]
 
 
 def repo_push_branch_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
@@ -171,8 +171,8 @@ def repo_push_branch_data(payload: WildValue, change: WildValue) -> Dict[str, st
         message = "{}.{}".format(payload["eventKey"].tame(check_string), event_type)  # nocoverage
         raise UnsupportedWebhookEventTypeError(message)
 
-    topic = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repo_name, branch=branch_name)
-    return {"topic": topic, "body": body}
+    topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repo_name, branch=branch_name)
+    return {"topic": topic_name, "body": body}
 
 
 def repo_push_tag_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
@@ -188,9 +188,9 @@ def repo_push_tag_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
         message = "{}.{}".format(payload["eventKey"].tame(check_string), event_type)  # nocoverage
         raise UnsupportedWebhookEventTypeError(message)
 
-    topic = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
+    topic_name = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = get_push_tag_event_message(get_user_name(payload), tag_name, action=action)
-    return {"topic": topic, "body": body}
+    return {"topic": topic_name, "body": body}
 
 
 def repo_push_handler(
@@ -342,7 +342,7 @@ def pr_handler(
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     pr = payload["pullRequest"]
-    topic = get_pr_topic(
+    topic_name = get_pr_topic(
         pr["toRef"]["repository"]["name"].tame(check_string),
         type="PR",
         id=pr["id"].tame(check_int),
@@ -359,7 +359,7 @@ def pr_handler(
     else:
         body = get_simple_pr_body(payload, action, include_title)
 
-    return [{"topic": topic, "body": body}]
+    return [{"topic": topic_name, "body": body}]
 
 
 def pr_comment_handler(
@@ -369,7 +369,7 @@ def pr_comment_handler(
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     pr = payload["pullRequest"]
-    topic = get_pr_topic(
+    topic_name = get_pr_topic(
         pr["toRef"]["repository"]["name"].tame(check_string),
         type="PR",
         id=pr["id"].tame(check_int),
@@ -387,7 +387,7 @@ def pr_comment_handler(
         title=pr["title"].tame(check_string) if include_title else None,
     )
 
-    return [{"topic": topic, "body": body}]
+    return [{"topic": topic_name, "body": body}]
 
 
 class EventHandler(Protocol):

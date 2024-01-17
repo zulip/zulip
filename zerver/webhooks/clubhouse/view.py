@@ -696,11 +696,11 @@ def send_stream_messages_for_actions(
     if body_func is None or topic_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
-    topic = topic_func(payload, action)
+    topic_name = topic_func(payload, action)
     body = body_func(payload, action)
 
-    if topic and body:
-        check_send_webhook_message(request, user_profile, topic, body, event)
+    if topic_name and body:
+        check_send_webhook_message(request, user_profile, topic_name, body, event)
 
 
 EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {

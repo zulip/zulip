@@ -13,20 +13,20 @@ class UptimeRobotHookTests(WebhookTestCase):
         """
         Tests if uptimerobot monitor down is handled correctly
         """
-        expected_topic = "Web Server"
+        expected_topic_name = "Web Server"
         expected_message = "Web Server (server1.example.com) is DOWN (Host Is Unreachable)."
-        self.check_webhook("uptimerobot_monitor_down", expected_topic, expected_message)
+        self.check_webhook("uptimerobot_monitor_down", expected_topic_name, expected_message)
 
     def test_uptimerobot_monitor_up(self) -> None:
         """
         Tests if uptimerobot monitor up is handled correctly
         """
-        expected_topic = "Mail Server"
+        expected_topic_name = "Mail Server"
         expected_message = """
 Mail Server (server2.example.com) is back UP (Host Is Reachable).
 It was down for 44 minutes and 37 seconds.
 """.strip()
-        self.check_webhook("uptimerobot_monitor_up", expected_topic, expected_message)
+        self.check_webhook("uptimerobot_monitor_up", expected_topic_name, expected_message)
 
     def test_uptimerobot_invalid_payload_with_missing_data(self) -> None:
         """

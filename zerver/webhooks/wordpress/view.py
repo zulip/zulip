@@ -56,7 +56,7 @@ def api_wordpress_webhook(
     else:
         raise JsonableError(_("Unknown WordPress webhook action: {hook}").format(hook=hook))
 
-    topic = "WordPress notification"
+    topic_name = "WordPress notification"
 
-    check_send_webhook_message(request, user_profile, topic, data, hook)
+    check_send_webhook_message(request, user_profile, topic_name, data, hook)
     return json_success(request)

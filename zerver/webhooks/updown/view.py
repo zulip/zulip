@@ -18,9 +18,9 @@ def send_message_for_event(
     request: HttpRequest, user_profile: UserProfile, event: WildValue
 ) -> None:
     event_type = get_event_type(event)
-    topic = TOPIC_TEMPLATE.format(service_url=event["check"]["url"].tame(check_string))
+    topic_name = TOPIC_TEMPLATE.format(service_url=event["check"]["url"].tame(check_string))
     body = EVENT_TYPE_BODY_MAPPER[event_type](event)
-    check_send_webhook_message(request, user_profile, topic, body, event_type)
+    check_send_webhook_message(request, user_profile, topic_name, body, event_type)
 
 
 def get_body_for_up_event(event: WildValue) -> str:

@@ -62,23 +62,23 @@ def api_lidarr_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    topic = get_topic_for_http_request(payload)
+    topic_name = get_topic_for_http_request(payload)
 
     check_send_webhook_message(
-        request, user_profile, topic, body, payload["eventType"].tame(check_string)
+        request, user_profile, topic_name, body, payload["eventType"].tame(check_string)
     )
     return json_success(request)
 
 
 def get_topic_for_http_request(payload: WildValue) -> str:
     if payload["eventType"].tame(check_string) == "Test":
-        topic = LIDARR_TOPIC_TEMPLATE_TEST
+        topic_name = LIDARR_TOPIC_TEMPLATE_TEST
     else:
-        topic = LIDARR_TOPIC_TEMPLATE.format(
+        topic_name = LIDARR_TOPIC_TEMPLATE.format(
             artist_name=payload["artist"]["name"].tame(check_string)
         )
 
-    return topic
+    return topic_name
 
 
 def get_body_for_album_grabbed_event(payload: WildValue) -> str:

@@ -106,7 +106,7 @@ def api_harbor_webhook(
         operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
 
     event = payload["type"].tame(check_string)
-    topic = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)
+    topic_name = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)
 
     if event in IGNORED_EVENTS:
         return json_success(request)
@@ -119,6 +119,6 @@ def api_harbor_webhook(
     content: str = content_func(payload, user_profile, operator_username)
 
     check_send_webhook_message(
-        request, user_profile, topic, content, event, unquote_url_parameters=True
+        request, user_profile, topic_name, content, event, unquote_url_parameters=True
     )
     return json_success(request)

@@ -9,70 +9,70 @@ class WordPressHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "wordpress"
 
     def test_publish_post(self) -> None:
-        expected_topic = "WordPress Post"
+        expected_topic_name = "WordPress Post"
         expected_message = "New post published:\n* [New Blog Post](http://example.com\n)"
 
         self.check_webhook(
             "publish_post",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_publish_post_type_not_provided(self) -> None:
-        expected_topic = "WordPress Post"
+        expected_topic_name = "WordPress Post"
         expected_message = "New post published:\n* [New Blog Post](http://example.com\n)"
 
         self.check_webhook(
             "publish_post_type_not_provided",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_publish_post_no_data_provided(self) -> None:
         # Note: the fixture includes 'hook=publish_post' because it's always added by HookPress
-        expected_topic = "WordPress notification"
+        expected_topic_name = "WordPress notification"
         expected_message = "New post published:\n* [New WordPress post](WordPress post URL)"
 
         self.check_webhook(
             "publish_post_no_data_provided",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_publish_page(self) -> None:
-        expected_topic = "WordPress Page"
+        expected_topic_name = "WordPress Page"
         expected_message = "New page published:\n* [New Blog Page](http://example.com\n)"
 
         self.check_webhook(
             "publish_page",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_user_register(self) -> None:
-        expected_topic = "New Blog Users"
+        expected_topic_name = "New Blog Users"
         expected_message = (
             "New blog user registered:\n* **Name**: test_user\n* **Email**: test_user@example.com"
         )
 
         self.check_webhook(
             "user_register",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_wp_login(self) -> None:
-        expected_topic = "New Login"
+        expected_topic_name = "New Login"
         expected_message = "User testuser logged in."
 
         self.check_webhook(
             "wp_login",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

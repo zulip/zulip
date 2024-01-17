@@ -5,7 +5,7 @@ class GocdHookTests(WebhookTestCase):
     STREAM_NAME = "gocd"
     URL_TEMPLATE = "/api/v1/external/gocd?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "gocd"
-    TOPIC = "https://github.com/gocd/gocd"
+    TOPIC_NAME = "https://github.com/gocd/gocd"
 
     def test_gocd_message(self) -> None:
         expected_message = (
@@ -18,7 +18,7 @@ class GocdHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pipeline",
-            self.TOPIC,
+            self.TOPIC_NAME,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -34,7 +34,7 @@ class GocdHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pipeline_failed",
-            self.TOPIC,
+            self.TOPIC_NAME,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

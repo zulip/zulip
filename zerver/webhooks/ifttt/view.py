@@ -20,14 +20,14 @@ def api_iftt_app_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     try:
-        topic = payload.get("topic").tame(check_none_or(check_string))
+        topic_name = payload.get("topic").tame(check_none_or(check_string))
         content = payload.get("content").tame(check_none_or(check_string))
 
-        if topic is None:
-            topic = payload.get("subject").tame(
+        if topic_name is None:
+            topic_name = payload.get("subject").tame(
                 check_none_or(check_string)
             )  # Backwards-compatibility
-            if topic is None:
+            if topic_name is None:
                 raise JsonableError(_("Topic can't be empty"))
 
         if content is None:
@@ -36,5 +36,5 @@ def api_iftt_app_webhook(
     except ValidationError:
         raise JsonableError(_("Malformed payload"))
 
-    check_send_webhook_message(request, user_profile, topic, content)
+    check_send_webhook_message(request, user_profile, topic_name, content)
     return json_success(request)

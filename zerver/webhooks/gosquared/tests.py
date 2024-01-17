@@ -9,20 +9,20 @@ class GoSquaredHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_traffic_message(self) -> None:
-        expected_topic = "GoSquared - requestb.in"
+        expected_topic_name = "GoSquared - requestb.in"
         expected_message = (
             "[requestb.in](https://www.gosquared.com/now/GSN-595854-T) has 33 visitors online."
         )
 
         self.check_webhook(
             "traffic_spike",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_chat_message(self) -> None:
-        expected_topic = "Live chat session - Zulip Chat"
+        expected_topic_name = "Live chat session - Zulip Chat"
         expected_message = CHAT_MESSAGE_TEMPLATE.format(
             status="visitor",
             name="John Smith",
@@ -31,7 +31,7 @@ class GoSquaredHookTests(WebhookTestCase):
 
         self.check_webhook(
             "chat_message",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

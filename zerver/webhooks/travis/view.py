@@ -62,7 +62,7 @@ def api_travis_webhook(
         message.compare_url,
         message.build_url,
     )
-    topic = "builds"
+    topic_name = "builds"
 
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)

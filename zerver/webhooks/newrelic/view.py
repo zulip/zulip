@@ -105,9 +105,9 @@ def api_newrelic_webhook(
                 check_union([check_string, check_int])
             ),
         }
-        topic = TOPIC_TEMPLATE.format(**topic_info)
+        topic_name = TOPIC_TEMPLATE.format(**topic_info)
 
-        check_send_webhook_message(request, user_profile, topic, content, info["status"])
+        check_send_webhook_message(request, user_profile, topic_name, content, info["status"])
         return json_success(request)
 
     # Handle new format
@@ -163,7 +163,7 @@ def api_newrelic_webhook(
             "policy_name": policy_names_str,
             "incident_id": payload.get("id", "Unknown ID").tame(check_string),
         }
-        topic = TOPIC_TEMPLATE.format(**topic_info)
+        topic_name = TOPIC_TEMPLATE.format(**topic_info)
 
-        check_send_webhook_message(request, user_profile, topic, content, info["status"])
+        check_send_webhook_message(request, user_profile, topic_name, content, info["status"])
         return json_success(request)

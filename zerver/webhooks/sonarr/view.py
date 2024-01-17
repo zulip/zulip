@@ -47,10 +47,10 @@ def api_sonarr_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    topic = get_topic_for_http_request(payload)
+    topic_name = get_topic_for_http_request(payload)
 
     check_send_webhook_message(
-        request, user_profile, topic, body, payload["eventType"].tame(check_string)
+        request, user_profile, topic_name, body, payload["eventType"].tame(check_string)
     )
     return json_success(request)
 
@@ -58,15 +58,17 @@ def api_sonarr_webhook(
 def get_topic_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
     if event_type == "Test":
-        topic = SONARR_TOPIC_TEMPLATE_TEST
+        topic_name = SONARR_TOPIC_TEMPLATE_TEST
     elif event_type == "Health":
-        topic = SONARR_TOPIC_TEMPLATE_HEALTH_CHECK.format(level=payload["level"].tame(check_string))
+        topic_name = SONARR_TOPIC_TEMPLATE_HEALTH_CHECK.format(
+            level=payload["level"].tame(check_string)
+        )
     else:
-        topic = SONARR_TOPIC_TEMPLATE.format(
+        topic_name = SONARR_TOPIC_TEMPLATE.format(
             series_title=payload["series"]["title"].tame(check_string)
         )
 
-    return topic
+    return topic_name
 
 
 def get_body_for_health_check_event(payload: WildValue) -> str:

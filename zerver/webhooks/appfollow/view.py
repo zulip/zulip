@@ -23,9 +23,9 @@ def api_appfollow_webhook(
     app_name_search = re.search(r"\A(.+)", message)
     assert app_name_search is not None
     app_name = app_name_search.group(0)
-    topic = app_name
+    topic_name = app_name
 
-    check_send_webhook_message(request, user_profile, topic, body=convert_markdown(message))
+    check_send_webhook_message(request, user_profile, topic_name, body=convert_markdown(message))
     return json_success(request)
 
 

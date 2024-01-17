@@ -56,7 +56,7 @@ def api_grafana_webhook(
         status = payload["status"].tame(check_string_in(["firing", "resolved"]))
         alert_count = len(payload["alerts"])
 
-        topic = NEW_TOPIC_TEMPLATE.format(alert_status=status.upper(), alert_count=alert_count)
+        topic_name = NEW_TOPIC_TEMPLATE.format(alert_status=status.upper(), alert_count=alert_count)
 
         if status == "firing":
             body = ALERT_STATUS_TEMPLATE.format(alert_icon=":alert:", alert_state=status.upper())
@@ -97,13 +97,13 @@ def api_grafana_webhook(
                 count=payload["truncatedAlerts"].tame(check_int)
             )
 
-        check_send_webhook_message(request, user_profile, topic, body, status)
+        check_send_webhook_message(request, user_profile, topic_name, body, status)
 
         return json_success(request)
 
     # Legacy Grafana alerts.
     else:
-        topic = OLD_TOPIC_TEMPLATE.format(alert_title=payload["title"].tame(check_string))
+        topic_name = OLD_TOPIC_TEMPLATE.format(alert_title=payload["title"].tame(check_string))
 
         eval_matches_text = ""
         if "evalMatches" in payload and payload["evalMatches"] is not None:
@@ -149,6 +149,6 @@ def api_grafana_webhook(
         body = body.strip()
 
         # send the message
-        check_send_webhook_message(request, user_profile, topic, body, state)
+        check_send_webhook_message(request, user_profile, topic_name, body, state)
 
         return json_success(request)

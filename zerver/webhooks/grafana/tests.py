@@ -8,7 +8,7 @@ class GrafanaHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_alert(self) -> None:
-        expected_topic = "[Alerting] Test notification"
+        expected_topic_name = "[Alerting] Test notification"
         expected_message = """
 :alert: **ALERTING**
 
@@ -25,13 +25,13 @@ Someone is testing the alert notification within grafana.
         # use fixture named helloworld_hello
         self.check_webhook(
             "alert",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_no_data_alert(self) -> None:
-        expected_topic = "[Alerting] No Data alert"
+        expected_topic_name = "[Alerting] No Data alert"
         expected_message = """
 :alert: **ALERTING**
 
@@ -44,13 +44,13 @@ The panel has no data.
         # use fixture named helloworld_hello
         self.check_webhook(
             "no_data_alert",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_no_message_alert(self) -> None:
-        expected_topic = "[Alerting] No Message alert"
+        expected_topic_name = "[Alerting] No Message alert"
         expected_message = """
 :alert: **ALERTING**
 
@@ -62,14 +62,14 @@ The panel has no data.
         # use fixture named helloworld_hello
         self.check_webhook(
             "no_message_alert",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_alert_ok(self) -> None:
-        expected_topic = "[Ok] Test notification"
+        expected_topic_name = "[Ok] Test notification"
         expected_message = """
 :squared_ok: **OK**
 
@@ -85,14 +85,14 @@ Someone is testing the alert notification within grafana.
         # use fixture named helloworld_hello
         self.check_webhook(
             "alert_ok",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_alert_paused(self) -> None:
-        expected_topic = "[Paused] Test notification"
+        expected_topic_name = "[Paused] Test notification"
         expected_message = """
 :info: **PAUSED**
 
@@ -107,14 +107,14 @@ Someone is testing the alert notification within grafana.
         # use fixture named helloworld_hello
         self.check_webhook(
             "alert_paused",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_alert_pending(self) -> None:
-        expected_topic = "[Pending] Test notification"
+        expected_topic_name = "[Pending] Test notification"
         expected_message = """
 :info: **PENDING**
 
@@ -131,13 +131,13 @@ Someone is testing the alert notification within grafana.
         # use fixture named helloworld_hello
         self.check_webhook(
             "alert_pending",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_alert_new(self) -> None:
-        expected_topic = "[RESOLVED:1]"
+        expected_topic_name = "[RESOLVED:1]"
         expected_message = """
 :checkbox: **RESOLVED**
 
@@ -162,13 +162,13 @@ Annotations:
 
         self.check_webhook(
             "alert_new",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_alert_new_multiple(self) -> None:
-        expected_topic = "[FIRING:2]"
+        expected_topic_name = "[FIRING:2]"
         expected_message = """
 :alert: **FIRING**
 
@@ -206,7 +206,7 @@ Annotations:
 
         self.check_webhook(
             "alert_new_multiple",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

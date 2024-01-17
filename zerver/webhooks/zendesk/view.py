@@ -29,6 +29,6 @@ def api_zendesk_webhook(
     ticket_id and ticket_title to create a topic. And passes with zendesk
     user's configured message to zulip.
     """
-    topic = truncate(f"#{ticket_id}: {ticket_title}", 60)
-    check_send_webhook_message(request, user_profile, topic, message)
+    topic_name = truncate(f"#{ticket_id}: {ticket_title}", 60)
+    check_send_webhook_message(request, user_profile, topic_name, message)
     return json_success(request)

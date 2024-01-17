@@ -28,12 +28,12 @@ def build_message_from_gitlog(
     deleted: bool = False,
 ) -> Tuple[str, str]:
     short_ref = re.sub(r"^refs/heads/", "", ref)
-    topic = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
+    topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
     commits_data = _transform_commits_list_to_common_format(commits)
     content = get_push_commits_event_message(pusher, url, short_ref, commits_data, deleted=deleted)
 
-    return topic, content
+    return topic_name, content
 
 
 def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[str, str]]:
@@ -70,7 +70,7 @@ def api_beanstalk_webhook(
         if branches is not None and branches.find(payload["branch"].tame(check_string)) == -1:
             return json_success(request)
 
-        topic, content = build_message_from_gitlog(
+        topic_name, content = build_message_from_gitlog(
             user_profile,
             payload["repository"]["name"].tame(check_string),
             payload["ref"].tame(check_string),
@@ -86,8 +86,8 @@ def api_beanstalk_webhook(
         revision = payload["revision"].tame(check_int)
         (short_commit_msg, _, _) = payload["message"].tame(check_string).partition("\n")
 
-        topic = f"svn r{revision}"
+        topic_name = f"svn r{revision}"
         content = f"{author} pushed [revision {revision}]({url}):\n\n> {short_commit_msg}"
 
-    check_send_webhook_message(request, user_profile, topic, content)
+    check_send_webhook_message(request, user_profile, topic_name, content)
     return json_success(request)

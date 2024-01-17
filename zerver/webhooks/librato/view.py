@@ -177,12 +177,12 @@ def api_librato_webhook(
         raise JsonableError(_("Malformed JSON input"))
 
     message_handler = LibratoWebhookHandler(payload, attachments)
-    topic = message_handler.generate_topic()
+    topic_name = message_handler.generate_topic()
 
     try:
         content = message_handler.handle()
     except Exception as e:
         raise JsonableError(str(e))
 
-    check_send_webhook_message(request, user_profile, topic, content)
+    check_send_webhook_message(request, user_profile, topic_name, content)
     return json_success(request)

@@ -41,8 +41,8 @@ def api_insping_webhook(
         timestamp=time_formatted,
     )
 
-    topic = "insping"
+    topic_name = "insping"
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)

@@ -41,7 +41,7 @@ def api_beeminder_webhook(
     else:
         expression = ":relieved:"
 
-    topic = "beekeeper"
+    topic_name = "beekeeper"
     body = MESSAGE_TEMPLATE.format(
         goal_name=goal_name,
         time=time_remain,
@@ -49,5 +49,5 @@ def api_beeminder_webhook(
         pledge=pledge,
         expression=expression,
     )
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)

@@ -194,13 +194,13 @@ def gogs_webhook_main(
         if branches is not None and branch not in branches.split(","):
             return json_success(request)
         body = format_push_event(payload)
-        topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
+        topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repo,
             branch=branch,
         )
     elif event == "create":
         body = format_new_branch_event(payload)
-        topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
+        topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repo,
             branch=payload["ref"].tame(check_string),
         )
@@ -209,7 +209,7 @@ def gogs_webhook_main(
             payload,
             include_title=user_specified_topic is not None,
         )
-        topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type="PR",
             id=payload["pull_request"]["id"].tame(check_int),
@@ -220,7 +220,7 @@ def gogs_webhook_main(
             payload,
             include_title=user_specified_topic is not None,
         )
-        topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type="issue",
             id=payload["issue"]["number"].tame(check_int),
@@ -231,7 +231,7 @@ def gogs_webhook_main(
             payload,
             include_title=user_specified_topic is not None,
         )
-        topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type="issue",
             id=payload["issue"]["number"].tame(check_int),
@@ -242,7 +242,7 @@ def gogs_webhook_main(
             payload,
             include_title=user_specified_topic is not None,
         )
-        topic = TOPIC_WITH_RELEASE_TEMPLATE.format(
+        topic_name = TOPIC_WITH_RELEASE_TEMPLATE.format(
             repo=repo,
             tag=payload["release"]["tag_name"].tame(check_string),
             title=payload["release"]["name"].tame(check_string),
@@ -251,5 +251,5 @@ def gogs_webhook_main(
     else:
         raise UnsupportedWebhookEventTypeError(event)
 
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)

@@ -95,15 +95,15 @@ def api_bitbucket2_webhook(
         if branch and branches and branches.find(branch) == -1:
             return json_success(request)
 
-        topics = get_push_topics(payload)
+        topic_names = get_push_topics(payload)
         bodies = get_push_bodies(request, payload)
 
-        for b, t in zip(bodies, topics):
+        for b, t in zip(bodies, topic_names):
             check_send_webhook_message(
                 request, user_profile, t, b, type, unquote_url_parameters=True
             )
     else:
-        topic = get_topic_based_on_type(payload, type)
+        topic_name = get_topic_based_on_type(payload, type)
         body_function = get_body_based_on_type(type)
         body = body_function(
             request,
@@ -112,7 +112,7 @@ def api_bitbucket2_webhook(
         )
 
         check_send_webhook_message(
-            request, user_profile, topic, body, type, unquote_url_parameters=True
+            request, user_profile, topic_name, body, type, unquote_url_parameters=True
         )
 
     return json_success(request)
