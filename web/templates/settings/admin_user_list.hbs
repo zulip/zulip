@@ -3,7 +3,7 @@
         <span class="user_name" >
             <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">{{full_name}}</a>
             {{#if is_current_user}}<span class="my_user_status">{{t '(you)' }}</span>{{/if}}</span>
-        <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Bot is deactivated' }}{{else}} {{t 'User is deactivated'}} {{/if}}" {{#if is_active}}style="display: none;"{{/if}}></i>
+        <i class="fa fa-ban deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
     </td>
     {{#if display_email}}
     <td>
