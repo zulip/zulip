@@ -13,7 +13,7 @@ class FreshdeskHookTests(WebhookTestCase):
         Messages are generated on ticket creation through Freshdesk's
         "Dispatch'r" service.
         """
-        expected_topic = "#11: Test ticket subject ☃"
+        expected_topic_name = "#11: Test ticket subject ☃"
         expected_message = """
 Requester ☃ Bob <requester-bob@example.com> created [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
@@ -29,7 +29,7 @@ Test ticket description ☃.
         self.api_stream_message(
             self.test_user,
             "ticket_created",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -39,7 +39,7 @@ Test ticket description ☃.
         Messages are generated when a ticket's status changes through
         Freshdesk's "Observer" service.
         """
-        expected_topic = "#11: Test ticket subject ☃"
+        expected_topic_name = "#11: Test ticket subject ☃"
         expected_message = """
 Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
@@ -49,7 +49,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         self.api_stream_message(
             self.test_user,
             "status_changed",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -59,7 +59,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         Messages are generated when a ticket's priority changes through
         Freshdesk's "Observer" service.
         """
-        expected_topic = "#11: Test ticket subject"
+        expected_topic_name = "#11: Test ticket subject"
         expected_message = """
 Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
@@ -68,7 +68,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         self.api_stream_message(
             self.test_user,
             "priority_changed",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -94,7 +94,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         Messages are generated when a note gets added to a ticket through
         Freshdesk's "Observer" service.
         """
-        expected_topic = "#11: Test ticket subject"
+        expected_topic_name = "#11: Test ticket subject"
         expected_message = """
 Requester Bob <requester-bob@example.com> added a {} note to \
 [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).
@@ -104,7 +104,7 @@ Requester Bob <requester-bob@example.com> added a {} note to \
         self.api_stream_message(
             self.test_user,
             fixture,
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -121,14 +121,14 @@ Requester Bob <requester-bob@example.com> added a {} note to \
         descriptions Zulip Markdown-friendly while still doing our best to
         preserve links and images.
         """
-        expected_topic = "#12: Not enough ☃ guinea pigs"
+        expected_topic_name = "#12: Not enough ☃ guinea pigs"
         expected_message = """
 Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n``` quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs.\nExhibit 1:\n\n  \n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)\n```\n\n* **Type**: Problem\n* **Priority**: Urgent\n* **Status**: Open
 """.strip()
         self.api_stream_message(
             self.test_user,
             "inline_images",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

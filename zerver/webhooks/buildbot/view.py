@@ -18,12 +18,12 @@ def api_buildbot_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    topic = payload["project"].tame(check_string)
-    if not topic:
-        topic = "general"
+    topic_name = payload["project"].tame(check_string)
+    if not topic_name:
+        topic_name = "general"
     body = get_message(payload)
     check_send_webhook_message(
-        request, user_profile, topic, body, payload["event"].tame(check_string)
+        request, user_profile, topic_name, body, payload["event"].tame(check_string)
     )
     return json_success(request)
 

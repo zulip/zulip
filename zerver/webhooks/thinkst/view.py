@@ -131,14 +131,14 @@ def api_thinkst_webhook(
 
     response = body(message)
 
-    topic = None
+    topic_name = None
     if user_specified_topic:
-        topic = user_specified_topic
+        topic_name = user_specified_topic
     else:
         name = canary_name(message)
         kind = canary_kind(message)
 
-        topic = f"{kind} alert - {name}"
+        topic_name = f"{kind} alert - {name}"
 
-    check_send_webhook_message(request, user_profile, topic, response)
+    check_send_webhook_message(request, user_profile, topic_name, response)
     return json_success(request)

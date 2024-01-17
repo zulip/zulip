@@ -18,7 +18,7 @@ def api_jotform_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    topic = payload["formTitle"].tame(check_string)
+    topic_name = payload["formTitle"].tame(check_string)
     submission_id = payload["submissionID"].tame(check_string)
     fields = payload["pretty"].tame(check_string).split(", ")
 
@@ -28,5 +28,5 @@ def api_jotform_webhook(
 
     message = form_response.strip()
 
-    check_send_webhook_message(request, user_profile, topic, message)
+    check_send_webhook_message(request, user_profile, topic_name, message)
     return json_success(request)

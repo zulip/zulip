@@ -107,9 +107,9 @@ def api_teamcity_webhook(
     )
 
     if "branchDisplayName" in message:
-        topic = "{} ({})".format(build_name, message["branchDisplayName"].tame(check_string))
+        topic_name = "{} ({})".format(build_name, message["branchDisplayName"].tame(check_string))
     else:
-        topic = build_name
+        topic_name = build_name
 
     # Check if this is a personal build, and if so try to direct message the user who triggered it.
     if (
@@ -148,5 +148,5 @@ def api_teamcity_webhook(
 
         return json_success(request)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)

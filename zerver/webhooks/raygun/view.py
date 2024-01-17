@@ -39,9 +39,9 @@ def api_raygun_webhook(
     else:
         raise UnsupportedWebhookEventTypeError(event)
 
-    topic = "test"
+    topic_name = "test"
 
-    check_send_webhook_message(request, user_profile, topic, message, event)
+    check_send_webhook_message(request, user_profile, topic_name, message, event)
 
     return json_success(request)
 

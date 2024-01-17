@@ -40,7 +40,7 @@ def api_alertmanager_webhook(
             topics[name] = {"firing": [], "resolved": []}
         topics[name][alert["status"].tame(check_string)].append(body)
 
-    for topic, statuses in topics.items():
+    for topic_name, statuses in topics.items():
         for status, messages in statuses.items():
             if len(messages) == 0:
                 continue
@@ -58,6 +58,6 @@ def api_alertmanager_webhook(
                 message_list = "\n".join(f"* {m}" for m in messages)
                 body = f"{icon} **{title}**\n{message_list}"
 
-            check_send_webhook_message(request, user_profile, topic, body)
+            check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)

@@ -191,8 +191,8 @@ def api_reviewboard_webhook(
     body_function = RB_MESSAGE_FUNCTIONS.get(event_type)
     if body_function is not None:
         body = body_function(payload)
-        topic = get_review_request_repo_title(payload)
-        check_send_webhook_message(request, user_profile, topic, body, event_type)
+        topic_name = get_review_request_repo_title(payload)
+        check_send_webhook_message(request, user_profile, topic_name, body, event_type)
     else:
         raise UnsupportedWebhookEventTypeError(event_type)
 

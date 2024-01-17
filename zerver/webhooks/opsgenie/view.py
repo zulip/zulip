@@ -44,7 +44,7 @@ def api_opsgenie_webhook(
         ),
     }
 
-    topic = info["integration_name"]
+    topic_name = info["integration_name"]
     bullet_template = "* **{key}**: {value}\n"
 
     if "note" in payload["alert"]:
@@ -100,6 +100,6 @@ def api_opsgenie_webhook(
 """.strip()
 
     body = body_template.format(**info)
-    check_send_webhook_message(request, user_profile, topic, body, info["alert_type"])
+    check_send_webhook_message(request, user_profile, topic_name, body, info["alert_type"])
 
     return json_success(request)

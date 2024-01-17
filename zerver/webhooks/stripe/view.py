@@ -56,11 +56,11 @@ def api_stripe_webhook(
     stream: str = "test",
 ) -> HttpResponse:
     try:
-        topic, body = topic_and_body(payload)
+        topic_name, body = topic_and_body(payload)
     except SuppressedEventError:  # nocoverage
         return json_success(request)
     check_send_webhook_message(
-        request, user_profile, topic, body, payload["type"].tame(check_string)
+        request, user_profile, topic_name, body, payload["type"].tame(check_string)
     )
     return json_success(request)
 
@@ -78,12 +78,12 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
     object_ = payload["data"]["object"]  # The full, updated Stripe object
 
     # Set the topic to the customer_id when we can
-    topic = ""
+    topic_name = ""
     customer_id = object_.get("customer").tame(check_none_or(check_string))
     if customer_id is not None:
         # Running into the 60 character topic limit.
         # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (customer_id, customer_id)
-        topic = customer_id
+        topic_name = customer_id
     body = None
 
     def update_string(blacklist: Sequence[str] = []) -> str:
@@ -114,7 +114,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             if event == "updated":
                 if "previous_attributes" not in payload["data"]:
                     raise SuppressedEventError
-                topic = "account updates"
+                topic_name = "account updates"
                 body = update_string()
         else:
             # Part of Stripe Connect
@@ -127,8 +127,8 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         raise NotImplementedEventTypeError
     if category == "charge":
         if resource == "charge":
-            if not topic:  # only in legacy fixtures
-                topic = "charges"
+            if not topic_name:  # only in legacy fixtures
+                topic_name = "charges"
             body = "{resource} for {amount} {verbed}".format(
                 resource=linkified_id(object_["id"].tame(check_string)),
                 amount=amount_string(
@@ -139,12 +139,12 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             if object_["failure_code"]:  # nocoverage
                 body += ". Failure code: {}".format(object_["failure_code"].tame(check_string))
         if resource == "dispute":
-            topic = "disputes"
+            topic_name = "disputes"
             body = default_body() + ". Current status: {status}.".format(
                 status=object_["status"].tame(check_string).replace("_", " ")
             )
         if resource == "refund":
-            topic = "refunds"
+            topic_name = "refunds"
             body = "A {resource} for a {charge} of {amount} was updated.".format(
                 resource=linkified_id(object_["id"].tame(check_string), lower=True),
                 charge=linkified_id(object_["charge"].tame(check_string), lower=True),
@@ -162,7 +162,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         if resource == "customer":
             # Running into the 60 character topic limit.
             # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (object_['id'], object_['id'])
-            topic = object_["id"].tame(check_string)
+            topic_name = object_["id"].tame(check_string)
             body = default_body(update_blacklist=["delinquent", "currency", "default_source"])
             if event == "created":
                 if object_["email"]:
@@ -207,7 +207,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
                         object_["billing"].tame(check_string).replace("_", " ")
                     )
     if category == "file":  # nocoverage
-        topic = "files"
+        topic_name = "files"
         body = default_body() + " ({purpose}). \nTitle: {title}".format(
             purpose=object_["purpose"].tame(check_string).replace("_", " "),
             title=object_["title"].tame(check_string),
@@ -286,7 +286,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
 
     if body is None:
         raise UnsupportedWebhookEventTypeError(event_type)
-    return (topic, body)
+    return (topic_name, body)
 
 
 def amount_string(amount: int, currency: str) -> str:

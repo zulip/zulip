@@ -100,9 +100,9 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_issue_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
-        expected_topic = "notifications"
+        expected_topic_name = "notifications"
         expected_message = "Tomasz created [issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n~~~ quote\nSuch a bug\n~~~"
-        self.check_webhook("issue_created", expected_topic, expected_message)
+        self.check_webhook("issue_created", expected_topic_name, expected_message)
 
     def test_bitbucket2_on_issue_updated_event(self) -> None:
         expected_message = "Tomasz updated [issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
@@ -114,9 +114,9 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_issue_commented_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
-        expected_topic = "notifications"
+        expected_topic_name = "notifications"
         expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/issues/2#comment-28973596) on [issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
-        self.check_webhook("issue_commented", expected_topic, expected_message)
+        self.check_webhook("issue_commented", expected_topic_name, expected_message)
 
     def test_bitbucket2_on_pull_request_created_event(self) -> None:
         expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
@@ -138,11 +138,11 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
-        expected_topic = "notifications"
+        expected_topic_name = "notifications"
         expected_message = "Tomasz created [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
         self.check_webhook(
             "pull_request_created_or_updated",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             HTTP_X_EVENT_KEY="pullrequest:created",
         )
@@ -167,11 +167,11 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_approved_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
-        expected_topic = "notifications"
+        expected_topic_name = "notifications"
         expected_message = "Tomasz approved [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
         self.check_webhook(
             "pull_request_approved_or_unapproved",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             HTTP_X_EVENT_KEY="pullrequest:approved",
         )
@@ -214,11 +214,11 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_comment_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
-        expected_topic = "notifications"
+        expected_topic_name = "notifications"
         expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
         self.check_webhook(
             "pull_request_comment_action",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             HTTP_X_EVENT_KEY="pullrequest:comment_created",
         )
@@ -234,11 +234,11 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_comment_updated_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
-        expected_topic = "notifications"
+        expected_topic_name = "notifications"
         expected_message = "Tomasz updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
         self.check_webhook(
             "pull_request_comment_action",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             HTTP_X_EVENT_KEY="pullrequest:comment_updated",
         )
@@ -254,9 +254,9 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_repo_updated_event(self) -> None:
         expected_message = "eeshangarg changed the website of the **new-name** repo to **http://zulipchat.com**.\neeshangarg changed the name of the **new-name** repo from **test-repo** to **new-name**.\neeshangarg changed the language of the **new-name** repo to **python**.\neeshangarg changed the full name of the **new-name** repo from **webhooktest/test-repo** to **webhooktest/new-name**.\neeshangarg changed the description of the **new-name** repo to **Random description.**"
-        expected_topic = "new-name"
+        expected_topic_name = "new-name"
         self.check_webhook(
-            "repo_updated", expected_topic, expected_message, HTTP_X_EVENT_KEY="repo:updated"
+            "repo_updated", expected_topic_name, expected_message, HTTP_X_EVENT_KEY="repo:updated"
         )
 
     def test_bitbucket2_on_push_one_tag_event(self) -> None:

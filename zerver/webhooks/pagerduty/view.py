@@ -224,10 +224,10 @@ def send_formatted_pagerduty(
     else:
         template = INCIDENT_WITH_ASSIGNEE
 
-    topic = "Incident {incident_num_title}".format(**format_dict)
+    topic_name = "Incident {incident_num_title}".format(**format_dict)
     body = template.format(**format_dict)
     assert isinstance(format_dict["action"], str)
-    check_send_webhook_message(request, user_profile, topic, body, format_dict["action"])
+    check_send_webhook_message(request, user_profile, topic_name, body, format_dict["action"])
 
 
 @webhook_view("PagerDuty", all_event_types=ALL_EVENT_TYPES)

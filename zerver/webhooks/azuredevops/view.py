@@ -181,10 +181,10 @@ def api_azuredevops_webhook(
     if event is None:
         return json_success(request)
 
-    topic = get_topic_based_on_event(payload, event)
+    topic_name = get_topic_based_on_event(payload, event)
 
     body_function = EVENT_FUNCTION_MAPPER[event]
     body = body_function(payload)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)

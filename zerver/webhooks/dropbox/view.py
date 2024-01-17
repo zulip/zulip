@@ -19,9 +19,9 @@ def api_dropbox_webhook(
     challenge: Optional[str] = None,
 ) -> HttpResponse:
     if request.method == "POST":
-        topic = "Dropbox"
+        topic_name = "Dropbox"
         check_send_webhook_message(
-            request, user_profile, topic, "File has been updated on Dropbox!"
+            request, user_profile, topic_name, "File has been updated on Dropbox!"
         )
         return json_success(request)
     else:

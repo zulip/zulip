@@ -147,8 +147,8 @@ def api_front_webhook(
     if event not in EVENT_FUNCTION_MAPPER:
         raise JsonableError(_("Unknown webhook request"))
 
-    topic = payload["conversation"]["id"].tame(check_string)
+    topic_name = payload["conversation"]["id"].tame(check_string)
     body = get_body_based_on_event(event)(payload)
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
 
     return json_success(request)

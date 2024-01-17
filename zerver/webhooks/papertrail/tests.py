@@ -11,7 +11,7 @@ class PapertrailHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "papertrail"
 
     def test_short_message(self) -> None:
-        expected_topic = "logs"
+        expected_topic_name = "logs"
         expected_message = """
 [Search for "Important stuff"](https://papertrailapp.com/searches/42) found **2** matches:
 
@@ -27,7 +27,7 @@ A short event
 
         self.check_webhook(
             "short_post",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

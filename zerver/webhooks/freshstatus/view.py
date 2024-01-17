@@ -88,7 +88,7 @@ def api_freshstatus_webhook(
 ) -> HttpResponse:
     try:
         body = get_body_for_http_request(payload)
-        topic = get_topic_for_http_request(payload)
+        topic_name = get_topic_for_http_request(payload)
     except ValidationError:
         message = MISCONFIGURED_PAYLOAD_ERROR_MESSAGE.format(
             bot_name=user_profile.full_name,
@@ -99,7 +99,11 @@ def api_freshstatus_webhook(
         raise JsonableError(_("Invalid payload"))
 
     check_send_webhook_message(
-        request, user_profile, topic, body, payload["event_data"]["event_type"].tame(check_string)
+        request,
+        user_profile,
+        topic_name,
+        body,
+        payload["event_data"]["event_type"].tame(check_string),
     )
     return json_success(request)
 

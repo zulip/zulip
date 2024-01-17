@@ -30,13 +30,13 @@ def api_slack_webhook(
         raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
 
     if channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:
-        topic = f"channel: {channel_name}"
+        topic_name = f"channel: {channel_name}"
     else:
         stream = channel_name
-        topic = _("Message from Slack")
+        topic_name = _("Message from Slack")
 
     content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
     client = RequestNotes.get_notes(request).client
     assert client is not None
-    check_send_stream_message(user_profile, client, stream, topic, content)
+    check_send_stream_message(user_profile, client, stream, topic_name, content)
     return json_success(request)

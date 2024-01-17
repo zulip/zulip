@@ -67,7 +67,7 @@ def api_hellosign_webhook(
 ) -> HttpResponse:
     if "signature_request" in payload:
         body = get_message_body(payload)
-        topic = payload["signature_request"]["title"].tame(check_string)
-        check_send_webhook_message(request, user_profile, topic, body)
+        topic_name = payload["signature_request"]["title"].tame(check_string)
+        check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request, data={"msg": "Hello API Event Received"})

@@ -42,9 +42,9 @@ def api_netlify_webhook(
         state=payload["state"].tame(check_string),
     )
 
-    topic = "{topic}".format(topic=payload["branch"].tame(check_string))
+    topic_name = "{topic}".format(topic=payload["branch"].tame(check_string))
 
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
 
     return json_success(request)
 

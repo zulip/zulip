@@ -59,7 +59,7 @@ def api_greenhouse_webhook(
         attachments=dict_list_to_string(application["candidate"]["attachments"]),
     )
 
-    topic = "{} - {}".format(action, str(candidate["id"].tame(check_int)))
+    topic_name = "{} - {}".format(action, str(candidate["id"].tame(check_int)))
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)

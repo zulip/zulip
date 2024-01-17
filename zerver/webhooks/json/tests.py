@@ -15,11 +15,11 @@ class JsonHookTests(WebhookTestCase):
         with open("zerver/webhooks/json/fixtures/json_github_push__1_commit.json") as f:
             original_fixture = json.load(f)
 
-        expected_topic = "JSON"
+        expected_topic_name = "JSON"
         expected_message = f"""```json
 {json.dumps(original_fixture, indent=2)}
 ```"""
-        self.check_webhook("json_github_push__1_commit", expected_topic, expected_message)
+        self.check_webhook("json_github_push__1_commit", expected_topic_name, expected_message)
 
     def test_json_pingdom_http_up_to_down_message(self) -> None:
         """
@@ -28,11 +28,11 @@ class JsonHookTests(WebhookTestCase):
         with open("zerver/webhooks/json/fixtures/json_pingdom_http_up_to_down.json") as f:
             original_fixture = json.load(f)
 
-        expected_topic = "JSON"
+        expected_topic_name = "JSON"
         expected_message = f"""```json
 {json.dumps(original_fixture, indent=2)}
 ```"""
-        self.check_webhook("json_pingdom_http_up_to_down", expected_topic, expected_message)
+        self.check_webhook("json_pingdom_http_up_to_down", expected_topic_name, expected_message)
 
     def test_json_sentry_event_for_exception_js_message(self) -> None:
         """
@@ -41,8 +41,10 @@ class JsonHookTests(WebhookTestCase):
         with open("zerver/webhooks/json/fixtures/json_sentry_event_for_exception_js.json") as f:
             original_fixture = json.load(f)
 
-        expected_topic = "JSON"
+        expected_topic_name = "JSON"
         expected_message = f"""```json
 {json.dumps(original_fixture, indent=2)}
 ```"""
-        self.check_webhook("json_sentry_event_for_exception_js", expected_topic, expected_message)
+        self.check_webhook(
+            "json_sentry_event_for_exception_js", expected_topic_name, expected_message
+        )

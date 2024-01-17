@@ -30,7 +30,7 @@ def api_gosquared_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     body = ""
-    topic = ""
+    topic_name = ""
 
     # Unfortunately, there is no other way to infer the event type
     # than just inferring it from the payload's attributes
@@ -43,21 +43,21 @@ def api_gosquared_webhook(
         body = TRAFFIC_SPIKE_TEMPLATE.format(
             website_name=domain_name, website_url=acc_url, user_num=user_num
         )
-        topic = f"GoSquared - {domain_name}"
-        check_send_webhook_message(request, user_profile, topic, body, "traffic_spike")
+        topic_name = f"GoSquared - {domain_name}"
+        check_send_webhook_message(request, user_profile, topic_name, body, "traffic_spike")
 
     # Live chat message event
     elif payload.get("message") is not None and payload.get("person") is not None:
         # Only support non-direct messages
         if not payload["message"]["private"].tame(check_bool):
             session_title = payload["message"]["session"]["title"].tame(check_string)
-            topic = f"Live chat session - {session_title}"
+            topic_name = f"Live chat session - {session_title}"
             body = CHAT_MESSAGE_TEMPLATE.format(
                 status=payload["person"]["status"].tame(check_string),
                 name=payload["person"]["_anon"]["name"].tame(check_string),
                 content=payload["message"]["content"].tame(check_string),
             )
-            check_send_webhook_message(request, user_profile, topic, body, "chat_message")
+            check_send_webhook_message(request, user_profile, topic_name, body, "chat_message")
     else:
         raise UnsupportedWebhookEventTypeError("unknown_event")
 

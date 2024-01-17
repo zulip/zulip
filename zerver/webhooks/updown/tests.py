@@ -7,19 +7,19 @@ class UpdownHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "updown"
 
     def test_updown_check_down_event(self) -> None:
-        expected_topic = "https://updown.io"
+        expected_topic_name = "https://updown.io"
         expected_message = "Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
-        self.check_webhook("check_down_one_event", expected_topic, expected_message)
+        self.check_webhook("check_down_one_event", expected_topic_name, expected_message)
 
     def test_updown_check_up_again_event(self) -> None:
-        expected_topic = "https://updown.io"
+        expected_topic_name = "https://updown.io"
         expected_message = "Service is `up` again after 4 minutes 25 seconds."
-        self.check_webhook("check_up_again_one_event", expected_topic, expected_message)
+        self.check_webhook("check_up_again_one_event", expected_topic_name, expected_message)
 
     def test_updown_check_up_event(self) -> None:
-        expected_topic = "https://updown.io"
+        expected_topic_name = "https://updown.io"
         expected_message = "Service is `up`."
-        self.check_webhook("check_up_first_time", expected_topic, expected_message)
+        self.check_webhook("check_up_first_time", expected_topic_name, expected_message)
 
     def test_updown_check_up_multiple_events(self) -> None:
         topic_name = "https://updown.io"

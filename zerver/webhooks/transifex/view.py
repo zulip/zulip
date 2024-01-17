@@ -27,7 +27,7 @@ def api_transifex_webhook(
     translated: Optional[Json[int]] = None,
     reviewed: Optional[Json[int]] = None,
 ) -> HttpResponse:
-    topic = f"{project} in {language}"
+    topic_name = f"{project} in {language}"
     if event == "translation_completed":
         event = "translated"
         body = f"Resource {resource} fully translated."
@@ -36,5 +36,5 @@ def api_transifex_webhook(
         body = f"Resource {resource} fully reviewed."
     else:
         raise UnsupportedWebhookEventTypeError(event)
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)

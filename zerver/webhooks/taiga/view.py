@@ -32,10 +32,10 @@ def api_taiga_webhook(
 ) -> HttpResponse:
     parsed_events = parse_message(message)
     content = "".join(sorted(generate_content(event) + "\n" for event in parsed_events))
-    topic = "General"
+    topic_name = "General"
     if message["data"].get("milestone") and "name" in message["data"]["milestone"]:
-        topic = message["data"]["milestone"]["name"].tame(check_string)
-    check_send_webhook_message(request, user_profile, topic, content)
+        topic_name = message["data"]["milestone"]["name"].tame(check_string)
+    check_send_webhook_message(request, user_profile, topic_name, content)
 
     return json_success(request)
 

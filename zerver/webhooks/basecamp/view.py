@@ -50,7 +50,7 @@ def api_basecamp_webhook(
     if event not in SUPPORT_EVENTS:
         raise UnsupportedWebhookEventTypeError(event)
 
-    topic = get_project_name(payload)
+    topic_name = get_project_name(payload)
     if event.startswith("document_"):
         body = get_document_body(event, payload)
         event = "document"
@@ -75,7 +75,7 @@ def api_basecamp_webhook(
     else:
         raise UnsupportedWebhookEventTypeError(event)
 
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
 
 

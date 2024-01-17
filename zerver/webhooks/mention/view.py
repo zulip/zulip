@@ -29,9 +29,9 @@ def api_mention_webhook(
 ```
 """.strip()
     body = template.format(title=title, url=source_url, description=description)
-    topic = "news"
+    topic_name = "news"
 
     # send the message
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)

@@ -30,9 +30,9 @@ def api_helloworld_webhook(
         featured_url=payload["featured_url"].tame(check_string),
     )
 
-    topic = "Hello World"
+    topic_name = "Hello World"
 
     # send the message
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)

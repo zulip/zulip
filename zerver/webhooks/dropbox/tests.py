@@ -8,12 +8,12 @@ class DropboxHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "dropbox"
 
     def test_file_updated(self) -> None:
-        expected_topic = "Dropbox"
+        expected_topic_name = "Dropbox"
         expected_message = "File has been updated on Dropbox!"
 
         self.check_webhook(
             "file_updated",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

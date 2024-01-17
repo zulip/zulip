@@ -27,7 +27,7 @@ def api_canarytoken_webhook(
 
     https://help.canary.tools/hc/en-gb/articles/360002426577-How-do-I-configure-notifications-for-a-Generic-Webhook-
     """
-    topic = "canarytoken alert"
+    topic_name = "canarytoken alert"
     body = (
         f"**:alert: Canarytoken has been triggered on {message['time'].tame(check_string)}!**\n\n"
         f"{message['memo'].tame(check_string)} \n\n"
@@ -35,7 +35,7 @@ def api_canarytoken_webhook(
     )
 
     if user_specified_topic:
-        topic = user_specified_topic
+        topic_name = user_specified_topic
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)

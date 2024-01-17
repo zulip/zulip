@@ -23,9 +23,9 @@ def api_flock_webhook(
     else:
         message_body = payload["notification"].tame(check_string)
 
-    topic = "Flock notifications"
+    topic_name = "Flock notifications"
     body = f"{message_body}"
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)

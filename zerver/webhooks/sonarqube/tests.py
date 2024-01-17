@@ -7,7 +7,7 @@ class SonarqubeHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "sonarqube"
 
     def test_analysis_success(self) -> None:
-        expected_topic = "test-sonar / master"
+        expected_topic_name = "test-sonar / master"
 
         expected_message = """
 Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis of branch master resulted in success.
@@ -15,13 +15,13 @@ Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis of 
 
         self.check_webhook(
             "success",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_analysis_error(self) -> None:
-        expected_topic = "test-sonar / master"
+        expected_topic_name = "test-sonar / master"
 
         expected_message = """
 Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis of branch master resulted in error:
@@ -31,13 +31,13 @@ Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis of 
 
         self.check_webhook(
             "error",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_analysis_error_no_value(self) -> None:
-        expected_topic = "test-sonar / master"
+        expected_topic_name = "test-sonar / master"
 
         expected_message = """
 Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis of branch master resulted in error:
@@ -47,13 +47,13 @@ Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis of 
 
         self.check_webhook(
             "error_no_value",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_analysis_success_no_branch(self) -> None:
-        expected_topic = "test-sonar"
+        expected_topic_name = "test-sonar"
 
         expected_message = """
 Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis resulted in success.
@@ -61,13 +61,13 @@ Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis res
 
         self.check_webhook(
             "success_no_branch",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_analysis_error_no_branch(self) -> None:
-        expected_topic = "test-sonar"
+        expected_topic_name = "test-sonar"
 
         expected_message = """
 Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis resulted in error:
@@ -77,7 +77,7 @@ Project [test-sonar](http://localhost:9000/dashboard?id=test-sonar) analysis res
 
         self.check_webhook(
             "error_no_branch",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

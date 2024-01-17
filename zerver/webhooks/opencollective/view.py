@@ -30,10 +30,10 @@ def api_opencollective_webhook(
     else:  # non-Incognito donation
         body = f"@_**{name}** donated **{amount}**! :tada:"
 
-    topic = "New Member"
+    topic_name = "New Member"
 
     # send the message
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)
 

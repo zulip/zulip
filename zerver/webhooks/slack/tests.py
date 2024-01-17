@@ -9,11 +9,11 @@ class SlackWebhookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "slack"
 
     def test_slack_channel_to_topic(self) -> None:
-        expected_topic = "channel: general"
+        expected_topic_name = "channel: general"
         expected_message = "**slack_user**: test"
         self.check_webhook(
             "message_info",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -21,11 +21,11 @@ class SlackWebhookTests(WebhookTestCase):
     def test_slack_channel_to_stream(self) -> None:
         self.STREAM_NAME = "general"
         self.url = "{}{}".format(self.url, "&channels_map_to_topics=0")
-        expected_topic = "Message from Slack"
+        expected_topic_name = "Message from Slack"
         expected_message = "**slack_user**: test"
         self.check_webhook(
             "message_info",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

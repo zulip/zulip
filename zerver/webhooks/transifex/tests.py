@@ -15,7 +15,7 @@ class TransifexHookTests(WebhookTestCase):
     RESOURCE = "file"
 
     def test_transifex_reviewed_message(self) -> None:
-        expected_topic = f"{self.PROJECT} in {self.LANGUAGE}"
+        expected_topic_name = f"{self.PROJECT} in {self.LANGUAGE}"
         expected_message = f"Resource {self.RESOURCE} fully reviewed."
         self.url = self.build_webhook_url(
             event="review_completed",
@@ -24,10 +24,10 @@ class TransifexHookTests(WebhookTestCase):
             language=self.LANGUAGE,
             resource=self.RESOURCE,
         )
-        self.check_webhook("", expected_topic, expected_message)
+        self.check_webhook("", expected_topic_name, expected_message)
 
     def test_transifex_translated_message(self) -> None:
-        expected_topic = f"{self.PROJECT} in {self.LANGUAGE}"
+        expected_topic_name = f"{self.PROJECT} in {self.LANGUAGE}"
         expected_message = f"Resource {self.RESOURCE} fully translated."
         self.url = self.build_webhook_url(
             event="translation_completed",
@@ -36,7 +36,7 @@ class TransifexHookTests(WebhookTestCase):
             language=self.LANGUAGE,
             resource=self.RESOURCE,
         )
-        self.check_webhook("", expected_topic, expected_message)
+        self.check_webhook("", expected_topic_name, expected_message)
 
     @override
     def get_payload(self, fixture_name: str) -> Dict[str, str]:

@@ -89,14 +89,14 @@ def strip_tags(html: str) -> str:
 
 
 def get_topic_for_contacts(user: WildValue) -> str:
-    topic = "{type}: {name}".format(
+    topic_name = "{type}: {name}".format(
         type=user["type"].tame(check_string).capitalize(),
         name=user.get("name").tame(check_none_or(check_string))
         or user.get("pseudonym").tame(check_none_or(check_string))
         or user.get("email").tame(check_none_or(check_string)),
     )
 
-    return topic
+    return topic_name
 
 
 def get_company_created_message(payload: WildValue) -> Tuple[str, str]:
@@ -111,8 +111,8 @@ def get_company_created_message(payload: WildValue) -> Tuple[str, str]:
 def get_contact_added_email_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
     body = CONTACT_EMAIL_ADDED.format(email=user["email"].tame(check_string))
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_contact_created_message(payload: WildValue) -> Tuple[str, str]:
@@ -127,8 +127,8 @@ def get_contact_created_message(payload: WildValue) -> Tuple[str, str]:
             country_name=contact["location_data"]["country_name"].tame(check_string),
         ),
     )
-    topic = get_topic_for_contacts(contact)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(contact)
+    return (topic_name, body)
 
 
 def get_contact_signed_up_message(payload: WildValue) -> Tuple[str, str]:
@@ -141,8 +141,8 @@ def get_contact_signed_up_message(payload: WildValue) -> Tuple[str, str]:
             country_name=contact["location_data"]["country_name"].tame(check_string),
         ),
     )
-    topic = get_topic_for_contacts(contact)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(contact)
+    return (topic_name, body)
 
 
 def get_contact_tag_created_message(payload: WildValue) -> Tuple[str, str]:
@@ -150,8 +150,8 @@ def get_contact_tag_created_message(payload: WildValue) -> Tuple[str, str]:
         name=payload["data"]["item"]["tag"]["name"].tame(check_string)
     )
     contact = payload["data"]["item"]["contact"]
-    topic = get_topic_for_contacts(contact)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(contact)
+    return (topic_name, body)
 
 
 def get_contact_tag_deleted_message(payload: WildValue) -> Tuple[str, str]:
@@ -159,8 +159,8 @@ def get_contact_tag_deleted_message(payload: WildValue) -> Tuple[str, str]:
         name=payload["data"]["item"]["tag"]["name"].tame(check_string)
     )
     contact = payload["data"]["item"]["contact"]
-    topic = get_topic_for_contacts(contact)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(contact)
+    return (topic_name, body)
 
 
 def get_conversation_admin_assigned_message(payload: WildValue) -> Tuple[str, str]:
@@ -168,8 +168,8 @@ def get_conversation_admin_assigned_message(payload: WildValue) -> Tuple[str, st
         name=payload["data"]["item"]["assignee"]["name"].tame(check_string)
     )
     user = payload["data"]["item"]["user"]
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_conversation_admin_message(
@@ -182,8 +182,8 @@ def get_conversation_admin_message(
         admin_name=assignee.get("name").tame(check_none_or(check_string)),
         action=action,
     )
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_conversation_admin_reply_message(
@@ -199,8 +199,8 @@ def get_conversation_admin_reply_message(
         action=action,
         content=content,
     )
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_conversation_admin_single_created_message(payload: WildValue) -> Tuple[str, str]:
@@ -212,8 +212,8 @@ def get_conversation_admin_single_created_message(payload: WildValue) -> Tuple[s
         admin_name=assignee.get("name").tame(check_none_or(check_string)),
         content=content,
     )
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_conversation_user_created_message(payload: WildValue) -> Tuple[str, str]:
@@ -224,8 +224,8 @@ def get_conversation_user_created_message(payload: WildValue) -> Tuple[str, str]
         admin_name=user.get("name").tame(check_none_or(check_string)),
         content=content,
     )
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_conversation_user_replied_message(payload: WildValue) -> Tuple[str, str]:
@@ -237,8 +237,8 @@ def get_conversation_user_replied_message(payload: WildValue) -> Tuple[str, str]
         action="replied to",
         content=content,
     )
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_event_created_message(payload: WildValue) -> Tuple[str, str]:
@@ -252,21 +252,21 @@ def get_user_created_message(payload: WildValue) -> Tuple[str, str]:
     body = USER_CREATED.format(
         name=user["name"].tame(check_string), email=user["email"].tame(check_string)
     )
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_user_deleted_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
-    topic = get_topic_for_contacts(user)
-    return (topic, "User deleted.")
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, "User deleted.")
 
 
 def get_user_email_updated_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
     body = "User's email was updated to {}.".format(user["email"].tame(check_string))
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 def get_user_tagged_message(
@@ -275,19 +275,19 @@ def get_user_tagged_message(
 ) -> Tuple[str, str]:
     user = payload["data"]["item"]["user"]
     tag = payload["data"]["item"]["tag"]
-    topic = get_topic_for_contacts(user)
+    topic_name = get_topic_for_contacts(user)
     body = "The tag `{tag_name}` was {action} the user.".format(
         tag_name=tag["name"].tame(check_string),
         action=action,
     )
-    return (topic, body)
+    return (topic_name, body)
 
 
 def get_user_unsubscribed_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
     body = "User unsubscribed from emails."
-    topic = get_topic_for_contacts(user)
-    return (topic, body)
+    topic_name = get_topic_for_contacts(user)
+    return (topic_name, body)
 
 
 EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Tuple[str, str]]] = {
@@ -343,7 +343,7 @@ def api_intercom_webhook(
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
         raise UnsupportedWebhookEventTypeError(event_type)
-    topic, body = handler(payload)
+    topic_name, body = handler(payload)
 
-    check_send_webhook_message(request, user_profile, topic, body, event_type)
+    check_send_webhook_message(request, user_profile, topic_name, body, event_type)
     return json_success(request)

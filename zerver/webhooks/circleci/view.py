@@ -67,12 +67,12 @@ def api_circleci_webhook(
     type = payload["type"].tame(check_string)
     if type == "ping":
         # Ping events don't have full payloads, so our normal codepath won't work
-        topic = "Test event"
+        topic_name = "Test event"
         body = "Webhook '{name}' test event successful.".format(
             name=payload["webhook"]["name"].tame(check_string)
         )
     else:
-        topic = get_topic(payload)
+        topic_name = get_topic(payload)
         body = get_body(payload)
 
         # We currently don't support projects using VCS providers other than GitHub,
@@ -86,7 +86,7 @@ def api_circleci_webhook(
     check_send_webhook_message(
         request,
         user_profile,
-        topic,
+        topic_name,
         body,
         payload["type"].tame(check_string),
     )

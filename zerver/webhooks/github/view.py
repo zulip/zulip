@@ -828,7 +828,7 @@ def api_github_webhook(
         # for events that are valid but not yet handled by us.
         # See IGNORED_EVENTS, for example.
         return json_success(request)
-    topic = get_topic_based_on_type(payload, event)
+    topic_name = get_topic_based_on_type(payload, event)
 
     body_function = EVENT_FUNCTION_MAPPER[event]
 
@@ -839,7 +839,7 @@ def api_github_webhook(
     )
     body = body_function(helper)
 
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
 
 

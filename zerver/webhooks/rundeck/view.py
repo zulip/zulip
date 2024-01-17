@@ -19,10 +19,10 @@ def api_rundeck_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    topic = get_topic(payload)
+    topic_name = get_topic(payload)
     body = get_body(payload)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)
 
 

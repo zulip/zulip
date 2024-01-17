@@ -56,7 +56,7 @@ def api_papertrail_webhook(
             break
 
     post = "\n".join(message)
-    topic = "logs"
+    topic_name = "logs"
 
-    check_send_webhook_message(request, user_profile, topic, post)
+    check_send_webhook_message(request, user_profile, topic_name, post)
     return json_success(request)

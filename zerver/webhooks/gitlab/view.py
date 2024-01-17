@@ -441,8 +441,8 @@ def api_gitlab_webhook(
             project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
             body = f"[{project_url}] {body}"
 
-        topic = get_topic_based_on_event(event, payload, use_merge_request_title)
-        check_send_webhook_message(request, user_profile, topic, body, event)
+        topic_name = get_topic_based_on_event(event, payload, use_merge_request_title)
+        check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
 
 

@@ -62,14 +62,14 @@ def api_statuspage_webhook(
 ) -> HttpResponse:
     if "incident" in payload:
         event = "incident"
-        topic = get_incident_topic(payload)
+        topic_name = get_incident_topic(payload)
         body = get_incident_events_body(payload)
     elif "component" in payload:
         event = "component"
-        topic = get_component_topic(payload)
+        topic_name = get_component_topic(payload)
         body = get_components_update_body(payload)
     else:
         raise AnomalousWebhookPayloadError
 
-    check_send_webhook_message(request, user_profile, topic, body, event)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)

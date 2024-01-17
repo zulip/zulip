@@ -9,7 +9,7 @@ class TravisHookTests(WebhookTestCase):
     STREAM_NAME = "travis"
     URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "travis"
-    TOPIC = "builds"
+    TOPIC_NAME = "builds"
     EXPECTED_MESSAGE = """
 Author: josh_mandel
 Build status: Passed :thumbs_up:
@@ -26,7 +26,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "build",
-            self.TOPIC,
+            self.TOPIC_NAME,
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -41,7 +41,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC,
+            self.TOPIC_NAME,
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -51,7 +51,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "build",
-            self.TOPIC,
+            self.TOPIC_NAME,
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -79,7 +79,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC,
+            self.TOPIC_NAME,
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -89,14 +89,14 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC,
+            self.TOPIC_NAME,
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
             "build",
-            self.TOPIC,
+            self.TOPIC_NAME,
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )

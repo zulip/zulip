@@ -114,9 +114,9 @@ def api_opbeat_webhook(
     details about the object mentioned.
     """
 
-    topic = payload["title"].tame(check_string)
+    topic_name = payload["title"].tame(check_string)
 
     message = format_object(payload, "base", "")
 
-    check_send_webhook_message(request, user_profile, topic, message)
+    check_send_webhook_message(request, user_profile, topic_name, message)
     return json_success(request)

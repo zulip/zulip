@@ -46,7 +46,7 @@ def api_delighted_webhook(
 
     BODY_TEMPLATE = body_template(score)
     body = BODY_TEMPLATE.format(email=email, score=score, comment=comment)
-    topic = "Survey response"
+    topic_name = "Survey response"
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)

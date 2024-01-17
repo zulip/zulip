@@ -41,7 +41,7 @@ def api_bitbucket_webhook(
     if len(commits) == 0:
         # Bitbucket doesn't give us enough information to really give
         # a useful message :/
-        topic = repository["name"].tame(check_string)
+        topic_name = repository["name"].tame(check_string)
         content = "{} [force pushed]({}).".format(
             payload.get("user", "Someone").tame(check_string),
             payload["canon_url"].tame(check_string) + repository["absolute_url"].tame(check_string),
@@ -53,9 +53,11 @@ def api_bitbucket_webhook(
 
         committer = payload.get("user", "Someone").tame(check_string)
         content = get_push_commits_event_message(committer, None, branch, commits)
-        topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
+        topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repository["name"].tame(check_string), branch=branch
         )
 
-    check_send_webhook_message(request, user_profile, topic, content, unquote_url_parameters=True)
+    check_send_webhook_message(
+        request, user_profile, topic_name, content, unquote_url_parameters=True
+    )
     return json_success(request)

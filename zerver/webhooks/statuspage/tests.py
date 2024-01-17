@@ -7,7 +7,7 @@ class StatuspageHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "statuspage"
 
     def test_statuspage_incident(self) -> None:
-        expected_topic = "Database query delays: All Systems Operational"
+        expected_topic_name = "Database query delays: All Systems Operational"
         expected_message = """
 **Database query delays**:
 * State: **identified**
@@ -15,13 +15,13 @@ class StatuspageHookTests(WebhookTestCase):
 """.strip()
         self.check_webhook(
             "incident_created",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_statuspage_incident_update(self) -> None:
-        expected_topic = "Database query delays: All Systems Operational"
+        expected_topic_name = "Database query delays: All Systems Operational"
         expected_message = """
 **Database query delays**:
 * State: **resolved**
@@ -29,17 +29,17 @@ class StatuspageHookTests(WebhookTestCase):
 """.strip()
         self.check_webhook(
             "incident_update",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_statuspage_component(self) -> None:
-        expected_topic = "Database component: Service Under Maintenance"
+        expected_topic_name = "Database component: Service Under Maintenance"
         expected_message = "**Database component** has changed status from **operational** to **under_maintenance**."
         self.check_webhook(
             "component_status_update",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )

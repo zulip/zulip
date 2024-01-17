@@ -7,7 +7,7 @@ class DelightedHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "delighted"
 
     def test_feedback_message_promoter(self) -> None:
-        expected_topic = "Survey response"
+        expected_topic_name = "Survey response"
         expected_message = """
 Kudos! You have a new promoter. Score of 9/10 from charlie_gravis@example.com:
 
@@ -18,13 +18,13 @@ Your service is fast and flawless!
 
         self.check_webhook(
             "survey_response_updated_promoter",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_feedback_message_non_promoter(self) -> None:
-        expected_topic = "Survey response"
+        expected_topic_name = "Survey response"
         expected_message = (
             "Great! You have new feedback.\n"
             ">Score of 5/10 from paul_gravis@example.com"
@@ -41,7 +41,7 @@ Your service is slow, but nearly flawless! Keep up the good work!
 
         self.check_webhook(
             "survey_response_updated_non_promoter",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
