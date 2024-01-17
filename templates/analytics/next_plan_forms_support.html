@@ -1,0 +1,8 @@
+<h4>⏱️ Schedule fixed price plan:</h4>
+<form method="POST" class="remote-form">
+    <b>Fixed price</b><br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="number" name="fixed_price" placeholder="{{_('Annual amount in dollars')}}" required />
+    <button type="submit" class="btn btn-default support-submit-button">Schedule</button>
+</form>

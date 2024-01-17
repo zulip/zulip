@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, Union
 from urllib.parse import urlencode, urljoin, urlunsplit
 
 from django.conf import settings
@@ -18,6 +18,7 @@ from corporate.lib.stripe import (
 from corporate.models import (
     Customer,
     CustomerPlan,
+    CustomerPlanOffer,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
 )
@@ -58,7 +59,7 @@ class SponsorshipData:
 class PlanData:
     customer: Optional["Customer"] = None
     current_plan: Optional["CustomerPlan"] = None
-    next_plan: Optional["CustomerPlan"] = None
+    next_plan: Union["CustomerPlan", "CustomerPlanOffer", None] = None
     licenses: Optional[int] = None
     licenses_used: Optional[int] = None
     next_billing_cycle_start: Optional[datetime] = None
@@ -179,6 +180,7 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
             elif plan_data.current_plan.licenses_at_next_renewal() is not None:
                 next_plan_licenses = plan_data.current_plan.licenses_at_next_renewal()
                 assert next_plan_licenses is not None
+                assert type(plan_data.next_plan) is CustomerPlan
                 assert plan_data.next_plan.price_per_license is not None
                 invoice_count = get_annual_invoice_count(plan_data.next_plan.billing_schedule)
                 plan_data.estimated_next_plan_revenue = (

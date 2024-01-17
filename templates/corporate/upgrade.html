@@ -69,8 +69,13 @@
                     {% else %}
                     <div class="input-box upgrade-page-field no-validation">
                         <select name="schedule" id="payment-schedule-select">
+                            {% if fixed_price_plan %}
+                            <option value="monthly">Pay monthly</option>
+                            <option value="annual">Pay annually</option>
+                            {% else %}
                             <option value="monthly" id="autopay_monthly_price"></option>
                             <option value="annual" id="autopay_annual_price_per_month"></option>
+                            {% endif %}
                         </select>
                         <label for="payment-schedule-select">Payment schedule</label>
                     </div>
@@ -125,33 +130,37 @@
                             </span>
                         </label>
                         <div id="due-today" class="not-editable-realm-field">
-                            $<span id="pre-discount-renewal-cents"></span>
-                            ($<span class="due-today-unit-price"></span> x
-                            {% if not manual_license_management %}
-                                {{ seat_count }}
+                            {% if fixed_price_plan %}
+                                <h1>$<span class="due-today-price"></span></h1>
                             {% else %}
-                                <span class="due-today-license-count">{{ seat_count }}</span>
-                            {% endif %}
-                            <span class="due-today-license-count-user-plural">
-                                {{ 'user' if seat_count == 1 else 'users' }}
-                            </span> x
-                            <span class="due-today-duration"></span>)
-                            {% if discount_percent %}
-                            <br/>
-                            <i class="billing-page-discount">Includes: {{ discount_percent }}% discount</i>
-                            {% endif %}
-                            {% if page_params.flat_discounted_months > 0 %}
-                            <br/>
-                            <span class="flat-discount-minus-sign">−</span>
-                            <span class="flat-discount-separator">$<span class="flat-discounted-price"></span>/month off</span> <i class="billing-page-discount">({{ page_params.flat_discounted_months }} {{ "month" if page_params.flat_discounted_months == 1 else "months" }} remaining)</i>
-                            {% endif %}
-                            <h1>$<span class="due-today-price"></span></h1>
-                            {% if free_trial_days %}
-                            <i>Your actual bill will depend on the number of
-                            active users in your organization.</i>
-                            {% endif %}
-                            {% if not manual_license_management and using_min_licenses_for_plan %}
-                                <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
+                                $<span id="pre-discount-renewal-cents"></span>
+                                ($<span class="due-today-unit-price"></span> x
+                                {% if not manual_license_management %}
+                                    {{ seat_count }}
+                                {% else %}
+                                    <span class="due-today-license-count">{{ seat_count }}</span>
+                                {% endif %}
+                                <span class="due-today-license-count-user-plural">
+                                    {{ 'user' if seat_count == 1 else 'users' }}
+                                </span> x
+                                <span class="due-today-duration"></span>)
+                                {% if discount_percent %}
+                                <br/>
+                                <i class="billing-page-discount">Includes: {{ discount_percent }}% discount</i>
+                                {% endif %}
+                                {% if page_params.flat_discounted_months > 0 %}
+                                <br/>
+                                <span class="flat-discount-minus-sign">−</span>
+                                <span class="flat-discount-separator">$<span class="flat-discounted-price"></span>/month off</span> <i class="billing-page-discount">({{ page_params.flat_discounted_months }} {{ "month" if page_params.flat_discounted_months == 1 else "months" }} remaining)</i>
+                                {% endif %}
+                                <h1>$<span class="due-today-price"></span></h1>
+                                {% if free_trial_days %}
+                                <i>Your actual bill will depend on the number of
+                                active users in your organization.</i>
+                                {% endif %}
+                                {% if not manual_license_management and using_min_licenses_for_plan %}
+                                    <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -160,10 +169,15 @@
                     {% elif not manual_license_management %}
                     <div id="license-automatic-section" class="input-box upgrade-page-field license-management-section">
                         <p class="not-editable-realm-field">
-                            Your subscription will renew automatically. Your bill will vary based on the number
-                            of active users in your organization. You can also
+                            {% if fixed_price_plan %}
+                                This is a fixed-price plan.
+                            {% endif %}
+                            Your subscription will renew automatically.
+                            {% if not fixed_price_plan %}
+                            Your bill will vary based on the number of active users in your organization. You can also
                             <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}">purchase a fixed number of licenses</a> instead. See
                             <a target="_blank" href="https://zulip.com/help/zulip-cloud-billing">here</a> for details.
+                            {% endif %}
                         </p>
                         <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
                     </div>
