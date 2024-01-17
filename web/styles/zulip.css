@@ -1294,8 +1294,6 @@ label {
     line-height: inherit;
 }
 
-
-
 /* List of text-like input types taken from Bootstrap */
 input {
     &[type="text"],
