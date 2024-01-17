@@ -142,6 +142,7 @@ async function start_status_polling(): Promise<void> {
         completed = await check_status();
     } catch {
         setTimeout(() => void start_status_polling(), 5000);
+        return;
     }
     if (!completed) {
         setTimeout(() => void start_status_polling(), 5000);
