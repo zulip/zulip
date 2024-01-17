@@ -30,7 +30,7 @@ const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
 const message_lists = zrequire("message_lists");
 message_lists.current = {
-    table_name: "zfilt",
+    id: "1",
 };
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -129,7 +129,7 @@ test("get_item", () => {
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(
         upload.get_item("drag_drop_container", {mode: "edit", row: 1}),
-        $(`#zfilt${CSS.escape(1)} .message_edit_form`),
+        $(`#message-row-1-${CSS.escape(1)} .message_edit_form`),
     );
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),
@@ -769,7 +769,7 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
             prevent_default_counter += 1;
         },
     };
-    const $drag_drop_container = $(`#zfilt${CSS.escape(40)} .message_edit_form`);
+    const $drag_drop_container = $(`#message-row-1-${CSS.escape(40)} .message_edit_form`);
 
     // Dragover event test
     const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");

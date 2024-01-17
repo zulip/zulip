@@ -404,8 +404,8 @@ export function update_timestamps(): void {
             const className = entry.className;
             const $elements = $(`.${CSS.escape(className)}`);
             // The element might not exist any more (because it
-            // was in the zfilt table, or because we added
-            // messages above it and re-collapsed).
+            // was in the narrowed message list which was removed,
+            // or because we added messages above it and re-collapsed).
             if ($elements.length > 0) {
                 const time = entry.time;
                 const rendered_time = render_now(time, today);

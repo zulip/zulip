@@ -65,11 +65,9 @@ const alice = {
 people.add_active_user(alice);
 
 function make_home_msg_list() {
-    const table_name = "whatever";
     const filter = new Filter([]);
 
     const list = new message_list.MessageList({
-        table_name,
         filter,
     });
     return list;
@@ -297,7 +295,6 @@ function simulate_narrow() {
     const filter = new Filter([{operator: "dm", operand: alice.email}]);
 
     const msg_list = new message_list.MessageList({
-        table_name: "zfilt",
         filter,
     });
     message_lists.current = msg_list;

@@ -12,7 +12,7 @@ async function copy_messages(
     return await page.evaluate(
         (start_message: string, end_message: string) => {
             function get_message_node(message: string): Element {
-                return [...document.querySelectorAll("#zhome .message_content")].find(
+                return [...document.querySelectorAll(".message-list .message_content")].find(
                     (node) => node.textContent?.trim() === message,
                 )!;
             }
@@ -130,7 +130,9 @@ async function test_copying_messages_from_several_topics(page: Page): Promise<vo
 async function copy_paste_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
 
     await common.send_multiple_messages(page, [
         {stream_name: "Verona", topic: "copy-paste-topic #1", content: "copy paste test A"},
@@ -148,7 +150,8 @@ async function copy_paste_test(page: Page): Promise<void> {
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test G"},
     ]);
 
-    await common.check_messages_sent(page, "zhome", [
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await common.check_messages_sent(page, message_list_id, [
         ["Verona > copy-paste-topic #1", ["copy paste test A", "copy paste test B"]],
         [
             "Verona > copy-paste-topic #2",

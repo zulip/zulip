@@ -57,10 +57,14 @@ async function run() {
         await page.goto(`${options.realmUri}/#narrow/id/${options.messageId}`, {
             waitUntil: "networkidle2",
         });
-        const messageSelector = `#zfilt${CSS.escape(options.messageId)}`;
+        // eslint-disable-next-line no-undef
+        const message_list_id = await page.evaluate(() => zulip_test.current_msg_list.id);
+        const messageSelector = `#message-row-${message_list_id}-${CSS.escape(options.messageId)}`;
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
-        const marker = `#zfilt${CSS.escape(options.messageId)} .unread_marker`;
+        const marker = `#message-row-${message_list_id}-${CSS.escape(
+            options.messageId,
+        )} .unread_marker`;
         await page.evaluate((sel) => $(sel).remove(), marker);
         const messageBox = await page.$(messageSelector);
         await page.evaluate((msg) => $(msg).removeClass("selected_message"), messageSelector);

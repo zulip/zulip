@@ -20,18 +20,6 @@ mock_esm("../src/timerender", {
     },
 });
 
-mock_esm("../src/rows", {
-    get_table() {
-        return {
-            children() {
-                return {
-                    detach: noop,
-                };
-            },
-        };
-    },
-});
-
 mock_esm("../src/people", {
     sender_is_bot: () => false,
     sender_is_guest: () => false,
@@ -47,9 +35,10 @@ const muted_users = zrequire("muted_users");
 let next_timestamp = 1500000000;
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         muted_users.set_muted_users([]);
-        f({override});
+        mock_template("message_list.hbs", false, noop);
+        f({override, mock_template});
     });
 }
 
@@ -80,7 +69,13 @@ test("msg_moved_var", () => {
     }
 
     function build_list(message_groups) {
-        const list = new MessageListView(undefined, undefined, true);
+        const list = new MessageListView(
+            {
+                id: 1,
+            },
+            true,
+            true,
+        );
         list._message_groups = message_groups;
         return list;
     }
@@ -229,7 +224,13 @@ test("msg_edited_vars", () => {
     }
 
     function build_list(message_groups) {
-        const list = new MessageListView(undefined, undefined, true);
+        const list = new MessageListView(
+            {
+                id: 1,
+            },
+            true,
+            true,
+        );
         list._message_groups = message_groups;
         return list;
     }
@@ -293,7 +294,13 @@ test("muted_message_vars", () => {
     }
 
     function build_list(message_groups) {
-        const list = new MessageListView(undefined, undefined, true);
+        const list = new MessageListView(
+            {
+                id: 1,
+            },
+            true,
+            true,
+        );
         list._message_groups = message_groups;
         return list;
     }
@@ -403,7 +410,8 @@ test("muted_message_vars", () => {
     })();
 });
 
-test("merge_message_groups", () => {
+test("merge_message_groups", ({mock_template}) => {
+    mock_template("message_list.hbs", false, noop);
     // MessageListView has lots of DOM code, so we are going to test the message
     // group merging logic on its own.
 
@@ -433,15 +441,14 @@ test("merge_message_groups", () => {
     }
 
     function build_list(message_groups) {
-        const table_name = "zfilt";
         const filter = new Filter([{operator: "stream", operand: "foo"}]);
 
         const list = new message_list.MessageList({
-            table_name,
             filter,
+            is_node_test: true,
         });
 
-        const view = new MessageListView(list, table_name, true);
+        const view = new MessageListView(list, true, true);
         view._message_groups = message_groups;
         view.list.unsubscribed_bookend_content = noop;
         view.list.subscribed_bookend_content = noop;
@@ -687,19 +694,19 @@ test("merge_message_groups", () => {
     })();
 });
 
-test("render_windows", () => {
+test("render_windows", ({mock_template}) => {
+    mock_template("message_list.hbs", false, noop);
     // We only render up to 400 messages at a time in our message list,
     // and we only change the window (which is a range, really, with
     // start/end) when the pointer moves outside of the window or close
     // to the edges.
 
     const view = (function make_view() {
-        const table_name = "zfilt";
         const filter = new Filter([]);
 
         const list = new message_list.MessageList({
-            table_name,
             filter,
+            is_node_test: true,
         });
 
         const view = list.view;
@@ -731,6 +738,7 @@ test("render_windows", () => {
             id: i,
         }));
         list.selected_idx = () => 0;
+        list.view.clear_table = noop;
         list.clear();
 
         list.add_messages(messages, {});

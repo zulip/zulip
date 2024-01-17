@@ -246,7 +246,9 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
 async function drafts_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
 
     await test_empty_drafts(page);
 

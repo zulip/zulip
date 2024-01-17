@@ -49,7 +49,10 @@ export function activate(in_opts) {
         });
     };
 
-    if ($row.attr("id").startsWith("zhome") && narrow_state.active()) {
+    if (
+        $row.attr("id").startsWith(`message-row-${message_lists.home.id}-`) &&
+        narrow_state.active()
+    ) {
         // Don't place widget in a home message row if we are narrowed
         // to active state
         return;

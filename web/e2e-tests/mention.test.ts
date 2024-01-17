@@ -7,7 +7,7 @@ import * as common from "./lib/common";
 async function test_mention(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector("#zhome .message_row", {visible: true});
+    await page.waitForSelector(".message-list .message_row", {visible: true});
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
 
@@ -36,7 +36,10 @@ async function test_mention(page: Page): Promise<void> {
     await page.click("#compose_banners .wildcard_warning .main-view-banner-action-button");
     await page.waitForSelector(".wildcard_warning", {hidden: true});
 
-    await common.check_messages_sent(page, "zhome", [["Verona > Test mention all", ["@all"]]]);
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await common.check_messages_sent(page, message_list_id, [
+        ["Verona > Test mention all", ["@all"]],
+    ]);
 }
 
 common.run_test(test_mention);
