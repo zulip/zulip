@@ -534,6 +534,11 @@ input[name="licenses"] {
     background-color: hsl(0deg 70% 40%);
 }
 
+#reactivate-subscription
+    .reactivate-current-plan-button.plan-toggle-action-button {
+    background-color: hsl(146deg 92% 26%);
+}
+
 #server-deactivate-button,
 #remote-billing-confirm-login-button,
 #remote-billing-confirm-email-button,
