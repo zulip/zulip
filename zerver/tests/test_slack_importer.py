@@ -84,6 +84,9 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
             "U061A3E0G": "T6LARQE2Z",
             "U061A8H1G": "T7KJRQE8Y",
             "U8X25EBAB": "T5YFFM2QY",
+            "U11111111": "T7KJRQE8Y",
+            "U22222222": "T7KJRQE8Y",
+            "U33333333": "T7KJRQE8Y",
         }
         try:
             user_id = qs["user"][0]
@@ -304,11 +307,22 @@ class SlackImporter(ZulipTestCase):
     ) -> None:
         users = [{"id": "U061A1R2R"}, {"id": "U061A5N1G"}, {"id": "U064KUGRJ"}]
         data_file_mock.side_effect = [
-            [
+            [  # Channels
                 {"name": "general", "members": ["U061A1R2R", "U061A5N1G"]},
                 {"name": "sharedchannel", "members": ["U061A1R2R", "U061A3E0G"]},
             ],
-            [],
+            [  # Private channels ("groups")
+                {"name": "private", "members": ["U061A1R2R", "U11111111"]},
+            ],
+            [  # Huddles ("mpims")
+                {
+                    "name": "mpdm-foo--bar--baz-1",
+                    "members": ["U061A1R2R", "U061A5N1G", "U22222222"],
+                },
+            ],
+            [  # DMs
+                {"id": "D123456", "members": ["U064KUGRJ", "U33333333"]},
+            ],
         ]
         messages_mock.return_value = [
             {"user": "U061A1R2R"},
@@ -325,7 +339,7 @@ class SlackImporter(ZulipTestCase):
         fetch_shared_channel_users(users, slack_data_dir, "xoxb-valid-token")
 
         # Normal users
-        self.assert_length(users, 5)
+        self.assert_length(users, 8)
         self.assertEqual(users[0]["id"], "U061A1R2R")
         self.assertEqual(users[0]["is_mirror_dummy"], False)
         self.assertFalse("team_domain" in users[0])
@@ -335,14 +349,18 @@ class SlackImporter(ZulipTestCase):
         # Shared channel users
         # We need to do this because the outcome order of `users` list is
         # not deterministic.
-        fourth_fifth = [users[3], users[4]]
-        fourth_fifth.sort(key=lambda x: x["id"])
-        self.assertEqual(fourth_fifth[0]["id"], "U061A3E0G")
-        self.assertEqual(fourth_fifth[0]["team_domain"], "foreignteam1")
-        self.assertEqual(fourth_fifth[0]["is_mirror_dummy"], True)
-        self.assertEqual(fourth_fifth[1]["id"], "U061A8H1G")
-        self.assertEqual(fourth_fifth[1]["team_domain"], "foreignteam2")
-        self.assertEqual(fourth_fifth[1]["is_mirror_dummy"], True)
+        later_users = sorted(users[3:], key=lambda x: x["id"])
+        expected_users = [
+            ("U061A3E0G", "foreignteam1"),
+            ("U061A8H1G", "foreignteam2"),
+            ("U11111111", "foreignteam2"),
+            ("U22222222", "foreignteam2"),
+            ("U33333333", "foreignteam2"),
+        ]
+        for expected, found in zip(expected_users, later_users):
+            self.assertEqual(found["id"], expected[0])
+            self.assertEqual(found["team_domain"], expected[1])
+            self.assertEqual(found["is_mirror_dummy"], True)
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:

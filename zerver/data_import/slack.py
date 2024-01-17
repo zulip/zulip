@@ -1256,11 +1256,21 @@ def fetch_shared_channel_users(
         private_channels = get_data_file(slack_data_dir + "/groups.json")
     except FileNotFoundError:
         private_channels = []
-    for channel in public_channels + private_channels:
+    try:
+        huddles = get_data_file(slack_data_dir + "/mpims.json")
+    except FileNotFoundError:
+        huddles = []
+    for channel in public_channels + private_channels + huddles:
         added_channels[channel["name"]] = True
         for user_id in channel["members"]:
             if user_id not in normal_user_ids:
                 mirror_dummy_user_ids.add(user_id)
+    if os.path.exists(slack_data_dir + "/dms.json"):
+        dms = get_data_file(slack_data_dir + "/dms.json")
+        for dm_data in dms:
+            for user_id in dm_data["members"]:
+                if user_id not in normal_user_ids:
+                    mirror_dummy_user_ids.add(user_id)
 
     all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {})
     for message in all_messages:
