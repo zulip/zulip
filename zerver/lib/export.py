@@ -2096,24 +2096,24 @@ def export_uploads_and_avatars(
 
 def _get_exported_s3_record(
     bucket_name: str,
-    key: "Object",
+    s3_obj: "Object",
     processing_emoji: bool,
     user_id_to_email: dict[int, str],
     realm_id: int,
 ) -> dict[str, Any]:
     # Helper function for export_files_from_s3
     record: dict[str, Any] = dict(
-        s3_path=key.key,
+        s3_path=s3_obj.key,
         bucket=bucket_name,
-        size=key.content_length,
-        last_modified=key.last_modified,
-        content_type=key.content_type,
-        md5=key.e_tag,
+        size=s3_obj.content_length,
+        last_modified=s3_obj.last_modified,
+        content_type=s3_obj.content_type,
+        md5=s3_obj.e_tag,
     )
-    record.update(key.metadata)
+    record.update(s3_obj.metadata)
 
     if processing_emoji:
-        file_name = os.path.basename(key.key)
+        file_name = os.path.basename(s3_obj.key)
         # Both the main emoji file and the .original version should have the same
         # file_name value in the record, as they reference the same emoji.
         file_name = file_name.removesuffix(".original")
@@ -2145,18 +2145,18 @@ def _get_exported_s3_record(
 
 
 def _save_s3_object_to_file(
-    key: "Object",
+    s3_obj: "Object",
     output_dir: str,
     processing_uploads: bool,
 ) -> None:
     # Helper function for export_files_from_s3
     if not processing_uploads:
-        filename = os.path.join(output_dir, key.key)
+        filename = os.path.join(output_dir, s3_obj.key)
     else:
-        fields = key.key.split("/")
+        fields = s3_obj.key.split("/")
         if len(fields) != 3:
-            raise AssertionError(f"Suspicious key with invalid format {key.key}")
-        filename = os.path.join(output_dir, key.key)
+            raise AssertionError(f"Suspicious key with invalid format {s3_obj.key}")
+        filename = os.path.join(output_dir, s3_obj.key)
 
     if "../" in filename:
         raise AssertionError(f"Suspicious file with invalid format {filename}")
@@ -2168,7 +2168,7 @@ def _save_s3_object_to_file(
 
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    key.download_file(Filename=filename)
+    s3_obj.download_file(Filename=filename)
 
 
 def export_files_from_s3(
@@ -2203,7 +2203,7 @@ def export_files_from_s3(
             if valid_hashes is not None and bkey.Object().key not in valid_hashes:
                 continue
 
-            key = bucket.Object(bkey.key)
+            s3_obj = bucket.Object(bkey.key)
 
             """
             For very old realms we may not have proper metadata. If you really need
@@ -2211,33 +2211,35 @@ def export_files_from_s3(
             """
             checking_metadata = True
             if checking_metadata:
-                if "realm_id" not in key.metadata:
-                    raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
+                if "realm_id" not in s3_obj.metadata:
+                    raise AssertionError(f"Missing realm_id in object metadata: {s3_obj.metadata}")
 
-                if "user_profile_id" not in key.metadata:
-                    raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
+                if "user_profile_id" not in s3_obj.metadata:
+                    raise AssertionError(
+                        f"Missing user_profile_id in object metadata: {s3_obj.metadata}"
+                    )
 
-                if int(key.metadata["user_profile_id"]) not in user_id_to_email:
+                if int(s3_obj.metadata["user_profile_id"]) not in user_id_to_email:
                     continue
 
-                if key.metadata["realm_id"] == str(realm.id):
+                if s3_obj.metadata["realm_id"] == str(realm.id):
                     pass
-                elif email_gateway_bot and key.metadata["user_profile_id"] == str(
+                elif email_gateway_bot and s3_obj.metadata["user_profile_id"] == str(
                     email_gateway_bot.id
                 ):
                     # Our one expected cross-realm source of attachments
                     pass
                 else:
                     raise AssertionError(
-                        f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}"
+                        f"Key metadata problem: {s3_obj.key} / {s3_obj.metadata} / {realm.id}"
                     )
 
             record = _get_exported_s3_record(
-                bucket_name, key, processing_emoji, user_id_to_email, realm.id
+                bucket_name, s3_obj, processing_emoji, user_id_to_email, realm.id
             )
 
-            record["path"] = key.key
-            _save_s3_object_to_file(key, output_dir, processing_uploads)
+            record["path"] = s3_obj.key
+            _save_s3_object_to_file(s3_obj, output_dir, processing_uploads)
 
             yield record
             count += 1
