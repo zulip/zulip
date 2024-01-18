@@ -24,6 +24,7 @@ import * as user_profile from "./user_profile";
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
+const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 const EMBEDDED_BOT_TYPE = "4";
 
 function add_bot_row(info) {
@@ -45,7 +46,7 @@ export function render_bots() {
     $("#inactive_bots_list").empty();
 
     const all_bots_for_current_user = bot_data.get_all_bots_for_current_user();
-    let user_owns_an_active_bot = false;
+    let user_owns_an_active_outgoing_webhook_bot = false;
 
     for (const elem of all_bots_for_current_user) {
         add_bot_row({
@@ -59,7 +60,15 @@ export function render_bots() {
             is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
             zuliprc: "zuliprc", // Most browsers do not allow filename starting with `.`
         });
-        user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
+        user_owns_an_active_outgoing_webhook_bot =
+            user_owns_an_active_outgoing_webhook_bot ||
+            (elem.is_active && elem.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT);
+    }
+
+    if (user_owns_an_active_outgoing_webhook_bot) {
+        $("#active_bots_list_container .config-download-text").show();
+    } else {
+        $("#active_bots_list_container .config-download-text").hide();
     }
 
     list_widget.render_empty_list_message_if_needed($("#active_bots_list"));
@@ -316,7 +325,6 @@ export function add_a_new_bot() {
 
 export function set_up() {
     $("#download_botserverrc").on("click", function () {
-        const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         let content = "";
 
         for (const bot of bot_data.get_all_bots_for_current_user()) {
@@ -339,7 +347,7 @@ export function set_up() {
             {label: $t({defaultMessage: "Inactive bots"}), key: "inactive-bots"},
         ],
         callback(_name, key) {
-            $(".bots_list").hide();
+            $(".bots_section").hide();
             $(`[data-bot-settings-section="${CSS.escape(key)}"]`).show();
         },
     });

@@ -13,23 +13,26 @@
         <div>
             <button class="button rounded sea-green add-a-new-bot {{#unless can_create_new_bots}}hide{{/unless}}">{{t "Add a new bot" }}</button>
         </div>
-        <div>
-            <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
-            <a type="submit" download="{{botserverrc}}" id= "download_botserverrc" class="btn" title="{{t 'Download botserverrc' }}">
-                <i class="fa fa-download sea-green" aria-hidden="true"></i>
-            </a>
-        </div>
         {{/unless}}
 
         <hr/>
 
         <div class="tab-container"></div>
 
-        <ol id="active_bots_list" class="bots_list" data-bot-settings-section="active-bots" data-empty="{{t 'You have no active bots.' }}">
-        </ol>
+        <div id="active_bots_list_container" class="bots_section" data-bot-settings-section="active-bots">
+            <div class="config-download-text">
+                <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
+                <a type="submit" download="{{botserverrc}}" id= "download_botserverrc" class="btn" title="{{t 'Download botserverrc' }}">
+                    <i class="fa fa-download sea-green" aria-hidden="true"></i>
+                </a>
+            </div>
+            <ol id="active_bots_list" class="bots_list" data-empty="{{t 'You have no active bots.' }}">
+            </ol>
+        </div>
 
-        <ol id="inactive_bots_list" class="bots_list" data-bot-settings-section="inactive-bots" data-empty="{{t 'You have no inactive bots.' }}">
-        </ol>
-
+        <div id="inactive_bots_list_container" class="bots_section" data-bot-settings-section="inactive-bots">
+            <ol id="inactive_bots_list" class="bots_list" data-empty="{{t 'You have no inactive bots.' }}">
+            </ol>
+        </div>
     </div>
 </div>

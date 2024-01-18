@@ -844,10 +844,13 @@ input[type="checkbox"] {
         margin: 10px 0;
         border-color: hsl(0deg 0% 85%);
     }
+
+    .config-download-text {
+        margin-left: 5px;
+    }
 }
 
 .bots_list {
-    display: none;
     list-style-type: none;
     margin-left: 0;
 
