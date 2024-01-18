@@ -93,7 +93,7 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
-from zerver.models.users import ExternalAuthID, get_system_bot, get_user_profile_by_id
+from zerver.models.users import ExternalAuthID, get_system_bot
 
 if TYPE_CHECKING:
     from mypy_boto3_s3.service_resource import Object
@@ -2095,7 +2095,10 @@ def export_uploads_and_avatars(
 
 
 def _get_exported_s3_record(
-    bucket_name: str, key: "Object", processing_emoji: bool
+    bucket_name: str,
+    key: "Object",
+    processing_emoji: bool,
+    realm_id: int,
 ) -> dict[str, Any]:
     # Helper function for export_files_from_s3
     record: dict[str, Any] = dict(
@@ -2116,13 +2119,11 @@ def _get_exported_s3_record(
         record["file_name"] = file_name
 
     if "user_profile_id" in record:
-        # Fix the record ids
         record["user_profile_id"] = int(record["user_profile_id"])
 
         # A few early avatars don't have 'realm_id' on the object; fix their metadata
         if "realm_id" not in record:
-            user_profile = get_user_profile_by_id(record["user_profile_id"])
-            record["realm_id"] = user_profile.realm_id
+            record["realm_id"] = realm_id
     else:
         # There are some rare cases in which 'user_profile_id' may not be present
         # in S3 metadata. Eg: Exporting an organization which was created
@@ -2228,7 +2229,7 @@ def export_files_from_s3(
                     # Email gateway bot sends messages, potentially including attachments, cross-realm.
                     print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
 
-            record = _get_exported_s3_record(bucket_name, key, processing_emoji)
+            record = _get_exported_s3_record(bucket_name, key, processing_emoji, realm.id)
 
             record["path"] = key.key
             _save_s3_object_to_file(key, output_dir, processing_uploads)
