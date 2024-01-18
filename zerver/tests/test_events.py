@@ -305,6 +305,7 @@ class BaseAction(ZulipTestCase):
         user_list_incomplete: bool = False,
         client_is_old: bool = False,
         include_deactivated_groups: bool = False,
+        archived_channels: bool = False,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -354,6 +355,7 @@ class BaseAction(ZulipTestCase):
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
 
         if client_is_old:
@@ -395,6 +397,7 @@ class BaseAction(ZulipTestCase):
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
@@ -425,6 +428,7 @@ class BaseAction(ZulipTestCase):
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -3355,6 +3359,23 @@ class NormalActionsTest(BaseAction):
             check_stream_delete("events[0]", events[0])
             self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
+    def test_admin_deactivate_unsubscribed_stream(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        stream = self.make_stream("test_stream")
+        iago = self.example_user("iago")
+        realm = iago.realm
+        self.user_profile = self.example_user("iago")
+
+        self.subscribe(iago, stream.name)
+        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [iago])
+
+        self.unsubscribe(iago, stream.name)
+        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [])
+
+        with self.verify_action(num_events=1, archived_channels=True) as events:
+            do_deactivate_stream(stream, acting_user=iago)
+        check_stream_delete("events[0]", events[0])
+
     def test_user_losing_access_on_deactivating_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
@@ -3367,7 +3388,7 @@ class NormalActionsTest(BaseAction):
             self.users_subscribed_to_stream(stream.name, realm), [hamlet, polonius]
         )
 
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
         check_stream_delete("events[0]", events[0])
         check_realm_user_remove("events[1]", events[1])
@@ -3383,7 +3404,7 @@ class NormalActionsTest(BaseAction):
             self.users_subscribed_to_stream(stream.name, realm), [iago, polonius, shiva]
         )
 
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
         check_stream_delete("events[0]", events[0])
         check_realm_user_remove("events[1]", events[1])

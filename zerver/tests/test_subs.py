@@ -238,8 +238,8 @@ class TestMiscStuff(ZulipTestCase):
         """Verify that all the fields from `Stream.API_FIELDS` and `Subscription.API_FIELDS` present
         in `APIStreamDict` and `APISubscriptionDict`, respectively.
         """
-        expected_fields = set(Stream.API_FIELDS) | {"stream_id"}
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields = set(Stream.API_FIELDS) | {"stream_id", "is_archived"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
@@ -2507,6 +2507,13 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_get("/json/streams", {"include_subscribed": "false"})
         public_streams = [s["name"] for s in self.assert_json_success(result)["streams"]]
         self.assertNotIn(deactivated_stream_name, public_streams)
+
+        # It shows up with `exclude_archived` parameter set to false.
+        result = self.client_get(
+            "/json/streams", {"exclude_archived": "false", "include_all_active": "true"}
+        )
+        streams = [s["name"] for s in self.assert_json_success(result)["streams"]]
+        self.assertIn(deactivated_stream_name, streams)
 
         # You can't subscribe to archived stream.
         result = self.common_subscribe_to_streams(
@@ -5464,10 +5471,10 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_length(result, 1)
         self.assertEqual(result[0]["stream_id"], stream1.id)
 
-    def test_gather_subscriptions_excludes_deactivated_streams(self) -> None:
+    def test_gather_subscriptions_deactivated_streams(self) -> None:
         """
-        Check that gather_subscriptions_helper does not include deactivated streams in its
-        results.
+        Check that gather_subscriptions_helper does/doesn't include deactivated streams in its
+        results with `exclude_archived` parameter.
         """
         realm = get_realm("zulip")
         admin_user = self.example_user("iago")
@@ -5497,6 +5504,10 @@ class SubscriptionAPITest(ZulipTestCase):
         admin_after_delete = gather_subscriptions_helper(admin_user)
         non_admin_after_delete = gather_subscriptions_helper(non_admin_user)
 
+        admin_after_delete_include_archived = gather_subscriptions_helper(
+            admin_user, include_archived_channels=True
+        )
+
         # Compare results - should be 1 stream less
         self.assertTrue(
             len(admin_before_delete.subscriptions) == len(admin_after_delete.subscriptions) + 1,
@@ -5506,6 +5517,14 @@ class SubscriptionAPITest(ZulipTestCase):
             len(non_admin_before_delete.subscriptions)
             == len(non_admin_after_delete.subscriptions) + 1,
             "Expected exactly 1 less stream from gather_subscriptions_helper",
+        )
+
+        # Compare results - should be the same number of streams
+        self.assertTrue(
+            len(admin_before_delete.subscriptions) + len(admin_before_delete.unsubscribed)
+            == len(admin_after_delete_include_archived.subscriptions)
+            + len(admin_after_delete_include_archived.unsubscribed),
+            "Expected exact number of streams from gather_subscriptions_helper",
         )
 
     def test_validate_user_access_to_subscribers_helper(self) -> None:
@@ -5944,6 +5963,7 @@ class GetSubscribersTest(ZulipTestCase):
 
     def verify_sub_fields(self, sub_data: SubscriptionInfo) -> None:
         other_fields = {
+            "is_archived",
             "is_announcement_only",
             "in_home_view",
             "stream_id",
@@ -5952,7 +5972,7 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | set(Subscription.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         for lst in [sub_data.subscriptions, sub_data.unsubscribed]:
@@ -5960,6 +5980,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertEqual(set(sub), expected_fields)
 
         other_fields = {
+            "is_archived",
             "is_announcement_only",
             "stream_id",
             "stream_weekly_traffic",
@@ -5967,7 +5988,7 @@ class GetSubscribersTest(ZulipTestCase):
         }
 
         expected_fields = set(Stream.API_FIELDS) | other_fields
-        expected_fields -= {"id", "can_remove_subscribers_group_id"}
+        expected_fields -= {"id", "can_remove_subscribers_group_id", "deactivated"}
         expected_fields |= {"can_remove_subscribers_group"}
 
         for never_sub in sub_data.never_subscribed:
