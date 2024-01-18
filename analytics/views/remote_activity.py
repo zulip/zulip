@@ -23,25 +23,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
 
     query = SQL(
         """
-        with icount_id as (
-            select
-                server_id,
-                max(id) as max_count_id
-            from zilencer_remoteinstallationcount
-            where
-                property='active_users:is_bot:day'
-                and subgroup='false'
-            group by server_id
-        ),
-        icount as (
-            select
-                icount_id.server_id,
-                value as latest_value
-            from icount_id
-            join zilencer_remoteinstallationcount
-            on max_count_id = zilencer_remoteinstallationcount.id
-        ),
-        mobile_push_forwarded_count as (
+        with mobile_push_forwarded_count as (
             select
                 server_id,
                 sum(coalesce(value, 0)) as push_forwarded_count
@@ -64,15 +46,13 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             rserver.contact_email,
             rserver.last_version,
             rserver.last_audit_log_update,
-            latest_value,
             push_user_count,
             push_forwarded_count
         from zilencer_remotezulipserver rserver
-        left join icount on icount.server_id = rserver.id
         left join mobile_push_forwarded_count on mobile_push_forwarded_count.server_id = rserver.id
         left join remote_push_devices on remote_push_devices.server_id = rserver.id
         where not deactivated
-        order by latest_value DESC NULLS LAST, push_user_count DESC NULLS LAST
+        order by push_user_count DESC NULLS LAST
     """
     )
 
@@ -82,7 +62,6 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Contact email",
         "Zulip version",
         "Last audit log update",
-        "Analytics users",
         "Mobile users",
         "Mobile pushes forwarded",
         "Plan name",
@@ -95,7 +74,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
 
     rows = get_query_data(query)
     total_row = []
-    totals_columns = [5, 6, 7]
+    totals_columns = [5, 6]
     plan_data_by_remote_server = get_plan_data_by_remote_server()
 
     for row in rows:
