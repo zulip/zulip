@@ -2220,9 +2220,10 @@ def export_files_from_s3(
                         f"Missing user_profile_id in object metadata: {s3_obj.metadata}"
                     )
 
-                if int(s3_obj.metadata["user_profile_id"]) not in user_id_to_email:
-                    continue
+            if int(s3_obj.metadata["user_profile_id"]) not in user_id_to_email:
+                continue
 
+            if checking_metadata:
                 if s3_obj.metadata["realm_id"] == str(realm.id):
                     pass
                 elif email_gateway_bot and s3_obj.metadata["user_profile_id"] == str(
