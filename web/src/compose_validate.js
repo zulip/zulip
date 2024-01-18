@@ -679,18 +679,6 @@ function validate_private_message() {
     const user_ids = compose_pm_pill.get_user_ids();
     const $banner_container = $("#compose_banners");
 
-    const user_ids_string = user_ids.join(",");
-
-    if (!people.user_can_direct_message(user_ids_string)) {
-        compose_banner.show_error_message(
-            $t({defaultMessage: "Direct messages are disabled in this organization."}),
-            compose_banner.CLASSNAMES.private_messages_disabled,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        return false;
-    }
-
     if (compose_state.private_message_recipient().length === 0) {
         compose_banner.show_error_message(
             $t({defaultMessage: "Please specify at least one valid recipient."}),

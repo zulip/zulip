@@ -88,9 +88,6 @@ export function get_organization_settings_options() {
     options.common_policy_values = settings_components.get_sorted_options_list(
         settings_config.common_policy_values,
     );
-    options.private_message_policy_values = settings_components.get_sorted_options_list(
-        settings_config.private_message_policy_values,
-    );
     options.wildcard_mention_policy_values = settings_components.get_sorted_options_list(
         settings_config.wildcard_mention_policy_values,
     );

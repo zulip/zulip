@@ -32,7 +32,6 @@ import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import {hide_all} from "./popovers";
 import * as rows from "./rows";
-import * as settings_config from "./settings_config";
 import * as sidebar_ui from "./sidebar_ui";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
@@ -265,11 +264,7 @@ function get_user_card_popover_data(
 
     const args = {
         invisible_mode,
-        can_send_private_message:
-            is_active &&
-            !is_me &&
-            realm.realm_private_message_policy !==
-                settings_config.private_message_policy_values.disabled.code,
+        can_send_private_message: is_active && !is_me,
         display_profile_fields,
         has_message_context,
         is_active,

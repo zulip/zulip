@@ -7,7 +7,6 @@ import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -203,17 +202,6 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     };
                 case "dm":
                     // You have no direct messages.
-                    if (
-                        realm.realm_private_message_policy ===
-                        settings_config.private_message_policy_values.disabled.code
-                    ) {
-                        return {
-                            title: $t({
-                                defaultMessage:
-                                    "You are not allowed to send direct messages in this organization.",
-                            }),
-                        };
-                    }
                     return {
                         title: $t({defaultMessage: "You have no direct messages yet!"}),
                         html: $t_html(
@@ -310,18 +298,6 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
             assert(user_ids !== undefined);
-            if (
-                realm.realm_private_message_policy ===
-                    settings_config.private_message_policy_values.disabled.code &&
-                (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
-            ) {
-                return {
-                    title: $t({
-                        defaultMessage:
-                            "You are not allowed to send direct messages in this organization.",
-                    }),
-                };
-            }
             if (!first_operand.includes(",")) {
                 // You have no direct messages with this person
                 if (people.is_current_user(first_operand)) {
@@ -393,18 +369,6 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             if (!person_in_dms) {
                 return {
                     title: $t({defaultMessage: "This user does not exist!"}),
-                };
-            }
-            if (
-                realm.realm_private_message_policy ===
-                    settings_config.private_message_policy_values.disabled.code &&
-                !person_in_dms.is_bot
-            ) {
-                return {
-                    title: $t({
-                        defaultMessage:
-                            "You are not allowed to send direct messages in this organization.",
-                    }),
                 };
             }
             if (people.is_current_user(first_operand)) {
