@@ -32,15 +32,13 @@ function test(label, f) {
 test("pan_and_zoom", ({override}) => {
     const $img = $.create("img-stub");
     const $link = $.create("link-stub");
-    const $msg = $.create("msg-stub");
 
     $img.closest = () => [];
 
     $img.set_parent($link);
-    $link.closest = () => $msg;
 
-    override(rows, "id", ($row) => {
-        assert.equal($row, $msg);
+    override(rows, "get_message_id", ($row) => {
+        assert.equal($row, $img);
         return 1234;
     });
 
@@ -67,10 +65,9 @@ test("youtube", ({override}) => {
     const href = "https://youtube.com/some-random-clip";
     const $img = $.create("img-stub");
     const $link = $.create("link-stub");
-    const $msg = $.create("msg-stub");
 
-    override(rows, "id", ($row) => {
-        assert.equal($row, $msg);
+    override(rows, "get_message_id", ($row) => {
+        assert.equal($row, $img);
         return 4321;
     });
 
@@ -86,7 +83,6 @@ test("youtube", ({override}) => {
     };
 
     $img.set_parent($link);
-    $link.closest = () => $msg;
     $link.attr("href", href);
 
     $.create(

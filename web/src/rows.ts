@@ -136,6 +136,10 @@ export function first_message_in_group($message_group: JQuery): JQuery {
     return $("div.message_row", $message_group).first();
 }
 
+export function last_message_in_group($message_group: JQuery): JQuery {
+    return $("div.message_row", $message_group).last();
+}
+
 export function get_message_recipient_row($message_row: JQuery): JQuery {
     return $message_row.parent(".recipient_row").expectOne();
 }
