@@ -22,6 +22,7 @@ export function setup_permissions_dropdown(group, for_group_creation) {
             group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
                 "can_mention_group",
                 "group",
+                group,
             ),
         item_click_callback(event, dropdown) {
             dropdown.hide();

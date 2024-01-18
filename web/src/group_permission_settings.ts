@@ -2,6 +2,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {GroupPermissionSetting} from "./types";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 
 export function get_group_permission_setting_config(
     setting_name: string,
@@ -25,6 +26,7 @@ type UserGroupForDropdownListWidget = {
 export function get_realm_user_groups_for_dropdown_list_widget(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
+    target_group?: UserGroup,
 ): UserGroupForDropdownListWidget[] {
     const group_setting_config = get_group_permission_setting_config(setting_name, setting_type);
 
@@ -81,12 +83,23 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         return system_user_groups;
     }
 
-    const user_groups_excluding_system_groups = user_groups
+    const user_groups_excluding_system_groups: UserGroupForDropdownListWidget[] = user_groups
         .get_realm_user_groups()
+        .filter((group) => {
+            if (target_group !== undefined && group.id === target_group.id) {
+                return false;
+            }
+            return true;
+        })
         .map((group) => ({
             name: group.name,
             unique_id: group.id,
         }));
+
+    if (target_group !== undefined) {
+        const current_group_option = {name: "Members of this group", unique_id: target_group.id};
+        user_groups_excluding_system_groups.unshift(current_group_option);
+    }
 
     return [...system_user_groups, ...user_groups_excluding_system_groups];
 }
