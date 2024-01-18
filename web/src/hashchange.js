@@ -241,6 +241,10 @@ function do_hashchange_overlay(old_hash) {
         history.replaceState(null, "", browser_history.get_full_url("streams/subscribed"));
     }
 
+    if (base === "groups" && !section) {
+        history.replaceState(null, "", browser_history.get_full_url("groups/your"));
+    }
+
     // Start by handling the specific case of going
     // from something like streams/all to streams_subscribed.
     //
