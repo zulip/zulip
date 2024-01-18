@@ -72,14 +72,20 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Links",
     ]
 
+    # If the column order above changes, update the constants below
+    SERVER_ID = 0
+    SERVER_HOSTNAME = 1
+    LAST_AUDIT_LOG_DATE = 4
+    MOBILE_USER_COUNT = 5
+    MOBILE_PUSH_COUNT = 6
+
     rows = get_query_data(query)
     total_row = []
-    totals_columns = [5, 6]
     plan_data_by_remote_server = get_plan_data_by_remote_server()
 
     for row in rows:
         # Add estimated revenue for server
-        server_plan_data = plan_data_by_remote_server.get(row[0])
+        server_plan_data = plan_data_by_remote_server.get(row[SERVER_ID])
         if server_plan_data is None:
             row.append("---")
             row.append("---")
@@ -90,22 +96,23 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             row.append(server_plan_data.current_status)
             row.append(f"${revenue}")
         # Add user counts
-        remote_server_counts = get_remote_server_guest_and_non_guest_count(row[0])
+        remote_server_counts = get_remote_server_guest_and_non_guest_count(row[SERVER_ID])
         row.append(remote_server_counts.non_guest_user_count)
         row.append(remote_server_counts.guest_user_count)
         # Add links
-        stats = remote_installation_stats_link(row[0])
-        support = remote_installation_support_link(row[1])
+        stats = remote_installation_stats_link(row[SERVER_ID])
+        support = remote_installation_support_link(row[SERVER_HOSTNAME])
         links = stats + " " + support
         row.append(links)
+    # Format column data and add total row
     for i, col in enumerate(cols):
-        if col == "Last audit log update":
+        if i == LAST_AUDIT_LOG_DATE:
             fix_rows(rows, i, format_date_for_activity_reports)
-        if col in ["Mobile users", "Mobile pushes forwarded"]:
+        if i in [MOBILE_USER_COUNT, MOBILE_PUSH_COUNT]:
             fix_rows(rows, i, format_none_as_zero)
-        if i == 0:
+        if i == SERVER_ID:
             total_row.append("Total")
-        elif i in totals_columns:
+        elif i in [MOBILE_USER_COUNT, MOBILE_PUSH_COUNT]:
             total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
         else:
             total_row.append("")
