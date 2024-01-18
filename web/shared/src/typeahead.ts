@@ -128,40 +128,44 @@ export function triage<T>(
         `matches` and then call the rest `rest`.
     */
 
-    const exactMatch = [];
-    const beginswithCaseSensitive = [];
-    const beginswithCaseInsensitive = [];
-    const noMatch = [];
-    const lowerQuery = query ? query.toLowerCase() : "";
+    const exact_matches = [];
+    const begins_with_case_sensitive_matches = [];
+    const begins_with_case_insensitive_matches = [];
+    const no_matches = [];
+    const lower_query = query ? query.toLowerCase() : "";
 
     for (const obj of objs) {
         const item = get_item(obj);
-        const lowerItem = item.toLowerCase();
+        const lower_item = item.toLowerCase();
 
-        if (lowerItem === lowerQuery) {
-            exactMatch.push(obj);
+        if (lower_item === lower_query) {
+            exact_matches.push(obj);
         } else if (item.startsWith(query)) {
-            beginswithCaseSensitive.push(obj);
-        } else if (lowerItem.startsWith(lowerQuery)) {
-            beginswithCaseInsensitive.push(obj);
+            begins_with_case_sensitive_matches.push(obj);
+        } else if (lower_item.startsWith(lower_query)) {
+            begins_with_case_insensitive_matches.push(obj);
         } else {
-            noMatch.push(obj);
+            no_matches.push(obj);
         }
     }
 
     if (sorting_comparator) {
         const non_exact_sorted_matches = [
-            ...beginswithCaseSensitive,
-            ...beginswithCaseInsensitive,
+            ...begins_with_case_sensitive_matches,
+            ...begins_with_case_insensitive_matches,
         ].sort(sorting_comparator);
         return {
-            matches: [...exactMatch.sort(sorting_comparator), ...non_exact_sorted_matches],
-            rest: noMatch.sort(sorting_comparator),
+            matches: [...exact_matches.sort(sorting_comparator), ...non_exact_sorted_matches],
+            rest: no_matches.sort(sorting_comparator),
         };
     }
     return {
-        matches: [...exactMatch, ...beginswithCaseSensitive, ...beginswithCaseInsensitive],
-        rest: noMatch,
+        matches: [
+            ...exact_matches,
+            ...begins_with_case_sensitive_matches,
+            ...begins_with_case_insensitive_matches,
+        ],
+        rest: no_matches,
     };
 }
 
