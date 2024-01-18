@@ -893,6 +893,16 @@ export function initialize() {
         open_create_user_group();
     });
 
+    $("#groups_overlay_container").on("click", "#user_group_creation_form [data-dismiss]", (e) => {
+        e.preventDefault();
+        // we want to make sure that the click is not just a simulated
+        // click; this fixes an issue where hitting "Enter" would
+        // trigger this code path due to bootstrap magic.
+        if (e.clientY !== 0) {
+            open_right_panel_empty();
+        }
+    });
+
     $("#groups_overlay_container").on("click", ".group-row", show_right_section);
 
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
