@@ -1,16 +1,13 @@
 import logging
 import os
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from glob import glob
 
-import bmemcached
 import magic
 from django.conf import settings
-from django.core.cache import cache
-from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
+from zerver.lib.parallel import run_parallel
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import upload_emoji_image, write_avatar_images
 from zerver.lib.upload.s3 import S3UploadBackend, upload_content_to_s3
@@ -52,20 +49,7 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
 
 
 def transfer_avatars_to_s3(processes: int) -> None:
-    users = list(UserProfile.objects.all())
-    if processes == 1:
-        for user in users:
-            _transfer_avatar_to_s3(user)
-    else:  # nocoverage
-        connection.close()
-        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-        assert isinstance(_cache, bmemcached.Client)
-        _cache.disconnect_all()
-        with ProcessPoolExecutor(max_workers=processes) as executor:
-            for future in as_completed(
-                executor.submit(_transfer_avatar_to_s3, user) for user in users
-            ):
-                future.result()
+    run_parallel(_transfer_avatar_to_s3, UserProfile.objects.all(), processes)
 
 
 def _transfer_message_files_to_s3(attachment: Attachment) -> None:
@@ -118,21 +102,7 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
 
 
 def transfer_message_files_to_s3(processes: int) -> None:
-    attachments = list(Attachment.objects.all())
-    if processes == 1:
-        for attachment in attachments:
-            _transfer_message_files_to_s3(attachment)
-    else:  # nocoverage
-        connection.close()
-        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-        assert isinstance(_cache, bmemcached.Client)
-        _cache.disconnect_all()
-        with ProcessPoolExecutor(max_workers=processes) as executor:
-            for future in as_completed(
-                executor.submit(_transfer_message_files_to_s3, attachment)
-                for attachment in attachments
-            ):
-                future.result()
+    run_parallel(_transfer_message_files_to_s3, Attachment.objects.all(), processes)
 
 
 def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
@@ -164,17 +134,4 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
 
 
 def transfer_emoji_to_s3(processes: int) -> None:
-    realm_emojis = list(RealmEmoji.objects.filter())
-    if processes == 1:
-        for realm_emoji in realm_emojis:
-            _transfer_emoji_to_s3(realm_emoji)
-    else:  # nocoverage
-        connection.close()
-        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-        assert isinstance(_cache, bmemcached.Client)
-        _cache.disconnect_all()
-        with ProcessPoolExecutor(max_workers=processes) as executor:
-            for future in as_completed(
-                executor.submit(_transfer_emoji_to_s3, realm_emoji) for realm_emoji in realm_emojis
-            ):
-                future.result()
+    run_parallel(_transfer_emoji_to_s3, RealmEmoji.objects.filter(), processes)

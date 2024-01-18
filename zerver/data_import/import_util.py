@@ -5,7 +5,6 @@ import shutil
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -19,6 +18,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
+from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
@@ -634,36 +634,16 @@ def process_avatars(
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
-    run_parallel_wrapper(
-        partial(get_avatar, avatar_dir, size_url_suffix), avatar_upload_list, threads=threads
+    run_parallel(
+        partial(get_avatar, avatar_dir, size_url_suffix),
+        avatar_upload_list,
+        processes=threads,
+        catch=True,
+        report=lambda count: logging.info("Finished %s items", count),
     )
 
     logging.info("######### GETTING AVATARS FINISHED #########\n")
     return avatar_list + avatar_original_list
-
-
-ListJobData = TypeVar("ListJobData")
-
-
-def wrapping_function(f: Callable[[ListJobData], None], item: ListJobData) -> None:
-    try:
-        f(item)
-    except Exception:
-        logging.exception("Error processing item: %s", item, stack_info=True)
-
-
-def run_parallel_wrapper(
-    f: Callable[[ListJobData], None], full_items: list[ListJobData], threads: int = 6
-) -> None:
-    logging.info("Distributing %s items across %s threads", len(full_items), threads)
-
-    with ProcessPoolExecutor(max_workers=threads) as executor:
-        for count, future in enumerate(
-            as_completed(executor.submit(wrapping_function, f, item) for item in full_items), 1
-        ):
-            future.result()
-            if count % 1000 == 0:
-                logging.info("Finished %s items", count)
 
 
 def get_uploads(upload_dir: str, upload: list[str]) -> None:
@@ -697,7 +677,13 @@ def process_uploads(
         upload["path"] = upload_s3_path
 
     # Run downloads in parallel
-    run_parallel_wrapper(partial(get_uploads, upload_dir), upload_url_list, threads=threads)
+    run_parallel(
+        partial(get_uploads, upload_dir),
+        upload_url_list,
+        processes=threads,
+        catch=True,
+        report=lambda count: logging.info("Finished %s items", count),
+    )
 
     logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
     return upload_list
