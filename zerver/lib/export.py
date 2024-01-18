@@ -2103,6 +2103,7 @@ def _get_exported_s3_record(
 ) -> dict[str, Any]:
     # Helper function for export_files_from_s3
     record: dict[str, Any] = dict(
+        path=s3_obj.key,
         s3_path=s3_obj.key,
         bucket=bucket_name,
         size=s3_obj.content_length,
@@ -2238,7 +2239,6 @@ def export_files_from_s3(
                 bucket_name, s3_obj, processing_emoji, user_id_to_email, realm.id
             )
 
-            record["path"] = s3_obj.key
             _save_s3_object_to_file(s3_obj, output_dir, processing_uploads)
 
             yield record
