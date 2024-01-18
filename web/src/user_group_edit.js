@@ -379,9 +379,13 @@ export const show_user_group_settings_pane = {
     },
 };
 
-function open_right_panel_empty() {
+function empty_right_panel() {
     $(".group-row.active").removeClass("active");
     show_user_group_settings_pane.nothing_selected();
+}
+
+function open_right_panel_empty() {
+    empty_right_panel();
     const tab_key = $(".user-groups-container")
         .find("div.ind-tab.selected")
         .first()
@@ -566,11 +570,13 @@ export function change_state(section) {
 
     if (section === "all") {
         group_list_toggler.goto("all-groups");
+        empty_right_panel();
         return;
     }
 
     if (section === "your") {
         group_list_toggler.goto("your-groups");
+        empty_right_panel();
         return;
     }
 
@@ -595,6 +601,7 @@ export function change_state(section) {
 
     blueslip.info("invalid section for groups: " + section);
     group_list_toggler.goto("your-groups");
+    empty_right_panel();
 }
 
 function compare_by_name(a, b) {
