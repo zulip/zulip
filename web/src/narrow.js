@@ -86,6 +86,20 @@ export function save_narrow(terms) {
     changehash(new_hash);
 }
 
+export function update_current_message_list(msg_list) {
+    if (msg_list !== message_lists.home) {
+        message_lists.home?.view.$list.removeClass("focused-message-list");
+    }
+
+    if (message_lists.current !== message_lists.home) {
+        // Remove old msg list from DOM.
+        message_lists.current?.view.$list.remove();
+    }
+
+    message_lists.set_current(msg_list);
+    message_lists.current.view.$list.addClass("focused-message-list");
+}
+
 export function activate(raw_terms, opts) {
     /* Main entry point for switching to a new view / message list.
        Note that for historical reasons related to the current
@@ -425,14 +439,7 @@ export function activate(raw_terms, opts) {
         // Show the new set of messages.  It is important to set message_lists.current to
         // the view right as it's being shown, because we rely on message_lists.current
         // being shown for deciding when to condense messages.
-        msg_list.view.$list.addClass("focused-message-list");
-        message_lists.home.view.$list.removeClass("focused-message-list");
-
-        // Remove old message list from DOM.
-        if (message_lists.current !== message_lists.home) {
-            message_lists.current?.view.$list.remove();
-        }
-        message_lists.set_current(msg_list);
+        update_current_message_list(msg_list);
 
         let then_select_offset;
         if (id_info.target_id === id_info.final_select_id) {
@@ -1077,12 +1084,7 @@ export function deactivate() {
         narrow_state.reset_current_filter();
         narrow_state.set_has_shown_message_list_view();
 
-        message_lists.home.view.$list.addClass("focused-message-list");
-        // Remove old message list from DOM.
-        if (message_lists.current !== message_lists.home) {
-            message_lists.current?.view.$list.remove();
-        }
-        message_lists.set_current(message_lists.home);
+        update_current_message_list(message_lists.home);
         message_lists.current.resume_reading();
         condense.condense_and_collapse(message_lists.home.view.$list.find(".message_row"));
 
