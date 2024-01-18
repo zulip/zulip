@@ -93,7 +93,7 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
-from zerver.models.users import ExternalAuthID, get_system_bot, get_user_profile_by_id
+from zerver.models.users import ExternalAuthID, get_system_bot
 
 if TYPE_CHECKING:
     from mypy_boto3_s3.service_resource import Object
@@ -2028,7 +2028,7 @@ def export_uploads_and_avatars(
                 output_dir=realm_icons_output_dir,
             )
     else:
-        user_ids = {user.id for user in users}
+        user_id_to_email = {user.id: user.email for user in users}
 
         # Some bigger installations will have their data stored on S3.
 
@@ -2041,7 +2041,7 @@ def export_uploads_and_avatars(
             bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
             object_prefix=f"{realm.id}/",
             output_dir=uploads_output_dir,
-            user_ids=user_ids,
+            user_id_to_email=user_id_to_email,
             valid_hashes=path_ids,
         )
 
@@ -2060,7 +2060,7 @@ def export_uploads_and_avatars(
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/",
             output_dir=avatars_output_dir,
-            user_ids=user_ids,
+            user_id_to_email=user_id_to_email,
             valid_hashes=avatar_hash_values,
         )
 
@@ -2077,7 +2077,7 @@ def export_uploads_and_avatars(
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/emoji/images/",
             output_dir=emoji_output_dir,
-            user_ids=user_ids,
+            user_id_to_email=user_id_to_email,
             valid_hashes=emoji_paths,
         )
 
@@ -2089,13 +2089,17 @@ def export_uploads_and_avatars(
                 bucket_name=settings.S3_AVATAR_BUCKET,
                 object_prefix=f"{realm.id}/realm/",
                 output_dir=realm_icons_output_dir,
-                user_ids=user_ids,
+                user_id_to_email=user_id_to_email,
                 valid_hashes=None,
             )
 
 
 def _get_exported_s3_record(
-    bucket_name: str, key: "Object", processing_emoji: bool
+    bucket_name: str,
+    key: "Object",
+    processing_emoji: bool,
+    user_id_to_email: dict[int, str],
+    realm_id: int,
 ) -> dict[str, Any]:
     # Helper function for export_files_from_s3
     record: dict[str, Any] = dict(
@@ -2116,15 +2120,12 @@ def _get_exported_s3_record(
         record["file_name"] = file_name
 
     if "user_profile_id" in record:
-        user_profile = get_user_profile_by_id(int(record["user_profile_id"]))
-        record["user_profile_email"] = user_profile.email
-
-        # Fix the record ids
         record["user_profile_id"] = int(record["user_profile_id"])
+        record["user_profile_email"] = user_id_to_email[record["user_profile_id"]]
 
         # A few early avatars don't have 'realm_id' on the object; fix their metadata
         if "realm_id" not in record:
-            record["realm_id"] = user_profile.realm_id
+            record["realm_id"] = realm_id
     else:
         # There are some rare cases in which 'user_profile_id' may not be present
         # in S3 metadata. Eg: Exporting an organization which was created
@@ -2177,7 +2178,7 @@ def export_files_from_s3(
     bucket_name: str,
     object_prefix: str,
     output_dir: Path,
-    user_ids: set[int],
+    user_id_to_email: dict[int, str],
     valid_hashes: set[str] | None,
 ) -> None:
     processing_uploads = flavor == "upload"
@@ -2192,7 +2193,7 @@ def export_files_from_s3(
     if handle_system_bots and settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
-        user_ids.add(email_gateway_bot.id)
+        user_id_to_email[email_gateway_bot.id] = email_gateway_bot.email
 
     def iterate_attachments() -> Iterator[Record]:
         count = 0
@@ -2216,7 +2217,7 @@ def export_files_from_s3(
                 if "user_profile_id" not in key.metadata:
                     raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
 
-                if int(key.metadata["user_profile_id"]) not in user_ids:
+                if int(key.metadata["user_profile_id"]) not in user_id_to_email:
                     continue
 
                 # This can happen if an email address has moved realms
@@ -2230,7 +2231,9 @@ def export_files_from_s3(
                     # Email gateway bot sends messages, potentially including attachments, cross-realm.
                     print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
 
-            record = _get_exported_s3_record(bucket_name, key, processing_emoji)
+            record = _get_exported_s3_record(
+                bucket_name, key, processing_emoji, user_id_to_email, realm.id
+            )
 
             record["path"] = key.key
             _save_s3_object_to_file(key, output_dir, processing_uploads)
