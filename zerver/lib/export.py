@@ -2204,34 +2204,28 @@ def export_files_from_s3(
 
             s3_obj = bucket.Object(bkey.key)
 
-            """
-            For very old realms we may not have proper metadata. If you really need
-            an export to bypass these checks, flip the following flag.
-            """
-            checking_metadata = True
-            if checking_metadata:
-                if "realm_id" not in s3_obj.metadata:
-                    raise AssertionError(f"Missing realm_id in object metadata: {s3_obj.metadata}")
+            if "realm_id" not in s3_obj.metadata:
+                raise AssertionError(f"Missing realm_id in object metadata: {s3_obj.metadata}")
 
-                if "user_profile_id" not in s3_obj.metadata:
-                    raise AssertionError(
-                        f"Missing user_profile_id in object metadata: {s3_obj.metadata}"
-                    )
+            if "user_profile_id" not in s3_obj.metadata:
+                raise AssertionError(
+                    f"Missing user_profile_id in object metadata: {s3_obj.metadata}"
+                )
 
-                if int(s3_obj.metadata["user_profile_id"]) not in user_ids:
-                    continue
+            if int(s3_obj.metadata["user_profile_id"]) not in user_ids:
+                continue
 
-                if s3_obj.metadata["realm_id"] == str(realm.id):
-                    pass
-                elif email_gateway_bot and s3_obj.metadata["user_profile_id"] == str(
-                    email_gateway_bot.id
-                ):
-                    # Our one expected cross-realm source of attachments
-                    pass
-                else:
-                    raise AssertionError(
-                        f"Key metadata problem: {s3_obj.key} / {s3_obj.metadata} / {realm.id}"
-                    )
+            if s3_obj.metadata["realm_id"] == str(realm.id):
+                pass
+            elif email_gateway_bot and s3_obj.metadata["user_profile_id"] == str(
+                email_gateway_bot.id
+            ):
+                # Our one expected cross-realm source of attachments
+                pass
+            else:
+                raise AssertionError(
+                    f"Key metadata problem: {s3_obj.key} / {s3_obj.metadata} / {realm.id}"
+                )
 
             record = _get_exported_s3_record(bucket_name, s3_obj, processing_emoji, realm.id)
 
