@@ -403,7 +403,7 @@ export function show_from_selected_message() {
                 $message = $message_selected;
                 break;
             } else {
-                $message = $prev_message_group.find(".message_row").last();
+                $message = rows.last_message_in_group($prev_message_group);
                 $media = $message.find(media_classes());
                 continue;
             }
@@ -419,7 +419,7 @@ export function show_from_selected_message() {
                 if ($next_message_group.length === 0) {
                     break;
                 } else {
-                    $message = $next_message_group.find(".message_row").first();
+                    $message = rows.first_message_in_group($next_message_group);
                     $media = $message.find(media_classes());
                     continue;
                 }
@@ -491,8 +491,7 @@ export function parse_media_data(media) {
     if (is_compose_preview_media) {
         sender_full_name = people.my_full_name();
     } else {
-        const $message = $parent.closest(".message_row");
-        const message_id = rows.id($message);
+        const message_id = rows.get_message_id(media);
         const message = message_store.get(message_id);
         if (message === undefined) {
             blueslip.error("Lightbox for unknown message", {message_id});
