@@ -91,6 +91,7 @@ def request_event_queue(
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
     include_deactivated_groups: bool = False,
+    archived_channels: bool = False,
 ) -> str | None:
     if not settings.USING_TORNADO:
         return None
@@ -115,6 +116,7 @@ def request_event_queue(
         "linkifier_url_template": orjson.dumps(linkifier_url_template),
         "user_list_incomplete": orjson.dumps(user_list_incomplete),
         "include_deactivated_groups": orjson.dumps(include_deactivated_groups),
+        "archived_channels": orjson.dumps(archived_channels),
     }
 
     if event_types is not None:

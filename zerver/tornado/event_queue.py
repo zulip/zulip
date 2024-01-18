@@ -79,6 +79,7 @@ class ClientDescriptor:
         linkifier_url_template: bool = False,
         user_list_incomplete: bool = False,
         include_deactivated_groups: bool = False,
+        archived_channels: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -110,6 +111,7 @@ class ClientDescriptor:
         self.linkifier_url_template = linkifier_url_template
         self.user_list_incomplete = user_list_incomplete
         self.include_deactivated_groups = include_deactivated_groups
+        self.archived_channels = archived_channels
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -141,6 +143,7 @@ class ClientDescriptor:
             linkifier_url_template=self.linkifier_url_template,
             user_list_incomplete=self.user_list_incomplete,
             include_deactivated_groups=self.include_deactivated_groups,
+            archived_channels=self.archived_channels,
         )
 
     @override
@@ -178,6 +181,7 @@ class ClientDescriptor:
             d.get("linkifier_url_template", False),
             d.get("user_list_incomplete", False),
             d.get("include_deactivated_groups", False),
+            d.get("archived_channels", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret

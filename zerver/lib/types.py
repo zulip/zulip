@@ -144,6 +144,7 @@ class RawStreamDict(TypedDict):
     can_remove_subscribers_group_id: int
     creator_id: int | None
     date_created: datetime
+    deactivated: bool
     description: str
     first_message_id: int | None
     history_public_to_subscribers: bool
@@ -193,6 +194,7 @@ class SubscriptionStreamDict(TypedDict):
     in_home_view: bool
     invite_only: bool
     is_announcement_only: bool
+    is_archived: bool
     is_muted: bool
     is_web_public: bool
     message_retention_days: int | None
@@ -208,6 +210,7 @@ class SubscriptionStreamDict(TypedDict):
 
 
 class NeverSubscribedStreamDict(TypedDict):
+    is_archived: bool
     can_remove_subscribers_group: int
     creator_id: int | None
     date_created: int
@@ -232,6 +235,7 @@ class DefaultStreamDict(TypedDict):
     with few exceptions and possible additional fields.
     """
 
+    is_archived: bool
     can_remove_subscribers_group: int
     creator_id: int | None
     date_created: int

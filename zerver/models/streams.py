@@ -182,6 +182,7 @@ class Stream(models.Model):
     API_FIELDS = [
         "creator_id",
         "date_created",
+        "deactivated",
         "description",
         "first_message_id",
         "history_public_to_subscribers",
@@ -197,6 +198,7 @@ class Stream(models.Model):
 
     def to_dict(self) -> DefaultStreamDict:
         return DefaultStreamDict(
+            is_archived=self.deactivated,
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             creator_id=self.creator_id,
             date_created=datetime_to_timestamp(self.date_created),
@@ -227,6 +229,16 @@ def get_active_streams(realm: Realm) -> QuerySet[Stream]:
     Return all streams (including invite-only streams) that have not been deactivated.
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
+
+
+def get_all_streams(realm: Realm, include_archived_channels: bool = True) -> QuerySet[Stream]:
+    """
+    Return all streams for `include_archived_channels`= true (including invite-only and deactivated streams).
+    """
+    if not include_archived_channels:
+        return get_active_streams(realm)
+
+    return Stream.objects.filter(realm=realm)
 
 
 def get_linkable_streams(realm_id: int) -> QuerySet[Stream]:
