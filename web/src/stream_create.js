@@ -290,7 +290,7 @@ function create_stream() {
                 // with i18n.  And likely we should be reporting the
                 // error text directly rather than turning it into
                 // "Error creating stream"?
-                stream_name_error.report_already_exists(stream_name);
+                stream_name_error.report_already_exists();
                 stream_name_error.select();
             }
 
