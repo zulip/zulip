@@ -144,6 +144,7 @@ def fetch_initial_state_data(
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
     include_deactivated_groups: bool = False,
+    archived_channels: bool = False,
 ) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -654,6 +655,7 @@ def fetch_initial_state_data(
             sub_info = gather_subscriptions_helper(
                 user_profile,
                 include_subscribers=include_subscribers,
+                include_archived_channels=archived_channels,
             )
         else:
             sub_info = get_web_public_subs(realm)
@@ -787,6 +789,7 @@ def apply_events(
     linkifier_url_template: bool,
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
+    archived_channels: bool = False,
 ) -> None:
     for event in events:
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
@@ -809,6 +812,7 @@ def apply_events(
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
+            archived_channels=archived_channels,
         )
 
 
@@ -823,6 +827,7 @@ def apply_event(
     linkifier_url_template: bool,
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
+    archived_channels: bool = False,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -1210,17 +1215,30 @@ def apply_event(
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
 
-            state["subscriptions"] = [
-                stream
-                for stream in state["subscriptions"]
-                if stream["stream_id"] not in deleted_stream_ids
-            ]
+            if archived_channels:
+                for stream in state["subscriptions"]:
+                    if stream["stream_id"] in deleted_stream_ids:
+                        stream["is_archived"] = True
 
-            state["unsubscribed"] = [
-                stream
-                for stream in state["unsubscribed"]
-                if stream["stream_id"] not in deleted_stream_ids
-            ]
+                for stream in state["unsubscribed"]:
+                    if stream["stream_id"] in deleted_stream_ids:
+                        stream["is_archived"] = True
+                        stream["first_message_id"] = Stream.objects.get(
+                            id=stream["stream_id"]
+                        ).first_message_id
+
+            else:
+                state["subscriptions"] = [
+                    stream
+                    for stream in state["subscriptions"]
+                    if stream["stream_id"] not in deleted_stream_ids
+                ]
+
+                state["unsubscribed"] = [
+                    stream
+                    for stream in state["unsubscribed"]
+                    if stream["stream_id"] not in deleted_stream_ids
+                ]
 
             state["never_subscribed"] = [
                 stream
@@ -1720,6 +1738,7 @@ class ClientCapabilities(TypedDict):
     linkifier_url_template: NotRequired[bool]
     user_list_incomplete: NotRequired[bool]
     include_deactivated_groups: NotRequired[bool]
+    archived_channels: NotRequired[bool]
 
 
 def do_events_register(
@@ -1757,6 +1776,7 @@ def do_events_register(
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
+    archived_channels = client_capabilities.get("archived_channels", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -1789,6 +1809,7 @@ def do_events_register(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
+            archived_channels=archived_channels,
             # These presence params are a noop, because presence is not included.
             slim_presence=True,
             presence_last_update_id_fetched_by_client=None,
@@ -1828,6 +1849,7 @@ def do_events_register(
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
+        archived_channels=archived_channels,
     )
 
     if queue_id is None:
@@ -1850,6 +1872,7 @@ def do_events_register(
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
+        archived_channels=archived_channels,
     )
 
     # Apply events that came in while we were fetching initial data

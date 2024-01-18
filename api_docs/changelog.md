@@ -20,6 +20,24 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 315**
+
+* [POST /register](/api/register-queue), [`GET
+  /streams/{stream_id}`](/api/get-stream-by-id), [`GET
+  /events`](/api/get-events), [GET
+  /users/me/subscriptions](/api/get-subscriptions): The `is_archived`
+  property has been added to channel and subscription objects.
+
+* [`GET /streams`](/api/get-streams): The new parameter
+  `exclude_archived` controls whether archived channels should be
+  returned.
+
+* [`POST /register`](/api/register-queue): The new `archived_channels`
+  [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  allows the client to specify whether it supports archived channels
+  being present in the response.
+
 **Feature level 314**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
