@@ -680,6 +680,7 @@ paths:
                                       {
                                         "name": "test_stream",
                                         "stream_id": 9,
+                                        "archived": false,
                                         "description": "",
                                         "rendered_description": "",
                                         "invite_only": false,
@@ -1321,6 +1322,7 @@ paths:
                                       {
                                         "name": "private",
                                         "stream_id": 12,
+                                        "archived": false,
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
@@ -1378,6 +1380,7 @@ paths:
                                       {
                                         "name": "private",
                                         "stream_id": 12,
+                                        "archived": true,
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
@@ -1953,6 +1956,7 @@ paths:
                                             {
                                               "name": "Scotland",
                                               "stream_id": 3,
+                                              "archived": false,
                                               "description": "Located in the United Kingdom",
                                               "rendered_description": "<p>Located in the United Kingdom</p>",
                                               "date_created": 1691057093,
@@ -1968,6 +1972,7 @@ paths:
                                             {
                                               "name": "Denmark",
                                               "stream_id": 1,
+                                              "archived": false,
                                               "description": "A Scandinavian country",
                                               "rendered_description": "<p>A Scandinavian country</p>",
                                               "date_created": 1691057093,
@@ -1983,6 +1988,7 @@ paths:
                                             {
                                               "name": "Verona",
                                               "stream_id": 5,
+                                              "archived": false,
                                               "description": "A city in Italy",
                                               "rendered_description": "<p>A city in Italy</p>",
                                               "date_created": 1691057093,
@@ -2029,6 +2035,7 @@ paths:
                                       {
                                         "name": "Scotland",
                                         "stream_id": 3,
+                                        "archived": false,
                                         "description": "Located in the United Kingdom",
                                         "rendered_description": "<p>Located in the United Kingdom</p>",
                                         "date_created": 1691057093,
@@ -9122,6 +9129,7 @@ paths:
                         "subscriptions":
                           [
                             {
+                              "archived": false,
                               "audible_notifications": true,
                               "color": "#e79ab5",
                               "description": "A Scandinavian country",
@@ -9135,6 +9143,7 @@ paths:
                               "subscribers": [7, 10, 11, 12, 14],
                             },
                             {
+                              "archived": false,
                               "audible_notifications": true,
                               "color": "#e79ab5",
                               "description": "Located in the United Kingdom",
@@ -11949,6 +11958,16 @@ paths:
                       to the current user. **Changes**: New in Zulip 8.0 (feature level 232). This
                       capability is for backwards-compatibility.
 
+                    - `archived_streams`: Boolean for whether the client
+                      supports processing archived streams in the `stream`
+                      and `subscription` event types. If `false`, the server
+                      will not include in the `register` response or in
+                      events related to archived streams.
+                      <br />
+                      **Changes**: New in Zulip 9.0 (feature level 244). This
+                      allows clients toaccess archived streams, without
+                      breaking backwards-compatibility for existing clients.
+
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
                     [events-linkifiers]: /api/get-events#realm_linkifiers
@@ -12610,6 +12629,7 @@ paths:
                               properties:
                                 stream_id: {}
                                 name: {}
+                                archived: {}
                                 description: {}
                                 date_created: {}
                                 invite_only: {}
@@ -17004,6 +17024,14 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: exclude_archived
+          in: query
+          description: |
+            Whether to exclude archived streams from the results.
+          schema:
+            type: boolean
+            default: true
+          example: true
         - name: include_all_active
           in: query
           description: |
@@ -17054,6 +17082,7 @@ paths:
                               properties:
                                 stream_id: {}
                                 name: {}
+                                archived: {}
                                 description: {}
                                 date_created: {}
                                 invite_only: {}
@@ -17095,6 +17124,7 @@ paths:
                               required:
                                 - stream_id
                                 - name
+                                - archived
                                 - description
                                 - date_created
                                 - invite_only
@@ -17114,6 +17144,7 @@ paths:
                         "streams":
                           [
                             {
+                              "archived": false,
                               "can_remove_subscribers_group": 10,
                               "date_created": 1691057093,
                               "description": "A private stream",
@@ -17131,6 +17162,7 @@ paths:
                               "stream_weekly_traffic": null,
                             },
                             {
+                              "archived": false,
                               "can_remove_subscribers_group": 9,
                               "date_created": 1691057093,
                               "description": "A default public stream",
@@ -17198,6 +17230,7 @@ paths:
                         "result": "success",
                         "stream":
                           {
+                            "archived": false,
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
                             "history_public_to_subscribers": true,
@@ -18518,6 +18551,7 @@ components:
           properties:
             stream_id: {}
             name: {}
+            archived: {}
             description: {}
             date_created: {}
             invite_only: {}
@@ -18549,6 +18583,7 @@ components:
           required:
             - stream_id
             - name
+            - archived
             - description
             - date_created
             - invite_only
@@ -18568,6 +18603,7 @@ components:
           properties:
             stream_id: {}
             name: {}
+            archived: {}
             description: {}
             date_created: {}
             invite_only: {}
@@ -18584,6 +18620,7 @@ components:
           required:
             - stream_id
             - name
+            - archived
             - description
             - date_created
             - invite_only
@@ -18608,6 +18645,13 @@ components:
           type: string
           description: |
             The name of the stream.
+        archived:
+          type: boolean
+          description: |
+            A boolean indicating whether a stream is archived.
+
+            **Changes**: New in Zulip 9.0 (feature level 244).
+            Previously, this endpoint never returned archived streams.
         description:
           type: string
           description: |
@@ -19410,6 +19454,13 @@ components:
             was named `can_remove_subscribers_group_id`.
 
             New in Zulip 6.0 (feature level 142).
+        archived:
+          type: boolean
+          description: |
+            A boolean indicating whether the stream is archived.
+
+            **Changes**: New in Zulip 9.0 (feature level 244).
+            Previously, subscriptions only included active streams.
     DefaultStreamGroup:
       type: object
       description: |

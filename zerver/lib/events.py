@@ -52,6 +52,7 @@ from zerver.lib.subscription_info import (
     build_unsubscribed_sub_from_stream_dict,
     gather_subscriptions_helper,
     get_web_public_subs,
+    has_metadata_access_to_previously_subscribed_stream,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
@@ -128,6 +129,7 @@ def fetch_initial_state_data(
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
+    archived_streams: bool = False,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -584,6 +586,7 @@ def fetch_initial_state_data(
             sub_info = gather_subscriptions_helper(
                 user_profile,
                 include_subscribers=include_subscribers,
+                include_archived_streams=archived_streams,
             )
         else:
             sub_info = get_web_public_subs(realm)
@@ -1092,6 +1095,13 @@ def apply_event(
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
 
+            unsubscribed_streams = [
+                stream
+                for stream in state["subscriptions"]
+                if stream["stream_id"] in deleted_stream_ids
+                and has_metadata_access_to_previously_subscribed_stream(user_profile, stream)
+            ]
+
             state["subscriptions"] = [
                 stream
                 for stream in state["subscriptions"]
@@ -1101,8 +1111,16 @@ def apply_event(
             state["unsubscribed"] = [
                 stream
                 for stream in state["unsubscribed"]
-                if stream["stream_id"] not in deleted_stream_ids
+                if has_metadata_access_to_previously_subscribed_stream(user_profile, stream)
             ]
+
+            state["unsubscribed"] += unsubscribed_streams
+
+            for stream in state["unsubscribed"]:
+                if stream["stream_id"] in deleted_stream_ids:
+                    stream["archived"] = True
+                    stream["invite_only"] = True
+                    stream["subscribers"] = []
 
             state["never_subscribed"] = [
                 stream
@@ -1576,6 +1594,7 @@ def do_events_register(
     user_settings_object = client_capabilities.get("user_settings_object", False)
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
+    archived_streams = client_capabilities.get("archived_streams", False)
 
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
@@ -1600,6 +1619,7 @@ def do_events_register(
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
+            archived_streams=archived_streams,
             # slim_presence is a noop, because presence is not included.
             slim_presence=True,
             # Force include_subscribers=False for security reasons.
@@ -1653,6 +1673,7 @@ def do_events_register(
         pronouns_field_type_supported=pronouns_field_type_supported,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
+        archived_streams=archived_streams,
     )
 
     # Apply events that came in while we were fetching initial data

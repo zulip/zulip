@@ -437,6 +437,7 @@ def send_subscription_add_events(
                 stream_weekly_traffic=stream_dict["stream_weekly_traffic"],
                 subscribers=stream_subscribers,
                 # Fields from Stream.API_FIELDS
+                archived=stream_dict["archived"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
