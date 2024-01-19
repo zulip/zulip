@@ -54,6 +54,7 @@ function hide_retry_spinner($row) {
 function show_message_failed(message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     message_live_update.update_message_in_all_views(message_id, ($row) => {
+        $row.find(".slow-send-spinner").addClass("hidden");
         const $failed_div = $row.find(".message_failed");
         $failed_div.toggleClass("hide", false);
         $failed_div.find(".failed_text").attr("title", failed_msg);
@@ -459,7 +460,10 @@ export function _patch_waiting_for_ack(data) {
 
 export function message_send_error(message_id, error_response) {
     // Error sending message, show inline
-    message_store.get(message_id).failed_request = true;
+    const message = message_store.get(message_id);
+    message.failed_request = true;
+    message.show_slow_send_spinner = false;
+
     show_message_failed(message_id, error_response);
 }
 
@@ -474,6 +478,7 @@ function abort_message(message) {
 export function display_slow_send_loading_spinner(message) {
     const $rows = message_lists.all_rendered_row_for_message_id(message.id);
     if (message.locally_echoed && !message.failed_request) {
+        message.show_slow_send_spinner = true;
         $rows.find(".slow-send-spinner").removeClass("hidden");
         // We don't need to do anything special to ensure this gets
         // cleaned up if the message is delivered, because the
