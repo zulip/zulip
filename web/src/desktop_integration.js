@@ -6,7 +6,6 @@ import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import * as narrow from "./narrow";
-import * as popovers from "./popovers";
 import * as stream_data from "./stream_data";
 
 if (window.electron_bridge !== undefined) {
@@ -81,7 +80,6 @@ export function initialize() {
             url,
             success(data) {
                 window.open(data.billing_access_url, "_blank", "noopener,noreferrer");
-                popovers.hide_all();
             },
             error(xhr) {
                 if (xhr.responseJSON?.msg) {
