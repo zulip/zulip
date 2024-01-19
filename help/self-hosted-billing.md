@@ -272,7 +272,7 @@ Zulip sponsors free plans for over 1000 worthy organizations. The following
 types of organizations are generally eligible for the free Community plan.
 
 - Open-source projects, including projects with a small paid team.
-- Research organizations, such as research groups, cross-institutional
+- Research in an academic setting, such as research groups, cross-institutional
   collaborations, etc.
 - Organizations operated by individual educators, such as a professor teaching
   one or more classes.
@@ -352,6 +352,10 @@ large organization.
 
 - Any organization where many users are **not paid staff** is likely eligible
   for a discount.
+
+If there are any circumstances that make regular pricing unaffordable for your
+organization, contact [sales@zulip.com](mailto:sales@zulip.com) to discuss your
+situation.
 
 ### Education pricing
 
