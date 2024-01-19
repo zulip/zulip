@@ -1357,6 +1357,13 @@ td.pointer {
         .private_message_header_name {
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: var(--margin-lefthand-bot-icon-offset);
+
+            i.zulip-icon-bot {
+                font-size: 12px;
+            }
         }
     }
 }

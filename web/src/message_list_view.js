@@ -186,6 +186,7 @@ function get_users_for_recipient_row(message) {
     const user_ids = people.pm_with_user_ids(message);
     const users = user_ids.map((user_id) => {
         let full_name;
+        const is_bot = people.user_is_bot(user_id);
         if (muted_users.is_user_muted(user_id)) {
             full_name = $t({defaultMessage: "Muted user"});
         } else {
@@ -193,6 +194,7 @@ function get_users_for_recipient_row(message) {
         }
         return {
             full_name,
+            is_bot,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
         };
     });
