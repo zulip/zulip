@@ -415,10 +415,15 @@ div.overlay {
 .grey-box {
     margin: 0;
     padding: 5px 10px;
-    background-color: hsl(0deg 0% 96.1%);
+    background-color: hsl(0deg 0% 98%);
+    border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
-
     list-style-type: none;
+}
+
+#export-data-div {
+    border: none;
+    background-color: hsl(0deg 0% 96.1%);
 }
 
 .white-box {
