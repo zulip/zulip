@@ -837,11 +837,6 @@ export function convert_mentions_to_silent_in_direct_messages(mention_text, full
         return mention_text;
     }
 
-    const mention_str = people.get_mention_syntax(full_name, user_id, false);
-    const silent_mention_str = people.get_mention_syntax(full_name, user_id, true);
-    mention_text = mention_text.replace(mention_str, silent_mention_str);
-    // also replace other mentions...
-    compose_ui.replace_syntax(mention_str, silent_mention_str);
-
-    return mention_text;
+    const silent_mention_text = people.get_mention_syntax(full_name, user_id, true);
+    return silent_mention_text;
 }
