@@ -305,6 +305,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
     if (
+        compose_state.can_restore_drafts() &&
         !opts.content &&
         opts.draft_id === undefined &&
         compose_state.message_content().length === 0
