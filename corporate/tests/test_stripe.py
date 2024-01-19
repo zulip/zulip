@@ -7341,3 +7341,30 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         # Verify Zulip team receives mail for the next cycle.
         invoice_plans_as_needed(add_months(self.next_month, 1))
         self.assert_length(outbox, messages_count + 1)
+
+    @responses.activate
+    @mock_stripe()
+    def test_legacy_plan_ends_on_plan_end_date(self, *mocks: Mock) -> None:
+        self.login("hamlet")
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        plan_end_date = add_months(self.now, 3)
+        self.billing_session.migrate_customer_to_legacy_plan(self.now, plan_end_date)
+
+        # Legacy plan ends on plan end date.
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertEqual(
+            self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
+        )
+        self.billing_session.make_end_of_cycle_updates_if_needed(plan, plan_end_date)
+        plan.refresh_from_db()
+        self.remote_server.refresh_from_db()
+        self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+        self.assertEqual(plan.next_invoice_date, None)
+        self.assertEqual(plan.status, CustomerPlan.ENDED)
