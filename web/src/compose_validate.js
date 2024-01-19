@@ -830,6 +830,13 @@ export function convert_mentions_to_silent_in_direct_messages(mention_text, full
         return mention_text;
     }
 
+    const user = people.get_user_by_id_assert_valid(user_id);
+    if (user.is_bot) {
+        // Since bots often process mentions as requests for them to
+        // do things, prefer non-silent mentions when DMing them.
+        return mention_text;
+    }
+
     const mention_str = people.get_mention_syntax(full_name, user_id, false);
     const silent_mention_str = people.get_mention_syntax(full_name, user_id, true);
     mention_text = mention_text.replace(mention_str, silent_mention_str);
