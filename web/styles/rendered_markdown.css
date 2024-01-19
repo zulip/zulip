@@ -34,12 +34,6 @@
         margin-left: 0;
     }
 
-    /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
-    & p + ul,
-    p + ol {
-        margin-top: 0;
-    }
-
     & hr {
         border-bottom: 1px solid hsl(0deg 0% 87%);
         border-top: 1px solid hsl(0deg 0% 87%);
