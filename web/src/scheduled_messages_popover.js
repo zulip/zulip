@@ -9,6 +9,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
+import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as flatpickr from "./flatpickr";
@@ -151,11 +152,15 @@ export function initialize() {
         onShow(instance) {
             const formatted_send_later_time =
                 scheduled_messages.get_formatted_selected_send_later_time();
+            // If there's existing text in the composebox, show an option
+            // to keep/save the current draft and start a new message.
+            const show_compose_new_message = compose_state.has_savable_message_content();
             instance.setContent(
                 parse_html(
                     render_send_later_popover({
                         enter_sends_true: user_settings.enter_sends,
                         formatted_send_later_time,
+                        show_compose_new_message,
                     }),
                 ),
             );
@@ -201,6 +206,11 @@ export function initialize() {
             // Handle Send later clicks
             $popper.one("click", ".open_send_later_modal", () => {
                 open_send_later_menu();
+                instance.hide();
+            });
+            $popper.one("click", ".compose_new_message", () => {
+                drafts.update_draft();
+                compose.clear_compose_box();
                 instance.hide();
             });
         },

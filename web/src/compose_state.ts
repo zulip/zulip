@@ -190,6 +190,11 @@ export function has_message_content(): boolean {
     return message_content() !== "";
 }
 
+export const MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT = 2;
+export function has_savable_message_content(): boolean {
+    return message_content().length > MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT;
+}
+
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
         return stream_id() !== undefined && topic() !== "";
