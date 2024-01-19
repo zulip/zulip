@@ -68,6 +68,8 @@ export function reset_ui_state() {
     message_feed_top_notices.hide_top_of_narrow_notices();
     message_feed_loading.hide_indicators();
     unread_ui.reset_unread_banner();
+    // We sometimes prevent draft restoring until the narrow resets.
+    compose_state.allow_draft_restoring();
 }
 
 export function changehash(newhash) {
