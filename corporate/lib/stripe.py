@@ -1651,6 +1651,9 @@ class BillingSession(ABC):
         else:
             next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
 
+        if plan.end_date is not None:
+            next_billing_cycle = min(next_billing_cycle, plan.end_date)
+
         return next_billing_cycle
 
     # event_time should roughly be timezone_now(). Not designed to handle
@@ -1666,6 +1669,15 @@ class BillingSession(ABC):
         if event_in_next_billing_cycle and last_ledger_entry is not None:
             licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             assert licenses_at_next_renewal is not None
+
+            if (
+                plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+                and plan.end_date == next_billing_cycle
+                and plan.status == CustomerPlan.ACTIVE
+            ):
+                self.process_downgrade(plan, True)
+                return None, None
+
             if plan.status == CustomerPlan.ACTIVE:
                 return None, LicenseLedger.objects.create(
                     plan=plan,
