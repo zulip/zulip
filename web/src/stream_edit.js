@@ -289,6 +289,25 @@ export function update_muting_rendering(sub) {
     $edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
 }
 
+function stream_notification_reset(e) {
+    const sub = get_sub_for_target(e.target);
+    const data = [{stream_id: sub.stream_id, property: "is_muted", value: false}];
+    for (const [per_stream_setting_name, global_setting_name] of Object.entries(
+        settings_config.generalize_stream_notification_setting,
+    )) {
+        data.push({
+            stream_id: sub.stream_id,
+            property: per_stream_setting_name,
+            value: user_settings[global_setting_name],
+        });
+    }
+
+    stream_settings_api.bulk_set_stream_property(
+        data,
+        $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
+    );
+}
+
 function stream_is_muted_changed(e) {
     const sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -536,6 +555,12 @@ export function initialize() {
             },
         });
     });
+
+    $("#streams_overlay_container").on(
+        "click",
+        ".subsection-parent .reset-stream-notifications-button",
+        stream_notification_reset,
+    );
 
     $("#streams_overlay_container").on(
         "change",
