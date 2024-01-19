@@ -4,13 +4,16 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
+from corporate.lib.analytics import get_remote_server_audit_logs
 from corporate.lib.stripe import add_months
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Client, UserActivity, UserProfile
 from zilencer.models import (
+    RemoteRealm,
     RemoteRealmAuditLog,
     RemoteZulipServer,
+    get_remote_customer_user_count,
     get_remote_server_guest_and_non_guest_count,
 )
 
@@ -74,6 +77,40 @@ data_list = [
         "event_time": event_time,
         "extra_data": {},
     },
+    {
+        "server_id": 1,
+        "realm_id": 3,
+        "event_type": RemoteRealmAuditLog.USER_CREATED,
+        "event_time": event_time,
+        "extra_data": {
+            RemoteRealmAuditLog.ROLE_COUNT: {
+                RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
+                    UserProfile.ROLE_REALM_ADMINISTRATOR: 1,
+                    UserProfile.ROLE_REALM_OWNER: 1,
+                    UserProfile.ROLE_MODERATOR: 1,
+                    UserProfile.ROLE_MEMBER: 1,
+                    UserProfile.ROLE_GUEST: 1,
+                }
+            }
+        },
+    },
+    {
+        "server_id": 1,
+        "realm_id": 3,
+        "event_type": RemoteRealmAuditLog.USER_DEACTIVATED,
+        "event_time": event_time + timedelta(seconds=1),
+        "extra_data": {
+            RemoteRealmAuditLog.ROLE_COUNT: {
+                RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
+                    UserProfile.ROLE_REALM_ADMINISTRATOR: 1,
+                    UserProfile.ROLE_REALM_OWNER: 1,
+                    UserProfile.ROLE_MODERATOR: 1,
+                    UserProfile.ROLE_MEMBER: 0,
+                    UserProfile.ROLE_GUEST: 1,
+                }
+            }
+        },
+    },
 ]
 
 
@@ -107,9 +144,8 @@ class ActivityTest(ZulipTestCase):
             self.assertEqual(result.status_code, 200)
 
         # Add data for remote activity page
-        RemoteRealmAuditLog.objects.bulk_create([RemoteRealmAuditLog(**data) for data in data_list])
-        remote_server = RemoteZulipServer.objects.get(id=1)
-        customer = Customer.objects.create(remote_server=remote_server)
+        remote_realm = RemoteRealm.objects.get(name="Lear & Co.")
+        customer = Customer.objects.create(remote_realm=remote_realm)
         plan = CustomerPlan.objects.create(
             customer=customer,
             billing_cycle_anchor=timezone_now(),
@@ -125,13 +161,31 @@ class ActivityTest(ZulipTestCase):
             is_renewal=True,
             plan=plan,
         )
-        RemoteZulipServer.objects.create(
+        server = RemoteZulipServer.objects.create(
             uuid=str(uuid.uuid4()),
             api_key="magic_secret_api_key",
             hostname="demo.example.com",
             contact_email="email@example.com",
         )
-        with self.assert_database_query_count(15):
+        extra_data = {
+            RemoteRealmAuditLog.ROLE_COUNT: {
+                RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
+                    UserProfile.ROLE_REALM_ADMINISTRATOR: 1,
+                    UserProfile.ROLE_REALM_OWNER: 1,
+                    UserProfile.ROLE_MODERATOR: 1,
+                    UserProfile.ROLE_MEMBER: 1,
+                    UserProfile.ROLE_GUEST: 1,
+                }
+            }
+        }
+        RemoteRealmAuditLog.objects.create(
+            server=server,
+            realm_id=10,
+            event_type=RemoteRealmAuditLog.USER_CREATED,
+            event_time=timezone_now() - timedelta(days=1),
+            extra_data=extra_data,
+        )
+        with self.assert_database_query_count(11):
             result = self.client_get("/activity/remote")
             self.assertEqual(result.status_code, 200)
 
@@ -150,9 +204,17 @@ class ActivityTest(ZulipTestCase):
 
     def test_get_remote_server_guest_and_non_guest_count(self) -> None:
         RemoteRealmAuditLog.objects.bulk_create([RemoteRealmAuditLog(**data) for data in data_list])
+        server_id = 1
 
+        # Used in billing code
         remote_server_counts = get_remote_server_guest_and_non_guest_count(
-            server_id=1, event_time=timezone_now()
+            server_id=server_id, event_time=timezone_now()
         )
-        self.assertEqual(remote_server_counts.non_guest_user_count, 70)
-        self.assertEqual(remote_server_counts.guest_user_count, 15)
+        self.assertEqual(remote_server_counts.non_guest_user_count, 73)
+        self.assertEqual(remote_server_counts.guest_user_count, 16)
+
+        # Used in remote activity view code
+        server_logs = get_remote_server_audit_logs()
+        remote_activity_counts = get_remote_customer_user_count(server_logs[server_id])
+        self.assertEqual(remote_activity_counts.non_guest_user_count, 73)
+        self.assertEqual(remote_activity_counts.guest_user_count, 16)

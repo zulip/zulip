@@ -11,15 +11,16 @@ from analytics.views.activity_common import (
     remote_installation_stats_link,
     remote_installation_support_link,
 )
-from corporate.lib.analytics import get_plan_data_by_remote_realm, get_plan_data_by_remote_server
+from corporate.lib.analytics import (
+    get_plan_data_by_remote_realm,
+    get_plan_data_by_remote_server,
+    get_remote_realm_user_counts,
+    get_remote_server_audit_logs,
+)
 from corporate.lib.stripe import cents_to_dollar_string
 from zerver.decorator import require_server_admin
 from zerver.models.realms import get_org_type_display_name
-from zilencer.models import (
-    RemoteRealm,
-    get_remote_realm_guest_and_non_guest_count,
-    get_remote_server_guest_and_non_guest_count,
-)
+from zilencer.models import get_remote_customer_user_count
 
 
 @require_server_admin
@@ -78,16 +79,16 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     )
 
     cols = [
-        "ID",
-        "Hostname",
-        "Contact email",
-        "Zulip version",
-        "Last audit log update",
+        "Server ID",
+        "Server hostname",
+        "Server contact email",
+        "Server Zulip version",
+        "Server last audit log update",
         "Server mobile users",
         "Server mobile pushes",
         "Realm ID",
         "Realm name",
-        "Organization Type",
+        "Realm organization type",
         "Plan name",
         "Plan status",
         "ARR",
@@ -111,32 +112,37 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     rows = get_query_data(query)
     plan_data_by_remote_server = get_plan_data_by_remote_server()
     plan_data_by_remote_server_and_realm = get_plan_data_by_remote_realm()
+    audit_logs_by_remote_server = get_remote_server_audit_logs()
+    remote_realm_user_counts = get_remote_realm_user_counts()
 
     total_row = []
-    server_mobile_data_counted = set()
+    remote_server_mobile_data_counted = set()
     total_revenue = 0
     total_mobile_users = 0
     total_pushes = 0
 
     for row in rows:
         # Count mobile users and pushes forwarded, once per server
-        if row[SERVER_ID] not in server_mobile_data_counted:
+        if row[SERVER_ID] not in remote_server_mobile_data_counted:
             if row[MOBILE_USER_COUNT] is not None:
                 total_mobile_users += row[MOBILE_USER_COUNT]  # nocoverage
             if row[MOBILE_PUSH_COUNT] is not None:
                 total_pushes += row[MOBILE_PUSH_COUNT]  # nocoverage
-            server_mobile_data_counted.add(row[SERVER_ID])
+            remote_server_mobile_data_counted.add(row[SERVER_ID])
         if row[REALM_ID] is None:
             plan_data = plan_data_by_remote_server.get(row[SERVER_ID])
-            user_counts = get_remote_server_guest_and_non_guest_count(row[SERVER_ID])
+            audit_log_list = audit_logs_by_remote_server.get(row[SERVER_ID])
+            if audit_log_list is None:
+                user_counts = None  # nocoverage
+            else:
+                user_counts = get_remote_customer_user_count(audit_log_list)
         else:
             server_remote_realms_data = plan_data_by_remote_server_and_realm.get(row[SERVER_ID])
             if server_remote_realms_data is not None:
-                plan_data = server_remote_realms_data.get(row[REALM_ID])  # nocoverage
+                plan_data = server_remote_realms_data.get(row[REALM_ID])
             else:
-                plan_data = None
-            remote_realm = RemoteRealm.objects.get(id=row[REALM_ID], server_id=row[SERVER_ID])
-            user_counts = get_remote_realm_guest_and_non_guest_count(remote_realm)
+                plan_data = None  # nocoverage
+            user_counts = remote_realm_user_counts.get(row[REALM_ID])
             # Format organization type for realm
             org_type = row[ORG_TYPE]
             row[ORG_TYPE] = get_org_type_display_name(org_type)
@@ -145,16 +151,20 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             row.append("---")
             row.append("---")
             row.append("---")
-        else:  # nocoverage
+        else:
             total_revenue += plan_data.annual_revenue
             revenue = cents_to_dollar_string(plan_data.annual_revenue)
             row.append(plan_data.current_plan_name)
             row.append(plan_data.current_status)
             row.append(f"${revenue}")
         # Add user counts
-        total_users = user_counts.non_guest_user_count + user_counts.guest_user_count
-        row.append(total_users)
-        row.append(user_counts.guest_user_count)
+        if user_counts is None:
+            row.append(0)
+            row.append(0)
+        else:
+            total_users = user_counts.non_guest_user_count + user_counts.guest_user_count
+            row.append(total_users)
+            row.append(user_counts.guest_user_count)
         # Add server links
         stats = remote_installation_stats_link(row[SERVER_ID])
         support = remote_installation_support_link(row[SERVER_HOSTNAME])
