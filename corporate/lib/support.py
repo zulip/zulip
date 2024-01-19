@@ -13,6 +13,7 @@ from corporate.lib.stripe import (
     BillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
+    start_of_next_billing_cycle,
 )
 from corporate.models import (
     Customer,
@@ -60,6 +61,7 @@ class PlanData:
     next_plan: Optional["CustomerPlan"] = None
     licenses: Optional[int] = None
     licenses_used: Optional[int] = None
+    next_billing_cycle_start: Optional[datetime] = None
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
     warning: Optional[str] = None
@@ -167,7 +169,6 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
                 plan_data.warning = (
                     "Recent audit log data missing: No information for used licenses"
                 )
-
         assert plan_data.current_plan is not None  # for mypy
 
         plan_data.next_plan = billing_session.get_next_plan(plan_data.current_plan)
@@ -185,6 +186,17 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
                 )
             else:
                 plan_data.estimated_next_plan_revenue = 0  # nocoverage
+
+        if plan_data.current_plan.status in (
+            CustomerPlan.FREE_TRIAL,
+            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        ):  # nocoverage
+            assert plan_data.current_plan.next_invoice_date is not None
+            plan_data.next_billing_cycle_start = plan_data.current_plan.next_invoice_date
+        else:
+            plan_data.next_billing_cycle_start = start_of_next_billing_cycle(
+                plan_data.current_plan, timezone_now()
+            )
 
         plan_data.is_legacy_plan = (
             plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
