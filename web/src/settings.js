@@ -61,7 +61,7 @@ function setup_settings_label() {
         }),
 
         ...settings_config.notification_settings_labels,
-        ...settings_config.display_settings_labels,
+        ...settings_config.preferences_settings_labels,
     };
 }
 

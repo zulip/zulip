@@ -536,7 +536,7 @@ export const expires_in_values = {
 const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 
-export const display_settings_labels = {
+export const preferences_settings_labels = {
     dense_mode: $t({defaultMessage: "Dense mode"}),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
@@ -593,7 +593,7 @@ export const notification_settings_labels = {
 
 export const realm_user_settings_defaults_labels = {
     ...notification_settings_labels,
-    ...display_settings_labels,
+    ...preferences_settings_labels,
 
     /* Overrides to remove "I" from labels for the realm-level versions of these labels. */
     enable_online_push_notifications: $t({
