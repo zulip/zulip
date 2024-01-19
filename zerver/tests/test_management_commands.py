@@ -537,7 +537,7 @@ class TestExport(ZulipTestCase):
             call_command(self.COMMAND_NAME, "-r=zulip", "--export-full-with-consent")
             m.assert_called_once_with(
                 export_row=mock.ANY,
-                threads=mock.ANY,
+                processes=mock.ANY,
                 output_dir=mock.ANY,
                 percent_callback=mock.ANY,
                 upload=False,

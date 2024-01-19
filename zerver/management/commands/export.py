@@ -68,8 +68,8 @@ class Command(ZulipBaseCommand):
     make sure you have the procedure right and minimize downtime.
 
     Performance: In one test, the tool exported a realm with hundreds
-    of users and ~1M messages of history with --threads=1 in about 3
-    hours of serial runtime (goes down to ~50m with --threads=6 on a
+    of users and ~1M messages of history with --parallel=1 in about 3
+    hours of serial runtime (goes down to ~50m with --parallel=6 on a
     machine with 8 CPUs).  Importing that same data set took about 30
     minutes.  But this will vary a lot depending on the average number
     of recipients of messages in the realm, hardware, etc."""
@@ -80,9 +80,9 @@ class Command(ZulipBaseCommand):
             "--output", dest="output_dir", help="Directory to write exported data to."
         )
         parser.add_argument(
-            "--threads",
+            "--parallel",
             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-            help="Threads to use in exporting UserMessage objects in parallel",
+            help="Processes to use in exporting UserMessage objects in parallel",
         )
         parser.add_argument(
             "--public-only",
@@ -121,9 +121,9 @@ class Command(ZulipBaseCommand):
 
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
-        num_threads = int(options["threads"])
-        if num_threads < 1:
-            raise CommandError("You must have at least one thread.")
+        processes = int(options["parallel"])
+        if processes < 1:
+            raise CommandError("You must have at least one process.")
 
         if public_only and export_full_with_consent:
             raise CommandError("Please pass either --public-only or --export-full-with-consennt")
@@ -183,7 +183,7 @@ class Command(ZulipBaseCommand):
         export_realm_wrapper(
             export_row=export_row,
             output_dir=output_dir,
-            threads=num_threads,
+            processes=processes,
             upload=options["upload"],
             percent_callback=percent_callback,
             export_as_active=True if options["deactivate_realm"] else None,
