@@ -1,6 +1,8 @@
+from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from django.utils.timezone import now as timezone_now
 
@@ -11,6 +13,11 @@ from corporate.lib.stripe import (
 )
 from corporate.models import Customer, CustomerPlan
 from zerver.lib.utils import assert_is_not_none
+from zilencer.models import (
+    RemoteCustomerUserCount,
+    RemoteRealmAuditLog,
+    get_remote_customer_user_count,
+)
 
 
 @dataclass
@@ -147,3 +154,54 @@ def get_plan_data_by_remote_realm() -> Dict[int, Dict[int, RemoteActivityPlanDat
                 current_server_data[realm_id] = plan_data
 
     return remote_server_plan_data_by_realm
+
+
+def get_remote_realm_user_counts(
+    event_time: datetime = timezone_now(),
+) -> Dict[int, RemoteCustomerUserCount]:  # nocoverage
+    user_counts_by_realm: Dict[int, RemoteCustomerUserCount] = {}
+    for log in (
+        RemoteRealmAuditLog.objects.filter(
+            event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
+            event_time__lte=event_time,
+            remote_realm__isnull=False,
+        )
+        # Important: extra_data is empty for some pre-2020 audit logs
+        # prior to the introduction of realm_user_count_by_role
+        # logging. Meanwhile, modern Zulip servers using
+        # bulk_create_users to create the users in the system bot
+        # realm also generate such audit logs. Such audit logs should
+        # never be the latest in a normal realm.
+        .exclude(extra_data={})
+        .order_by("remote_realm", "-event_time")
+        .distinct("remote_realm")
+    ):
+        assert log.remote_realm is not None
+        user_counts_by_realm[log.remote_realm.id] = get_remote_customer_user_count([log])
+
+    return user_counts_by_realm
+
+
+def get_remote_server_audit_logs(
+    event_time: datetime = timezone_now(),
+) -> Dict[int, List[RemoteRealmAuditLog]]:
+    logs_per_server: Dict[int, List[RemoteRealmAuditLog]] = defaultdict(list)
+    for log in (
+        RemoteRealmAuditLog.objects.filter(
+            event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
+            event_time__lte=event_time,
+        )
+        # Important: extra_data is empty for some pre-2020 audit logs
+        # prior to the introduction of realm_user_count_by_role
+        # logging. Meanwhile, modern Zulip servers using
+        # bulk_create_users to create the users in the system bot
+        # realm also generate such audit logs. Such audit logs should
+        # never be the latest in a normal realm.
+        .exclude(extra_data={})
+        .order_by("server_id", "realm_id", "-event_time")
+        .distinct("server_id", "realm_id")
+        .select_related("server")
+    ):
+        logs_per_server[log.server.id].append(log)
+
+    return logs_per_server
