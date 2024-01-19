@@ -590,7 +590,7 @@ def process_avatars(
     avatar_list: list[ZerverFieldsT],
     avatar_dir: str,
     realm_id: int,
-    threads: int,
+    processes: int,
     size_url_suffix: str = "",
 ) -> list[ZerverFieldsT]:
     """
@@ -637,7 +637,7 @@ def process_avatars(
     run_parallel(
         partial(get_avatar, avatar_dir, size_url_suffix),
         avatar_upload_list,
-        processes=threads,
+        processes=processes,
         catch=True,
         report=lambda count: logging.info("Finished %s items", count),
     )
@@ -658,7 +658,7 @@ def get_uploads(upload_dir: str, upload: list[str]) -> None:
 
 
 def process_uploads(
-    upload_list: list[ZerverFieldsT], upload_dir: str, threads: int
+    upload_list: list[ZerverFieldsT], upload_dir: str, processes: int
 ) -> list[ZerverFieldsT]:
     """
     This function downloads the uploads and saves it in the realm's upload directory.
@@ -680,7 +680,7 @@ def process_uploads(
     run_parallel(
         partial(get_uploads, upload_dir),
         upload_url_list,
-        processes=threads,
+        processes=processes,
         catch=True,
         report=lambda count: logging.info("Finished %s items", count),
     )
@@ -715,7 +715,7 @@ def process_emojis(
     zerver_realmemoji: list[ZerverFieldsT],
     emoji_dir: str,
     emoji_url_map: ZerverFieldsT,
-    threads: int,
+    processes: int,
 ) -> list[ZerverFieldsT]:
     """
     This function downloads the custom emojis and saves in the output emoji folder.

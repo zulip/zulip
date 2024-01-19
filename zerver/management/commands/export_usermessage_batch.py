@@ -17,7 +17,7 @@ class Command(ZulipBaseCommand):
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--path", help="Path to find messages.json archives")
-        parser.add_argument("--thread", help="Thread ID")
+        parser.add_argument("--process", help="Process identifier (used only for debug output)")
         parser.add_argument(
             "--export-full-with-consent",
             action="store_true",
@@ -26,7 +26,7 @@ class Command(ZulipBaseCommand):
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
-        logging.info("Starting UserMessage batch thread %s", options["thread"])
+        logging.info("Starting UserMessage batch process %s", options["process"])
         path = options["path"]
         files = set(glob.glob(os.path.join(path, "messages-*.json.partial")))
 
@@ -47,7 +47,7 @@ class Command(ZulipBaseCommand):
             except FileNotFoundError:
                 # Already claimed by another process
                 continue
-            logging.info("Thread %s processing %s", options["thread"], output_path)
+            logging.info("Process %s processing %s", options["process"], output_path)
             try:
                 export_usermessages_batch(
                     locked_path,
