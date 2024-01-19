@@ -416,7 +416,7 @@ class RealmImportExportTest(ExportFile):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
-                threads=0,
+                processes=0,
                 export_type=export_type,
                 exportable_user_ids=exportable_user_ids,
             )
