@@ -205,10 +205,8 @@ export function get_reaction_title_data(message_id, local_id) {
 }
 
 export function get_reaction_section(message_id) {
-    const message_list_id = message_lists.current.id;
-    return $(`#message-row-${message_list_id}-${CSS.escape(message_id)}`).find(
-        ".message_reactions",
-    );
+    const $rows = message_lists.all_rendered_row_for_message_id(message_id);
+    return $rows.find(".message_reactions");
 }
 
 export function find_reaction(message_id, local_id) {

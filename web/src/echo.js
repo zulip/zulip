@@ -461,10 +461,9 @@ function abort_message(message) {
 }
 
 export function display_slow_send_loading_spinner(message) {
-    const message_list_id = message_lists.current.id;
-    const $row = $(`#message-row-${message_list_id}-${CSS.escape(message.id)}`);
+    const $rows = message_lists.all_rendered_row_for_message_id(message.id);
     if (message.locally_echoed && !message.failed_request) {
-        $row.find(".slow-send-spinner").removeClass("hidden");
+        $rows.find(".slow-send-spinner").removeClass("hidden");
         // We don't need to do anything special to ensure this gets
         // cleaned up if the message is delivered, because the
         // message's HTML gets replaced once the message is
