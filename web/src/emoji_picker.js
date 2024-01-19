@@ -590,7 +590,15 @@ export function emoji_select_tab($elt) {
     }
     // Handles the corner case of the scrolling back to top.
     if (scrolltop === 0) {
-        currently_selected = section_head_offsets[0].section;
+        // Handles the corner case where the refill_section_head_offsets()
+        // is still running and section_head_offset[] is still empty,
+        // scroll events in the middle may attempt to access section_head_offset[]
+        // causing exception. In this situation the currently_selected is hardcoded as "Popular".
+        if (section_head_offsets.length === 0) {
+            currently_selected = "Popular";
+        } else {
+            currently_selected = section_head_offsets[0].section;
+        }
     }
     if (currently_selected) {
         $(".emoji-popover-tab-item.active").removeClass("active");
