@@ -1,3 +1,4 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
@@ -68,6 +69,14 @@ export function all_rendered_message_lists(): MessageList[] {
         rendered_message_lists.push(current);
     }
     return rendered_message_lists;
+}
+
+export function all_rendered_row_for_message_id(message_id: number): JQuery {
+    let $rows = $();
+    for (const msg_list of all_rendered_message_lists()) {
+        $rows = $rows.add(msg_list.get_row(message_id));
+    }
+    return $rows;
 }
 
 export function all_current_message_rows(): JQuery {
