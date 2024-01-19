@@ -463,6 +463,26 @@ class RemoteCustomerUserCount:
     non_guest_user_count: int
 
 
+def get_remote_customer_user_count(
+    audit_logs: List[RemoteRealmAuditLog],
+) -> RemoteCustomerUserCount:
+    guest_count = 0
+    non_guest_count = 0
+    for log in audit_logs:
+        humans_count_dict = log.extra_data[RemoteRealmAuditLog.ROLE_COUNT][
+            RemoteRealmAuditLog.ROLE_COUNT_HUMANS
+        ]
+        for role_type in UserProfile.ROLE_TYPES:
+            if role_type == UserProfile.ROLE_GUEST:
+                guest_count += humans_count_dict.get(str(role_type), 0)
+            else:
+                non_guest_count += humans_count_dict.get(str(role_type), 0)
+
+    return RemoteCustomerUserCount(
+        non_guest_user_count=non_guest_count, guest_user_count=guest_count
+    )
+
+
 def get_remote_server_guest_and_non_guest_count(
     server_id: int, event_time: datetime = timezone_now()
 ) -> RemoteCustomerUserCount:
@@ -486,26 +506,11 @@ def get_remote_server_guest_and_non_guest_count(
         .values_list("max_id", flat=True)
     )
 
-    extra_data_list = RemoteRealmAuditLog.objects.filter(
-        id__in=list(realm_last_audit_log_ids)
-    ).values_list("extra_data", flat=True)
+    realm_audit_logs = RemoteRealmAuditLog.objects.filter(id__in=list(realm_last_audit_log_ids))
 
     # Now we add up the user counts from the different realms.
-    guest_count = 0
-    non_guest_count = 0
-    for extra_data in extra_data_list:
-        humans_count_dict = extra_data[RemoteRealmAuditLog.ROLE_COUNT][
-            RemoteRealmAuditLog.ROLE_COUNT_HUMANS
-        ]
-        for role_type in UserProfile.ROLE_TYPES:
-            if role_type == UserProfile.ROLE_GUEST:
-                guest_count += humans_count_dict.get(str(role_type), 0)
-            else:
-                non_guest_count += humans_count_dict.get(str(role_type), 0)
-
-    return RemoteCustomerUserCount(
-        non_guest_user_count=non_guest_count, guest_user_count=guest_count
-    )
+    user_count = get_remote_customer_user_count(list(realm_audit_logs))
+    return user_count
 
 
 def get_remote_realm_guest_and_non_guest_count(
@@ -526,21 +531,12 @@ def get_remote_realm_guest_and_non_guest_count(
         .exclude(extra_data={}).last()
     )
 
-    guest_count = 0
-    non_guest_count = 0
     if latest_audit_log is not None:
-        humans_count_dict = latest_audit_log.extra_data[RemoteRealmAuditLog.ROLE_COUNT][
-            RemoteRealmAuditLog.ROLE_COUNT_HUMANS
-        ]
-        for role_type in UserProfile.ROLE_TYPES:
-            if role_type == UserProfile.ROLE_GUEST:
-                guest_count += humans_count_dict.get(str(role_type), 0)
-            else:
-                non_guest_count += humans_count_dict.get(str(role_type), 0)
-
-    return RemoteCustomerUserCount(
-        non_guest_user_count=non_guest_count, guest_user_count=guest_count
-    )
+        assert latest_audit_log is not None
+        user_count = get_remote_customer_user_count([latest_audit_log])
+    else:
+        user_count = RemoteCustomerUserCount(guest_user_count=0, non_guest_user_count=0)
+    return user_count
 
 
 def has_stale_audit_log(server: RemoteZulipServer) -> bool:
