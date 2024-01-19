@@ -8,7 +8,12 @@ import time_machine
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from corporate.lib.stripe import RealmBillingSession, RemoteRealmBillingSession, add_months
+from corporate.lib.stripe import (
+    RealmBillingSession,
+    RemoteRealmBillingSession,
+    add_months,
+    start_of_next_billing_cycle,
+)
 from corporate.models import (
     Customer,
     CustomerPlan,
@@ -599,7 +604,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     "<b>Licenses</b>: 2/10 (Manual)",
                     "<b>Price per license</b>: $80.00",
                     "<b>Annual recurring revenue</b>: $800.00",
-                    "<b>Next invoice date</b>: 02 January 2017",
+                    "<b>Start of next billing cycle</b>:",
                     '<option value="send_invoice" selected>',
                     '<option value="charge_automatically" >',
                 ],
@@ -934,6 +939,8 @@ class TestSupportEndpoint(ZulipTestCase):
         assert plan is not None
         self.assertEqual(customer.default_discount, Decimal(25))
         self.assertEqual(plan.discount, Decimal(25))
+        start_next_billing_cycle = start_of_next_billing_cycle(plan, timezone_now())
+        biling_cycle_string = start_next_billing_cycle.strftime("%d %B %Y")
 
         result = self.client_get("/activity/support", {"q": "lear"})
         self.assert_in_success_response(
@@ -945,7 +952,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 "<b>Licenses</b>: 2/10 (Manual)",
                 "<b>Price per license</b>: $6.00",
                 "<b>Annual recurring revenue</b>: $720.00",
-                "<b>Next invoice date</b>: 02 February 2016",
+                f"<b>Start of next billing cycle</b>: {biling_cycle_string}",
             ],
             result,
         )
