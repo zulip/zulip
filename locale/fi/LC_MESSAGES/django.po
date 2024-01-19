@@ -1,25 +1,25 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Aarni Koskela, 2018
-# Arto Leinonen <arto@vasemmistonuoret.fi>, 2021
-# Flammie <flammie@iki.fi>, 2020,2022
-# Heidi Ahlberg, 2022
-# Jari Winberg <winjar@autistici.org>, 2018
-# Matti R, 2020
-# Matti R, 2020-2021
-# Pekka Pehkonen <pekka@pupuherra.fi>, 2020
-# Tim Abbott <tabbott@kandralabs.com>, 2022
+# Transifex Bot <>, 2023
+# Jari Winberg <winjar@autistici.org>, 2023
+# Aarni Koskela, 2023
+# Arto Leinonen <arto@vasemmistonuoret.fi>, 2023
+# Heidi Ahlberg, 2023
+# Flammie <flammie@iki.fi>, 2023
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 20:29+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Flammie <flammie@iki.fi>, 2020,2022\n"
-"Language-Team: Finnish (http://app.transifex.com/zulip/zulip/language/fi/)\n"
+"POT-Creation-Date: 2023-12-15 21:31+0000\n"
+"PO-Revision-Date: 2023-12-15 21:32+0000\n"
+"Last-Translator: Flammie <flammie@iki.fi>, 2023\n"
+"Language-Team: Finnish (https://app.transifex.com/zulip/teams/53893/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -64,11 +64,14 @@ msgstr ""
 #: analytics/views/stats.py:361
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "Aloitusaika on myöhemmin kuin lopetusaika. Aloitus:{start}, Lopetus: {end}"
+msgstr ""
+"Aloitusaika on myöhemmin kuin lopetusaika. Aloitus:{start}, Lopetus: {end}"
 
 #: analytics/views/stats.py:383 analytics/views/stats.py:418
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Analytiikan tietoja ei ole saatavilla. Ota yhteyttä palvelimesi järjestelmänvalvojaan."
+msgstr ""
+"Analytiikan tietoja ei ole saatavilla. Ota yhteyttä palvelimesi "
+"järjestelmänvalvojaan."
 
 #: analytics/views/support.py:188 analytics/views/support.py:427
 #: zerver/views/streams.py:291 zerver/views/streams.py:295
@@ -83,7 +86,11 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr "Organisaatiollasi ei ole enää Zulip-lisenssejä, eikä se voi enää ottaa vastaan uusia käyttäjiä. [Lisää lisenssien määrää]({billing_page_link}) tai [poista käytöstä passiiviset käyttäjät]({deactivate_user_help_page_link}), jotta uudet käyttäjät voivat liittyä. "
+msgstr ""
+"Organisaatiollasi ei ole enää Zulip-lisenssejä, eikä se voi enää ottaa "
+"vastaan uusia käyttäjiä. [Lisää lisenssien määrää]({billing_page_link}) tai "
+"[poista käytöstä passiiviset käyttäjät]({deactivate_user_help_page_link}), "
+"jotta uudet käyttäjät voivat liittyä. "
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -92,7 +99,11 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr "Organisaatiollasi on vain yksi Zulip-lisenssiä jäljellä. Voit [lisätä lisenssien määrää]({billing_page_link}) tai [poistaa käytöstä ei-aktiiviset käyttäjät]({deactivate_user_help_page_link}) mahdollistaaksesi useamman kuin yhden käyttäjän liittymisen. "
+msgstr ""
+"Organisaatiollasi on vain yksi Zulip-lisenssiä jäljellä. Voit [lisätä "
+"lisenssien määrää]({billing_page_link}) tai [poistaa käytöstä ei-aktiiviset "
+"käyttäjät]({deactivate_user_help_page_link}) mahdollistaaksesi useamman kuin"
+" yhden käyttäjän liittymisen. "
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -101,7 +112,11 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr "Organisaatiollasi on vain kaksi Zulip-lisenssiä jäljellä. Voit [lisätä lisenssien määrää]({billing_page_link}) tai [poistaa käytöstä ei-aktiiviset käyttäjät]({deactivate_user_help_page_link}) mahdollistaaksesi useamman kuin kahden käyttäjän liittymisen."
+msgstr ""
+"Organisaatiollasi on vain kaksi Zulip-lisenssiä jäljellä. Voit [lisätä "
+"lisenssien määrää]({billing_page_link}) tai [poistaa käytöstä ei-aktiiviset "
+"käyttäjät]({deactivate_user_help_page_link}) mahdollistaaksesi useamman kuin"
+" kahden käyttäjän liittymisen."
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -110,7 +125,11 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr "Organisaatiollasi on vain kolme Zulip-lisenssiä jäljellä. Voit [lisätä lisenssien määrää]({billing_page_link}) tai [poistaa käytöstä ei-aktiiviset käyttäjät]({deactivate_user_help_page_link}) mahdollistaaksesi useamman kuin kolmen käyttäjän liittymisen. "
+msgstr ""
+"Organisaatiollasi on vain kolme Zulip-lisenssiä jäljellä. Voit [lisätä "
+"lisenssien määrää]({billing_page_link}) tai [poistaa käytöstä ei-aktiiviset "
+"käyttäjät]({deactivate_user_help_page_link}) mahdollistaaksesi useamman kuin"
+" kolmen käyttäjän liittymisen. "
 
 #: corporate/lib/registration.py:57
 #, python-brace-format
@@ -119,18 +138,25 @@ msgid ""
 "Zulip licenses are in use. Please [increase the number of "
 "licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow new members to join."
-msgstr "Uusi jäsen ({email}) ei voinut liittyä organisaatioosi, koska kaikki Zulip-lisenssit ovat käytössä. [Lisää lisenssien määrää]({billing_page_link}) tai [poista käytöstä passiiviset käyttäjät]({deactivate_user_help_page_link}), jotta uudet jäsenet voivat liittyä. "
+msgstr ""
+"Uusi jäsen ({email}) ei voinut liittyä organisaatioosi, koska kaikki Zulip-"
+"lisenssit ovat käytössä. [Lisää lisenssien määrää]({billing_page_link}) tai "
+"[poista käytöstä passiiviset käyttäjät]({deactivate_user_help_page_link}), "
+"jotta uudet jäsenet voivat liittyä. "
 
 #: corporate/lib/registration.py:109
 msgid "All Zulip licenses for this organization are currently in use."
-msgstr "Kaikki tämän organisaation Zulip-lisenssit ovat tällä hetkellä käytössä. "
+msgstr ""
+"Kaikki tämän organisaation Zulip-lisenssit ovat tällä hetkellä käytössä. "
 
 #: corporate/lib/registration.py:112
 #, python-brace-format
 msgid ""
 "Your organization does not have enough unused Zulip licenses to invite "
 "{num_invites} users."
-msgstr "Organisaatiollasi ei ole tarpeeksi käyttämättömiä Zulip-lisenssejä {num_invites} käyttäjän kutsumiseen."
+msgstr ""
+"Organisaatiollasi ei ole tarpeeksi käyttämättömiä Zulip-lisenssejä "
+"{num_invites} käyttäjän kutsumiseen."
 
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
@@ -141,124 +167,130 @@ msgstr ""
 msgid "Invalid remote server."
 msgstr ""
 
-#: corporate/lib/stripe.py:204
+#: corporate/lib/stripe.py:203
 #, python-brace-format
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
 
-#: corporate/lib/stripe.py:210
+#: corporate/lib/stripe.py:209
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
 msgstr ""
 
-#: corporate/lib/stripe.py:352
+#: corporate/lib/stripe.py:351
 msgid "No payment method on file."
 msgstr ""
 
-#: corporate/lib/stripe.py:360
+#: corporate/lib/stripe.py:359
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr "{brand} päättyy {last4}"
 
-#: corporate/lib/stripe.py:368
+#: corporate/lib/stripe.py:367
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr "Tuntematon maksutapa. Ota yhteyttä {email}."
 
-#: corporate/lib/stripe.py:384
+#: corporate/lib/stripe.py:383
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "Jotain meni pieleen. Lähetä meille sähköpostia osoitteeseen {email}."
 
-#: corporate/lib/stripe.py:385
+#: corporate/lib/stripe.py:384
 msgid "Something went wrong. Please reload the page."
 msgstr "Jotain meni pieleen. Lataa sivu uudestaan."
 
-#: corporate/lib/stripe.py:476
+#: corporate/lib/stripe.py:475
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "Jotain meni pieleen. Odota hetki ja lataa sivu uudestaan."
 
-#: corporate/lib/stripe.py:1226
+#: corporate/lib/stripe.py:1225
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
 
-#: corporate/lib/stripe.py:1247
+#: corporate/lib/stripe.py:1246
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:1995
+#: corporate/lib/stripe.py:1994
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
-msgstr "Tilausta ei voi päivittää. Tilaus on vanhentunut ja korvattu uudella. "
+msgstr ""
+"Tilausta ei voi päivittää. Tilaus on vanhentunut ja korvattu uudella. "
 
-#: corporate/lib/stripe.py:2000
+#: corporate/lib/stripe.py:1999
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Tilauksen päivitys epäonnistui. Tilaus on päättäynyt."
 
-#: corporate/lib/stripe.py:2055
+#: corporate/lib/stripe.py:2054
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2060 corporate/lib/stripe.py:2088
+#: corporate/lib/stripe.py:2059 corporate/lib/stripe.py:2087
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
-msgstr "Lisenssien manuaalinen päivitys epäonnistui. Tilauksesi on asetettu automaattiseen lisenssienhallintaan."
+msgstr ""
+"Lisenssien manuaalinen päivitys epäonnistui. Tilauksesi on asetettu "
+"automaattiseen lisenssienhallintaan."
 
-#: corporate/lib/stripe.py:2066
+#: corporate/lib/stripe.py:2065
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr "Tilauksesi löytyy jo lisensseistä {licenses} nykyiseltä laskutusjaksolta."
+msgstr ""
+"Tilauksesi löytyy jo lisensseistä {licenses} nykyiseltä laskutusjaksolta."
 
-#: corporate/lib/stripe.py:2071
+#: corporate/lib/stripe.py:2070
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "Et voi vähentää lisenssejä nykyiseltä laskutusjaksolta."
 
-#: corporate/lib/stripe.py:2097
+#: corporate/lib/stripe.py:2096
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:2103
+#: corporate/lib/stripe.py:2102
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
-msgstr "TIlauksesi uudistaminen on jo ajastettu seuraavien lisenssien osalta {licenses_at_next_renewal}."
+msgstr ""
+"TIlauksesi uudistaminen on jo ajastettu seuraavien lisenssien osalta "
+"{licenses_at_next_renewal}."
 
-#: corporate/lib/stripe.py:2118
+#: corporate/lib/stripe.py:2117
 msgid "Nothing to change."
 msgstr "Ei mitään muutettavaa."
 
-#: corporate/lib/stripe.py:2323
+#: corporate/lib/stripe.py:2322
 msgid "No customer for this organization!"
 msgstr "Tälle organisaatiolle ei ole asiakasta!"
 
-#: corporate/lib/stripe.py:2332
+#: corporate/lib/stripe.py:2331
 msgid "Session not found"
 msgstr "Istuntoa ei löytynyt"
 
-#: corporate/lib/stripe.py:2338 zerver/decorator.py:197
+#: corporate/lib/stripe.py:2337 zerver/decorator.py:197
 msgid "Must be a billing administrator or an organization owner"
 msgstr "On oltava laskutuksen järjestelmänvalvoja tai organisaation omistaja"
 
-#: corporate/lib/stripe.py:2349
+#: corporate/lib/stripe.py:2348
 msgid "Payment intent not found"
 msgstr "Maksutarkoitusta ei löytynyt"
 
-#: corporate/lib/stripe.py:2352
+#: corporate/lib/stripe.py:2351
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
 msgstr "Anna stripe_session_id tai stripe_payment_intent_id"
 
-#: corporate/lib/stripe.py:2891
+#: corporate/lib/stripe.py:2900
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
@@ -270,33 +302,33 @@ msgstr ""
 msgid "Parameter 'confirmed' is required"
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:130
+#: corporate/views/remote_billing_page.py:134
 msgid "Billing access token expired."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:132
+#: corporate/views/remote_billing_page.py:136
 msgid "Invalid billing access token."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:256
+#: corporate/views/remote_billing_page.py:273
 msgid "User account doesn't exist yet."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:261
-#: corporate/views/remote_billing_page.py:659
+#: corporate/views/remote_billing_page.py:278
+#: corporate/views/remote_billing_page.py:691
 msgid "You must accept the Terms of Service to proceed."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:487
+#: corporate/views/remote_billing_page.py:504
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:494
+#: corporate/views/remote_billing_page.py:511
 msgid "Invalid zulip_org_key for this zulip_org_id."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:498
+#: corporate/views/remote_billing_page.py:515
 msgid "Your server registration has been deactivated."
 msgstr ""
 
@@ -320,7 +352,10 @@ msgid ""
 "                        If this error is unexpected, you can\n"
 "                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "                        "
-msgstr "\nJos tämä virhe tuli odottamatta voit\n <a href=\"mailto:%(support_email)s\">ottaa yhteyttä tukeen</a>."
+msgstr ""
+"\n"
+"Jos tämä virhe tuli odottamatta voit\n"
+" <a href=\"mailto:%(support_email)s\">ottaa yhteyttä tukeen</a>."
 
 #: templates/500.html:4 templates/500.html:21
 #: zerver/actions/scheduled_messages.py:401 zerver/middleware.py:393
@@ -332,14 +367,18 @@ msgid ""
 "\n"
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
-msgstr "\nZulip-chattia ei voi ladata koska palvelimella on ongelmia."
+msgstr ""
+"\n"
+"Zulip-chattia ei voi ladata koska palvelimella on ongelmia."
 
 #: templates/500.html:28
 msgid ""
 "\n"
 "                        This page will reload automatically when service is restored.\n"
 "                        "
-msgstr "\nTämä sivu latautuu automaattisesti uudelleen kun palvelin on palautettu."
+msgstr ""
+"\n"
+"Tämä sivu latautuu automaattisesti uudelleen kun palvelin on palautettu."
 
 #: templates/500.html:32
 #, python-format
@@ -347,7 +386,9 @@ msgid ""
 "\n"
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                            "
-msgstr "\nSillä välin voit <a href=\"mailto:%(support_email)s\">ottaa yhteyttä Zulipin tukeen</a>."
+msgstr ""
+"\n"
+"Sillä välin voit <a href=\"mailto:%(support_email)s\">ottaa yhteyttä Zulipin tukeen</a>."
 
 #: templates/500.html:36
 #, python-format
@@ -356,7 +397,10 @@ msgid ""
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n"
 "                            this server's administrators</a> for support.\n"
 "                            "
-msgstr "\nSillä välin voit <a href=\"mailto:%(support_email)s\">ottaaa yhteyttä\ntämän palvelimen ylläpitoon</a> tuen saamiseksi."
+msgstr ""
+"\n"
+"Sillä välin voit <a href=\"mailto:%(support_email)s\">ottaaa yhteyttä\n"
+"tämän palvelimen ylläpitoon</a> tuen saamiseksi."
 
 #: templates/500.html:44
 #, python-format
@@ -365,7 +409,10 @@ msgid ""
 "                            If you administer this server, you may want to check out the\n"
 "                            <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
 "                            "
-msgstr "\nJos ylläpidät palvelint niin voit \n<a href=\"%(troubleshooting_url)s\">lukea Zulipin palvelinvirheenjäljitysopasta</a>."
+msgstr ""
+"\n"
+"Jos ylläpidät palvelint niin voit \n"
+"<a href=\"%(troubleshooting_url)s\">lukea Zulipin palvelinvirheenjäljitysopasta</a>."
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -373,11 +420,14 @@ msgid ""
 "\n"
 "    Analytics for %(target_name)s | Zulip\n"
 "    "
-msgstr "\nanalytiikkaa kohteelle %(target_name)s | Zulip"
+msgstr ""
+"\n"
+"analytiikkaa kohteelle %(target_name)s | Zulip"
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr "Analytiikka on täysin käytössä 24 tuntia organisaation luomisen jälkeen."
+msgstr ""
+"Analytiikka on täysin käytössä 24 tuntia organisaation luomisen jälkeen."
 
 #: templates/analytics/stats.html:23
 #, python-format
@@ -502,7 +552,9 @@ msgstr "Viimeisin päivitys"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "Kaikkien kaavioiden täydellinen päivitys tapahtuu kerran päivässä. “Viestit aikajaksolla” kaavio päivitetään kerran tunnissa."
+msgstr ""
+"Kaikkien kaavioiden täydellinen päivitys tapahtuu kerran päivässä. “Viestit "
+"aikajaksolla” kaavio päivitetään kerran tunnissa."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -519,7 +571,10 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\nTämä varmistaa, että sähköpostiosoite Zulip tunnuksellesi on vaihtunut\n osoitteesta %(old_email_html_tag)s osoitteeksi %(new_email_html_tag)s"
+msgstr ""
+"\n"
+"Tämä varmistaa, että sähköpostiosoite Zulip tunnuksellesi on vaihtunut\n"
+" osoitteesta %(old_email_html_tag)s osoitteeksi %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -540,7 +595,9 @@ msgid ""
 "\n"
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
-msgstr "\nLaita sähköpostia %(support_email_html_tag)sja selvitetään asia pikimmiten."
+msgstr ""
+"\n"
+"Laita sähköpostia %(support_email_html_tag)sja selvitetään asia pikimmiten."
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
@@ -566,38 +623,44 @@ msgstr "Hupsista. Varmistuslinkki on virheellinen."
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
-msgstr "Varmista, että kopioit linkin oikein selaimeesi. Jos näet tämän sivun uudelleen, kyseessä lienee meidän virheemme. Olemme pahoillamme!"
+msgstr ""
+"Varmista, että kopioit linkin oikein selaimeesi. Jos näet tämän sivun "
+"uudelleen, kyseessä lienee meidän virheemme. Olemme pahoillamme!"
 
 #: templates/corporate/billing.html:5
 msgid "Billing"
 msgstr "Laskutus"
 
-#: templates/corporate/billing.html:312 templates/corporate/billing.html:338
-#: templates/corporate/billing.html:367 templates/corporate/billing.html:396
-#: templates/corporate/billing.html:422
+#: templates/corporate/billing.html:350 templates/corporate/billing.html:385
+#: templates/corporate/billing.html:414 templates/corporate/billing.html:443
+#: templates/corporate/billing.html:469 templates/corporate/billing.html:497
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 msgid "Close modal"
 msgstr "Sulje näkymä"
 
-#: templates/corporate/billing.html:323 templates/corporate/billing.html:352
-#: templates/corporate/billing.html:381
+#: templates/corporate/billing.html:370 templates/corporate/billing.html:454
+#: templates/corporate/billing.html:482 templates/corporate/billing.html:510
+msgid "Never mind"
+msgstr ""
+
+#: templates/corporate/billing.html:372 templates/corporate/billing.html:456
+#: templates/corporate/billing.html:484
+msgid "Downgrade"
+msgstr ""
+
+#: templates/corporate/billing.html:399 templates/corporate/billing.html:428
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr "Peruuta"
 
-#: templates/corporate/billing.html:325 templates/corporate/billing.html:409
-#: templates/corporate/billing.html:432
-msgid "Downgrade"
-msgstr ""
-
-#: templates/corporate/billing.html:354 templates/corporate/billing.html:383
+#: templates/corporate/billing.html:401 templates/corporate/billing.html:430
 #: templates/zerver/change_email_address_visibility_modal.html:28
 msgid "Confirm"
 msgstr "Vahvista"
 
-#: templates/corporate/billing.html:407 templates/corporate/billing.html:430
-msgid "Never mind"
+#: templates/corporate/billing.html:512
+msgid "Cancel upgrade"
 msgstr ""
 
 #: templates/corporate/communities.html:28
@@ -618,6 +681,435 @@ msgstr "Kategoriat"
 #: templates/zerver/integrations/index.html:78
 msgid "All"
 msgstr "Kaikki"
+
+#: templates/corporate/comparison_table_self_hosted.html:34
+#: templates/corporate/comparison_table_self_hosted.html:35
+#: templates/corporate/comparison_table_self_hosted.html:36
+#: templates/corporate/comparison_table_self_hosted.html:37
+#: templates/corporate/comparison_table_self_hosted.html:41
+#: templates/corporate/comparison_table_self_hosted.html:42
+#: templates/corporate/comparison_table_self_hosted.html:43
+#: templates/corporate/comparison_table_self_hosted.html:44
+#: templates/corporate/comparison_table_self_hosted.html:50
+#: templates/corporate/comparison_table_self_hosted.html:51
+#: templates/corporate/comparison_table_self_hosted.html:52
+#: templates/corporate/comparison_table_self_hosted.html:53
+#: templates/corporate/comparison_table_self_hosted.html:59
+#: templates/corporate/comparison_table_self_hosted.html:60
+#: templates/corporate/comparison_table_self_hosted.html:61
+#: templates/corporate/comparison_table_self_hosted.html:62
+#: templates/corporate/comparison_table_self_hosted.html:68
+#: templates/corporate/comparison_table_self_hosted.html:69
+#: templates/corporate/comparison_table_self_hosted.html:70
+#: templates/corporate/comparison_table_self_hosted.html:71
+#: templates/corporate/comparison_table_self_hosted.html:78
+#: templates/corporate/comparison_table_self_hosted.html:79
+#: templates/corporate/comparison_table_self_hosted.html:80
+#: templates/corporate/comparison_table_self_hosted.html:81
+#: templates/corporate/comparison_table_self_hosted.html:88
+#: templates/corporate/comparison_table_self_hosted.html:89
+#: templates/corporate/comparison_table_self_hosted.html:90
+#: templates/corporate/comparison_table_self_hosted.html:91
+#: templates/corporate/comparison_table_self_hosted.html:97
+#: templates/corporate/comparison_table_self_hosted.html:98
+#: templates/corporate/comparison_table_self_hosted.html:99
+#: templates/corporate/comparison_table_self_hosted.html:100
+#: templates/corporate/comparison_table_self_hosted.html:158
+#: templates/corporate/comparison_table_self_hosted.html:159
+#: templates/corporate/comparison_table_self_hosted.html:160
+msgid "Unlimited"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:106
+#: templates/corporate/comparison_table_self_hosted.html:107
+#: templates/corporate/comparison_table_self_hosted.html:108
+#: templates/corporate/comparison_table_self_hosted.html:109
+#: templates/corporate/comparison_table_self_hosted.html:122
+#: templates/corporate/comparison_table_self_hosted.html:123
+#: templates/corporate/comparison_table_self_hosted.html:124
+#: templates/corporate/comparison_table_self_hosted.html:132
+#: templates/corporate/comparison_table_self_hosted.html:133
+#: templates/corporate/comparison_table_self_hosted.html:134
+#: templates/corporate/comparison_table_self_hosted.html:142
+#: templates/corporate/comparison_table_self_hosted.html:143
+#: templates/corporate/comparison_table_self_hosted.html:144
+#: templates/corporate/comparison_table_self_hosted.html:151
+#: templates/corporate/comparison_table_self_hosted.html:172
+#: templates/corporate/comparison_table_self_hosted.html:173
+#: templates/corporate/comparison_table_self_hosted.html:174
+#: templates/corporate/comparison_table_self_hosted.html:175
+#: templates/corporate/comparison_table_self_hosted.html:182
+#: templates/corporate/comparison_table_self_hosted.html:183
+#: templates/corporate/comparison_table_self_hosted.html:184
+#: templates/corporate/comparison_table_self_hosted.html:185
+#: templates/corporate/comparison_table_self_hosted.html:191
+#: templates/corporate/comparison_table_self_hosted.html:192
+#: templates/corporate/comparison_table_self_hosted.html:193
+#: templates/corporate/comparison_table_self_hosted.html:194
+#: templates/corporate/comparison_table_self_hosted.html:202
+#: templates/corporate/comparison_table_self_hosted.html:203
+#: templates/corporate/comparison_table_self_hosted.html:204
+#: templates/corporate/comparison_table_self_hosted.html:205
+#: templates/corporate/comparison_table_self_hosted.html:212
+#: templates/corporate/comparison_table_self_hosted.html:213
+#: templates/corporate/comparison_table_self_hosted.html:214
+#: templates/corporate/comparison_table_self_hosted.html:215
+#: templates/corporate/comparison_table_self_hosted.html:221
+#: templates/corporate/comparison_table_self_hosted.html:222
+#: templates/corporate/comparison_table_self_hosted.html:223
+#: templates/corporate/comparison_table_self_hosted.html:224
+#: templates/corporate/comparison_table_self_hosted.html:230
+#: templates/corporate/comparison_table_self_hosted.html:231
+#: templates/corporate/comparison_table_self_hosted.html:232
+#: templates/corporate/comparison_table_self_hosted.html:233
+#: templates/corporate/comparison_table_self_hosted.html:237
+#: templates/corporate/comparison_table_self_hosted.html:238
+#: templates/corporate/comparison_table_self_hosted.html:239
+#: templates/corporate/comparison_table_self_hosted.html:240
+#: templates/corporate/comparison_table_self_hosted.html:246
+#: templates/corporate/comparison_table_self_hosted.html:247
+#: templates/corporate/comparison_table_self_hosted.html:248
+#: templates/corporate/comparison_table_self_hosted.html:249
+#: templates/corporate/comparison_table_self_hosted.html:255
+#: templates/corporate/comparison_table_self_hosted.html:256
+#: templates/corporate/comparison_table_self_hosted.html:257
+#: templates/corporate/comparison_table_self_hosted.html:258
+#: templates/corporate/comparison_table_self_hosted.html:265
+#: templates/corporate/comparison_table_self_hosted.html:266
+#: templates/corporate/comparison_table_self_hosted.html:267
+#: templates/corporate/comparison_table_self_hosted.html:268
+#: templates/corporate/comparison_table_self_hosted.html:276
+#: templates/corporate/comparison_table_self_hosted.html:277
+#: templates/corporate/comparison_table_self_hosted.html:278
+#: templates/corporate/comparison_table_self_hosted.html:279
+#: templates/corporate/comparison_table_self_hosted.html:286
+#: templates/corporate/comparison_table_self_hosted.html:287
+#: templates/corporate/comparison_table_self_hosted.html:288
+#: templates/corporate/comparison_table_self_hosted.html:295
+#: templates/corporate/comparison_table_self_hosted.html:296
+#: templates/corporate/comparison_table_self_hosted.html:297
+#: templates/corporate/comparison_table_self_hosted.html:305
+#: templates/corporate/comparison_table_self_hosted.html:306
+#: templates/corporate/comparison_table_self_hosted.html:307
+#: templates/corporate/comparison_table_self_hosted.html:322
+#: templates/corporate/comparison_table_self_hosted.html:323
+#: templates/corporate/comparison_table_self_hosted.html:324
+#: templates/corporate/comparison_table_self_hosted.html:331
+#: templates/corporate/comparison_table_self_hosted.html:332
+#: templates/corporate/comparison_table_self_hosted.html:333
+#: templates/corporate/comparison_table_self_hosted.html:340
+#: templates/corporate/comparison_table_self_hosted.html:341
+#: templates/corporate/comparison_table_self_hosted.html:342
+#: templates/corporate/comparison_table_self_hosted.html:350
+#: templates/corporate/comparison_table_self_hosted.html:351
+#: templates/corporate/comparison_table_self_hosted.html:352
+#: templates/corporate/comparison_table_self_hosted.html:361
+#: templates/corporate/comparison_table_self_hosted.html:362
+#: templates/corporate/comparison_table_self_hosted.html:363
+#: templates/corporate/comparison_table_self_hosted.html:373
+#: templates/corporate/comparison_table_self_hosted.html:374
+#: templates/corporate/comparison_table_self_hosted.html:384
+#: templates/corporate/comparison_table_self_hosted.html:385
+#: templates/corporate/comparison_table_self_hosted.html:396
+#: templates/corporate/comparison_table_self_hosted.html:397
+#: templates/corporate/comparison_table_self_hosted.html:405
+#: templates/corporate/comparison_table_self_hosted.html:406
+#: templates/corporate/comparison_table_self_hosted.html:413
+#: templates/corporate/comparison_table_self_hosted.html:424
+#: templates/corporate/comparison_table_self_hosted.html:425
+#: templates/corporate/comparison_table_self_hosted.html:426
+#: templates/corporate/comparison_table_self_hosted.html:427
+#: templates/corporate/comparison_table_self_hosted.html:433
+#: templates/corporate/comparison_table_self_hosted.html:434
+#: templates/corporate/comparison_table_self_hosted.html:435
+#: templates/corporate/comparison_table_self_hosted.html:436
+#: templates/corporate/comparison_table_self_hosted.html:444
+#: templates/corporate/comparison_table_self_hosted.html:445
+#: templates/corporate/comparison_table_self_hosted.html:446
+#: templates/corporate/comparison_table_self_hosted.html:453
+#: templates/corporate/comparison_table_self_hosted.html:454
+#: templates/corporate/comparison_table_self_hosted.html:455
+#: templates/corporate/comparison_table_self_hosted.html:464
+#: templates/corporate/comparison_table_self_hosted.html:465
+#: templates/corporate/comparison_table_self_hosted.html:473
+#: templates/corporate/comparison_table_self_hosted.html:474
+#: templates/corporate/comparison_table_self_hosted.html:487
+#: templates/corporate/comparison_table_self_hosted.html:499
+#: templates/corporate/comparison_table_self_hosted.html:509
+#: templates/corporate/comparison_table_self_hosted.html:510
+#: templates/corporate/comparison_table_self_hosted.html:521
+#: templates/corporate/comparison_table_self_hosted.html:528
+#: templates/corporate/comparison_table_self_hosted.html:535
+#: templates/corporate/comparison_table_self_hosted.html:536
+#: templates/corporate/comparison_table_self_hosted.html:537
+#: templates/corporate/comparison_table_self_hosted.html:544
+#: templates/corporate/comparison_table_self_hosted.html:545
+#: templates/corporate/comparison_table_self_hosted.html:546
+#: templates/corporate/comparison_table_self_hosted.html:554
+#: templates/corporate/comparison_table_self_hosted.html:555
+#: templates/corporate/comparison_table_self_hosted.html:567
+#: templates/corporate/comparison_table_self_hosted.html:568
+#: templates/corporate/comparison_table_self_hosted.html:569
+#: templates/corporate/comparison_table_self_hosted.html:576
+#: templates/corporate/comparison_table_self_hosted.html:577
+#: templates/corporate/comparison_table_self_hosted.html:578
+#: templates/corporate/comparison_table_self_hosted.html:585
+#: templates/corporate/comparison_table_self_hosted.html:586
+#: templates/corporate/comparison_table_self_hosted.html:587
+#: templates/corporate/comparison_table_self_hosted.html:601
+#: templates/corporate/comparison_table_self_hosted.html:602
+#: templates/corporate/comparison_table_self_hosted.html:603
+#: templates/corporate/comparison_table_self_hosted.html:612
+#: templates/corporate/comparison_table_self_hosted.html:613
+#: templates/corporate/comparison_table_self_hosted.html:614
+#: templates/corporate/comparison_table_self_hosted.html:623
+#: templates/corporate/comparison_table_self_hosted.html:624
+#: templates/corporate/comparison_table_self_hosted.html:625
+#: templates/corporate/comparison_table_self_hosted.html:632
+#: templates/corporate/comparison_table_self_hosted.html:633
+#: templates/corporate/comparison_table_self_hosted.html:634
+#: templates/corporate/comparison_table_self_hosted.html:641
+#: templates/corporate/comparison_table_self_hosted.html:642
+#: templates/corporate/comparison_table_self_hosted.html:643
+#: templates/corporate/comparison_table_self_hosted.html:650
+#: templates/corporate/comparison_table_self_hosted.html:651
+#: templates/corporate/comparison_table_self_hosted.html:652
+#: templates/corporate/comparison_table_self_hosted.html:660
+#: templates/corporate/comparison_table_self_hosted.html:661
+#: templates/corporate/comparison_table_self_hosted.html:672
+#: templates/corporate/comparison_table_self_hosted.html:673
+#: templates/corporate/comparison_table_self_hosted.html:674
+#: templates/corporate/comparison_table_self_hosted.html:675
+#: templates/corporate/comparison_table_self_hosted.html:683
+#: templates/corporate/comparison_table_self_hosted.html:684
+#: templates/corporate/comparison_table_self_hosted.html:685
+#: templates/corporate/comparison_table_self_hosted.html:686
+#: templates/corporate/comparison_table_self_hosted.html:694
+#: templates/corporate/comparison_table_self_hosted.html:695
+#: templates/corporate/comparison_table_self_hosted.html:696
+#: templates/corporate/comparison_table_self_hosted.html:697
+#: templates/corporate/comparison_table_self_hosted.html:705
+#: templates/corporate/comparison_table_self_hosted.html:706
+#: templates/corporate/comparison_table_self_hosted.html:707
+#: templates/corporate/comparison_table_self_hosted.html:708
+#: templates/corporate/comparison_table_self_hosted.html:716
+#: templates/corporate/comparison_table_self_hosted.html:717
+#: templates/corporate/comparison_table_self_hosted.html:727
+#: templates/corporate/comparison_table_self_hosted.html:728
+#: templates/corporate/comparison_table_self_hosted.html:737
+#: templates/corporate/comparison_table_self_hosted.html:738
+#: templates/corporate/comparison_table_self_hosted.html:739
+#: templates/corporate/comparison_table_self_hosted.html:746
+#: templates/corporate/comparison_table_self_hosted.html:752
+#: templates/corporate/comparison_table_self_hosted.html:753
+#: templates/corporate/comparison_table_self_hosted.html:763
+#: templates/corporate/comparison_table_self_hosted.html:764
+#: templates/corporate/comparison_table_self_hosted.html:774
+#: templates/corporate/comparison_table_self_hosted.html:775
+#: templates/corporate/comparison_table_self_hosted.html:785
+#: templates/corporate/comparison_table_self_hosted.html:786
+#: templates/corporate/comparison_table_self_hosted.html:800
+#: templates/corporate/comparison_table_self_hosted.html:801
+#: templates/corporate/comparison_table_self_hosted.html:802
+#: templates/corporate/comparison_table_self_hosted.html:809
+#: templates/corporate/comparison_table_self_hosted.html:810
+#: templates/corporate/comparison_table_self_hosted.html:811
+#: templates/corporate/comparison_table_self_hosted.html:819
+#: templates/corporate/comparison_table_self_hosted.html:820
+#: templates/corporate/comparison_table_self_hosted.html:830
+#: templates/corporate/comparison_table_self_hosted.html:831
+#: templates/corporate/comparison_table_self_hosted.html:843
+#: templates/corporate/comparison_table_self_hosted.html:844
+#: templates/corporate/comparison_table_self_hosted.html:852
+#: templates/corporate/comparison_table_self_hosted.html:853
+#: templates/corporate/comparison_table_self_hosted.html:860
+#: templates/corporate/comparison_table_self_hosted.html:867
+#: templates/corporate/comparison_table_self_hosted.html:880
+#: templates/corporate/comparison_table_self_hosted.html:881
+#: templates/corporate/comparison_table_self_hosted.html:890
+#: templates/corporate/comparison_table_self_hosted.html:891
+#: templates/corporate/comparison_table_self_hosted.html:899
+#: templates/corporate/comparison_table_self_hosted.html:900
+#: templates/corporate/comparison_table_self_hosted.html:908
+#: templates/corporate/comparison_table_self_hosted.html:909
+#: templates/corporate/comparison_table_self_hosted.html:918
+#: templates/corporate/comparison_table_self_hosted.html:919
+#: templates/corporate/comparison_table_self_hosted.html:927
+#: templates/corporate/comparison_table_self_hosted.html:928
+#: templates/corporate/comparison_table_self_hosted.html:936
+#: templates/corporate/comparison_table_self_hosted.html:937
+#: templates/corporate/comparison_table_self_hosted.html:946
+#: templates/corporate/comparison_table_self_hosted.html:955
+#: templates/corporate/comparison_table_self_hosted.html:964
+#: templates/corporate/comparison_table_self_hosted.html:973
+#: templates/corporate/comparison_table_self_hosted.html:982
+#: templates/corporate/comparison_table_self_hosted.html:991
+#: templates/corporate/comparison_table_self_hosted.html:1003
+#: templates/corporate/comparison_table_self_hosted.html:1004
+#: templates/corporate/comparison_table_self_hosted.html:1005
+#: templates/corporate/comparison_table_self_hosted.html:1006
+#: templates/corporate/comparison_table_self_hosted.html:1011
+#: templates/corporate/comparison_table_self_hosted.html:1012
+#: templates/corporate/comparison_table_self_hosted.html:1013
+#: templates/corporate/comparison_table_self_hosted.html:1021
+#: templates/corporate/comparison_table_self_hosted.html:1022
+#: templates/corporate/comparison_table_self_hosted.html:1032
+#: templates/corporate/comparison_table_self_hosted.html:1033
+#: templates/corporate/comparison_table_self_hosted.html:1034
+#: templates/corporate/comparison_table_self_hosted.html:1041
+#: templates/corporate/comparison_table_self_hosted.html:1048
+#: templates/corporate/comparison_table_self_hosted.html:1055
+#: templates/corporate/comparison_table_self_hosted.html:1062
+#: templates/corporate/comparison_table_self_hosted.html:1069
+#: templates/corporate/comparison_table_self_hosted.html:1076
+msgid "Supported"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:121
+#: templates/corporate/comparison_table_self_hosted.html:131
+#: templates/corporate/comparison_table_self_hosted.html:141
+#: templates/corporate/comparison_table_self_hosted.html:148
+#: templates/corporate/comparison_table_self_hosted.html:149
+#: templates/corporate/comparison_table_self_hosted.html:150
+#: templates/corporate/comparison_table_self_hosted.html:285
+#: templates/corporate/comparison_table_self_hosted.html:294
+#: templates/corporate/comparison_table_self_hosted.html:304
+#: templates/corporate/comparison_table_self_hosted.html:321
+#: templates/corporate/comparison_table_self_hosted.html:330
+#: templates/corporate/comparison_table_self_hosted.html:339
+#: templates/corporate/comparison_table_self_hosted.html:349
+#: templates/corporate/comparison_table_self_hosted.html:360
+#: templates/corporate/comparison_table_self_hosted.html:371
+#: templates/corporate/comparison_table_self_hosted.html:372
+#: templates/corporate/comparison_table_self_hosted.html:382
+#: templates/corporate/comparison_table_self_hosted.html:383
+#: templates/corporate/comparison_table_self_hosted.html:394
+#: templates/corporate/comparison_table_self_hosted.html:395
+#: templates/corporate/comparison_table_self_hosted.html:403
+#: templates/corporate/comparison_table_self_hosted.html:404
+#: templates/corporate/comparison_table_self_hosted.html:410
+#: templates/corporate/comparison_table_self_hosted.html:411
+#: templates/corporate/comparison_table_self_hosted.html:412
+#: templates/corporate/comparison_table_self_hosted.html:443
+#: templates/corporate/comparison_table_self_hosted.html:452
+#: templates/corporate/comparison_table_self_hosted.html:462
+#: templates/corporate/comparison_table_self_hosted.html:463
+#: templates/corporate/comparison_table_self_hosted.html:471
+#: templates/corporate/comparison_table_self_hosted.html:472
+#: templates/corporate/comparison_table_self_hosted.html:484
+#: templates/corporate/comparison_table_self_hosted.html:485
+#: templates/corporate/comparison_table_self_hosted.html:486
+#: templates/corporate/comparison_table_self_hosted.html:496
+#: templates/corporate/comparison_table_self_hosted.html:497
+#: templates/corporate/comparison_table_self_hosted.html:498
+#: templates/corporate/comparison_table_self_hosted.html:507
+#: templates/corporate/comparison_table_self_hosted.html:508
+#: templates/corporate/comparison_table_self_hosted.html:518
+#: templates/corporate/comparison_table_self_hosted.html:519
+#: templates/corporate/comparison_table_self_hosted.html:520
+#: templates/corporate/comparison_table_self_hosted.html:525
+#: templates/corporate/comparison_table_self_hosted.html:526
+#: templates/corporate/comparison_table_self_hosted.html:527
+#: templates/corporate/comparison_table_self_hosted.html:534
+#: templates/corporate/comparison_table_self_hosted.html:543
+#: templates/corporate/comparison_table_self_hosted.html:552
+#: templates/corporate/comparison_table_self_hosted.html:553
+#: templates/corporate/comparison_table_self_hosted.html:566
+#: templates/corporate/comparison_table_self_hosted.html:575
+#: templates/corporate/comparison_table_self_hosted.html:584
+#: templates/corporate/comparison_table_self_hosted.html:600
+#: templates/corporate/comparison_table_self_hosted.html:611
+#: templates/corporate/comparison_table_self_hosted.html:622
+#: templates/corporate/comparison_table_self_hosted.html:631
+#: templates/corporate/comparison_table_self_hosted.html:640
+#: templates/corporate/comparison_table_self_hosted.html:649
+#: templates/corporate/comparison_table_self_hosted.html:658
+#: templates/corporate/comparison_table_self_hosted.html:659
+#: templates/corporate/comparison_table_self_hosted.html:714
+#: templates/corporate/comparison_table_self_hosted.html:715
+#: templates/corporate/comparison_table_self_hosted.html:725
+#: templates/corporate/comparison_table_self_hosted.html:726
+#: templates/corporate/comparison_table_self_hosted.html:736
+#: templates/corporate/comparison_table_self_hosted.html:743
+#: templates/corporate/comparison_table_self_hosted.html:744
+#: templates/corporate/comparison_table_self_hosted.html:745
+#: templates/corporate/comparison_table_self_hosted.html:750
+#: templates/corporate/comparison_table_self_hosted.html:751
+#: templates/corporate/comparison_table_self_hosted.html:761
+#: templates/corporate/comparison_table_self_hosted.html:762
+#: templates/corporate/comparison_table_self_hosted.html:772
+#: templates/corporate/comparison_table_self_hosted.html:773
+#: templates/corporate/comparison_table_self_hosted.html:783
+#: templates/corporate/comparison_table_self_hosted.html:784
+#: templates/corporate/comparison_table_self_hosted.html:799
+#: templates/corporate/comparison_table_self_hosted.html:808
+#: templates/corporate/comparison_table_self_hosted.html:817
+#: templates/corporate/comparison_table_self_hosted.html:818
+#: templates/corporate/comparison_table_self_hosted.html:828
+#: templates/corporate/comparison_table_self_hosted.html:829
+#: templates/corporate/comparison_table_self_hosted.html:841
+#: templates/corporate/comparison_table_self_hosted.html:842
+#: templates/corporate/comparison_table_self_hosted.html:850
+#: templates/corporate/comparison_table_self_hosted.html:851
+#: templates/corporate/comparison_table_self_hosted.html:857
+#: templates/corporate/comparison_table_self_hosted.html:858
+#: templates/corporate/comparison_table_self_hosted.html:859
+#: templates/corporate/comparison_table_self_hosted.html:878
+#: templates/corporate/comparison_table_self_hosted.html:879
+#: templates/corporate/comparison_table_self_hosted.html:888
+#: templates/corporate/comparison_table_self_hosted.html:889
+#: templates/corporate/comparison_table_self_hosted.html:897
+#: templates/corporate/comparison_table_self_hosted.html:898
+#: templates/corporate/comparison_table_self_hosted.html:906
+#: templates/corporate/comparison_table_self_hosted.html:907
+#: templates/corporate/comparison_table_self_hosted.html:916
+#: templates/corporate/comparison_table_self_hosted.html:917
+#: templates/corporate/comparison_table_self_hosted.html:925
+#: templates/corporate/comparison_table_self_hosted.html:926
+#: templates/corporate/comparison_table_self_hosted.html:934
+#: templates/corporate/comparison_table_self_hosted.html:935
+#: templates/corporate/comparison_table_self_hosted.html:943
+#: templates/corporate/comparison_table_self_hosted.html:944
+#: templates/corporate/comparison_table_self_hosted.html:945
+#: templates/corporate/comparison_table_self_hosted.html:952
+#: templates/corporate/comparison_table_self_hosted.html:953
+#: templates/corporate/comparison_table_self_hosted.html:954
+#: templates/corporate/comparison_table_self_hosted.html:961
+#: templates/corporate/comparison_table_self_hosted.html:962
+#: templates/corporate/comparison_table_self_hosted.html:963
+#: templates/corporate/comparison_table_self_hosted.html:970
+#: templates/corporate/comparison_table_self_hosted.html:971
+#: templates/corporate/comparison_table_self_hosted.html:972
+#: templates/corporate/comparison_table_self_hosted.html:979
+#: templates/corporate/comparison_table_self_hosted.html:980
+#: templates/corporate/comparison_table_self_hosted.html:981
+#: templates/corporate/comparison_table_self_hosted.html:988
+#: templates/corporate/comparison_table_self_hosted.html:989
+#: templates/corporate/comparison_table_self_hosted.html:990
+#: templates/corporate/comparison_table_self_hosted.html:1031
+#: templates/corporate/comparison_table_self_hosted.html:1038
+#: templates/corporate/comparison_table_self_hosted.html:1039
+msgid "Self-managed"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:157
+msgid "For organizations with up to 10 users"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:864
+#: templates/corporate/comparison_table_self_hosted.html:1019
+#: templates/corporate/comparison_table_self_hosted.html:1020
+#: templates/corporate/comparison_table_self_hosted.html:1045
+#: templates/corporate/comparison_table_self_hosted.html:1046
+#: templates/corporate/comparison_table_self_hosted.html:1052
+#: templates/corporate/comparison_table_self_hosted.html:1059
+#: templates/corporate/comparison_table_self_hosted.html:1066
+#: templates/corporate/comparison_table_self_hosted.html:1067
+#: templates/corporate/comparison_table_self_hosted.html:1073
+#: templates/corporate/comparison_table_self_hosted.html:1074
+#: templates/corporate/comparison_table_self_hosted.html:1075
+msgid "Not available"
+msgstr ""
 
 #: templates/corporate/development-community.html:23
 msgid "The Zulip development community"
@@ -699,6 +1191,52 @@ msgstr "Katso hinnoittelu"
 msgid "Deactivate server registration?"
 msgstr ""
 
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:4
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:16
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:4
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:16
+msgid "Plan management not available"
+msgstr ""
+
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:18
+#, python-format
+msgid ""
+" Plan management is not available for this\n"
+"                        organization, because your Zulip server is already on a\n"
+"                        %(server_plan_name)s plan, which covers all\n"
+"                        organizations on this server. Follow the <a\n"
+"                        href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">log\n"
+"                        in instructions</a>\n"
+"                        for <b>All older versions</b>\n"
+"                        of the Zulip server to manage your plan.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:29
+msgid ""
+" To move the plan from the server to this\n"
+"                        organization, or for other questions, <a href=\"mailto:{{\n"
+"                        support_email }}\">contact support</a>.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:18
+msgid ""
+"\n"
+"                        Plan management for this server is not available because at least one organization\n"
+"                        hosted on this server already has an active plan.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:24
+#, python-format
+msgid ""
+"\n"
+"                        <a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">Log in</a> to plan management for your\n"
+"                        organization instead, or <a href='mailto:%(support_email)s'>contact support</a> with any questions.\n"
+"                        "
+msgstr ""
+
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
 msgstr "Zulip yrityksille"
@@ -745,7 +1283,10 @@ msgid ""
 "            You can find answers to frequently asked questions in the\n"
 "            <a href=\"/help/\">Zulip help center</a>.\n"
 "            "
-msgstr "\nLisätietoja on yleisissä kysymyksissä\n<a href=\"/help/\">Zulipin ohjekeskuksessa</a>."
+msgstr ""
+"\n"
+"Lisätietoja on yleisissä kysymyksissä\n"
+"<a href=\"/help/\">Zulipin ohjekeskuksessa</a>."
 
 #: templates/corporate/team.html:146
 msgid "Avatar"
@@ -759,7 +1300,7 @@ msgstr ""
 msgid "Upgrade"
 msgstr "Päivitys"
 
-#: templates/corporate/upgrade.html:199
+#: templates/corporate/upgrade.html:200
 msgid "Convert demo organization before upgrading."
 msgstr "Muunna demo-organisaatio ennen päivitystä."
 
@@ -768,7 +1309,9 @@ msgid ""
 "\n"
 "        This team chat is now being hosted on Zulip Cloud. Please accept the <a href=\"https://zulip.com/policies/terms\">Zulip Terms of Service</a> to continue.\n"
 "        "
-msgstr "\nTätä tiimichattia isännöidään nyt Zulip Cloudissa. Hyväksy <a href=\"https://zulip.com/policies/terms\">Zulipin käyttöehdo</a>t jatkaaksesi. "
+msgstr ""
+"\n"
+"Tätä tiimichattia isännöidään nyt Zulip Cloudissa. Hyväksy <a href=\"https://zulip.com/policies/terms\">Zulipin käyttöehdo</a>t jatkaaksesi. "
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -914,7 +1457,14 @@ msgid ""
 "                        you probably got the address wrong. If you got stuck here while trying\n"
 "                        to log in, this is most likely a server bug or misconfiguration.\n"
 "                        "
-msgstr "\nOlet varmaan päätynyt tänne sattumalta. Tämän sivun\nptiäisi olla vain väliaikainen vahvennusprosessissa \nja sinne ei pitäisi päätyä muulloin. Jos tulit tänne\njonkun linkin kautta se oli varmaan väärä. Jos \nolet täällä kesken kirjautumisen niin palvelin on\nvarmaan väärin asennettu."
+msgstr ""
+"\n"
+"Olet varmaan päätynyt tänne sattumalta. Tämän sivun\n"
+"ptiäisi olla vain väliaikainen vahvennusprosessissa \n"
+"ja sinne ei pitäisi päätyä muulloin. Jos tulit tänne\n"
+"jonkun linkin kautta se oli varmaan väärä. Jos \n"
+"olet täällä kesken kirjautumisen niin palvelin on\n"
+"varmaan väärin asennettu."
 
 #: templates/zerver/change_email_address_visibility_modal.html:6
 msgid "Configure email address privacy"
@@ -980,7 +1530,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\nTiliä ei löydy sähköpostilla %(email)s.\n                            "
+msgstr ""
+"\n"
+"Tiliä ei löydy sähköpostilla %(email)s.\n"
+"                            "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -1025,7 +1578,9 @@ msgid ""
 "\n"
 "                    The organization you are trying to join, %(deactivated_domain_name)s, has been deactivated.\n"
 "                    "
-msgstr "\nOrganisaatio %(deactivated_domain_name)s, johon yritit liittyä, on poistettu käytöstä."
+msgstr ""
+"\n"
+"Organisaatio %(deactivated_domain_name)s, johon yritit liittyä, on poistettu käytöstä."
 
 #: templates/zerver/deactivated.html:28
 #, python-format
@@ -1033,7 +1588,9 @@ msgid ""
 "\n"
 "                        It has moved to <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
 "                        "
-msgstr "\nSe on siirretty <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>."
+msgstr ""
+"\n"
+"Se on siirretty <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>."
 
 #: templates/zerver/deactivated.html:32
 #, python-format
@@ -1042,7 +1599,10 @@ msgid ""
 "                    Please contact <a href=\"mailto:%(support_email)s\">%(support_email)s</a> to reactivate\n"
 "                    this group.\n"
 "                    "
-msgstr "\nOta yhteyttä <a href=\"mailto:%(support_email)s\">%(support_email)s</a> aktivoidaksesi uudelleen\ntämä ryhmä."
+msgstr ""
+"\n"
+"Ota yhteyttä <a href=\"mailto:%(support_email)s\">%(support_email)s</a> aktivoidaksesi uudelleen\n"
+"tämä ryhmä."
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
@@ -1056,7 +1616,9 @@ msgstr "Viimeistele työpöytäkirjautuminen"
 msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
-msgstr "Käytä selainta viimeistelläksesi kirjautuminen, palaa sitten tänne ja liitä kirjautumiskoodisi."
+msgstr ""
+"Käytä selainta viimeistelläksesi kirjautuminen, palaa sitten tänne ja liitä "
+"kirjautumiskoodisi."
 
 #: templates/zerver/desktop_login.html:18
 msgid "Paste token here"
@@ -1081,7 +1643,9 @@ msgstr "Kirjaudu työpöutäsovelluksella"
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
-msgstr "Kopioi tämä kirjautumiskoodi ja palaa Zulip sovellukseesi viimeistelläksesi sisäänkirjautuminen:"
+msgstr ""
+"Kopioi tämä kirjautumiskoodi ja palaa Zulip sovellukseesi viimeistelläksesi "
+"sisäänkirjautuminen:"
 
 #: templates/zerver/desktop_redirect.html:17
 msgid "Copy"
@@ -1231,12 +1795,12 @@ msgstr ""
 #: templates/zerver/emails/account_registered.subject.txt:2
 #, python-format
 msgid "%(realm_name)s on Zulip: Your new organization details"
-msgstr "%(realm_name)sZulipissa: Organisaatiotiedot"
+msgstr "%(realm_name)sZulipissa: Uudet organisaatiotietosi"
 
 #: templates/zerver/emails/account_registered.subject.txt:4
 #, python-format
 msgid "%(realm_name)s on Zulip: Your new account details"
-msgstr "%(realm_name)sZulipissa: Uudet tilitiedot"
+msgstr "%(realm_name)sZulipissa: Uudet tilitietosi"
 
 #: templates/zerver/emails/account_registered.txt:5
 #, python-format
@@ -1323,7 +1887,9 @@ msgstr ""
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
-msgstr "Jollet pyytänyt tätä muutosta itse, ota pikimmiten yhteyttä %(support_email)s.    "
+msgstr ""
+"Jollet pyytänyt tätä muutosta itse, ota pikimmiten yhteyttä "
+"%(support_email)s.    "
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt:1
 msgid "Verify your new email address for your demo Zulip organization"
@@ -1335,7 +1901,9 @@ msgstr ""
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
-msgstr "Jollet pyytänyt tätä muutosta itse, ota pikimmiten yhteyttä <%(support_email)s>.    "
+msgstr ""
+"Jollet pyytänyt tätä muutosta itse, ota pikimmiten yhteyttä "
+"<%(support_email)s>.    "
 
 #: templates/zerver/emails/confirm_new_email.html:10
 #: templates/zerver/emails/confirm_new_email.txt:4
@@ -1344,7 +1912,10 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr "Saimme pyynnön muuttaa Zulip-tilin sähköpostiosoite osoiteessa %(realm_uri)s osoitteesta %(old_email)sosoitteeksi %(new_email)s. Vahvista tämä muutos napsauttamalla alta: "
+msgstr ""
+"Olemme saaneet pyynnön vaihtaa sähköpostiosoitten Zulipin käyttäjälle "
+"sivulla %(realm_uri)sosoitteesta %(old_email)s osoitteeksi %(new_email)s. "
+"Vahvista tämä muutos napsauttamalla alta: "
 
 #: templates/zerver/emails/confirm_new_email.html:11
 msgid "Confirm email change"
@@ -1490,7 +2061,10 @@ msgstr "Kiitos pyynnöstäsi!"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by <a href=\"%(external_host)s\">%(external_host)s</a>:"
-msgstr "Sähköpostiosoitteellasi %(email)s on tilejä seuraavissa Zulip-organisaatioissa, joita isännöi <a href=\"%(external_host)s\">%(external_host)s</a>: "
+msgstr ""
+"Sähköpostiosoitteellasi %(email)s on tilejä seuraavissa Zulip-"
+"organisaatioissa, joita isännöi <a "
+"href=\"%(external_host)s\">%(external_host)s</a>: "
 
 #: templates/zerver/emails/find_team.html:19
 #, python-format
@@ -1514,7 +2088,9 @@ msgstr "Zulip tilisi"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
-msgstr "Sähköpostiosoitteellasi %(email)s on tilejä seuraavissa Zulip-organisaatioissa, joita isännöi %(external_host)s: "
+msgstr ""
+"Sähköpostiosoitteellasi %(email)s on tilejä seuraavissa Zulip-"
+"organisaatioissa, joita isännöi %(external_host)s: "
 
 #: templates/zerver/emails/find_team.txt:10
 #, python-format
@@ -1533,7 +2109,9 @@ msgstr "Heippa,"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
-msgstr "%(referrer_name)stoivoo, että liittyisit seuraan Zulipissa &mdash; tuottavuuteen suunnitellussa viestintätyökalussa."
+msgstr ""
+"%(referrer_name)stoivoo, että liittyisit seuraan Zulipissa &mdash; "
+"tuottavuuteen suunnitellussa viestintätyökalussa."
 
 #: templates/zerver/emails/invitation.html:15
 #: templates/zerver/emails/invitation_reminder.html:13
@@ -1543,14 +2121,17 @@ msgstr "Aloita alla olevasta napista."
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
-msgstr "%(referrer_full_name)s kutsui sinut liittymään %(referrer_realm_name)s"
+msgstr ""
+"%(referrer_full_name)s kutsui sinut liittymään %(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
 msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
-msgstr "%(referrer_full_name)s (%(referrer_email)s) toivoo, että liittyisit seuraan Zulipissa -- tuottavuuteen suunnitellussa viestintätyökalussa."
+msgstr ""
+"%(referrer_full_name)s (%(referrer_email)s) toivoo, että liittyisit seuraan "
+"Zulipissa -- tuottavuuteen suunnitellussa viestintätyökalussa."
 
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
@@ -1567,7 +2148,9 @@ msgstr "Hei taas,"
 msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip &mdash; the team communication tool designed for productivity."
-msgstr "Ystävällinen muistutus: %(referrer_name)s toivoo, että liittyisit seuraan Zulipissa &mdash; tuottavuuteen suunnitellussa viestintätyökalussa."
+msgstr ""
+"Ystävällinen muistutus: %(referrer_name)s toivoo, että liittyisit seuraan "
+"Zulipissa &mdash; tuottavuuteen suunnitellussa viestintätyökalussa."
 
 #: templates/zerver/emails/invitation_reminder.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
@@ -1581,12 +2164,16 @@ msgid ""
 "    This invitation expires in two days. If the invitation expires,\n"
 "    you'll need to ask %(referrer_name)s for another one.\n"
 "    "
-msgstr "\nTämä kutsu vanhenee kahdessa päivässä. Jos kutsu vanhenee,\nsinun täytyy pyytää että %(referrer_name)skutsuu sinut uudestaan."
+msgstr ""
+"\n"
+"Tämä kutsu vanhenee kahdessa päivässä. Jos kutsu vanhenee,\n"
+"sinun täytyy pyytää että %(referrer_name)skutsuu sinut uudestaan."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
 msgid "Reminder: Join %(referrer_name)s at %(referrer_realm_name)s"
-msgstr "Muistutus: liity %(referrer_name)s seuraan kohteessa%(referrer_realm_name)s"
+msgstr ""
+"Muistutus: liity %(referrer_name)s seuraan kohteessa%(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation_reminder.txt:3
 #, python-format
@@ -1594,14 +2181,19 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "Ystävällinen muistutus: %(referrer_name)s (%(referrer_email)s) toivoo, että liittyisit seuraan Zulipissa -- tuottavuuteen suunnitellussa viestintätyökalussa."
+msgstr ""
+"Ystävällinen muistutus: %(referrer_name)s (%(referrer_email)s) toivoo, että "
+"liittyisit seuraan Zulipissa -- tuottavuuteen suunnitellussa "
+"viestintätyökalussa."
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr "Tämä kutsu vanhenee kahdessa päivässä. Jos kutsu vanhenee, sinun täytyy pyytää että %(referrer_name)skutsuu sinut uudestaan."
+msgstr ""
+"Tämä kutsu vanhenee kahdessa päivässä. Jos kutsu vanhenee, sinun täytyy "
+"pyytää että %(referrer_name)skutsuu sinut uudestaan."
 
 #: templates/zerver/emails/macros.html:14
 #, python-format
@@ -1623,7 +2215,10 @@ msgid ""
 "This email does not include message content because your organization has "
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
-msgstr "Tämä sähköposti ei sisällä viestin sisältöä, koska organisaatiosi on estänyt <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">viestien sisällön näyttämisen sähköposti-ilmoituksissa</a>."
+msgstr ""
+"Tämä sähköposti ei sisällä viestin sisältöä, koska organisaatiosi on estänyt"
+" <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">viestien "
+"sisällön näyttämisen sähköposti-ilmoituksissa</a>."
 
 #: templates/zerver/emails/missed_message.html:19
 #, python-format
@@ -1631,7 +2226,10 @@ msgid ""
 "This email does not include message content because you have disabled <a "
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
-msgstr "Tämä sähköposti ei sisällä viestin sisältöä, koska olet estänyt <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">viestien sisällön näyttämisen sähköposti-ilmoituksissa</a>."
+msgstr ""
+"Tämä sähköposti ei sisällä viestin sisältöä, koska olet estänyt <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">viestien "
+"sisällön näyttämisen sähköposti-ilmoituksissa</a>."
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:25
@@ -1667,7 +2265,8 @@ msgstr ""
 #, python-format
 msgid ""
 "You are receiving this because everyone was mentioned in #%(stream_name)s."
-msgstr "Sait tämän koska kaikki käyttäjät mainittiin huoneessa #%(stream_name)s."
+msgstr ""
+"Sait tämän koska kaikki käyttäjät mainittiin huoneessa #%(stream_name)s."
 
 #: templates/zerver/emails/missed_message.html:41
 #: templates/zerver/emails/missed_message.txt:37
@@ -1682,7 +2281,9 @@ msgstr ""
 msgid ""
 "You are receiving this because you have email notifications enabled for "
 "#%(stream_name)s."
-msgstr "Sait tämän viestin koska sähköpostimuistutkset on päällä ryhmälle #%(stream_name)s"
+msgstr ""
+"Sait tämän viestin koska sähköpostimuistutkset on päällä ryhmälle "
+"#%(stream_name)s"
 
 #: templates/zerver/emails/missed_message.html:46
 #, python-format
@@ -1690,21 +2291,28 @@ msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
-msgstr "Vastaa tähän sähköpostiin suoraan <a href=\"%(narrow_url)s\">katso sitä %(realm_name)s Zulipissa</a>, tai <a href=\"%(notif_url)s\">muokkaa sähköpostiasetuksia</a>. "
+msgstr ""
+"Vastaa tähän sähköpostiin suoraan <a href=\"%(narrow_url)s\">katso sitä "
+"%(realm_name)s Zulipissa</a>, tai <a href=\"%(notif_url)s\">muokkaa "
+"sähköpostiasetuksia</a>. "
 
 #: templates/zerver/emails/missed_message.html:48
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Katso tätä viestiä %(realm_name)sZulipissa </a>, tai <a href=\"%(notif_url)s\">muokkaa sähköpostiasetuksia</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Katso tätä viestiä %(realm_name)sZulipissa </a>, "
+"tai <a href=\"%(notif_url)s\">muokkaa sähköpostiasetuksia</a>."
 
 #: templates/zerver/emails/missed_message.html:50
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Vastaa %(realm_name)s Zulipissa</a> tai <a href=\"%(notif_url)s\">muokkaa sähköpostiasetuksia</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Vastaa %(realm_name)s Zulipissa</a> tai <a "
+"href=\"%(notif_url)s\">muokkaa sähköpostiasetuksia</a>."
 
 #: templates/zerver/emails/missed_message.html:52
 #, python-format
@@ -1712,7 +2320,9 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
 "    "
-msgstr "\nÄlä vastaa tähän sähköpostiin. Tätä Zulip-palvelinta ei ole määritetty vastaanottamaan saapuvia sähköposteja. (<a href=\"%(url)s\">ohjeita</a>)."
+msgstr ""
+"\n"
+"Älä vastaa tähän sähköpostiin. Tätä Zulip-palvelinta ei ole määritetty vastaanottamaan saapuvia sähköposteja. (<a href=\"%(url)s\">ohjeita</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -1739,7 +2349,10 @@ msgid ""
 "\n"
 "This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
 "See %(hide_content_url)s for more details.\n"
-msgstr "\nTämä sähköposti ei sisällä viestin sisältöä, koska organisaatiosi on poistanut viestin sisällön näkymisen sähköposti-ilmoituksissa.\nKatso lisätietoja %(hide_content_url)s.\n"
+msgstr ""
+"\n"
+"Tämä sähköposti ei sisällä viestin sisältöä, koska organisaatiosi on poistanut viestin sisällön näkymisen sähköposti-ilmoituksissa.\n"
+"Katso lisätietoja %(hide_content_url)s.\n"
 
 #: templates/zerver/emails/missed_message.txt:16
 #, python-format
@@ -1747,7 +2360,10 @@ msgid ""
 "\n"
 "This email does not include message content because you have disabled message content appearing in email notifications.\n"
 "See %(alert_notif_url)s for more details.\n"
-msgstr "\nTämä sähköposti ei sisällä viestin sisältöä, koska olet estänyt viestien sisällön näyttämisen sähköposti-ilmoituksissa.\nLisätietoja %(alert_notif_url)s \n"
+msgstr ""
+"\n"
+"Tämä sähköposti ei sisällä viestin sisältöä, koska olet estänyt viestien sisällön näyttämisen sähköposti-ilmoituksissa.\n"
+"Lisätietoja %(alert_notif_url)s \n"
 
 #: templates/zerver/emails/missed_message.txt:43
 #, python-format
@@ -1769,7 +2385,9 @@ msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
-msgstr "\nÄlä vastaa tähän sähköpostiin. Tätä Zulip-palvelinta ei ole määritetty vastaanottamaan sähköpostia. Auta:\n"
+msgstr ""
+"\n"
+"Älä vastaa tähän sähköpostiin. Tätä Zulip-palvelinta ei ole määritetty vastaanottamaan sähköpostia. Auta:\n"
 
 #: templates/zerver/emails/missed_message.txt:62
 msgid "Manage email preferences: "
@@ -1781,7 +2399,10 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
-msgstr "Zulip-tunnukseen määritelty sähköpostiosoiteeksi vaihdettiin äskettäin %(new_email)s. Jos et pyytänyt tätä muutosta itse, ota pikimmiten yhteyttä %(support_email)s."
+msgstr ""
+"Zulip-tunnukseen määritelty sähköpostiosoiteeksi vaihdettiin äskettäin "
+"%(new_email)s. Jos et pyytänyt tätä muutosta itse, ota pikimmiten yhteyttä "
+"%(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -1804,14 +2425,19 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
-msgstr "Zulip-tiliisi yhdistetty sähköpostiosoite muutettiin äskettäin muotoon %(new_email)s. Jos et pyytänyt tätä muutosta, ota meihin välittömästi yhteyttä osoitteessa <%(support_email)s>."
+msgstr ""
+"Zulip-tiliisi yhdistetty sähköpostiosoite muutettiin äskettäin muotoon "
+"%(new_email)s. Jos et pyytänyt tätä muutosta, ota meihin välittömästi "
+"yhteyttä osoitteessa <%(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organisaatio: %(organization_url)s Aika: %(login_time)s Sähköposti: %(user_email)s"
+msgstr ""
+"Organisaatio: %(organization_url)s Aika: %(login_time)s Sähköposti: "
+"%(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -1850,7 +2476,9 @@ msgstr "IP-osoite: %(device_ip)s"
 #: templates/zerver/emails/notify_new_login.html:33
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
-msgstr "Jos tämä on sinun kirjautumisesi, kaikki on hyvin, eikä siihen tarvitse reagoida mitenkään."
+msgstr ""
+"Jos tämä on sinun kirjautumisesi, kaikki on hyvin, eikä siihen tarvitse "
+"reagoida mitenkään."
 
 #: templates/zerver/emails/notify_new_login.html:36
 #, python-format
@@ -1858,7 +2486,10 @@ msgid ""
 "If you do not recognize this login, or think your account may have been "
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
-msgstr "Jos et tunnista tätä kirjautumistunnusta tai uskot, että tilisi on vaarantunut, <a href=\"%(reset_link)s\">vaihda salasanasi</a> tai ota meihin yhteyttä välittömästi osoitteessa %(support_email)s."
+msgstr ""
+"Jos et tunnista tätä kirjautumistunnusta tai uskot, että tilisi on "
+"vaarantunut, <a href=\"%(reset_link)s\">vaihda salasanasi</a> tai ota meihin"
+" yhteyttä välittömästi osoitteessa %(support_email)s."
 
 #: templates/zerver/emails/notify_new_login.html:40
 #: templates/zerver/emails/notify_new_login.txt:20
@@ -1877,7 +2508,8 @@ msgstr "Peru kirjautumisilmoitukset"
 #: templates/zerver/emails/notify_new_login.subject.txt:1
 #, python-format
 msgid "New login from %(device_browser)s on %(device_os)s"
-msgstr "Uusi kirjautuminen selaimella %(device_browser)s laitteella %(device_os)s"
+msgstr ""
+"Uusi kirjautuminen selaimella %(device_browser)s laitteella %(device_os)s"
 
 #: templates/zerver/emails/notify_new_login.txt:3
 #, python-format
@@ -1889,7 +2521,9 @@ msgstr "Organisaatio: %(organization_url)s"
 msgid ""
 "\n"
 "If you do not recognize this login, or think your account may have been compromised, please reset your password at %(reset_link)s or contact us immediately at %(support_email)s."
-msgstr "\nJos et tunnista tätä kirjautumistunnusta tai uskot, että tilisi on vaarantunut, vaihda salasanasi osoitteessa %(reset_link)s tai ota meihin yhteyttä välittömästi osoitteella %(support_email)s."
+msgstr ""
+"\n"
+"Jos et tunnista tätä kirjautumistunnusta tai uskot, että tilisi on vaarantunut, vaihda salasanasi osoitteessa %(reset_link)s tai ota meihin yhteyttä välittömästi osoitteella %(support_email)s."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:10
 #, python-format
@@ -2127,7 +2761,9 @@ msgstr ""
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
 "%(email)s on %(realm_uri)s."
-msgstr "Joku (mahdollisesti sinä itse) pyysi uuta salasanaa Zulip-tunnukselle %(email)sosoitteessa %(realm_uri)s."
+msgstr ""
+"Joku (mahdollisesti sinä itse) pyysi uuta salasanaa Zulip-tunnukselle "
+"%(email)sosoitteessa %(realm_uri)s."
 
 #: templates/zerver/emails/password_reset.html:13
 msgid "Click the button below to reset your password."
@@ -2143,7 +2779,10 @@ msgid ""
 "You previously had an account on %(organization_url)s, but it has been "
 "deactivated. You can contact an organization administrator to <a "
 "href=\"%(help_link)s\">reactivate your account</a>."
-msgstr "Sinulla oli aiemmin tili osoitteessa %(organization_url)s, mutta se on poistettu käytöstä. Voit ottaa yhteyttä organisaation järjestelmänvalvojaan <a href=\"%(help_link)s\">aktivoidaksesi tilisi uudelleen</a>."
+msgstr ""
+"Sinulla oli aiemmin tili osoitteessa %(organization_url)s, mutta se on "
+"poistettu käytöstä. Voit ottaa yhteyttä organisaation järjestelmänvalvojaan "
+"<a href=\"%(help_link)s\">aktivoidaksesi tilisi uudelleen</a>."
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -2160,13 +2799,16 @@ msgstr "Sinulla ei ole aktiivista tiliä seuraavissa organisaatio(i)ssa."
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "Voit kokeilla kirjautua sisään tai vaihtaa salasanasi ylläolevaan organisaatioon (tai organisaatioihin)."
+msgstr ""
+"Voit kokeilla kirjautua sisään tai vaihtaa salasanasi ylläolevaan "
+"organisaatioon (tai organisaatioihin)."
 
 #: templates/zerver/emails/password_reset.html:38
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr "Jos et tunnista tätä toimintaa, voit jättää tämän sähköpostin huomiotta."
+msgstr ""
+"Jos et tunnista tätä toimintaa, voit jättää tämän sähköpostin huomiotta."
 
 #: templates/zerver/emails/password_reset.subject.txt:1
 #, python-format
@@ -2182,7 +2824,10 @@ msgstr "Alla olevasta linkistä voi asettaa uuden salasanan."
 msgid ""
 "You previously had an account on %(realm_uri)s, but it has been deactivated."
 " You can contact an organization administrator to reactivate your account."
-msgstr "Sinulla oli aiemmin tili osoitteessa %(realm_uri)s, mutta se on poistettu käytöstä. Voit ottaa yhteyttä organisaation järjestelmänvalvojaan aktivoidaksesi tilisi uudelleen."
+msgstr ""
+"Sinulla oli aiemmin tili osoitteessa %(realm_uri)s, mutta se on poistettu "
+"käytöstä. Voit ottaa yhteyttä organisaation järjestelmänvalvojaan "
+"aktivoidaksesi tilisi uudelleen."
 
 #: templates/zerver/emails/realm_auto_downgraded.html:8
 #, python-format
@@ -2191,7 +2836,10 @@ msgid ""
 "    Your organization, %(organization_name_with_link)s, has been downgraded to the Zulip Cloud\n"
 "    Free plan because of unpaid invoices. The unpaid invoices have been voided.\n"
 "    "
-msgstr "\nOrganisaatiosi %(organization_name_with_link)son alennettu Zulip Cloudiin\nIlmainen tilaus maksamattomien laskujen vuoksi. Maksamattomat laskut on mitätöity."
+msgstr ""
+"\n"
+"Organisaatiosi %(organization_name_with_link)son alennettu Zulip Cloudiin\n"
+"Ilmainen tilaus maksamattomien laskujen vuoksi. Maksamattomat laskut on mitätöity."
 
 #: templates/zerver/emails/realm_auto_downgraded.html:15
 #, python-format
@@ -2199,7 +2847,9 @@ msgid ""
 "\n"
 "    To continue on the Zulip Cloud Standard plan, please upgrade again by going to %(upgrade_url)s.\n"
 "    "
-msgstr "\nJos haluat jatkaa Zulip Cloud Standard -tilausta, päivitä uudelleen siirtymällä osoitteeseen %(upgrade_url)s."
+msgstr ""
+"\n"
+"Jos haluat jatkaa Zulip Cloud Standard -tilausta, päivitä uudelleen siirtymällä osoitteeseen %(upgrade_url)s."
 
 #: templates/zerver/emails/realm_auto_downgraded.html:22
 #, python-format
@@ -2207,7 +2857,9 @@ msgid ""
 "\n"
 "    If you think this was a mistake or need more details, please reach out to us at %(support_email)s.\n"
 "    "
-msgstr "\nJos tämä oli mielestäsi virhe tai tarvitset lisätietoja, ota meihin yhteyttä osoitteella %(support_email)s."
+msgstr ""
+"\n"
+"Jos tämä oli mielestäsi virhe tai tarvitset lisätietoja, ota meihin yhteyttä osoitteella %(support_email)s."
 
 #: templates/zerver/emails/realm_reactivation.html:8
 #: templates/zerver/emails/realm_reactivation.txt:1
@@ -2221,7 +2873,9 @@ msgstr "Parahin aiempi järjestelmänvalvoja osoitteessa %(realm_name)s,"
 msgid ""
 "One of your administrators requested reactivation of the previously "
 "deactivated Zulip organization hosted at %(realm_uri)s."
-msgstr "Yksi järjestelmänvalvojista pyysi aiemmin käytöstä poistetun Zulip-organisaation uudelleen aktivointia osoitteessa %(realm_uri)s"
+msgstr ""
+"Yksi järjestelmänvalvojista pyysi aiemmin käytöstä poistetun Zulip-"
+"organisaation uudelleen aktivointia osoitteessa %(realm_uri)s"
 
 #: templates/zerver/emails/realm_reactivation.html:13
 msgid "Click the button below to reactivate your organization."
@@ -2236,7 +2890,9 @@ msgstr "Uudelleenaktivoi organisaatio"
 msgid ""
 "If the request was in error, you can take no action and this link will "
 "expire in 24 hours."
-msgstr "Jos pyyntö oli virhe, voit olla tekemättä mitään ja tämä linkki vanhenee 24 tunnissa."
+msgstr ""
+"Jos pyyntö oli virhe, voit olla tekemättä mitään ja tämä linkki vanhenee 24 "
+"tunnissa."
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:1
 msgid "Reactivate your Zulip organization"
@@ -2356,7 +3012,7 @@ msgstr ""
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:4
 msgid ""
 "If you could list Zulip as a sponsor on your website, we would really "
-"appreciate it!."
+"appreciate it!"
 msgstr ""
 
 #: templates/zerver/find_account.html:4
@@ -2582,7 +3238,10 @@ msgid ""
 "                        You are using old version of the Zulip desktop\n"
 "                        app that is no longer supported.\n"
 "                        "
-msgstr "\nKäytät Zulip-työpöydän vanhaa versiota\nsovellusta ei enää tueta."
+msgstr ""
+"\n"
+"Käytät Zulip-työpöydän vanhaa versiota\n"
+"sovellusta ei enää tueta."
 
 #: templates/zerver/insecure_desktop_app.html:25
 msgid ""
@@ -2590,7 +3249,10 @@ msgid ""
 "                        The auto-update feature in this old version of\n"
 "                        Zulip desktop app no longer works.\n"
 "                        "
-msgstr "\nAutomaattinen päivitysominaisuus tässä vanhassa versiossa\nZulip-työpöytäsovellusta ei enää toimi."
+msgstr ""
+"\n"
+"Automaattinen päivitysominaisuus tässä vanhassa versiossa\n"
+"Zulip-työpöytäsovellusta ei enää toimi."
 
 #: templates/zerver/insecure_desktop_app.html:34
 msgid "Download the latest release."
@@ -2609,7 +3271,13 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\n                        Ja satoja lisää seuraavista palveluista:\n                       <a href=\"/integrations/doc/zapier\">Zapier</a>\n                        ja\n                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n                        "
+msgstr ""
+"\n"
+"                        Ja satoja lisää seuraavista palveluista:\n"
+"                       <a href=\"/integrations/doc/zapier\">Zapier</a>\n"
+"                        ja\n"
+"                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
+"                        "
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
@@ -2691,7 +3359,8 @@ msgstr "Moikka! Kiitos kiinnostuksestasi Zulipia kohtaan."
 
 #: templates/zerver/invalid_realm.html:18
 msgid "There is no Zulip organization hosted at this subdomain."
-msgstr "Yhtään Zulip-organisaatiota ei ole hostattu tässä aliverkkotunnuksessa."
+msgstr ""
+"Yhtään Zulip-organisaatiota ei ole hostattu tässä aliverkkotunnuksessa."
 
 #: templates/zerver/log_into_subdomain_token_invalid.html:4
 msgid "Invalid or expired login session"
@@ -2712,7 +3381,8 @@ msgstr "Katsele ilman tiliä"
 #: templates/zerver/login.html:69
 msgid ""
 "You've already registered with this email address. Please log in below."
-msgstr "Olet jo rekisteröitynyt tällä sähköpostiosoitteella. Kirjaudu sisään alta."
+msgstr ""
+"Olet jo rekisteröitynyt tällä sähköpostiosoitteella. Kirjaudu sisään alta."
 
 #: templates/zerver/login.html:98
 msgid "Email or username"
@@ -2739,7 +3409,9 @@ msgstr "Unohtuiko salasana?"
 #: templates/zerver/login.html:163
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
-msgstr "Eikö sinulla ole tiliä vielä? Tarvitsen kutsun liittyäksesi tähän organisaatioon."
+msgstr ""
+"Eikö sinulla ole tiliä vielä? Tarvitsen kutsun liittyäksesi tähän "
+"organisaatioon."
 
 #: templates/zerver/new_user_email_address_visibility.html:5
 msgid ""
@@ -2803,7 +3475,9 @@ msgstr "Raja-arvo ylitetty."
 msgid ""
 "You have exceeded the limit for how\n"
 "                        often a user can perform this action."
-msgstr "Olet ylittänyt rajan kuinka\nusein käyttäjä voi suorittaa tämän toiminnon. "
+msgstr ""
+"Olet ylittänyt rajan kuinka\n"
+"usein käyttäjä voi suorittaa tämän toiminnon. "
 
 #: templates/zerver/rate_limit_exceeded.html:19
 #, python-format
@@ -2821,7 +3495,10 @@ msgid ""
 "                    Creating a new organization on this server requires a valid organization creation link.\n"
 "                    Please see <a href=\"https://zulip.readthedocs.io/en/stable/production/multiple-organizations.html\">documentation</a> on creating a new organization for more information.\n"
 "                    "
-msgstr "\nUuden organisaation luonti tällä palvemilla vaatii organisaationluontilinkin.\nLue <a href=\"https://zulip.readthedocs.io/en/stable/production/multiple-organizations.html\">ohjeita</a> jos haluat lisää tietoja."
+msgstr ""
+"\n"
+"Uuden organisaation luonti tällä palvemilla vaatii organisaationluontilinkin.\n"
+"Lue <a href=\"https://zulip.readthedocs.io/en/stable/production/multiple-organizations.html\">ohjeita</a> jos haluat lisää tietoja."
 
 #: templates/zerver/realm_creation_form.html:9
 #: templates/zerver/register.html:48
@@ -2862,7 +3539,9 @@ msgid ""
 "\n"
 "                        Unfortunately, this is not a valid link for creating an organization. Please <a href=\"/new/\">obtain a new link</a> and try again.\n"
 "                        "
-msgstr "\nTämä ei ole toimiva linkki organisaation luomiseksi. <a href=\"/new/\">Hae uusi linkki</a> ja yritä uudestaan."
+msgstr ""
+"\n"
+"Tämä ei ole toimiva linkki organisaation luomiseksi. <a href=\"/new/\">Hae uusi linkki</a> ja yritä uudestaan."
 
 #: templates/zerver/realm_reactivation.html:4
 msgid "Organization successfully reactivated"
@@ -2964,7 +3643,9 @@ msgstr "Syötä sinun LDAP/Active Directory salasana."
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Tätä käytetään mobiilisovelluksiin ja muihin työkaluihin jotka tarvitsevat salasanan."
+msgstr ""
+"Tätä käytetään mobiilisovelluksiin ja muihin työkaluihin jotka tarvitsevat "
+"salasanan."
 
 #: templates/zerver/register.html:162
 msgid "Password strength"
@@ -2976,7 +3657,9 @@ msgstr "Mistä olet kiinnostunut?"
 
 #: templates/zerver/register.html:228
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
-msgstr "Tilaa minulle Zulipin vähäliikenteinen uutiskirje (muutama sähköposti vuodessa). "
+msgstr ""
+"Tilaa minulle Zulipin vähäliikenteinen uutiskirje (muutama sähköposti "
+"vuodessa). "
 
 #: templates/zerver/reset.html:4 templates/zerver/reset.html:12
 msgid "Reset your password"
@@ -3006,7 +3689,8 @@ msgstr "Vahvista salasana"
 
 #: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Valitettavasti linkki, jonka annoit on virheellinen tai se on jo käytetty."
+msgstr ""
+"Valitettavasti linkki, jonka annoit on virheellinen tai se on jo käytetty."
 
 #: templates/zerver/reset_done.html:4
 msgid " New password successfully set"
@@ -3031,7 +3715,8 @@ msgstr "Salasanan uudelleenasetussähköposti lähetetty!"
 
 #: templates/zerver/reset_emailed.html:17
 msgid "Check your email in a few minutes to finish the process."
-msgstr "Viimeistele prosessi tarkistamalla sähköpostisi muutaman minuutin kuluttua."
+msgstr ""
+"Viimeistele prosessi tarkistamalla sähköpostisi muutaman minuutin kuluttua."
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
@@ -3042,7 +3727,9 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n<h1 class=\"get-started\">Valitse tili</h1>"
+msgstr ""
+"\n"
+"<h1 class=\"get-started\">Valitse tili</h1>"
 
 #: templates/zerver/social_auth_select_email.html:67
 msgid ""
@@ -3050,7 +3737,9 @@ msgid ""
 "            Your GitHub account also has unverified email addresses\n"
 "            associated with it.\n"
 "            "
-msgstr "\nGitHub-tililläsi on myös vahvistamattomia sähköpostiosoitteita liitettynä"
+msgstr ""
+"\n"
+"GitHub-tililläsi on myös vahvistamattomia sähköpostiosoitteita liitettynä"
 
 #: templates/zerver/social_auth_select_email.html:73
 msgid ""
@@ -3058,7 +3747,9 @@ msgid ""
 "            To use one of these to log in to Zulip, you must first\n"
 "            <a href=\"https://github.com/settings/emails\">verify it with GitHub.</a>\n"
 "            "
-msgstr "\nKirjautuaksesi jollakin näistä Zulipiin, sinun tulee ensin <a href=\"https://github.com/settings/emails\">vahvistaa se GitHubissa.</a>"
+msgstr ""
+"\n"
+"Kirjautuaksesi jollakin näistä Zulipiin, sinun tulee ensin <a href=\"https://github.com/settings/emails\">vahvistaa se GitHubissa.</a>"
 
 #: templates/zerver/unsubscribe_link_error.html:4
 msgid "Error unsubscribing email"
@@ -3080,7 +3771,10 @@ msgid ""
 "Please double-check that you have the full URL and try again, or <a "
 "href=\"mailto:%(support_email)s\">email us</a> and we'll get this squared "
 "away!"
-msgstr "Varmista että verkko-osoite on väärä ja kokeile uudesraan tai <a href=\"mailto:%(support_email)s\">lähetä sähköpostia meille</a> jotta tämä saadaan korjatuksi."
+msgstr ""
+"Varmista että verkko-osoite on väärä ja kokeile uudesraan tai <a "
+"href=\"mailto:%(support_email)s\">lähetä sähköpostia meille</a> jotta tämä "
+"saadaan korjatuksi."
 
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
@@ -3116,7 +3810,10 @@ msgid ""
 "\n"
 "                        %(browser_name)s is not supported by Zulip.\n"
 "                        "
-msgstr "\n                        Zulip ei tue %(browser_name)s-selainta.\n                        "
+msgstr ""
+"\n"
+"                        Zulip ei tue %(browser_name)s-selainta.\n"
+"                        "
 
 #: templates/zerver/unsupported_browser.html:22
 #, python-format
@@ -3133,7 +3830,9 @@ msgid ""
 "\n"
 "                        You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>.\n"
 "                        "
-msgstr "\nVoit myös käyttää <a href=\"%(apps_page_link)s\">Zulipin työpöytäsovellusta</a>."
+msgstr ""
+"\n"
+"Voit myös käyttää <a href=\"%(apps_page_link)s\">Zulipin työpöytäsovellusta</a>."
 
 #: templates/zilencer/remote_realm_server_mismatch_error.html:16
 msgid "Unexpected Zulip server registration"
@@ -3206,7 +3905,8 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
-msgstr "'{stream_name}' on oletuskanava ja sitä ei voi lisätä '{group_name}' ryhmään"
+msgstr ""
+"'{stream_name}' on oletuskanava ja sitä ei voi lisätä '{group_name}' ryhmään"
 
 #: zerver/actions/default_streams.py:112 zerver/actions/default_streams.py:173
 #, python-brace-format
@@ -3235,17 +3935,23 @@ msgstr ""
 msgid ""
 "To protect users, Zulip limits the number of invitations you can send in one"
 " day. Because you have reached the limit, no invitations were sent."
-msgstr "Käyttäjien suojaamiseksi Zulip rajoittaa yhdessä päivässä lähetettävien kutsujen määrää. Koska olet saavuttanut rajan, kutsuja ei lähetetty. "
+msgstr ""
+"Käyttäjien suojaamiseksi Zulip rajoittaa yhdessä päivässä lähetettävien "
+"kutsujen määrää. Koska olet saavuttanut rajan, kutsuja ei lähetetty. "
 
 #: zerver/actions/invites.py:242
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "Tilisi on liian uusi jotta voisit lähettää kutsuja tähän organisaatioon. Kysy organisaation järjestelmänvalvojalta tai kokeneemmalta käyttäjältä."
+msgstr ""
+"Tilisi on liian uusi jotta voisit lähettää kutsuja tähän organisaatioon. "
+"Kysy organisaation järjestelmänvalvojalta tai kokeneemmalta käyttäjältä."
 
 #: zerver/actions/invites.py:282
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Joitain sähköposteja ei saatu vahvistettua, joten yhtään kutsua ei lähetetty."
+msgstr ""
+"Joitain sähköposteja ei saatu vahvistettua, joten yhtään kutsua ei "
+"lähetetty."
 
 #: zerver/actions/invites.py:290
 msgid "We weren't able to invite anyone."
@@ -3255,7 +3961,9 @@ msgstr "Emme kyenneet kutsumaan ketään."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Jotkut osoitteista käyttää jo Zulipia, joten heille ei lähetetty kutsua. Muille kutsut lähetettiin!"
+msgstr ""
+"Jotkut osoitteista käyttää jo Zulipia, joten heille ei lähetetty kutsua. "
+"Muille kutsut lähetettiin!"
 
 #: zerver/actions/message_edit.py:100 zerver/views/scheduled_messages.py:60
 msgid "Nothing to change"
@@ -3294,24 +4002,30 @@ msgstr "{user} on merkinnyt tämän aiheen ratkaisemattomaksi."
 #: zerver/actions/message_edit.py:1005
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
-msgstr "Tämä aihe on siirretty paikkaan {new_location} käyttäjän {user} toimesta."
+msgstr ""
+"Tämä aihe on siirretty paikkaan {new_location} käyttäjän {user} toimesta."
 
 #: zerver/actions/message_edit.py:1009
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
-msgstr "Viesti tästä aiheesta on siirretty paikkaan {new_location} käyttäjän {user} toimesta."
+msgstr ""
+"Viesti tästä aiheesta on siirretty paikkaan {new_location} käyttäjän {user} "
+"toimesta."
 
 #: zerver/actions/message_edit.py:1013
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
-msgstr "{changed_messages_count} viestiä tästä aiheesta on siirretty paikkaan {new_location} käyttäjän {user} toimesta."
+msgstr ""
+"{changed_messages_count} viestiä tästä aiheesta on siirretty paikkaan "
+"{new_location} käyttäjän {user} toimesta."
 
 #: zerver/actions/message_edit.py:1068
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
-msgstr "Tämä aihe on siirretty paikasta {old_location} käyttäjän {user} toimesta."
+msgstr ""
+"Tämä aihe on siirretty paikasta {old_location} käyttäjän {user} toimesta."
 
 #: zerver/actions/message_edit.py:1073
 #, python-brace-format
@@ -3324,7 +4038,9 @@ msgstr ""
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
-msgstr "{changed_messages_count} viestiä on siirretty tänne paikasta {old_location} käyttäjän {user} toimesta."
+msgstr ""
+"{changed_messages_count} viestiä on siirretty tänne paikasta {old_location} "
+"käyttäjän {user} toimesta."
 
 #: zerver/actions/message_edit.py:1206
 msgid "Your organization has turned off message editing"
@@ -3389,28 +4105,37 @@ msgstr "Virheellinen tieto vastaanottajille"
 
 #: zerver/actions/message_send.py:1316 zerver/actions/message_send.py:1324
 msgid "Recipient lists may contain emails or user IDs, but not both."
-msgstr "Vastaanottajalista voi sisältää sähköpostiosoitteita tai käyttäjätunnuksia, mutta ei molempia."
+msgstr ""
+"Vastaanottajalista voi sisältää sähköpostiosoitteita tai käyttäjätunnuksia, "
+"mutta ei molempia."
 
 #: zerver/actions/message_send.py:1474
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
-msgstr "Bottisi {bot_identity} yritti lähettää viestiä kanvatunnukselle {stream_id}, mutta kanavaa ei ole olemassa."
+msgstr ""
+"Bottisi {bot_identity} yritti lähettää viestiä kanvatunnukselle {stream_id},"
+" mutta kanavaa ei ole olemassa."
 
 #: zerver/actions/message_send.py:1485
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
-msgstr "Bottisi {bot_identity} yritti lähettää viestiä kanavalle {stream_name}, mutta tätä kanavaa ei ole olemassa. Luo se napsauttamalla [tästä]({new_stream_link})."
+msgstr ""
+"Bottisi {bot_identity} yritti lähettää viestiä kanavalle {stream_name}, "
+"mutta tätä kanavaa ei ole olemassa. Luo se napsauttamalla "
+"[tästä]({new_stream_link})."
 
 #: zerver/actions/message_send.py:1497
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
-msgstr "Bottisi {bot_identity} yritti lähettää viestiä kanavalle {stream_name}. Kanava on olemassa mutta sillä ei ole yhtään tilaajaa."
+msgstr ""
+"Bottisi {bot_identity} yritti lähettää viestiä kanavalle {stream_name}. "
+"Kanava on olemassa mutta sillä ei ole yhtään tilaajaa."
 
 #: zerver/actions/message_send.py:1544
 msgid "Direct messages are disabled in this organization."
@@ -3493,7 +4218,9 @@ msgstr ""
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
-msgstr "{user} muutti tämän kanavan [käyttöoikeudet](/help/stream-permissions) arvosta **{old_policy}** arvoon **{new_policy}**. "
+msgstr ""
+"{user} muutti tämän kanavan [käyttöoikeudet](/help/stream-permissions) "
+"arvosta **{old_policy}** arvoon **{new_policy}**. "
 
 #: zerver/actions/streams.py:1355
 #, python-brace-format
@@ -3502,12 +4229,18 @@ msgid ""
 "\n"
 "* **Old permissions**: {old_policy}.\n"
 "* **New permissions**: {new_policy}.\n"
-msgstr "{user} muutti tämän kanavan [lähetysoikeudet](/help/stream-sending-policy):\n\n* **Vanhat käyttöoikeudet**: {old_policy}. \n* **Uudet käyttöoikeudet**: {new_policy}. \n"
+msgstr ""
+"{user} muutti tämän kanavan [lähetysoikeudet](/help/stream-sending-policy):\n"
+"\n"
+"* **Vanhat käyttöoikeudet**: {old_policy}. \n"
+"* **Uudet käyttöoikeudet**: {new_policy}. \n"
 
 #: zerver/actions/streams.py:1471
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
-msgstr "Käyttäjä: {user_name} muutti kanavan: {old_stream_name} nimeksi: {new_stream_name}."
+msgstr ""
+"Käyttäjä: {user_name} muutti kanavan: {old_stream_name} nimeksi: "
+"{new_stream_name}."
 
 #: zerver/actions/streams.py:1487 zerver/actions/streams.py:1489
 #: zerver/views/streams.py:798
@@ -3543,7 +4276,12 @@ msgid ""
 "* **New retention period**: {new_retention_period}\n"
 "\n"
 "{summary_line}"
-msgstr "{user} on muuttanut tämän kanavan [viestin säilytysjaksoa](/help/message-retention-policy):\n* **Vanha säilytysjakso**: {old_retention_period} \n* **Uusi säilytysjakso**: {new_retention_period} \n\n{summary_line}"
+msgstr ""
+"{user} on muuttanut tämän kanavan [viestin säilytysjaksoa](/help/message-retention-policy):\n"
+"* **Vanha säilytysjakso**: {old_retention_period} \n"
+"* **Uusi säilytysjakso**: {new_retention_period} \n"
+"\n"
+"{summary_line}"
 
 #: zerver/actions/submessage.py:36
 msgid "You cannot attach a submessage to this message."
@@ -3607,7 +4345,9 @@ msgstr "Webhook-botit voivat päästä vain webhookeihin"
 msgid ""
 "Your account {username} has been deactivated. Please contact your "
 "organization administrator to reactivate it."
-msgstr "Tilisi {username} on poistettu käytöstä. Ota yhteyttä organisaatiosi järjestelmänvalvojaan aktivoidaksesi tilisi uudelleen. "
+msgstr ""
+"Tilisi {username} on poistettu käytöstä. Ota yhteyttä organisaatiosi "
+"järjestelmänvalvojaan aktivoidaksesi tilisi uudelleen. "
 
 #: zerver/forms.py:67
 msgid "The password is too weak."
@@ -3623,7 +4363,9 @@ msgstr "Aliverkkotunnus ei voi alkaa taikka loppua '-' merkkiin."
 
 #: zerver/forms.py:94
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
-msgstr "Aliverkkotunnus voi sisältää vain pieniä kirjaimia, numeroita, ja '-' merkkejä."
+msgstr ""
+"Aliverkkotunnus voi sisältää vain pieniä kirjaimia, numeroita, ja '-' "
+"merkkejä."
 
 #: zerver/forms.py:95
 msgid "Subdomain already in use. Please choose a different one."
@@ -3641,20 +4383,25 @@ msgstr "Käytä oikeaa sähköpostiosoitettasi."
 #: zerver/forms.py:256
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "Organisaatio johon yrität liittyä käyttäen {email} osoitetta ei ole olemassa."
+msgstr ""
+"Organisaatio johon yrität liittyä käyttäen {email} osoitetta ei ole "
+"olemassa."
 
 #: zerver/forms.py:264
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr "Pyydä organisaation järjestelmänvalvojalta kutsu {email} osoitteelle. "
+msgstr ""
+"Pyydä organisaation järjestelmänvalvojalta kutsu {email} osoitteelle. "
 
 #: zerver/forms.py:275
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Sähköpostiosoitteesi {email} ei ole verkkotunnuksesta joista on sallittu rekisteröityminen tähän organisaatioon."
+msgstr ""
+"Sähköpostiosoitteesi {email} ei ole verkkotunnuksesta joista on sallittu "
+"rekisteröityminen tähän organisaatioon."
 
 #: zerver/forms.py:283
 msgid "Email addresses containing + are not allowed in this organization."
@@ -3665,7 +4412,10 @@ msgid ""
 "New members cannot join this organization because all Zulip licenses are in "
 "use. Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
-msgstr "Uudet jäsenet eivät voi liittyä tähän organisaatioon, koska kaikki Zulip-lisenssit ovat käytössä. Ota yhteyttä kutsujaan ja pyydä häntä lisäämään lisenssien määrää ja yritä sitten uudelleen. "
+msgstr ""
+"Uudet jäsenet eivät voi liittyä tähän organisaatioon, koska kaikki Zulip-"
+"lisenssit ovat käytössä. Ota yhteyttä kutsujaan ja pyydä häntä lisäämään "
+"lisenssien määrää ja yritä sitten uudelleen. "
 
 #: zerver/forms.py:315
 msgid "New password"
@@ -3686,7 +4436,9 @@ msgstr ""
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
-msgstr "Salasanasi on poistettu käytöstä, koska se on liian heikko. Nollaa salasanasi luodaksesi uusi. "
+msgstr ""
+"Salasanasi on poistettu käytöstä, koska se on liian heikko. Nollaa "
+"salasanasi luodaksesi uusi. "
 
 #: zerver/forms.py:575
 msgid "Token"
@@ -3774,7 +4526,9 @@ msgstr "Aliverkkotunnukset eivät voi alkaa tai loppua '-' merkkiin."
 
 #: zerver/lib/domains.py:23
 msgid "Domain can only have letters, numbers, '.' and '-'s."
-msgstr "Verkkotunnukset voivat sisältää vain kirjaimia, numeroita, '.' ja '-' merkkejä."
+msgstr ""
+"Verkkotunnukset voivat sisältää vain kirjaimia, numeroita, '.' ja '-' "
+"merkkejä."
 
 #: zerver/lib/drafts.py:52
 msgid "Timestamp must not be negative."
@@ -3954,7 +4708,9 @@ msgstr "Tämä organisaatio on poistettu käytöstä"
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
-msgstr "Palvelimesi mobiili push-ilmoituspalvelun rekisteröinti on poistettu käytöstä "
+msgstr ""
+"Palvelimesi mobiili push-ilmoituspalvelun rekisteröinti on poistettu "
+"käytöstä "
 
 #: zerver/lib/exceptions.py:343
 msgid "Password authentication is disabled in this organization"
@@ -4057,7 +4813,9 @@ msgstr "Seuraa kanavaa"
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr "Kaikki kanavan tilaajat näkevät kanavaan lähetetyt viestit. Kokeile napsauttaa jotakin alla olevista kanavalinkeistä."
+msgstr ""
+"Kaikki kanavan tilaajat näkevät kanavaan lähetetyt viestit. Kokeile "
+"napsauttaa jotakin alla olevista kanavalinkeistä."
 
 #: zerver/lib/hotspots.py:42
 msgid "Topics"
@@ -4067,7 +4825,9 @@ msgstr "Aiheet"
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
-msgstr "Jokaisella viestillä on aihe. Aiheiden avulla keskustelut on helppo löytää ja niihin on helppo vastata, vaikka olisit offline-tilassa. "
+msgstr ""
+"Jokaisella viestillä on aihe. Aiheiden avulla keskustelut on helppo löytää "
+"ja niihin on helppo vastata, vaikka olisit offline-tilassa. "
 
 #: zerver/lib/hotspots.py:54
 msgid "Settings"
@@ -4085,7 +4845,9 @@ msgstr "Kirjoita"
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
-msgstr "Aloita uusi keskustelu napsauttamalla tätä. Valitse aihe (mieluiten kaksi-kolme sanaa) ja kokeile!"
+msgstr ""
+"Aloita uusi keskustelu napsauttamalla tätä. Valitse aihe (mieluiten kaksi-"
+"kolme sanaa) ja kokeile!"
 
 #: zerver/lib/integrations.py:38
 msgid "Integration frameworks"
@@ -4188,7 +4950,9 @@ msgstr ""
 msgid ""
 "If you are new to Zulip, check out our [Getting started "
 "guide]({getting_started_url})!"
-msgstr "Jos olet uusi Zulip-käyttäjä, tutustu [aloitusoppaaseemme]({getting_started_url})! "
+msgstr ""
+"Jos olet uusi Zulip-käyttäjä, tutustu "
+"[aloitusoppaaseemme]({getting_started_url})! "
 
 #: zerver/lib/onboarding.py:76
 #, python-brace-format
@@ -4223,7 +4987,9 @@ msgstr ""
 msgid ""
 "I can also help you get set up! Just click anywhere on this message or press"
 " `r` to reply."
-msgstr "Voin myös auttaa asennuksessa! Napsauta mitä tahansa tämän viestin kohtaa tai paina r vastataksesi. "
+msgstr ""
+"Voin myös auttaa asennuksessa! Napsauta mitä tahansa tämän viestin kohtaa "
+"tai paina r vastataksesi. "
 
 #: zerver/lib/onboarding.py:113 zerver/lib/onboarding.py:225
 msgid "Here are a few messages I understand:"
@@ -4240,7 +5006,10 @@ msgid ""
 "Go to [Profile settings](#settings/profile) to add a [profile "
 "picture](/help/change-your-profile-picture) and edit your [profile "
 "information](/help/edit-your-profile)."
-msgstr "Siirry kohtaan [Profiiliasetukset](#settings/profile), lisää [profiilikuva](/help/change-your-profile-picture) ja muokkaa [profiilitietojasi](/help/edit-your-file). "
+msgstr ""
+"Siirry kohtaan [Profiiliasetukset](#settings/profile), lisää "
+"[profiilikuva](/help/change-your-profile-picture) ja muokkaa "
+"[profiilitietojasi](/help/edit-your-file). "
 
 #: zerver/lib/onboarding.py:165
 msgid ""
@@ -4255,7 +5024,8 @@ msgstr ""
 msgid ""
 "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
 "They are similar to channels in other chat apps."
-msgstr "Zulipissa kanavat [määrittävät kuka saa viestin](/help/streams-and-topics)."
+msgstr ""
+"Zulipissa kanavat [määrittävät kuka saa viestin](/help/streams-and-topics)."
 
 #: zerver/lib/onboarding.py:179
 msgid "[Browse and subscribe to streams](#streams/all)."
@@ -4266,7 +5036,9 @@ msgid ""
 "In Zulip, topics [tell you what a message is about](/help/streams-and-"
 "topics). They are light-weight subjects, very similar to the subject line of"
 " an email."
-msgstr "Zulipissa aiheet [kertovat mistä viestissä on kyse](/help/streams-and-topics). Ne ovat kuten sähköpostin aiherivi."
+msgstr ""
+"Zulipissa aiheet [kertovat mistä viestissä on kyse](/help/streams-and-"
+"topics). Ne ovat kuten sähköpostin aiherivi."
 
 #: zerver/lib/onboarding.py:191
 msgid ""
@@ -4279,42 +5051,56 @@ msgstr ""
 msgid ""
 "Zulip's [keyboard shortcuts](#keyboard-shortcuts) let you navigate the app "
 "quickly and efficiently."
-msgstr "Zulipin [pikanäppäimet](#keyboard-shortcuts) mahdollistavat sovelluksen nopean ja tehokkaan navigoinnin. "
+msgstr ""
+"Zulipin [pikanäppäimet](#keyboard-shortcuts) mahdollistavat sovelluksen "
+"nopean ja tehokkaan navigoinnin. "
 
 #: zerver/lib/onboarding.py:204
 msgid "Press `?` any time to see a [cheat sheet](#keyboard-shortcuts)."
-msgstr "Paina `?` milloin tahansa nähdäksesi [lunttilapun](#keyboard-shortcuts)."
+msgstr ""
+"Paina `?` milloin tahansa nähdäksesi [lunttilapun](#keyboard-shortcuts)."
 
 #: zerver/lib/onboarding.py:211
 msgid ""
 "Zulip uses [Markdown](/help/format-your-message-using-markdown), an "
 "intuitive format for **bold**, *italics*, bulleted lists, and more. Click "
 "[here](#message-formatting) for a cheat sheet."
-msgstr "Zulip käyttää [Markdown](/help/format-your-message-using-markdown), intuitiivista muotoa **lihavoitukselle**, *kursivoitukselle*, luettelomerkityille luetteloille ja muille. Napsauta [tätä](#message-formatting) saadaksesi lunttilapun. "
+msgstr ""
+"Zulip käyttää [Markdown](/help/format-your-message-using-markdown), "
+"intuitiivista muotoa **lihavoitukselle**, *kursivoitukselle*, "
+"luettelomerkityille luetteloille ja muille. Napsauta [tätä](#message-"
+"formatting) saadaksesi lunttilapun. "
 
 #: zerver/lib/onboarding.py:217
 msgid ""
 "Check out our [messaging tips](/help/messaging-tips) to learn about emoji "
 "reactions, code blocks and much more!"
-msgstr "Tutustu [viestivinkkeihimme] (/help/messaging-tips) saadaksesi lisätietoja emojireaktioista, koodilohkoista ja paljon muusta! "
+msgstr ""
+"Tutustu [viestivinkkeihimme] (/help/messaging-tips) saadaksesi lisätietoja "
+"emojireaktioista, koodilohkoista ja paljon muusta! "
 
 #: zerver/lib/onboarding.py:228
 msgid ""
 "Check out our [Getting started guide](/help/getting-started-with-zulip), or "
 "browse the [Help center](/help/) to learn more!"
-msgstr "Tutustu [aloitusoppaaseemme](/help/getting-started-with-zulip) tai selaa [Tukikeskusta](/help/) saadaksesi lisätietoja! "
+msgstr ""
+"Tutustu [aloitusoppaaseemme](/help/getting-started-with-zulip) tai selaa "
+"[Tukikeskusta](/help/) saadaksesi lisätietoja! "
 
 #: zerver/lib/onboarding.py:237
 msgid ""
 "I’m sorry, I did not understand your message. Please try one of the "
 "following commands:"
-msgstr "Anteeksi, en ymmärtänyt viestiäsi. Kokeile jotakin seuraavista komennoista: "
+msgstr ""
+"Anteeksi, en ymmärtänyt viestiäsi. Kokeile jotakin seuraavista komennoista: "
 
 #: zerver/lib/onboarding.py:270
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
-msgstr "Tämä on yksityinen kanava, kuten streamin nimen vieressä oleva lukkokuvake osoittaa. "
+msgstr ""
+"Tämä on yksityinen kanava, kuten streamin nimen vieressä oleva lukkokuvake "
+"osoittaa. "
 
 #: zerver/lib/onboarding.py:272
 msgid "Private streams are only visible to stream members."
@@ -4325,14 +5111,18 @@ msgstr "Yksityiset kanavat ovat näkyvissä vain kanavan jäsenille."
 msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
-msgstr "Hallitaksesi kanavaa, siirry [Kanavan asetukset]({stream_settings_url}) ja napsauttamalla `{initial_private_stream_name}`."
+msgstr ""
+"Hallitaksesi kanavaa, siirry [Kanavan asetukset]({stream_settings_url}) ja "
+"napsauttamalla `{initial_private_stream_name}`."
 
 #: zerver/lib/onboarding.py:286
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `topic demonstration`."
-msgstr "Tämä on viesti kanavalla #**{default_notification_stream_name}** aiheella `topic demonstration`."
+msgstr ""
+"Tämä on viesti kanavalla #**{default_notification_stream_name}** aiheella "
+"`topic demonstration`."
 
 #: zerver/lib/onboarding.py:292
 msgid "Topics are a lightweight tool to keep conversations organized."
@@ -4343,14 +5133,18 @@ msgstr "Aiheet ovat kevyt työkalu keskustelujen pitämiseen järjestyksessä. "
 msgid ""
 "You can learn more about topics at [Streams and "
 "topics]({about_topics_help_url})."
-msgstr "Voit lukea lisää aiheista paikasta [Kanavat ja aiheet]({about_topics_help_url})."
+msgstr ""
+"Voit lukea lisää aiheista paikasta [Kanavat ja "
+"aiheet]({about_topics_help_url})."
 
 #: zerver/lib/onboarding.py:299
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
-msgstr "Tämä on viesti kanavalla #**{default_notification_stream_name}** aiheenaan `swimming turtles`."
+msgstr ""
+"Tämä on viesti kanavalla #**{default_notification_stream_name}** aiheenaan "
+"`swimming turtles`."
 
 #: zerver/lib/onboarding.py:308
 #, python-brace-format
@@ -4377,45 +5171,47 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:731 zilencer/views.py:234
+#: zerver/lib/push_notifications.py:739 zilencer/views.py:243
 msgid "Token does not exist"
 msgstr "Token ei ole olemassa"
 
-#: zerver/lib/push_notifications.py:902
+#: zerver/lib/push_notifications.py:910
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
-msgstr "Tämä organisaatio on poistanut mahdollisuuden viestisisällön sisällyttämisestä mobiili push-ilmoituksiin "
+msgstr ""
+"Tämä organisaatio on poistanut mahdollisuuden viestisisällön "
+"sisällyttämisestä mobiili push-ilmoituksiin "
 
-#: zerver/lib/push_notifications.py:1015
+#: zerver/lib/push_notifications.py:1023
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} maintisi @{user_group_name}:"
 
-#: zerver/lib/push_notifications.py:1019
+#: zerver/lib/push_notifications.py:1027
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} mainitsi sinut:"
 
-#: zerver/lib/push_notifications.py:1026
+#: zerver/lib/push_notifications.py:1034
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} mainitisi kaikki:"
 
-#: zerver/lib/push_notifications.py:1436
+#: zerver/lib/push_notifications.py:1438
 msgid "Test notification"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1437
+#: zerver/lib/push_notifications.py:1439
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1488
+#: zerver/lib/push_notifications.py:1490
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1500
+#: zerver/lib/push_notifications.py:1502
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -4451,7 +5247,8 @@ msgstr ""
 #: zerver/lib/request.py:93
 #, python-brace-format
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
-msgstr "Ei voida päätellä argumenttien '{var_name1}' ja '{var_name2}' välillä "
+msgstr ""
+"Ei voida päätellä argumenttien '{var_name1}' ja '{var_name2}' välillä "
 
 #: zerver/lib/request.py:106
 #, python-brace-format
@@ -4484,12 +5281,16 @@ msgstr ""
 
 #: zerver/lib/streams.py:241
 msgid "Only organization administrators can send to this stream."
-msgstr "Vain organisaation järjestelmänvalvojat voivat lähettää viestejä tälle kanavalle."
+msgstr ""
+"Vain organisaation järjestelmänvalvojat voivat lähettää viestejä tälle "
+"kanavalle."
 
 #: zerver/lib/streams.py:247
 msgid ""
 "Only organization administrators and moderators can send to this stream."
-msgstr "Vain organisaation järjestelmänvalvojat ja moderaattorit voivat lähettää viestejä tälle kanavalle."
+msgstr ""
+"Vain organisaation järjestelmänvalvojat ja moderaattorit voivat lähettää "
+"viestejä tälle kanavalle."
 
 #: zerver/lib/streams.py:250
 msgid "Guests cannot send to this stream."
@@ -4792,7 +5593,7 @@ msgstr "Virheellinen bottityyppi"
 msgid "Invalid interface type"
 msgstr "Virheellinen käyttöliittymätyyppi"
 
-#: zerver/lib/users.py:217 zerver/models.py:4978
+#: zerver/lib/users.py:217 zerver/models.py:4979
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
@@ -4818,7 +5619,8 @@ msgstr "{item} ei voi olla tyhjä."
 #: zerver/lib/validator.py:124
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
-msgstr "{var_name} on liian vähän merkkejä {length}; pitäisi olla {target_length}"
+msgstr ""
+"{var_name} on liian vähän merkkejä {length}; pitäisi olla {target_length}"
 
 #: zerver/lib/validator.py:145
 #, python-brace-format
@@ -5077,7 +5879,9 @@ msgstr "Ainoastaan organisaation järjestelmänvalvojat voivat lähetää vieste
 
 #: zerver/models.py:2758
 msgid "Only organization administrators and moderators can post"
-msgstr "Vain organisaation järjestelmänvalvojat ja moderaattorit voivat lähettää viestejä"
+msgstr ""
+"Vain organisaation järjestelmänvalvojat ja moderaattorit voivat lähettää "
+"viestejä"
 
 #: zerver/models.py:2761
 msgid "Only organization full members can post"
@@ -5095,45 +5899,45 @@ msgstr "Mukautetut emojit"
 msgid "Zulip extra emoji"
 msgstr "Zulipin ekstraemoji"
 
-#: zerver/models.py:4982
+#: zerver/models.py:4983
 #, python-brace-format
 msgid "User with ID {user_id} is deactivated"
 msgstr ""
 
-#: zerver/models.py:4986
+#: zerver/models.py:4987
 #, python-brace-format
 msgid "User with ID {user_id} is a bot"
 msgstr ""
 
-#: zerver/models.py:5026
+#: zerver/models.py:5027
 msgid "List of options"
 msgstr "Lista vaihtoehdoista"
 
-#: zerver/models.py:5029
+#: zerver/models.py:5030
 msgid "Person picker"
 msgstr "Henkilövalitsin"
 
-#: zerver/models.py:5041
+#: zerver/models.py:5042
 msgid "Short text"
 msgstr "Lyhyt teksti"
 
-#: zerver/models.py:5042
+#: zerver/models.py:5043
 msgid "Long text"
 msgstr "Pitkä teksti"
 
-#: zerver/models.py:5043
+#: zerver/models.py:5044
 msgid "Date picker"
 msgstr "Päivämäärän valitsin"
 
-#: zerver/models.py:5044
+#: zerver/models.py:5045
 msgid "Link"
 msgstr "Linkki"
 
-#: zerver/models.py:5047
+#: zerver/models.py:5048
 msgid "External account"
 msgstr "Ulkoinen tili"
 
-#: zerver/models.py:5052
+#: zerver/models.py:5053
 msgid "Pronouns"
 msgstr "Pronominit"
 
@@ -5378,7 +6182,9 @@ msgstr "Asiakasohjelma ei antanut uusia arvoja."
 #: zerver/views/presence.py:119
 msgid ""
 "Client must pass emoji_name if they pass either emoji_code or reaction_type."
-msgstr "Asiakkaan on välitettävä emoji_name, jos hän välittää joko emoji_code:n tai reaction_type:n."
+msgstr ""
+"Asiakkaan on välitettävä emoji_name, jos hän välittää joko emoji_code:n tai "
+"reaction_type:n."
 
 #: zerver/views/presence.py:158
 #, python-brace-format
@@ -5406,7 +6212,8 @@ msgstr ""
 msgid ""
 "At least one of the following arguments must be present: emoji_name, "
 "emoji_code"
-msgstr "Vähintään yksi argumentti seuraavista on oltava: emoji_name, emoji_code"
+msgstr ""
+"Vähintään yksi argumentti seuraavista on oltava: emoji_name, emoji_code"
 
 #: zerver/views/read_receipts.py:22
 msgid "Read receipts are disabled in this organization."
@@ -5560,7 +6367,9 @@ msgstr "Kanavalle ({stream_name}) pääsy ei onnistu."
 
 #: zerver/views/streams.py:660
 msgid "You can only invite other Zephyr mirroring users to private streams."
-msgstr "Voit kutsua ainoastaan toisia Zephyr-peilauksen käyttäjiä yksityisille kanaville."
+msgstr ""
+"Voit kutsua ainoastaan toisia Zephyr-peilauksen käyttäjiä yksityisille "
+"kanaville."
 
 #: zerver/views/streams.py:772
 #, python-brace-format
@@ -5605,7 +6414,9 @@ msgstr ""
 
 #: zerver/views/typing.py:41
 msgid "User has disabled typing notifications for stream messages"
-msgstr "Käyttäjä on ottanut pois käytöstä ilmoitukset kanavaviestien kirjoittamisesta"
+msgstr ""
+"Käyttäjä on ottanut pois käytöstä ilmoitukset kanavaviestien "
+"kirjoittamisesta"
 
 #: zerver/views/typing.py:50
 msgid "Missing 'to' argument"
@@ -5687,7 +6498,9 @@ msgstr "Avatarin muutokset on estetty tässä organisaatiossa."
 
 #: zerver/views/user_settings.py:73
 msgid "Email address changes are disabled in this organization."
-msgstr "Sähköpostinosoitteen muuttaminen on poistettu käytöstä tässä organisaatiossa."
+msgstr ""
+"Sähköpostinosoitteen muuttaminen on poistettu käytöstä tässä "
+"organisaatiossa."
 
 #: zerver/views/user_settings.py:174
 msgid "Invalid default_language"
@@ -5735,7 +6548,8 @@ msgstr "Organisaation ainoaa omistajaa ei voi poistaa käytöstä"
 #: zerver/views/users.py:241
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
-msgstr "Organisaation ainoalta omistajalta ei voi poistaa omistajan käyttöoikeuksia."
+msgstr ""
+"Organisaation ainoalta omistajalta ei voi poistaa omistajan käyttöoikeuksia."
 
 #: zerver/views/users.py:389
 msgid "Failed to change owner, no such user"
@@ -5753,7 +6567,9 @@ msgstr "Omistajan vaihto epäonnistui, botit eivät voi omistaa toisia botteja"
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr "Ei voi luoda botteja ennen kuin FAKE_EMAIL_DOMAIN on määritetty oikein. \nOta yhteyttä palvelimesi järjestelmänvalvojaan. "
+msgstr ""
+"Ei voi luoda botteja ennen kuin FAKE_EMAIL_DOMAIN on määritetty oikein. \n"
+"Ota yhteyttä palvelimesi järjestelmänvalvojaan. "
 
 #: zerver/views/users.py:509
 msgid "Embedded bots are not enabled."
@@ -5778,7 +6594,9 @@ msgstr "Sähköposti '{email}' ei ole sallittu tässä organisaatiossa"
 
 #: zerver/views/users.py:716
 msgid "Disposable email addresses are not allowed in this organization"
-msgstr "Kertakäyttöiset sähköpostiosoitteet eivät ole sallittuja tässä organisaatiossa"
+msgstr ""
+"Kertakäyttöiset sähköpostiosoitteet eivät ole sallittuja tässä "
+"organisaatiossa"
 
 #: zerver/views/users.py:722
 #, python-brace-format
@@ -5879,7 +6697,8 @@ msgstr "Newrelic webhook current_state on oltava [open|acknowledged|closed]"
 msgid ""
 "The newrelic webhook requires state be in "
 "[created|activated|acknowledged|closed]"
-msgstr "Newrelic-webhook pitää olla tilassa [createdacvticadertknogledegdiaclosed]"
+msgstr ""
+"Newrelic-webhook pitää olla tilassa [createdacvticadertknogledegdiaclosed]"
 
 #: zerver/webhooks/papertrail/view.py:31
 msgid "Events key is missing from payload"
@@ -5918,52 +6737,56 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "Täytyy vahvistaa oikealla Zulip-palvelimen API-avaimella"
 
 #. error
-#: zilencer/views.py:77 zilencer/views.py:79
+#: zilencer/views.py:83 zilencer/views.py:85
 msgid "Invalid UUID"
 msgstr "Virheellinen UUID"
 
 #. error
-#: zilencer/views.py:84
+#: zilencer/views.py:90
 msgid "Invalid token type"
 msgstr "Virheellinen token-tyyppi"
 
-#: zilencer/views.py:122
+#: zilencer/views.py:128
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:175
+#: zilencer/views.py:184
 msgid "Missing ios_app_id"
 msgstr ""
 
-#: zilencer/views.py:178
+#: zilencer/views.py:187
 msgid "Missing user_id or user_uuid"
 msgstr "user_id tai user_uuid puuttuu"
 
-#: zilencer/views.py:603
+#: zilencer/views.py:433 zilencer/views.py:435
+msgid "Your plan doesn't allow sending push notifications."
+msgstr ""
+
+#: zilencer/views.py:631
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:606
+#: zilencer/views.py:634
 msgid "Invalid event type."
 msgstr ""
 
-#: zilencer/views.py:613
+#: zilencer/views.py:641
 msgid "Data is out of order."
 msgstr "Tiedot ovat epäkunnossa."
 
-#: zilencer/views.py:675
+#: zilencer/views.py:717
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:905
+#: zilencer/views.py:978
 msgid ""
 "Failed to migrate customer from server to realms. Please contact support for"
 " assistance."
 msgstr ""
 
-#: zilencer/views.py:957
+#: zilencer/views.py:1030
 msgid "Malformed audit log data"
 msgstr ""
 

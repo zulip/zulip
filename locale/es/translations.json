@@ -1374,7 +1374,7 @@
   "Which parts of the email should be included in the Zulip message sent to this stream?": "",
   "Who can access the stream?": "Quiénes pueden acceder el canal?",
   "Who can access user's email address": "",
-  "Who can access your email address": "",
+  "Who can access your email address": "Quiénes pueden acceder a tu dirección de correo",
   "Who can add bots": "Quiénes puede añadir bots",
   "Who can add custom emoji": "Quiénes pueden añadir emoticonos personalizados",
   "Who can add users to streams": "Quiénes pueden añadir usuarios a canales",

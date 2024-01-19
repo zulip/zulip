@@ -1,27 +1,26 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Chriser Chaoo <jsf.chris@foxmail.com>, 2017
+# 张建春 <zhang.jianchun1@gmail.com>, 2023
+# Chriser Chaoo <jsf.chris@foxmail.com>, 2023
 # Clay Cheng <569735195@qq.com>, 2023
-# FaZang, 2022
-# Greg Price <gnprice@gmail.com>, 2017
-# Hanson Sin <yeehangsin@yahoo.com>, 2020
-# Huiming Tao <taohuiming@gmail.com>, 2017-2018
-# 张建春 <zhang.jianchun1@gmail.com>, 2016
-# LIU Lin <2671362312@qq.com>, 2019
-# longjiang li <cqlilon@live.com>, 2018-2020
-# Tim Abbott <tabbott@kandralabs.com>, 2022
-# 张建春 <zhang.jianchun1@gmail.com>, 2016
+# FaZang, 2023
+# longjiang li <cqlilon@live.com>, 2023
+# Cranyozen, 2023
+# Transifex Bot <>, 2024
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 20:29+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Clay Cheng <569735195@qq.com>, 2023\n"
-"Language-Team: Chinese Simplified (http://app.transifex.com/zulip/zulip/language/zh-Hans/)\n"
+"POT-Creation-Date: 2023-12-15 21:31+0000\n"
+"PO-Revision-Date: 2023-12-15 21:32+0000\n"
+"Last-Translator: Transifex Bot <>, 2024\n"
+"Language-Team: Chinese Simplified (https://app.transifex.com/zulip/teams/53893/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -85,7 +84,9 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr "您的组织没有剩余的 Zulip 许可证，并且不能再接受新用户。请[增加许可数量]({billing_page_link}) 或[停用非活动用户]({deactivate_user_help_page_link}) 以允许新用户加入。"
+msgstr ""
+"您的组织没有剩余的 Zulip 许可证，并且不能再接受新用户。请[增加许可数量]({billing_page_link}) "
+"或[停用非活动用户]({deactivate_user_help_page_link}) 以允许新用户加入。"
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -94,7 +95,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr "您的组织只剩下一个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 [停用非活动用户]({deactivate_user_help_page_link}) 以允许多个用户加入。"
+msgstr ""
+"您的组织只剩下一个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
+"[停用非活动用户]({deactivate_user_help_page_link}) 以允许多个用户加入。"
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -103,7 +106,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr "您的组织只剩下两个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 [停用非活动用户]({deactivate_user_help_page_link}) 以允许两个以上的用户加入。"
+msgstr ""
+"您的组织只剩下两个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
+"[停用非活动用户]({deactivate_user_help_page_link}) 以允许两个以上的用户加入。"
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -112,7 +117,9 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr "您的组织只剩下三个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 [停用非活动用户]({deactivate_user_help_page_link}) 以允许三个以上的用户加入。"
+msgstr ""
+"您的组织只剩下三个 Zulip 许可证。您可以 [增加许可证数量]({billing_page_link}) 或 "
+"[停用非活动用户]({deactivate_user_help_page_link}) 以允许三个以上的用户加入。"
 
 #: corporate/lib/registration.py:57
 #, python-brace-format
@@ -121,7 +128,9 @@ msgid ""
 "Zulip licenses are in use. Please [increase the number of "
 "licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow new members to join."
-msgstr "新成员 ({email}) 无法加入您的组织，因为所有 Zulip 许可证都在使用中。请[增加许可数量]({billing_page_link}) 或[停用非活动用户]({deactivate_user_help_page_link}) 以允许新成员加入。"
+msgstr ""
+"新成员 ({email}) 无法加入您的组织，因为所有 Zulip 许可证都在使用中。请[增加许可数量]({billing_page_link}) "
+"或[停用非活动用户]({deactivate_user_help_page_link}) 以允许新成员加入。"
 
 #: corporate/lib/registration.py:109
 msgid "All Zulip licenses for this organization are currently in use."
@@ -143,124 +152,124 @@ msgstr ""
 msgid "Invalid remote server."
 msgstr ""
 
-#: corporate/lib/stripe.py:204
+#: corporate/lib/stripe.py:203
 #, python-brace-format
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
 
-#: corporate/lib/stripe.py:210
+#: corporate/lib/stripe.py:209
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
 msgstr ""
 
-#: corporate/lib/stripe.py:352
+#: corporate/lib/stripe.py:351
 msgid "No payment method on file."
 msgstr ""
 
-#: corporate/lib/stripe.py:360
+#: corporate/lib/stripe.py:359
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr "{brand} 以 {last4} 结尾"
 
-#: corporate/lib/stripe.py:368
+#: corporate/lib/stripe.py:367
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr "未知的付款方式。请联系{email}。"
 
-#: corporate/lib/stripe.py:384
+#: corporate/lib/stripe.py:383
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "发生了一些错误。请联系 {email}。"
 
-#: corporate/lib/stripe.py:385
+#: corporate/lib/stripe.py:384
 msgid "Something went wrong. Please reload the page."
 msgstr "出错啦！请刷新页面！"
 
-#: corporate/lib/stripe.py:476
+#: corporate/lib/stripe.py:475
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "出错啦！请过几秒再试."
 
-#: corporate/lib/stripe.py:1226
+#: corporate/lib/stripe.py:1225
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
 
-#: corporate/lib/stripe.py:1247
+#: corporate/lib/stripe.py:1246
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:1995
+#: corporate/lib/stripe.py:1994
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
 msgstr "无法更新计划。该计划已过期并被新计划取代。"
 
-#: corporate/lib/stripe.py:2000
+#: corporate/lib/stripe.py:1999
 msgid "Unable to update the plan. The plan has ended."
 msgstr "无法更新计划。计划已经结束。"
 
-#: corporate/lib/stripe.py:2055
+#: corporate/lib/stripe.py:2054
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2060 corporate/lib/stripe.py:2088
+#: corporate/lib/stripe.py:2059 corporate/lib/stripe.py:2087
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr "无法手动更新许可证。您的计划是自动许可证管理。"
 
-#: corporate/lib/stripe.py:2066
+#: corporate/lib/stripe.py:2065
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr "在当前计费周期内，您的计划已使用 {licenses} 许可。"
 
-#: corporate/lib/stripe.py:2071
+#: corporate/lib/stripe.py:2070
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "您不能减少当前计费周期内的许可证。"
 
-#: corporate/lib/stripe.py:2097
+#: corporate/lib/stripe.py:2096
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:2103
+#: corporate/lib/stripe.py:2102
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr "您的计划已安排续订 {licenses_at_next_renewal} 许可证。"
 
-#: corporate/lib/stripe.py:2118
+#: corporate/lib/stripe.py:2117
 msgid "Nothing to change."
 msgstr "没什么可改变的。"
 
-#: corporate/lib/stripe.py:2323
+#: corporate/lib/stripe.py:2322
 msgid "No customer for this organization!"
 msgstr "该组织没有客户！"
 
-#: corporate/lib/stripe.py:2332
+#: corporate/lib/stripe.py:2331
 msgid "Session not found"
 msgstr "找不到会话"
 
-#: corporate/lib/stripe.py:2338 zerver/decorator.py:197
+#: corporate/lib/stripe.py:2337 zerver/decorator.py:197
 msgid "Must be a billing administrator or an organization owner"
 msgstr "必须是帐单管理员或组织所有者"
 
-#: corporate/lib/stripe.py:2349
+#: corporate/lib/stripe.py:2348
 msgid "Payment intent not found"
 msgstr "未找到付款意图"
 
-#: corporate/lib/stripe.py:2352
+#: corporate/lib/stripe.py:2351
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
 msgstr "传递 stripe_session_id 或 stripe_payment_intent_id"
 
-#: corporate/lib/stripe.py:2891
+#: corporate/lib/stripe.py:2900
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
@@ -272,33 +281,33 @@ msgstr ""
 msgid "Parameter 'confirmed' is required"
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:130
+#: corporate/views/remote_billing_page.py:134
 msgid "Billing access token expired."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:132
+#: corporate/views/remote_billing_page.py:136
 msgid "Invalid billing access token."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:256
+#: corporate/views/remote_billing_page.py:273
 msgid "User account doesn't exist yet."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:261
-#: corporate/views/remote_billing_page.py:659
+#: corporate/views/remote_billing_page.py:278
+#: corporate/views/remote_billing_page.py:691
 msgid "You must accept the Terms of Service to proceed."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:487
+#: corporate/views/remote_billing_page.py:504
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:494
+#: corporate/views/remote_billing_page.py:511
 msgid "Invalid zulip_org_key for this zulip_org_id."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:498
+#: corporate/views/remote_billing_page.py:515
 msgid "Your server registration has been deactivated."
 msgstr ""
 
@@ -322,7 +331,10 @@ msgid ""
 "                        If this error is unexpected, you can\n"
 "                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "                        "
-msgstr "\n如果此错误是意外的，你可以<a href=\"mailto:%(support_email)s\">联系支持</a>。"
+msgstr ""
+"\n"
+"如果此错误是意外的，你可以<a href=\"mailto:%(support_email)s\">联系支持</a>。\n"
+" "
 
 #: templates/500.html:4 templates/500.html:21
 #: zerver/actions/scheduled_messages.py:401 zerver/middleware.py:393
@@ -334,7 +346,10 @@ msgid ""
 "\n"
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
-msgstr "\n无法加载 Zulip 聊天，服务器遇到了技术问题。\n "
+msgstr ""
+"\n"
+"无法加载 Zulip 聊天，服务器遇到了技术问题。\n"
+" "
 
 #: templates/500.html:28
 msgid ""
@@ -521,7 +536,11 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\n            确认一下嗷，Zulip账号邮箱已经更改咯\n            从%(old_email_html_tag)s 更改为%(new_email_html_tag)s\n            "
+msgstr ""
+"\n"
+"            确认一下嗷，Zulip账号邮箱已经更改咯\n"
+"            从%(old_email_html_tag)s 更改为%(new_email_html_tag)s\n"
+"            "
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -542,7 +561,10 @@ msgid ""
 "\n"
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
-msgstr "\n                    不管任何麻烦，请联系 %(support_email_html_tag)s，我们将尽快给您解决。 \n                    "
+msgstr ""
+"\n"
+"                    不管任何麻烦，请联系 %(support_email_html_tag)s，我们将尽快给您解决。 \n"
+"                    "
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
@@ -574,32 +596,36 @@ msgstr "确保将链接正确复制到浏览器中。如果您仍然遇到此页
 msgid "Billing"
 msgstr "账单"
 
-#: templates/corporate/billing.html:312 templates/corporate/billing.html:338
-#: templates/corporate/billing.html:367 templates/corporate/billing.html:396
-#: templates/corporate/billing.html:422
+#: templates/corporate/billing.html:350 templates/corporate/billing.html:385
+#: templates/corporate/billing.html:414 templates/corporate/billing.html:443
+#: templates/corporate/billing.html:469 templates/corporate/billing.html:497
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 msgid "Close modal"
 msgstr ""
 
-#: templates/corporate/billing.html:323 templates/corporate/billing.html:352
-#: templates/corporate/billing.html:381
+#: templates/corporate/billing.html:370 templates/corporate/billing.html:454
+#: templates/corporate/billing.html:482 templates/corporate/billing.html:510
+msgid "Never mind"
+msgstr ""
+
+#: templates/corporate/billing.html:372 templates/corporate/billing.html:456
+#: templates/corporate/billing.html:484
+msgid "Downgrade"
+msgstr ""
+
+#: templates/corporate/billing.html:399 templates/corporate/billing.html:428
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr "取消"
 
-#: templates/corporate/billing.html:325 templates/corporate/billing.html:409
-#: templates/corporate/billing.html:432
-msgid "Downgrade"
-msgstr ""
-
-#: templates/corporate/billing.html:354 templates/corporate/billing.html:383
+#: templates/corporate/billing.html:401 templates/corporate/billing.html:430
 #: templates/zerver/change_email_address_visibility_modal.html:28
 msgid "Confirm"
 msgstr "确认"
 
-#: templates/corporate/billing.html:407 templates/corporate/billing.html:430
-msgid "Never mind"
+#: templates/corporate/billing.html:512
+msgid "Cancel upgrade"
 msgstr ""
 
 #: templates/corporate/communities.html:28
@@ -620,6 +646,435 @@ msgstr "分类"
 #: templates/zerver/integrations/index.html:78
 msgid "All"
 msgstr "所有"
+
+#: templates/corporate/comparison_table_self_hosted.html:34
+#: templates/corporate/comparison_table_self_hosted.html:35
+#: templates/corporate/comparison_table_self_hosted.html:36
+#: templates/corporate/comparison_table_self_hosted.html:37
+#: templates/corporate/comparison_table_self_hosted.html:41
+#: templates/corporate/comparison_table_self_hosted.html:42
+#: templates/corporate/comparison_table_self_hosted.html:43
+#: templates/corporate/comparison_table_self_hosted.html:44
+#: templates/corporate/comparison_table_self_hosted.html:50
+#: templates/corporate/comparison_table_self_hosted.html:51
+#: templates/corporate/comparison_table_self_hosted.html:52
+#: templates/corporate/comparison_table_self_hosted.html:53
+#: templates/corporate/comparison_table_self_hosted.html:59
+#: templates/corporate/comparison_table_self_hosted.html:60
+#: templates/corporate/comparison_table_self_hosted.html:61
+#: templates/corporate/comparison_table_self_hosted.html:62
+#: templates/corporate/comparison_table_self_hosted.html:68
+#: templates/corporate/comparison_table_self_hosted.html:69
+#: templates/corporate/comparison_table_self_hosted.html:70
+#: templates/corporate/comparison_table_self_hosted.html:71
+#: templates/corporate/comparison_table_self_hosted.html:78
+#: templates/corporate/comparison_table_self_hosted.html:79
+#: templates/corporate/comparison_table_self_hosted.html:80
+#: templates/corporate/comparison_table_self_hosted.html:81
+#: templates/corporate/comparison_table_self_hosted.html:88
+#: templates/corporate/comparison_table_self_hosted.html:89
+#: templates/corporate/comparison_table_self_hosted.html:90
+#: templates/corporate/comparison_table_self_hosted.html:91
+#: templates/corporate/comparison_table_self_hosted.html:97
+#: templates/corporate/comparison_table_self_hosted.html:98
+#: templates/corporate/comparison_table_self_hosted.html:99
+#: templates/corporate/comparison_table_self_hosted.html:100
+#: templates/corporate/comparison_table_self_hosted.html:158
+#: templates/corporate/comparison_table_self_hosted.html:159
+#: templates/corporate/comparison_table_self_hosted.html:160
+msgid "Unlimited"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:106
+#: templates/corporate/comparison_table_self_hosted.html:107
+#: templates/corporate/comparison_table_self_hosted.html:108
+#: templates/corporate/comparison_table_self_hosted.html:109
+#: templates/corporate/comparison_table_self_hosted.html:122
+#: templates/corporate/comparison_table_self_hosted.html:123
+#: templates/corporate/comparison_table_self_hosted.html:124
+#: templates/corporate/comparison_table_self_hosted.html:132
+#: templates/corporate/comparison_table_self_hosted.html:133
+#: templates/corporate/comparison_table_self_hosted.html:134
+#: templates/corporate/comparison_table_self_hosted.html:142
+#: templates/corporate/comparison_table_self_hosted.html:143
+#: templates/corporate/comparison_table_self_hosted.html:144
+#: templates/corporate/comparison_table_self_hosted.html:151
+#: templates/corporate/comparison_table_self_hosted.html:172
+#: templates/corporate/comparison_table_self_hosted.html:173
+#: templates/corporate/comparison_table_self_hosted.html:174
+#: templates/corporate/comparison_table_self_hosted.html:175
+#: templates/corporate/comparison_table_self_hosted.html:182
+#: templates/corporate/comparison_table_self_hosted.html:183
+#: templates/corporate/comparison_table_self_hosted.html:184
+#: templates/corporate/comparison_table_self_hosted.html:185
+#: templates/corporate/comparison_table_self_hosted.html:191
+#: templates/corporate/comparison_table_self_hosted.html:192
+#: templates/corporate/comparison_table_self_hosted.html:193
+#: templates/corporate/comparison_table_self_hosted.html:194
+#: templates/corporate/comparison_table_self_hosted.html:202
+#: templates/corporate/comparison_table_self_hosted.html:203
+#: templates/corporate/comparison_table_self_hosted.html:204
+#: templates/corporate/comparison_table_self_hosted.html:205
+#: templates/corporate/comparison_table_self_hosted.html:212
+#: templates/corporate/comparison_table_self_hosted.html:213
+#: templates/corporate/comparison_table_self_hosted.html:214
+#: templates/corporate/comparison_table_self_hosted.html:215
+#: templates/corporate/comparison_table_self_hosted.html:221
+#: templates/corporate/comparison_table_self_hosted.html:222
+#: templates/corporate/comparison_table_self_hosted.html:223
+#: templates/corporate/comparison_table_self_hosted.html:224
+#: templates/corporate/comparison_table_self_hosted.html:230
+#: templates/corporate/comparison_table_self_hosted.html:231
+#: templates/corporate/comparison_table_self_hosted.html:232
+#: templates/corporate/comparison_table_self_hosted.html:233
+#: templates/corporate/comparison_table_self_hosted.html:237
+#: templates/corporate/comparison_table_self_hosted.html:238
+#: templates/corporate/comparison_table_self_hosted.html:239
+#: templates/corporate/comparison_table_self_hosted.html:240
+#: templates/corporate/comparison_table_self_hosted.html:246
+#: templates/corporate/comparison_table_self_hosted.html:247
+#: templates/corporate/comparison_table_self_hosted.html:248
+#: templates/corporate/comparison_table_self_hosted.html:249
+#: templates/corporate/comparison_table_self_hosted.html:255
+#: templates/corporate/comparison_table_self_hosted.html:256
+#: templates/corporate/comparison_table_self_hosted.html:257
+#: templates/corporate/comparison_table_self_hosted.html:258
+#: templates/corporate/comparison_table_self_hosted.html:265
+#: templates/corporate/comparison_table_self_hosted.html:266
+#: templates/corporate/comparison_table_self_hosted.html:267
+#: templates/corporate/comparison_table_self_hosted.html:268
+#: templates/corporate/comparison_table_self_hosted.html:276
+#: templates/corporate/comparison_table_self_hosted.html:277
+#: templates/corporate/comparison_table_self_hosted.html:278
+#: templates/corporate/comparison_table_self_hosted.html:279
+#: templates/corporate/comparison_table_self_hosted.html:286
+#: templates/corporate/comparison_table_self_hosted.html:287
+#: templates/corporate/comparison_table_self_hosted.html:288
+#: templates/corporate/comparison_table_self_hosted.html:295
+#: templates/corporate/comparison_table_self_hosted.html:296
+#: templates/corporate/comparison_table_self_hosted.html:297
+#: templates/corporate/comparison_table_self_hosted.html:305
+#: templates/corporate/comparison_table_self_hosted.html:306
+#: templates/corporate/comparison_table_self_hosted.html:307
+#: templates/corporate/comparison_table_self_hosted.html:322
+#: templates/corporate/comparison_table_self_hosted.html:323
+#: templates/corporate/comparison_table_self_hosted.html:324
+#: templates/corporate/comparison_table_self_hosted.html:331
+#: templates/corporate/comparison_table_self_hosted.html:332
+#: templates/corporate/comparison_table_self_hosted.html:333
+#: templates/corporate/comparison_table_self_hosted.html:340
+#: templates/corporate/comparison_table_self_hosted.html:341
+#: templates/corporate/comparison_table_self_hosted.html:342
+#: templates/corporate/comparison_table_self_hosted.html:350
+#: templates/corporate/comparison_table_self_hosted.html:351
+#: templates/corporate/comparison_table_self_hosted.html:352
+#: templates/corporate/comparison_table_self_hosted.html:361
+#: templates/corporate/comparison_table_self_hosted.html:362
+#: templates/corporate/comparison_table_self_hosted.html:363
+#: templates/corporate/comparison_table_self_hosted.html:373
+#: templates/corporate/comparison_table_self_hosted.html:374
+#: templates/corporate/comparison_table_self_hosted.html:384
+#: templates/corporate/comparison_table_self_hosted.html:385
+#: templates/corporate/comparison_table_self_hosted.html:396
+#: templates/corporate/comparison_table_self_hosted.html:397
+#: templates/corporate/comparison_table_self_hosted.html:405
+#: templates/corporate/comparison_table_self_hosted.html:406
+#: templates/corporate/comparison_table_self_hosted.html:413
+#: templates/corporate/comparison_table_self_hosted.html:424
+#: templates/corporate/comparison_table_self_hosted.html:425
+#: templates/corporate/comparison_table_self_hosted.html:426
+#: templates/corporate/comparison_table_self_hosted.html:427
+#: templates/corporate/comparison_table_self_hosted.html:433
+#: templates/corporate/comparison_table_self_hosted.html:434
+#: templates/corporate/comparison_table_self_hosted.html:435
+#: templates/corporate/comparison_table_self_hosted.html:436
+#: templates/corporate/comparison_table_self_hosted.html:444
+#: templates/corporate/comparison_table_self_hosted.html:445
+#: templates/corporate/comparison_table_self_hosted.html:446
+#: templates/corporate/comparison_table_self_hosted.html:453
+#: templates/corporate/comparison_table_self_hosted.html:454
+#: templates/corporate/comparison_table_self_hosted.html:455
+#: templates/corporate/comparison_table_self_hosted.html:464
+#: templates/corporate/comparison_table_self_hosted.html:465
+#: templates/corporate/comparison_table_self_hosted.html:473
+#: templates/corporate/comparison_table_self_hosted.html:474
+#: templates/corporate/comparison_table_self_hosted.html:487
+#: templates/corporate/comparison_table_self_hosted.html:499
+#: templates/corporate/comparison_table_self_hosted.html:509
+#: templates/corporate/comparison_table_self_hosted.html:510
+#: templates/corporate/comparison_table_self_hosted.html:521
+#: templates/corporate/comparison_table_self_hosted.html:528
+#: templates/corporate/comparison_table_self_hosted.html:535
+#: templates/corporate/comparison_table_self_hosted.html:536
+#: templates/corporate/comparison_table_self_hosted.html:537
+#: templates/corporate/comparison_table_self_hosted.html:544
+#: templates/corporate/comparison_table_self_hosted.html:545
+#: templates/corporate/comparison_table_self_hosted.html:546
+#: templates/corporate/comparison_table_self_hosted.html:554
+#: templates/corporate/comparison_table_self_hosted.html:555
+#: templates/corporate/comparison_table_self_hosted.html:567
+#: templates/corporate/comparison_table_self_hosted.html:568
+#: templates/corporate/comparison_table_self_hosted.html:569
+#: templates/corporate/comparison_table_self_hosted.html:576
+#: templates/corporate/comparison_table_self_hosted.html:577
+#: templates/corporate/comparison_table_self_hosted.html:578
+#: templates/corporate/comparison_table_self_hosted.html:585
+#: templates/corporate/comparison_table_self_hosted.html:586
+#: templates/corporate/comparison_table_self_hosted.html:587
+#: templates/corporate/comparison_table_self_hosted.html:601
+#: templates/corporate/comparison_table_self_hosted.html:602
+#: templates/corporate/comparison_table_self_hosted.html:603
+#: templates/corporate/comparison_table_self_hosted.html:612
+#: templates/corporate/comparison_table_self_hosted.html:613
+#: templates/corporate/comparison_table_self_hosted.html:614
+#: templates/corporate/comparison_table_self_hosted.html:623
+#: templates/corporate/comparison_table_self_hosted.html:624
+#: templates/corporate/comparison_table_self_hosted.html:625
+#: templates/corporate/comparison_table_self_hosted.html:632
+#: templates/corporate/comparison_table_self_hosted.html:633
+#: templates/corporate/comparison_table_self_hosted.html:634
+#: templates/corporate/comparison_table_self_hosted.html:641
+#: templates/corporate/comparison_table_self_hosted.html:642
+#: templates/corporate/comparison_table_self_hosted.html:643
+#: templates/corporate/comparison_table_self_hosted.html:650
+#: templates/corporate/comparison_table_self_hosted.html:651
+#: templates/corporate/comparison_table_self_hosted.html:652
+#: templates/corporate/comparison_table_self_hosted.html:660
+#: templates/corporate/comparison_table_self_hosted.html:661
+#: templates/corporate/comparison_table_self_hosted.html:672
+#: templates/corporate/comparison_table_self_hosted.html:673
+#: templates/corporate/comparison_table_self_hosted.html:674
+#: templates/corporate/comparison_table_self_hosted.html:675
+#: templates/corporate/comparison_table_self_hosted.html:683
+#: templates/corporate/comparison_table_self_hosted.html:684
+#: templates/corporate/comparison_table_self_hosted.html:685
+#: templates/corporate/comparison_table_self_hosted.html:686
+#: templates/corporate/comparison_table_self_hosted.html:694
+#: templates/corporate/comparison_table_self_hosted.html:695
+#: templates/corporate/comparison_table_self_hosted.html:696
+#: templates/corporate/comparison_table_self_hosted.html:697
+#: templates/corporate/comparison_table_self_hosted.html:705
+#: templates/corporate/comparison_table_self_hosted.html:706
+#: templates/corporate/comparison_table_self_hosted.html:707
+#: templates/corporate/comparison_table_self_hosted.html:708
+#: templates/corporate/comparison_table_self_hosted.html:716
+#: templates/corporate/comparison_table_self_hosted.html:717
+#: templates/corporate/comparison_table_self_hosted.html:727
+#: templates/corporate/comparison_table_self_hosted.html:728
+#: templates/corporate/comparison_table_self_hosted.html:737
+#: templates/corporate/comparison_table_self_hosted.html:738
+#: templates/corporate/comparison_table_self_hosted.html:739
+#: templates/corporate/comparison_table_self_hosted.html:746
+#: templates/corporate/comparison_table_self_hosted.html:752
+#: templates/corporate/comparison_table_self_hosted.html:753
+#: templates/corporate/comparison_table_self_hosted.html:763
+#: templates/corporate/comparison_table_self_hosted.html:764
+#: templates/corporate/comparison_table_self_hosted.html:774
+#: templates/corporate/comparison_table_self_hosted.html:775
+#: templates/corporate/comparison_table_self_hosted.html:785
+#: templates/corporate/comparison_table_self_hosted.html:786
+#: templates/corporate/comparison_table_self_hosted.html:800
+#: templates/corporate/comparison_table_self_hosted.html:801
+#: templates/corporate/comparison_table_self_hosted.html:802
+#: templates/corporate/comparison_table_self_hosted.html:809
+#: templates/corporate/comparison_table_self_hosted.html:810
+#: templates/corporate/comparison_table_self_hosted.html:811
+#: templates/corporate/comparison_table_self_hosted.html:819
+#: templates/corporate/comparison_table_self_hosted.html:820
+#: templates/corporate/comparison_table_self_hosted.html:830
+#: templates/corporate/comparison_table_self_hosted.html:831
+#: templates/corporate/comparison_table_self_hosted.html:843
+#: templates/corporate/comparison_table_self_hosted.html:844
+#: templates/corporate/comparison_table_self_hosted.html:852
+#: templates/corporate/comparison_table_self_hosted.html:853
+#: templates/corporate/comparison_table_self_hosted.html:860
+#: templates/corporate/comparison_table_self_hosted.html:867
+#: templates/corporate/comparison_table_self_hosted.html:880
+#: templates/corporate/comparison_table_self_hosted.html:881
+#: templates/corporate/comparison_table_self_hosted.html:890
+#: templates/corporate/comparison_table_self_hosted.html:891
+#: templates/corporate/comparison_table_self_hosted.html:899
+#: templates/corporate/comparison_table_self_hosted.html:900
+#: templates/corporate/comparison_table_self_hosted.html:908
+#: templates/corporate/comparison_table_self_hosted.html:909
+#: templates/corporate/comparison_table_self_hosted.html:918
+#: templates/corporate/comparison_table_self_hosted.html:919
+#: templates/corporate/comparison_table_self_hosted.html:927
+#: templates/corporate/comparison_table_self_hosted.html:928
+#: templates/corporate/comparison_table_self_hosted.html:936
+#: templates/corporate/comparison_table_self_hosted.html:937
+#: templates/corporate/comparison_table_self_hosted.html:946
+#: templates/corporate/comparison_table_self_hosted.html:955
+#: templates/corporate/comparison_table_self_hosted.html:964
+#: templates/corporate/comparison_table_self_hosted.html:973
+#: templates/corporate/comparison_table_self_hosted.html:982
+#: templates/corporate/comparison_table_self_hosted.html:991
+#: templates/corporate/comparison_table_self_hosted.html:1003
+#: templates/corporate/comparison_table_self_hosted.html:1004
+#: templates/corporate/comparison_table_self_hosted.html:1005
+#: templates/corporate/comparison_table_self_hosted.html:1006
+#: templates/corporate/comparison_table_self_hosted.html:1011
+#: templates/corporate/comparison_table_self_hosted.html:1012
+#: templates/corporate/comparison_table_self_hosted.html:1013
+#: templates/corporate/comparison_table_self_hosted.html:1021
+#: templates/corporate/comparison_table_self_hosted.html:1022
+#: templates/corporate/comparison_table_self_hosted.html:1032
+#: templates/corporate/comparison_table_self_hosted.html:1033
+#: templates/corporate/comparison_table_self_hosted.html:1034
+#: templates/corporate/comparison_table_self_hosted.html:1041
+#: templates/corporate/comparison_table_self_hosted.html:1048
+#: templates/corporate/comparison_table_self_hosted.html:1055
+#: templates/corporate/comparison_table_self_hosted.html:1062
+#: templates/corporate/comparison_table_self_hosted.html:1069
+#: templates/corporate/comparison_table_self_hosted.html:1076
+msgid "Supported"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:121
+#: templates/corporate/comparison_table_self_hosted.html:131
+#: templates/corporate/comparison_table_self_hosted.html:141
+#: templates/corporate/comparison_table_self_hosted.html:148
+#: templates/corporate/comparison_table_self_hosted.html:149
+#: templates/corporate/comparison_table_self_hosted.html:150
+#: templates/corporate/comparison_table_self_hosted.html:285
+#: templates/corporate/comparison_table_self_hosted.html:294
+#: templates/corporate/comparison_table_self_hosted.html:304
+#: templates/corporate/comparison_table_self_hosted.html:321
+#: templates/corporate/comparison_table_self_hosted.html:330
+#: templates/corporate/comparison_table_self_hosted.html:339
+#: templates/corporate/comparison_table_self_hosted.html:349
+#: templates/corporate/comparison_table_self_hosted.html:360
+#: templates/corporate/comparison_table_self_hosted.html:371
+#: templates/corporate/comparison_table_self_hosted.html:372
+#: templates/corporate/comparison_table_self_hosted.html:382
+#: templates/corporate/comparison_table_self_hosted.html:383
+#: templates/corporate/comparison_table_self_hosted.html:394
+#: templates/corporate/comparison_table_self_hosted.html:395
+#: templates/corporate/comparison_table_self_hosted.html:403
+#: templates/corporate/comparison_table_self_hosted.html:404
+#: templates/corporate/comparison_table_self_hosted.html:410
+#: templates/corporate/comparison_table_self_hosted.html:411
+#: templates/corporate/comparison_table_self_hosted.html:412
+#: templates/corporate/comparison_table_self_hosted.html:443
+#: templates/corporate/comparison_table_self_hosted.html:452
+#: templates/corporate/comparison_table_self_hosted.html:462
+#: templates/corporate/comparison_table_self_hosted.html:463
+#: templates/corporate/comparison_table_self_hosted.html:471
+#: templates/corporate/comparison_table_self_hosted.html:472
+#: templates/corporate/comparison_table_self_hosted.html:484
+#: templates/corporate/comparison_table_self_hosted.html:485
+#: templates/corporate/comparison_table_self_hosted.html:486
+#: templates/corporate/comparison_table_self_hosted.html:496
+#: templates/corporate/comparison_table_self_hosted.html:497
+#: templates/corporate/comparison_table_self_hosted.html:498
+#: templates/corporate/comparison_table_self_hosted.html:507
+#: templates/corporate/comparison_table_self_hosted.html:508
+#: templates/corporate/comparison_table_self_hosted.html:518
+#: templates/corporate/comparison_table_self_hosted.html:519
+#: templates/corporate/comparison_table_self_hosted.html:520
+#: templates/corporate/comparison_table_self_hosted.html:525
+#: templates/corporate/comparison_table_self_hosted.html:526
+#: templates/corporate/comparison_table_self_hosted.html:527
+#: templates/corporate/comparison_table_self_hosted.html:534
+#: templates/corporate/comparison_table_self_hosted.html:543
+#: templates/corporate/comparison_table_self_hosted.html:552
+#: templates/corporate/comparison_table_self_hosted.html:553
+#: templates/corporate/comparison_table_self_hosted.html:566
+#: templates/corporate/comparison_table_self_hosted.html:575
+#: templates/corporate/comparison_table_self_hosted.html:584
+#: templates/corporate/comparison_table_self_hosted.html:600
+#: templates/corporate/comparison_table_self_hosted.html:611
+#: templates/corporate/comparison_table_self_hosted.html:622
+#: templates/corporate/comparison_table_self_hosted.html:631
+#: templates/corporate/comparison_table_self_hosted.html:640
+#: templates/corporate/comparison_table_self_hosted.html:649
+#: templates/corporate/comparison_table_self_hosted.html:658
+#: templates/corporate/comparison_table_self_hosted.html:659
+#: templates/corporate/comparison_table_self_hosted.html:714
+#: templates/corporate/comparison_table_self_hosted.html:715
+#: templates/corporate/comparison_table_self_hosted.html:725
+#: templates/corporate/comparison_table_self_hosted.html:726
+#: templates/corporate/comparison_table_self_hosted.html:736
+#: templates/corporate/comparison_table_self_hosted.html:743
+#: templates/corporate/comparison_table_self_hosted.html:744
+#: templates/corporate/comparison_table_self_hosted.html:745
+#: templates/corporate/comparison_table_self_hosted.html:750
+#: templates/corporate/comparison_table_self_hosted.html:751
+#: templates/corporate/comparison_table_self_hosted.html:761
+#: templates/corporate/comparison_table_self_hosted.html:762
+#: templates/corporate/comparison_table_self_hosted.html:772
+#: templates/corporate/comparison_table_self_hosted.html:773
+#: templates/corporate/comparison_table_self_hosted.html:783
+#: templates/corporate/comparison_table_self_hosted.html:784
+#: templates/corporate/comparison_table_self_hosted.html:799
+#: templates/corporate/comparison_table_self_hosted.html:808
+#: templates/corporate/comparison_table_self_hosted.html:817
+#: templates/corporate/comparison_table_self_hosted.html:818
+#: templates/corporate/comparison_table_self_hosted.html:828
+#: templates/corporate/comparison_table_self_hosted.html:829
+#: templates/corporate/comparison_table_self_hosted.html:841
+#: templates/corporate/comparison_table_self_hosted.html:842
+#: templates/corporate/comparison_table_self_hosted.html:850
+#: templates/corporate/comparison_table_self_hosted.html:851
+#: templates/corporate/comparison_table_self_hosted.html:857
+#: templates/corporate/comparison_table_self_hosted.html:858
+#: templates/corporate/comparison_table_self_hosted.html:859
+#: templates/corporate/comparison_table_self_hosted.html:878
+#: templates/corporate/comparison_table_self_hosted.html:879
+#: templates/corporate/comparison_table_self_hosted.html:888
+#: templates/corporate/comparison_table_self_hosted.html:889
+#: templates/corporate/comparison_table_self_hosted.html:897
+#: templates/corporate/comparison_table_self_hosted.html:898
+#: templates/corporate/comparison_table_self_hosted.html:906
+#: templates/corporate/comparison_table_self_hosted.html:907
+#: templates/corporate/comparison_table_self_hosted.html:916
+#: templates/corporate/comparison_table_self_hosted.html:917
+#: templates/corporate/comparison_table_self_hosted.html:925
+#: templates/corporate/comparison_table_self_hosted.html:926
+#: templates/corporate/comparison_table_self_hosted.html:934
+#: templates/corporate/comparison_table_self_hosted.html:935
+#: templates/corporate/comparison_table_self_hosted.html:943
+#: templates/corporate/comparison_table_self_hosted.html:944
+#: templates/corporate/comparison_table_self_hosted.html:945
+#: templates/corporate/comparison_table_self_hosted.html:952
+#: templates/corporate/comparison_table_self_hosted.html:953
+#: templates/corporate/comparison_table_self_hosted.html:954
+#: templates/corporate/comparison_table_self_hosted.html:961
+#: templates/corporate/comparison_table_self_hosted.html:962
+#: templates/corporate/comparison_table_self_hosted.html:963
+#: templates/corporate/comparison_table_self_hosted.html:970
+#: templates/corporate/comparison_table_self_hosted.html:971
+#: templates/corporate/comparison_table_self_hosted.html:972
+#: templates/corporate/comparison_table_self_hosted.html:979
+#: templates/corporate/comparison_table_self_hosted.html:980
+#: templates/corporate/comparison_table_self_hosted.html:981
+#: templates/corporate/comparison_table_self_hosted.html:988
+#: templates/corporate/comparison_table_self_hosted.html:989
+#: templates/corporate/comparison_table_self_hosted.html:990
+#: templates/corporate/comparison_table_self_hosted.html:1031
+#: templates/corporate/comparison_table_self_hosted.html:1038
+#: templates/corporate/comparison_table_self_hosted.html:1039
+msgid "Self-managed"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:157
+msgid "For organizations with up to 10 users"
+msgstr ""
+
+#: templates/corporate/comparison_table_self_hosted.html:864
+#: templates/corporate/comparison_table_self_hosted.html:1019
+#: templates/corporate/comparison_table_self_hosted.html:1020
+#: templates/corporate/comparison_table_self_hosted.html:1045
+#: templates/corporate/comparison_table_self_hosted.html:1046
+#: templates/corporate/comparison_table_self_hosted.html:1052
+#: templates/corporate/comparison_table_self_hosted.html:1059
+#: templates/corporate/comparison_table_self_hosted.html:1066
+#: templates/corporate/comparison_table_self_hosted.html:1067
+#: templates/corporate/comparison_table_self_hosted.html:1073
+#: templates/corporate/comparison_table_self_hosted.html:1074
+#: templates/corporate/comparison_table_self_hosted.html:1075
+msgid "Not available"
+msgstr ""
 
 #: templates/corporate/development-community.html:23
 msgid "The Zulip development community"
@@ -701,6 +1156,52 @@ msgstr "查看定价"
 msgid "Deactivate server registration?"
 msgstr ""
 
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:4
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:16
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:4
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:16
+msgid "Plan management not available"
+msgstr ""
+
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:18
+#, python-format
+msgid ""
+" Plan management is not available for this\n"
+"                        organization, because your Zulip server is already on a\n"
+"                        %(server_plan_name)s plan, which covers all\n"
+"                        organizations on this server. Follow the <a\n"
+"                        href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">log\n"
+"                        in instructions</a>\n"
+"                        for <b>All older versions</b>\n"
+"                        of the Zulip server to manage your plan.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_realm_login_error_for_server_on_active_plan.html:29
+msgid ""
+" To move the plan from the server to this\n"
+"                        organization, or for other questions, <a href=\"mailto:{{\n"
+"                        support_email }}\">contact support</a>.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:18
+msgid ""
+"\n"
+"                        Plan management for this server is not available because at least one organization\n"
+"                        hosted on this server already has an active plan.\n"
+"                        "
+msgstr ""
+
+#: templates/corporate/remote_server_login_error_for_any_realm_on_active_plan.html:24
+#, python-format
+msgid ""
+"\n"
+"                        <a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">Log in</a> to plan management for your\n"
+"                        organization instead, or <a href='mailto:%(support_email)s'>contact support</a> with any questions.\n"
+"                        "
+msgstr ""
+
 #: templates/corporate/self-hosting.html:31
 msgid "Zulip for business"
 msgstr "商务用Zulip"
@@ -761,7 +1262,7 @@ msgstr ""
 msgid "Upgrade"
 msgstr ""
 
-#: templates/corporate/upgrade.html:199
+#: templates/corporate/upgrade.html:200
 msgid "Convert demo organization before upgrading."
 msgstr ""
 
@@ -770,7 +1271,9 @@ msgid ""
 "\n"
 "        This team chat is now being hosted on Zulip Cloud. Please accept the <a href=\"https://zulip.com/policies/terms\">Zulip Terms of Service</a> to continue.\n"
 "        "
-msgstr "\n这个团队聊天现在托管在 Zulip Cloud 上。请接受<a href=\"https://zulip.com/policies/terms\">Zulip 服务条款</a>以继续。"
+msgstr ""
+"\n"
+"这个团队聊天现在托管在 Zulip Cloud 上。请接受<a href=\"https://zulip.com/policies/terms\">Zulip 服务条款</a>以继续。"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -982,7 +1485,9 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n未找到账户%(email)s"
+msgstr ""
+"\n"
+"未找到账户%(email)s"
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -1027,7 +1532,10 @@ msgid ""
 "\n"
 "                    The organization you are trying to join, %(deactivated_domain_name)s, has been deactivated.\n"
 "                    "
-msgstr "\n                    您要加入的组织, %(deactivated_domain_name)s, 已停用.\n                    "
+msgstr ""
+"\n"
+"                    您要加入的组织, %(deactivated_domain_name)s, 已停用.\n"
+"                    "
 
 #: templates/zerver/deactivated.html:28
 #, python-format
@@ -1035,7 +1543,10 @@ msgid ""
 "\n"
 "                        It has moved to <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
 "                        "
-msgstr "\n                        他已经移到这里啦！ <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n                        "
+msgstr ""
+"\n"
+"                        他已经移到这里啦！ <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
+"                        "
 
 #: templates/zerver/deactivated.html:32
 #, python-format
@@ -1044,7 +1555,11 @@ msgid ""
 "                    Please contact <a href=\"mailto:%(support_email)s\">%(support_email)s</a> to reactivate\n"
 "                    this group.\n"
 "                    "
-msgstr "\n                    请联系组织管理员 <a href=\"mailto:%(support_email)s\">%(support_email)s</a> 重新激活\n                    群聊.\n                    "
+msgstr ""
+"\n"
+"                    请联系 <a href=\"mailto:%(support_email)s\">%(support_email)s</a> 重新激活\n"
+"                    群聊.\n"
+"                    "
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
@@ -1233,7 +1748,7 @@ msgstr ""
 #: templates/zerver/emails/account_registered.subject.txt:2
 #, python-format
 msgid "%(realm_name)s on Zulip: Your new organization details"
-msgstr "Zulip组织%(realm_name)s：您的新组织详情"
+msgstr "Zulip社群%(realm_name)s：您的新社群详情"
 
 #: templates/zerver/emails/account_registered.subject.txt:4
 #, python-format
@@ -1346,7 +1861,8 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr "我们收到您的Zulip账户%(realm_uri)s电子邮件地址由%(old_email)s变更为%(new_email)s的请求。如果确认更改，请点击下面："
+msgstr ""
+"我们收到您的Zulip账户%(realm_uri)s电子邮件地址由%(old_email)s变更为%(new_email)s的请求。如果确认更改，请点击下面："
 
 #: templates/zerver/emails/confirm_new_email.html:11
 msgid "Confirm email change"
@@ -1492,7 +2008,9 @@ msgstr "感谢您提交的需求！"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by <a href=\"%(external_host)s\">%(external_host)s</a>:"
-msgstr "您的电子邮件地址 %(email)s 拥有以下由 %(external_host)s 托管的<a href=\"%(external_host)s\">Zulip</a>组织的账号："
+msgstr ""
+"您的电子邮件地址 %(email)s 拥有以下由 %(external_host)s 托管的<a "
+"href=\"%(external_host)s\">Zulip</a>组织的帐户："
 
 #: templates/zerver/emails/find_team.html:19
 #, python-format
@@ -1516,7 +2034,7 @@ msgstr "您的 Zulip 帐户"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
-msgstr "您的电子邮件地址 %(email)s 拥有以下由 %(external_host)s 托管的 Zulip 组织的账号："
+msgstr "您的电子邮件地址 %(email)s 拥有以下由 %(external_host)s 托管的 Zulip 组织的帐户："
 
 #: templates/zerver/emails/find_team.txt:10
 #, python-format
@@ -1583,7 +2101,11 @@ msgid ""
 "    This invitation expires in two days. If the invitation expires,\n"
 "    you'll need to ask %(referrer_name)s for another one.\n"
 "    "
-msgstr "\n    此邀请将在两天后到期。如果邀请过期,\n    您需要向 %(referrer_name)s 申请新的邀请链接.\n    "
+msgstr ""
+"\n"
+"    此邀请将在两天后到期。如果邀请过期,\n"
+"    您需要向 %(referrer_name)s 申请新的邀请链接.\n"
+"    "
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -1596,7 +2118,9 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "友情提示：%(referrer_name)s（%(referrer_email)s）邀请您加入他们的Zulip — 一个能大大提高工作效率的团队交流工具。"
+msgstr ""
+"友情提示：%(referrer_name)s（%(referrer_email)s）邀请您加入他们的Zulip "
+"— 一个能大大提高工作效率的团队交流工具。"
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
@@ -1625,7 +2149,9 @@ msgid ""
 "This email does not include message content because your organization has "
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
-msgstr "此电子邮件不包含消息内容，因为您的组织已禁用<a class=\"content_disabled_help_link\" href=\"%(help_url)s\">出现在电子邮件通知中的消息内容</a>。"
+msgstr ""
+"此电子邮件不包含消息内容，因为您的组织已禁用<a class=\"content_disabled_help_link\" "
+"href=\"%(help_url)s\">出现在电子邮件通知中的消息内容</a>。"
 
 #: templates/zerver/emails/missed_message.html:19
 #, python-format
@@ -1633,7 +2159,9 @@ msgid ""
 "This email does not include message content because you have disabled <a "
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
-msgstr "此电子邮件不包含消息内容，因为您已禁用<a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">出现在电子邮件通知中的消息内容</a>。"
+msgstr ""
+"此电子邮件不包含消息内容，因为您已禁用<a class=\"content_disabled_help_link\" "
+"href=\"%(alert_notif_url)s\">出现在电子邮件通知中的消息内容</a>。"
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:25
@@ -1714,7 +2242,10 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
 "    "
-msgstr "\n    请勿回复此电子邮件。 (<a href=\"%(url)s\">help</a>).\n    "
+msgstr ""
+"\n"
+"    请勿回复此电子邮件。 (<a href=\"%(url)s\">help</a>).\n"
+"    "
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -1741,7 +2272,9 @@ msgid ""
 "\n"
 "This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
 "See %(hide_content_url)s for more details.\n"
-msgstr "\n此电子邮件不包含消息内容，因为您的组织已禁用出现在电子邮件通知中的消息内容。有关详细信息，请参阅 %(hide_content_url)s。\n"
+msgstr ""
+"\n"
+"此电子邮件不包含消息内容，因为您的组织已禁用出现在电子邮件通知中的消息内容。有关详细信息，请参阅 %(hide_content_url)s。\n"
 
 #: templates/zerver/emails/missed_message.txt:16
 #, python-format
@@ -1749,7 +2282,9 @@ msgid ""
 "\n"
 "This email does not include message content because you have disabled message content appearing in email notifications.\n"
 "See %(alert_notif_url)s for more details.\n"
-msgstr "\n此电子邮件不包含消息内容，因为您已禁用出现在电子邮件通知中的消息内容。有关详细信息，请参阅 %(alert_notif_url)s。\n"
+msgstr ""
+"\n"
+"此电子邮件不包含消息内容，因为您已禁用出现在电子邮件通知中的消息内容。有关详细信息，请参阅 %(alert_notif_url)s。\n"
 
 #: templates/zerver/emails/missed_message.txt:43
 #, python-format
@@ -1771,7 +2306,9 @@ msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
-msgstr "\n请勿回复次邮件. Help:\n"
+msgstr ""
+"\n"
+"请勿回复次邮件. Help:\n"
 
 #: templates/zerver/emails/missed_message.txt:62
 msgid "Manage email preferences: "
@@ -1783,7 +2320,9 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
-msgstr "与您的 Zulip 帐户关联的电子邮件最近更改为 %(new_email)s。如果您未请求此更改，请立即通过 %(support_email)s 与我们联系。"
+msgstr ""
+"与您的 Zulip 帐户关联的电子邮件最近更改为 %(new_email)s。如果您未请求此更改，请立即通过 %(support_email)s "
+"与我们联系。"
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -1860,7 +2399,9 @@ msgid ""
 "If you do not recognize this login, or think your account may have been "
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
-msgstr "如果您不认识此登录名，或者认为您的帐户可能已被盗用，请<a href=\"%(reset_link)s\">重置您的密码</a>或立即通过 %(support_email)s 联系我们。"
+msgstr ""
+"如果您不认识此登录名，或者认为您的帐户可能已被盗用，请<a href=\"%(reset_link)s\">重置您的密码</a>或立即通过 "
+"%(support_email)s 联系我们。"
 
 #: templates/zerver/emails/notify_new_login.html:40
 #: templates/zerver/emails/notify_new_login.txt:20
@@ -1884,14 +2425,16 @@ msgstr "新的登录来自%(device_os)s上的%(device_browser)s"
 #: templates/zerver/emails/notify_new_login.txt:3
 #, python-format
 msgid "Organization: %(organization_url)s"
-msgstr "组织：%(organization_url)s"
+msgstr "社群：%(organization_url)s"
 
 #: templates/zerver/emails/notify_new_login.txt:16
 #, python-format
 msgid ""
 "\n"
 "If you do not recognize this login, or think your account may have been compromised, please reset your password at %(reset_link)s or contact us immediately at %(support_email)s."
-msgstr "\n如果您不认识此登录名，或认为您的帐户可能已被盗用，请在 %(reset_link)s 重置您的密码或立即通过 %(support_email)s 联系我们。"
+msgstr ""
+"\n"
+"如果您不认识此登录名，或认为您的帐户可能已被盗用，请在 %(reset_link)s 重置您的密码或立即通过 %(support_email)s 联系我们。"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:10
 #, python-format
@@ -2145,7 +2688,9 @@ msgid ""
 "You previously had an account on %(organization_url)s, but it has been "
 "deactivated. You can contact an organization administrator to <a "
 "href=\"%(help_link)s\">reactivate your account</a>."
-msgstr "您之前在 %(organization_url)s 上拥有一个账号，但它已被停用。您可以联系组织管理员<a href=\"%(help_link)s\">重新激活您的账号</a>。"
+msgstr ""
+"您之前在 %(organization_url)s 上拥有一个账号，但它已被停用。您可以联系组织管理员<a "
+"href=\"%(help_link)s\">重新激活您的账号</a>。"
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -2193,7 +2738,9 @@ msgid ""
 "    Your organization, %(organization_name_with_link)s, has been downgraded to the Zulip Cloud\n"
 "    Free plan because of unpaid invoices. The unpaid invoices have been voided.\n"
 "    "
-msgstr "\n由于未付账单，您的组织 %(organization_name_with_link)s 已降级为 Zulip Cloud Free 计划。未付账单已作废。"
+msgstr ""
+"\n"
+"由于未付账单，您的组织 %(organization_name_with_link)s 已降级为 Zulip Cloud Free 计划。未付账单已作废。"
 
 #: templates/zerver/emails/realm_auto_downgraded.html:15
 #, python-format
@@ -2201,7 +2748,9 @@ msgid ""
 "\n"
 "    To continue on the Zulip Cloud Standard plan, please upgrade again by going to %(upgrade_url)s.\n"
 "    "
-msgstr "\n要继续使用 Zulip Cloud 标准计划，请转到 %(upgrade_url)s 再次升级。"
+msgstr ""
+"\n"
+"要继续使用 Zulip Cloud 标准计划，请转到 %(upgrade_url)s 再次升级。"
 
 #: templates/zerver/emails/realm_auto_downgraded.html:22
 #, python-format
@@ -2209,7 +2758,9 @@ msgid ""
 "\n"
 "    If you think this was a mistake or need more details, please reach out to us at %(support_email)s.\n"
 "    "
-msgstr "\n如果您认为这是一个错误或需要更多详细信息，请通过 %(support_email)s 与我们联系。"
+msgstr ""
+"\n"
+"如果您认为这是一个错误或需要更多详细信息，请通过 %(support_email)s 与我们联系。"
 
 #: templates/zerver/emails/realm_reactivation.html:8
 #: templates/zerver/emails/realm_reactivation.txt:1
@@ -2358,7 +2909,7 @@ msgstr ""
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:4
 msgid ""
 "If you could list Zulip as a sponsor on your website, we would really "
-"appreciate it!."
+"appreciate it!"
 msgstr ""
 
 #: templates/zerver/find_account.html:4
@@ -2584,7 +3135,9 @@ msgid ""
 "                        You are using old version of the Zulip desktop\n"
 "                        app that is no longer supported.\n"
 "                        "
-msgstr "\n您使用的是不再受支持的旧版 Zulip 桌面应用程序。"
+msgstr ""
+"\n"
+"您使用的是不再受支持的旧版 Zulip 桌面应用程序。"
 
 #: templates/zerver/insecure_desktop_app.html:25
 msgid ""
@@ -2592,7 +3145,9 @@ msgid ""
 "                        The auto-update feature in this old version of\n"
 "                        Zulip desktop app no longer works.\n"
 "                        "
-msgstr "\n这个旧版本的 Zulip 桌面应用程序中的自动更新功能不再起作用。"
+msgstr ""
+"\n"
+"这个旧版本的 Zulip 桌面应用程序中的自动更新功能不再起作用。"
 
 #: templates/zerver/insecure_desktop_app.html:34
 msgid "Download the latest release."
@@ -2611,7 +3166,9 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\n还有数百个通过<a href=\"/integrations/doc/zapier\">Zapier</a>和<a href=\"/integrations/doc/ifttt\">IFTTT</a> 。"
+msgstr ""
+"\n"
+"还有数百个通过<a href=\"/integrations/doc/zapier\">Zapier</a>和<a href=\"/integrations/doc/ifttt\">IFTTT</a> 。"
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
@@ -2741,7 +3298,7 @@ msgstr "忘记密码？"
 #: templates/zerver/login.html:163
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
-msgstr "还没有帐户？你需要被邀请加入这个社群。"
+msgstr "还没有账号？你需要被邀请加入这个组织。"
 
 #: templates/zerver/new_user_email_address_visibility.html:5
 msgid ""
@@ -2828,7 +3385,7 @@ msgstr ""
 #: templates/zerver/realm_creation_form.html:9
 #: templates/zerver/register.html:48
 msgid "Organization name"
-msgstr "社群名称"
+msgstr "组织名称"
 
 #: templates/zerver/realm_creation_form.html:18
 msgid "Shorter is better than longer."
@@ -2837,7 +3394,7 @@ msgstr "短比长更好一些"
 #: templates/zerver/realm_creation_form.html:34
 #: templates/zerver/register.html:52
 msgid "Organization type"
-msgstr "社群类型"
+msgstr "组织类型"
 
 #: templates/zerver/realm_creation_form.html:47
 #: templates/zerver/register.html:56
@@ -2847,7 +3404,7 @@ msgstr ""
 #: templates/zerver/realm_creation_form.html:56
 #: templates/zerver/register.html:60
 msgid "Organization URL"
-msgstr "社群网址"
+msgstr "组织网址"
 
 #: templates/zerver/realm_creation_form.html:63
 #, python-format
@@ -2872,7 +3429,7 @@ msgstr ""
 
 #: templates/zerver/realm_reactivation.html:13
 msgid "Your organization has been successfully reactivated."
-msgstr "您的社群已经成功地重新激活"
+msgstr "您的组织已经成功地重新激活"
 
 #: templates/zerver/realm_reactivation_link_error.html:4
 msgid "Organization reactivation link expired or invalid"
@@ -2880,12 +3437,12 @@ msgstr ""
 
 #: templates/zerver/realm_reactivation_link_error.html:13
 msgid "The organization reactivation link has expired or is not valid."
-msgstr "社群重新激活链接已过期或无效"
+msgstr "组织重新激活链接已过期或无效"
 
 #: templates/zerver/realm_redirect.html:4
 #: templates/zerver/realm_redirect.html:12
 msgid "Log in to your organization"
-msgstr "登录您的社群"
+msgstr "登录您的组织"
 
 #: templates/zerver/realm_redirect.html:22
 msgid "Enter your organization's Zulip URL:"
@@ -3044,7 +3601,10 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n        <h1 class=\"get-started\">选择账户</h1>\n        "
+msgstr ""
+"\n"
+"        <h1 class=\"get-started\">选择账户</h1>\n"
+"        "
 
 #: templates/zerver/social_auth_select_email.html:67
 msgid ""
@@ -3052,7 +3612,9 @@ msgid ""
 "            Your GitHub account also has unverified email addresses\n"
 "            associated with it.\n"
 "            "
-msgstr "\n您的 GitHub 帐户也有与之关联的未经验证的电子邮件地址。"
+msgstr ""
+"\n"
+"您的 GitHub 帐户也有与之关联的未经验证的电子邮件地址。"
 
 #: templates/zerver/social_auth_select_email.html:73
 msgid ""
@@ -3060,7 +3622,9 @@ msgid ""
 "            To use one of these to log in to Zulip, you must first\n"
 "            <a href=\"https://github.com/settings/emails\">verify it with GitHub.</a>\n"
 "            "
-msgstr "\n要使用其中之一登录 Zulip，您必须先<a href=\"https://github.com/settings/emails\">使用 GitHub 进行验证。</a>"
+msgstr ""
+"\n"
+"要使用其中之一登录 Zulip，您必须先<a href=\"https://github.com/settings/emails\">使用 GitHub 进行验证。</a>"
 
 #: templates/zerver/unsubscribe_link_error.html:4
 msgid "Error unsubscribing email"
@@ -3118,7 +3682,9 @@ msgid ""
 "\n"
 "                        %(browser_name)s is not supported by Zulip.\n"
 "                        "
-msgstr "\nZulip 不支持 %(browser_name)s。"
+msgstr ""
+"\n"
+"Zulip 不支持 %(browser_name)s。"
 
 #: templates/zerver/unsupported_browser.html:22
 #, python-format
@@ -3135,7 +3701,9 @@ msgid ""
 "\n"
 "                        You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>.\n"
 "                        "
-msgstr "\n您还可以使用<a href=\"%(apps_page_link)s\">Zulip 桌面应用程序</a>。"
+msgstr ""
+"\n"
+"您还可以使用<a href=\"%(apps_page_link)s\">Zulip 桌面应用程序</a>。"
 
 #: templates/zilencer/remote_realm_server_mismatch_error.html:16
 msgid "Unexpected Zulip server registration"
@@ -3405,7 +3973,9 @@ msgstr "您的机器人 {bot_identity} 尝试向频道 ID {stream_id} 发送消�
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
-msgstr "您的机器人 {bot_identity} 尝试向频道 {stream_name} 发送消息，但该频道不存在。单击 [此处]({new_stream_link}) 以创建它。"
+msgstr ""
+"您的机器人 {bot_identity} 尝试向频道 {stream_name} 发送消息，但该频道不存在。单击 "
+"[此处]({new_stream_link}) 以创建它。"
 
 #: zerver/actions/message_send.py:1497
 #, python-brace-format
@@ -3495,7 +4065,9 @@ msgstr ""
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
-msgstr "{user} 将此频道的 [访问权限](/help/stream-permissions) 从 **{old_policy}** 更改为 **{new_policy}** 。"
+msgstr ""
+"{user} 将此频道的 [访问权限](/help/stream-permissions) 从 **{old_policy}** 更改为 "
+"**{new_policy}** 。"
 
 #: zerver/actions/streams.py:1355
 #, python-brace-format
@@ -3504,7 +4076,11 @@ msgid ""
 "\n"
 "* **Old permissions**: {old_policy}.\n"
 "* **New permissions**: {new_policy}.\n"
-msgstr "{user} 更改了此频道的 [发布权限](/help/stream-sending-policy)：\n\n* **旧权限** ：{old_policy}。\n* **新权限** ：{new_policy}。\n"
+msgstr ""
+"{user} 更改了此频道的 [发布权限](/help/stream-sending-policy)：\n"
+"\n"
+"* **旧权限** ：{old_policy}。\n"
+"* **新权限** ：{new_policy}。\n"
 
 #: zerver/actions/streams.py:1471
 #, python-brace-format
@@ -3545,7 +4121,9 @@ msgid ""
 "* **New retention period**: {new_retention_period}\n"
 "\n"
 "{summary_line}"
-msgstr "{user} 已更改此频道的 [消息保留期](/help/message-retention-policy)：* **旧保留期** ：{old_retention_period} * **新保留期** ：{new_retention_period} {summary_line}"
+msgstr ""
+"{user} 已更改此频道的 [消息保留期](/help/message-retention-policy)：* **旧保留期** "
+"：{old_retention_period} * **新保留期** ：{new_retention_period} {summary_line}"
 
 #: zerver/actions/submessage.py:36
 msgid "You cannot attach a submessage to this message."
@@ -3984,7 +4562,7 @@ msgstr ""
 #: zerver/lib/exceptions.py:436
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
-msgstr "无法解析请求：{webhook_name} 是否生成了此事件？"
+msgstr ""
 
 #: zerver/lib/exceptions.py:463
 msgid "User not authenticated"
@@ -4229,7 +4807,7 @@ msgstr "我也可以帮你设置！只需单击此消息上的任意位置或按
 
 #: zerver/lib/onboarding.py:113 zerver/lib/onboarding.py:225
 msgid "Here are a few messages I understand:"
-msgstr "以下是我理解的一些消息："
+msgstr ""
 
 #: zerver/lib/onboarding.py:154
 msgid ""
@@ -4242,7 +4820,9 @@ msgid ""
 "Go to [Profile settings](#settings/profile) to add a [profile "
 "picture](/help/change-your-profile-picture) and edit your [profile "
 "information](/help/edit-your-profile)."
-msgstr "转到 [个人资料设置](#settings/profile) 添加 [个人资料图片](/help/change-your-profile-picture) 并编辑您的 [个人资料信息](/help/edit-your-profile)。"
+msgstr ""
+"转到 [个人资料设置](#settings/profile) 添加 [个人资料图片](/help/change-your-profile-"
+"picture) 并编辑您的 [个人资料信息](/help/edit-your-profile)。"
 
 #: zerver/lib/onboarding.py:165
 msgid ""
@@ -4268,7 +4848,8 @@ msgid ""
 "In Zulip, topics [tell you what a message is about](/help/streams-and-"
 "topics). They are light-weight subjects, very similar to the subject line of"
 " an email."
-msgstr "在 Zulip 中，主题 [告诉您消息的内容](/help/streams-and-topics)。它们是轻量级主题，非常类似于电子邮件的主题行。"
+msgstr ""
+"在 Zulip 中，主题 [告诉您消息的内容](/help/streams-and-topics)。它们是轻量级主题，非常类似于电子邮件的主题行。"
 
 #: zerver/lib/onboarding.py:191
 msgid ""
@@ -4292,7 +4873,9 @@ msgid ""
 "Zulip uses [Markdown](/help/format-your-message-using-markdown), an "
 "intuitive format for **bold**, *italics*, bulleted lists, and more. Click "
 "[here](#message-formatting) for a cheat sheet."
-msgstr "Zulip 使用 [Markdown](/help/format-your-message-using-markdown)，这是一种直观的 **bold** 、*italics*、项目符号列表等格式。单击  [此处](#message-formatting)  获取备忘单。"
+msgstr ""
+"Zulip 使用 [Markdown](/help/format-your-message-using-markdown)，这是一种直观的 "
+"**bold** 、*italics*、项目符号列表等格式。单击  [此处](#message-formatting)  获取备忘单。"
 
 #: zerver/lib/onboarding.py:217
 msgid ""
@@ -4304,13 +4887,14 @@ msgstr "查看我们的[消息提示](/help/messaging-tips)，了解表情符号
 msgid ""
 "Check out our [Getting started guide](/help/getting-started-with-zulip), or "
 "browse the [Help center](/help/) to learn more!"
-msgstr "查看我们的 [入门指南](/help/getting-started-with-zulip)，或浏览 [帮助中心](/help/) 了解更多信息！"
+msgstr ""
+"查看我们的 [入门指南](/help/getting-started-with-zulip)，或浏览 [帮助中心](/help/) 了解更多信息！"
 
 #: zerver/lib/onboarding.py:237
 msgid ""
 "I’m sorry, I did not understand your message. Please try one of the "
 "following commands:"
-msgstr "对不起，我没看懂你的留言。请尝试以下命令之一："
+msgstr ""
 
 #: zerver/lib/onboarding.py:270
 msgid ""
@@ -4327,7 +4911,9 @@ msgstr "私有频道仅对频道成员可见。"
 msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
-msgstr "要管理此频道，请转到 [频道设置]({stream_settings_url}) 并单击“ {initial_private_stream_name} ”。"
+msgstr ""
+"要管理此频道，请转到 [频道设置]({stream_settings_url}) 并单击“ {initial_private_stream_name} "
+"”。"
 
 #: zerver/lib/onboarding.py:286
 #, python-brace-format
@@ -4379,45 +4965,45 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:731 zilencer/views.py:234
+#: zerver/lib/push_notifications.py:739 zilencer/views.py:243
 msgid "Token does not exist"
 msgstr "Token不存在"
 
-#: zerver/lib/push_notifications.py:902
+#: zerver/lib/push_notifications.py:910
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr "此社群已禁用在移动推送通知中包含消息内容"
 
-#: zerver/lib/push_notifications.py:1015
+#: zerver/lib/push_notifications.py:1023
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} 提到 @{user_group_name} ："
 
-#: zerver/lib/push_notifications.py:1019
+#: zerver/lib/push_notifications.py:1027
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} 提到了您："
 
-#: zerver/lib/push_notifications.py:1026
+#: zerver/lib/push_notifications.py:1034
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} 提到了大家："
 
-#: zerver/lib/push_notifications.py:1436
+#: zerver/lib/push_notifications.py:1438
 msgid "Test notification"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1437
+#: zerver/lib/push_notifications.py:1439
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1488
+#: zerver/lib/push_notifications.py:1490
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1500
+#: zerver/lib/push_notifications.py:1502
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -4794,7 +5380,7 @@ msgstr "无效的机器人类型"
 msgid "Invalid interface type"
 msgstr "无效的接口类型"
 
-#: zerver/lib/users.py:217 zerver/models.py:4978
+#: zerver/lib/users.py:217 zerver/models.py:4979
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
@@ -5097,45 +5683,45 @@ msgstr "自定义表情"
 msgid "Zulip extra emoji"
 msgstr "Zulip额外表情"
 
-#: zerver/models.py:4982
+#: zerver/models.py:4983
 #, python-brace-format
 msgid "User with ID {user_id} is deactivated"
 msgstr ""
 
-#: zerver/models.py:4986
+#: zerver/models.py:4987
 #, python-brace-format
 msgid "User with ID {user_id} is a bot"
 msgstr ""
 
-#: zerver/models.py:5026
+#: zerver/models.py:5027
 msgid "List of options"
 msgstr "选项列表"
 
-#: zerver/models.py:5029
+#: zerver/models.py:5030
 msgid "Person picker"
 msgstr "用户选择"
 
-#: zerver/models.py:5041
+#: zerver/models.py:5042
 msgid "Short text"
 msgstr "短文本"
 
-#: zerver/models.py:5042
+#: zerver/models.py:5043
 msgid "Long text"
 msgstr "长文本"
 
-#: zerver/models.py:5043
+#: zerver/models.py:5044
 msgid "Date picker"
 msgstr "日期选择"
 
-#: zerver/models.py:5044
+#: zerver/models.py:5045
 msgid "Link"
 msgstr "链接"
 
-#: zerver/models.py:5047
+#: zerver/models.py:5048
 msgid "External account"
 msgstr "外部帐户"
 
-#: zerver/models.py:5052
+#: zerver/models.py:5053
 msgid "Pronouns"
 msgstr ""
 
@@ -5920,52 +6506,56 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "必须验证有效的Zulip服务器 API Key"
 
 #. error
-#: zilencer/views.py:77 zilencer/views.py:79
+#: zilencer/views.py:83 zilencer/views.py:85
 msgid "Invalid UUID"
 msgstr "无效的 UUID"
 
 #. error
-#: zilencer/views.py:84
+#: zilencer/views.py:90
 msgid "Invalid token type"
 msgstr "无效的Token类型"
 
-#: zilencer/views.py:122
+#: zilencer/views.py:128
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:175
+#: zilencer/views.py:184
 msgid "Missing ios_app_id"
 msgstr ""
 
-#: zilencer/views.py:178
+#: zilencer/views.py:187
 msgid "Missing user_id or user_uuid"
 msgstr "缺少 user_id 或 user_uuid"
 
-#: zilencer/views.py:603
+#: zilencer/views.py:433 zilencer/views.py:435
+msgid "Your plan doesn't allow sending push notifications."
+msgstr ""
+
+#: zilencer/views.py:631
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:606
+#: zilencer/views.py:634
 msgid "Invalid event type."
 msgstr ""
 
-#: zilencer/views.py:613
+#: zilencer/views.py:641
 msgid "Data is out of order."
 msgstr "数据超出要求"
 
-#: zilencer/views.py:675
+#: zilencer/views.py:717
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:905
+#: zilencer/views.py:978
 msgid ""
 "Failed to migrate customer from server to realms. Please contact support for"
 " assistance."
 msgstr ""
 
-#: zilencer/views.py:957
+#: zilencer/views.py:1030
 msgid "Malformed audit log data"
 msgstr ""
 
