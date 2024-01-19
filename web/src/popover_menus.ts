@@ -358,11 +358,11 @@ export function toggle_popover_menu(
     target: ReferenceElement,
     popover_props: Partial<PopoverProps>,
     options?: {show_as_overlay_on_mobile: boolean},
-): void {
+): PopoverInstance {
     const instance = target._tippy;
     if (instance) {
         instance.hide();
-        return;
+        return instance;
     }
 
     let mobile_popover_props = {};
@@ -382,7 +382,7 @@ export function toggle_popover_menu(
         ];
     }
 
-    tippy(target, {
+    return tippy(target, {
         ...default_popover_props,
         showOnCreate: true,
         ...popover_props,
@@ -409,7 +409,14 @@ export function register_popover_menu(target: string, popover_props: Partial<Pop
         e.preventDefault();
         e.stopPropagation();
 
-        toggle_popover_menu(e.currentTarget, popover_props);
+        // Hide popovers when user clicks on an element which navigates user to a link.
+        // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
+        // we are not able to hide the popover which we would do otherwise.
+        const instance = toggle_popover_menu(e.currentTarget, popover_props);
+        const $popper = $(instance.popper);
+        $popper.on("click", "a[href]", () => {
+            instance.hide();
+        });
     });
 }
 
