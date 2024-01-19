@@ -116,7 +116,7 @@ input::placeholder {
         line-height: normal;
         text-align: center;
 
-        background-color: hsl(0deg 0% 98%);
+        background-color: hsl(0deg 0% 100%);
         color: inherit;
         outline: none;
         border: 1px solid hsl(0deg 0% 80%);
@@ -415,8 +415,7 @@ div.overlay {
 .grey-box {
     margin: 0;
     padding: 5px 10px;
-    background-color: hsl(0deg 0% 98%);
-    border: 1px solid hsl(0deg 0% 87%);
+    background-color: hsl(0deg 0% 96.1%);
     border-radius: 4px;
 
     list-style-type: none;

@@ -784,7 +784,6 @@
     .subscriptions-container .subscriptions-header,
     .user-groups-container .user-groups-header,
     .overlay-messages-header,
-    .grey-box,
     .white-box,
     .stream-email,
     #generate-integration-url-modal .integration-url,
@@ -796,6 +795,10 @@
     #groups_overlay #user-group-creation .settings-sticky-footer {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .grey-box {
+        background-color: hsl(212.3deg 28.9% 17.6%);
     }
 
     .table-striped tbody tr:nth-child(even) td {
