@@ -1923,7 +1923,7 @@ by Pieter
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_zipfile(test_slack_zip_file, output_dir, token, threads=1)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
 
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
@@ -2132,7 +2132,7 @@ by Pieter
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_zipfile(test_slack_zip_file, output_dir, token, threads=1)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
 
     @mock.patch("zerver.data_import.slack.check_token_access")
     @responses.activate

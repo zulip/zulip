@@ -2451,7 +2451,7 @@ def get_exportable_scheduled_message_ids(
 def do_export_realm(
     realm: Realm,
     output_dir: Path,
-    threads: int,
+    processes: int,
     export_type: int,
     exportable_user_ids: set[int] | None = None,
     export_as_active: bool | None = None,
@@ -2462,11 +2462,11 @@ def do_export_realm(
         # indicates a bug.
         assert export_type == RealmExport.EXPORT_FULL_WITH_CONSENT
 
-    # We need at least one thread running to export
+    # We need at least one process running to export
     # UserMessage rows.  The management command should
     # enforce this for us.
     if not settings.TEST_SUITE:
-        assert threads >= 1
+        assert processes >= 1
 
     realm_config = get_realm_config()
 
@@ -2544,7 +2544,7 @@ def do_export_realm(
 
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(
-        threads=threads,
+        processes=processes,
         output_dir=output_dir,
         export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
         exportable_user_ids=exportable_user_ids,
@@ -2585,12 +2585,12 @@ def export_attachment_table(
 
 
 def launch_user_message_subprocesses(
-    threads: int,
+    processes: int,
     output_dir: Path,
     export_full_with_consent: bool,
     exportable_user_ids: set[int] | None,
 ) -> None:
-    logging.info("Launching %d PARALLEL subprocesses to export UserMessage rows", threads)
+    logging.info("Launching %d PARALLEL subprocesses to export UserMessage rows", processes)
     pids = {}
 
     if export_full_with_consent:
@@ -2600,12 +2600,12 @@ def launch_user_message_subprocesses(
             f.write(orjson.dumps(list(exportable_user_ids)))
         logging.info("Created consented_user_ids.json file.")
 
-    for shard_id in range(threads):
+    for shard_id in range(processes):
         arguments = [
             os.path.join(settings.DEPLOY_ROOT, "manage.py"),
             "export_usermessage_batch",
             f"--path={output_dir}",
-            f"--thread={shard_id}",
+            f"--process={shard_id}",
         ]
         if export_full_with_consent:
             arguments.append("--export-full-with-consent")
@@ -2955,7 +2955,7 @@ def get_consented_user_ids(realm: Realm) -> set[int]:
 def export_realm_wrapper(
     export_row: RealmExport,
     output_dir: str,
-    threads: int,
+    processes: int,
     upload: bool,
     percent_callback: Callable[[Any], None] | None = None,
     export_as_active: bool | None = None,
@@ -2972,7 +2972,7 @@ def export_realm_wrapper(
         tarball_path, stats = do_export_realm(
             realm=export_row.realm,
             output_dir=output_dir,
-            threads=threads,
+            processes=processes,
             export_type=export_row.type,
             export_as_active=export_as_active,
             exportable_user_ids=exportable_user_ids,
