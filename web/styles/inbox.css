@@ -30,6 +30,7 @@
             top: var(--navbar-fixed-height);
             background: var(--color-background-inbox);
             display: flex;
+            margin: 10px;
             padding: 15px 0 10px;
             z-index: 1;
         }
