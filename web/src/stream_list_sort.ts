@@ -23,11 +23,11 @@ let all_streams: number[] = [];
 // to avoid making left sidebar rendering a quadratic operation.
 let filter_out_inactives = false;
 
-export function get_streams(): (string | undefined)[] {
-    const sorted_streams = all_streams.map((stream_id) =>
-        sub_store.maybe_get_stream_name(stream_id),
-    );
-    return sorted_streams;
+export function get_streams(): string[] {
+    return all_streams.flatMap((stream_id) => {
+        const stream_name = sub_store.maybe_get_stream_name(stream_id);
+        return stream_name === undefined ? [] : [stream_name];
+    });
 }
 
 function compare_function(a: number, b: number): number {

@@ -84,6 +84,7 @@ run_test("topics", ({override}) => {
     const stream_id_dct = {
         muted: muted_stream_id,
         devel: devel_stream_id,
+        announce: 402,
     };
 
     override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
