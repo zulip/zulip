@@ -11,6 +11,7 @@ import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as realm_playground from "./realm_playground";
 import * as scroll_util from "./scroll_util";
+import {render_typeahead_item} from "./typeahead_helper";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -158,9 +159,7 @@ function build_page() {
         items: 5,
         fixed: true,
         helpOnEmptyStrings: true,
-        highlighter(item) {
-            return language_labels.get(item);
-        },
+        highlighter: (item) => render_typeahead_item({primary: language_labels.get(item)}),
         matcher(item) {
             const q = this.query.trim().toLowerCase();
             return item.toLowerCase().startsWith(q);
