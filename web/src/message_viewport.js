@@ -6,7 +6,7 @@ import * as message_scroll_state from "./message_scroll_state";
 import * as rows from "./rows";
 import * as util from "./util";
 
-export let $scroll_container;
+export const $scroll_container = $("html");
 
 let $jwindow;
 const dimensions = {};
@@ -15,20 +15,20 @@ let in_stoppable_autoscroll = false;
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value() {
-            return dimen_func.call($scroll_container);
+            return dimen_func();
         },
     });
     return function viewport_dimension_wrapper(...args) {
         if (args.length !== 0) {
             dimensions[dimen_name].reset();
-            return dimen_func.apply($scroll_container, args);
+            return dimen_func(...args);
         }
         return dimensions[dimen_name].get();
     };
 }
 
-export const height = make_dimen_wrapper("height", $.fn.height);
-export const width = make_dimen_wrapper("width", $.fn.width);
+export const height = make_dimen_wrapper("height", $.fn.height.bind($scroll_container));
+export const width = make_dimen_wrapper("width", $.fn.width.bind($scroll_container));
 
 // TODO: This function lets us use the DOM API instead of jquery
 // (<10x faster) for condense.js, but we want to eventually do a
@@ -505,7 +505,7 @@ export function maybe_scroll_to_selected() {
 
 export function initialize() {
     $jwindow = $(window);
-    $scroll_container = $("html");
+
     // This handler must be placed before all resize handlers in our application
     $jwindow.on("resize", () => {
         dimensions.height.reset();
