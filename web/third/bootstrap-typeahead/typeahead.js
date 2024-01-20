@@ -156,7 +156,7 @@ import {get_string_diff} from "../../src/util";
     this.options = $.extend({}, $.fn.typeahead.defaults, options)
     this.matcher = this.options.matcher || this.matcher
     this.sorter = this.options.sorter || this.sorter
-    this.highlighter = this.options.highlighter || this.highlighter
+    this.highlighter = this.options.highlighter
     this.updater = this.options.updater || this.updater
     this.$container = $(this.options.container).appendTo(this.options.parentElement || 'body')
     this.$menu = $(this.options.menu).appendTo(this.$container)
@@ -346,13 +346,6 @@ import {get_string_diff} from "../../src/util";
       }
 
       return beginswith.concat(caseSensitive, caseInsensitive)
-    }
-
-  , highlighter: function (item) {
-      var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
-      return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
-        return '<strong>' + match + '</strong>'
-      })
     }
 
   , render: function (final_items, matching_items) {
@@ -642,18 +635,4 @@ import {get_string_diff} from "../../src/util";
   }
 
   $.fn.typeahead.Constructor = Typeahead
-
-
- /*   TYPEAHEAD DATA-API
-  * ================== */
-
-  $(function () {
-    $('body').on('focus.typeahead.data-api', '[data-provide="typeahead"]', function (e) {
-      var $this = $(this)
-      if ($this.data('typeahead')) return
-      e.preventDefault()
-      $this.typeahead($this.data())
-    })
-  })
-
 }(window.jQuery);
