@@ -114,11 +114,20 @@ def try_update_realm_custom_profile_field(
 
     field.display_in_profile_summary = display_in_profile_summary
     field.required = required
-    if field.field_type in (CustomProfileField.SELECT, CustomProfileField.EXTERNAL_ACCOUNT):
-        if field.field_type == CustomProfileField.SELECT:
-            assert field_data is not None
+
+    if field.field_type in (
+        CustomProfileField.SELECT,
+        CustomProfileField.EXTERNAL_ACCOUNT,
+    ):
+        # If field_data is None, field_data is unchanged and there is no need for
+        # comparing field_data values.
+        if field_data is not None and field.field_type == CustomProfileField.SELECT:
             remove_custom_profile_field_value_if_required(field, field_data)
-        field.field_data = orjson.dumps(field_data or {}).decode()
+
+        # If field.field_data is the default empty string, we will set field_data
+        # to an empty dict.
+        if field_data is not None or field.field_data == "":
+            field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
     notify_realm_custom_profile_fields(realm)
 

@@ -118,8 +118,8 @@ def validate_custom_profile_field(
 
 def validate_custom_profile_field_update(
     field: CustomProfileField,
-    field_data: ProfileFieldData,
     display_in_profile_summary: bool,
+    field_data: Optional[ProfileFieldData] = None,
     name: Optional[str] = None,
     hint: Optional[str] = None,
 ) -> None:
@@ -127,8 +127,21 @@ def validate_custom_profile_field_update(
         name = field.name
     if hint is None:
         hint = field.hint
+    if field_data is None:
+        if field.field_data == "":
+            # We're passing this just for validation, sinec the function won't
+            # accept a string. This won't change the actual value.
+            field_data = {}
+        else:
+            field_data = orjson.loads(field.field_data)
+
+    assert field_data is not None
     validate_custom_profile_field(
-        name, hint, field.field_type, field_data, display_in_profile_summary
+        name,
+        hint,
+        field.field_type,
+        field_data,
+        display_in_profile_summary,
     )
 
 
@@ -138,15 +151,18 @@ check_profile_field_data: Validator[ProfileFieldData] = check_dict(
 
 
 def update_only_display_in_profile_summary(
-    requested_field_data: ProfileFieldData,
     existing_field: CustomProfileField,
+    requested_field_data: Optional[ProfileFieldData] = None,
     requested_name: Optional[str] = None,
     requested_hint: Optional[str] = None,
 ) -> bool:
     if (
         (requested_name is not None and requested_name != existing_field.name)
         or (requested_hint is not None and requested_hint != existing_field.hint)
-        or requested_field_data != orjson.loads(existing_field.field_data)
+        or (
+            requested_field_data is not None
+            and requested_field_data != orjson.loads(existing_field.field_data)
+        )
     ):
         return False
     return True
@@ -226,7 +242,9 @@ def update_realm_custom_profile_field(
     field_id: int,
     name: Optional[str] = REQ(default=None, converter=lambda var_name, x: x.strip()),
     hint: Optional[str] = REQ(default=None),
-    field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
+    field_data: Optional[ProfileFieldData] = REQ(
+        default=None, json_validator=check_profile_field_data
+    ),
     display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
     required: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
@@ -249,13 +267,16 @@ def update_realm_custom_profile_field(
         # of default external account types, but not any others.
         #
         # TODO: Make the name/hint/field_data parameters optional, and
-        # just require that None was passed for all of them for this case.
+        # explicitly require that the client passes None for all of them for this case.
+        # Right now, for name/hint/field_data we allow the client to send the existing
+        # values for the respective fields. After this TODO is done, we will only allow
+        # the client to pass None values if the field is unchanged.
         and is_default_external_field(field.field_type, orjson.loads(field.field_data))
-        and not update_only_display_in_profile_summary(field_data, field, name, hint)
+        and not update_only_display_in_profile_summary(field, field_data, name, hint)
     ):
         raise JsonableError(_("Default custom field cannot be updated."))
 
-    validate_custom_profile_field_update(field, field_data, display_in_profile_summary, name, hint)
+    validate_custom_profile_field_update(field, display_in_profile_summary, field_data, name, hint)
     try:
         try_update_realm_custom_profile_field(
             realm=realm,

@@ -601,6 +601,17 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field.refresh_from_db()
         self.assertEqual(field.hint, "")
 
+        field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
+
+        # Empty field_data should not be allowed
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "field_data": {},
+            },
+        )
+        self.assert_json_error(result, "Field must have at least one choice.")
+
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
