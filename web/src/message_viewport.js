@@ -18,10 +18,10 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
             return dimen_func();
         },
     });
-    return function viewport_dimension_wrapper(...args) {
-        if (args.length !== 0) {
+    return function viewport_dimension_wrapper(val) {
+        if (val !== undefined) {
             dimensions[dimen_name].reset();
-            return dimen_func(...args);
+            return dimen_func(val);
         }
         return dimensions[dimen_name].get();
     };
