@@ -108,9 +108,12 @@ def try_update_realm_custom_profile_field(
         field.hint = hint
 
     field.display_in_profile_summary = display_in_profile_summary
-    if field.field_type in (CustomProfileField.SELECT, CustomProfileField.EXTERNAL_ACCOUNT):
+
+    if field_data is not None and field.field_type in (
+        CustomProfileField.SELECT,
+        CustomProfileField.EXTERNAL_ACCOUNT,
+    ):
         if field.field_type == CustomProfileField.SELECT:
-            assert field_data is not None
             remove_custom_profile_field_value_if_required(field, field_data)
         field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
