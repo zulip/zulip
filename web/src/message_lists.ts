@@ -18,6 +18,17 @@ type MessageListView = {
 };
 
 export type RenderInfo = {need_user_to_scroll: boolean};
+
+export type SelectIdOpts = {
+    then_scroll?: boolean;
+    target_scroll_offset?: number;
+    use_closest?: boolean;
+    empty_ok?: boolean;
+    mark_read?: boolean;
+    force_rerender?: boolean;
+    from_scroll?: boolean;
+};
+
 export type MessageList = {
     id: number;
     view: MessageListView;
@@ -30,7 +41,7 @@ export type MessageList = {
     can_mark_messages_read_without_setting: () => boolean;
     resume_reading: () => void;
     data: MessageListData;
-    select_id: (message_id: number) => void;
+    select_id: (message_id: number, opts?: SelectIdOpts) => void;
     get_row: (message_id: number) => JQuery;
     add_messages: (
         messages: Message[],
