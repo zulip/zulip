@@ -13,7 +13,7 @@ import * as util from "./util";
 const max_topics = 8;
 const max_topics_with_unread = 12;
 
-type TopicInfo = {
+export type TopicInfo = {
     topic_name: string;
     topic_resolved_prefix: string;
     topic_display_name: string;
