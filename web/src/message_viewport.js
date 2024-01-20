@@ -461,10 +461,10 @@ export function keep_pointer_in_view() {
     function adjust(in_view, get_next_row) {
         // return true only if we make an actual adjustment, so
         // that we know to short circuit the other direction
-        if (in_view($next_row)) {
+        if (in_view()) {
             return false; // try other side
         }
-        while (!in_view($next_row)) {
+        while (!in_view()) {
             $candidate = get_next_row($next_row);
             if ($candidate.length === 0) {
                 break;
