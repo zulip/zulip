@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as narrow_state from "./narrow_state";
 import * as pm_conversations from "./pm_conversations";
@@ -8,7 +9,13 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 
-export function next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic) {
+export function next_topic(
+    streams: string[],
+    get_topics: (stream_name: string) => string[],
+    has_unread_messages: (stream_name: string, topic: string) => boolean,
+    curr_stream: string,
+    curr_topic: string,
+): {stream: string; topic: string} | undefined {
     const curr_stream_index = streams.indexOf(curr_stream); // -1 if not found
 
     if (curr_stream_index >= 0) {
@@ -52,7 +59,11 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
     return undefined;
 }
 
-export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
+export function get_next_topic(
+    curr_stream: string,
+    curr_topic: string,
+    only_followed_topics: boolean,
+): {stream: string; topic: string} | undefined {
     let my_streams = stream_list_sort.get_streams();
 
     my_streams = my_streams.filter((stream_name) => {
@@ -62,6 +73,7 @@ export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
         if (only_followed_topics) {
             // We can use Shift + N to go to unread followed topic in muted stream.
             const stream_id = stream_data.get_stream_id(stream_name);
+            assert(stream_id !== undefined);
             const topics = stream_topic_history.get_recent_topic_names(stream_id);
             return topics.some((topic) => user_topics.is_topic_followed(stream_id, topic));
         }
@@ -72,19 +84,21 @@ export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
         }
         // We can use N to go to next unread unmuted/followed topic in a muted stream .
         const stream_id = stream_data.get_stream_id(stream_name);
+        assert(stream_id !== undefined);
         const topics = stream_topic_history.get_recent_topic_names(stream_id);
         return topics.some((topic) => user_topics.is_topic_unmuted_or_followed(stream_id, topic));
     });
 
-    function get_unmuted_topics(stream_name) {
+    function get_unmuted_topics(stream_name: string): string[] {
         const stream_id = stream_data.get_stream_id(stream_name);
+        assert(stream_id !== undefined);
         const topics = stream_topic_history.get_recent_topic_names(stream_id);
-
         if (
             narrow_state.active() &&
             narrow_state.stream_id() === stream_id &&
-            _.isEqual(narrow_state.filter().sorted_term_types(), ["stream", "topic"]) &&
-            !user_topics.is_topic_unmuted_or_followed(stream_id, narrow_state.topic())
+            _.isEqual(narrow_state.filter()?.sorted_term_types(), ["stream", "topic"]) &&
+            narrow_state.topic() !== undefined &&
+            !user_topics.is_topic_unmuted_or_followed(stream_id, narrow_state.topic()!)
         ) {
             // Here we're using N within a muted stream starting from
             // a muted topic; advance to the next not-explicitly-muted
@@ -102,15 +116,17 @@ export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
         return topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
     }
 
-    function get_followed_topics(stream_name) {
+    function get_followed_topics(stream_name: string): string[] {
         const stream_id = stream_data.get_stream_id(stream_name);
+        assert(stream_id !== undefined);
         let topics = stream_topic_history.get_recent_topic_names(stream_id);
         topics = topics.filter((topic) => user_topics.is_topic_followed(stream_id, topic));
         return topics;
     }
 
-    function has_unread_messages(stream_name, topic) {
+    function has_unread_messages(stream_name: string, topic: string): boolean {
         const stream_id = stream_data.get_stream_id(stream_name);
+        assert(stream_id !== undefined);
         return unread.topic_has_any_unread(stream_id, topic);
     }
 
@@ -127,7 +143,7 @@ export function get_next_topic(curr_stream, curr_topic, only_followed_topics) {
     return next_topic(my_streams, get_unmuted_topics, has_unread_messages, curr_stream, curr_topic);
 }
 
-export function get_next_unread_pm_string(curr_pm) {
+export function get_next_unread_pm_string(curr_pm: string): string | undefined {
     const my_pm_strings = pm_conversations.recent.get_strings();
     const curr_pm_index = my_pm_strings.indexOf(curr_pm); // -1 if not found
 
@@ -146,7 +162,7 @@ export function get_next_unread_pm_string(curr_pm) {
     return undefined;
 }
 
-export function get_next_stream(curr_stream) {
+export function get_next_stream(curr_stream: string): string {
     const my_streams = stream_list_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[
@@ -156,7 +172,7 @@ export function get_next_stream(curr_stream) {
     ];
 }
 
-export function get_prev_stream(curr_stream) {
+export function get_prev_stream(curr_stream: string): string {
     const my_streams = stream_list_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[curr_stream_index <= 0 ? my_streams.length - 1 : curr_stream_index - 1];
