@@ -1466,7 +1466,7 @@ export class MessageListView {
         if ($row === undefined) {
             // For legacy reasons we need to return an empty
             // jQuery object here.
-            return $(undefined);
+            return $();
         }
 
         return $row;
