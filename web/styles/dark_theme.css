@@ -798,6 +798,11 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
+    .add-new-export-box{
+        border: none;
+        background-color: #202C3A;
+    }
+
     .table-striped tbody tr:nth-child(even) td {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: color-mix(

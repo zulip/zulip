@@ -422,6 +422,11 @@ div.overlay {
     list-style-type: none;
 }
 
+.add-new-export-box{
+    background-color: #F5F5F5;
+    border: none;
+}
+
 .white-box {
     background-color: hsl(0deg 0% 100%);
     border: 1px solid hsl(0deg 0% 87%);
