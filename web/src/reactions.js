@@ -202,19 +202,19 @@ export function get_reaction_title_data(message_id, local_id) {
     return title;
 }
 
-export function get_reaction_section(message_id) {
+export function get_reaction_sections(message_id) {
     const $rows = message_lists.all_rendered_row_for_message_id(message_id);
     return $rows.find(".message_reactions");
 }
 
 export function find_reaction(message_id, local_id) {
-    const $reaction_section = get_reaction_section(message_id);
+    const $reaction_section = get_reaction_sections(message_id);
     const $reaction = $reaction_section.find(`[data-reaction-id='${CSS.escape(local_id)}']`);
     return $reaction;
 }
 
 export function get_add_reaction_button(message_id) {
-    const $reaction_section = get_reaction_section(message_id);
+    const $reaction_section = get_reaction_sections(message_id);
     const $add_button = $reaction_section.find(".reaction_button");
     return $add_button;
 }

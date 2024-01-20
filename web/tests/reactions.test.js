@@ -545,10 +545,10 @@ test("find_reaction", () => {
     assert.equal(reactions.find_reaction(message_id, local_id), $reaction);
 });
 
-test("get_reaction_section", () => {
+test("get_reaction_sections", () => {
     const $message_reactions = stub_reactions(555);
 
-    const $section = reactions.get_reaction_section(555);
+    const $section = reactions.get_reaction_sections(555);
 
     assert.equal($section, $message_reactions);
 });
