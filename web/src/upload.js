@@ -316,13 +316,41 @@ export function setup_upload(config) {
         },
     );
 
+    // To prevent overlay blinking, keep track of the number of
+    // drag events triggered. Ensures the overlay screen appears
+    // only when a file enters the drop zone and disappears either
+    // when the file is dropped or leaves the drop zone.
+    let drag_counter = 0;
+
     const $drag_drop_container = get_item("drag_drop_container", config);
-    $drag_drop_container.on("dragover", (event) => event.preventDefault());
-    $drag_drop_container.on("dragenter", (event) => event.preventDefault());
+    $drag_drop_container.on("dragover", (event) => {
+        event.preventDefault();
+        // Show the upload overlay during drag events.
+        $(".upload-overlay-container").addClass("upload-overlay-visibility");
+    });
+
+    $drag_drop_container.on("dragenter", (event) => {
+        event.preventDefault();
+        drag_counter += 1;
+        // Show the upload overlay during drag events.
+        $(".upload-overlay-container").addClass("upload-overlay-visibility");
+    });
+
+    $drag_drop_container.on("dragleave", (event) => {
+        event.preventDefault();
+        drag_counter -= 1;
+        if (drag_counter === 0) {
+            // Hide the upload overlay when no files are being dragged.
+            $(".upload-overlay-container").removeClass("upload-overlay-visibility");
+        }
+    });
 
     $drag_drop_container.on("drop", (event) => {
         event.preventDefault();
         event.stopPropagation();
+        drag_counter = 0;
+        // Hide the upload overlay after files are dropped.
+        $(".upload-overlay-container").removeClass("upload-overlay-visibility");
         const files = event.originalEvent.dataTransfer.files;
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_reply.respond_to_message({trigger: "file drop or paste"});
@@ -450,15 +478,48 @@ export function initialize() {
         }
     });
 
+    let drag_counter = 0;
     // Allow the app panel to receive drag/drop events.
-    $(".app, #navbar-fixed-container").on("dragover", (event) => event.preventDefault());
+    $(".app, #navbar-fixed-container").on("dragover", (event) => {
+        event.preventDefault();
+        // Show the upload overlay during drag events.
+        $(".upload-overlay-container").addClass("upload-overlay-visibility");
+        // Adjust z-index so that message box is visible.
+        if ($(".message_comp").css("display") === "block") {
+            $("#compose").addClass("compose-active-state").removeClass("compose-default-state");
+        }
+    });
 
     // TODO: Do something visual to hint that drag/drop will work.
-    $(".app, #navbar-fixed-container").on("dragenter", (event) => event.preventDefault());
+    $(".app, #navbar-fixed-container").on("dragenter", (event) => {
+        event.preventDefault();
+        drag_counter += 1;
+        // Show the upload overlay during drag events.
+        $(".upload-overlay-container").addClass("upload-overlay-visibility");
+        // Adjust z-index so that message box is visible.
+        if ($(".message_comp").css("display") === "block") {
+            $("#compose").addClass("compose-active-state").removeClass("compose-default-state");
+        }
+    });
+
+    $(".app, #navbar-fixed-container").on("dragleave", (event) => {
+        event.preventDefault();
+        drag_counter -= 1;
+        // Hide the upload overlay when no files are being dragged.
+        if (drag_counter === 0) {
+            $(".upload-overlay-container").removeClass("upload-overlay-visibility");
+            // Restore the z-index for the compose message component.
+            $("#compose").removeClass("compose-active-state").addClass("compose-default-state");
+        }
+    });
 
     $(".app, #navbar-fixed-container").on("drop", (event) => {
         event.preventDefault();
-
+        drag_counter = 0;
+        // Hide the upload overlay after files are dropped.
+        $(".upload-overlay-container").removeClass("upload-overlay-visibility");
+        // Restore the z-index for the compose message component.
+        $("#compose").removeClass("compose-active-state").addClass("compose-default-state");
         if (event.target.nodeName === "IMG" && event.target === drag_drop_img) {
             drag_drop_img = null;
             return;
