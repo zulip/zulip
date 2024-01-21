@@ -44,7 +44,6 @@ import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as resize from "./resize";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
-import * as search from "./search";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
@@ -1063,8 +1062,6 @@ export function deactivate() {
       message_list_data structure caching system that happens to have
       message_lists.home in it.
      */
-    search.clear_search_form();
-
     const coming_from_recent_view = recent_view_util.is_visible();
     const coming_from_inbox = inbox_util.is_visible();
 
