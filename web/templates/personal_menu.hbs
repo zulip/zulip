@@ -48,19 +48,19 @@
                                     {{/if}}
                                 </span>
                             </span>
-                            <a href="" class="personal-menu-clear-status navbar-dropdown-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
+                            <a tabindex="0" class="personal-menu-clear-status navbar-dropdown-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
                                 <i class="personal-menu-clear-status-icon navbar-dropdown-icon zulip-icon zulip-icon-x-circle"></i>
                             </a>
                         </li>
                         <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a href="" class="update_status_text navbar-dropdown-menu-link">
+                            <a tabindex="0" class="update_status_text navbar-dropdown-menu-link">
                                 <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile-smaller"></i>
                                 {{#tr}}Edit status{{/tr}}
                             </a>
                         </li>
                         {{else}}
                         <li class="link-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
-                            <a href="" class="update_status_text navbar-dropdown-menu-link">
+                            <a tabindex="0" class="update_status_text navbar-dropdown-menu-link">
                                 <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile-smaller"></i>
                                 {{#tr}}Set status{{/tr}}
                             </a>
@@ -69,14 +69,14 @@
 
                         {{#if invisible_mode}}
                         <li class="link-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
-                            <a href="" class="invisible_mode_turn_off navbar-dropdown-menu-link">
+                            <a tabindex="0" class="invisible_mode_turn_off navbar-dropdown-menu-link">
                                 <i class="navbar-dropdown-icon zulip-icon zulip-icon-play-circle"></i>
                                 {{#tr}}Turn off invisible mode{{/tr}}
                             </a>
                         </li>
                         {{else}}
                         <li class="link-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
-                            <a href="" class="invisible_mode_turn_on navbar-dropdown-menu-link">
+                            <a tabindex="0" class="invisible_mode_turn_on navbar-dropdown-menu-link">
                                 <i class="navbar-dropdown-icon zulip-icon zulip-icon-stop-circle"></i>
                                 {{#tr}}Go invisible{{/tr}}
                             </a>
@@ -93,13 +93,13 @@
                             </a>
                         </li>
                         <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a href="" class="narrow-self-direct-message navbar-dropdown-menu-link">
+                            <a tabindex="0" class="narrow-self-direct-message navbar-dropdown-menu-link">
                                 <i class="navbar-dropdown-icon zulip-icon zulip-icon-users"></i>
                                 {{#tr}}View messages with yourself{{/tr}}
                             </a>
                         </li>
                         <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a href="" class="narrow-messages-sent navbar-dropdown-menu-link">
+                            <a tabindex="0" class="narrow-messages-sent navbar-dropdown-menu-link">
                                 <i class="navbar-dropdown-icon zulip-icon zulip-icon-message-square"></i>
                                 {{#tr}}View messages sent{{/tr}}
                             </a>
