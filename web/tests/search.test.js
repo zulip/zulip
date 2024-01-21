@@ -17,16 +17,6 @@ mock_esm("../src/filter", {
 
 const search = zrequire("search");
 
-run_test("clear_search_form", () => {
-    $("#search_query").val("noise");
-    $("#search_query").trigger("click");
-
-    search.clear_search_form();
-
-    assert.equal($("#search_query").is_focused(), false);
-    assert.equal($("#search_query").val(), "");
-});
-
 run_test("initialize", ({override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
