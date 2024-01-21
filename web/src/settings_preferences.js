@@ -209,7 +209,7 @@ export function set_up(settings_panel) {
         if (current_emojiset === data.emojiset) {
             return;
         }
-        const $spinner = $container.find(".emoji-display-settings-status").expectOne();
+        const $spinner = $container.find(".emoji-preferences-settings-status").expectOne();
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -220,7 +220,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $container.find(".emoji-display-settings-status").expectOne(),
+                    $container.find(".emoji-preferences-settings-status").expectOne(),
                 );
             },
         });
@@ -259,7 +259,7 @@ export async function report_emojiset_change(settings_panel) {
     // update in all active browser windows.
     await emojisets.select(settings_panel.settings_object.emojiset);
 
-    const $spinner = $(settings_panel.container).find(".emoji-display-settings-status");
+    const $spinner = $(settings_panel.container).find(".emoji-preferences-settings-status");
     if ($spinner.length) {
         loading.destroy_indicator($spinner);
         ui_report.success(
