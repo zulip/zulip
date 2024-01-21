@@ -296,10 +296,6 @@ export function mark_as_unread_from_here(
     });
 }
 
-export function resume_reading() {
-    message_lists.current.resume_reading();
-}
-
 export function process_read_messages_event(message_ids) {
     /*
         This code has a lot in common with notify_server_messages_read,
