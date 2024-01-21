@@ -120,7 +120,9 @@ class CustomProfileField(models.Model):
         (PRONOUNS, gettext_lazy("Pronouns"), check_short_string, str, "PRONOUNS"),
     ]
 
-    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
+    ALL_FIELD_TYPES = sorted(
+        [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1]
+    )
 
     FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
