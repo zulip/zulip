@@ -235,7 +235,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
-        override(markdown, "apply_markdown", noop);
+        override(markdown, "render", noop);
         override(markdown, "add_topic_links", noop);
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
@@ -730,7 +730,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert.ok(make_indicator_called);
         assert_visibilities();
 
-        let apply_markdown_called = false;
+        let render_called = false;
         $("textarea#compose-textarea").val("foobarfoobar");
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
@@ -738,15 +738,14 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         current_message = "foobarfoobar";
 
-        override(markdown, "apply_markdown", (msg) => {
-            assert.equal(msg.raw_content, "foobarfoobar");
-            apply_markdown_called = true;
-            return msg;
+        override(markdown, "render", (raw_content) => {
+            assert.equal(raw_content, "foobarfoobar");
+            render_called = true;
         });
 
         handler(event);
 
-        assert.ok(apply_markdown_called);
+        assert.ok(render_called);
         assert_visibilities();
         assert.equal($("#compose .preview_content").html(), "Server: foobarfoobar");
     })();

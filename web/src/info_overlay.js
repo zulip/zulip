@@ -246,8 +246,10 @@ Coffee`,
 export function set_up_toggler() {
     for (const row of markdown_help_rows) {
         if (row.markdown && !row.output_html) {
-            const message = {raw_content: row.markdown};
-            markdown.apply_markdown(message);
+            const message = {
+                raw_content: row.markdown,
+                ...markdown.render(row.markdown),
+            };
             row.output_html = util.clean_user_content_links(message.content);
         }
     }

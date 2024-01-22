@@ -854,7 +854,7 @@ export function end_message_edit(message_id) {
 export function save_inline_topic_edit($row) {
     const msg_list = message_lists.current;
     let message_id = rows.id_for_recipient_row($row);
-    const message = message_lists.current.get(message_id);
+    let message = message_lists.current.get(message_id);
 
     const old_topic = message.topic;
     const new_topic = $row.find(".inline_topic_edit").val();
@@ -871,7 +871,7 @@ export function save_inline_topic_edit($row) {
 
     if (message.locally_echoed) {
         if (topic_changed) {
-            echo.edit_locally(message, {new_topic});
+            message = echo.edit_locally(message, {new_topic});
             $row = message_lists.current.get_row(message_id);
         }
         end_inline_topic_edit($row);
@@ -946,7 +946,7 @@ export function save_message_row_edit($row) {
     );
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
-    const message = message_lists.current.get(message_id);
+    let message = message_lists.current.get(message_id);
     let changed = false;
     let edit_locally_echoed = false;
 
@@ -981,7 +981,7 @@ export function save_message_row_edit($row) {
     if (message.locally_echoed) {
         if (new_content !== message.raw_content) {
             // `edit_locally` handles the case where `new_topic/new_stream_id` is undefined
-            echo.edit_locally(message, {
+            message = echo.edit_locally(message, {
                 raw_content: new_content,
             });
             $row = message_lists.current.get_row(message_id);
@@ -1027,7 +1027,7 @@ export function save_message_row_edit($row) {
         // the message is acknowledged by the server.
         message.local_edit_timestamp = Math.round(Date.now() / 1000);
 
-        echo.edit_locally(message, currently_echoing_messages.get(message_id));
+        message = echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
         $row = message_lists.current.get_row(message_id);
         end_message_row_edit($row);
@@ -1054,14 +1054,14 @@ export function save_message_row_edit($row) {
                 message_id = rows.id($row);
 
                 if (edit_locally_echoed) {
-                    const echoed_message = message_store.get(message_id);
+                    let echoed_message = message_store.get(message_id);
                     const echo_data = currently_echoing_messages.get(message_id);
 
                     delete echoed_message.local_edit_timestamp;
                     currently_echoing_messages.delete(message_id);
 
                     // Restore the original content.
-                    echo.edit_locally(echoed_message, {
+                    echoed_message = echo.edit_locally(echoed_message, {
                         content: echo_data.orig_content,
                         raw_content: echo_data.orig_raw_content,
                         mentioned: echo_data.mentioned,
