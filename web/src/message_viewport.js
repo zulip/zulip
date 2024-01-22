@@ -57,24 +57,25 @@ export function message_viewport_info() {
     // message pane, which should make sense for callers, who will
     // generally be concerned about whether actual message content is
     // visible.
-
-    const res = {};
-
     const $element_just_above_us = $("#navbar-fixed-container");
     const $element_just_below_us = $("#compose");
 
-    res.visible_top = $element_just_above_us.outerHeight() ?? 0;
+    let visible_top = $element_just_above_us.outerHeight() ?? 0;
 
     const $sticky_header = $(".sticky_header");
     if ($sticky_header.length) {
-        res.visible_top += $sticky_header.outerHeight() ?? 0;
+        visible_top += $sticky_header.outerHeight() ?? 0;
     }
 
-    res.visible_bottom = $element_just_below_us.position().top;
+    const visible_bottom = $element_just_below_us.position().top;
 
-    res.visible_height = res.visible_bottom - res.visible_top;
+    const visible_height = visible_bottom - visible_top;
 
-    return res;
+    return {
+        visible_top,
+        visible_bottom,
+        visible_height,
+    };
 }
 
 export function at_bottom() {
