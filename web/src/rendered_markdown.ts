@@ -101,6 +101,11 @@ export function set_name_in_mention_element(
     } else {
         $(element).text("@" + name);
     }
+
+    // Add bot icon to right of the name if it is a bot.
+    if (user_id !== undefined && people.user_is_bot(user_id)) {
+        $(element).append(`<i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>`);
+    }
 }
 
 export const update_elements = ($content: JQuery): void => {

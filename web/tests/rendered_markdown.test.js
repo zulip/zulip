@@ -49,12 +49,21 @@ const polonius = {
     full_name: "Polonius",
     is_guest: true,
 };
+
+const zulip_default_bot = {
+    email: "default-bot@zulip.com",
+    user_id: 16,
+    full_name: "Zulip Default Bot",
+    is_bot: true,
+};
+
 const inaccessible_user_id = 33;
 const inaccessible_user = people.add_inaccessible_user(inaccessible_user_id);
 people.init();
 people.add_active_user(iago);
 people.add_active_user(cordelia);
 people.add_active_user(polonius);
+people.add_active_user(zulip_default_bot);
 people.initialize_current_user(iago.user_id);
 
 const group_me = {
@@ -218,6 +227,19 @@ run_test("user-mention", () => {
     set_message_for_message_content($content, message);
     rm.update_elements($content);
     assert.ok($iago.hasClass("user-mention-me"));
+});
+
+run_test("bot-mention", () => {
+    const $bot_mention_pill = $.create("user-mention");
+    const bot_icon_html = `<i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>`;
+
+    assert.ok(!$bot_mention_pill.html().includes(bot_icon_html));
+    rm.set_name_in_mention_element(
+        $bot_mention_pill,
+        zulip_default_bot.full_name,
+        zulip_default_bot.user_id,
+    );
+    assert.ok($bot_mention_pill.html().includes(bot_icon_html));
 });
 
 run_test("user-mention without guest indicator", () => {

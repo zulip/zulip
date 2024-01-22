@@ -175,7 +175,9 @@
         padding: 0 3px;
         border-radius: 3px;
         white-space: nowrap;
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        width: fit-content;
     }
 
     .user-mention {
@@ -189,6 +191,11 @@
 
         &:hover {
             background-color: var(--color-background-text-hover-direct-mention);
+        }
+
+        i.zulip-icon-bot {
+            font-size: 12px;
+            margin: 0 var(--margin-lefthand-bot-icon-offset);
         }
     }
 
