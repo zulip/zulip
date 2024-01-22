@@ -633,7 +633,21 @@ function should_disable_save_button_for_jitsi_server_url_setting() {
     const $dropdown_elem = $("#id_realm_jitsi_server_url");
     const $custom_input_elem = $("#id_realm_jitsi_server_url_custom_input");
 
-    return $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val(), true);
+    const isInvalidUrl = $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val(), true);
+
+    // Update the tooltip dynamically based on the condition
+    const saveButton = $(".save-button");
+    const tooltip = saveButton.next(".tooltiptext"); // Assuming the tooltip is a sibling element
+
+    if (isInvalidUrl) {
+        saveButton.attr("title", "Cannot save invalid Jitsi server URL.");
+        tooltip.addClass("invalid-tooltip"); // Add a class for styling
+    } else {
+        saveButton.removeAttr("title");
+        tooltip.removeClass("invalid-tooltip"); // Remove the styling class
+    }
+
+    return isInvalidUrl;
 }
 
 function should_disable_save_button_for_time_limit_settings(time_limit_settings) {
@@ -684,3 +698,5 @@ function enable_or_disable_save_button($subsection_elem) {
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
 }
+
+
