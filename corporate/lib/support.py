@@ -203,12 +203,15 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
         )
         plan_data.has_fixed_price = plan_data.current_plan.fixed_price is not None
         annual_invoice_count = get_annual_invoice_count(plan_data.current_plan.billing_schedule)
-        plan_data.annual_recurring_revenue = (
-            billing_session.get_customer_plan_renewal_amount(
-                plan_data.current_plan, timezone_now(), last_ledger_entry
+        if last_ledger_entry is not None:
+            plan_data.annual_recurring_revenue = (
+                billing_session.get_customer_plan_renewal_amount(
+                    plan_data.current_plan, last_ledger_entry
+                )
+                * annual_invoice_count
             )
-            * annual_invoice_count
-        )
+        else:
+            plan_data.annual_recurring_revenue = 0  # nocoverage
 
     return plan_data
 

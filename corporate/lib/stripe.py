@@ -1847,20 +1847,12 @@ class BillingSession(ABC):
     def get_customer_plan_renewal_amount(
         self,
         plan: CustomerPlan,
-        event_time: datetime,
-        last_ledger_entry: Optional[LicenseLedger] = None,
+        last_ledger_entry: LicenseLedger,
     ) -> int:
         if plan.fixed_price is not None:
             return plan.fixed_price
-        new_plan = None
-        if last_ledger_entry is None:
-            new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, event_time)
-        if last_ledger_entry is None:
-            return 0  # nocoverage
         if last_ledger_entry.licenses_at_next_renewal is None:
             return 0  # nocoverage
-        if new_plan is not None:
-            plan = new_plan  # nocoverage
         assert plan.price_per_license is not None  # for mypy
         return plan.price_per_license * last_ledger_entry.licenses_at_next_renewal
 
@@ -1919,7 +1911,7 @@ class BillingSession(ABC):
             num_months_next_cycle = (
                 12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
             )
-            renewal_cents = self.get_customer_plan_renewal_amount(plan, now, last_ledger_entry)
+            renewal_cents = self.get_customer_plan_renewal_amount(plan, last_ledger_entry)
 
             if plan.price_per_license is None:
                 price_per_license = ""
