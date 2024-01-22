@@ -7359,10 +7359,21 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         assert customer is not None
         plan = get_current_plan_by_customer(customer)
         assert plan is not None
+        self.assertEqual(plan.end_date, plan_end_date)
+        self.assertEqual(plan.next_invoice_date, plan_end_date)
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(
             self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
         )
-        self.billing_session.make_end_of_cycle_updates_if_needed(plan, plan_end_date)
+
+        with mock.patch("stripe.Invoice.create") as invoice_create, time_machine.travel(
+            plan_end_date, tick=False
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            invoice_plans_as_needed()
+            # The legacy plan is downgraded, no invoice created.
+            invoice_create.assert_not_called()
+
         plan.refresh_from_db()
         self.remote_server.refresh_from_db()
         self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)

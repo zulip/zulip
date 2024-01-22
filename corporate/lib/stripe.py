@@ -854,7 +854,6 @@ class BillingSession(ABC):
             customer=customer,
             tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
             status=status,
-            next_invoice_date=None,
         ).first()
 
     def get_formatted_remote_server_legacy_plan_end_date(
@@ -2418,7 +2417,10 @@ class BillingSession(ABC):
             raise NotImplementedError(
                 "Plan with invoicing_status==STARTED needs manual resolution."
             )
-        if not plan.customer.stripe_customer_id:
+        if (
+            plan.tier != CustomerPlan.TIER_SELF_HOSTED_LEGACY
+            and not plan.customer.stripe_customer_id
+        ):
             raise BillingError(
                 f"Customer has a paid plan without a Stripe customer ID: {plan.customer!s}"
             )
@@ -2483,6 +2485,7 @@ class BillingSession(ABC):
                 plan.invoiced_through = ledger_entry
                 plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
                 plan.save(update_fields=["invoicing_status", "invoiced_through"])
+                assert plan.customer.stripe_customer_id is not None
                 stripe.InvoiceItem.create(
                     currency="usd",
                     customer=plan.customer.stripe_customer_id,
@@ -2918,10 +2921,10 @@ class BillingSession(ABC):
             "tier": CustomerPlan.TIER_SELF_HOSTED_LEGACY,
             # End when the new plan starts.
             "end_date": end_date,
+            "next_invoice_date": end_date,
             # The primary mechanism for preventing charges under this
-            # plan is setting a null `next_invoice_date`, but setting
-            # a 0 price is useful defense in depth here.
-            "next_invoice_date": None,
+            # plan is setting 'invoiced_through' to last ledger_entry below,
+            # but setting a 0 price is useful defense in depth here.
             "price_per_license": 0,
             "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             "automanage_licenses": True,
@@ -4433,7 +4436,7 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
 
 
 def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
-    if event_time is None:  # nocoverage
+    if event_time is None:
         event_time = timezone_now()
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         remote_server: Optional[RemoteZulipServer] = None
