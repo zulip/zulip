@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import * as hash_parser from "./hash_parser";
 import * as keydown_util from "./keydown_util";
 
 // Add functions to this that have no non-trivial
@@ -42,6 +43,60 @@ export function change_katex_to_raw_latex($element: JQuery): void {
         // Replace the current .katex element with the new <span> containing the text
         $(this).replaceWith($latex_span);
     });
+}
+
+export function is_user_said_paragraph($element: JQuery): boolean {
+    // Irrespective of language, the user said paragraph has these exact elements:
+    // 1. A user mention
+    // 2. A same server message link ("said")
+    // 3. A colon (:)
+    const $user_mention = $element.find(".user-mention");
+    if ($user_mention.length !== 1) {
+        return false;
+    }
+    const $message_link = $element.find("a[href]").filter((_index, element) => {
+        const href = $(element).attr("href")!;
+        return href ? hash_parser.is_same_server_message_link(href) : false;
+    });
+    if ($message_link.length !== 1) {
+        return false;
+    }
+    const remaining_text = $element
+        .text()
+        .replace($user_mention.text(), "")
+        .replace($message_link.text(), "");
+    return remaining_text.trim() === ":";
+}
+
+export function get_collapsible_status_array($elements: JQuery): boolean[] {
+    return [...$elements].map(
+        (element) => $(element).is("blockquote") || is_user_said_paragraph($(element)),
+    );
+}
+
+export function potentially_collapse_quotes($element: JQuery): boolean {
+    const $children = $element.children();
+    const collapsible_status = get_collapsible_status_array($children);
+
+    if (collapsible_status.every(Boolean) || collapsible_status.every((x) => !x)) {
+        // If every element is collapsible or none of them is collapsible,
+        // we don't collapse any element.
+        return false;
+    }
+
+    for (const [index, element] of [...$children].entries()) {
+        if (collapsible_status[index]) {
+            if (index > 0 && collapsible_status[index - 1]) {
+                // If the previous element was also collapsible, remove its text
+                // to have a single collapsed block instead of multiple in a row.
+                $(element).text("");
+            } else {
+                // Else, collapse this element.
+                $(element).text("[…]");
+            }
+        }
+    }
+    return true;
 }
 
 export function blur_active_element(): void {

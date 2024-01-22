@@ -20,6 +20,7 @@ function get_notification_content(message) {
     const $content = $("<div>").html(message.content);
     ui_util.replace_emoji_with_text($content);
     ui_util.change_katex_to_raw_latex($content);
+    ui_util.potentially_collapse_quotes($content);
     spoilers.hide_spoilers_in_notification($content);
 
     if (
