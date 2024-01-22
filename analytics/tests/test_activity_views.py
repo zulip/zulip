@@ -1,5 +1,6 @@
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+from typing import Optional
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -13,6 +14,7 @@ from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
     RemoteZulipServer,
+    RemoteZulipServerAuditLog,
     get_remote_customer_user_count,
     get_remote_server_guest_and_non_guest_count,
 )
@@ -218,3 +220,148 @@ class ActivityTest(ZulipTestCase):
         remote_activity_counts = get_remote_customer_user_count(server_logs[server_id])
         self.assertEqual(remote_activity_counts.non_guest_user_count, 73)
         self.assertEqual(remote_activity_counts.guest_user_count, 16)
+
+    def test_remote_activity_with_robust_data(self) -> None:
+        def add_plan(customer: Customer, tier: int, fixed_price: bool = False) -> None:
+            if fixed_price:
+                plan = CustomerPlan.objects.create(
+                    customer=customer,
+                    billing_cycle_anchor=timezone_now(),
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    tier=tier,
+                    fixed_price=10000,
+                    next_invoice_date=add_months(timezone_now(), 12),
+                )
+            else:
+                if tier in (
+                    CustomerPlan.TIER_SELF_HOSTED_BASE,
+                    CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                    CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+                ):
+                    price_per_license = 0
+                else:
+                    price_per_license = 1000
+                plan = CustomerPlan.objects.create(
+                    customer=customer,
+                    billing_cycle_anchor=timezone_now(),
+                    billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    tier=tier,
+                    price_per_license=price_per_license,
+                    next_invoice_date=add_months(timezone_now(), 12),
+                )
+            LicenseLedger.objects.create(
+                licenses=10,
+                licenses_at_next_renewal=10,
+                event_time=timezone_now(),
+                is_renewal=True,
+                plan=plan,
+            )
+
+        def add_audit_log_data(
+            server: RemoteZulipServer, remote_realm: Optional[RemoteRealm], realm_id: Optional[int]
+        ) -> None:
+            extra_data = {
+                RemoteRealmAuditLog.ROLE_COUNT: {
+                    RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
+                        UserProfile.ROLE_REALM_ADMINISTRATOR: 1,
+                        UserProfile.ROLE_REALM_OWNER: 1,
+                        UserProfile.ROLE_MODERATOR: 0,
+                        UserProfile.ROLE_MEMBER: 0,
+                        UserProfile.ROLE_GUEST: 1,
+                    }
+                }
+            }
+            if remote_realm is not None:
+                RemoteRealmAuditLog.objects.create(
+                    server=server,
+                    remote_realm=remote_realm,
+                    event_type=RemoteRealmAuditLog.USER_CREATED,
+                    event_time=timezone_now() - timedelta(days=1),
+                    extra_data=extra_data,
+                )
+            else:
+                RemoteRealmAuditLog.objects.create(
+                    server=server,
+                    realm_id=realm_id,
+                    event_type=RemoteRealmAuditLog.USER_CREATED,
+                    event_time=timezone_now() - timedelta(days=1),
+                    extra_data=extra_data,
+                )
+
+        for i in range(6):
+            hostname = f"zulip-{i}.example.com"
+            remote_server = RemoteZulipServer.objects.create(
+                hostname=hostname, contact_email=f"admin@{hostname}", uuid=uuid.uuid4()
+            )
+            RemoteZulipServerAuditLog.objects.create(
+                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                server=remote_server,
+                event_time=remote_server.last_updated,
+            )
+            # We want at least one RemoteZulipServer that has no RemoteRealm
+            # as an example of a pre-8.0 release registered remote server.
+            if i > 2:
+                realm_name = f"realm-name-{i}"
+                realm_host = f"realm-host-{i}"
+                realm_uuid = uuid.uuid4()
+                RemoteRealm.objects.create(
+                    server=remote_server,
+                    uuid=realm_uuid,
+                    host=realm_host,
+                    name=realm_name,
+                    realm_date_created=datetime(2023, 12, 1, tzinfo=timezone.utc),
+                )
+
+        # Remote server on legacy plan
+        server = RemoteZulipServer.objects.get(hostname="zulip-1.example.com")
+        customer = Customer.objects.create(remote_server=server)
+        add_plan(customer, tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        add_audit_log_data(server, remote_realm=None, realm_id=2)
+
+        # Remote server paid plan - multiple realms
+        server = RemoteZulipServer.objects.get(hostname="zulip-2.example.com")
+        customer = Customer.objects.create(remote_server=server)
+        add_plan(customer, tier=CustomerPlan.TIER_SELF_HOSTED_BASIC)
+        add_audit_log_data(server, remote_realm=None, realm_id=3)
+        add_audit_log_data(server, remote_realm=None, realm_id=4)
+        add_audit_log_data(server, remote_realm=None, realm_id=5)
+
+        # Single remote realm on remote server - community plan
+        realm = RemoteRealm.objects.get(name="realm-name-3")
+        customer = Customer.objects.create(remote_realm=realm)
+        add_plan(customer, tier=CustomerPlan.TIER_SELF_HOSTED_COMMUNITY)
+        add_audit_log_data(realm.server, remote_realm=realm, realm_id=None)
+
+        # Single remote realm on remote server - paid plan
+        realm = RemoteRealm.objects.get(name="realm-name-4")
+        customer = Customer.objects.create(remote_realm=realm)
+        add_plan(customer, tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        add_audit_log_data(realm.server, remote_realm=realm, realm_id=None)
+
+        # Multiple remote realms on remote server - on different paid plans
+        realm = RemoteRealm.objects.get(name="realm-name-5")
+        customer = Customer.objects.create(remote_realm=realm)
+        add_plan(customer, tier=CustomerPlan.TIER_SELF_HOSTED_BASIC)
+        add_audit_log_data(realm.server, remote_realm=realm, realm_id=None)
+
+        remote_server = realm.server
+        realm_name = "realm-name-6"
+        realm_host = "realm-host-6"
+        realm_uuid = uuid.uuid4()
+        RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=realm_uuid,
+            host=realm_host,
+            name=realm_name,
+            realm_date_created=datetime(2023, 12, 1, tzinfo=timezone.utc),
+        )
+
+        realm = RemoteRealm.objects.get(name="realm-name-6")
+        customer = Customer.objects.create(remote_realm=realm)
+        add_plan(customer, tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, fixed_price=True)
+        add_audit_log_data(realm.server, remote_realm=realm, realm_id=None)
+
+        self.login("iago")
+        with self.assert_database_query_count(27):
+            result = self.client_get("/activity/remote")
+            self.assertEqual(result.status_code, 200)
