@@ -80,37 +80,143 @@ def simulated_queue_client(client: FakeClient) -> Iterator[None]:
 
 
 class WorkerTest(ZulipTestCase):
-    def test_UserActivityWorker(self) -> None:
+    def test_useractivity_worker(self) -> None:
         fake_client = FakeClient()
 
         user = self.example_user("hamlet")
+        other_user = self.example_user("iago")
         UserActivity.objects.filter(
-            user_profile=user.id,
-            client=get_client("ios"),
+            user_profile__in=[user.id, other_user.id],
         ).delete()
 
-        data = dict(
-            user_profile_id=user.id,
-            client_id=get_client("ios").id,
-            time=time.time(),
-            query="send_message",
+        # Enqueue two events for the same user/client/query
+        now = time.time()
+        for event_time in [now, now + 10]:
+            fake_client.enqueue(
+                "user_activity",
+                dict(
+                    user_profile_id=user.id,
+                    client_id=get_client("ios").id,
+                    time=event_time,
+                    query="send_message",
+                ),
+            )
+        # And a third event for a different query
+        fake_client.enqueue(
+            "user_activity",
+            dict(
+                user_profile_id=user.id,
+                client_id=get_client("ios").id,
+                time=now + 15,
+                query="get_events",
+            ),
         )
-        fake_client.enqueue("user_activity", data)
+        # One for a different client
+        fake_client.enqueue(
+            "user_activity",
+            dict(
+                user_profile_id=user.id,
+                client_id=get_client("website").id,
+                time=now + 20,
+                query="get_events",
+            ),
+        )
 
-        # Now process the event a second time and confirm count goes
-        # up. Ideally, we'd use an event with a slightly newer
-        # time, but it's not really important.
-        fake_client.enqueue("user_activity", data)
+        # And one for a different user
+        fake_client.enqueue(
+            "user_activity",
+            dict(
+                user_profile_id=other_user.id,
+                client_id=get_client("ios").id,
+                time=now + 25,
+                query="get_events",
+            ),
+        )
+
+        # Run the worker; this will produce a single upsert statement
         with simulated_queue_client(fake_client):
             worker = queue_processors.UserActivityWorker()
             worker.setup()
-            worker.start()
-            activity_records = UserActivity.objects.filter(
-                user_profile=user.id,
-                client=get_client("ios"),
+            with self.assert_database_query_count(1):
+                worker.start()
+
+        activity_records = UserActivity.objects.filter(
+            user_profile__in=[user.id, other_user.id],
+        ).order_by("last_visit")
+        self.assert_length(activity_records, 4)
+
+        self.assertEqual(activity_records[0].query, "send_message")
+        self.assertEqual(activity_records[0].client.name, "ios")
+        self.assertEqual(activity_records[0].count, 2)
+        self.assertEqual(
+            activity_records[0].last_visit, datetime.fromtimestamp(now + 10, tz=timezone.utc)
+        )
+
+        self.assertEqual(activity_records[1].query, "get_events")
+        self.assertEqual(activity_records[1].client.name, "ios")
+        self.assertEqual(activity_records[1].count, 1)
+        self.assertEqual(
+            activity_records[1].last_visit, datetime.fromtimestamp(now + 15, tz=timezone.utc)
+        )
+
+        self.assertEqual(activity_records[2].query, "get_events")
+        self.assertEqual(activity_records[2].client.name, "website")
+        self.assertEqual(activity_records[2].count, 1)
+        self.assertEqual(
+            activity_records[2].last_visit, datetime.fromtimestamp(now + 20, tz=timezone.utc)
+        )
+
+        self.assertEqual(activity_records[3].query, "get_events")
+        self.assertEqual(activity_records[3].user_profile, other_user)
+        self.assertEqual(activity_records[3].count, 1)
+        self.assertEqual(
+            activity_records[3].last_visit, datetime.fromtimestamp(now + 25, tz=timezone.utc)
+        )
+
+        # Add 3 more events which stack atop the existing send_message
+        # to test the update part, and a new "home_real" event to show
+        # the insert part of the upsert.
+        for event_time in [now + 30, now + 35, now + 40]:
+            fake_client.enqueue(
+                "user_activity",
+                dict(
+                    user_profile_id=user.id,
+                    client_id=get_client("ios").id,
+                    time=event_time,
+                    query="send_message",
+                ),
             )
-            self.assert_length(activity_records, 1)
-            self.assertEqual(activity_records[0].count, 2)
+        fake_client.enqueue(
+            "user_activity",
+            dict(
+                user_profile_id=user.id,
+                client_id=get_client("ios").id,
+                time=now + 45,
+                query="home_real",
+            ),
+        )
+        # Run the worker again; this will insert one row and update the other
+        with simulated_queue_client(fake_client):
+            worker = queue_processors.UserActivityWorker()
+            worker.setup()
+            with self.assert_database_query_count(1):
+                worker.start()
+        activity_records = UserActivity.objects.filter(
+            user_profile__in=[user.id, other_user.id],
+        ).order_by("last_visit")
+        self.assert_length(activity_records, 5)
+        self.assertEqual(activity_records[3].query, "send_message")
+        self.assertEqual(activity_records[3].client.name, "ios")
+        self.assertEqual(activity_records[3].count, 5)
+        self.assertEqual(
+            activity_records[3].last_visit, datetime.fromtimestamp(now + 40, tz=timezone.utc)
+        )
+        self.assertEqual(activity_records[4].query, "home_real")
+        self.assertEqual(activity_records[4].client.name, "ios")
+        self.assertEqual(activity_records[4].count, 1)
+        self.assertEqual(
+            activity_records[4].last_visit, datetime.fromtimestamp(now + 45, tz=timezone.utc)
+        )
 
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user("cordelia")
