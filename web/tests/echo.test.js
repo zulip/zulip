@@ -222,15 +222,15 @@ run_test("insert_local_message streams", ({override}) => {
     const local_id_float = 101.01;
 
     let render_called = false;
-    let add_topic_links_called = false;
+    let get_topic_links_called = false;
     let insert_message_called = false;
 
     override(markdown, "render", () => {
         render_called = true;
     });
 
-    override(markdown, "add_topic_links", () => {
-        add_topic_links_called = true;
+    override(markdown, "get_topic_links", () => {
+        get_topic_links_called = true;
     });
 
     const insert_new_messages = ([message]) => {
@@ -245,6 +245,7 @@ run_test("insert_local_message streams", ({override}) => {
     const message_request = {
         type: "stream",
         stream_id: general_sub.stream_id,
+        topic: "important note",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,
@@ -252,7 +253,7 @@ run_test("insert_local_message streams", ({override}) => {
     echo.insert_local_message(message_request, local_id_float, insert_new_messages);
 
     assert.ok(render_called);
-    assert.ok(add_topic_links_called);
+    assert.ok(get_topic_links_called);
     assert.ok(insert_message_called);
 });
 
@@ -273,7 +274,6 @@ run_test("insert_local_message direct message", ({override}) => {
     params.cross_realm_bots = [];
     people.initialize(page_params.user_id, params);
 
-    let add_topic_links_called = false;
     let render_called = false;
     let insert_message_called = false;
 
@@ -286,10 +286,6 @@ run_test("insert_local_message direct message", ({override}) => {
         render_called = true;
     });
 
-    override(markdown, "add_topic_links", () => {
-        add_topic_links_called = true;
-    });
-
     const message_request = {
         private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
         type: "private",
@@ -298,7 +294,6 @@ run_test("insert_local_message direct message", ({override}) => {
         sender_id: 123,
     };
     echo.insert_local_message(message_request, local_id_float, insert_new_messages);
-    assert.ok(add_topic_links_called);
     assert.ok(render_called);
     assert.ok(insert_message_called);
 });
@@ -307,7 +302,6 @@ run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
     override(markdown, "render", noop);
-    override(markdown, "add_topic_links", noop);
 
     const message_request = {
         type: "stream",

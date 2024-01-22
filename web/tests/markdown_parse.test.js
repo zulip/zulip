@@ -223,15 +223,15 @@ run_test("linkifiers", () => {
 });
 
 function assert_topic_links(topic, expected_links) {
-    const topic_links = markdown.get_topic_links({
-        topic,
-        get_linkifier_map: linkifiers.get_linkifier_map,
-    });
+    const topic_links = markdown.get_topic_links(topic);
     assert.deepEqual(topic_links, expected_links);
 }
 
 run_test("topic links", () => {
     linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}"}]);
+    markdown.initialize({
+        get_linkifier_map: linkifiers.get_linkifier_map,
+    });
     assert_topic_links("progress on #foo101 and #foo102", [
         {
             text: "#foo101",

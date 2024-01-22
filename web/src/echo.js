@@ -192,7 +192,11 @@ export function insert_local_message(message_request, local_id_float, insert_new
     message.local_id = local_id_float.toString();
     message.locally_echoed = true;
     message.id = local_id_float;
-    markdown.add_topic_links(message);
+    if (message.topic === undefined) {
+        message.topic_links = [];
+    } else {
+        message.topic_links = markdown.get_topic_links(message.topic);
+    }
 
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
