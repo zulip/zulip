@@ -104,8 +104,6 @@ run_test("pills", ({override, override_rewire}) => {
                 return othello;
             case hamlet.user_id:
                 return hamlet;
-            case iago.user_id:
-                return iago;
             /* istanbul ignore next */
             default:
                 throw new Error(`Unknown user ID ${id}`);

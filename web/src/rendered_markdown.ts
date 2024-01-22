@@ -82,9 +82,9 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
 // This enables mentions to display inline, while adjusting
 // the outer element's font-size for better appearance on
 // lines of message text.
-function wrap_mention_content_in_dom_element(element: HTMLElement): HTMLElement {
+function wrap_mention_content_in_dom_element(element: HTMLElement, is_bot: boolean): HTMLElement {
     const mention_text = $(element).text();
-    $(element).html(render_mention_content_wrapper({mention_text}));
+    $(element).html(render_mention_content_wrapper({mention_text, is_bot}));
     return element;
 }
 
@@ -102,7 +102,7 @@ export function set_name_in_mention_element(
             display_text = $t({defaultMessage: "{name} (guest)"}, {name});
         }
         $(element).text(display_text);
-        wrap_mention_content_in_dom_element(element);
+        wrap_mention_content_in_dom_element(element, people.user_is_bot(user_id));
         return;
     }
 
@@ -112,7 +112,10 @@ export function set_name_in_mention_element(
         $(element).text("@" + name);
     }
 
-    wrap_mention_content_in_dom_element(element);
+    wrap_mention_content_in_dom_element(
+        element,
+        typeof user_id === "number" && people.user_is_bot(user_id),
+    );
 }
 
 export const update_elements = ($content: JQuery): void => {
@@ -167,14 +170,20 @@ export const update_elements = ($content: JQuery): void => {
                 if (person === undefined) {
                     people.add_inaccessible_user(user_id);
                 }
-                wrap_mention_content_in_dom_element(this);
+                wrap_mention_content_in_dom_element(
+                    this,
+                    typeof user_id === "number" && people.user_is_bot(user_id),
+                );
                 return;
             }
 
             set_name_in_mention_element(this, person.full_name, user_id);
         }
 
-        wrap_mention_content_in_dom_element(this);
+        wrap_mention_content_in_dom_element(
+            this,
+            typeof user_id === "number" && people.user_is_bot(user_id),
+        );
     });
 
     $content.find(".topic-mention").each(function (): void {
@@ -184,7 +193,7 @@ export const update_elements = ($content: JQuery): void => {
             $(this).addClass("user-mention-me");
         }
 
-        wrap_mention_content_in_dom_element(this);
+        wrap_mention_content_in_dom_element(this, false);
     });
 
     $content.find(".user-group-mention").each(function (): void {
