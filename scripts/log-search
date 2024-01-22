@@ -130,7 +130,7 @@ NGINX_LOG_LINE_RE = re.compile(
       "
          (?P<method> \S+ )
          \s+
-         (?P<path> [^"]+ )
+         (?P<full_path> (?P<path> [^"?]+ ) (\?[^"]*)? )
          \s+
          (?P<http_version> HTTP/[^"]+ )
       " \s+
@@ -159,7 +159,7 @@ PYTHON_LOG_LINE_RE = re.compile(
       (?P<code> \d+ ) \s+
       (?P<duration> \S+ ) \s+ # This can be "217ms" or "1.7s"
       ( \( [^)]+ \) \s+ )*
-      (?P<path> /\S* ) \s+
+      (?P<full_path> (?P<path> /\S* ) ) \s+
       .*   # Multiple extra things can go here
       \(
         (?P<user>
@@ -419,9 +419,9 @@ def print_line(
         color = FAIL
 
     if use_color:
-        url = f"{BOLD}{match['path']}"
+        url = f"{BOLD}{match['full_path']}"
     else:
-        url = match["path"]
+        url = match["full_path"]
         color = ""
 
     if FilterType.HOSTNAME not in filter_types:
