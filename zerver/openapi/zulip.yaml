@@ -4133,9 +4133,14 @@ paths:
                                           is enabled in this organization.
                                         type: boolean
                                       description: |
-                                        Dictionary of 'authentication_method_name': 'boolean' with each
-                                        entry describing whether the authentication name can be used for
-                                        authenticating into the organization.
+                                        Dictionary of authentication method keys with boolean values that
+                                        describe whether the named authentication method is enabled for the
+                                        organization.
+
+                                        Clients should use this to implement server-settings UI to change which
+                                        methods are enabled for the organization. For authentication UI itself,
+                                        clients should use the pre-authentication metadata returned by
+                                        [`GET /server_settings`](/api/get-server-settings).
                                     bot_creation_policy:
                                       type: integer
                                       description: |
@@ -14273,9 +14278,14 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Dictionary of 'authentication_method_name': 'boolean' with each
-                          entry describing whether the authentication name can be used for
-                          authenticating into the organization.
+                          Dictionary of authentication method keys with boolean values that
+                          describe whether the named authentication method is enabled for the
+                          organization.
+
+                          Clients should use this to implement server-settings UI to change which
+                          methods are enabled for the organization. For authentication UI itself,
+                          clients should use the pre-authentication metadata returned by
+                          [`GET /server_settings`](/api/get-server-settings).
                       realm_allow_message_editing:
                         type: boolean
                         description: |
