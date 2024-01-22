@@ -174,12 +174,15 @@ export function insert_local_message(message_request, local_id_float, insert_new
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
-    const message = {...message_request};
+    let message = {...message_request};
 
     message.raw_content = message.content;
 
     // NOTE: This will parse synchronously. We're not using the async pipeline
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
 
     message.content_type = "text/html";
     message.sender_email = people.my_current_email();
@@ -315,7 +318,10 @@ export function edit_locally(message, request) {
             // all flags, so we need to restore those flags that are
             // properties of how the user has interacted with the
             // message, and not its rendering.
-            markdown.apply_markdown(message);
+            message = {
+                ...message,
+                ...markdown.render(message.raw_content),
+            };
             if (request.starred !== undefined) {
                 message.starred = request.starred;
             }
@@ -336,6 +342,7 @@ export function edit_locally(message, request) {
     }
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+    return message;
 }
 
 export function reify_message_id(local_id, server_id) {

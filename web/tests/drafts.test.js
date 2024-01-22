@@ -31,7 +31,7 @@ set_global("setTimeout", (f, delay) => {
     f();
 });
 mock_esm("../src/markdown", {
-    apply_markdown: noop,
+    render: noop,
 });
 mock_esm("../src/overlays", {
     open_overlay: noop,

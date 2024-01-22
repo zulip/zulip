@@ -675,14 +675,15 @@ export function initialize(helper_config) {
     web_app_helpers = helper_config;
 }
 
-export function apply_markdown(message) {
+export function render(raw_content) {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
-    const raw_content = message.raw_content;
     const {content, flags} = parse({raw_content, helper_config: web_app_helpers});
-    message.content = content;
-    message.flags = flags;
-    message.is_me_message = is_status_message(raw_content);
+    return {
+        content,
+        flags,
+        is_me_message: is_status_message(raw_content),
+    };
 }
 
 export function add_topic_links(message) {

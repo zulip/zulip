@@ -345,7 +345,10 @@ export function format_draft(draft) {
     }
 
     try {
-        markdown.apply_markdown(formatted);
+        formatted = {
+            ...formatted,
+            ...markdown.render(formatted.raw_content),
+        };
     } catch (error) {
         // In the unlikely event that there is syntax in the
         // draft content which our Markdown processor is

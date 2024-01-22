@@ -263,9 +263,12 @@ test("marked_shared", () => {
             continue;
         }
 
-        const message = {raw_content: test.input};
+        let message = {raw_content: test.input};
         user_settings.translate_emoticons = test.translate_emoticons || false;
-        markdown.apply_markdown(message);
+        message = {
+            ...message,
+            ...markdown.render(message.raw_content),
+        };
         const output = message.content;
         const error_message = `Failure in test: ${test.name}`;
         if (test.marked_expected_output) {
@@ -281,20 +284,32 @@ test("marked_shared", () => {
 
 test("message_flags", () => {
     let message = {raw_content: "@**Leo**"};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.ok(!message.flags.includes("mentioned"));
 
     message = {raw_content: "@**Cordelia, Lear's daughter**"};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.ok(message.flags.includes("mentioned"));
 
     message = {raw_content: "@**all**"};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.ok(message.flags.includes("stream_wildcard_mentioned"));
     assert.ok(!message.flags.includes("topic_wildcard_mentioned"));
 
     message = {raw_content: "@**topic**"};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.ok(!message.flags.includes("stream_wildcard_mentioned"));
     assert.ok(message.flags.includes("topic_wildcard_mentioned"));
 });
@@ -617,8 +632,7 @@ test("marked", () => {
         const input = test_case.input;
         const expected = test_case.expected;
 
-        const message = {raw_content: input};
-        markdown.apply_markdown(message);
+        const message = markdown.render(input);
         const output = message.content;
         assert.equal(output, expected);
     }
@@ -717,20 +731,29 @@ test("topic_links", () => {
 test("message_flags", () => {
     let input = "/me is testing this";
     let message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
 
     assert.equal(message.is_me_message, true);
     assert.ok(!message.unread);
 
     input = "/me is testing\nthis";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
 
     assert.equal(message.is_me_message, true);
 
     input = "testing this @**all** @**Cordelia, Lear's daughter**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.is_me_message, false);
     assert.equal(message.flags.includes("mentioned"), true);
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), true);
@@ -738,7 +761,10 @@ test("message_flags", () => {
 
     input = "test @**everyone**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.is_me_message, false);
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), true);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
@@ -746,7 +772,10 @@ test("message_flags", () => {
 
     input = "test @**stream**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.is_me_message, false);
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), true);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
@@ -754,7 +783,10 @@ test("message_flags", () => {
 
     input = "test @**topic**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.is_me_message, false);
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), true);
@@ -762,98 +794,140 @@ test("message_flags", () => {
 
     input = "test @all";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @everyone";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @topic";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @any";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @alleycat.com";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), true);
 
     input = "test @*backend*";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**invalid_user**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_**all**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @**all**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_**topic**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @**topic**";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.flags.includes("stream_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
@@ -929,9 +1003,12 @@ test("parse_non_message", () => {
 });
 
 test("missing unicode emojis", ({override}) => {
-    const message = {raw_content: "\u{1F6B2}"};
+    let message = {raw_content: "\u{1F6B2}"};
 
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(
         message.content,
         '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
@@ -941,7 +1018,10 @@ test("missing unicode emojis", ({override}) => {
     override(emoji_codes.codepoint_to_name, "1f6b2", undefined);
 
     markdown.initialize(markdown_config.get_helpers());
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });
 
@@ -952,7 +1032,7 @@ test("katex_throws_unexpected_exceptions", ({override_rewire}) => {
             throw new Error("some-exception");
         },
     });
-    assert.throws(() => markdown.apply_markdown(message), {
+    assert.throws(() => markdown.render(message.raw_content), {
         name: "Error",
         message: "some-exception\nPlease report this to https://zulip.com/development-community/",
     });

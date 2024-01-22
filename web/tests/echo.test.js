@@ -221,12 +221,12 @@ run_test("insert_local_message streams", ({override}) => {
 
     const local_id_float = 101.01;
 
-    let apply_markdown_called = false;
+    let render_called = false;
     let add_topic_links_called = false;
     let insert_message_called = false;
 
-    override(markdown, "apply_markdown", () => {
-        apply_markdown_called = true;
+    override(markdown, "render", () => {
+        render_called = true;
     });
 
     override(markdown, "add_topic_links", () => {
@@ -251,7 +251,7 @@ run_test("insert_local_message streams", ({override}) => {
     };
     echo.insert_local_message(message_request, local_id_float, insert_new_messages);
 
-    assert.ok(apply_markdown_called);
+    assert.ok(render_called);
     assert.ok(add_topic_links_called);
     assert.ok(insert_message_called);
 });
@@ -274,7 +274,7 @@ run_test("insert_local_message direct message", ({override}) => {
     people.initialize(page_params.user_id, params);
 
     let add_topic_links_called = false;
-    let apply_markdown_called = false;
+    let render_called = false;
     let insert_message_called = false;
 
     const insert_new_messages = ([message]) => {
@@ -282,8 +282,8 @@ run_test("insert_local_message direct message", ({override}) => {
         insert_message_called = true;
     };
 
-    override(markdown, "apply_markdown", () => {
-        apply_markdown_called = true;
+    override(markdown, "render", () => {
+        render_called = true;
     });
 
     override(markdown, "add_topic_links", () => {
@@ -299,14 +299,14 @@ run_test("insert_local_message direct message", ({override}) => {
     };
     echo.insert_local_message(message_request, local_id_float, insert_new_messages);
     assert.ok(add_topic_links_called);
-    assert.ok(apply_markdown_called);
+    assert.ok(render_called);
     assert.ok(insert_message_called);
 });
 
 run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
-    override(markdown, "apply_markdown", noop);
+    override(markdown, "render", noop);
     override(markdown, "add_topic_links", noop);
 
     const message_request = {
