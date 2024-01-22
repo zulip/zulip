@@ -30,6 +30,8 @@ function contains_preview_link(content) {
     return preview_regexes.some((re) => re.test(content));
 }
 
+let web_app_helpers;
+
 export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     // Translates emoticons in a string to their colon syntax.
     let translated = src;
@@ -318,12 +320,14 @@ function is_overlapping(match_a, match_b) {
     );
 }
 
-export function get_topic_links({topic, get_linkifier_map}) {
+export function get_topic_links(topic) {
     // We export this for testing purposes, and mobile may want to
     // use this as well in the future.
     const links = [];
     // The lower the precedence is, the more prioritized the pattern is.
     let precedence = 0;
+
+    const get_linkifier_map = web_app_helpers.get_linkifier_map;
 
     for (const [pattern, {url_template, group_number_to_name}] of get_linkifier_map().entries()) {
         let match;
@@ -667,8 +671,6 @@ export function parse({raw_content, helper_config}) {
 //       We may eventually move this code to a new file, but we want
 //       to wait till the dust settles a bit on some other changes first.
 
-let web_app_helpers;
-
 export function initialize(helper_config) {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call setup().
@@ -684,17 +686,6 @@ export function render(raw_content) {
         flags,
         is_me_message: is_status_message(raw_content),
     };
-}
-
-export function add_topic_links(message) {
-    if (message.type !== "stream") {
-        message.topic_links = [];
-        return;
-    }
-    message.topic_links = get_topic_links({
-        topic: message.topic,
-        get_linkifier_map: web_app_helpers.get_linkifier_map,
-    });
 }
 
 export function contains_backend_only_syntax(content) {

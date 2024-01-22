@@ -236,7 +236,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         const server_message_id = 127;
         override(markdown, "render", noop);
-        override(markdown, "add_topic_links", noop);
+        override(markdown, "get_topic_links", noop);
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;

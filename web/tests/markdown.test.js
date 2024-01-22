@@ -640,11 +640,11 @@ test("marked", () => {
 
 test("topic_links", () => {
     let message = {type: "stream", topic: "No links here"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 0);
 
     message = {type: "stream", topic: "One #123 link here"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
         url: "https://trac.example.com/ticket/123",
@@ -652,7 +652,7 @@ test("topic_links", () => {
     });
 
     message = {type: "stream", topic: "Two #123 #456 link here"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 2);
     assert.deepEqual(message.topic_links[0], {
         url: "https://trac.example.com/ticket/123",
@@ -664,7 +664,7 @@ test("topic_links", () => {
     });
 
     message = {type: "stream", topic: "New ZBUG_123 link here"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
         url: "https://trac2.zulip.net/ticket/123",
@@ -672,7 +672,7 @@ test("topic_links", () => {
     });
 
     message = {type: "stream", topic: "New ZBUG_123 with #456 link here"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 2);
     assert.deepEqual(message.topic_links[0], {
         url: "https://trac2.zulip.net/ticket/123",
@@ -684,7 +684,7 @@ test("topic_links", () => {
     });
 
     message = {type: "stream", topic: "One ZGROUP_123:45 link here"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
         url: "https://zone_45.zulip.net/ticket/123",
@@ -692,7 +692,7 @@ test("topic_links", () => {
     });
 
     message = {type: "stream", topic: "Hello https://google.com"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
         url: "https://google.com",
@@ -700,7 +700,7 @@ test("topic_links", () => {
     });
 
     message = {type: "stream", topic: "#456 https://google.com https://github.com"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 3);
     assert.deepEqual(message.topic_links[0], {
         url: "https://trac.example.com/ticket/456",
@@ -716,11 +716,11 @@ test("topic_links", () => {
     });
 
     message = {type: "not-stream"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 0);
 
     message = {type: "stream", topic: "FOO_abcde;e;zulip;luxembourg;foo;23;testing"};
-    markdown.add_topic_links(message);
+    message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
         url: "https://zone_e.zulip.net/ticket/luxembourg/abcde?name=foo&chapter=23#testi",
