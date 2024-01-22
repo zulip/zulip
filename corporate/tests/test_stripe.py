@@ -6547,6 +6547,99 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         invoice_plans_as_needed(add_months(self.next_month, 1))
         self.assert_length(outbox, messages_count + 1)
 
+    @responses.activate
+    @mock_stripe()
+    def test_invoice_scheduled_upgrade_realm_legacy_plan(self, *mocks: Mock) -> None:
+        remote_server = RemoteZulipServer.objects.get(hostname="demo.example.com")
+        server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
+
+        # Migrate server to legacy plan.
+        with time_machine.travel(self.now, tick=False):
+            start_date = timezone_now()
+            end_date = add_months(start_date, months=3)
+            server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+
+        # Upload data.
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        # Login. Performs customer migration from server to realms.
+        self.execute_remote_billing_authentication_flow(hamlet)
+        remote_server.refresh_from_db()
+
+        # Schedule upgrade to business plan
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade(
+                remote_server_plan_start_date="billing_cycle_end_date", talk_to_stripe=False
+            )
+
+        zulip_realm_customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+        assert zulip_realm_customer is not None
+        realm_legacy_plan = get_current_plan_by_customer(zulip_realm_customer)
+        assert realm_legacy_plan is not None
+        self.assertEqual(realm_legacy_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(realm_legacy_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        self.assertEqual(realm_legacy_plan.next_invoice_date, end_date)
+
+        new_plan = self.billing_session.get_next_plan(realm_legacy_plan)
+        assert new_plan is not None
+        self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(new_plan.status, CustomerPlan.NEVER_STARTED)
+        self.assertEqual(
+            new_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+        )
+        self.assertEqual(new_plan.next_invoice_date, end_date)
+        self.assertEqual(new_plan.billing_cycle_anchor, end_date)
+
+        realm_user_count = UserProfile.objects.filter(
+            realm=hamlet.realm, is_bot=False, is_active=True
+        ).count()
+        licenses = max(
+            realm_user_count,
+            self.billing_session.min_licenses_for_plan(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
+        )
+
+        with mock.patch("stripe.Invoice.create") as invoice_create, time_machine.travel(
+            end_date, tick=False
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            invoice_plans_as_needed()
+            # 'invoice_plan()' is called with both legacy & new plan, but
+            # invoice is created only for new plan. The legacy plan only goes
+            # through the end of cycle updates.
+            invoice_create.assert_called_once()
+
+        realm_legacy_plan.refresh_from_db()
+        new_plan.refresh_from_db()
+        self.assertEqual(realm_legacy_plan.status, CustomerPlan.ENDED)
+        self.assertEqual(realm_legacy_plan.next_invoice_date, None)
+        self.assertEqual(new_plan.status, CustomerPlan.ACTIVE)
+        self.assertEqual(new_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
+        self.assertEqual(new_plan.next_invoice_date, add_months(end_date, 1))
+
+        [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+
+        [invoice_item0, invoice_item1] = iter(invoice0.lines)
+        invoice_item_params = {
+            "amount": -2000 * 12,
+            "description": "$20.00/month new customer discount",
+            "quantity": 1,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item0[key], value)
+
+        invoice_item_params = {
+            "amount": licenses * 80 * 100,
+            "description": "Zulip Business - renewal",
+            "quantity": licenses,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item1[key], value)
+
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
@@ -6855,6 +6948,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         new_customer_plan = self.billing_session.get_next_plan(customer_plan)
         assert new_customer_plan is not None
         self.assertEqual(new_customer_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(new_customer_plan.status, CustomerPlan.NEVER_STARTED)
         self.assertEqual(new_customer_plan.billing_cycle_anchor, end_date)
 
         # Visit billing page
@@ -7379,3 +7473,90 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
         self.assertEqual(plan.next_invoice_date, None)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
+
+    @responses.activate
+    @mock_stripe()
+    def test_invoice_scheduled_upgrade_server_legacy_plan(self, *mocks: Mock) -> None:
+        # Upload data
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Migrate server to legacy plan.
+        with time_machine.travel(self.now, tick=False):
+            start_date = timezone_now()
+            end_date = add_months(start_date, months=3)
+            self.billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+        legacy_plan = get_current_plan_by_customer(customer)
+        assert legacy_plan is not None
+        self.assertEqual(legacy_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(legacy_plan.status, CustomerPlan.ACTIVE)
+        self.assertEqual(legacy_plan.next_invoice_date, end_date)
+
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        self.execute_remote_billing_authentication_flow(hamlet.delivery_email, hamlet.full_name)
+        # Add card and schedule upgrade
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade(
+                remote_server_plan_start_date="billing_cycle_end_date", talk_to_stripe=False
+            )
+        legacy_plan.refresh_from_db()
+        self.assertEqual(legacy_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        new_plan = self.billing_session.get_next_plan(legacy_plan)
+        assert new_plan is not None
+        self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(new_plan.status, CustomerPlan.NEVER_STARTED)
+        self.assertEqual(
+            new_plan.invoicing_status,
+            CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
+        )
+        self.assertEqual(new_plan.next_invoice_date, end_date)
+        self.assertEqual(new_plan.billing_cycle_anchor, end_date)
+
+        server_user_count = UserProfile.objects.filter(is_bot=False, is_active=True).count()
+        min_licenses = self.billing_session.min_licenses_for_plan(
+            CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+        )
+        licenses = max(min_licenses, server_user_count)
+
+        with mock.patch("stripe.Invoice.create") as invoice_create, time_machine.travel(
+            end_date, tick=False
+        ):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            invoice_plans_as_needed()
+            # 'invoice_plan()' is called with both legacy & new plan, but
+            # invoice is created only for new plan. The legacy plan only
+            # goes through the end of cycle updates.
+            invoice_create.assert_called_once()
+
+        legacy_plan.refresh_from_db()
+        new_plan.refresh_from_db()
+        self.assertEqual(legacy_plan.status, CustomerPlan.ENDED)
+        self.assertEqual(legacy_plan.next_invoice_date, None)
+        self.assertEqual(new_plan.status, CustomerPlan.ACTIVE)
+        self.assertEqual(new_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
+        self.assertEqual(new_plan.next_invoice_date, add_months(end_date, 1))
+
+        [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+
+        [invoice_item0, invoice_item1] = iter(invoice0.lines)
+        invoice_item_params = {
+            "amount": -2000 * 12,
+            "description": "$20.00/month new customer discount",
+            "quantity": 1,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item0[key], value)
+
+        invoice_item_params = {
+            "amount": licenses * 80 * 100,
+            "description": "Zulip Business - renewal",
+            "quantity": licenses,
+        }
+        for key, value in invoice_item_params.items():
+            self.assertEqual(invoice_item1[key], value)

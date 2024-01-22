@@ -1,0 +1,79 @@
+{
+  "address": null,
+  "balance": 0,
+  "created": 1705936954,
+  "currency": null,
+  "default_currency": null,
+  "default_source": null,
+  "delinquent": false,
+  "description": "zulip.testserver 15439a7d-691",
+  "discount": null,
+  "email": "hamlet@zulip.com",
+  "id": "cus_PQFq9E4uE975fx",
+  "invoice_prefix": "A8DC88AC",
+  "invoice_settings": {
+    "custom_fields": null,
+    "default_payment_method": {
+      "billing_details": {
+        "address": {
+          "city": null,
+          "country": null,
+          "line1": null,
+          "line2": null,
+          "postal_code": null,
+          "state": null
+        },
+        "email": null,
+        "name": null,
+        "phone": null
+      },
+      "card": {
+        "brand": "visa",
+        "checks": {
+          "address_line1_check": null,
+          "address_postal_code_check": null,
+          "cvc_check": "pass"
+        },
+        "country": "US",
+        "exp_month": 1,
+        "exp_year": 2025,
+        "fingerprint": "9XKsMixKBi6kIIzd",
+        "funding": "credit",
+        "generated_from": null,
+        "last4": "4242",
+        "networks": {
+          "available": [
+            "visa"
+          ],
+          "preferred": null
+        },
+        "three_d_secure_usage": {
+          "supported": true
+        },
+        "wallet": null
+      },
+      "created": 1705936956,
+      "customer": "cus_PQFq9E4uE975fx",
+      "id": "pm_1ObPKaDEQaroqDjsfNthLIRI",
+      "livemode": false,
+      "metadata": {},
+      "object": "payment_method",
+      "type": "card"
+    },
+    "footer": null,
+    "rendering_options": null
+  },
+  "livemode": false,
+  "metadata": {
+    "remote_realm_host": "zulip.testserver",
+    "remote_realm_uuid": "15439a7d-6911-4d6e-a26a-154a525214ab"
+  },
+  "name": null,
+  "next_invoice_sequence": 1,
+  "object": "customer",
+  "phone": null,
+  "preferred_locales": [],
+  "shipping": null,
+  "tax_exempt": "none",
+  "test_clock": null
+}
