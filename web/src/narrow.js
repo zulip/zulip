@@ -1121,7 +1121,6 @@ export function deactivate() {
 
         reset_ui_state();
         compose_recipient.handle_middle_pane_transition();
-        save_narrow();
 
         if (message_lists.current.selected_id() !== -1) {
             const preserve_pre_narrowing_screen_position =
