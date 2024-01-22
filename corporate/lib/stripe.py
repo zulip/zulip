@@ -1337,6 +1337,7 @@ class BillingSession(ABC):
             free_trial,
             billing_cycle_anchor,
             is_self_hosted_billing,
+            should_schedule_upgrade_for_legacy_remote_server,
         )
 
         # TODO: The correctness of this relies on user creation, deactivation, etc being
@@ -1397,6 +1398,9 @@ class BillingSession(ABC):
                 # to worry about this plan being used for any other purpose.
                 # NOTE: This is the 2nd plan for the customer.
                 plan_params["status"] = CustomerPlan.NEVER_STARTED
+                plan_params[
+                    "invoicing_status"
+                ] = CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
                 event_time = timezone_now().replace(microsecond=0)
 
                 # Schedule switching to the new plan at plan end date.
@@ -4309,6 +4313,7 @@ def compute_plan_parameters(
     free_trial: bool = False,
     billing_cycle_anchor: Optional[datetime] = None,
     is_self_hosted_billing: bool = False,
+    should_schedule_upgrade_for_legacy_remote_server: bool = False,
 ) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
@@ -4333,6 +4338,8 @@ def compute_plan_parameters(
             days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing, tier))
         )
         next_invoice_date = period_end
+    if should_schedule_upgrade_for_legacy_remote_server:
+        next_invoice_date = billing_cycle_anchor
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
 
@@ -4438,7 +4445,9 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
 def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
     if event_time is None:
         event_time = timezone_now()
-    for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
+    # For self hosted legacy plan with status SWITCH_PLAN_TIER_AT_PLAN_END, we need
+    # to invoice legacy plan followed by new plan on the same day, hence ordered by ID.
+    for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time).order_by("id"):
         remote_server: Optional[RemoteZulipServer] = None
         if plan.customer.realm is not None:
             billing_session: BillingSession = RealmBillingSession(realm=plan.customer.realm)
