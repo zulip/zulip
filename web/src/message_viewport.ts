@@ -7,7 +7,6 @@ import * as message_scroll_state from "./message_scroll_state";
 import type {Message} from "./message_store";
 import * as rows from "./rows";
 import * as util from "./util";
-import type {CachedValue} from "./util";
 
 type MessageViewportInfo = {
     visible_top: number;
@@ -15,44 +14,14 @@ type MessageViewportInfo = {
     visible_height: number;
 };
 
-type DimenFunc = JQuery["height"] | JQuery["width"];
-type DimenWrapper = {
-    (): number;
-    (val: string | number): JQuery;
-};
-
 export const $scroll_container = $("html");
 
-let $jwindow: JQuery<Window & typeof globalThis>;
-const dimensions: Record<string, CachedValue<number>> = {};
 let in_stoppable_autoscroll = false;
 
-function make_dimen_wrapper(dimen_name: string, dimen_func: DimenFunc): DimenWrapper {
-    dimensions[dimen_name] = new util.CachedValue({
-        compute_value() {
-            return dimen_func() ?? 0;
-        },
-    });
-
-    // Inner function overload for the case when dimen_func is () => number | undefined
-    function viewport_dimension_wrapper(): number;
-
-    // Inner function overload for the case when dimen_func is (val: string | number) => JQuery
-    function viewport_dimension_wrapper(val: string | number): JQuery;
-
-    function viewport_dimension_wrapper(val?: string | number): number | JQuery {
-        if (val !== undefined) {
-            dimensions[dimen_name].reset();
-            return dimen_func(val);
-        }
-        return dimensions[dimen_name].get();
-    }
-
-    return viewport_dimension_wrapper;
-}
-
-export const height = make_dimen_wrapper("height", $.fn.height.bind($scroll_container));
-export const width = make_dimen_wrapper("width", $.fn.width.bind($scroll_container));
+const cached_width = new util.CachedValue({compute_value: () => $scroll_container.width() ?? 0});
+const cached_height = new util.CachedValue({compute_value: () => $scroll_container.height() ?? 0});
+export const width = cached_width.get.bind(cached_width);
+export const height = cached_height.get.bind(cached_height);
 
 // TODO: This function lets us use the DOM API instead of jquery
 // (<10x faster) for condense.js, but we want to eventually do a
@@ -565,11 +534,10 @@ export function maybe_scroll_to_selected(): void {
 }
 
 export function initialize(): void {
-    $jwindow = $(window);
     // This handler must be placed before all resize handlers in our application
-    $jwindow.on("resize", () => {
-        dimensions.height.reset();
-        dimensions.width.reset();
+    $(window).on("resize", () => {
+        cached_width.reset();
+        cached_height.reset();
         top_of_feed.reset();
         bottom_of_feed.reset();
     });
