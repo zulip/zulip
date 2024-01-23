@@ -70,10 +70,14 @@ export function get_user_ids(pill_widget: StreamPillWidget): number[] {
     return user_ids;
 }
 
-export function append_stream(stream: StreamSubscription, pill_widget: StreamPillWidget): void {
+export function append_stream(
+    stream: StreamSubscription,
+    pill_widget: StreamPillWidget,
+    display_value: (stream: StreamSubscription) => string,
+): void {
     pill_widget.appendValidatedData({
         type: "stream",
-        display_value: display_pill(stream),
+        display_value: display_value(stream),
         stream_id: stream.stream_id,
         stream_name: stream.name,
     });
