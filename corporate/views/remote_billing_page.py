@@ -11,6 +11,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.crypto import constant_time_compare
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
@@ -405,6 +406,7 @@ def remote_realm_billing_confirm_email(
         "zerver/emails/remote_realm_billing_confirm_login",
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
+        language=get_language(),
         context=context,
     )
 
@@ -633,6 +635,7 @@ def remote_billing_legacy_server_confirm_login(
         "zerver/emails/remote_billing_legacy_server_confirm_login",
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
+        language=get_language(),
         context=context,
     )
 
