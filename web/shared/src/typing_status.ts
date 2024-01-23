@@ -5,7 +5,14 @@ type StreamTopic = {
     stream_id: number;
     topic: string;
 };
-type Recipient = number[] | StreamTopic;
+export type Recipient =
+    | {
+          message_type: "direct";
+          ids: number[];
+      }
+    | (StreamTopic & {
+          message_type: "stream";
+      });
 type TypingStatusWorker = {
     get_current_time: () => number;
     notify_server_start: (recipient: Recipient) => void;
@@ -32,10 +39,10 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
         return false;
     }
 
-    if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.message_type === "direct" && b.message_type === "direct") {
         // direct message recipients
-        return _.isEqual(a, b);
-    } else if (!Array.isArray(a) && !Array.isArray(b)) {
+        return _.isEqual(a.ids, b.ids);
+    } else if (a.message_type === "stream" && b.message_type === "stream") {
         // stream recipients
         return same_stream_and_topic(a, b);
     }
@@ -120,9 +127,9 @@ export function maybe_ping_server(
  * @param {*} worker Callbacks for reaching the real world. See typing.js
  *   for implementations.
  * @param {*} new_recipient Depends on type of message being composed. If
- *   * Direct message: The users the DM being composed is addressed to,
- *     as a sorted array of user IDs
- *   * Stream message: An Object containing the stream_id and topic
+ *   * Direct message: An Object containing id of users the DM being composed is addressed to
+ *    and a message_type="direct" property.
+ *   * Stream message: An Object containing stream_id, topic and message_type="stream".
  *   * No message is being composed: `null`
  */
 export function update(
