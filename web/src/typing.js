@@ -48,10 +48,9 @@ function send_stream_typing_notification(stream_id, topic, operation) {
 }
 
 function send_typing_notification_based_on_message_type(to, operation) {
-    const message_type = to.stream_id ? "stream" : "direct";
-    if (message_type === "direct" && user_settings.send_private_typing_notifications) {
-        send_direct_message_typing_notification(to, operation);
-    } else if (message_type === "stream" && user_settings.send_stream_typing_notifications) {
+    if (to.message_type === "direct" && user_settings.send_private_typing_notifications) {
+        send_direct_message_typing_notification(to.ids, operation);
+    } else if (to.message_type === "stream" && user_settings.send_stream_typing_notifications) {
         send_stream_typing_notification(to.stream_id, to.topic, operation);
     }
 }
@@ -89,13 +88,20 @@ function notify_server_stop(to) {
 export function get_recipient() {
     const message_type = compose_state.get_message_type();
     if (message_type === "private") {
-        return get_user_ids_array();
+        return {
+            message_type: "direct",
+            ids: get_user_ids_array(),
+        };
     }
     if (message_type === "stream") {
         const stream_name = compose_state.stream_name();
         const stream_id = stream_data.get_stream_id(stream_name);
         const topic = compose_state.topic();
-        return {stream_id, topic};
+        return {
+            message_type: "stream",
+            stream_id,
+            topic,
+        };
     }
     return null;
 }
