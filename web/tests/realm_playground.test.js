@@ -75,14 +75,14 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     let iterator = candidates.entries();
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: custom_lang"}));
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: invent_a_lang"}));
-    assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
+    assert.equal(iterator.next().value[1], "JavaScript (javascript, js)");
     assert.equal(
         iterator.next().value[1],
-        "Python (python, bazel, py, py3, python3, sage, starlark, python, bazel, py, py3, python3, sage, starlark)",
+        "Python (bazel, py, py3, python, python3, sage, starlark)",
     );
-    assert.equal(iterator.next().value[1], "Java (java, java)");
-    assert.equal(iterator.next().value[1], "Go (go, golang, go, golang)");
-    assert.equal(iterator.next().value[1], "Rust (rust, rs, rust, rs)");
+    assert.equal(iterator.next().value[1], "Java (java)");
+    assert.equal(iterator.next().value[1], "Go (go, golang)");
+    assert.equal(iterator.next().value[1], "Rust (rs, rust)");
 
     // Test typing "cu". Previously added custom languages should show up too.
     candidates = realm_playground.get_pygments_typeahead_list_for_settings("cu");
@@ -93,10 +93,10 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     );
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: custom_lang"}));
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: invent_a_lang"}));
-    assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
+    assert.equal(iterator.next().value[1], "JavaScript (javascript, js)");
     assert.equal(
         iterator.next().value[1],
-        "Python (python, bazel, py, py3, python3, sage, starlark, python, bazel, py, py3, python3, sage, starlark)",
+        "Python (bazel, py, py3, python, python3, sage, starlark)",
     );
 
     // Test typing "invent_a_lang". Make sure there is no duplicate entries.
@@ -104,9 +104,9 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     iterator = candidates.entries();
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: invent_a_lang"}));
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: custom_lang"}));
-    assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
+    assert.equal(iterator.next().value[1], "JavaScript (javascript, js)");
     assert.equal(
         iterator.next().value[1],
-        "Python (python, bazel, py, py3, python3, sage, starlark, python, bazel, py, py3, python3, sage, starlark)",
+        "Python (bazel, py, py3, python, python3, sage, starlark)",
     );
 });
