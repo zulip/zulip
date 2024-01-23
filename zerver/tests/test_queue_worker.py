@@ -90,7 +90,7 @@ class WorkerTest(ZulipTestCase):
         ).delete()
 
         # Enqueue two events for the same user/client/query
-        now = time.time()
+        now = datetime(year=2024, month=1, day=1, tzinfo=timezone.utc).timestamp()
         for event_time in [now, now + 10]:
             fake_client.enqueue(
                 "user_activity",
