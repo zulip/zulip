@@ -11,13 +11,28 @@ import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 
+function destroyTippyInstance() {
+    // "Scroll Button" tooltip needs to be explicitly destroyed because the [data-reference-hidden] property does not work accurately under animation. Track the issue here - "https://github.com/atomiks/tippyjs/issues/1154".
+    setTimeout(() => {
+        const tippyInstance = $("#scroll-to-bottom-button-clickable-area")[0]._tippy;
+        if (tippyInstance) {
+            tippyInstance.destroy();
+        }
+    }, 500);
+}
+
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
+    $("#scroll-to-bottom-button-clickable-area").off("mouseenter");
+
     if (message_viewport.bottom_message_visible() || message_lists.current.visibly_empty()) {
         // If last message is visible, just hide the
         // scroll to bottom button.
         $show_scroll_to_bottom_button.removeClass("show");
+
+        $("#scroll-to-bottom-button-clickable-area").on("mouseenter", destroyTippyInstance);
+
         return;
     }
 
@@ -29,6 +44,8 @@ export function hide_scroll_to_bottom() {
             !$show_scroll_to_bottom_button.get(0).matches(":hover")
         ) {
             $show_scroll_to_bottom_button.removeClass("show");
+
+            $("#scroll-to-bottom-button-clickable-area").on("mouseenter", destroyTippyInstance);
         }
     }, 3000);
 }
