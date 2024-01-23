@@ -17,20 +17,36 @@ import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
+// TODO: Refactor to push this into a field of ComposeTriggeredOptions.
+type messageType = "stream" | "private";
+type ComposeTriggeredOptions = {
+    trigger: string;
+    private_message_recipient: string;
+    topic: string;
+    stream_id: number;
+};
+type SelectedLinesSections = {
+    before_lines: string;
+    separating_new_line_before: boolean;
+    selected_lines: string;
+    separating_new_line_after: boolean;
+    after_lines: string;
+};
+
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
 let full_size_status = false; // true or false
 
 // Some functions to handle the full size status explicitly
-export function set_full_size(is_full) {
+export function set_full_size(is_full: boolean): void {
     full_size_status = is_full;
 }
 
-export function is_full_size() {
+export function is_full_size(): boolean {
     return full_size_status;
 }
 
-export function autosize_textarea($textarea) {
+export function autosize_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
     if (!is_full_size()) {
@@ -38,7 +54,10 @@ export function autosize_textarea($textarea) {
     }
 }
 
-export function insert_and_scroll_into_view(content, $textarea) {
+export function insert_and_scroll_into_view(
+    content: string,
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
     insert($textarea[0], content);
     // Blurring and refocusing ensures the cursor / selection is in view.
     $textarea.trigger("blur");
@@ -46,7 +65,7 @@ export function insert_and_scroll_into_view(content, $textarea) {
     autosize_textarea($textarea);
 }
 
-function get_focus_area(msg_type, opts) {
+function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): string {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
@@ -70,24 +89,24 @@ function get_focus_area(msg_type, opts) {
 // Export for testing
 export const _get_focus_area = get_focus_area;
 
-export function set_focus(msg_type, opts) {
+export function set_focus(msg_type: messageType, opts: ComposeTriggeredOptions): void {
     // Called mainly when opening the compose box or switching the
     // message type to set the focus in the first empty input in the
     // compose box.
-    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+    if (window.getSelection()!.toString() === "" || opts.trigger !== "message click") {
         const focus_area = get_focus_area(msg_type, opts);
         $(focus_area).trigger("focus");
     }
 }
 
-export function smart_insert_inline($textarea, syntax) {
-    function is_space(c) {
+export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void {
+    function is_space(c: string): boolean {
         return c === " " || c === "\t" || c === "\n";
     }
 
     const pos = $textarea.caret();
-    const before_str = $textarea.val().slice(0, pos);
-    const after_str = $textarea.val().slice(pos);
+    const before_str = $textarea.val()!.slice(0, pos);
+    const after_str = $textarea.val()!.slice(pos);
 
     if (
         pos > 0 &&
@@ -114,10 +133,14 @@ export function smart_insert_inline($textarea, syntax) {
     insert_and_scroll_into_view(syntax, $textarea);
 }
 
-export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
+export function smart_insert_block(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    syntax: string,
+    padding_newlines = 2,
+): void {
     const pos = $textarea.caret();
-    const before_str = $textarea.val().slice(0, pos);
-    const after_str = $textarea.val().slice(pos);
+    const before_str = $textarea.val()!.slice(0, pos);
+    const after_str = $textarea.val()!.slice(pos);
 
     if (pos > 0) {
         // Insert newline/s before the content block if there is
@@ -161,11 +184,11 @@ export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
 }
 
 export function insert_syntax_and_focus(
-    syntax,
-    $textarea = $("textarea#compose-textarea"),
+    syntax: string,
+    $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
     mode = "inline",
-    padding_newlines,
-) {
+    padding_newlines: number,
+): void {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert_inline and smart_inline_block.
@@ -187,11 +210,15 @@ export function insert_syntax_and_focus(
     }
 }
 
-export function replace_syntax(old_syntax, new_syntax, $textarea = $("textarea#compose-textarea")) {
+export function replace_syntax(
+    old_syntax: string,
+    new_syntax: string,
+    $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
+): boolean {
     // The following couple lines are needed to later restore the initial
     // logical position of the cursor after the replacement
     const prev_caret = $textarea.caret();
-    const replacement_offset = $textarea.val().indexOf(old_syntax);
+    const replacement_offset = $textarea.val()!.indexOf(old_syntax);
 
     // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
     // the way that JavaScript handles string replacements, if `old_syntax` is
@@ -228,7 +255,9 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("textarea#c
     return old_text !== new_text;
 }
 
-export function compute_placeholder_text(opts) {
+export function compute_placeholder_text(
+    opts: {message_type: messageType} & ComposeTriggeredOptions,
+): string {
     // Computes clear placeholder text for the compose box, depending
     // on what heading values have already been filled out.
     //
@@ -254,17 +283,17 @@ export function compute_placeholder_text(opts) {
         const recipient_list = opts.private_message_recipient.split(",");
         const recipient_parts = recipient_list.map((recipient) => {
             const user = people.get_by_email(recipient);
-            if (people.should_add_guest_user_indicator(user.user_id)) {
-                return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+            if (people.should_add_guest_user_indicator(user!.user_id)) {
+                return $t({defaultMessage: "{name} (guest)"}, {name: user!.full_name});
             }
-            return user.full_name;
+            return user!.full_name;
         });
         const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
             const user = people.get_by_email(recipient_list[0]);
-            const status = user_status.get_status_text(user.user_id);
+            const status = user_status.get_status_text(user!.user_id);
             if (status) {
                 return $t(
                     {defaultMessage: "Message {recipient_name} ({recipient_status})"},
@@ -277,7 +306,7 @@ export function compute_placeholder_text(opts) {
     return $t({defaultMessage: "Compose your message here"});
 }
 
-export function set_compose_box_top(set_top) {
+export function set_compose_box_top(set_top: boolean): void {
     if (set_top) {
         // As `#compose` has `position: fixed` property, we cannot
         // make the compose-box to attain the correct height just by
@@ -291,7 +320,7 @@ export function set_compose_box_top(set_top) {
     }
 }
 
-export function make_compose_box_full_size() {
+export function make_compose_box_full_size(): void {
     set_full_size(true);
 
     // The autosize should be destroyed for the full size compose
@@ -309,7 +338,7 @@ export function make_compose_box_full_size() {
     $("textarea#compose-textarea").trigger("focus");
 }
 
-export function make_compose_box_original_size() {
+export function make_compose_box_original_size(): void {
     set_full_size(false);
 
     $("#compose").removeClass("compose-fullscreen");
@@ -326,7 +355,10 @@ export function make_compose_box_original_size() {
     $("textarea#compose-textarea").trigger("focus");
 }
 
-export function handle_keydown(event, $textarea) {
+export function handle_keydown(
+    event: JQuery.KeyboardEventBase,
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
     if (event.key === "Shift") {
         shift_pressed = true;
     }
@@ -354,7 +386,10 @@ export function handle_keydown(event, $textarea) {
     }
 }
 
-export function handle_keyup(_event, $textarea) {
+export function handle_keyup(
+    _event: JQuery.KeyboardEventBase,
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
     if (_event?.key === "Shift") {
         shift_pressed = false;
     }
@@ -362,11 +397,11 @@ export function handle_keyup(_event, $textarea) {
     rtl.set_rtl_class_for_textarea($textarea);
 }
 
-export function cursor_inside_code_block($textarea) {
+export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
     // Returns whether the cursor is at a point that would be inside
     // a code block on rendering the textarea content as markdown.
     const cursor_position = $textarea.caret();
-    const current_content = $textarea.val();
+    const current_content = $textarea.val()!;
 
     let unique_insert = "UNIQUEINSERT:" + Math.random();
     while (current_content.includes(unique_insert)) {
@@ -379,19 +414,22 @@ export function cursor_inside_code_block($textarea) {
     const rendered_content = markdown.parse_non_message(content);
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
     const code_blocks = rendered_html.querySelectorAll("pre > code");
-    return [...code_blocks].some((code_block) => code_block.textContent.includes(unique_insert));
+    return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
 }
 
-export function format_text($textarea, type, inserted_content) {
+export function format_text(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    type: string,
+    inserted_content = "",
+): void {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
-    const field = $textarea.get(0);
+    const field = $textarea.get(0)!;
     let range = $textarea.range();
-    let text = $textarea.val();
-
+    let text = $textarea.val()!;
     // Remove new line and space around selected text, except list formatting,
     // where we want to especially preserve any selected new line character
     // before the selected text, as it is conventionally depicted with a highlight
@@ -410,19 +448,19 @@ export function format_text($textarea, type, inserted_content) {
     const selected_text = range.text;
 
     // Check if the selection is already surrounded by syntax
-    const is_selection_formatted = (syntax_start, syntax_end = syntax_start) =>
+    const is_selection_formatted = (syntax_start: string, syntax_end = syntax_start): boolean =>
         range.start >= syntax_start.length &&
         text.length - range.end >= syntax_end.length &&
         text.slice(range.start - syntax_start.length, range.start) === syntax_start &&
         text.slice(range.end, range.end + syntax_end.length) === syntax_end;
 
     // Check if selected text itself has syntax inside it.
-    const is_inner_text_formatted = (syntax_start, syntax_end = syntax_start) =>
+    const is_inner_text_formatted = (syntax_start: string, syntax_end = syntax_start): boolean =>
         range.length >= syntax_start.length + syntax_end.length &&
         selected_text.startsWith(syntax_start) &&
         selected_text.endsWith(syntax_end);
 
-    const section_off_selected_lines = () => {
+    const section_off_selected_lines = (): SelectedLinesSections => {
         // Divide all lines of text (separated by `\n`) into those entirely or
         // partially selected, and those before and after these selected lines.
         const before = text.slice(0, range.start);
@@ -468,13 +506,13 @@ export function format_text($textarea, type, inserted_content) {
         };
     };
 
-    const format_list = (type) => {
-        let is_marked;
-        let mark;
-        let strip_marking;
+    const format_list = (type: string): void => {
+        let is_marked: (line: string) => boolean;
+        let mark: (line: string, i: number) => string;
+        let strip_marking: (line: string) => string;
         if (type === "bulleted") {
             is_marked = bulleted_numbered_list_util.is_bulleted;
-            mark = (line) => "- " + line;
+            mark = (line: string) => "- " + line;
             strip_marking = bulleted_numbered_list_util.strip_bullet;
         } else {
             is_marked = bulleted_numbered_list_util.is_numbered;
@@ -536,7 +574,7 @@ export function format_text($textarea, type, inserted_content) {
         }
     };
 
-    const format = (syntax_start, syntax_end = syntax_start) => {
+    const format = (syntax_start: string, syntax_end = syntax_start): void => {
         let linebreak_start = "";
         let linebreak_end = "";
         if (syntax_start.startsWith("\n")) {
@@ -578,7 +616,7 @@ export function format_text($textarea, type, inserted_content) {
         wrapSelection(field, syntax_start, syntax_end);
     };
 
-    const format_spoiler = () => {
+    const format_spoiler = (): void => {
         const spoiler_syntax_start = "```spoiler \n";
         let spoiler_syntax_start_without_break = "```spoiler ";
         let spoiler_syntax_end = "\n```";
@@ -651,7 +689,7 @@ export function format_text($textarea, type, inserted_content) {
             return;
         }
 
-        const is_inner_content_selected = () =>
+        const is_inner_content_selected = (): boolean =>
             range.start >= spoiler_syntax_start.length &&
             text.length - range.end >= spoiler_syntax_end.length &&
             text.slice(range.end, range.end + spoiler_syntax_end.length) === spoiler_syntax_end &&
@@ -681,7 +719,7 @@ export function format_text($textarea, type, inserted_content) {
             return;
         }
 
-        const is_header_selected = () =>
+        const is_header_selected = (): boolean =>
             range.start >= spoiler_syntax_start_without_break.length &&
             text.slice(range.start - spoiler_syntax_start_without_break.length, range.start) ===
                 spoiler_syntax_start_without_break &&
@@ -726,18 +764,18 @@ export function format_text($textarea, type, inserted_content) {
     // Links have to be formatted differently because formatting is not only
     // at the beginning and end of the text, but also in the middle
     // Therefore more checks are necessary if selected text is already formatted
-    const format_link = () => {
+    const format_link = (): void => {
         const link_syntax_start = "[";
         const link_syntax_end = "](url)";
 
-        const space_between_description_and_url = (descr, url) => {
+        const space_between_description_and_url = (descr: string, url: string): string => {
             if (descr === "" || url === "" || url === "url") {
                 return "";
             }
             return " ";
         };
 
-        const url_to_retain = (url) => {
+        const url_to_retain = (url: string): string => {
             if (url === "" || url === "url") {
                 return "";
             }
@@ -747,7 +785,7 @@ export function format_text($textarea, type, inserted_content) {
         // Captures:
         // [<description>](<url>)
         // with just <url> selected
-        const is_selection_url = () =>
+        const is_selection_url = (): boolean =>
             range.start >= "[](".length &&
             text.length - range.end >= ")".length &&
             text.slice(range.start - 2, range.start) === "](" &&
@@ -778,7 +816,7 @@ export function format_text($textarea, type, inserted_content) {
         // Captures:
         // [<description>](<url>)
         // with just <description> selected
-        const is_selection_description_of_link = () =>
+        const is_selection_description_of_link = (): boolean =>
             range.start >= "[".length &&
             text.length - range.end >= "]()".length &&
             text.slice(range.start - 1, range.start) === "[" &&
@@ -805,7 +843,7 @@ export function format_text($textarea, type, inserted_content) {
         // Captures:
         // [<description>](<url>)
         // with [<description>](<url>) selected
-        const is_selection_link = () =>
+        const is_selection_link = (): boolean =>
             range.length >= "[]()".length &&
             text[range.start] === "[" &&
             text[range.end - 1] === ")" &&
@@ -1025,14 +1063,14 @@ export function format_text($textarea, type, inserted_content) {
 
 /* TODO: This functions don't belong in this module, as they have
  * nothing to do with the compose textarea. */
-export function hide_compose_spinner() {
+export function hide_compose_spinner(): void {
     compose_spinner_visible = false;
     $(".compose-submit-button .loader").hide();
     $(".compose-submit-button .zulip-icon-send").show();
     $(".compose-submit-button").removeClass("disable-btn");
 }
 
-export function show_compose_spinner() {
+export function show_compose_spinner(): void {
     compose_spinner_visible = true;
     // Always use white spinner.
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
@@ -1040,7 +1078,7 @@ export function show_compose_spinner() {
     $(".compose-submit-button").addClass("disable-btn");
 }
 
-export function get_compose_click_target(e) {
+export function get_compose_click_target(e: JQuery.ClickEvent): Element {
     const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
     if (
         compose_control_buttons_popover &&
