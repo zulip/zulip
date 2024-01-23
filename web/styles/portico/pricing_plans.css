@@ -11,8 +11,9 @@
 .portico-pricing {
     --font-ss3: "Source Sans 3 VF", sans-serif;
     --font-ops: "Open Sans Variable", sans-serif;
-    --color-background-box: hsla(210deg 44% 92%);
+    --color-background-box: hsl(210deg 44% 92%);
     --color-background-box-muted: hsl(0deg 0% 100% / 50%);
+    --color-background-box-muted-hover: hsl(0deg 0% 100% / 60%);
     --color-plan-tab-header: hsl(223deg 40% 30%);
     --color-plan-tab-copy: hsl(223deg 40% 25% / 70%);
     --color-box-header: hsl(223deg 43% 25%);
@@ -39,6 +40,8 @@
     );
 
     @media (prefers-color-scheme: dark) {
+        --color-background-box: hsl(221deg 35% 89%);
+
         background: linear-gradient(
             180deg,
             var(--color-background-gradient-start) 30%,
@@ -441,7 +444,7 @@
                 width: 32px;
                 height: 56px;
                 position: absolute;
-                background-color: hsla(210deg 44% 92%);
+                background-color: var(--color-background-box);
                 top: 30px;
                 left: -0.5px;
                 mask-position: center;
@@ -670,6 +673,10 @@
             border-radius: 16px 16px 0 14px;
             margin-bottom: 2px;
             background-color: var(--color-background-box-muted);
+
+            &:hover {
+                background-color: var(--color-background-box-muted-hover);
+            }
         }
     }
 
@@ -686,6 +693,10 @@
             border-radius: 16px 16px 14px 0;
             margin-bottom: 2px;
             background-color: var(--color-background-box-muted);
+
+            &:hover {
+                background-color: var(--color-background-box-muted-hover);
+            }
         }
 
         .self-hosted-plan-title {
