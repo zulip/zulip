@@ -177,7 +177,7 @@
                                 {% if is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_LEGACY %}
                                 <span class="button current-plan-descriptor" type="button">
                                     <i class="icon current-plan-icon"></i>
-                                    Unlimited push notifications<br />until February 15, 2024
+                                    Unlimited push notifications<br />until {{ customer_plan.end_date.strftime('%d %B, %Y') }}
                                 </span>
                                 {% elif not is_self_hosted_realm %}
                                 <a href="/self-hosting/" class="button get-started-button">
