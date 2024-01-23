@@ -4,16 +4,23 @@
 
 "use strict";
 
-type RecipientUserIds<UserId: number> = $ReadOnlyArray<UserId>;
-type StreamTopicObject = {|stream_id: number, topic: string|};
+type DirectMessageObject<UserId: number> = {|
+    message_type: string,
+    ids: $ReadOnlyArray<UserId>,
+|};
+type StreamObject = {|
+    message_type: string,
+    stream_id: number,
+    topic: string,
+|};
 
 type Worker<UserId> = {|
     get_current_time: () => number, // as ms since epoch
-    notify_server_start: (RecipientUserIds<UserId> | StreamTopicObject) => void,
-    notify_server_stop: (RecipientUserIds<UserId> | StreamTopicObject) => void,
+    notify_server_start: (DirectMessageObject<UserId> | StreamObject) => void,
+    notify_server_stop: (DirectMessageObject<UserId> | StreamObject) => void,
 |};
 
 declare export function update<UserId>(
     worker: Worker<UserId>,
-    new_recipient: RecipientUserIds<UserId> | StreamTopicObject | null,
+    new_recipient: DirectMessageObject<UserId> | StreamObject | null,
 ): void;
