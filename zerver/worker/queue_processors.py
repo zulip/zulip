@@ -623,22 +623,6 @@ class MissedMessageWorker(QueueProcessingWorker):
     @sentry_sdk.trace
     def consume(self, event: Dict[str, Any]) -> None:
         logging.debug("Processing missedmessage_emails event: %s", event)
-        # When we consume an event, check if there are existing pending emails
-        # for that user, and if so use the same scheduled timestamp.
-
-        user_profile_id: int = event["user_profile_id"]
-        user_profile = get_user_profile_by_id(user_profile_id)
-        batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
-        batch_duration = timedelta(seconds=batch_duration_seconds)
-
-        try:
-            pending_email = ScheduledMessageNotificationEmail.objects.filter(
-                user_profile_id=user_profile_id
-            )[0]
-            scheduled_timestamp = pending_email.scheduled_timestamp
-        except IndexError:
-            scheduled_timestamp = timezone_now() + batch_duration
-
         with self.cv:
             # We now hold the lock, so there are three places the
             # worker thread can be:
@@ -670,13 +654,48 @@ class MissedMessageWorker(QueueProcessingWorker):
             # in, and as such if we need to notify after making the
             # row.
             try:
-                ScheduledMessageNotificationEmail.objects.create(
-                    user_profile_id=user_profile_id,
-                    message_id=event["message_id"],
-                    trigger=event["trigger"],
-                    scheduled_timestamp=scheduled_timestamp,
-                    mentioned_user_group_id=event.get("mentioned_user_group_id"),
-                )
+                # We insert the data from the event, but choose a
+                # scheduled_timestamp of _either_ the first
+                # scheduled_timestamp for the user, _or_ now plus the user's
+                # email_notifications_batching_period_seconds.  We use "now"
+                # as defined in Python purely so that we can test this worker
+                # reliably with mocks.
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO zerver_scheduledmessagenotificationemail(
+                            user_profile_id,
+                            message_id,
+                            trigger,
+                            mentioned_user_group_id,
+                            scheduled_timestamp
+                        ) VALUES (
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            (SELECT COALESCE(
+                                (SELECT scheduled_timestamp
+                                 FROM zerver_scheduledmessagenotificationemail
+                                 WHERE user_profile_id = %s
+                                 ORDER BY id ASC
+                                 LIMIT 1),
+                                (SELECT cast(%s as timestamp) + email_notifications_batching_period_seconds * interval '1 second'
+                                 FROM zerver_userprofile
+                                 WHERE id = %s))
+                            )
+                        )
+                        """,
+                        [
+                            event["user_profile_id"],
+                            event["message_id"],
+                            event["trigger"],
+                            event.get("mentioned_user_group_id"),
+                            event["user_profile_id"],
+                            timezone_now(),
+                            event["user_profile_id"],
+                        ],
+                    )
                 if not self.has_timeout:
                     self.cv.notify()
             except IntegrityError:
