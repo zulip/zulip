@@ -10,7 +10,7 @@ type StreamPill = {
 
 type StreamPillWidget = InputPillContainer<StreamPill>;
 
-function display_pill(sub: StreamSubscription): string {
+export function display_pill(sub: StreamSubscription): string {
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
     return "#" + sub.name + ": " + sub_count + " users";
 }

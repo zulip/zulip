@@ -21,20 +21,35 @@ function group_matcher(query, item) {
     return false;
 }
 
+// If it's only a stream search, there is no need to start the query with '#'
+function get_include_streams_function(opts, include_users, include_user_groups) {
+    const stream_query = (query) => opts.stream && query.trim().startsWith("#");
+
+    return include_users || include_user_groups ? stream_query : () => opts.stream;
+}
+
 export function set_up($input, pills, opts) {
     if (!opts.user && !opts.user_group && !opts.stream) {
         blueslip.error("Unspecified possible item types");
         return;
     }
-    const include_streams = (query) => opts.stream && query.trim().startsWith("#");
+    if (!opts.help_on_empty_strings) {
+        opts.help_on_empty_strings = false;
+    }
     const include_user_groups = opts.user_group;
     const include_users = opts.user;
     const exclude_bots = opts.exclude_bots;
+    const include_streams = get_include_streams_function(opts, include_users, include_user_groups);
+
+    if (!opts.display_pill) {
+        opts.display_pill = stream_pill.display_pill;
+    }
 
     $input.typeahead({
         items: 5,
         fixed: true,
         dropup: true,
+        helpOnEmptyStrings: opts.help_on_empty_strings,
         source() {
             let source = [];
             if (include_streams(this.query)) {
@@ -120,7 +135,7 @@ export function set_up($input, pills, opts) {
         },
         updater(item) {
             if (include_streams(this.query)) {
-                stream_pill.append_stream(item, pills);
+                stream_pill.append_stream(item, pills, opts.display_pill);
             } else if (include_user_groups && user_groups.is_user_group(item)) {
                 user_group_pill.append_user_group(item, pills);
             } else if (include_users && people.is_known_user(item)) {
