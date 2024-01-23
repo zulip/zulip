@@ -449,6 +449,8 @@ def remote_servers_support(
     modify_plan: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
+    paid_invoice_number_for_upgrade: Optional[str] = REQ(default=None),
+    plan_tier_for_upgrade:Optional[int] = REQ(default=None, converter=to_non_negative_int),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -465,8 +467,6 @@ def remote_servers_support(
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
-        if len(keys) != 2:
-            raise JsonableError(_("Invalid parameters"))
 
         if remote_realm_id is not None:
             remote_realm_support_request = True
@@ -515,6 +515,14 @@ def remote_servers_support(
                 support_type=SupportType.modify_plan,
                 plan_modification=modify_plan,
             )
+        elif paid_invoice_number_for_upgrade is not None:
+            assert plan_tier_for_upgrade is not None
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.upgrade_plan_tier_by_invoice_payment,
+                paid_invoice_number=paid_invoice_number_for_upgrade,
+                new_plan_tier=plan_tier_for_upgrade,
+            )
+
         if support_view_request is not None:
             if remote_realm_support_request:
                 try:

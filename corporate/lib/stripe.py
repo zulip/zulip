@@ -487,6 +487,11 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
         stripe_customer_id, expand=["invoice_settings", "invoice_settings.default_payment_method"]
     )
 
+@catch_stripe_errors
+def get_invoice_details(invoice_number: str) -> Tuple[stripe.Invoice, stripe.Customer]:
+    invoice = stripe.Invoice.retrieve(invoice_number)
+    customer = stripe.Customer.retrieve(invoice.customer)
+    return invoice, customer
 
 def sponsorship_org_type_key_helper(d: Any) -> int:
     return d[1]["display_order"]
@@ -555,6 +560,7 @@ class SupportType(Enum):
     update_minimum_licenses = 6
     update_plan_end_date = 7
     update_required_plan_tier = 8
+    upgrade_plan_tier_by_invoice_payment = 9
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -567,6 +573,7 @@ class SupportViewRequest(TypedDict, total=False):
     minimum_licenses: Optional[int]
     plan_end_date: Optional[str]
     required_plan_tier: Optional[int]
+    paid_invoice_number: Optional[str]
 
 
 class AuditLogEventType(Enum):
@@ -2800,6 +2807,57 @@ class BillingSession(ABC):
                 assert support_request["new_plan_tier"] is not None
                 new_plan_tier = support_request["new_plan_tier"]
                 success_message = self.do_change_plan_to_new_tier(new_plan_tier)
+        elif support_type == SupportType.upgrade_plan_tier_by_invoice_payment:
+            assert support_request["new_plan_tier"] is not None
+            assert support_request["paid_invoice_number"] is not None
+            with transaction.atomic():
+                new_plan_tier = support_request["new_plan_tier"]
+                paid_invoice_number = support_request["paid_invoice_number"]
+                invoice, stripe_customer = get_invoice_details(paid_invoice_number)
+                customer = self.update_or_create_customer(stripe_customer_id=stripe_customer.id)
+
+                # Since this is a very custom request, we know what are doing.
+                # We end any existing plans and create a new plan with the new plan tier.
+                existing_plan = get_current_plan_by_customer(customer)
+                if existing_plan is not None:
+                    self.process_downgrade(existing_plan)
+
+                assert invoice.currency == "usd"
+                now = timezone_now()
+                next_year = add_months(now, 12)
+                next_invoice_date = next_year - timedelta(days=30)
+                plan_params = {
+                    "billing_cycle_anchor": now,
+                    "status": CustomerPlan.ACTIVE,
+                    "tier": new_plan_tier,
+                    "end_date": next_year,
+                    "next_invoice_date": next_invoice_date,
+                    "fixed_price": invoice.total,
+                    "billing_schedule": CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    "automanage_licenses": True,
+                    "charge_automatically": False,
+                }
+                plan = CustomerPlan.objects.create(
+                    customer=customer,
+                    **plan_params,
+                )
+
+                # Create a ledger entry for the legacy plan for tracking purposes.
+                ledger_entry = LicenseLedger.objects.create(
+                    plan=plan,
+                    is_renewal=True,
+                    event_time=now,
+                    licenses=0,
+                    licenses_at_next_renewal=0,
+                )
+                plan.invoiced_through = ledger_entry
+                plan.save(update_fields=["invoiced_through"])
+                self.write_to_audit_log(
+                    event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                    event_time=now,
+                    extra_data=plan_params,
+                )
+                self.do_change_plan_type(tier=new_plan_tier)
 
         return success_message
 
@@ -3561,12 +3619,16 @@ class RemoteRealmBillingSession(BillingSession):
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
     ) -> Customer:
         if stripe_customer_id is not None:
-            # Support requests do not set any stripe billing information.
-            assert self.support_session is False
             customer, created = Customer.objects.update_or_create(
                 remote_realm=self.remote_realm,
                 defaults={"stripe_customer_id": stripe_customer_id},
             )
+            if not self.support_session:
+                # We don't have user information for support sessions.
+                from zerver.actions.users import do_change_is_billing_admin
+
+                assert self.user is not None
+                do_change_is_billing_admin(self.user, True)
         else:
             customer, created = Customer.objects.update_or_create(
                 remote_realm=self.remote_realm, defaults=defaults
@@ -3979,8 +4041,6 @@ class RemoteServerBillingSession(BillingSession):
         self, stripe_customer_id: Optional[str] = None, *, defaults: Optional[Dict[str, Any]] = None
     ) -> Customer:
         if stripe_customer_id is not None:
-            # Support requests do not set any stripe billing information.
-            assert self.support_session is False
             customer, created = Customer.objects.update_or_create(
                 remote_server=self.remote_server,
                 defaults={"stripe_customer_id": stripe_customer_id},

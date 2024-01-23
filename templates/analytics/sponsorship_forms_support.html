@@ -62,6 +62,19 @@
     <button type="submit" class="btn btn-default support-submit-button">Update</button>
 </form>
 
+<form method="POST" class="remote-form">
+    <b>Manually upgrade after Invoice payment</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="text" name="paid_invoice_number_for_upgrade" placeholder="Paid invoice ID" required />
+    <select name="plan_tier_for_upgrade">
+        {% for plan_tier in REMOTE_PLAN_TIERS %}
+            <option value="{{ plan_tier.value }}">{{ plan_tier.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+
 {% if sponsorship_data.sponsorship_pending %}
 <div class="">
     <h4>Sponsorship request information:</h4>
