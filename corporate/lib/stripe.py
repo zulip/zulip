@@ -2080,9 +2080,7 @@ class BillingSession(ABC):
         if customer is not None and customer_has_credit_card_as_default_payment_method(customer):
             assert customer.stripe_customer_id is not None
             stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-            payment_method = payment_method_string(stripe_customer)
-            # Show "Update card" button if user has already added a card.
-            current_payment_method = None if "ending in" not in payment_method else payment_method
+            current_payment_method = payment_method_string(stripe_customer)
 
         tier = initial_upgrade_request.tier
 
