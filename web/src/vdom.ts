@@ -2,22 +2,20 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 
-export type Node = {
+export type Node<T> = T & {
     key: unknown;
     render: () => string;
-    // TODO: This is hiding type errors due to bivariance.
-    // eslint-disable-next-line @typescript-eslint/method-signature-style
-    eq(other: Node): boolean;
+    eq: (other: Node<T>) => boolean;
 };
 
-type Options = {
+type Options<T> = {
     attrs: [string, string][];
-    keyed_nodes: Node[];
+    keyed_nodes: Node<T>[];
 };
 
-export type Tag = {
+export type Tag<T> = {
     tag_name: string;
-    opts: Options;
+    opts: Options<T>;
 };
 
 export function eq_array<T>(
@@ -42,14 +40,14 @@ export function eq_array<T>(
     return a.every((item, i) => eq(item, b[i]));
 }
 
-export function ul(opts: Options): Tag {
+export function ul<T>(opts: Options<T>): Tag<T> {
     return {
         tag_name: "ul",
         opts,
     };
 }
 
-export function render_tag(tag: Tag): string | undefined {
+export function render_tag<T>(tag: Tag<T>): string | undefined {
     /*
         This renders a tag into a string.  It will
         automatically escape attributes, but it's your
@@ -73,7 +71,7 @@ export function render_tag(tag: Tag): string | undefined {
         return undefined;
     }
 
-    const innards = opts.keyed_nodes.map((node: Node) => node.render()).join("\n");
+    const innards = opts.keyed_nodes.map((node) => node.render()).join("\n");
     return start_tag + "\n" + innards + "\n" + end_tag;
 }
 
@@ -98,11 +96,11 @@ export function update_attrs(
     }
 }
 
-export function update(
+export function update<T>(
     replace_content: (html: string | undefined) => void,
     find: () => JQuery,
-    new_dom: Tag,
-    old_dom: Tag | undefined,
+    new_dom: Tag<T>,
+    old_dom: Tag<T> | undefined,
 ): void {
     /*
         The update method allows you to continually

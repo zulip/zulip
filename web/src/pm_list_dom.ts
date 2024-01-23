@@ -10,40 +10,43 @@ type PMListConversation = {
     user_ids_string: string;
 };
 
-type PMNode = vdom.Node & {
-    conversation: PMListConversation;
-};
+type PMNode =
+    | {
+          type: "conversation";
+          conversation: PMListConversation;
+      }
+    | {
+          type: "more_items";
+          more_conversations_unread_count: number;
+      };
 
-export function keyed_pm_li(conversation: PMListConversation): PMNode {
+export function keyed_pm_li(conversation: PMListConversation): vdom.Node<PMNode> {
     const render = (): string => render_pm_list_item(conversation);
 
-    const eq = (other: PMNode): boolean => _.isEqual(conversation, other.conversation);
+    const eq = (other: PMNode): boolean =>
+        other.type === "conversation" && _.isEqual(conversation, other.conversation);
 
     const key = conversation.user_ids_string;
 
     return {
         key,
         render,
-        conversation,
         eq,
+        type: "conversation",
+        conversation,
     };
 }
 
-type MorePrivateConversationsNode = vdom.Node & {
-    more_items: boolean;
-    more_conversations_unread_count: number;
-};
-
 export function more_private_conversations_li(
     more_conversations_unread_count: number,
-): MorePrivateConversationsNode {
+): vdom.Node<PMNode> {
     const render = (): string =>
         render_more_private_conversations({more_conversations_unread_count});
 
     // Used in vdom.js to check if an element has changed and needs to
     // be updated in the DOM.
-    const eq = (other: MorePrivateConversationsNode): boolean =>
-        other.more_items &&
+    const eq = (other: PMNode): boolean =>
+        other.type === "more_items" &&
         more_conversations_unread_count === other.more_conversations_unread_count;
 
     // This special key must be impossible as a user_ids_string.
@@ -51,14 +54,14 @@ export function more_private_conversations_li(
 
     return {
         key,
-        more_items: true,
-        more_conversations_unread_count,
         render,
         eq,
+        type: "more_items",
+        more_conversations_unread_count,
     };
 }
 
-export function pm_ul(nodes: vdom.Node[]): vdom.Tag {
+export function pm_ul(nodes: vdom.Node<PMNode>[]): vdom.Tag<PMNode> {
     const attrs: [string, string][] = [
         ["class", "dm-list"],
         ["data-name", "private"],
