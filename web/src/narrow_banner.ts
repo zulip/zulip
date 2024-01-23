@@ -298,6 +298,9 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         }
         case "dm": {
             if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
+                if (first_operand.trim().length === 0) {
+                    $("#search_query").val("dm:");
+                }
                 if (!first_operand.includes(",")) {
                     return {
                         title: $t({defaultMessage: "This user does not exist!"}),
