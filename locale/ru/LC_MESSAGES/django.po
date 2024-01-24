@@ -12,7 +12,7 @@
 # Sergey Korablin <s.korablin@gmail.com>, 2023
 # Roman Bannack <apxwn@yandex.ru>, 2023
 # Lev Shereshevsky, 2023
-# Transifex Bot <>, 2023
+# Transifex Bot <>, 2024
 # 
 #, fuzzy
 msgid ""
@@ -21,7 +21,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: Transifex Bot <>, 2023\n"
+"Last-Translator: Transifex Bot <>, 2024\n"
 "Language-Team: Russian (https://app.transifex.com/zulip/teams/53893/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1402,7 +1402,7 @@ msgid ""
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
 "Я соглашаюсь с <a href=\"%(root_domain_url)s/policies/terms\" "
-"target=\"_blank\" rel=\"noopener noreferrer\">условиями исрользования</a>."
+"target=\"_blank\" rel=\"noopener noreferrer\">условиями использования</a>."
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
