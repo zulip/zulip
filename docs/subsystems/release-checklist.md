@@ -102,6 +102,7 @@ preparing a new release.
     update commit with a `-dev` suffix, e.g. `5.0-dev`. Push the tag
     to both zulip.git and zulip-internal.git to get a correct version
     number for future Cloud deployments.
+  - Add the new release to `.github/ISSUE_TEMPLATE/2_bug_report.md`.
   - Consider removing a few old releases from ReadTheDocs; we keep about
     two years of back-versions.
   - Update Transifex to add the new `4.x` style release branch
