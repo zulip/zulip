@@ -35,12 +35,21 @@
     </li>
     {{/if}}
 
+    {{#if has_unread_messages}}
     <li class="topic-menu-item hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}
         </a>
     </li>
+    {{else}}
+    <li class="topic-menu-item hidden-for-spectators">
+        <a tabindex="0" class="sidebar-popover-mark-topic-unread" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            {{t "Mark all messages as unread"}}
+        </a>
+    </li>
+    {{/if}}
 
     <li class="topic-menu-item">
         <a tabindex="0" class="sidebar-popover-copy-link-to-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" data-clipboard-text="{{ url }}">
