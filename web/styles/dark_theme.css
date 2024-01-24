@@ -515,6 +515,12 @@
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
+    .emoji-picker-popover .emoji-showcase-container,
+    .emoji-picker-popover .emoji-popover .emoji-popover-category-tabs,
+    .emoji-picker-popover .emoji-popover .emoji-popover-top {
+        background-color: hsl(0deg 0% 0% / 20%);
+    }
+
     .emoji-picker-popover
         .emoji-popover
         .emoji-popover-category-tabs
@@ -522,10 +528,21 @@
         background-color: hsl(0deg 0% 0% / 50%);
     }
 
+    .emoji-popover-emoji {
+        &:focus {
+            background-color: hsl(212deg 28% 8% / 75%);
+            box-shadow: 0 0 1px hsl(0deg 0% 98%);
+        }
+
+        &.reacted {
+            background-color: hsl(0deg 0% 0% / 50%);
+            border-color: hsl(0deg 0% 0% / 90%);
+        }
+    }
+
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
-    .table-striped thead th,
-    .emoji-popover .reaction.reacted {
+    .table-striped thead th {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
     }
@@ -536,10 +553,6 @@
 
     .message_time:hover {
         color: var(--color-message-action-interactive);
-    }
-
-    .emoji-popover .reaction:focus {
-        box-shadow: 0 0 1px hsl(0deg 0% 98%);
     }
 
     & input[type="text"]:focus,
@@ -593,10 +606,7 @@
     #groups_overlay
         #user-group-creation
         #user_group_creation_form
-        #user_group_creating_indicator:not(:empty),
-    .emoji-picker-popover
-        .emoji-popover
-        .emoji-popover-emoji:not(.reacted):focus {
+        #user_group_creating_indicator:not(:empty) {
         background-color: hsl(212deg 28% 8% / 75%);
     }
 
@@ -678,10 +688,7 @@
     }
 
     .group-row.active,
-    .stream-row.active,
-    .emoji-picker-popover .emoji-showcase-container,
-    .emoji-picker-popover .emoji-popover .emoji-popover-category-tabs,
-    .emoji-picker-popover .emoji-popover .emoji-popover-top {
+    .stream-row.active {
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
