@@ -12,6 +12,7 @@ from django.contrib.sessions.models import Session
 from django.core.files.base import File
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
+from django.core.validators import validate_email
 from django.db import connection
 from django.db.models import F
 from django.db.models.signals import post_delete
@@ -511,7 +512,8 @@ class Command(BaseCommand):
                         full_name += f" {random.choice(raw_emojis)} "
                     else:
                         full_name += " " + random.choice(lnames)
-                email = fname.lower() + "@zulip.com"
+                email = fname.lower().encode("ascii", "ignore").decode("ascii") + "@zulip.com"
+                validate_email(email)
                 names.append((full_name, email))
 
             create_users(zulip_realm, names, tos_version=settings.TERMS_OF_SERVICE_VERSION)
