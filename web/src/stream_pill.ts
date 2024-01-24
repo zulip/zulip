@@ -3,12 +3,12 @@ import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 
-type StreamPill = {
+export type StreamPill = {
     stream_id: number;
     stream_name: string;
 };
 
-type StreamPillWidget = InputPillContainer<StreamPill>;
+export type StreamPillWidget = InputPillContainer<StreamPill>;
 
 export function display_pill(sub: StreamSubscription): string {
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
