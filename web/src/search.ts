@@ -25,6 +25,12 @@ function clear_search_bar_text(): void {
     $("#search_query").text("");
 }
 
+function set_search_bar_text(text: string): void {
+    $("#search_query").text(text);
+    // After setting the text, move the cursor to the end of the line.
+    window.getSelection()!.modify("move", "forward", "line");
+}
+
 function get_search_bar_text(): string {
     return $("#search_query").text();
 }
@@ -138,10 +144,16 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
                 clear_search_bar_text();
                 assert(search_pill_widget !== null);
                 const search_terms = Filter.parse(search_string);
-                search_pill.set_search_bar_contents(search_terms, search_pill_widget);
+                search_pill.set_search_bar_contents(
+                    search_terms,
+                    search_pill_widget,
+                    set_search_bar_text,
+                );
             }
             return get_search_bar_text();
         },
+        // We do this ourselves in `search_pill.set_search_bar_contents`
+        updateElementContent: false,
         sorter(items: string[]): string[] {
             return items;
         },
