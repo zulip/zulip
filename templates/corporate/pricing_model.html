@@ -172,7 +172,7 @@
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    <div class="price no-discount">Free</div>
+                                    <div class="price">Free</div>
                                 </div>
                                 {% if is_self_hosted_realm and customer_plan and customer_plan.tier == customer_plan.TIER_SELF_HOSTED_LEGACY %}
                                 <span class="button current-plan-descriptor" type="button">
@@ -205,15 +205,15 @@
                                     {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC)
                                       or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Basic")
                                       or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
-                                    <div class="price no-discount"><span class="currency-symbol">$</span>3.50</div>
-                                    <div class="details no-discount singular-billing-frequency">
+                                    <div class="price"><span class="currency-symbol">$</span>3.50</div>
+                                    <div class="details">
                                         <p>
                                             /user/month billed monthly
                                         </p>
                                     </div>
                                     {% else %}
                                     <div class="price"><span class="currency-symbol">$</span>3.50</div>
-                                    <div class="details singular-billing-frequency">
+                                    <div class="details">
                                         <p>
                                             /user/month billed monthly
                                         </p>
@@ -290,7 +290,7 @@
                                     {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS)
                                       or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business")
                                       or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
-                                    <div class="price no-discount"><span class="currency-symbol">$</span>6.67</div>
+                                    <div class="price"><span class="currency-symbol">$</span>6.67</div>
                                     <div class="details">
                                         <p>
                                             /user/month billed annually
