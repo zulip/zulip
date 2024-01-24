@@ -182,11 +182,6 @@
     .emoji-popover {
         width: 250px;
 
-        .reacted {
-            background-color: hsl(195deg 50% 95%);
-            border-color: hsl(195deg 52% 79%);
-        }
-
         .emoji-popover-top {
             position: relative;
 
@@ -276,14 +271,18 @@
             height: 25px;
             width: 25px;
 
-            &.reacted.reaction:focus {
-                background-color: hsl(195deg 55% 88%);
+            &:focus {
+                background-color: hsl(0deg 0% 93%);
                 outline: none;
             }
 
-            &:not(.reacted):focus {
-                background-color: hsl(0deg 0% 93%);
-                outline: none;
+            &.reacted {
+                background-color: hsl(195deg 50% 95%);
+                border-color: hsl(195deg 52% 79%);
+            }
+
+            &.reacted:focus {
+                background-color: hsl(195deg 55% 88%);
             }
 
             &.hide {
