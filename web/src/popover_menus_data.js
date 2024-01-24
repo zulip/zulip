@@ -16,6 +16,7 @@ import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import {num_unread_for_topic} from "./unread";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
@@ -118,6 +119,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const sub = sub_store.get(stream_id);
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
+    const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
     const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
@@ -133,6 +135,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         is_realm_admin: page_params.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,
+        has_unread_messages,
         url,
         visibility_policy,
         all_visibility_policies,
