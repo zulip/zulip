@@ -477,7 +477,8 @@ export async function build_move_topic_to_stream_popover(
                 );
             },
             (xhr) => {
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_spinner($button);
                 ui_report.error(
                     $t_html({defaultMessage: "Error moving topic"}),
                     xhr,

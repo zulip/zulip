@@ -109,3 +109,10 @@ export function show_spinner($button: JQuery): void {
         height: dialog_submit_button_span_height,
     });
 }
+
+export function hide_spinner($button: JQuery): void {
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", false);
+    $button.find("span").show();
+    destroy_indicator($spinner);
+}

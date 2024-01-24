@@ -181,7 +181,8 @@ function bulk_update_read_flags_for_narrow(narrow, op, args = {}) {
                     body: xhr.responseText,
                 });
             }
-            dialog_widget.hide_dialog_spinner();
+            const $button = $("#dialog_widget_modal .modal__btn");
+            loading.hide_spinner($button);
         },
     });
 }

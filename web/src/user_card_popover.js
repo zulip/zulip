@@ -21,6 +21,7 @@ import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as loading from "./loading";
 import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
@@ -729,7 +730,8 @@ function register_click_handlers() {
                 },
                 error(xhr) {
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                    dialog_widget.hide_dialog_spinner();
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_spinner($button);
                 },
             });
         }

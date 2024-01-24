@@ -8,6 +8,7 @@ import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 
 export let loaded = false;
@@ -54,7 +55,8 @@ function add_alert_word(): void {
             $t({defaultMessage: "Alert word already exists!"}),
             $("#dialog_error"),
         );
-        dialog_widget.hide_dialog_spinner();
+        const $button = $("#dialog_widget_modal .modal__btn");
+        loading.hide_spinner($button);
         return;
     }
 

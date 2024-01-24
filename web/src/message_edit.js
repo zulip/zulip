@@ -1160,7 +1160,8 @@ export function delete_message(msg_id) {
                 currently_deleting_messages = currently_deleting_messages.filter(
                     (id) => id !== msg_id,
                 );
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_spinner($button);
                 dialog_widget.close();
             },
             error(xhr) {
@@ -1168,7 +1169,8 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
 
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_spinner($button);
                 ui_report.error(
                     $t_html({defaultMessage: "Error deleting message"}),
                     xhr,
@@ -1269,7 +1271,8 @@ export function move_topic_containing_message_to_stream(
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
             (id) => id !== message_id,
         );
-        dialog_widget.hide_dialog_spinner();
+        const $button = $("#dialog_widget_modal .modal__btn");
+        loading.hide_spinner($button);
     }
     if (currently_topic_editing_messages.includes(message_id)) {
         ui_report.client_error(
