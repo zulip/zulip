@@ -1337,6 +1337,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     sender_map = {user["id"]: user for user in data["zerver_userprofile"]}
 
+    # Import zerver_message and zerver_usermessage
+    import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
+
     if "zerver_scheduledmessage" in data:
         fix_datetime_fields(data, "zerver_scheduledmessage")
         re_map_foreign_keys(data, "zerver_scheduledmessage", "sender", related_table="user_profile")
@@ -1346,6 +1349,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
         re_map_foreign_keys(data, "zerver_scheduledmessage", "stream", related_table="stream")
         re_map_foreign_keys(data, "zerver_scheduledmessage", "realm", related_table="realm")
+        re_map_foreign_keys(
+            data, "zerver_scheduledmessage", "delivered_message", related_table="message"
+        )
 
         fix_upload_links(data, "zerver_scheduledmessage")
 
@@ -1357,9 +1363,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         update_model_ids(ScheduledMessage, data, "scheduledmessage")
         bulk_import_model(data, ScheduledMessage)
-
-    # Import zerver_message and zerver_usermessage
-    import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
 
     re_map_foreign_keys(data, "zerver_reaction", "message", related_table="message")
     re_map_foreign_keys(data, "zerver_reaction", "user_profile", related_table="user_profile")
