@@ -687,10 +687,6 @@ input[type="checkbox"] {
     text-align: right;
 }
 
-.add-new-export-box {
-    margin: 10px 0;
-}
-
 #add-default-stream-modal {
     .dropdown-widget-button {
         display: inline-flex;
