@@ -19,6 +19,12 @@ function clear_search_bar_text() {
     $("#search_query").text("");
 }
 
+function set_search_bar_text(text) {
+    $("#search_query").text(text);
+    // After setting the text, move the cursor to the end of the line.
+    window.getSelection().modify("move", "forward", "line");
+}
+
 function get_search_bar_text() {
     return $("#search_query").text();
 }
@@ -107,10 +113,16 @@ export function initialize({on_narrow_search}) {
                 // search suggestion.
                 clear_search_bar_text();
                 search_pill_widget.clear(true);
-                search_pill.append_search_string(search_string, search_pill_widget);
+                search_pill.append_search_string(
+                    search_string,
+                    search_pill_widget,
+                    set_search_bar_text,
+                );
             }
             return get_search_bar_text();
         },
+        // We do this ourselves in `search_pill.append_search_String`
+        updateElementContent: false,
         sorter(items) {
             return items;
         },

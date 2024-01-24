@@ -177,6 +177,10 @@ const defaults = {
     advanceKeyCodes: [],
     tabIsEnter: true,
     shouldHighlightFirstResult: () => true,
+    // Used for contenteditble divs. If this is set to false, we
+    // don't set the html content of the div from this module, and
+    // it's handled from the caller (or updater function) instead.
+    updateElementContent: true,
 };
 
 const Typeahead = function (element, options) {
@@ -217,10 +221,15 @@ Typeahead.prototype = {
     select(e) {
         const val = this.$menu.find(".active").data("typeahead-value");
         if (this.$element.is("[contenteditable]")) {
-            this.$element.text(this.updater(val, e)).trigger("change");
-            // Empty text after the change event handler
-            // converts the input text to html elements.
-            this.$element.text("");
+            if (this.options.updateElementContent) {
+                this.$element.text(this.updater(val, e)).trigger("change");
+                // Empty textContent after the change event handler
+                // converts the input text to html elements.
+                this.$element.text("");
+            } else {
+                this.updater(val, e);
+                this.$element.trigger("change");
+            }
         } else {
             const after_text = this.updater(val, e);
             const [from, to_before, to_after] = get_string_diff(this.$element.val(), after_text);
@@ -231,7 +240,7 @@ Typeahead.prototype = {
             this.$element.trigger("change");
         }
 
-        return this.hide();
+        return this.lookup(true);
     },
 
     set_value() {
