@@ -28,16 +28,28 @@ Paid plan discounts are available in a variety of situations; see
 
 ### Upgrades for legacy customers
 
-Any Zulip server that registered for Zulip's [Mobile Push Notification
-Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
-prior to December 12, 2023 is considered to be a **legacy customer**. Legacy
-customers can continue using the notification service for free (no action
+On December 15, 2023, it was
+[announced](https://blog.zulip.com/2023/12/15/new-plans-for-self-hosted-customers/)
+that self-hosted customers will no longer get unlimited free access to Zulip's
+[Mobile Push Notification
+Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
+Legacy customers can continue using the notification service for free (no action
 required) until February 15, 2024.
 
 To continue using the service after that date, organizations with more than 10
 users must upgrade to a paid plan or the Community plan. When you upgrade to a
 paid plan, you can start the plan right away (if you‘d like your technical
 support to start immediately), or schedule a February 15 start date.
+
+Any Zulip server that registered for Zulip's [Mobile Push Notification
+Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
+prior to December 15, 2023 is considered to be a legacy customer.
+
+!!! tip ""
+    An email announcing this change was sent to the registered contact email
+    address for all legacy customers. If you did not receive this email, please
+    [update](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#updating-your-server-s-registration)
+    your contact information.
 
 #### Do I have to upgrade my server first?
 
