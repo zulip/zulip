@@ -29,8 +29,10 @@
     --icon-right-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M16 16H0V0c0 8.837 7.163 16 16 16Z'/%3e%3c/svg%3e");
     --icon-question-header-swoosh: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='33' height='56' fill='none' viewBox='0 0 33 56'%3e%3cpath fill='%23E2EBF4' d='M33 37 1 56C1 35-3.5 0 33 0 7.5 3 7.776 37 33 37Z'/%3e%3c/svg%3e");
     --icon-current-plan-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='none' viewBox='0 0 22 22'%3e%3cg fill='%230F8544'%3e%3cpath d='M14.396 9.813a.914.914 0 1 0-1.293-1.293l-3.02 3.02-1.186-1.186a.914.914 0 1 0-1.294 1.293l1.834 1.833a.914.914 0 0 0 1.293 0l3.666-3.667Z'/%3e%3cpath fill-rule='evenodd' d='M11 .923a4.58 4.58 0 0 0-3.495 1.62 4.581 4.581 0 0 0-4.961 4.949 4.58 4.58 0 0 0 0 7.016 4.58 4.58 0 0 0 4.96 4.949 4.583 4.583 0 0 0 7.003-.001 4.582 4.582 0 0 0 4.95-4.96 4.583 4.583 0 0 0 0-6.991 4.58 4.58 0 0 0-4.962-4.962A4.581 4.581 0 0 0 11 .923ZM9.678 3.09a2.752 2.752 0 0 1 3.64.932.914.914 0 0 0 .972.4 2.752 2.752 0 0 1 3.289 3.288.914.914 0 0 0 .4.971 2.753 2.753 0 0 1 0 4.638.914.914 0 0 0-.4.97 2.752 2.752 0 0 1-3.283 3.29.914.914 0 0 0-.97.401 2.75 2.75 0 0 1-4.644 0 .914.914 0 0 0-.971-.401 2.752 2.752 0 0 1-3.29-3.283.914.914 0 0 0-.403-.97 2.753 2.753 0 0 1 0-4.652.914.914 0 0 0 .404-.97A2.752 2.752 0 0 1 7.71 4.42a.914.914 0 0 0 .97-.4c.25-.389.592-.709.997-.93Z' clip-rule='evenodd'/%3e%3c/g%3e%3c/svg%3e");
+    --icon-discount-tooltip-curve: url("data:image/svg+xml,%3Csvg width='35' height='14' viewBox='0 0 35 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M17.4814 14C16.3229 6.40469 8.98604 0 0.5 0L34.5 0C26.0153 0 18.4853 6.40469 17.4814 14Z' fill='%23F4F9FE'/%3E%3C/svg%3E");
     --width-price-box-min: 240px;
     --width-price-box-max: 355px;
+    --height-discounted-price-box: 98px;
     --height-price-details-min: 53px;
 
     padding: 102px 0 58px;
@@ -351,6 +353,12 @@
                to the text column above. */
             .bottom {
                 padding: 0 16px;
+
+                .text-content {
+                    /* But allow buttons and price info
+                       a bit more breathing room. */
+                    padding: 0;
+                }
             }
         }
 
@@ -370,8 +378,16 @@
             flex-wrap: wrap;
             align-items: flex-start;
             gap: 4px;
-            min-height: 56px;
-            margin-top: 24px;
+            margin: 24px 0 6px;
+
+            /* For supporting browsers, constrain the height
+               of the standard price box when it includes a
+               discount. This keeps discount tooltips on the
+               same horizontal line, while also maintaining
+               alignment of non-discounted price box prices. */
+            &:has(.discount) {
+                height: var(--height-discounted-price-box);
+            }
 
             .price {
                 font-size: 38px;
@@ -402,11 +418,43 @@
                 /* Keep the discount to its own
                    line in the wrapping flexbox. */
                 flex: 0 0 100%;
+                /* But move it to the top of the
+                   flex area. */
+                order: -1;
                 text-align: center;
-                padding: 1px 0 6px;
-                margin-bottom: -5px;
-                border-radius: 4px 4px 0 0;
-                background-color: hsl(0deg 0% 85%);
+                padding: 9px 0 10px;
+                margin-bottom: 9px;
+                border-radius: 30px;
+                background-color: hsl(210deg 83% 98%);
+                position: relative;
+                font-family: var(--font-ops);
+                font-size: 15px;
+                /* Use padding to better position
+                   text within its single line. */
+                line-height: 1;
+
+                @media screen and (width <= 1240px) {
+                    /* Pad the discount balloon... */
+                    padding: 8px 5px 9px;
+                    /* But pull out the margins an equal
+                       amount so it can breathe. */
+                    margin: 0 -5px 9px;
+                }
+
+                & b {
+                    font-weight: 650;
+                }
+
+                &::after {
+                    content: "";
+                    background-image: var(--icon-discount-tooltip-curve);
+                    display: block;
+                    width: 35px;
+                    height: 14px;
+                    bottom: -14px;
+                    left: calc(50% - 17.5px);
+                    position: absolute;
+                }
             }
 
             .price,
@@ -747,6 +795,7 @@
 
             .standard-price-box {
                 --height-price-details-min: 48px;
+                --height-discounted-price-box: 91px;
 
                 .price {
                     font-size: 32px;
@@ -757,6 +806,10 @@
                         font-size: 13px;
                         line-height: 16px;
                     }
+                }
+
+                .discount {
+                    font-size: 13px;
                 }
             }
         }
