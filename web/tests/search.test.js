@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
@@ -18,6 +18,10 @@ function stub_pills() {
     $pill_container.set_find_results(".input", $pill_input);
     $pill_input.before = noop;
 }
+
+set_global("getSelection", () => ({
+    modify: noop,
+}));
 
 let typeahead_forced_open = false;
 
@@ -307,7 +311,11 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         for (const pill of pills) {
             pill.$element.remove = noop;
         }
-        search_pill.set_search_bar_contents(terms, search.search_pill_widget);
+        search_pill.set_search_bar_contents(
+            terms,
+            search.search_pill_widget,
+            $search_query_box.text,
+        );
     };
 
     terms = [
