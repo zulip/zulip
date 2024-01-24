@@ -1586,21 +1586,13 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     vertical-align: bottom;
 }
 
-.invite-stream-controls button {
-    color: hsl(207.79deg 56.2% 52.55%);
-    background-color: transparent;
+.add_streams_container {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
 
-    &:focus,
-    &:hover {
-        color: hsl(207.78deg 56.25% 37.65%);
-        text-decoration: underline;
-        background-color: transparent;
-    }
-}
-
-#invite-stream-checkboxes {
-    & i.zulip-icon-globe {
-        font-size: 80%;
+    .pill-container {
+        padding: 4px 6px;
     }
 }
 

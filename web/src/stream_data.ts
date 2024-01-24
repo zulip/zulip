@@ -359,32 +359,14 @@ export function get_streams_for_user(user_id: number): {
     };
 }
 
-export function get_invite_stream_data(): InviteStreamData[] {
-    function get_data(sub: StreamSubscription): InviteStreamData {
-        return {
-            name: sub.name,
-            stream_id: sub.stream_id,
-            invite_only: sub.invite_only,
-            is_web_public: sub.is_web_public,
-            default_stream: default_stream_ids.has(sub.stream_id),
-        };
-    }
-
+export function get_invite_stream_data(): StreamSubscription[] {
     const streams = [];
-
-    // Invite users to all default streams...
-    for (const stream_id of default_stream_ids) {
-        const sub = sub_store.get(stream_id)!;
-        streams.push(get_data(sub));
-    }
-
-    // ...plus all your subscribed streams (avoiding repeats).
-    for (const sub of subscribed_subs()) {
-        if (!default_stream_ids.has(sub.stream_id)) {
-            streams.push(get_data(sub));
+    const all_subs = get_unsorted_subs();
+    for (const sub of all_subs) {
+        if (can_subscribe_others(sub)) {
+            streams.push(sub);
         }
     }
-
     return streams;
 }
 
