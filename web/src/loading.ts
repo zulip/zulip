@@ -92,3 +92,20 @@ export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): vo
     }
     $elt.css("display", "inline-block");
 }
+
+// For showing spinners at dialog_widget and user_profile.
+export function show_spinner($button: JQuery): void {
+    const $spinner = $button.find(".modal__spinner");
+    const dialog_submit_button_span_width = $button.find("span").width();
+    const dialog_submit_button_span_height = $button.find("span").height();
+
+    // Disable buttons.
+    $button.prop("disabled", true);
+    $button.find("span").hide();
+
+    // Show spinner.
+    make_indicator($spinner, {
+        width: dialog_submit_button_span_width,
+        height: dialog_submit_button_span_height,
+    });
+}

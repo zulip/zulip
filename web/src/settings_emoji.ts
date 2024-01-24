@@ -214,7 +214,8 @@ function show_modal(): void {
     const html_body = render_add_emoji({});
 
     function add_custom_emoji(): void {
-        dialog_widget.show_dialog_spinner();
+        const $button = $("#dialog_widget_modal .modal__btn");
+        loading.show_spinner($button);
 
         const $emoji_status = $("#dialog_error");
         const emoji: Record<string, string> = {};
