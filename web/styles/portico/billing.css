@@ -26,15 +26,6 @@
         margin-bottom: 0;
     }
 
-    .nav-tabs {
-        border-bottom: 0;
-        font-size: 1.2em;
-
-        & a {
-            font-weight: bold;
-        }
-    }
-
     .tab-content {
         border: 1px solid hsl(0deg 0% 87%);
         border-bottom-left-radius: 4px;
