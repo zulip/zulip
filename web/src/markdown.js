@@ -72,7 +72,7 @@ export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     return translated;
 }
 
-function contains_problematic_linkifier({content, get_linkifier_map}) {
+function contains_problematic_linkifier(content, get_linkifier_map) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
@@ -101,7 +101,7 @@ function content_contains_backend_only_syntax(content, get_linkifier_map) {
     // If it doesn't, we can immediately render it client-side for local echo.
     return (
         contains_preview_link(content) ||
-        contains_problematic_linkifier({content, get_linkifier_map}) ||
+        contains_problematic_linkifier(content, get_linkifier_map) ||
         contains_topic_wildcard_mention(content)
     );
 }
