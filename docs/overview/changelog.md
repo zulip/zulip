@@ -7,6 +7,57 @@ up-to-date list of all changes.
 
 ## Zulip Server 8.x series
 
+### Zulip Server 8.1
+
+_Released 2024-01-24_
+
+- CVE-2024-21630: Zulip version 8.0 and its betas had a bug affecting
+  an unlikely permissions configuration where some user roles had
+  permission to create reusable invitation links to join the
+  organization, but lacked the permission to subscribe other users to
+  streams. A user with such a role could incorrectly create an
+  invitation link that subscribes new users to streams. This
+  vulnerability is similar to CVE-2023-32677, but applies to multi-use
+  invitations, not single-user invites.
+- Fixed a fault-tolerance bug, where failing outgoing email
+  authentication could cause other queue workers to not progress
+  properly on low-memory Zulip servers.
+- Added support for using PostgreSQL 16 as the database. See the
+  PostgreSQL upgrade documentation if you’re interested in upgrading
+  an existing server to newer Postgres.
+- Added support for explicitly deactivating a mobile push
+  notifications registration.
+- Added support for a new class of custom authentication hook.
+- Improved the workflow for sending password reset emails to users
+  imported from another chat app.
+- Improved the file uploads integration to be compatible with S3
+  alternatives that use a different URL addressing style.
+- Improved the Terms of Service/Privacy Policy settings if no policies
+  sidebar is configured.
+- Fixed a bug preventing the incoming email integration from
+  mentioning groups that everyone is allowed to mention.
+- Fixed the data import tool crashing when processing delivered
+  scheduled messages.
+- Fixed buggy tooltips in the push notifications column of
+  notification settings.
+- Fixed minor UI bugs with the user group settings panel.
+- Fixed minor UI bugs with the new compose box buttons.
+- Fixed minor UI bugs with limiting guest user access to other users.
+- Fixed incorrect alert words color in the dark theme.
+- Fixed a few subtle bugs with the Zulip plan management login flow.
+- Fixed a live-update bug involving user statuses enabled via the API.
+- Fixed a configuration problem preventing the logrotate service from
+  starting.
+- Fixed a layout bug for the mobile help center navbar area affecting
+  some servers.
+- Fixed Slack data import tool corner cases involving shared users.
+- Fixed mentions being incorrectly converted to silent mentions in DMs
+  with bot users.
+- Fixed an unexploitable HTML injection bug in the typeahead for
+  configuring custom code playgrounds.
+- Improved in-app documentation for following topics.
+- Backported several documentation improvements.
+
 ### Zulip Server 8.0
 
 _Released 2023-12-15_
