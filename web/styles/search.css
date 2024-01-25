@@ -187,6 +187,10 @@
         /* override .input-append style from app_components.js */
         letter-spacing: normal;
         height: var(--search-box-height);
+        /* Override .pill-container */
+        flex-wrap: nowrap;
+        padding: 0;
+        border: none;
     }
 
     @media (width >= $md_min) {
