@@ -848,8 +848,7 @@
         color: inherit;
     }
 
-    .nav-list > li > a,
-    .nav-list .nav-header {
+    .nav-list > li > a {
         text-shadow: none;
     }
 
