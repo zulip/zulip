@@ -16,7 +16,7 @@
             & span {
                 font-size: 1.2em !important;
                 font-weight: 400;
-                line-height: 1em;
+                line-height: var(--line-height-compose-buttons);
             }
         }
     }
@@ -53,6 +53,7 @@
             border: none;
             background: var(--color-compose-embedded-button-background);
             border-radius: 3px;
+            line-height: var(--line-height-compose-buttons);
         }
 
         #left_bar_compose_reply_button_big {
@@ -93,6 +94,7 @@
     #new_conversation_button,
     .new_direct_message_button_container {
         flex-shrink: 0;
+        line-height: var(--line-height-compose-buttons);
 
         @media (width < $sm_min) {
             /* Override inline style injected by jQuery hide() */

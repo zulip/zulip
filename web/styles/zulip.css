@@ -173,6 +173,13 @@ body {
     --max-unexpanded-compose-height: 40vh;
 
     /*
+    Line height of the message buttons in compose box. Here it's necessary
+    to control this value uniformly and precisely to avoid issues with
+    layout shifts originating with non-Latin characters in this area.
+    */
+    --line-height-compose-buttons: 20px;
+
+    /*
     Maximum height of the subscribers list in stream settings so that
     it doesn't cause the container to have a second scrollbar.
     This value will be overridden when stream settings is opened.
