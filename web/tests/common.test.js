@@ -89,7 +89,7 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         ["PgUp", "↑"],
         ["PgDn", "↓"],
         ["Ctrl", "⌘"],
-        ["Alt", "⌘"],
+        ["Alt", "⌥"],
         ["#stream_name", "#stream_name"],
         ["Ctrl+K", "Ctrl+K"],
         ["[", "["],
@@ -153,7 +153,6 @@ run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
         [["PgUp"], ["Fn", "↑"]],
         [["PgDn"], ["Fn", "↓"]],
         [["Ctrl"], ["⌘"]],
-        [["Alt"], ["⌘"]],
     ]);
 
     override(navigator, "platform", "MacIntel");
@@ -191,14 +190,6 @@ run_test("adjust_mac_tooltip_keys mac random", ({override}) => {
             ["Shift", "G"],
         ],
         [["Space"], ["Space"]],
-        [
-            ["Alt", "←"],
-            ["⌘", "←"],
-        ],
-        [
-            ["Alt", "→"],
-            ["⌘", "→"],
-        ],
     ]);
 
     override(navigator, "platform", "MacIntel");
