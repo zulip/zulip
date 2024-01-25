@@ -2289,7 +2289,6 @@ button {
     }
 
     .billing-upgrade-page {
-        .nav-tabs,
         .tab-content {
             font-size: 1em;
         }
