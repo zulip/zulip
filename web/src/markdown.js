@@ -95,7 +95,7 @@ function contains_topic_wildcard_mention(content) {
     return content.includes("@**topic**");
 }
 
-function content_contains_backend_only_syntax({content, get_linkifier_map}) {
+function content_contains_backend_only_syntax(content, get_linkifier_map) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
@@ -689,10 +689,10 @@ export function render(raw_content) {
 }
 
 export function contains_backend_only_syntax(content) {
-    return content_contains_backend_only_syntax({
+    return content_contains_backend_only_syntax(
         content,
-        get_linkifier_map: web_app_helpers.get_linkifier_map,
-    });
+        web_app_helpers.get_linkifier_map,
+    );
 }
 
 export function parse_non_message(raw_content) {
