@@ -13,7 +13,6 @@ class zulip_ops::statuspage {
     source => 'puppet:///modules/zulip_ops/statuspage-pusher',
   }
 
-  $page_id = zulipsecret('secrets','statuspage_page_id','')
   file { "${zulip::common::supervisor_conf_dir}/statuspage-pusher.conf":
     ensure  => file,
     require => [
