@@ -267,10 +267,6 @@ Files: web/third/bootstrap/css/bootstrap-btn.css
 Copyright: 2011-2014 Twitter, Inc.
 License: Expat
 
-Files: web/third/bootstrap/js/bootstrap.js
-Copyright: 2012 Twitter, Inc.
-License: Apache-2.0
-
 Files: web/third/bootstrap-typeahead/*
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0

@@ -3,7 +3,6 @@ import "../../debug-require";
 import "../alert_popup";
 import "../csrf";
 import "../blueslip";
-import "../../third/bootstrap/js/bootstrap";
 import "../../third/bootstrap/css/bootstrap.css";
 import "../../third/bootstrap/css/bootstrap-btn.css";
 import "simplebar/dist/simplebar.css";
