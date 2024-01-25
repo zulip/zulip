@@ -27,7 +27,7 @@
 <p>
     {% for other in other_devices %}
     <button name="challenge_device" value="{{ other.persistent_id }}"
-      class="btn btn-default btn-block" type="submit">
+      class="two-factor-button" type="submit">
         {{ other|device_action }}
     </button>
     {% endfor %}
@@ -37,7 +37,7 @@
 <p>{{ _("As a last resort, you can use a backup token:") }}</p>
 <p>
     <button name="wizard_goto_step" type="submit" value="backup"
-      class="btn btn-default btn-block">
+      class="two-factor-button">
         {{ _("Use backup token") }}
     </button>
 </p>
