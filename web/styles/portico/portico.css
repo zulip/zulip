@@ -485,12 +485,6 @@ input.text-error {
                 & a i {
                     margin-right: 5px;
                 }
-
-                &.nav-header {
-                    background-color: transparent;
-                    cursor: default;
-                    font-size: 14px;
-                }
             }
 
             &.dropdown-list {
