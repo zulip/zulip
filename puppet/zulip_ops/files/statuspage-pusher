@@ -61,7 +61,7 @@ def main() -> None:
     config_file.read("/etc/zulip/zulip.conf")
     page_id = config_file.get("statuspage", "page_id")
     if page_id is None:
-        raise RuntimeError("statuspage_page_id secret is required")
+        raise RuntimeError("statuspage.page_id in zulip.conf is required")
 
     metrics_file = configparser.RawConfigParser()
     metrics_file.read("/etc/zulip/statuspage.conf")
