@@ -1225,4 +1225,12 @@ export class Filter {
             !this.has_operand("is", "starred")
         );
     }
+
+    is_stream_or_topic_narrow(): boolean {
+        const term_type = this.sorted_term_types();
+        if (_.isEqual(term_type, ["stream", "topic"]) || _.isEqual(term_type, ["stream"])) {
+            return true;
+        }
+        return false;
+    }
 }

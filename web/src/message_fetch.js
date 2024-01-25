@@ -45,10 +45,16 @@ const consts = {
 
 function process_result(data, opts) {
     let messages = data.messages;
-
-    messages = messages.map((message) => message_helper.process_new_message(message));
     const has_found_oldest = opts.msg_list?.data.fetch_status.has_found_oldest() ?? false;
     const has_found_newest = opts.msg_list?.data.fetch_status.has_found_newest() ?? false;
+
+    const filter = opts.msg_list ? opts.msg_list.data.filter : opts.msg_list_data.filter;
+    const is_data_reliable_for_stream_history =
+        opts.msg_list === message_lists.home ||
+        (filter.is_stream_or_topic_narrow() && has_found_newest);
+    messages = messages.map((message) =>
+        message_helper.process_new_message(message, is_data_reliable_for_stream_history),
+    );
 
     // In some rare situations, we expect to discover new unread
     // messages not tracked in unread.ts during this fetching process.

@@ -79,7 +79,7 @@ export function stream_has_topics(stream_id: number): boolean {
 }
 
 export type TopicHistoryEntry = {
-    historical: boolean;
+    is_data_reliable: boolean;
     message_id: number;
     pretty_name: string;
 };
@@ -112,8 +112,8 @@ export class PerStreamHistory {
           topic would likely suffice, though we need to think about
           private stream corner cases).
         * pretty_name: The topic_name, with original case.
-        * historical: Whether the user actually received any messages in
-          the topic (has UserMessage rows) or is just viewing the stream.
+        * is_data_reliable: Whether the message_id field is absolutely
+          correct and is set to the latest message_id.
     */
 
     topics = new FoldDict<TopicHistoryEntry>();
@@ -135,7 +135,7 @@ export class PerStreamHistory {
         }
     }
 
-    add_or_update(topic_name: string, message_id: number): void {
+    add_or_update(topic_name: string, message_id: number, is_data_reliable: boolean): void {
         this.update_stream_max_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
@@ -144,9 +144,13 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: false,
+                is_data_reliable,
             });
             return;
+        }
+
+        if (!existing.is_data_reliable && is_data_reliable) {
+            existing.is_data_reliable = true;
         }
 
         if (message_id > existing.message_id) {
@@ -166,7 +170,7 @@ export class PerStreamHistory {
 
             const existing = this.topics.get(topic_name);
 
-            if (existing && !existing.historical) {
+            if (existing && existing.is_data_reliable) {
                 // Trust out local data more.
                 continue;
             }
@@ -178,7 +182,7 @@ export class PerStreamHistory {
             this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
-                historical: true,
+                is_data_reliable: true,
             });
             this.update_stream_max_message_id(message_id);
         }
@@ -263,14 +267,16 @@ export function add_message(opts: {
     stream_id: number;
     message_id: number;
     topic_name: string;
+    is_data_reliable: boolean;
 }): void {
     const stream_id = opts.stream_id;
     const message_id = opts.message_id;
     const topic_name = opts.topic_name;
+    const is_data_reliable = opts.is_data_reliable;
 
     const history = find_or_create(stream_id);
 
-    history.add_or_update(topic_name, message_id);
+    history.add_or_update(topic_name, message_id, is_data_reliable);
 }
 
 export function add_history(stream_id: number, server_history: ServerTopicHistoryEntry[]): void {

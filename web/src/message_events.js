@@ -116,7 +116,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 }
 
 export function insert_new_messages(messages, sent_by_this_client) {
-    messages = messages.map((message) => message_helper.process_new_message(message));
+    messages = messages.map((message) => message_helper.process_new_message(message, true));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     huddle_data.process_loaded_messages(messages);
