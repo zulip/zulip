@@ -87,6 +87,7 @@
             transition: border 0.4s ease-out;
 
             &:hover {
+                text-decoration: none;
                 color: inherit;
                 border-bottom: 2px solid hsl(0deg 0% 100%);
                 transition: none;
@@ -147,6 +148,7 @@
 
         &:hover {
             color: var(--color-link-hover);
+            text-decoration: underline;
             text-decoration-color: var(--color-link-underline-hover);
         }
     }
@@ -322,11 +324,11 @@
             font-family: var(--font-ops);
             font-weight: 400;
             font-size: 15px;
-            line-height: 21px;
         }
 
         li {
             margin-bottom: 10px;
+            line-height: 21px;
         }
 
         .price-box {
@@ -379,6 +381,7 @@
             align-items: flex-start;
             gap: 4px;
             margin: 24px 0 6px;
+            font-weight: 400;
 
             /* For supporting browsers, constrain the height
                of the standard price box when it includes a
@@ -391,6 +394,7 @@
 
             .price {
                 font-size: 38px;
+                font-weight: 400;
                 line-height: 1;
                 letter-spacing: -1px;
             }
@@ -514,6 +518,7 @@
                 text-decoration-color: var(--color-link-underline-alternate);
 
                 &:hover {
+                    text-decoration: underline;
                     text-decoration-color: var(
                         --color-link-underline-alternate-hover
                     );
@@ -610,6 +615,7 @@
         background-color: hsl(146deg 92% 26%);
 
         &:hover {
+            text-decoration: none;
             color: hsl(0deg 0% 100%);
             background-color: hsl(146deg 92% 24%);
         }
@@ -620,6 +626,7 @@
         background-color: hsl(219deg 62% 54%);
 
         &:hover {
+            text-decoration: none;
             color: hsl(0deg 0% 100%);
             background-color: hsl(219deg 62% 50%);
         }
@@ -656,6 +663,7 @@
     }
 
     .current-plan-button:hover {
+        text-decoration: none;
         color: hsl(147deg 57% 25%);
         background-color: hsl(152deg 79% 24% / 14%);
     }
@@ -665,6 +673,7 @@
         background-color: hsl(152deg 79% 24% / 10%);
 
         &:hover {
+            text-decoration: none;
             color: hsl(147deg 57% 25%);
             background-color: hsla(146deg 92% 24% / 15%);
         }
