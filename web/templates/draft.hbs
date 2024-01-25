@@ -16,7 +16,7 @@
                     </div>
                 </span>
                 <span class="recipient_bar_controls"></span>
-                <div class="recipient_row_date" title="{{t 'Last modified'}}">{{ time_stamp }}</div>
+                <div class="recipient_row_date restore-overlay-message tippy-zulip-delayed-tooltip" data-tooltip-template-id="last-modified-tooltip-template">{{time_stamp}}</div>
             </div>
         </div>
         {{else}}
@@ -26,7 +26,7 @@
                     <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
                     <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
                 </div>
-                <div class="recipient_row_date" title="{{t 'Last modified'}}">{{ time_stamp }}</div>
+                <div class="recipient_row_date restore-overlay-message tippy-zulip-delayed-tooltip" data-tooltip-template-id="last-modified-tooltip-template">{{ time_stamp }}</div>
             </div>
         </div>
         {{/if}}
