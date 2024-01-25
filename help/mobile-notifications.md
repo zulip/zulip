@@ -147,8 +147,8 @@ To enable push notifications for your organization:
    Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
 
 1. For organizations with more than 10 users, an
-   [owner](/help/roles-and-permissions) or billing administrator needs
-   to sign up for a [plan](/plans/#self-hosted) for your organization.
+   [owner](/help/roles-and-permissions) or billing administrator needs to sign
+   up for a [plan](https://zulip.com/plans/#self-hosted) for your organization.
 
 {end_tabs}
 
@@ -166,6 +166,28 @@ To enable push notifications for your organization:
    banner that indicates this.
 
 {end_tabs}
+
+### Warning banners
+
+To make sure that you are aware when mobile notifications will not work, you will
+see a warning banner in the mobile app if:
+
+- Your server is not registered with the [Zulip Mobile Push Notification
+  Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
+
+- There is a problem with your server's registration, such as failing to [upload
+  required
+  basic metadata](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-basic-metadata).
+
+- Your organization's [plan](https://zulip.com/plans/#self-hosted) does not
+  include access to mobile notifications.
+
+- Your organization's access to mobile push notifications is about to
+  end. This banner is first shown to server administrators, and then
+  to all users.
+
+These banners can be snoozed temporarily, or permanently silenced in
+notification settings.
 
 ### Contacting Zulip support
 
