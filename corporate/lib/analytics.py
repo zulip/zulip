@@ -70,7 +70,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         ).get_customer_plan_renewal_amount(plan, latest_ledger_entry)
         if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
             renewal_cents *= 12
-        annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)
+        annual_revenue[plan.customer.realm.string_id] = renewal_cents
     return annual_revenue
 
 

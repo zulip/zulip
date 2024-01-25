@@ -12,6 +12,13 @@
     }
 }
 
+.activity-foot {
+    background-color: hsl(208deg 100% 97%);
+    font-weight: 700;
+    position: sticky;
+    bottom: 0;
+}
+
 .table-striped {
     & tr.recently_active {
         & td {

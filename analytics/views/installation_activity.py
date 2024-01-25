@@ -23,6 +23,7 @@ from analytics.views.activity_common import (
     realm_url_link,
 )
 from analytics.views.support import get_plan_type_string
+from corporate.lib.stripe import cents_to_dollar_string
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.models import Realm
@@ -210,7 +211,7 @@ def realm_summary_table() -> str:
             string_id = row["string_id"]
 
             if string_id in estimated_arrs:
-                row["arr"] = estimated_arrs[string_id]
+                row["arr"] = f"${cents_to_dollar_string(estimated_arrs[string_id])}"
 
             if row["plan_type"] in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
                 row["effective_rate"] = 100 - int(realms_with_default_discount.get(string_id, 0))
@@ -250,28 +251,34 @@ def realm_summary_table() -> str:
         total_bot_count += int(row["bot_count"])
         total_wau_count += int(row["wau_count"])
 
-    total_row = dict(
-        string_id="Total",
-        plan_type_string="",
-        org_type_string="",
-        effective_rate="",
-        arr=total_arr,
-        realm_url="",
-        stats_link="",
-        support_link="",
-        date_created_day="",
-        dau_count=total_dau_count,
-        user_profile_count=total_user_profile_count,
-        bot_count=total_bot_count,
-        wau_count=total_wau_count,
-    )
-
-    rows.insert(0, total_row)
+    total_row = [
+        "Total",
+        "",
+        "",
+        "",
+        f"${cents_to_dollar_string(total_arr)}",
+        "",
+        "",
+        total_dau_count,
+        total_wau_count,
+        total_user_profile_count,
+        total_bot_count,
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ]
 
     content = loader.render_to_string(
         "analytics/realm_summary_table.html",
         dict(
             rows=rows,
+            totals=total_row,
             num_active_sites=num_active_sites,
             utctime=now.strftime("%Y-%m-%d %H:%M %Z"),
             billing_enabled=settings.BILLING_ENABLED,

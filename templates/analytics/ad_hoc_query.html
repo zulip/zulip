@@ -23,4 +23,11 @@
         </tr>
         {% endfor %}
     </tbody>
+    {% if data.totals %}
+    <tfoot class="activity-foot">
+        {% for total in data.totals %}
+        <td>{{ total }}</td>
+        {% endfor %}
+    </tfoot>
+    {% endif %}
 </table>
