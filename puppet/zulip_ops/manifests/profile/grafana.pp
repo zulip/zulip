@@ -12,7 +12,7 @@ class zulip_ops::profile::grafana {
   zulip::external_dep { 'grafana':
     version        => $version,
     url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${zulip::common::goarch}.tar.gz",
-    tarball_prefix => "grafana-${version}",
+    tarball_prefix => "grafana-v${version}",
   }
 
   group { 'grafana':
