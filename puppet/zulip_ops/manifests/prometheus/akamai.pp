@@ -7,7 +7,10 @@ class zulip_ops::prometheus::akamai {
 
   $bin = $zulip_ops::vector::bin
   $conf = '/etc/vector.toml'
-  $sqs_url = zulipsecret('secrets', 'akamai_sqs_url', '')
+  $pipelines = {
+    'static' => zulipsecret('secrets', 'akamai_static_sqs_url', ''),
+    'realm'  => zulipsecret('secrets', 'akamai_realm_sqs_url', ''),
+  }
 
   file { $conf:
     ensure  => file,
