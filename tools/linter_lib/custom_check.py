@@ -879,7 +879,7 @@ help_markdown_rules = RuleList(
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
             "include_only": {"help/"},
-            "exclude_pattern": "Rocket.Chat",
+            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",

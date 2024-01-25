@@ -98,7 +98,20 @@ automatically to future versions.
 
 3. Run Zulip from your app launcher, or with `zulip` from a terminal.
 
-<!-- TODO why dpkg? -->
+#### Flathub
+
+1. Make sure you have [Flatpak](https://flathub.org/setup) installed on your
+system.
+
+2. Use the following command from the official
+[Flathub page](https://flathub.org/apps/org.zulip.Zulip) to install Zulip:
+
+        flatpak install flathub org.zulip.Zulip
+
+3. After the installation is complete, you can run Zulip using the following
+command:
+
+        flatpak run org.zulip.Zulip
 
 {end_tabs}
 
