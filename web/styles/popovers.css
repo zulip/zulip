@@ -574,6 +574,18 @@ ul {
         font-size: 18px;
     }
 
+    .user_profile_manage_own_copy_link_button {
+        width: 20px;
+        height: 15px;
+        text-align: center;
+        font-size: 15px;
+    }
+
+    #user_profile_manage_own_copy_link {
+        height: 25px;
+        margin-right: 8px;
+    }
+
     #user_profile_manage_own_edit_link {
         height: 25px;
     }

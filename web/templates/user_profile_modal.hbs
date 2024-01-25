@@ -18,6 +18,9 @@
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
                     <span class="user_profile_name">{{> user_full_name name=full_name}}</span>
+                    <a id="user_profile_manage_own_copy_link" class="copy_link_to_user_profile" tabindex="0" data-user-id="{{user_id}}">
+                        <i class="fa fa-link tippy-zulip-tooltip user_profile_manage_own_copy_link_button" data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
+                    </a>
                     {{#if is_me}}
                         <a id="user_profile_manage_own_edit_link" href="/#settings/profile">
                             <i class="fa fa-edit tippy-zulip-tooltip user_profile_manage_own_edit_button" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>

@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
 
@@ -16,6 +17,7 @@ import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as components from "./components";
+import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
@@ -960,5 +962,16 @@ export function initialize() {
             $("#user-profile-streams-tab #clear_stream_search").hide();
             $input.css("margin-right", "0");
         }
+    });
+
+    new ClipboardJS(".copy_link_to_user_profile", {
+        text(trigger) {
+            const user_id = $(trigger).attr("data-user-id");
+            const user_profile_link = window.location.origin + "/#user/" + user_id;
+
+            return user_profile_link;
+        },
+    }).on("success", (e) => {
+        show_copied_confirmation(e.trigger);
     });
 }
