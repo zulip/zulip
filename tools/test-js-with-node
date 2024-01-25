@@ -198,6 +198,7 @@ EXEMPT_FILES = make_set(
         "web/src/scroll_bar.ts",
         "web/src/scroll_util.ts",
         "web/src/search.ts",
+        "web/src/search_pill.ts",
         "web/src/sent_messages.ts",
         "web/src/sentry.ts",
         "web/src/server_events.js",

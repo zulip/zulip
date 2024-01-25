@@ -58,7 +58,7 @@
     }
 
     .zulip-icon-close {
-        font-size: 13px;
+        font-size: 10px;
     }
 
     .navbar-search:not(.expanded) {
@@ -155,6 +155,13 @@
     .search-input {
         /* Avoid massive inheritance chain on font-size. */
         font-size: var(--base-font-size-px);
+        /* override height-input-pill from default input pills to account for pill border */
+        line-height: calc(
+            var(--height-input-pill) + var(--vertical-spacing-input-pill)
+        );
+        min-height: calc(
+            var(--height-input-pill) + var(--vertical-spacing-input-pill)
+        );
         /* override bootstrap padding for input[type="text"] */
         padding: 0;
         border: none;
@@ -185,9 +192,36 @@
     #searchbox-input-container {
         display: flex;
         align-items: center;
-        /* override .input-append style from app_components.js */
+        /* The next two styles override .input-append style from app_components.js */
         letter-spacing: normal;
+        font-size: 100%;
         height: var(--search-box-height);
+        /* Override styles for .pill-container that aren't relevant for search. */
+        flex-wrap: nowrap;
+        padding: 0;
+        border: none;
+
+        .user-pill-container {
+            padding: 2px;
+            height: 22px;
+            min-width: fit-content;
+
+            > .pill-label {
+                min-width: fit-content;
+                white-space: nowrap;
+                width: fit-content;
+            }
+
+            .pill {
+                height: 22px;
+                margin: 2px;
+            }
+
+            .pill-image {
+                width: 22px;
+                height: 22px;
+            }
+        }
     }
 
     @media (width >= $md_min) {
