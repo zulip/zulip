@@ -106,7 +106,7 @@ function content_contains_backend_only_syntax({content, get_linkifier_map}) {
     );
 }
 
-function parse_with_options({raw_content, helper_config, options}) {
+function parse_with_options(raw_content, helper_config, options) {
     // Given the raw markdown content of a message (raw_content)
     // we return the HTML content (content) and flags.
     // Our caller passes a helper_config object that has several
@@ -663,7 +663,7 @@ export function parse({raw_content, helper_config}) {
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     };
 
-    return parse_with_options({raw_content, helper_config, options});
+    return parse_with_options(raw_content, helper_config, options);
 }
 
 // NOTE: Everything below this line is likely to be web-specific
