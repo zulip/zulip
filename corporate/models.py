@@ -59,6 +59,8 @@ class Customer(models.Model):
     def __str__(self) -> str:
         if self.realm is not None:
             return f"{self.realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
+        elif self.remote_realm is not None:
+            return f"{self.remote_realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
         else:
             return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
 
