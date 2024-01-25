@@ -105,7 +105,7 @@ organization on it, this will happen automatically. Otherwise, contact
     support for server-wide configurations requires upgrading the
     organization with the largest number of users.
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 
@@ -157,7 +157,7 @@ organization is considered to be a new customer if:
     Once you start the trial, you can switch between monthly and annual billing
     on your organization's billing page.
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 
@@ -206,7 +206,7 @@ organization is considered to be a new customer if:
     support for server-wide configurations requires upgrading the
     organization with the largest number of users.
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 
@@ -241,7 +241,7 @@ organization is considered to be a new customer if:
 
 {!self-hosted-log-in.md!}
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 
@@ -266,7 +266,7 @@ If you cancel your plan, your organization will be downgraded to the
 
 2. Click **Downgrade** to confirm.
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 
@@ -329,7 +329,7 @@ eligibility prior to setting up a server, contact
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for Community plan eligibility.
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 
@@ -442,7 +442,7 @@ eligibility prior to setting up a server, contact
 1. Fill out the requested information, and click **Submit**. Your application
    will be reviewed for discount eligibility.
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 
@@ -490,7 +490,7 @@ you will need to sign up for an annual plan.
 
     You can only increase the number of licenses for the current billing period.
 
-{tab|older-versions}
+{tab|all-versions}
 
 {!legacy-log-in-intro.md!}
 

@@ -111,7 +111,7 @@ TAB_SECTION_LABELS = {
     "v8": "Zulip Server 8.0+",
     "v6": "Zulip Server 6.0+",
     "v4": "Zulip Server 4.0+",
-    "older-versions": "All older versions",
+    "all-versions": "All versions",
 }
 
 
