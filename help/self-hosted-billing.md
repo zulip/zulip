@@ -41,15 +41,19 @@ users must upgrade to a paid plan or the Community plan. When you upgrade to a
 paid plan, you can start the plan right away (if you‘d like your technical
 support to start immediately), or schedule a February 15 start date.
 
-Any Zulip server that registered for Zulip's [Mobile Push Notification
-Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
-prior to December 15, 2023 is considered to be a legacy customer.
+If your organization needs more time to sign up for a plan, please contact
+[sales@zulip.com](mailto:sales@zulip.com) to request extended free access to the
+Mobile Push Notification Service.
 
 !!! tip ""
     An email announcing this change was sent to the registered contact email
     address for all legacy customers. If you did not receive this email, please
     [update](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#updating-your-server-s-registration)
     your contact information.
+
+Any Zulip server that registered for Zulip's [Mobile Push Notification
+Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
+prior to December 15, 2023 is considered to be a legacy customer.
 
 #### Do I have to upgrade my server first?
 
