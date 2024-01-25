@@ -45,7 +45,7 @@ const keys_map = new Map([
     ["PgUp", "↑"],
     ["PgDn", "↓"],
     ["Ctrl", "⌘"],
-    ["Alt", "⌘"],
+    ["Alt", "⌥"],
 ]);
 
 const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
@@ -69,7 +69,12 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
             $(this).addClass("arrow-key");
         }
 
-        const replace_key = keys_map.get(key_text);
+        // We use data-mac-key attribute to override the default key in case
+        // of exceptions. Currently, there are 2 shortcuts (for navigating back
+        // and forth in browser history) which need `Cmd` instead of the expected
+        // mapping (`Opt`) for the `Alt` key, so we use this attribute to override
+        // `Opt` with `Cmd`.
+        const replace_key = $(this).attr("data-mac-key") ?? keys_map.get(key_text);
         if (replace_key !== undefined) {
             key_text = replace_key;
         }

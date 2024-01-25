@@ -73,10 +73,10 @@ in the Zulip app to add more to your repertoire as needed.
 * **Scroll down**: <kbd>PgDn</kbd>, <kbd>Shift</kbd> + <kbd>J</kbd>, or
   <kbd>Spacebar</kbd>
 
-* **Go back through viewing history**: <kbd>Alt</kbd> +
+* **Go back through viewing history**: <kbd data-mac-key="⌘">Alt</kbd> +
   <kbd class="arrow-key">←</kbd>
 
-* **Go forward through viewing history**: <kbd>Alt</kbd> +
+* **Go forward through viewing history**: <kbd data-mac-key="⌘">Alt</kbd> +
   <kbd class="arrow-key">→</kbd>
 
 ## Narrowing
