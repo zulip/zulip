@@ -214,9 +214,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
         else:
             total_row.append("")
-    rows.insert(0, total_row)
 
-    content = make_table(title, cols, rows)
+    content = make_table(title, cols, rows, totals=total_row)
     return render(
         request,
         "analytics/activity_details_template.html",
