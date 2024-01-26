@@ -1,5 +1,6 @@
 {
     "activity": [
+        "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common",
         "sorttable",
         "./src/analytics/activity",
@@ -40,7 +41,10 @@
         "./styles/portico/billing.css"
     ],
     "portico": ["./src/bundles/portico"],
-    "error-styles": ["./third/bootstrap/css/bootstrap.css", "./styles/portico/portico_styles.css"],
+    "error-styles": [
+        "./third/bootstrap/css/bootstrap.portico.css",
+        "./styles/portico/portico_styles.css"
+    ],
     "common": ["./src/bundles/common"],
     "help": [
         "./src/bundles/portico",
@@ -96,10 +100,12 @@
     "signup": ["./src/bundles/portico", "jquery-validation", "./src/portico/signup"],
     "register": ["./src/bundles/portico", "jquery-validation", "./src/portico/signup"],
     "confirm-preregistrationuser": [
+        "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common",
         "./src/portico/confirm-preregistrationuser"
     ],
     "support": [
+        "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common",
         "sorttable",
         "./src/analytics/activity",
