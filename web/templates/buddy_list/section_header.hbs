@@ -1,4 +1,4 @@
 <h5 id="{{id}}" class="buddy-list-heading no-style hidden-for-spectators">
     {{header_text}} ({{user_count}})
 </h5>
-<i class="{{toggle_class}} fa fa-sm fa-caret-down" aria-hidden="true"></i>
+<i class="{{toggle_class}} fa fa-sm {{#if is_collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}}" aria-hidden="true"></i>
