@@ -137,6 +137,25 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#subscription_overlay .subscription_settings .sub-stream-name",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            const stream_name_element = instance.reference;
+            assert(stream_name_element instanceof HTMLElement);
+            // Only show tooltip if the stream name is truncated.
+            // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
+            // for more details.
+            if (stream_name_element.offsetWidth >= stream_name_element.scrollWidth) {
+                return false;
+            }
+
+            return undefined;
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
