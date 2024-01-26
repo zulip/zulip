@@ -119,6 +119,14 @@ export function initialize(): void {
     });
 
     delegate("body", {
+        target: ".sub-stream-name-tooltip",
+        trigger: "mouseenter",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+    });
+
+    delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
