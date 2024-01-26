@@ -253,7 +253,7 @@ function do_hashchange_overlay(old_hash) {
     if (coming_from_overlay && base === old_base) {
         if (base === "streams") {
             // e.g. #streams/29/social/subscribers
-            const right_side_tab = hash_parser.get_current_nth_hash_section(4);
+            const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             stream_settings_ui.change_state(section, right_side_tab);
             return;
         }
@@ -320,7 +320,7 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "streams") {
         // e.g. #streams/29/social/subscribers
-        const right_side_tab = hash_parser.get_current_nth_hash_section(4);
+        const right_side_tab = hash_parser.get_current_nth_hash_section(3);
         stream_settings_ui.launch(section, right_side_tab);
         return;
     }
