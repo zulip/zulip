@@ -4909,6 +4909,32 @@ class PushBouncerSignupTest(ZulipTestCase):
             result, f"Zulip server auth failure: key does not match role {zulip_org_id}"
         )
 
+    def test_register_duplicate_hostname(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@zulip.com",
+        )
+
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        self.assertEqual(server.hostname, "example.com")
+
+        new_zulip_org_id = str(uuid.uuid4())
+        new_zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=new_zulip_org_id,
+            zulip_org_key=new_zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@zulip.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "A server with hostname example.com already exists")
+
 
 class TestUserPushIdentityCompat(ZulipTestCase):
     def test_filter_q(self) -> None:

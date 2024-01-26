@@ -137,29 +137,40 @@ def register_remote_server(
     except ValidationError as e:
         raise JsonableError(e.message)
 
-    with transaction.atomic():
-        remote_server, created = RemoteZulipServer.objects.get_or_create(
-            uuid=zulip_org_id,
-            defaults={
-                "hostname": hostname,
-                "contact_email": contact_email,
-                "api_key": zulip_org_key,
-                "last_request_datetime": timezone_now(),
-            },
+    try:
+        remote_server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+    except RemoteZulipServer.DoesNotExist:
+        remote_server = None
+
+    if remote_server is not None:
+        if not constant_time_compare(remote_server.api_key, zulip_org_key):
+            raise InvalidZulipServerKeyError(zulip_org_id)
+
+        if remote_server.deactivated:
+            raise RemoteServerDeactivatedError
+
+    if remote_server is None and RemoteZulipServer.objects.filter(hostname=hostname).exists():
+        raise JsonableError(
+            _("A server with hostname {hostname} already exists").format(hostname=hostname)
         )
-        if created:
+
+    with transaction.atomic():
+        if remote_server is None:
+            created = True
+            remote_server = RemoteZulipServer.objects.create(
+                uuid=zulip_org_id,
+                hostname=hostname,
+                contact_email=contact_email,
+                api_key=zulip_org_key,
+                last_request_datetime=timezone_now(),
+            )
             RemoteZulipServerAuditLog.objects.create(
                 event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
                 server=remote_server,
                 event_time=remote_server.last_updated,
             )
         else:
-            if not constant_time_compare(remote_server.api_key, zulip_org_key):
-                raise InvalidZulipServerKeyError(zulip_org_id)
-
-            if remote_server.deactivated:
-                raise RemoteServerDeactivatedError
-
+            created = False
             remote_server.hostname = hostname
             remote_server.contact_email = contact_email
             if new_org_key is not None:
