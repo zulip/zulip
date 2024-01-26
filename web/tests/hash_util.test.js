@@ -77,14 +77,14 @@ run_test("test_get_hash_section", () => {
 
 run_test("get_current_nth_hash_section", () => {
     window.location.hash = "#settings/profile";
-    assert.equal(hash_parser.get_current_nth_hash_section(1), "#settings");
-    assert.equal(hash_parser.get_current_nth_hash_section(2), "profile");
+    assert.equal(hash_parser.get_current_nth_hash_section(0), "#settings");
+    assert.equal(hash_parser.get_current_nth_hash_section(1), "profile");
 
     window.location.hash = "#settings/10/general";
-    assert.equal(hash_parser.get_current_nth_hash_section(1), "#settings");
-    assert.equal(hash_parser.get_current_nth_hash_section(2), "10");
-    assert.equal(hash_parser.get_current_nth_hash_section(3), "general");
-    assert.equal(hash_parser.get_current_nth_hash_section(4), "");
+    assert.equal(hash_parser.get_current_nth_hash_section(0), "#settings");
+    assert.equal(hash_parser.get_current_nth_hash_section(1), "10");
+    assert.equal(hash_parser.get_current_nth_hash_section(2), "general");
+    assert.equal(hash_parser.get_current_nth_hash_section(3), "");
 });
 
 run_test("build_reload_url", () => {
