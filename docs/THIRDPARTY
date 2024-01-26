@@ -258,7 +258,12 @@ Copyright: 2022, Quansight Labs
 License: BSD-3-Clause
 Comment: GitHub theme (light and dark); Selectors have been modified for use with Zulip
 
-Files: web/third/bootstrap/css/bootstrap.css
+Files: web/third/bootstrap/css/bootstrap.app.css
+Copyright: 2012 Twitter, Inc.
+License: Apache-2.0
+Comment: The software has been modified.
+
+Files: web/third/bootstrap/css/bootstrap.portico.css
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
 Comment: The software has been modified.
