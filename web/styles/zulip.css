@@ -2811,6 +2811,18 @@ select.invite-as {
     vertical-align: bottom;
 }
 
+.invite-stream-controls button {
+    color: hsl(207.79deg 56.2% 52.55%);
+    background-color: transparent;
+
+    &:focus,
+    &:hover {
+        color: hsl(207.78deg 56.25% 37.65%);
+        text-decoration: underline;
+        background-color: transparent;
+    }
+}
+
 #invite-stream-checkboxes {
     & i.zulip-icon-globe {
         font-size: 80%;
