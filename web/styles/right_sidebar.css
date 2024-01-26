@@ -39,6 +39,20 @@ $user_status_emoji_width: 24px;
     }
 }
 
+#buddy-list-users-matching-view-container.collapsed {
+    #buddy-list-users-matching-view,
+    .view-all-subscribers-link {
+        display: none;
+    }
+}
+
+#buddy-list-other-users-container.collapsed {
+    #buddy-list-other-users,
+    .view-all-users-link {
+        display: none;
+    }
+}
+
 #buddy-list-users-matching-view,
 #buddy-list-other-users {
     width: 90%;
@@ -46,10 +60,6 @@ $user_status_emoji_width: 24px;
     margin-bottom: 0;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
-
-    &.collapsed {
-        display: none;
-    }
 
     & li {
         overflow: hidden;

@@ -278,7 +278,7 @@ export class BuddyList extends BuddyListConf {
                 header_text,
                 user_count: get_formatted_sub_count(subscriber_count),
                 toggle_class: "toggle-users-matching-view",
-                is_collapsed: $("#buddy-list-users-matching-view").hasClass("collapsed"),
+                is_collapsed: $("#buddy-list-users-matching-view-container").hasClass("collapsed"),
             }),
         );
 
@@ -288,7 +288,7 @@ export class BuddyList extends BuddyListConf {
                 header_text: $t({defaultMessage: "Others"}),
                 user_count: get_formatted_sub_count(other_users_count),
                 toggle_class: "toggle-other-users",
-                is_collapsed: $("#buddy-list-other-users").hasClass("collapsed"),
+                is_collapsed: $("#buddy-list-other-users-container").hasClass("collapsed"),
             }),
         );
     }
