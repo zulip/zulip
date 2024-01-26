@@ -37,6 +37,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
     do_set_realm_signup_announcements_stream,
+    do_set_realm_zulip_update_announcements_stream,
 )
 from zerver.actions.streams import (
     bulk_add_subscriptions,
@@ -599,6 +600,30 @@ class TestRealmAuditLog(ZulipTestCase):
                     RealmAuditLog.OLD_VALUE: old_value,
                     RealmAuditLog.NEW_VALUE: stream.id,
                     "property": "signup_announcements_stream",
+                },
+            ).count(),
+            1,
+        )
+
+    def test_set_realm_zulip_update_announcements_stream(self) -> None:
+        now = timezone_now()
+        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+        old_value = realm.zulip_update_announcements_stream_id
+        stream_name = "test"
+        stream = self.make_stream(stream_name, realm)
+
+        do_set_realm_zulip_update_announcements_stream(realm, stream, stream.id, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream.id,
+                    "property": "zulip_update_announcements_stream",
                 },
             ).count(),
             1,

@@ -60,6 +60,17 @@ async function test_change_signup_announcements_stream(page: Page): Promise<void
     await submit_announcements_stream_settings(page);
 }
 
+async function test_change_zulip_update_announcements_stream(page: Page): Promise<void> {
+    await page.click("#realm_zulip_update_announcements_stream_id_widget");
+    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
+
+    await page.type(".dropdown-list-search-input", "verona");
+    await page.waitForSelector(".dropdown-list .list-item", {visible: true});
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await submit_announcements_stream_settings(page);
+}
+
 async function test_permissions_change_save_worked(page: Page): Promise<void> {
     const saved_status = '#org-stream-permissions .save-button[data-status="saved"]';
     await page.waitForSelector(saved_status, {
@@ -265,6 +276,7 @@ async function admin_test(page: Page): Promise<void> {
     await common.manage_organization(page);
     await test_change_new_stream_announcements_stream(page);
     await test_change_signup_announcements_stream(page);
+    await test_change_zulip_update_announcements_stream(page);
 
     await test_organization_permissions(page);
     // Currently, Firefox (with puppeteer) does not support file upload:

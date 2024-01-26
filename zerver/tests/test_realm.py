@@ -619,6 +619,80 @@ class RealmTest(ZulipTestCase):
         do_deactivate_stream(signup_announcements_stream, acting_user=None)
         self.assertIsNone(realm.get_signup_announcements_stream())
 
+    def test_change_zulip_update_announcements_stream(self) -> None:
+        # We need an admin user.
+        self.login("iago")
+
+        disabled_zulip_update_announcements_stream_id = -1
+        req = dict(
+            zulip_update_announcements_stream_id=orjson.dumps(
+                disabled_zulip_update_announcements_stream_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.zulip_update_announcements_stream, None)
+
+        new_zulip_update_announcements_stream_id = Stream.objects.get(name="Denmark").id
+        req = dict(
+            zulip_update_announcements_stream_id=orjson.dumps(
+                new_zulip_update_announcements_stream_id
+            ).decode()
+        )
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.zulip_update_announcements_stream is not None
+        self.assertEqual(
+            realm.zulip_update_announcements_stream.id, new_zulip_update_announcements_stream_id
+        )
+
+        # Test that admin can set the setting to an unsubscribed private stream as well.
+        new_zulip_update_announcements_stream_id = self.make_stream(
+            "private_stream", invite_only=True
+        ).id
+        req = dict(
+            zulip_update_announcements_stream_id=orjson.dumps(
+                new_zulip_update_announcements_stream_id
+            ).decode()
+        )
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        assert realm.zulip_update_announcements_stream is not None
+        self.assertEqual(
+            realm.zulip_update_announcements_stream.id, new_zulip_update_announcements_stream_id
+        )
+
+        invalid_zulip_update_announcements_stream_id = 1234
+        req = dict(
+            zulip_update_announcements_stream_id=orjson.dumps(
+                invalid_zulip_update_announcements_stream_id
+            ).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Invalid stream ID")
+        realm = get_realm("zulip")
+        assert realm.zulip_update_announcements_stream is not None
+        self.assertNotEqual(
+            realm.zulip_update_announcements_stream.id, invalid_zulip_update_announcements_stream_id
+        )
+
+    def test_get_default_zulip_update_announcements_stream(self) -> None:
+        realm = get_realm("zulip")
+        verona = get_stream("verona", realm)
+        realm.zulip_update_announcements_stream = verona
+        realm.save(update_fields=["zulip_update_announcements_stream"])
+
+        zulip_update_announcements_stream = realm.get_zulip_update_announcements_stream()
+        assert zulip_update_announcements_stream is not None
+        self.assertEqual(zulip_update_announcements_stream, verona)
+        do_deactivate_stream(zulip_update_announcements_stream, acting_user=None)
+        self.assertIsNone(realm.get_zulip_update_announcements_stream())
+
     def test_change_realm_default_language(self) -> None:
         # we need an admin user.
         self.login("iago")

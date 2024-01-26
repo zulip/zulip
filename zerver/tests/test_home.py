@@ -199,6 +199,7 @@ class HomeTest(ZulipTestCase):
         "realm_waiting_period_threshold",
         "realm_want_advertise_in_communities_directory",
         "realm_wildcard_mention_policy",
+        "realm_zulip_update_announcements_stream_id",
         "recent_private_conversations",
         "scheduled_messages",
         "server_avatar_changes_disabled",
@@ -254,7 +255,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        with self.assert_database_query_count(50):
+        with self.assert_database_query_count(51):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -437,7 +438,7 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        with self.assert_database_query_count(50):
+        with self.assert_database_query_count(51):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
@@ -468,7 +469,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(46):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -670,6 +671,18 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(
             page_params["state_data"]["realm_signup_announcements_stream_id"],
+            get_stream("Denmark", realm).id,
+        )
+
+    def test_zulip_update_announcements_stream(self) -> None:
+        realm = get_realm("zulip")
+        realm.zulip_update_announcements_stream = get_stream("Denmark", realm)
+        realm.save()
+        self.login("hamlet")
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            page_params["state_data"]["realm_zulip_update_announcements_stream_id"],
             get_stream("Denmark", realm).id,
         )
 

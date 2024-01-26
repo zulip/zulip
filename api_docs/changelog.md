@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 242**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `zulip_update_announcements_stream_id` realm setting,
+  which is the ID of the of the stream to which automated messages announcing
+  new features or other end-user updates about the Zulip software are sent.
+
 **Feature level 241**
 
 * [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),

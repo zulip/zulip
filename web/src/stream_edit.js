@@ -610,13 +610,18 @@ export function initialize() {
             stream_id === realm.realm_new_stream_announcements_stream_id;
         const is_signup_announcements_stream =
             stream_id === realm.realm_signup_announcements_stream_id;
+        const is_zulip_update_announcements_stream =
+            stream_id === realm.realm_zulip_update_announcements_stream_id;
         const is_announcement_stream =
-            is_new_stream_announcements_stream || is_signup_announcements_stream;
+            is_new_stream_announcements_stream ||
+            is_signup_announcements_stream ||
+            is_zulip_update_announcements_stream;
 
         const html_body = render_settings_deactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
             is_new_stream_announcements_stream,
             is_signup_announcements_stream,
+            is_zulip_update_announcements_stream,
             is_announcement_stream,
         });
 

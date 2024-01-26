@@ -241,6 +241,7 @@ export function dispatch_normal_event(event) {
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_announcements_stream_id: noop,
+                zulip_update_announcements_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
@@ -567,6 +568,12 @@ export function dispatch_normal_event(event) {
                         if (realm.realm_signup_announcements_stream_id === stream.stream_id) {
                             realm.realm_signup_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("signup_announcements_stream_id");
+                        }
+                        if (realm.realm_zulip_update_announcements_stream_id === stream.stream_id) {
+                            realm.realm_zulip_update_announcements_stream_id = -1;
+                            settings_org.sync_realm_settings(
+                                "zulip_update_announcements_stream_id",
+                            );
                         }
                     }
                     stream_list.update_subscribe_to_more_streams_link();

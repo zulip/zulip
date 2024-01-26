@@ -278,7 +278,9 @@ def do_create_realm(
         stream_description="Everyone is added to this stream by default. Welcome! :octopus:",
         acting_user=None,
     )
+    # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
     realm.new_stream_announcements_stream = new_stream_announcements_stream
+    realm.zulip_update_announcements_stream = new_stream_announcements_stream
 
     # With the current initial streams situation, the only public
     # stream is the new_stream_announcements_stream.
@@ -293,7 +295,13 @@ def do_create_realm(
     )
     realm.signup_announcements_stream = signup_announcements_stream
 
-    realm.save(update_fields=["new_stream_announcements_stream", "signup_announcements_stream"])
+    realm.save(
+        update_fields=[
+            "new_stream_announcements_stream",
+            "signup_announcements_stream",
+            "zulip_update_announcements_stream",
+        ]
+    )
 
     if plan_type is None and settings.BILLING_ENABLED:
         # We use acting_user=None for setting the initial plan type.
