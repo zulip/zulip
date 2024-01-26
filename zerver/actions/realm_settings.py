@@ -260,7 +260,11 @@ def do_set_realm_authentication_methods(
 
 def do_set_realm_stream(
     realm: Realm,
-    field: Literal["new_stream_announcements_stream", "signup_announcements_stream"],
+    field: Literal[
+        "new_stream_announcements_stream",
+        "signup_announcements_stream",
+        "zulip_update_announcements_stream",
+    ],
     stream: Optional[Stream],
     stream_id: int,
     *,
@@ -276,6 +280,10 @@ def do_set_realm_stream(
         old_value = realm.signup_announcements_stream_id
         realm.signup_announcements_stream = stream
         property = "signup_announcements_stream_id"
+    elif field == "zulip_update_announcements_stream":
+        old_value = realm.zulip_update_announcements_stream_id
+        realm.zulip_update_announcements_stream = stream
+        property = "zulip_update_announcements_stream_id"
     else:
         raise AssertionError("Invalid realm stream field.")
 
@@ -317,6 +325,14 @@ def do_set_realm_signup_announcements_stream(
 ) -> None:
     do_set_realm_stream(
         realm, "signup_announcements_stream", stream, stream_id, acting_user=acting_user
+    )
+
+
+def do_set_realm_zulip_update_announcements_stream(
+    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+) -> None:
+    do_set_realm_stream(
+        realm, "zulip_update_announcements_stream", stream, stream_id, acting_user=acting_user
     )
 
 

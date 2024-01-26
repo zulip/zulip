@@ -4555,6 +4555,18 @@ paths:
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed
                                         'signup_notifications_stream_id' to `signup_announcements_stream_id`.
+                                    zulip_update_announcements_stream_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the stream to which automated messages announcing
+                                        new features or other end-user updates about the Zulip software are sent.
+
+                                        Will be `-1` if such automated messages are disabled.
+
+                                        Since these automated messages are sent by the server, this field is
+                                        primarily relevant to clients containing UI for changing it.
+
+                                        **Changes**: New in Zulip 9.0 (feature level 242).
                                     user_group_edit_policy:
                                       type: integer
                                       description: |
@@ -15154,6 +15166,20 @@ paths:
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed
                           'realm_signup_notifications_stream_id' to `realm_signup_announcements_stream_id`.
+                      realm_zulip_update_announcements_stream_id:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The ID of the stream to which automated messages announcing
+                          new features or other end-user updates about the Zulip software are sent.
+
+                          Will be `-1` if such automated messages are disabled.
+
+                          Since these automated messages are sent by the server, this field is
+                          primarily relevant to clients containing UI for changing it.
+
+                          **Changes**: New in Zulip 9.0 (feature level 242).
                       realm_user_settings_defaults:
                         type: object
                         additionalProperties: false

@@ -243,6 +243,7 @@ test("stream delete (special streams)", ({override}) => {
     assert.equal(event.streams.length, 2);
     realm.realm_new_stream_announcements_stream_id = event.streams[0].stream_id;
     realm.realm_signup_announcements_stream_id = event.streams[1].stream_id;
+    realm.realm_zulip_update_announcements_stream_id = event.streams[0].stream_id;
 
     override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
@@ -255,6 +256,7 @@ test("stream delete (special streams)", ({override}) => {
 
     assert.equal(realm.realm_new_stream_announcements_stream_id, -1);
     assert.equal(realm.realm_signup_announcements_stream_id, -1);
+    assert.equal(realm.realm_zulip_update_announcements_stream_id, -1);
 });
 
 test("stream delete (stream is selected in compose)", ({override, override_rewire}) => {

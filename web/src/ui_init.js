@@ -606,6 +606,7 @@ export function initialize_everything(state_data) {
         "realm_waiting_period_threshold",
         "realm_want_advertise_in_communities_directory",
         "realm_wildcard_mention_policy",
+        "realm_zulip_update_announcements_stream_id",
         "server_avatar_changes_disabled",
         "server_emoji_data_url",
         "server_inline_image_preview",

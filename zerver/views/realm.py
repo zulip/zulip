@@ -18,6 +18,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
     do_set_realm_signup_announcements_stream,
     do_set_realm_user_default_setting,
+    do_set_realm_zulip_update_announcements_stream,
     parse_and_set_setting_value_if_required,
     validate_authentication_methods_dict_from_api,
 )
@@ -112,6 +113,9 @@ def update_realm(
     # are not offered here as it is maintained by the server, not via the API.
     new_stream_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     signup_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    zulip_update_announcements_stream_id: Optional[int] = REQ(
+        json_validator=check_int, default=None
+    ),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
         "message_retention_days", json_validator=check_string_or_int, default=None
     ),
@@ -389,8 +393,9 @@ def update_realm(
         do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
         data["authentication_methods"] = authentication_methods
 
-    # Realm.new_stream_announcements_stream and Realm.signup_announcements_stream are not boolean,
-    # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
+    # Realm.new_stream_announcements_stream, Realm.signup_announcements_stream,
+    # and Realm.zulip_update_announcements_stream are not boolean, str or integer field,
+    # and thus doesn't fit into the do_set_realm_property framework.
     if new_stream_announcements_stream_id is not None and (
         realm.new_stream_announcements_stream is None
         or (realm.new_stream_announcements_stream.id != new_stream_announcements_stream_id)
@@ -424,6 +429,23 @@ def update_realm(
             acting_user=user_profile,
         )
         data["signup_announcements_stream_id"] = signup_announcements_stream_id
+
+    if zulip_update_announcements_stream_id is not None and (
+        realm.zulip_update_announcements_stream is None
+        or realm.zulip_update_announcements_stream.id != zulip_update_announcements_stream_id
+    ):
+        new_zulip_update_announcements_stream = None
+        if zulip_update_announcements_stream_id >= 0:
+            (new_zulip_update_announcements_stream, sub) = access_stream_by_id(
+                user_profile, zulip_update_announcements_stream_id, allow_realm_admin=True
+            )
+        do_set_realm_zulip_update_announcements_stream(
+            realm,
+            new_zulip_update_announcements_stream,
+            zulip_update_announcements_stream_id,
+            acting_user=user_profile,
+        )
+        data["zulip_update_announcements_stream_id"] = zulip_update_announcements_stream_id
 
     if string_id is not None:
         if not user_profile.is_realm_owner:
