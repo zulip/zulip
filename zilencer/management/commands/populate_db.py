@@ -1028,8 +1028,16 @@ class Command(BaseCommand):
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
                 # Now that we've created the new_stream_announcements_stream, configure it properly.
-                zulip_realm.new_stream_announcements_stream = get_stream("announce", zulip_realm)
-                zulip_realm.save(update_fields=["new_stream_announcements_stream"])
+                # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
+                announce_stream = get_stream("announce", zulip_realm)
+                zulip_realm.new_stream_announcements_stream = announce_stream
+                zulip_realm.zulip_update_announcements_stream = announce_stream
+                zulip_realm.save(
+                    update_fields=[
+                        "new_stream_announcements_stream",
+                        "zulip_update_announcements_stream",
+                    ]
+                )
 
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:

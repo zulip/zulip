@@ -350,6 +350,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         on_delete=models.SET_NULL,
     )
 
+    ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME = gettext_lazy("Zulip updates")
+    zulip_update_announcements_stream = models.ForeignKey(
+        "Stream",
+        related_name="+",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
     }
@@ -798,6 +807,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             and not self.signup_announcements_stream.deactivated
         ):
             return self.signup_announcements_stream
+        return None
+
+    def get_zulip_update_announcements_stream(self) -> Optional["Stream"]:
+        if (
+            self.zulip_update_announcements_stream is not None
+            and not self.zulip_update_announcements_stream.deactivated
+        ):
+            return self.zulip_update_announcements_stream
         return None
 
     @property

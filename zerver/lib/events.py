@@ -374,6 +374,14 @@ def fetch_initial_state_data(
         else:
             state["realm_signup_announcements_stream_id"] = -1
 
+        zulip_update_announcements_stream = realm.get_zulip_update_announcements_stream()
+        if zulip_update_announcements_stream:
+            state["realm_zulip_update_announcements_stream_id"] = (
+                zulip_update_announcements_stream.id
+            )
+        else:
+            state["realm_zulip_update_announcements_stream_id"] = -1
+
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH

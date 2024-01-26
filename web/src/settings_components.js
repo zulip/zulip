@@ -241,6 +241,7 @@ export function sort_object_by_key(obj) {
 export let default_code_language_widget = null;
 export let new_stream_announcements_stream_widget = null;
 export let signup_announcements_stream_widget = null;
+export let zulip_update_announcements_stream_widget = null;
 export let create_multiuse_invite_group_widget = null;
 export let can_remove_subscribers_group_widget = null;
 export let can_access_all_users_group_widget = null;
@@ -253,6 +254,8 @@ export function get_widget_for_dropdown_list_settings(property_name) {
             return new_stream_announcements_stream_widget;
         case "realm_signup_announcements_stream_id":
             return signup_announcements_stream_widget;
+        case "realm_zulip_update_announcements_stream_id":
+            return zulip_update_announcements_stream_widget;
         case "realm_default_code_block_language":
             return default_code_language_widget;
         case "realm_create_multiuse_invite_group":
@@ -279,6 +282,10 @@ export function set_new_stream_announcements_stream_widget(widget) {
 
 export function set_signup_announcements_stream_widget(widget) {
     signup_announcements_stream_widget = widget;
+}
+
+export function set_zulip_update_announcements_stream_widget(widget) {
+    zulip_update_announcements_stream_widget = widget;
 }
 
 export function set_create_multiuse_invite_group_widget(widget) {
@@ -506,6 +513,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
             break;
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
+        case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":

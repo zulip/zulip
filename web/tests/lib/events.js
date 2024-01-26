@@ -372,6 +372,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__zulip_update_announcements_stream_id: {
+        type: "realm",
+        op: "update",
+        property: "zulip_update_announcements_stream_id",
+        value: 42,
+    },
+
     realm__update_dict__default: {
         type: "realm",
         op: "update_dict",
