@@ -96,7 +96,7 @@ EXEMPT_FILES = make_set(
         "web/src/desktop_integration.js",
         "web/src/desktop_notifications.js",
         "web/src/dialog_widget.ts",
-        "web/src/drafts.js",
+        "web/src/drafts.ts",
         "web/src/drafts_overlay_ui.js",
         "web/src/dropdown_widget.ts",
         "web/src/echo.js",

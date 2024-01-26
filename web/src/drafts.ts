@@ -1,7 +1,7 @@
 import {subDays} from "date-fns";
-import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import tippy from "tippy.js";
 import {z} from "zod";
 
@@ -22,14 +22,39 @@ import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
-export function set_count(count) {
+export function set_count(count: number): void {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
 }
 
-function getTimestamp() {
+function getTimestamp(): number {
     return Date.now();
 }
+
+const draft_schema = z.intersection(
+    z.object({
+        content: z.string(),
+        updatedAt: z.number(),
+    }),
+    z.union([
+        z.object({
+            type: z.literal("stream"),
+            topic: z.string(),
+            stream_id: z.number().optional(),
+        }),
+        z.object({
+            type: z.literal("private"),
+            reply_to: z.string(),
+            private_message_recipient: z.string(),
+        }),
+    ]),
+);
+
+type LocalStorageDraft = z.infer<typeof draft_schema>;
+
+// The id is added to the draft in format_drafts in drafts_overlay_ui.
+// We should probably just include it in the draft object itself always?
+type LocalStorageDraftWithId = LocalStorageDraft & {id: string};
 
 const possibly_buggy_draft_schema = z.intersection(
     z.object({
@@ -51,33 +76,33 @@ const possibly_buggy_draft_schema = z.intersection(
     ]),
 );
 
+const drafts_schema = z.record(z.string(), draft_schema);
 const possibly_buggy_drafts_schema = z.record(z.string(), possibly_buggy_draft_schema);
 
 export const draft_model = (function () {
-    const exports = {};
-
     // the key that the drafts are stored under.
     const KEY = "drafts";
     const ls = localstorage();
     let fixed_buggy_drafts = false;
 
-    function get() {
-        const drafts = ls.get(KEY);
-        if (ls.get(KEY) === undefined) {
+    function get(): Record<string, LocalStorageDraft> {
+        let drafts = ls.get(KEY);
+        if (drafts === undefined) {
             return {};
         }
+
         if (!fixed_buggy_drafts) {
             fix_buggy_drafts();
-            return ls.get(KEY);
+            drafts = ls.get(KEY);
         }
-        return drafts;
-    }
-    exports.get = get;
 
-    function fix_buggy_drafts() {
+        return drafts_schema.parse(drafts);
+    }
+
+    function fix_buggy_drafts(): void {
         const drafts = ls.get(KEY);
         const parsed_drafts = possibly_buggy_drafts_schema.parse(drafts);
-        const valid_drafts = {};
+        const valid_drafts: Record<string, LocalStorageDraft> = {};
         for (const [draft_id, draft] of Object.entries(parsed_drafts)) {
             if (draft.type !== "stream") {
                 valid_drafts[draft_id] = draft;
@@ -119,23 +144,23 @@ export const draft_model = (function () {
         fixed_buggy_drafts = true;
     }
 
-    exports.getDraft = function (id) {
+    function getDraft(id: string): LocalStorageDraft | false {
         return get()[id] || false;
-    };
+    }
 
-    exports.getDraftCount = function () {
+    function getDraftCount(): number {
         const drafts = get();
         return Object.keys(drafts).length;
-    };
+    }
 
-    function save(drafts, update_count = true) {
+    function save(drafts: Record<string, LocalStorageDraft>, update_count = true): void {
         ls.set(KEY, drafts);
         if (update_count) {
             set_count(Object.keys(drafts).length);
         }
     }
 
-    exports.addDraft = function (draft, update_count = true) {
+    function addDraft(draft: LocalStorageDraft, update_count = true): string {
         const drafts = get();
 
         // use the base16 of the current time + a random string to reduce
@@ -146,13 +171,13 @@ export const draft_model = (function () {
         save(drafts, update_count);
 
         return id;
-    };
+    }
 
-    exports.editDraft = function (id, draft) {
+    function editDraft(id: string, draft: LocalStorageDraft): boolean {
         const drafts = get();
         let changed = false;
 
-        function check_if_equal(draft_a, draft_b) {
+        function check_if_equal(draft_a: LocalStorageDraft, draft_b: LocalStorageDraft): boolean {
             return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
         }
 
@@ -162,31 +187,40 @@ export const draft_model = (function () {
             save(drafts);
         }
         return changed;
-    };
+    }
 
-    exports.deleteDraft = function (id) {
+    function deleteDraft(id: string): void {
         const drafts = get();
 
+        // TODO(typescript) rework this to store the draft data in a map.
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete drafts[id];
         save(drafts);
-    };
+    }
 
-    return exports;
+    return {
+        get,
+        getDraft,
+        getDraftCount,
+        addDraft,
+        editDraft,
+        deleteDraft,
+    };
 })();
 
-export function sync_count() {
+export function sync_count(): void {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
 }
 
-export function delete_all_drafts() {
+export function delete_all_drafts(): void {
     const drafts = draft_model.get();
     for (const [id] of Object.entries(drafts)) {
         draft_model.deleteDraft(id);
     }
 }
 
-export function confirm_delete_all_drafts() {
+export function confirm_delete_all_drafts(): void {
     const html_body = render_confirm_delete_all_drafts();
 
     confirm_dialog.launch({
@@ -196,11 +230,24 @@ export function confirm_delete_all_drafts() {
     });
 }
 
-export function rename_stream_recipient(old_stream_id, old_topic, new_stream_id, new_topic) {
+export function rename_stream_recipient(
+    old_stream_id: number,
+    old_topic: string,
+    new_stream_id: number,
+    new_topic: string,
+): void {
     const current_drafts = draft_model.get();
     for (const draft_id of Object.keys(current_drafts)) {
         const draft = current_drafts[draft_id];
-        if (util.same_stream_and_topic(draft, {stream_id: old_stream_id, topic: old_topic})) {
+        if (draft.type !== "stream" || draft.stream_id === undefined) {
+            continue;
+        }
+        if (
+            util.same_stream_and_topic(
+                {stream_id: draft.stream_id, topic: draft.topic},
+                {stream_id: old_stream_id, topic: old_topic},
+            )
+        ) {
             // If new_stream_id is undefined, that means the stream wasn't updated.
             if (new_stream_id !== undefined) {
                 draft.stream_id = new_stream_id;
@@ -214,7 +261,7 @@ export function rename_stream_recipient(old_stream_id, old_topic, new_stream_id,
     }
 }
 
-export function snapshot_message() {
+export function snapshot_message(): LocalStorageDraft | undefined {
     if (!compose_state.composing() || compose_state.message_content().length <= 2) {
         // If you aren't in the middle of composing the body of a
         // message or the message is shorter than 2 characters long, don't try to snapshot.
@@ -229,44 +276,61 @@ export function snapshot_message() {
     };
     if (message.type === "private") {
         const recipient = compose_state.private_message_recipient();
-        message.reply_to = recipient;
-        message.private_message_recipient = recipient;
-    } else {
-        message.stream_id = compose_state.stream_id();
-        message.topic = compose_state.topic();
+        return {
+            ...message,
+            type: "private",
+            reply_to: recipient,
+            private_message_recipient: recipient,
+        };
     }
-    return message;
+    assert(message.type === "stream");
+    return {
+        ...message,
+        type: "stream",
+        stream_id: compose_state.stream_id(),
+        topic: compose_state.topic(),
+    };
 }
 
-export function restore_message(draft) {
+type ComposeArguments =
+    | {
+          type: "stream";
+          stream_id: number | undefined;
+          topic: string;
+          content: string;
+      }
+    | {
+          type: "private";
+          private_message_recipient: string;
+          content: string;
+      };
+
+export function restore_message(draft: LocalStorageDraft): ComposeArguments {
     // This is kinda the inverse of snapshot_message, and
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
     // system.
-    let compose_args;
 
     if (draft.type === "stream") {
-        compose_args = {
+        return {
             type: "stream",
             stream_id: draft.stream_id,
             topic: draft.topic,
             content: draft.content,
         };
-    } else {
-        const recipient_emails = draft.private_message_recipient
-            .split(",")
-            .filter((email) => people.is_valid_email_for_compose(email));
-        compose_args = {
-            type: draft.type,
-            private_message_recipient: recipient_emails.join(","),
-            content: draft.content,
-        };
     }
 
-    return compose_args;
+    const recipient_emails = draft.private_message_recipient
+        .split(",")
+        .filter((email) => people.is_valid_email_for_compose(email));
+    return {
+        type: "private",
+        private_message_recipient: recipient_emails.join(","),
+        content: draft.content,
+    };
 }
 
-function draft_notify() {
+function draft_notify(): void {
     // Display a tooltip to notify the user about the saved draft.
     const instance = tippy(".top_left_drafts .unread_count", {
         content: $t({defaultMessage: "Saved as draft"}),
@@ -274,20 +338,25 @@ function draft_notify() {
         placement: "right",
     })[0];
     instance.show();
-    function remove_instance() {
+    function remove_instance(): void {
         instance.destroy();
     }
     setTimeout(remove_instance, 3000);
 }
 
-function maybe_notify(no_notify) {
+function maybe_notify(no_notify: boolean): void {
     if (!no_notify) {
         draft_notify();
     }
 }
 
-export function update_draft(opts = {}) {
-    const no_notify = opts.no_notify || false;
+type UpdateDraftOptions = {
+    no_notify?: boolean;
+    update_count?: boolean;
+};
+
+export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
+    const no_notify = opts.no_notify ?? false;
     const draft = snapshot_message();
 
     if (draft === undefined) {
@@ -312,7 +381,7 @@ export function update_draft(opts = {}) {
     }
 
     // We have never saved a draft for this message, so add one.
-    const update_count = opts.update_count === undefined ? true : opts.update_count;
+    const update_count = opts.update_count ?? true;
     const new_draft_id = draft_model.addDraft(draft, update_count);
     $("textarea#compose-textarea").data("draft-id", new_draft_id);
     maybe_notify(no_notify);
@@ -322,7 +391,11 @@ export function update_draft(opts = {}) {
 
 export const DRAFT_LIFETIME = 30;
 
-export function current_recipient_data() {
+export function current_recipient_data(): {
+    stream_name: string | undefined;
+    topic: string | undefined;
+    private_recipients: string | undefined;
+} {
     // Prioritize recipients from the compose box first. If the compose
     // box isn't open, just return data from the current narrow.
     if (!compose_state.composing()) {
@@ -355,7 +428,9 @@ export function current_recipient_data() {
     };
 }
 
-export function filter_drafts_by_compose_box_and_recipient(drafts) {
+export function filter_drafts_by_compose_box_and_recipient(
+    drafts: Record<string, LocalStorageDraft>,
+): Record<string, LocalStorageDraft> {
     const {stream_name, topic, private_recipients} = current_recipient_data();
     const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
     const narrow_drafts_ids = [];
@@ -364,8 +439,13 @@ export function filter_drafts_by_compose_box_and_recipient(drafts) {
         if (
             stream_id &&
             topic &&
+            draft.type === "stream" &&
             draft.topic &&
-            util.same_recipient(draft, {type: "stream", stream_id, topic})
+            draft.stream_id !== undefined &&
+            util.same_recipient(
+                {type: "stream", stream_id: draft.stream_id, topic: draft.topic},
+                {type: "stream", stream_id, topic},
+            )
         ) {
             narrow_drafts_ids.push(id);
         }
@@ -394,17 +474,39 @@ export function filter_drafts_by_compose_box_and_recipient(drafts) {
     return _.pick(drafts, narrow_drafts_ids);
 }
 
-export function remove_old_drafts() {
+export function remove_old_drafts(): void {
     const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
     const drafts = draft_model.get();
     for (const [id, draft] of Object.entries(drafts)) {
-        if (draft.updatedAt < old_date) {
+        if (draft.updatedAt !== undefined && draft.updatedAt < old_date) {
             draft_model.deleteDraft(id);
         }
     }
 }
 
-export function format_draft(draft) {
+type FormattedDraft =
+    | {
+          is_stream: true;
+          draft_id: string;
+          stream_name?: string;
+          recipient_bar_color: string;
+          stream_privacy_icon_color: string;
+          topic: string;
+          raw_content: string;
+          stream_id: number | undefined;
+          time_stamp: string;
+          invite_only: boolean;
+          is_web_public: boolean;
+      }
+    | {
+          is_stream: false;
+          draft_id: string;
+          recipients: string;
+          raw_content: string;
+          time_stamp: string;
+      };
+
+export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | undefined {
     const id = draft.id;
     const time = new Date(draft.updatedAt);
     let invite_only = false;
@@ -436,9 +538,7 @@ export function format_draft(draft) {
     }
 
     if (draft.type === "stream") {
-        // In case there is no stream for the draft, we need a
-        // single space char for proper rendering of the stream label
-        let stream_name = new Handlebars.SafeString("&nbsp;");
+        let stream_name;
         let sub;
         if (draft.stream_id) {
             sub = sub_store.get(draft.stream_id);
@@ -480,7 +580,7 @@ export function format_draft(draft) {
     };
 }
 
-export function initialize() {
+export function initialize(): void {
     remove_old_drafts();
 
     window.addEventListener("beforeunload", () => {
