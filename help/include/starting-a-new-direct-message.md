@@ -1,4 +1,4 @@
-{!send-group-dm.md!}
+{!send-dm.md!}
 
 !!! tip ""
 
