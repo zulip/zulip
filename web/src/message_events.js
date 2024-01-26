@@ -339,23 +339,7 @@ export function update_messages(events) {
                 }
                 moved_message.last_edit_timestamp = event.edit_timestamp;
 
-                // Remove the Recent Conversations entry for the old topics;
-                // must be called before we call set_message_topic.
-                //
-                // TODO: Use a single bulk request to do this removal.
-                // Note that we need to be careful to only remove IDs
-                // that were present in stream_topic_history data.
-                // This may not be possible to do correctly without extra
-                // complexity; the present loop assumes stream_topic_history has
-                // only messages in message_store, but that's been false
-                // since we added the server_history feature.
-                stream_topic_history.remove_messages({
-                    stream_id: moved_message.stream_id,
-                    topic_name: moved_message.topic,
-                    max_removed_msg_id: moved_message.id,
-                });
-
-                // Update the unread counts; again, this must be called
+                // Update the unread counts; this must be called
                 // before we modify the topic field on the message.
                 unread.update_unread_topics(moved_message, event);
 
@@ -369,14 +353,43 @@ export function update_messages(events) {
                     moved_message.stream_id = new_stream_id;
                     moved_message.display_recipient = new_stream_name;
                 }
-
-                // Add the Recent Conversations entry for the new stream/topics.
-                stream_topic_history.add_message({
-                    stream_id: moved_message.stream_id,
-                    topic_name: moved_message.topic,
-                    message_id: moved_message.id,
-                });
             }
+
+            // In case there are no such messages, set it as -1 here, such that it is
+            // neglected in Math.max calcualtion.
+            const latest_locally_available_message_id = event_messages.length
+                ? event_messages.at(-1).id
+                : -1;
+            const latest_locally_unavailable_message_id = messages_not_available_locally.length
+                ? messages_not_available_locally.at(-1)
+                : -1;
+
+            const max_moved_message_id = Math.max(
+                latest_locally_available_message_id,
+                latest_locally_unavailable_message_id,
+            );
+            stream_topic_history.remove_messages({
+                stream_id: old_stream_id,
+                topic_name: orig_topic,
+                max_removed_msg_id: max_moved_message_id,
+                topic_deleted: event.propagate_mode === "change_all",
+            });
+
+            // Add the Recent Conversations entry for the new stream/topics.
+            // We ignore the messages not available locally here as the message_ids
+            // passed in the event may also contain the messages that we might
+            // not have access to like in the case of topic being edited
+            // in a private stream with protected history.
+            const stream_id = stream_changed ? new_stream_id : old_stream_id;
+            const can_latest_message_be_inaccessible =
+                max_moved_message_id === latest_locally_unavailable_message_id &&
+                !sub_store.get(stream_id).history_public_to_subscribers;
+            stream_topic_history.add_moved_message({
+                stream_id,
+                topic_name: topic_edited ? new_topic : orig_topic,
+                max_moved_message_id,
+                can_latest_message_be_inaccessible,
+            });
 
             const old_stream_name = stream_archived ? undefined : old_stream.name;
             if (
