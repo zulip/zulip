@@ -1,9 +1,11 @@
 import logging
 from collections import Counter
 from datetime import datetime, timezone
+from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Type, TypedDict, TypeVar, Union
 from uuid import UUID
 
+import DNS
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -32,6 +34,7 @@ from corporate.lib.stripe import (
 )
 from corporate.models import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
+from zerver.lib.email_validation import validate_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -57,6 +60,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.types import RemoteRealmDictValue
 from zerver.lib.validator import check_capped_string, check_int, check_string_fixed_length
+from zerver.models.realms import DisposableEmailError
 from zerver.views.push_notifications import check_app_id, validate_token
 from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
@@ -131,6 +135,31 @@ def register_remote_server(
         validate_email(contact_email)
     except ValidationError as e:
         raise JsonableError(e.message)
+
+    # We don't want to allow disposable domains for contact_email either
+    try:
+        validate_disposable(contact_email)
+    except DisposableEmailError:
+        raise JsonableError(_("Please use your real email address."))
+
+    contact_email_domain = Address(addr_spec=contact_email).domain.lower()
+    if contact_email_domain == "example.com":
+        raise JsonableError(_("Invalid address."))
+
+    # Check if the domain has an MX record
+    try:
+        records = DNS.mxlookup(contact_email_domain)
+        dns_ms_check_successful = True
+        if not records:
+            dns_ms_check_successful = False
+    except DNS.Base.ServerError:
+        dns_ms_check_successful = False
+    if not dns_ms_check_successful:
+        raise JsonableError(
+            _("{domain} does not exist or is not configured to accept email.").format(
+                domain=contact_email_domain
+            )
+        )
 
     try:
         validate_uuid(zulip_org_id)

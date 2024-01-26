@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 from unittest import mock, skipUnless
 
 import aioapns
+import DNS
 import orjson
 import responses
 import time_machine
@@ -4743,6 +4744,20 @@ class TestPushNotificationsContent(ZulipTestCase):
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class PushBouncerSignupTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+
+        # Set up a MX lookup mock for all the tests, so that they don't have to
+        # worry about it failing, unless they intentionally want to set it up
+        # to happen.
+        self.mxlookup_patcher = mock.patch("DNS.mxlookup", return_value=[(0, "")])
+        self.mxlookup_mock = self.mxlookup_patcher.start()
+
+    @override
+    def tearDown(self) -> None:
+        self.mxlookup_patcher.stop()
+
     def test_deactivate_remote_server(self) -> None:
         zulip_org_id = str(uuid.uuid4())
         zulip_org_key = get_random_string(64)
@@ -4750,13 +4765,13 @@ class PushBouncerSignupTest(ZulipTestCase):
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,
             hostname="example.com",
-            contact_email="server-admin@example.com",
+            contact_email="server-admin@zulip.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_success(result)
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         self.assertEqual(server.hostname, "example.com")
-        self.assertEqual(server.contact_email, "server-admin@example.com")
+        self.assertEqual(server.contact_email, "server-admin@zulip.com")
 
         result = self.uuid_post(zulip_org_id, "/api/v1/remotes/server/deactivate", subdomain="")
         self.assert_json_success(result)
@@ -4795,22 +4810,10 @@ class PushBouncerSignupTest(ZulipTestCase):
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,
             hostname="invalid-host",
-            contact_email="server-admin@example.com",
+            contact_email="server-admin@zulip.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "invalid-host is not a valid hostname")
-
-    def test_push_signup_invalid_email(self) -> None:
-        zulip_org_id = str(uuid.uuid4())
-        zulip_org_key = get_random_string(64)
-        request = dict(
-            zulip_org_id=zulip_org_id,
-            zulip_org_key=zulip_org_key,
-            hostname="example.com",
-            contact_email="server-admin",
-        )
-        result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Enter a valid email address.")
 
     def test_push_signup_invalid_zulip_org_id(self) -> None:
         zulip_org_id = "x" * RemoteZulipServer.UUID_LENGTH
@@ -4819,7 +4822,7 @@ class PushBouncerSignupTest(ZulipTestCase):
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,
             hostname="example.com",
-            contact_email="server-admin@example.com",
+            contact_email="server-admin@zulip.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "Invalid UUID")
@@ -4839,7 +4842,7 @@ class PushBouncerSignupTest(ZulipTestCase):
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,
             hostname="example.com",
-            contact_email="server-admin@example.com",
+            contact_email="server-admin@zulip.com",
         )
 
         time_sent = now()
@@ -4849,7 +4852,7 @@ class PushBouncerSignupTest(ZulipTestCase):
         self.assert_json_success(result)
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         self.assertEqual(server.hostname, "example.com")
-        self.assertEqual(server.contact_email, "server-admin@example.com")
+        self.assertEqual(server.contact_email, "server-admin@zulip.com")
         self.assertEqual(server.last_request_datetime, time_sent)
 
         # Update our hostname
@@ -4857,7 +4860,7 @@ class PushBouncerSignupTest(ZulipTestCase):
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,
             hostname="zulip.example.com",
-            contact_email="server-admin@example.com",
+            contact_email="server-admin@zulip.com",
         )
 
         with time_machine.travel(time_sent + timedelta(minutes=1), tick=False):
@@ -4865,7 +4868,7 @@ class PushBouncerSignupTest(ZulipTestCase):
         self.assert_json_success(result)
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         self.assertEqual(server.hostname, "zulip.example.com")
-        self.assertEqual(server.contact_email, "server-admin@example.com")
+        self.assertEqual(server.contact_email, "server-admin@zulip.com")
         self.assertEqual(server.last_request_datetime, time_sent + timedelta(minutes=1))
 
         # Now test rotating our key
@@ -4873,14 +4876,14 @@ class PushBouncerSignupTest(ZulipTestCase):
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,
             hostname="example.com",
-            contact_email="server-admin@example.com",
+            contact_email="server-admin@zulip.com",
             new_org_key=get_random_string(64),
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_success(result)
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         self.assertEqual(server.hostname, "example.com")
-        self.assertEqual(server.contact_email, "server-admin@example.com")
+        self.assertEqual(server.contact_email, "server-admin@zulip.com")
         zulip_org_key = request["new_org_key"]
         self.assertEqual(server.api_key, zulip_org_key)
 
@@ -4889,20 +4892,20 @@ class PushBouncerSignupTest(ZulipTestCase):
             zulip_org_id=zulip_org_id,
             zulip_org_key=zulip_org_key,
             hostname="zulip.example.com",
-            contact_email="new-server-admin@example.com",
+            contact_email="new-server-admin@zulip.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_success(result)
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
         self.assertEqual(server.hostname, "zulip.example.com")
-        self.assertEqual(server.contact_email, "new-server-admin@example.com")
+        self.assertEqual(server.contact_email, "new-server-admin@zulip.com")
 
         # Now test trying to double-create with a new random key fails
         request = dict(
             zulip_org_id=zulip_org_id,
             zulip_org_key=get_random_string(64),
             hostname="example.com",
-            contact_email="server-admin@example.com",
+            contact_email="server-admin@zulip.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(
@@ -4934,6 +4937,41 @@ class PushBouncerSignupTest(ZulipTestCase):
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "A server with hostname example.com already exists")
+
+    def test_register_contact_email_validation_rules(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+        )
+
+        request["contact_email"] = "server-admin"
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "Enter a valid email address.")
+
+        request["contact_email"] = "admin@example.com"
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "Invalid address.")
+
+        # An example disposable domain.
+        request["contact_email"] = "admin@mailnator.com"
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "Please use your real email address.")
+
+        request["contact_email"] = "admin@zulip.com"
+        with mock.patch("DNS.mxlookup", side_effect=DNS.Base.ServerError("test", 1)):
+            result = self.client_post("/api/v1/remotes/server/register", request)
+            self.assert_json_error(
+                result, "zulip.com does not exist or is not configured to accept email."
+            )
+
+        with mock.patch("DNS.mxlookup", return_value=[]):
+            result = self.client_post("/api/v1/remotes/server/register", request)
+            self.assert_json_error(
+                result, "zulip.com does not exist or is not configured to accept email."
+            )
 
 
 class TestUserPushIdentityCompat(ZulipTestCase):
