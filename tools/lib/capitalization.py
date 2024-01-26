@@ -75,6 +75,7 @@ IGNORED_PHRASES = [
     r"keyword",
     r"streamname",
     r"user@example\.com",
+    r"example\.com",
     r"acme",
     # Fragments of larger strings
     r"is …",
