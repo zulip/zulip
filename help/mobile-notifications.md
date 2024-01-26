@@ -189,6 +189,23 @@ see a warning banner in the mobile app if:
 These banners can be snoozed temporarily, or permanently silenced in
 notification settings.
 
+#### Configure warnings about mobile notifications
+
+{start_tabs}
+
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Settings**.
+
+1. Tap **Notifications**.
+
+1. Toggle **Silence warnings about disabled mobile notifications** to
+   configure warning banners in the mobile app.
+
+{end_tabs}
+
 ### Contacting Zulip support
 
 If you are still having trouble with your push notifications, you can send an
