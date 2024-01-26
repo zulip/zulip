@@ -11,7 +11,7 @@ remove participants as needed.
 
 ## Send a DM
 
-{!send-group-dm.md!}
+{!send-dm.md!}
 
 ## Access a DM
 
