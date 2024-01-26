@@ -118,11 +118,13 @@ feel excessive.
 ## Low-traffic newsletter
 
 Zulip sends out a low-traffic newsletter (expect 2-4 emails a year)
-announcing major changes in Zulip.
+to Zulip Cloud users announcing major changes in Zulip.
 
 ### Managing your newsletter subscription
 
 {start_tabs}
+
+{tab|zulip-cloud}
 
 {settings_tab|notifications}
 
