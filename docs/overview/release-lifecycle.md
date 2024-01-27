@@ -167,8 +167,8 @@ releases, and do not support them in production.
 The Zulip server project uses GitHub projects and labels to structure
 communication about priorities:
 
-- We use GitHub projects to track goals for major releases (e.g., [Zulip Server
-  8.0 priorities](https://github.com/orgs/zulip/projects/6)). The project board
+- We use GitHub projects to track goals for major releases (e.g., [Zulip 9.0
+  priorities](https://github.com/orgs/zulip/projects/9/)). The project board
   should be seen a list of priorities being _considered_ for the release, not a
   guarantee that features will be included. As the release date approaches,
   features that will not make it into the release are dropped from the project
