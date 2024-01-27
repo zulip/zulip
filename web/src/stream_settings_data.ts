@@ -63,7 +63,7 @@ function get_subs_for_settings(subs: StreamSubscription[]): SettingsSubscription
     // delegating, so that we can more efficiently compute subscriber counts
     // (in bulk).  If that plan appears to have been aborted, feel free to
     // inline this.
-    return subs.map((sub) => get_sub_for_settings(sub));
+    return subs.filter((sub) => !sub.is_archived).map((sub) => get_sub_for_settings(sub));
 }
 
 export function get_updated_unsorted_subs(): SettingsSubscription[] {

@@ -223,14 +223,18 @@ export function validate_channels_settings_hash(hash: string): string {
         const stream_id = Number.parseInt(section, 10);
         const sub = sub_store.get(stream_id);
         // There are a few situations where we can't display stream settings:
-        // 1. This is a stream that's been archived. (sub=undefined)
+        // 1. This is a stream that's been archived. (sub.is_archived=true)
         // 2. The stream ID is invalid. (sub=undefined)
         // 3. The current user is a guest, and was unsubscribed from the stream
         //    stream in the current session. (In future sessions, the stream will
         //    not be in sub_store).
         //
         // In all these cases we redirect the user to 'subscribed' tab.
-        if (sub === undefined || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
+        if (
+            sub === undefined ||
+            sub.is_archived ||
+            (page_params.is_guest && !stream_data.is_subscribed(stream_id))
+        ) {
             return channels_settings_section_url();
         }
 
