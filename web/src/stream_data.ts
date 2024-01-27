@@ -629,6 +629,11 @@ export function get_stream_privacy_policy(stream_id: number): string {
     return settings_config.stream_privacy_policy_values.private_with_public_history.code;
 }
 
+export function is_stream_archived(stream_id: number): boolean {
+    const sub = sub_store.get(stream_id);
+    return sub ? sub.is_archived : false;
+}
+
 export function is_web_public(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
     return sub ? sub.is_web_public : false;
