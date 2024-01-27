@@ -1213,6 +1213,15 @@ td.pointer {
             }
         }
     }
+
+    .message-header-stream-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .message-header-stream-archived {
+        color: var(--color-text-message-header-archived);
+    }
 }
 
 .recipient_bar_controls {
@@ -1714,6 +1723,12 @@ div.focused-message-list {
         flex: 0 1 auto;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .message-header-archived {
+        color: var(--color-text-message-header-archived);
+        cursor: default;
+        padding-left: 5px;
     }
 
     .narrow_description {

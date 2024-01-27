@@ -28,6 +28,7 @@ import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
+import * as message_view_header from "./message_view_header";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
