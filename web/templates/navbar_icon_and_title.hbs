@@ -4,3 +4,10 @@
 <i class="navbar-icon fa fa-{{icon}}" aria-hidden="true"></i>
 {{/if}}
 <span class="message-header-navbar-title">{{title}}</span>
+{{#if stream}}
+    {{#if stream.is_archived}}
+    <span class="message-header-archived">
+        <i class="archived-indicator">({{t 'archived' }})</i>
+    </span>
+    {{/if}}
+{{/if}}

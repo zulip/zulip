@@ -716,6 +716,7 @@
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-default: hsl(0deg 0% 15%);
+    --color-text-message-header-archived: hsl(0deg 0% 50%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
     /* Light and dark mode both use the same hover color on
