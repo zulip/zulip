@@ -135,54 +135,6 @@ class Message(AbstractMessage):
 
     DEFAULT_SELECT_RELATED = ["sender", "realm", "recipient", "sending_client"]
 
-    def topic_name(self) -> str:
-        """
-        Please start using this helper to facilitate an
-        eventual switch over to a separate topic table.
-        """
-        return self.subject
-
-    def set_topic_name(self, topic_name: str) -> None:
-        self.subject = topic_name
-
-    def is_stream_message(self) -> bool:
-        """
-        Find out whether a message is a stream message by
-        looking up its recipient.type.  TODO: Make this
-        an easier operation by denormalizing the message
-        type onto Message, either explicitly (message.type)
-        or implicitly (message.stream_id is not None).
-        """
-        return self.recipient.type == Recipient.STREAM
-
-    def get_realm(self) -> Realm:
-        return self.realm
-
-    def save_rendered_content(self) -> None:
-        self.save(update_fields=["rendered_content", "rendered_content_version"])
-
-    @staticmethod
-    def need_to_render_content(
-        rendered_content: Optional[str],
-        rendered_content_version: Optional[int],
-        markdown_version: int,
-    ) -> bool:
-        return (
-            rendered_content is None
-            or rendered_content_version is None
-            or rendered_content_version < markdown_version
-        )
-
-    @staticmethod
-    def is_status_message(content: str, rendered_content: str) -> bool:
-        """
-        "status messages" start with /me and have special rendering:
-            /me loves chocolate -> Full Name loves chocolate
-        """
-        if content.startswith("/me "):
-            return True
-        return False
-
     class Meta:
         indexes = [
             GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
@@ -256,6 +208,54 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_id",
             ),
         ]
+
+    def topic_name(self) -> str:
+        """
+        Please start using this helper to facilitate an
+        eventual switch over to a separate topic table.
+        """
+        return self.subject
+
+    def set_topic_name(self, topic_name: str) -> None:
+        self.subject = topic_name
+
+    def is_stream_message(self) -> bool:
+        """
+        Find out whether a message is a stream message by
+        looking up its recipient.type.  TODO: Make this
+        an easier operation by denormalizing the message
+        type onto Message, either explicitly (message.type)
+        or implicitly (message.stream_id is not None).
+        """
+        return self.recipient.type == Recipient.STREAM
+
+    def get_realm(self) -> Realm:
+        return self.realm
+
+    def save_rendered_content(self) -> None:
+        self.save(update_fields=["rendered_content", "rendered_content_version"])
+
+    @staticmethod
+    def need_to_render_content(
+        rendered_content: Optional[str],
+        rendered_content_version: Optional[int],
+        markdown_version: int,
+    ) -> bool:
+        return (
+            rendered_content is None
+            or rendered_content_version is None
+            or rendered_content_version < markdown_version
+        )
+
+    @staticmethod
+    def is_status_message(content: str, rendered_content: str) -> bool:
+        """
+        "status messages" start with /me and have special rendering:
+            /me loves chocolate -> Full Name loves chocolate
+        """
+        if content.startswith("/me "):
+            return True
+        return False
 
 
 def get_context_for_message(message: Message) -> QuerySet[Message]:
@@ -364,6 +364,10 @@ class AbstractReaction(AbstractEmoji):
 class Reaction(AbstractReaction):
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
+    @override
+    def __str__(self) -> str:
+        return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
+
     @staticmethod
     def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
         fields = [
@@ -379,10 +383,6 @@ class Reaction(AbstractReaction):
         # for clients to display reactions in order without
         # client-side sorting code.
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
-
-    @override
-    def __str__(self) -> str:
-        return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
 
 
 class ArchivedReaction(AbstractReaction):
