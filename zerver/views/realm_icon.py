@@ -22,7 +22,7 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
     [icon_file] = request.FILES.values()
     assert isinstance(icon_file, UploadedFile)
     assert icon_file.size is not None
-    if (settings.MAX_ICON_FILE_SIZE_MIB * 1024 * 1024) < icon_file.size:
+    if icon_file.size > settings.MAX_ICON_FILE_SIZE_MIB * 1024 * 1024:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
                 max_size=settings.MAX_ICON_FILE_SIZE_MIB,
