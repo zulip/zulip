@@ -209,16 +209,6 @@ class RealmAuditLog(AbstractRealmAuditLog):
     )
     event_last_message_id = models.IntegerField(null=True)
 
-    @override
-    def __str__(self) -> str:
-        if self.modified_user is not None:
-            return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
-        if self.modified_stream is not None:
-            return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
-        if self.modified_user_group is not None:
-            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
-        return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
-
     class Meta:
         indexes = [
             models.Index(
@@ -233,3 +223,13 @@ class RealmAuditLog(AbstractRealmAuditLog):
                 ),
             )
         ]
+
+    @override
+    def __str__(self) -> str:
+        if self.modified_user is not None:
+            return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
+        if self.modified_stream is not None:
+            return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
+        if self.modified_user_group is not None:
+            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
+        return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
