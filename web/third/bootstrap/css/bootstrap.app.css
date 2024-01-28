@@ -79,22 +79,6 @@ a:focus {
   color: #005580;
   text-decoration: underline;
 }
-.container {
-  width: 940px;
-}
-.container {
-  margin-right: auto;
-  margin-left: auto;
-}
-.container:before,
-.container:after {
-  display: table;
-  content: "";
-  line-height: 0;
-}
-.container:after {
-  clear: both;
-}
 p {
   margin: 0 0 10px;
 }
@@ -544,49 +528,13 @@ button.close {
     padding-left: 20px;
     padding-right: 20px;
   }
-  .container {
-    width: auto;
-  }
-  .row {
-    margin-left: 0;
-  }
 }
 @media (min-width: 768px) and (max-width: 979px) {
-  .row {
-    margin-left: -20px;
-  }
-  .row:before,
-  .row:after {
-    display: table;
-    content: "";
-    line-height: 0;
-  }
-  .row:after {
-    clear: both;
-  }
-  .container {
-    width: 724px;
-  }
   input {
     margin-left: 0;
   }
 }
 @media (min-width: 1180px) {
-  .row {
-    margin-left: -30px;
-  }
-  .row:before,
-  .row:after {
-    display: table;
-    content: "";
-    line-height: 0;
-  }
-  .row:after {
-    clear: both;
-  }
-  .container {
-    width: 1170px;
-  }
   input {
     margin-left: 0;
   }
@@ -594,10 +542,5 @@ button.close {
 @media (max-width: 979px) {
   body {
     padding-top: 0;
-  }
-  .navbar .container {
-    width: auto;
-    max-width: 724px; /* same as a normal container */
-    padding: 0;
   }
 }
