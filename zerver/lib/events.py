@@ -350,9 +350,9 @@ def fetch_initial_state_data(
         state["server_emoji_data_url"] = emoji.data_url()
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
-        state[
-            "event_queue_longpoll_timeout_seconds"
-        ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
+        state["event_queue_longpoll_timeout_seconds"] = (
+            settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
+        )
 
         # TODO: This probably belongs on the server object.
         state["realm_default_external_accounts"] = get_default_external_accounts()
@@ -393,15 +393,15 @@ def fetch_initial_state_data(
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
         state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS
         # Typing notifications protocol parameters for client behavior.
-        state[
-            "server_typing_started_expiry_period_milliseconds"
-        ] = settings.TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS
-        state[
-            "server_typing_stopped_wait_period_milliseconds"
-        ] = settings.TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS
-        state[
-            "server_typing_started_wait_period_milliseconds"
-        ] = settings.TYPING_STARTED_WAIT_PERIOD_MILLISECONDS
+        state["server_typing_started_expiry_period_milliseconds"] = (
+            settings.TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS
+        )
+        state["server_typing_stopped_wait_period_milliseconds"] = (
+            settings.TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS
+        )
+        state["server_typing_started_wait_period_milliseconds"] = (
+            settings.TYPING_STARTED_WAIT_PERIOD_MILLISECONDS
+        )
 
         state["server_supported_permission_settings"] = get_server_supported_permission_settings()
     if want("realm_user_settings_defaults"):
@@ -907,9 +907,9 @@ def apply_event(
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_private_streams"] = user_profile.can_create_private_streams()
                     state["can_create_public_streams"] = user_profile.can_create_public_streams()
-                    state[
-                        "can_create_web_public_streams"
-                    ] = user_profile.can_create_web_public_streams()
+                    state["can_create_web_public_streams"] = (
+                        user_profile.can_create_web_public_streams()
+                    )
                     state["can_create_streams"] = (
                         state["can_create_private_streams"]
                         or state["can_create_public_streams"]

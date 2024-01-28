@@ -1180,7 +1180,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_id}.png"
         )
         verify_body_include = [
-            f'<img alt=":green_tick:" src="{realm_emoji_url}" style="height: 20px;" title="green tick">'
+            f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick" style="height: 20px;">'
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(
@@ -1200,7 +1200,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "Extremely personal message with a hamburger :hamburger:!",
         )
         verify_body_include = [
-            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" style="height: 20px;" title="hamburger">'
+            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(
@@ -1219,7 +1219,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         stream_id = get_stream("Verona", get_realm("zulip")).id
         href = f"http://zulip.testserver/#narrow/stream/{stream_id}-Verona"
         verify_body_include = [
-            f'<a class="stream" data-stream-id="{stream_id}" href="{href}">#Verona</a'
+            f'<a class="stream" href="{href}" data-stream-id="{stream_id}">#Verona</a'
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(

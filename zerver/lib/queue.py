@@ -80,9 +80,9 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         if self.rabbitmq_heartbeat == 0:
             tcp_options = dict(TCP_KEEPIDLE=60 * 5)
 
-        ssl_options: Union[
-            Type[pika.ConnectionParameters._DEFAULT], pika.SSLOptions
-        ] = pika.ConnectionParameters._DEFAULT
+        ssl_options: Union[Type[pika.ConnectionParameters._DEFAULT], pika.SSLOptions] = (
+            pika.ConnectionParameters._DEFAULT
+        )
         if settings.RABBITMQ_USE_TLS:
             ssl_options = pika.SSLOptions(context=ssl.create_default_context())
 
@@ -313,9 +313,11 @@ class TornadoQueueClient(QueueClient[Channel]):
         self._connection_failure_count += 1
         retry_secs = self.CONNECTION_RETRY_SECS
         self.log.log(
-            logging.CRITICAL
-            if self._connection_failure_count > self.CONNECTION_FAILURES_BEFORE_NOTIFY
-            else logging.WARNING,
+            (
+                logging.CRITICAL
+                if self._connection_failure_count > self.CONNECTION_FAILURES_BEFORE_NOTIFY
+                else logging.WARNING
+            ),
             "TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs...",
             retry_secs,
         )

@@ -24,9 +24,11 @@ def api_bitbucket_webhook(
 
     commits = [
         {
-            "name": commit["author"].tame(check_string)
-            if "author" in commit
-            else payload.get("user", "Someone").tame(check_string),
+            "name": (
+                commit["author"].tame(check_string)
+                if "author" in commit
+                else payload.get("user", "Someone").tame(check_string)
+            ),
             "sha": commit["raw_node"].tame(check_string),
             "message": commit["message"].tame(check_string),
             "url": "{}{}commits/{}".format(

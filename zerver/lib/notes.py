@@ -50,5 +50,4 @@ class BaseNotes(Generic[_KeyT, _DataT], metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def init_notes(cls) -> _DataT:
-        ...
+    def init_notes(cls) -> _DataT: ...

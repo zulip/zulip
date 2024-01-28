@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from stripe.webhook import Webhook
 
 from corporate.lib.stripe import STRIPE_API_VERSION
 from corporate.lib.stripe_event_handler import (
@@ -27,14 +26,14 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
     ):  # nocoverage: We can't verify the signature in test suite since we fetch the events
         # from Stripe events API and manually post to the webhook endpoint.
         try:
-            stripe_event = Webhook.construct_event(
+            stripe_event = stripe.Webhook.construct_event(
                 request.body,
                 request.headers["Stripe-Signature"],
                 stripe_webhook_endpoint_secret,
             )
         except ValueError:
             return HttpResponse(status=400)
-        except stripe.error.SignatureVerificationError:
+        except stripe.SignatureVerificationError:
             return HttpResponse(status=400)
     else:
         assert not settings.PRODUCTION

@@ -133,9 +133,9 @@ class Session(models.Model):
 
         session_dict["status"] = self.get_status_as_string()
         session_dict["type"] = self.get_type_as_string()
-        session_dict[
-            "is_manual_license_management_upgrade_session"
-        ] = self.is_manual_license_management_upgrade_session
+        session_dict["is_manual_license_management_upgrade_session"] = (
+            self.is_manual_license_management_upgrade_session
+        )
         event = self.get_last_associated_event()
         if event is not None:
             session_dict["event_handler"] = event.get_event_handler_details_as_dict()

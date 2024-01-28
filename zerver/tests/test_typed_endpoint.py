@@ -50,8 +50,7 @@ class TestEndpoint(ZulipTestCase):
 
     def test_coerce(self) -> None:
         @typed_endpoint
-        def view(request: HttpRequest, *, strict_int: int) -> None:
-            ...
+        def view(request: HttpRequest, *, strict_int: int) -> None: ...
 
         with self.assertRaisesMessage(JsonableError, "strict_int is not an integer"):
             call_endpoint(view, HostRequestMock({"strict_int": orjson.dumps("10").decode()}))
@@ -322,8 +321,7 @@ class TestEndpoint(ZulipTestCase):
             request: HttpRequest,
             *,
             path_var_default: PathOnly[str] = "test",
-        ) -> None:
-            ...
+        ) -> None: ...
 
         with self.assertRaisesMessage(
             AssertionError, "Path-only parameter path_var_default should not have a default value"
@@ -346,8 +344,7 @@ class TestEndpoint(ZulipTestCase):
             ],
             paz: PathOnly[int],
             other: str,
-        ) -> None:
-            ...
+        ) -> None: ...
 
         from zerver.lib.request import arguments_map
 
@@ -365,16 +362,14 @@ class TestEndpoint(ZulipTestCase):
                 Json[int],
                 ApiParamConfig(path_only=True),
             ],
-        ) -> None:
-            ...
+        ) -> None: ...
 
         def annotated_with_repeated_api_param_config(
             request: HttpRequest,
             user_profile: UserProfile,
             *,
             foo: Annotated[Json[int], ApiParamConfig(), ApiParamConfig()],
-        ) -> None:
-            ...
+        ) -> None: ...
 
         with self.assertRaisesMessage(
             AssertionError, "ApiParamConfig can only be defined once per parameter"
@@ -408,8 +403,7 @@ class TestEndpoint(ZulipTestCase):
                 StringConstraints(strip_whitespace=True, max_length=3),
                 ApiParamConfig("test"),
             ] = None,
-        ) -> None:
-            ...
+        ) -> None: ...
 
         with self.assertRaisesMessage(ApiParamValidationError, "test is too long"):
             call_endpoint(no_nesting, HostRequestMock({"test": "long"}))
@@ -510,11 +504,9 @@ class TestEndpoint(ZulipTestCase):
             )
 
     def test_expect_no_parameters(self) -> None:
-        def no_parameter(request: HttpRequest) -> None:
-            ...
+        def no_parameter(request: HttpRequest) -> None: ...
 
-        def has_parameters(request: HttpRequest, *, foo: int, bar: str) -> None:
-            ...
+        def has_parameters(request: HttpRequest, *, foo: int, bar: str) -> None: ...
 
         with self.assertRaisesRegex(AssertionError, "there is no keyword-only parameter found"):
             typed_endpoint(no_parameter)
@@ -551,13 +543,11 @@ class TestEndpoint(ZulipTestCase):
         # all. The only possible way for val to be None is through the default
         # value (if it has one).
         @typed_endpoint
-        def foo(request: HttpRequest, *, val: Optional[Json[int]]) -> None:
-            ...
+        def foo(request: HttpRequest, *, val: Optional[Json[int]]) -> None: ...
 
         # Json[Optional[int]] however, allows client specified None value.
         @typed_endpoint
-        def bar(request: HttpRequest, *, val: Json[Optional[int]]) -> None:
-            ...
+        def bar(request: HttpRequest, *, val: Json[Optional[int]]) -> None: ...
 
         with self.assertRaisesMessage(ApiParamValidationError, "val is not an integer"):
             call_endpoint(foo, HostRequestMock({"val": orjson.dumps(None).decode()}))
@@ -640,8 +630,7 @@ class ValidationErrorHandlingTest(ZulipTestCase):
                 input_type: Any = subtest.param_type
 
                 @typed_endpoint
-                def func(request: HttpRequest, *, input: input_type) -> None:
-                    ...
+                def func(request: HttpRequest, *, input: input_type) -> None: ...
 
                 with self.assertRaises(ApiParamValidationError) as m:
                     call_endpoint(func, HostRequestMock({"input": subtest.input_data}))

@@ -481,9 +481,9 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     assert isinstance(validated_user_profile, UserProfile)
 
     django_login(request, validated_user_profile)
-    RequestNotes.get_notes(
-        request
-    ).requester_for_logs = validated_user_profile.format_requester_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = (
+        validated_user_profile.format_requester_for_logs()
+    )
     process_client(request, validated_user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Log in with two factor authentication as well.
@@ -537,15 +537,13 @@ def human_users_only(
     return _wrapped_view_func
 
 
+# Based on Django 1.8's @login_required
 @overload
 def zulip_login_required(
     function: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
     redirect_field_name: str = REDIRECT_FIELD_NAME,
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
-    ...
-
-
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]: ...
 @overload
 def zulip_login_required(
     function: None,
@@ -554,11 +552,7 @@ def zulip_login_required(
 ) -> Callable[
     [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
     Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
-]:
-    ...
-
-
-# Based on Django 1.8's @login_required
+]: ...
 def zulip_login_required(
     function: Optional[Callable[Concatenate[HttpRequest, ParamT], HttpResponse]] = None,
     redirect_field_name: str = REDIRECT_FIELD_NAME,

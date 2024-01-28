@@ -247,9 +247,9 @@ def send_message_backend(
     )
     data["id"] = sent_message_result.message_id
     if sent_message_result.automatic_new_visibility_policy:
-        data[
-            "automatic_new_visibility_policy"
-        ] = sent_message_result.automatic_new_visibility_policy
+        data["automatic_new_visibility_policy"] = (
+            sent_message_result.automatic_new_visibility_policy
+        )
     return json_success(request, data=data)
 
 

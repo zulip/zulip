@@ -160,9 +160,11 @@ def get_issue_body(helper: Helper) -> str:
         action=action,
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
-        message=None
-        if action in ("assigned", "unassigned")
-        else issue["body"].tame(check_none_or(check_string)),
+        message=(
+            None
+            if action in ("assigned", "unassigned")
+            else issue["body"].tame(check_none_or(check_string))
+        ),
         title=issue["title"].tame(check_string) if include_title else None,
     )
 

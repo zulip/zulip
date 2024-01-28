@@ -6,6 +6,7 @@ Tips for notification output:
 value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
+
 from typing import Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest, HttpResponse
