@@ -570,13 +570,14 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         # Let upstream's implementation do its job as it is, we'll
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
         # an inline code span.
         el, start, end = ret = super().handleMatch(m, data)
         if el is not None and m.group(3):
+            assert isinstance(el, Element)
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
             el.text = markdown.util.AtomicString(markdown.util.code_escape(m.group(3)))
         return ret
@@ -1492,7 +1493,7 @@ class UnicodeEmoji(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, match: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         orig_syntax = match.group("syntax")
 
         # We want to avoid turning things like arrows (↔) and keycaps (numbers
@@ -1840,7 +1841,7 @@ class LinkifierPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         url = url_to_a(
             db_data,
@@ -1861,7 +1862,7 @@ class UserMentionPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1927,7 +1928,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1968,7 +1969,7 @@ class StreamPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("stream_name")
 
         stream_id = self.find_stream_id(name)
@@ -2000,7 +2001,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
@@ -2121,11 +2122,11 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         ret = super().handleMatch(m, data)
         if ret[0] is not None:
-            el: Optional[Element]
             el, match_start, index = ret
+            assert isinstance(el, Element)
             el = self.zulip_specific_link_changes(el)
             if el is not None:
                 return el, match_start, index

@@ -393,8 +393,7 @@ def pr_comment_handler(
 class EventHandler(Protocol):
     def __call__(
         self, payload: WildValue, branches: Optional[str], include_title: Optional[str]
-    ) -> List[Dict[str, str]]:
-        ...
+    ) -> List[Dict[str, str]]: ...
 
 
 EVENT_HANDLER_MAP: Dict[str, EventHandler] = {

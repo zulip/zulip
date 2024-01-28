@@ -10,7 +10,6 @@ import boto3
 import botocore
 from botocore.client import Config
 from django.conf import settings
-from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
 from typing_extensions import override
 
@@ -107,7 +106,7 @@ def upload_image_to_s3(
 
 
 def get_signed_upload_url(path: str, force_download: bool = False) -> str:
-    client: S3Client = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET).meta.client  # type: ignore[assignment]  # https://github.com/youtype/mypy_boto3_builder/issues/239
+    client = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET).meta.client
     params = {
         "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
         "Key": path,
@@ -164,7 +163,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # We do not access self.avatar_bucket.meta.client directly,
         # since that client is auth'd, and we want only the direct
         # unauthed endpoint here.
-        client: S3Client = get_bucket(self.avatar_bucket.name, authed=False).meta.client  # type: ignore[assignment]  # https://github.com/youtype/mypy_boto3_builder/issues/239
+        client = get_bucket(self.avatar_bucket.name, authed=False).meta.client
         dummy_signed_url = client.generate_presigned_url(
             ClientMethod="get_object",
             Params={

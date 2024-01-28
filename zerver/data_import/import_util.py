@@ -214,8 +214,7 @@ def build_subscription(recipient_id: int, user_id: int, subscription_id: int) ->
 
 
 class GetUsers(Protocol):
-    def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]:
-        ...
+    def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]: ...
 
 
 def build_stream_subscriptions(

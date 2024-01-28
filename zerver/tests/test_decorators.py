@@ -70,9 +70,9 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(parse_client(req), ("Unspecified", None))
 
         req = HostRequestMock()
-        req.META[
-            "HTTP_USER_AGENT"
-        ] = "ZulipElectron/4.0.3 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36"
+        req.META["HTTP_USER_AGENT"] = (
+            "ZulipElectron/4.0.3 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36"
+        )
         self.assertEqual(parse_client(req), ("ZulipElectron", "4.0.3"))
 
         req = HostRequestMock()
@@ -89,23 +89,23 @@ class DecoratorTestCase(ZulipTestCase):
 
         # TODO: This should ideally be Firefox.
         req = HostRequestMock()
-        req.META[
-            "HTTP_USER_AGENT"
-        ] = "Mozilla/5.0 (X11; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0"
+        req.META["HTTP_USER_AGENT"] = (
+            "Mozilla/5.0 (X11; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0"
+        )
         self.assertEqual(parse_client(req), ("Mozilla", None))
 
         # TODO: This should ideally be Chrome.
         req = HostRequestMock()
-        req.META[
-            "HTTP_USER_AGENT"
-        ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.43 Safari/537.36"
+        req.META["HTTP_USER_AGENT"] = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.43 Safari/537.36"
+        )
         self.assertEqual(parse_client(req), ("Mozilla", None))
 
         # TODO: This should ideally be Mobile Safari if we had better user-agent parsing.
         req = HostRequestMock()
-        req.META[
-            "HTTP_USER_AGENT"
-        ] = "Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36"
+        req.META["HTTP_USER_AGENT"] = (
+            "Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36"
+        )
         self.assertEqual(parse_client(req), ("Mozilla", None))
 
         post_req_with_client = HostRequestMock()

@@ -17,6 +17,7 @@ from users:
     And then on top of that, we want to represent narrow
     specification internally as dataclasses.
 """
+
 from dataclasses import dataclass
 from typing import Collection, Sequence
 

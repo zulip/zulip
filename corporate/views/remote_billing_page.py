@@ -522,15 +522,15 @@ def remote_billing_legacy_server_login(
     # authenticated as a billing admin for this remote server, so we need to store
     # our usual IdentityDict structure in the session.
     request.session["remote_billing_identities"] = {}
-    request.session["remote_billing_identities"][
-        f"remote_server:{remote_server_uuid}"
-    ] = LegacyServerIdentityDict(
-        remote_server_uuid=remote_server_uuid,
-        authenticated_at=datetime_to_timestamp(timezone_now()),
-        # The lack of remote_billing_user_id indicates the auth hasn't been completed.
-        # This means access to authenticated endpoints will be denied. Only proceeding
-        # to the next step in the flow is permitted with this.
-        remote_billing_user_id=None,
+    request.session["remote_billing_identities"][f"remote_server:{remote_server_uuid}"] = (
+        LegacyServerIdentityDict(
+            remote_server_uuid=remote_server_uuid,
+            authenticated_at=datetime_to_timestamp(timezone_now()),
+            # The lack of remote_billing_user_id indicates the auth hasn't been completed.
+            # This means access to authenticated endpoints will be denied. Only proceeding
+            # to the next step in the flow is permitted with this.
+            remote_billing_user_id=None,
+        )
     )
 
     context = {
@@ -717,14 +717,14 @@ def remote_billing_legacy_server_from_login_confirmation_link(
     # if the user came here e.g. in a different browser than they
     # started the login flow in.)
     request.session["remote_billing_identities"] = {}
-    request.session["remote_billing_identities"][
-        f"remote_server:{remote_server_uuid}"
-    ] = LegacyServerIdentityDict(
-        remote_server_uuid=remote_server_uuid,
-        authenticated_at=datetime_to_timestamp(timezone_now()),
-        # Having a remote_billing_user_id indicates the auth has been completed.
-        # The user will now be granted access to authenticated endpoints.
-        remote_billing_user_id=remote_billing_user.id,
+    request.session["remote_billing_identities"][f"remote_server:{remote_server_uuid}"] = (
+        LegacyServerIdentityDict(
+            remote_server_uuid=remote_server_uuid,
+            authenticated_at=datetime_to_timestamp(timezone_now()),
+            # Having a remote_billing_user_id indicates the auth has been completed.
+            # The user will now be granted access to authenticated endpoints.
+            remote_billing_user_id=remote_billing_user.id,
+        )
     )
 
     next_page = prereg_object.next_page

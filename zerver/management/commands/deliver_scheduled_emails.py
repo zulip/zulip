@@ -4,6 +4,7 @@ various things (e.g. invitation reminders and welcome emails).
 
 This management command is run via supervisor.
 """
+
 import logging
 import time
 from typing import Any

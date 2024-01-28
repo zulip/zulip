@@ -129,9 +129,11 @@ To learn more about the test itself, see zerver/openapi/test_curl_examples.py.
                             file_name=file_name,
                             line=line,
                             curl_command=generated_curl_command,
-                            response=response_json
-                            if response is None
-                            else json.dumps(response, indent=4),
+                            response=(
+                                response_json
+                                if response is None
+                                else json.dumps(response, indent=4)
+                            ),
                         )
                     )
                     raise
