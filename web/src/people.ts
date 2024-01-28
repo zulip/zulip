@@ -475,8 +475,10 @@ export function get_recipients(user_ids_string: string): string {
         return my_full_name();
     }
 
-    const names = get_display_full_names(other_ids).sort();
-    return names.join(", ");
+    const names = get_display_full_names(other_ids)
+    const caseInsensitiveCompare = (a: string, b: string) :number => a.toLowerCase().localeCompare(b.toLowerCase());
+    const sortedNames = names.sort(caseInsensitiveCompare);
+    return sortedNames.join(", ");
 }
 
 export function pm_reply_user_string(message: Message): string | undefined {
