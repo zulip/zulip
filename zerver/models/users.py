@@ -579,6 +579,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         ROLE_GUEST: gettext_lazy("Guest"),
     }
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_userprofile_email_idx"),
+        ]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.email} {self.realm!r}"
+
     def get_role_name(self) -> str:
         return str(self.ROLE_ID_TO_NAME_MAP[self.role])
 
@@ -628,10 +637,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             return True
         else:
             return False
-
-    @override
-    def __str__(self) -> str:
-        return f"{self.email} {self.realm!r}"
 
     @property
     def is_provisional_member(self) -> bool:
@@ -842,11 +847,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             raise PasswordTooWeakError
 
         super().set_password(password)
-
-    class Meta:
-        indexes = [
-            models.Index(Upper("email"), name="upper_userprofile_email_idx"),
-        ]
 
 
 class PasswordTooWeakError(Exception):
