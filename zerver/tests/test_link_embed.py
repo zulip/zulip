@@ -744,9 +744,11 @@ class PreviewTestCase(ZulipTestCase):
 
         # HTML with a bad og:image metadata
         html = "\n".join(
-            line
-            if "og:image" not in line
-            else '<meta property="og:image" content="http://[bad url/" />'
+            (
+                line
+                if "og:image" not in line
+                else '<meta property="og:image" content="http://[bad url/" />'
+            )
             for line in self.open_graph_html.splitlines()
         )
         self.create_mock_response(url, body=html)

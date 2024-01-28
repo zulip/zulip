@@ -266,18 +266,18 @@ def support(
                 context["error_message"] = error.message
             else:
                 do_change_realm_subdomain(realm, new_subdomain, acting_user=acting_user)
-                request.session[
-                    "success_message"
-                ] = f"Subdomain changed from {old_subdomain} to {new_subdomain}"
+                request.session["success_message"] = (
+                    f"Subdomain changed from {old_subdomain} to {new_subdomain}"
+                )
                 return HttpResponseRedirect(
                     reverse("support") + "?" + urlencode({"q": new_subdomain})
                 )
         elif status is not None:
             if status == "active":
                 do_send_realm_reactivation_email(realm, acting_user=acting_user)
-                context[
-                    "success_message"
-                ] = f"Realm reactivation email sent to admins of {realm.string_id}."
+                context["success_message"] = (
+                    f"Realm reactivation email sent to admins of {realm.string_id}."
+                )
             elif status == "deactivated":
                 do_deactivate_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} deactivated."
@@ -569,9 +569,9 @@ def remote_servers_support(
                 remote_server
             )
         except MissingDataError:
-            remote_server_to_max_monthly_messages[
-                remote_server.id
-            ] = "Recent analytics data missing"
+            remote_server_to_max_monthly_messages[remote_server.id] = (
+                "Recent analytics data missing"
+            )
 
     context["remote_servers"] = remote_servers
     context["remote_servers_support_data"] = server_support_data

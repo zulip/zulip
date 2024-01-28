@@ -1,4 +1,5 @@
 """Webhooks for external integrations."""
+
 import re
 from typing import Any, Dict, List, Optional, Tuple
 

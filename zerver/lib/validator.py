@@ -27,6 +27,7 @@ To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 
 """
+
 import re
 import sys
 from dataclasses import dataclass
@@ -260,10 +261,7 @@ def check_dict(
     optional_keys: Collection[Tuple[str, Validator[object]]] = [],
     *,
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, object]]:
-    ...
-
-
+) -> Validator[Dict[str, object]]: ...
 @overload
 def check_dict(
     required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
@@ -271,10 +269,7 @@ def check_dict(
     *,
     value_validator: Validator[ResultT],
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, ResultT]]:
-    ...
-
-
+) -> Validator[Dict[str, ResultT]]: ...
 def check_dict(
     required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
     optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],

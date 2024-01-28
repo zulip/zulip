@@ -23,17 +23,11 @@ else:
 
 
 @overload
-def get_secret(key: str, default_value: str, development_only: bool = False) -> str:
-    ...
-
-
+def get_secret(key: str, default_value: str, development_only: bool = False) -> str: ...
 @overload
 def get_secret(
     key: str, default_value: Optional[str] = None, development_only: bool = False
-) -> Optional[str]:
-    ...
-
-
+) -> Optional[str]: ...
 def get_secret(
     key: str, default_value: Optional[str] = None, development_only: bool = False
 ) -> Optional[str]:
@@ -52,15 +46,9 @@ def get_mandatory_secret(key: str) -> str:
 
 
 @overload
-def get_config(section: str, key: str, default_value: str) -> str:
-    ...
-
-
+def get_config(section: str, key: str, default_value: str) -> str: ...
 @overload
-def get_config(section: str, key: str, default_value: Optional[str] = None) -> Optional[str]:
-    ...
-
-
+def get_config(section: str, key: str, default_value: Optional[str] = None) -> Optional[str]: ...
 def get_config(section: str, key: str, default_value: Optional[str] = None) -> Optional[str]:
     return config_file.get(section, key, fallback=default_value)
 

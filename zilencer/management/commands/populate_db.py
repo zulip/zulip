@@ -966,7 +966,9 @@ class Command(BaseCommand):
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
-                    "ビデオゲーム": {"description": f"Share your favorite video games!  {raw_emojis[2]}"},
+                    "ビデオゲーム": {
+                        "description": f"Share your favorite video games!  {raw_emojis[2]}"
+                    },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,

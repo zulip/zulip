@@ -288,9 +288,9 @@ def update_realm(
         )
 
         if setting_value_changed:
-            data[
-                "move_messages_within_stream_limit_seconds"
-            ] = move_messages_within_stream_limit_seconds
+            data["move_messages_within_stream_limit_seconds"] = (
+                move_messages_within_stream_limit_seconds
+            )
 
     move_messages_between_streams_limit_seconds: Optional[int] = None
     if move_messages_between_streams_limit_seconds_raw is not None:
@@ -305,9 +305,9 @@ def update_realm(
         )
 
         if setting_value_changed:
-            data[
-                "move_messages_between_streams_limit_seconds"
-            ] = move_messages_between_streams_limit_seconds
+            data["move_messages_between_streams_limit_seconds"] = (
+                move_messages_between_streams_limit_seconds
+            )
 
     jitsi_server_url: Optional[str] = None
     if jitsi_server_url_raw is not None:

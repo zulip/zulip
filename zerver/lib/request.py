@@ -222,8 +222,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> ResultT:
-    ...
+) -> ResultT: ...
 
 
 # Overload 2: json_validator
@@ -238,8 +237,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> ResultT:
-    ...
+) -> ResultT: ...
 
 
 # Overload 3: no converter/json_validator, default: str or unspecified, argument_type=None
@@ -253,8 +251,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> str:
-    ...
+) -> str: ...
 
 
 # Overload 4: no converter/validator, default=None, argument_type=None
@@ -268,8 +265,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> Optional[str]:
-    ...
+) -> Optional[str]: ...
 
 
 # Overload 5: argument_type="body"
@@ -283,8 +279,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> ResultT:
-    ...
+) -> ResultT: ...
 
 
 # Implementation

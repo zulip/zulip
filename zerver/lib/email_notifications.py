@@ -661,9 +661,9 @@ def handle_missedmessage_emails(
             unique_messages[m.id] = dict(
                 message=m,
                 trigger=message_info.trigger if message_info else None,
-                mentioned_user_group_id=message_info.mentioned_user_group_id
-                if message_info is not None
-                else None,
+                mentioned_user_group_id=(
+                    message_info.mentioned_user_group_id if message_info is not None else None
+                ),
             )
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,

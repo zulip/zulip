@@ -37,7 +37,7 @@ from django.http.request import QueryDict
 from django.http.response import HttpResponseBase
 from django.test import override_settings
 from django.urls import URLResolver
-from moto.s3 import mock_s3
+from moto.core.decorator import mock_aws
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import ParamSpec, override
 
@@ -562,7 +562,7 @@ P = ParamSpec("P")
 
 
 def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
-    @mock_s3
+    @mock_aws
     @override_settings(LOCAL_UPLOADS_DIR=None)
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)

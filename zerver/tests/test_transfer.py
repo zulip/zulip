@@ -2,7 +2,7 @@ import os
 from unittest.mock import Mock, patch
 
 from django.conf import settings
-from moto.s3 import mock_s3
+from moto.core.decorator import mock_aws
 
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.lib.avatar_hash import user_avatar_path
@@ -35,7 +35,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         m2.assert_called_with(4)
         m3.assert_called_with(4)
 
-    @mock_s3
+    @mock_aws
     def test_transfer_avatars_to_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
@@ -61,7 +61,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         with open(avatar_disk_path(user, medium=True), "rb") as f:
             self.assertEqual(medium_image_key.get()["Body"].read(), f.read())
 
-    @mock_s3
+    @mock_aws
     def test_transfer_message_files(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
         hamlet = self.example_user("hamlet")
@@ -79,7 +79,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         self.assertEqual(bucket.Object(attachments[0].path_id).get()["Body"].read(), b"zulip1!")
         self.assertEqual(bucket.Object(attachments[1].path_id).get()["Body"].read(), b"zulip2!")
 
-    @mock_s3
+    @mock_aws
     def test_transfer_emoji_to_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
         othello = self.example_user("othello")

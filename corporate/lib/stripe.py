@@ -449,10 +449,10 @@ def catch_stripe_errors(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, Ret
         # See https://stripe.com/docs/api/python#error_handling, though
         # https://stripe.com/docs/api/ruby#error_handling suggests there are additional fields, and
         # https://stripe.com/docs/error-codes gives a more detailed set of error codes
-        except stripe.error.StripeError as e:
+        except stripe.StripeError as e:
             assert isinstance(e.json_body, dict)
             err = e.json_body.get("error", {})
-            if isinstance(e, stripe.error.CardError):
+            if isinstance(e, stripe.CardError):
                 billing_logger.info(
                     "Stripe card error: %s %s %s %s",
                     e.http_status,
@@ -469,9 +469,7 @@ def catch_stripe_errors(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, Ret
                 err.get("code"),
                 err.get("param"),
             )
-            if isinstance(
-                e, (stripe.error.RateLimitError, stripe.error.APIConnectionError)
-            ):  # nocoverage TODO
+            if isinstance(e, (stripe.RateLimitError, stripe.APIConnectionError)):  # nocoverage TODO
                 raise StripeConnectionError(
                     "stripe connection error",
                     _("Something went wrong. Please wait a few seconds and try again."),
@@ -979,7 +977,7 @@ class BillingSession(ABC):
                 off_session=True,
                 payment_method=stripe_customer.invoice_settings.default_payment_method,
             )
-        except stripe.error.CardError as e:
+        except stripe.CardError as e:
             raise StripeCardError("card error", e.user_message)
 
         PaymentIntent.objects.create(
@@ -1398,9 +1396,9 @@ class BillingSession(ABC):
                 # to worry about this plan being used for any other purpose.
                 # NOTE: This is the 2nd plan for the customer.
                 plan_params["status"] = CustomerPlan.NEVER_STARTED
-                plan_params[
-                    "invoicing_status"
-                ] = CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+                plan_params["invoicing_status"] = (
+                    CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+                )
                 event_time = timezone_now().replace(microsecond=0)
 
                 # Schedule switching to the new plan at plan end date.

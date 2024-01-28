@@ -137,10 +137,10 @@ def run() -> None:
         pass_targets=False,
         description="Static type checker for Python (config: pyproject.toml)",
         suppress_line=(
-            lambda line: line.startswith("Daemon") or line == "Restarting: configuration changed"
-        )
-        if args.use_mypy_daemon
-        else lambda _: False,
+            (lambda line: line.startswith("Daemon") or line == "Restarting: configuration changed")
+            if args.use_mypy_daemon
+            else lambda _: False
+        ),
     )
     linter_config.external_linter(
         "ruff",
