@@ -82,26 +82,12 @@ a:focus {
 p {
   margin: 0 0 10px;
 }
-.text-warning {
-  color: #c09853;
-}
-a.text-warning:hover,
-a.text-warning:focus {
-  color: #a47e3c;
-}
 .text-error {
   color: #b94a48;
 }
 a.text-error:hover,
 a.text-error:focus {
   color: #953b39;
-}
-.text-success {
-  color: #468847;
-}
-a.text-success:hover,
-a.text-success:focus {
-  color: #356635;
 }
 h1,
 h2,
