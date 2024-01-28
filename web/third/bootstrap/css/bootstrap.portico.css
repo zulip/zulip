@@ -424,7 +424,6 @@ input:focus:invalid:focus {
 .alert-info h4 {
   color: #3a87ad;
 }
-.dropup,
 .dropdown {
   position: relative;
 }
@@ -520,16 +519,6 @@ input:focus:invalid:focus {
   bottom: 0;
   top: 0;
   z-index: 990;
-}
-.dropup .caret {
-  border-top: 0;
-  border-bottom: 4px solid #000000;
-  content: "";
-}
-.dropup .dropdown-menu {
-  top: auto;
-  bottom: 100%;
-  margin-bottom: 1px;
 }
 .typeahead {
   z-index: 1051;
