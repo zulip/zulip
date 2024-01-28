@@ -281,82 +281,6 @@ input:focus:invalid:focus {
 .form-inline .btn-group {
   display: inline-block;
 }
-.nav {
-  margin-left: 0;
-  margin-bottom: 20px;
-  list-style: none;
-}
-.nav > li > a {
-  display: block;
-}
-.nav > li > a:hover,
-.nav > li > a:focus {
-  text-decoration: none;
-  background-color: #eeeeee;
-}
-.nav > li > a > img {
-  max-width: none;
-}
-.nav-list {
-  padding-left: 15px;
-  padding-right: 15px;
-  margin-bottom: 0;
-}
-.nav-list > li > a {
-  margin-left: -15px;
-  margin-right: -15px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-.nav-list > li > a {
-  padding: 3px 15px;
-}
-.nav-list > .active > a,
-.nav-list > .active > a:hover,
-.nav-list > .active > a:focus {
-  color: #ffffff;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
-  background-color: #0088cc;
-}
-.nav-list .divider {
-  height: 1px;
-  margin: 9px 1px;
-  overflow: hidden;
-  background-color: #e5e5e5;
-  border-bottom: 1px solid #ffffff;
-}
-.nav .dropdown-toggle .caret {
-  border-top-color: #0088cc;
-  border-bottom-color: #0088cc;
-  margin-top: 6px;
-}
-.nav .dropdown-toggle:hover .caret,
-.nav .dropdown-toggle:focus .caret {
-  border-top-color: #005580;
-  border-bottom-color: #005580;
-}
-/* move down carets for tabs */
-.nav .active .dropdown-toggle .caret {
-  border-top-color: #fff;
-  border-bottom-color: #fff;
-}
-.nav > .dropdown.active > a:hover,
-.nav > .dropdown.active > a:focus {
-  cursor: pointer;
-}
-.nav > li.dropdown.open.active > a:hover,
-.nav > li.dropdown.open.active > a:focus {
-  color: #ffffff;
-  background-color: #999999;
-  border-color: #999999;
-}
-.nav li.dropdown.open .caret,
-.nav li.dropdown.open.active .caret,
-.nav li.dropdown.open a:hover .caret,
-.nav li.dropdown.open a:focus .caret {
-  border-top-color: #ffffff;
-  border-bottom-color: #ffffff;
-  opacity: 1;
-}
 .tab-content {
   overflow: auto;
 }
@@ -365,15 +289,6 @@ input:focus:invalid:focus {
 }
 .tab-content > .active {
   display: block;
-}
-.nav > .disabled > a {
-  color: #999999;
-}
-.nav > .disabled > a:hover,
-.nav > .disabled > a:focus {
-  text-decoration: none;
-  background-color: transparent;
-  cursor: default;
 }
 .alert {
   padding: 8px 35px 8px 14px;
@@ -658,15 +573,5 @@ button.close {
 @media (max-width: 979px) {
   body {
     padding-top: 0;
-  }
-  .navbar .container {
-    width: auto;
-    max-width: 724px; /* same as a normal container */
-    padding: 0;
-  }
-  .navbar .brand {
-    padding-left: 10px;
-    padding-right: 10px;
-    margin: 0 0 0 -5px;
   }
 }
