@@ -247,10 +247,16 @@ export function add_reaction(event) {
 
     if (clean_reaction_object) {
         clean_reaction_object.user_ids.push(user_id);
-        const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+        const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
+        const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
         update_user_fields(clean_reaction_object, should_display_reactors);
         update_existing_reaction(clean_reaction_object, message, user_id);
     } else {
+        const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
+        reaction_counts_and_user_ids.push({
+            user_ids: [user_id],
+        });
+        const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
         clean_reaction_object = make_clean_reaction({
             local_id,
             user_ids: [user_id],
@@ -260,7 +266,6 @@ export function add_reaction(event) {
         });
 
         message.clean_reactions.set(local_id, clean_reaction_object);
-        const should_display_reactors = check_should_display_reactors(message.clean_reactions);
         update_user_fields(clean_reaction_object, should_display_reactors);
         insert_new_reaction(clean_reaction_object, message, user_id);
     }
@@ -354,7 +359,8 @@ export function remove_reaction(event) {
         message.clean_reactions.delete(local_id);
     }
 
-    const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+    const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
+    const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     update_user_fields(clean_reaction_object, should_display_reactors);
 
     remove_reaction_from_view(clean_reaction_object, message, user_id);
@@ -424,7 +430,8 @@ export function set_clean_reactions(message) {
         // user_settings.display_emoji_reaction_users or the names of
         // the users appearing in the reaction may have changed since
         // this reaction was first rendered.
-        const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+        const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
+        const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
         for (const clean_reaction of message.clean_reactions.values()) {
             update_user_fields(clean_reaction, should_display_reactors);
         }
@@ -475,7 +482,8 @@ export function set_clean_reactions(message) {
     // lets us avoid duplicating check_should_display_reactors to
     // determine whether to store in the vote_text field a count or
     // the names of reactors (users who reacted).
-    const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+    const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
+    const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const clean_reaction of message.clean_reactions.values()) {
         update_user_fields(clean_reaction, should_display_reactors);
     }
@@ -527,6 +535,13 @@ export function update_user_fields(clean_reaction_object, should_display_reactor
     clean_reaction_object.vote_text = get_vote_text(clean_reaction_object, should_display_reactors);
 }
 
+function get_reaction_counts_and_user_ids(message) {
+    return [...message.clean_reactions.values()].map((reaction) => ({
+        count: reaction.count,
+        user_ids: reaction.user_ids,
+    }));
+}
+
 export function get_vote_text(clean_reaction_object, should_display_reactors) {
     if (should_display_reactors) {
         return comma_separated_usernames(clean_reaction_object.user_ids);
@@ -534,16 +549,14 @@ export function get_vote_text(clean_reaction_object, should_display_reactors) {
     return `${clean_reaction_object.user_ids.length}`;
 }
 
-function check_should_display_reactors(cleaned_reactions) {
+function check_should_display_reactors(reaction_counts_and_user_ids) {
     if (!user_settings.display_emoji_reaction_users) {
         return false;
     }
 
     let total_reactions = 0;
-    for (const r of cleaned_reactions.values()) {
-        // r.count is not yet initialized when this is called during
-        // set_clean_reactions.
-        total_reactions += r.count || r.user_ids.length;
+    for (const {count, user_ids} of reaction_counts_and_user_ids) {
+        total_reactions += count || user_ids.length;
     }
     return total_reactions <= 3;
 }
@@ -567,8 +580,9 @@ export function update_vote_text_on_message(message) {
     // users depends on total reactions on the message, we need to
     // recalculate this whenever adjusting reaction rendering on a
     // message.
-    const cleaned_reactions = get_message_reactions(message);
-    const should_display_reactors = check_should_display_reactors(cleaned_reactions);
+    set_clean_reactions(message);
+    const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
+    const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const [reaction, clean_reaction] of message.clean_reactions.entries()) {
         const reaction_elem = find_reaction(message.id, clean_reaction.local_id);
         const vote_text = get_vote_text(clean_reaction, should_display_reactors);
