@@ -163,12 +163,12 @@ def get_merge_request_open_or_updated_body(
         action=action,
         url=pull_request["url"].tame(check_string),
         number=pull_request["iid"].tame(check_int),
-        target_branch=pull_request["source_branch"].tame(check_string)
-        if action == "created"
-        else None,
-        base_branch=pull_request["target_branch"].tame(check_string)
-        if action == "created"
-        else None,
+        target_branch=(
+            pull_request["source_branch"].tame(check_string) if action == "created" else None
+        ),
+        base_branch=(
+            pull_request["target_branch"].tame(check_string) if action == "created" else None
+        ),
         message=pull_request["description"].tame(check_none_or(check_string)),
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type="MR",
@@ -379,8 +379,7 @@ def get_object_url(payload: WildValue) -> str:
 
 
 class EventFunction(Protocol):
-    def __call__(self, payload: WildValue, include_title: bool) -> str:
-        ...
+    def __call__(self, payload: WildValue, include_title: bool) -> str: ...
 
 
 EVENT_FUNCTION_MAPPER: Dict[str, EventFunction] = {
@@ -467,9 +466,11 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             repo=get_repo_name(payload),
             type="MR",
             id=payload["object_attributes"]["iid"].tame(check_int),
-            title=payload["object_attributes"]["title"].tame(check_string)
-            if use_merge_request_title
-            else "",
+            title=(
+                payload["object_attributes"]["title"].tame(check_string)
+                if use_merge_request_title
+                else ""
+            ),
         )
     elif event.startswith(("Issue Hook", "Confidential Issue Hook")):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
@@ -490,9 +491,11 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             repo=get_repo_name(payload),
             type="MR",
             id=payload["merge_request"]["iid"].tame(check_int),
-            title=payload["merge_request"]["title"].tame(check_string)
-            if use_merge_request_title
-            else "",
+            title=(
+                payload["merge_request"]["title"].tame(check_string)
+                if use_merge_request_title
+                else ""
+            ),
         )
 
     elif event == "Note Hook Snippet":

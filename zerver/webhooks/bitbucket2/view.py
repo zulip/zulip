@@ -201,8 +201,7 @@ def get_type(request: HttpRequest, payload: WildValue) -> str:
 
 
 class BodyGetter(Protocol):
-    def __call__(self, request: HttpRequest, payload: WildValue, include_title: bool) -> str:
-        ...
+    def __call__(self, request: HttpRequest, payload: WildValue, include_title: bool) -> str: ...
 
 
 def get_body_based_on_type(
@@ -372,12 +371,16 @@ def get_pull_request_created_or_updated_body(
         action=action,
         url=get_pull_request_url(pull_request),
         number=pull_request["id"].tame(check_int),
-        target_branch=pull_request["source"]["branch"]["name"].tame(check_string)
-        if action == "created"
-        else None,
-        base_branch=pull_request["destination"]["branch"]["name"].tame(check_string)
-        if action == "created"
-        else None,
+        target_branch=(
+            pull_request["source"]["branch"]["name"].tame(check_string)
+            if action == "created"
+            else None
+        ),
+        base_branch=(
+            pull_request["destination"]["branch"]["name"].tame(check_string)
+            if action == "created"
+            else None
+        ),
         message=pull_request["description"].tame(check_string),
         assignee=assignee,
         title=pull_request["title"].tame(check_string) if include_title else None,

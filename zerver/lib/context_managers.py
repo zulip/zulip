@@ -1,6 +1,7 @@
 """
 Context managers, i.e. things you can use with the 'with' statement.
 """
+
 import fcntl
 from contextlib import contextmanager
 from typing import IO, Any, Iterator, Union

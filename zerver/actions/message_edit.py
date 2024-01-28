@@ -445,9 +445,9 @@ def do_update_message(
         event["orig_rendered_content"] = target_message.rendered_content
         edit_history_event["prev_content"] = target_message.content
         edit_history_event["prev_rendered_content"] = target_message.rendered_content
-        edit_history_event[
-            "prev_rendered_content_version"
-        ] = target_message.rendered_content_version
+        edit_history_event["prev_rendered_content_version"] = (
+            target_message.rendered_content_version
+        )
         target_message.content = content
         target_message.rendered_content = rendering_result.rendered_content
         target_message.rendered_content_version = markdown_version
@@ -848,16 +848,16 @@ def do_update_message(
             if new_stream is not None and user_topic.user_profile_id in losing_access_user_ids:
                 stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
-                orig_topic_user_profile_to_visibility_policy[
-                    user_topic.user_profile
-                ] = user_topic.visibility_policy
+                orig_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
+                    user_topic.visibility_policy
+                )
 
         for user_topic in get_users_with_user_topic_visibility_policy(
             target_stream.id, target_topic_name
         ):
-            target_topic_user_profile_to_visibility_policy[
-                user_topic.user_profile
-            ] = user_topic.visibility_policy
+            target_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
+                user_topic.visibility_policy
+            )
 
         # User profiles having any of the visibility policies set for either the original or target topic.
         user_profiles_having_visibility_policy: Set[UserProfile] = set(
@@ -867,18 +867,18 @@ def do_update_message(
             )
         )
 
-        user_profiles_for_visibility_policy_pair: Dict[
-            Tuple[int, int], List[UserProfile]
-        ] = defaultdict(list)
+        user_profiles_for_visibility_policy_pair: Dict[Tuple[int, int], List[UserProfile]] = (
+            defaultdict(list)
+        )
         for user_profile_with_policy in user_profiles_having_visibility_policy:
             if user_profile_with_policy not in target_topic_user_profile_to_visibility_policy:
-                target_topic_user_profile_to_visibility_policy[
-                    user_profile_with_policy
-                ] = UserTopic.VisibilityPolicy.INHERIT
+                target_topic_user_profile_to_visibility_policy[user_profile_with_policy] = (
+                    UserTopic.VisibilityPolicy.INHERIT
+                )
             elif user_profile_with_policy not in orig_topic_user_profile_to_visibility_policy:
-                orig_topic_user_profile_to_visibility_policy[
-                    user_profile_with_policy
-                ] = UserTopic.VisibilityPolicy.INHERIT
+                orig_topic_user_profile_to_visibility_policy[user_profile_with_policy] = (
+                    UserTopic.VisibilityPolicy.INHERIT
+                )
 
             orig_topic_visibility_policy = orig_topic_user_profile_to_visibility_policy[
                 user_profile_with_policy

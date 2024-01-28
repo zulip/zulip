@@ -31,6 +31,7 @@ Credit for the approach goes to:
 https://stackoverflow.com/questions/2090717
 
 """
+
 import glob
 import itertools
 import json

@@ -188,20 +188,20 @@ def reactivate_user_backend(
     return json_success(request)
 
 
-check_profile_data: Validator[
-    List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]
-] = check_list(
-    check_dict_only(
-        [
-            ("id", check_int),
-            (
-                "value",
-                check_none_or(
-                    check_union([check_string, check_list(check_int)]),
+check_profile_data: Validator[List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]] = (
+    check_list(
+        check_dict_only(
+            [
+                ("id", check_int),
+                (
+                    "value",
+                    check_none_or(
+                        check_union([check_string, check_list(check_int)]),
+                    ),
                 ),
-            ),
-        ]
-    ),
+            ]
+        ),
+    )
 )
 
 

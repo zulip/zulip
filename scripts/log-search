@@ -186,8 +186,7 @@ class FilterType(Enum):
 
 
 class FilterFunc(Protocol):
-    def __call__(self, m: Match[str], t: str = ...) -> bool:
-        ...
+    def __call__(self, m: Match[str], t: str = ...) -> bool: ...
 
 
 def main() -> None:

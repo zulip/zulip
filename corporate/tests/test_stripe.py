@@ -163,7 +163,7 @@ def generate_and_save_stripe_fixture(
                 request_mock.add_passthru("https://api.stripe.com")
                 # Talk to Stripe
                 stripe_object = mocked_function(*args, **kwargs)
-        except stripe.error.StripeError as e:
+        except stripe.StripeError as e:
             with open(fixture_path, "w") as f:
                 assert e.headers is not None
                 error_dict = {**vars(e), "headers": dict(e.headers)}
@@ -193,12 +193,12 @@ def read_stripe_fixture(
             fixture = orjson.loads(f.read())
         # Check for StripeError fixtures
         if "json_body" in fixture:
-            requester = stripe.api_requestor.APIRequestor()
+            requester = stripe._api_requestor._APIRequestor()
             # This function will raise the relevant StripeError according to the fixture
-            requester.interpret_response(
+            requester._interpret_response(
                 fixture["http_body"], fixture["http_status"], fixture["headers"]
             )
-        return stripe.util.convert_to_stripe_object(fixture)
+        return stripe.convert_to_stripe_object(fixture)
 
     return _read_stripe_fixture
 
@@ -257,9 +257,9 @@ def normalize_fixture_data(
     # why we're doing something a bit more complicated
     for i, timestamp_field in enumerate(tested_timestamp_fields):
         # Don't use (..) notation, since the matched timestamp can easily appear in other fields
-        pattern_translations[
-            f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'
-        ] = f'"{timestamp_field}": 1{i+1:02}%07d'
+        pattern_translations[f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'] = (
+            f'"{timestamp_field}": 1{i+1:02}%07d'
+        )
 
     normalized_values: Dict[str, Dict[str, str]] = {pattern: {} for pattern in pattern_translations}
     for fixture_file in fixture_files_for_function(decorated_function):
@@ -752,7 +752,7 @@ class StripeTest(StripeTestCase):
     def test_catch_stripe_errors(self) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
-            raise stripe.error.InvalidRequestError("message", "param", "code", json_body={})
+            raise stripe.InvalidRequestError("message", "param", "code", json_body={})
 
         with self.assertLogs("corporate.stripe", "ERROR") as error_log:
             with self.assertRaises(BillingError) as billing_context:
@@ -766,9 +766,7 @@ class StripeTest(StripeTestCase):
         def raise_card_error() -> None:
             error_message = "The card number is not a valid credit card number."
             json_body = {"error": {"message": error_message}}
-            raise stripe.error.CardError(
-                error_message, "number", "invalid_number", json_body=json_body
-            )
+            raise stripe.CardError(error_message, "number", "invalid_number", json_body=json_body)
 
         with self.assertLogs("corporate.stripe", "INFO") as info_log:
             with self.assertRaises(StripeCardError) as card_context:
@@ -2166,7 +2164,7 @@ class StripeTest(StripeTestCase):
                 "tier": None,
             },
         )
-        with self.assertRaises(stripe.error.CardError):
+        with self.assertRaises(stripe.CardError):
             # We don't have to handle this since the Stripe Checkout page would
             # ask Customer to enter a valid card number. trigger_stripe_checkout_session_completed_webhook
             # emulates what happens in the Stripe Checkout page. Adding this check mostly for coverage of

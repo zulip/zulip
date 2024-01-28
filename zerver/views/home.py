@@ -90,9 +90,9 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
         request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
         and settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE is not None
     ):
-        context[
-            "first_time_terms_of_service_message_template"
-        ] = settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE
+        context["first_time_terms_of_service_message_template"] = (
+            settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE
+        )
 
     return render(
         request,
