@@ -26,15 +26,6 @@
         margin-bottom: 0;
     }
 
-    .tab-content {
-        border: 1px solid hsl(0deg 0% 87%);
-        border-bottom-left-radius: 4px;
-        border-bottom-right-radius: 4px;
-        padding: 20px;
-        background-color: hsl(0deg 0% 100%);
-        font-size: 1.1em;
-    }
-
     .support-link {
         margin: 10px 20px;
 

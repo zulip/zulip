@@ -2287,12 +2287,6 @@ button {
             }
         }
     }
-
-    .billing-upgrade-page {
-        .tab-content {
-            font-size: 1em;
-        }
-    }
 }
 
 @media (width <= 1024px) {
