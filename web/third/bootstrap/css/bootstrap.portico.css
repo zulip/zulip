@@ -293,28 +293,11 @@ input:focus:invalid:focus {
 .dropdown {
   position: relative;
 }
-.dropdown-toggle:active,
-.open .dropdown-toggle {
-  outline: 0;
-}
 .hide {
   display: none;
 }
 .show {
   display: block;
-}
-.invisible {
-  visibility: hidden;
-}
-.fade {
-  opacity: 0;
-  -webkit-transition: opacity 0.15s linear;
-  -moz-transition: opacity 0.15s linear;
-  -o-transition: opacity 0.15s linear;
-  transition: opacity 0.15s linear;
-}
-.fade.in {
-  opacity: 1;
 }
 @-ms-viewport {
   width: device-width;
