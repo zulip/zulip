@@ -10,6 +10,7 @@ import "../../images/icons/zulip-icons.font";
 import "source-sans/source-sans-3VF.css";
 import "source-code-pro/source-code-pro.css";
 import "@fontsource-variable/open-sans";
+import "../../third/bootstrap/css/bootstrap-alert.css";
 import "../../styles/alerts.css";
 import "../../styles/modal.css";
 import "../../styles/progress_bar.css";
