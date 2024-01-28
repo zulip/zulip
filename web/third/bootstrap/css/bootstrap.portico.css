@@ -281,15 +281,6 @@ input:focus:invalid:focus {
 .form-inline .btn-group {
   display: inline-block;
 }
-.tab-content {
-  overflow: auto;
-}
-.tab-content > .tab-pane {
-  display: none;
-}
-.tab-content > .active {
-  display: block;
-}
 .dropdown {
   position: relative;
 }
