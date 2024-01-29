@@ -3602,7 +3602,9 @@ class RemoteRealmBillingSession(BillingSession):
             "supports_remote_realms": self.remote_realm.server.last_api_feature_level is not None,
         }
         return render(
-            request, "corporate/server_not_uploading_data.html", context=missing_data_context
+            request,
+            "corporate/billing/server_not_uploading_data.html",
+            context=missing_data_context,
         )
 
     @override
@@ -4026,7 +4028,9 @@ class RemoteServerBillingSession(BillingSession):
             "supports_remote_realms": self.remote_server.last_api_feature_level is not None,
         }
         return render(
-            request, "corporate/server_not_uploading_data.html", context=missing_data_context
+            request,
+            "corporate/billing/server_not_uploading_data.html",
+            context=missing_data_context,
         )
 
     @override

@@ -204,7 +204,7 @@ def upgrade_page(
     if redirect_url:
         return HttpResponseRedirect(redirect_url)
 
-    response = render(request, "corporate/upgrade.html", context=context)
+    response = render(request, "corporate/billing/upgrade.html", context=context)
     return response
 
 
@@ -231,7 +231,7 @@ def remote_realm_upgrade_page(
     if redirect_url:  # nocoverage
         return HttpResponseRedirect(redirect_url)
 
-    response = render(request, "corporate/upgrade.html", context=context)
+    response = render(request, "corporate/billing/upgrade.html", context=context)
     return response
 
 
@@ -258,5 +258,5 @@ def remote_server_upgrade_page(
     if redirect_url:  # nocoverage
         return HttpResponseRedirect(redirect_url)
 
-    response = render(request, "corporate/upgrade.html", context=context)
+    response = render(request, "corporate/billing/upgrade.html", context=context)
     return response

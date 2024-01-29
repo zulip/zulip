@@ -666,7 +666,7 @@ html_rules: List["Rule"] = [
         "the DOM is ready (inside a $(function () {...}) block).",
         "exclude": {
             "templates/zerver/development/dev_login.html",
-            "templates/corporate/upgrade.html",
+            "templates/corporate/billing/upgrade.html",
         },
         "good_lines": ["($('#foo').on('click', function () {}"],
         "bad_lines": [
@@ -705,8 +705,8 @@ html_rules: List["Rule"] = [
             "templates/zerver/landing_nav.html",
             "templates/corporate/features.html",
             "templates/zerver/portico-header.html",
-            "templates/corporate/billing.html",
-            "templates/corporate/upgrade.html",
+            "templates/corporate/billing/billing.html",
+            "templates/corporate/billing/upgrade.html",
             # Miscellaneous violations to be cleaned up
             "web/templates/popovers/user_card/user_card_popover_avatar.hbs",
             "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
