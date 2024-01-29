@@ -25,7 +25,6 @@ repo_url=git@github.com:zulip/zulip.git
 [aws]
 zone_id=Z2U988IEXAMPLE
 security_groups=sg-01234567
-image_id=ami-0dc45e3d9be6ab7b5
 instance_type=m4.large
 ssh_secret_id=prod/git/deploy
 EOF
@@ -105,12 +104,17 @@ function lookup() {
 
 AWS_ZONE_ID=$(lookup zone_id)
 SECURITY_GROUPS=$(lookup security_groups)
-AMI_ID=$(lookup image_id)
 INSTANCE_TYPE=$(lookup instance_type)
 IAM_PROFILE=$(lookup iam_profile)
 SSH_SECRET_ID=$(lookup ssh_secret_id)
 AZ=$(lookup availability_zone)
 DISK_SIZE=$(lookup disk_size)
+
+# Determine the architecture
+ARCH=$($AWS ec2 describe-instance-types --instance-types "$INSTANCE_TYPE" --query 'InstanceTypes[*].ProcessorInfo.SupportedArchitectures[0]' --output text)
+
+# Lookup the latest 22.04 image
+AMI_ID=$($AWS ec2 describe-images --owners 099720109477 --filters 'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-*-22.04*' "Name=architecture,Values=$ARCH" --query 'sort_by(Images, &CreationDate)[-1].ImageId' --output text)
 
 # Verify it doesn't exist already
 ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
