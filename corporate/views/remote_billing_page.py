@@ -221,7 +221,7 @@ def remote_realm_billing_finalize_login(
         if server_plan is not None:
             return render(
                 request,
-                "corporate/remote_realm_login_error_for_server_on_active_plan.html",
+                "corporate/billing/remote_realm_login_error_for_server_on_active_plan.html",
                 context={
                     "server_plan_name": server_plan.name,
                 },
@@ -265,7 +265,7 @@ def remote_realm_billing_finalize_login(
             }
             return render(
                 request,
-                "corporate/remote_billing_finalize_login_confirmation.html",
+                "corporate/billing/remote_billing_finalize_login_confirmation.html",
                 context=context,
             )
         else:
@@ -280,7 +280,7 @@ def remote_realm_billing_finalize_login(
             }
             return render(
                 request,
-                "corporate/remote_billing_confirm_email_form.html",
+                "corporate/billing/remote_billing_confirm_email_form.html",
                 context=context,
             )
 
@@ -412,7 +412,7 @@ def remote_realm_billing_confirm_email(
 
     return render(
         request,
-        "corporate/remote_billing_email_confirmation_sent.html",
+        "corporate/billing/remote_billing_email_confirmation_sent.html",
         context={"email": email},
     )
 
@@ -522,7 +522,7 @@ def remote_billing_legacy_server_login(
     context: Dict[str, Any] = {"next_page": next_page}
     if zulip_org_id is None or zulip_org_key is None:
         context.update({"error_message": False})
-        return render(request, "corporate/legacy_server_login.html", context)
+        return render(request, "corporate/billing/legacy_server_login.html", context)
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -537,15 +537,15 @@ def remote_billing_legacy_server_login(
                 )
             }
         )
-        return render(request, "corporate/legacy_server_login.html", context)
+        return render(request, "corporate/billing/legacy_server_login.html", context)
 
     if not constant_time_compare(zulip_org_key, remote_server.api_key):
         context.update({"error_message": _("Invalid zulip_org_key for this zulip_org_id.")})
-        return render(request, "corporate/legacy_server_login.html", context)
+        return render(request, "corporate/billing/legacy_server_login.html", context)
 
     if remote_server.deactivated:
         context.update({"error_message": _("Your server registration has been deactivated.")})
-        return render(request, "corporate/legacy_server_login.html", context)
+        return render(request, "corporate/billing/legacy_server_login.html", context)
 
     remote_server_uuid = str(remote_server.uuid)
 
@@ -574,7 +574,7 @@ def remote_billing_legacy_server_login(
     }
     return render(
         request,
-        "corporate/remote_billing_confirm_email_form.html",
+        "corporate/billing/remote_billing_confirm_email_form.html",
         context=context,
     )
 
@@ -641,7 +641,7 @@ def remote_billing_legacy_server_confirm_login(
 
     return render(
         request,
-        "corporate/remote_billing_email_confirmation_sent.html",
+        "corporate/billing/remote_billing_email_confirmation_sent.html",
         context={"email": email, "remote_server_hostname": remote_server.hostname},
     )
 
@@ -714,7 +714,7 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         }
         return render(
             request,
-            "corporate/remote_billing_finalize_login_confirmation.html",
+            "corporate/billing/remote_billing_finalize_login_confirmation.html",
             context=context,
         )
 
@@ -731,7 +731,7 @@ def remote_billing_legacy_server_from_login_confirmation_link(
     ):
         return render(
             request,
-            "corporate/remote_server_login_error_for_any_realm_on_active_plan.html",
+            "corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html",
         )
 
     if remote_billing_user is None:
@@ -837,7 +837,7 @@ def check_rate_limits(
         assert e.secs_to_freedom is not None
         return render(
             request,
-            "corporate/remote_server_rate_limit_exceeded.html",
+            "corporate/billing/remote_server_rate_limit_exceeded.html",
             context={"retry_after": int(e.secs_to_freedom)},
             status=429,
         )

@@ -27,7 +27,7 @@ def sponsorship_page(request: HttpRequest) -> HttpResponse:
     if context is None:
         return HttpResponseRedirect(reverse("billing_page"))
 
-    return render(request, "corporate/sponsorship.html", context=context)
+    return render(request, "corporate/billing/sponsorship.html", context=context)
 
 
 @authenticated_remote_realm_management_endpoint
@@ -41,7 +41,7 @@ def remote_realm_sponsorship_page(
             reverse("remote_realm_billing_page", args=(billing_session.remote_realm.uuid,))
         )
 
-    return render(request, "corporate/sponsorship.html", context=context)
+    return render(request, "corporate/billing/sponsorship.html", context=context)
 
 
 @authenticated_remote_server_management_endpoint
@@ -55,7 +55,7 @@ def remote_server_sponsorship_page(
             reverse("remote_server_billing_page", args=(billing_session.remote_server.uuid,))
         )
 
-    return render(request, "corporate/sponsorship.html", context=context)
+    return render(request, "corporate/billing/sponsorship.html", context=context)
 
 
 @require_organization_member

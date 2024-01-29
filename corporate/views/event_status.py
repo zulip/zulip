@@ -85,7 +85,7 @@ def event_status_page(
         "stripe_payment_intent_id": stripe_payment_intent_id,
         "billing_base_url": "",
     }
-    return render(request, "corporate/event_status.html", context=context)
+    return render(request, "corporate/billing/event_status.html", context=context)
 
 
 @self_hosting_management_endpoint
@@ -103,7 +103,7 @@ def remote_realm_event_status_page(
         "stripe_payment_intent_id": stripe_payment_intent_id,
         "billing_base_url": f"/realm/{realm_uuid}",
     }
-    return render(request, "corporate/event_status.html", context=context)
+    return render(request, "corporate/billing/event_status.html", context=context)
 
 
 @self_hosting_management_endpoint
@@ -121,4 +121,4 @@ def remote_server_event_status_page(
         "stripe_payment_intent_id": stripe_payment_intent_id,
         "billing_base_url": f"/server/{server_uuid}",
     }
-    return render(request, "corporate/event_status.html", context=context)
+    return render(request, "corporate/billing/event_status.html", context=context)
