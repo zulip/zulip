@@ -448,7 +448,6 @@ export function set_up() {
             on_click: do_change_password,
             validate_input,
         });
-        $("#pw_change_controls").show();
 
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
