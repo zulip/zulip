@@ -38,7 +38,7 @@ export DEBIAN_FRONTEND=noninteractive
     apt-get -qy autoclean
 )
 
-# The following line gets subbed in with the contents of bootstrap-awscli.sh
+# The following line gets subbed in with the contents of install-aws-cli
 AWS=
 
 # Set up a bare-bones AWS configuration
