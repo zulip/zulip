@@ -13,7 +13,7 @@
     <form>
         <center>
             <input type="text" name="q" class="input-xxlarge search-query" placeholder="full names, emails, string_ids, organization URLs separated by commas" value="{{ request.GET.get('q', '') }}" autofocus />
-            <button type="submit" class="btn btn-default support-search-button">Search</button>
+            <button type="submit" class="support-search-button">Search</button>
         </center>
     </form>
 
@@ -45,7 +45,7 @@
                 {{ csrf_input }}
                 <input type="hidden" name="realm_id" value="{{ realm.id }}" />
                 <input type="hidden" name="delete_user_by_id" value="{{ user.id }}" />
-                <button data-email="{{ user.delivery_email }}" data-string-id="{{ realm.string_id }}" class="btn btn-danger small delete-user-button">Delete user (danger)</button>
+                <button data-email="{{ user.delivery_email }}" data-string-id="{{ realm.string_id }}" class="delete-user-button">Delete user (danger)</button>
             </form>
             <hr />
             <div>

@@ -170,6 +170,80 @@ tr.admin td:first-child {
     }
 }
 
+.approve-sponsorship-button,
+.support-search-button,
+.support-submit-button,
+.delete-user-button,
+.scrub-realm-button {
+    padding: 6px 12px;
+    display: inline-block;
+    margin-bottom: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.4286;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    background-image: none;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:focus {
+        outline: 5px auto -webkit-focus-ring-color;
+        outline-offset: -2px;
+    }
+
+    &:active {
+        background-image: none;
+        outline: 0;
+    }
+
+    &[disabled] {
+        pointer-events: none;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+}
+
+.approve-sponsorship-button,
+.support-search-button,
+.support-submit-button {
+    color: hsl(0deg 0% 20%);
+    background-color: hsl(0deg 0% 100%);
+    border: 1px solid hsl(0deg 0% 83%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(0deg 0% 20%);
+        background-color: hsl(0deg 0% 92%);
+        border: 1px solid hsl(0deg 0% 68%);
+    }
+}
+
+.delete-user-button,
+.scrub-realm-button {
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(2deg 64% 58%);
+    border: 1px solid hsl(2deg 64% 53%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(2deg 65% 50%);
+        border: 1px solid hsl(2deg 65% 41%);
+    }
+}
+
 .remote-server-information,
 .remote-realm-information {
     padding-bottom: 15px;
@@ -234,16 +308,9 @@ tr.admin td:first-child {
     top: -70px;
 }
 
-.support-search-button {
-    border-color: hsl(0deg 0% 83%);
-    border-radius: 2px;
-}
-
 .support-submit-button {
     position: relative;
     top: -3px;
-    border-color: hsl(0deg 0% 83%);
-    border-radius: 2px;
 }
 
 .search-query.input-xxlarge {
