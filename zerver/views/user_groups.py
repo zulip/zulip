@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -18,7 +18,7 @@ from zerver.actions.user_groups import (
     do_update_user_group_name,
     remove_subgroups_from_user_group,
 )
-from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
+from zerver.decorator import require_member_or_admin, require_user_group_create_permission
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
@@ -36,13 +36,13 @@ from zerver.lib.user_groups import (
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
-from zerver.lib.validator import check_bool, check_int, check_list
+from zerver.lib.validator import check_bool, check_int, check_list, check_string_or_int
 from zerver.models import UserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
 
-@require_user_group_edit_permission
+@require_user_group_create_permission
 @has_request_variables
 def add_user_group(
     request: HttpRequest,
@@ -53,11 +53,14 @@ def add_user_group(
     can_mention_group_id: Optional[int] = REQ(
         "can_mention_group", json_validator=check_int, default=None
     ),
+    can_manage_group_id: Optional[Union[int, str]] = REQ(
+        "can_manage_group", json_validator=check_string_or_int, default=None
+    ),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
 
-    group_settings_map = {}
+    group_settings_map: Dict[str, Union[str, UserGroup]] = {}
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
         setting_group_id_name = permission_config.id_field_name
@@ -66,9 +69,13 @@ def add_user_group(
             continue
 
         if request_settings_dict[setting_group_id_name] is not None:
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+            setting_value_group_id_or_str = request_settings_dict[setting_group_id_name]
+            if setting_value_group_id_or_str == "created_group":
+                group_settings_map[setting_name] = "created_group"
+                continue
+
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                setting_value_group_id_or_str,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
@@ -94,7 +101,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 
 
 @transaction.atomic
-@require_user_group_edit_permission
+@require_member_or_admin
 @has_request_variables
 def edit_user_group(
     request: HttpRequest,
@@ -105,8 +112,16 @@ def edit_user_group(
     can_mention_group_id: Optional[int] = REQ(
         "can_mention_group", json_validator=check_int, default=None
     ),
+    can_manage_group_id: Optional[Union[int, str]] = REQ(
+        "can_manage_group", json_validator=check_string_or_int, default=None
+    ),
 ) -> HttpResponse:
-    if name is None and description is None and can_mention_group_id is None:
+    if (
+        name is None
+        and description is None
+        and can_mention_group_id is None
+        and can_manage_group_id is None
+    ):
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
@@ -125,12 +140,19 @@ def edit_user_group(
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
-            setting_group_id_name
-        ] != getattr(user_group, setting_group_id_name):
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+        if request_settings_dict[setting_group_id_name] is not None:
+            setting_value = request_settings_dict[setting_group_id_name]
+            if isinstance(setting_value, str):
+                current_value = getattr(user_group, setting_name)
+                if current_value.name == setting_value:
+                    continue
+            else:
+                current_value = getattr(user_group, setting_group_id_name)
+                if current_value == setting_value:
+                    continue
+
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                setting_value,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
@@ -142,7 +164,7 @@ def edit_user_group(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @has_request_variables
 def delete_user_group(
     request: HttpRequest,
@@ -157,7 +179,7 @@ def delete_user_group(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @has_request_variables
 def update_user_group_backend(
     request: HttpRequest,
@@ -354,7 +376,7 @@ def remove_subgroups_from_group_backend(
     return json_success(request)
 
 
-@require_user_group_edit_permission
+@require_member_or_admin
 @has_request_variables
 def update_subgroups_of_user_group(
     request: HttpRequest,

@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 240**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_manage_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_manage_group`
+  parameter to support setting the user group whose members can manage the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_manage_group` parameter to support changing the user group whose
+  members can manage the specified user group.
+
 Feature levels 238-239 are reserved for future use in 8.x maintenance
 releases.
 

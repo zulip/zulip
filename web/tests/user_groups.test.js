@@ -7,6 +7,7 @@ const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
 
+const group_permission_settings = zrequire("group_permission_settings");
 const user_groups = zrequire("user_groups");
 
 run_test("user_groups", () => {
@@ -18,6 +19,7 @@ run_test("user_groups", () => {
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
         can_mention_group: 2,
+        can_manage_group: 1,
     };
 
     const params = {};
@@ -36,6 +38,7 @@ run_test("user_groups", () => {
         is_system_group: false,
         direct_subgroup_ids: new Set([]),
         can_mention_group: 2,
+        can_manage_group: 1,
     };
     const all = {
         name: "Everyone",
@@ -44,6 +47,7 @@ run_test("user_groups", () => {
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5, 6]),
         can_mention_group: 1,
+        can_manage_group: 1,
     };
 
     user_groups.add(admins);
@@ -378,7 +382,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     });
 
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(
+        group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
             "can_remove_subscribers_group",
             "stream",
         ),
@@ -391,7 +395,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     ];
 
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(
+        group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
             "can_access_all_users_group",
             "realm",
         ),
@@ -400,7 +404,10 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
 
     assert.throws(
         () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget("invalid_setting", "stream"),
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
+                "invalid_setting",
+                "stream",
+            ),
         {
             name: "Error",
             message: "Invalid setting: invalid_setting",

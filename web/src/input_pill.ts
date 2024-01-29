@@ -54,7 +54,7 @@ type InputPillStore<T> = {
     createPillonPaste?: () => void;
 };
 
-type InputPillRenderingDetails = {
+export type InputPillRenderingDetails = {
     display_value: string;
     has_image: boolean;
     img_src?: string;

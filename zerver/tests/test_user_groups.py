@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 from unittest import mock
 
 import orjson
@@ -13,6 +13,7 @@ from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     check_add_user_group,
     create_user_group_in_database,
+    get_single_user_group_name_from_user_id,
     promote_new_full_members,
 )
 from zerver.actions.users import do_deactivate_user
@@ -26,6 +27,7 @@ from zerver.lib.user_groups import (
     get_recursive_group_members,
     get_recursive_membership_groups,
     get_recursive_subgroups,
+    get_role_based_system_groups_dict,
     get_subgroup_ids,
     get_user_group_member_ids,
     has_user_group_access,
@@ -50,13 +52,21 @@ class UserGroupTestCase(ZulipTestCase):
 
     def create_user_group_for_test(self, group_name: str) -> UserGroup:
         members = [self.example_user("othello")]
-        return check_add_user_group(get_realm("zulip"), group_name, members, acting_user=None)
+        realm = get_realm("zulip")
+        admins_group = UserGroup.objects.get(
+            realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
+        )
+        return check_add_user_group(
+            realm, group_name, members, "", {"can_manage_group": admins_group}, acting_user=None
+        )
 
     def test_user_groups_in_realm_serialized(self) -> None:
         realm = get_realm("zulip")
         user_group = UserGroup.objects.filter(realm=realm).first()
         assert user_group is not None
-        empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=None)
+        empty_user_group = check_add_user_group(
+            realm, "newgroup", [], "", {"can_manage_group": user_group}, acting_user=None
+        )
 
         user_groups = user_groups_in_realm_serialized(realm)
         self.assert_length(user_groups, 10)
@@ -104,12 +114,18 @@ class UserGroupTestCase(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
 
-        leadership_group = check_add_user_group(realm, "Leadership", [desdemona], acting_user=None)
+        leadership_group = check_add_user_group(
+            realm, "Leadership", [desdemona], acting_user=self.example_user("othello")
+        )
 
-        staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=None)
+        staff_group = check_add_user_group(
+            realm, "Staff", [iago], acting_user=self.example_user("othello")
+        )
         GroupGroupMembership.objects.create(supergroup=staff_group, subgroup=leadership_group)
 
-        everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=None)
+        everyone_group = check_add_user_group(
+            realm, "Everyone", [shiva], acting_user=self.example_user("othello")
+        )
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
 
         self.assertCountEqual(list(get_recursive_subgroups(leadership_group)), [leadership_group])
@@ -228,13 +244,17 @@ class UserGroupTestCase(ZulipTestCase):
     def test_has_user_group_access_to_subgroup(self) -> None:
         iago = self.example_user("iago")
         zulip_realm = get_realm("zulip")
-        zulip_group = check_add_user_group(zulip_realm, "zulip", [], acting_user=None)
+        zulip_group = check_add_user_group(
+            zulip_realm, "zulip", [], acting_user=self.example_user("othello")
+        )
         moderators_group = UserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=zulip_realm, is_system_group=True
         )
 
         lear_realm = get_realm("lear")
-        lear_group = check_add_user_group(lear_realm, "test", [], acting_user=None)
+        lear_group = check_add_user_group(
+            lear_realm, "test", [], acting_user=self.example_user("othello")
+        )
 
         self.assertFalse(has_user_group_access(lear_group, iago, for_read=False, as_subgroup=True))
         self.assertTrue(has_user_group_access(zulip_group, iago, for_read=False, as_subgroup=True))
@@ -256,7 +276,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         # Check default value of can_mention_group setting.
         everyone_system_group = UserGroup.objects.get(
@@ -264,6 +284,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
         self.assertEqual(support_group.can_mention_group, everyone_system_group)
+
+        # Check default value of can_manage_group setting.
+        expected_default_group_name = get_single_user_group_name_from_user_id(hamlet.id)
+        self.assertEqual(support_group.can_manage_group.name, expected_default_group_name)
+        self.assertEqual(support_group.can_manage_group.can_mention_group.name, SystemGroups.NOBODY)
+        self.assertTrue(support_group.can_manage_group.is_system_group)
+        self.assert_user_membership(support_group.can_manage_group, [hamlet])
 
         # Test invalid member error
         params = {
@@ -273,7 +300,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user ID: 1111")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         # Test we cannot create group with same name again
         params = {
@@ -283,7 +310,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group 'support' already exists.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         # Test we cannot create group with same name again
         params = {
@@ -293,7 +320,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         # Test emtpty group name.
         params = {
@@ -303,7 +330,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name can't be empty!")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         # Test invalid prefixes for user group name.
         params = {
@@ -313,33 +340,33 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with '@'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         params["name"] = "role:manager"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'role:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         params["name"] = "user:1"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'user:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         params["name"] = "stream:1"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'stream:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
         params["name"] = "channel:1"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 11)
 
     def test_can_mention_group_setting_during_user_group_creation(self) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
         leadership_group = check_add_user_group(
-            hamlet.realm, "leadership", [hamlet], acting_user=None
+            hamlet.realm, "leadership", [hamlet], acting_user=self.example_user("othello")
         )
         moderators_group = UserGroup.objects.get(
             name="role:moderators", realm=hamlet.realm, is_system_group=True
@@ -417,6 +444,149 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
 
+    def test_can_manage_group_setting_during_user_group_creation(self) -> None:
+        self.login("hamlet")
+
+        # Test sending id of can_manage_group.
+        hamlet = self.example_user("hamlet")
+        leadership_group = check_add_user_group(
+            hamlet.realm, "leadership", [hamlet], acting_user=self.example_user("othello")
+        )
+
+        moderators_group = UserGroup.objects.get(
+            name="role:moderators", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "support",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Support team",
+            "can_manage_group": orjson.dumps(moderators_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, moderators_group)
+
+        owners_group = UserGroup.objects.get(
+            name="role:owners", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "frontend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Frontend team",
+            "can_manage_group": orjson.dumps(owners_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        frontend_group = UserGroup.objects.get(name="frontend", realm=hamlet.realm)
+        self.assertEqual(frontend_group.can_manage_group, owners_group)
+
+        params = {
+            "name": "test",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test group",
+            "can_manage_group": orjson.dumps(leadership_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        test_group = UserGroup.objects.get(name="test", realm=hamlet.realm)
+        self.assertEqual(test_group.can_manage_group, leadership_group)
+
+        nobody_group = UserGroup.objects.get(
+            name="role:nobody", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(nobody_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:nobody' group."
+        )
+
+        internet_group = UserGroup.objects.get(
+            name="role:internet", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(internet_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:internet' group."
+        )
+
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(1111).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid user group")
+
+        # Test sending name of can_manage_group.
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps("Random string").decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        invalid_single_user_group_name = "invalid-name"
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(invalid_single_user_group_name).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        invalid_single_user_group_name = "user:99"
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(invalid_single_user_group_name).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        expected_can_manage_group_name = get_single_user_group_name_from_user_id(hamlet.id)
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_manage_group": orjson.dumps(expected_can_manage_group_name).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        marketing_group = UserGroup.objects.get(name="marketing", realm=hamlet.realm)
+        self.assertEqual(marketing_group.can_manage_group.name, expected_can_manage_group_name)
+        self.assertEqual(
+            marketing_group.can_manage_group.can_mention_group.name, SystemGroups.NOBODY
+        )
+        self.assertTrue(marketing_group.can_manage_group.is_system_group)
+        self.assert_user_membership(marketing_group.can_manage_group, [hamlet])
+
+        params = {
+            "name": "backend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Backend team",
+            "can_manage_group": orjson.dumps("created_group").decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        backend_group = UserGroup.objects.get(name="backend", realm=hamlet.realm)
+        self.assertEqual(backend_group.can_manage_group, backend_group)
+
     def test_user_group_get(self) -> None:
         # Test success
         user_profile = self.example_user("hamlet")
@@ -426,12 +596,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_length(
             response_dict["user_groups"], UserGroup.objects.filter(realm=user_profile.realm).count()
         )
-
-    def test_can_edit_user_groups(self) -> None:
-        def validation_func(user_profile: UserProfile) -> bool:
-            return user_profile.can_edit_user_groups()
-
-        self.check_has_permission_policies("user_group_edit_policy", validation_func)
 
     def test_user_group_update(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -473,7 +637,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         lear_realm = get_realm("lear")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm,
+            "test",
+            [self.lear_user("cordelia")],
+            acting_user=self.example_user("othello"),
         )
         result = self.client_patch(f"/json/user_groups/{lear_test_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")
@@ -510,9 +677,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_update_can_mention_group_setting(self) -> None:
         hamlet = self.example_user("hamlet")
-        support_group = check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=None)
+        support_group = check_add_user_group(
+            hamlet.realm, "support", [hamlet], acting_user=self.example_user("othello")
+        )
         marketing_group = check_add_user_group(
-            hamlet.realm, "marketing", [hamlet], acting_user=None
+            hamlet.realm, "marketing", [hamlet], acting_user=self.example_user("othello")
         )
 
         moderators_group = UserGroup.objects.get(
@@ -575,12 +744,131 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")
 
+    def test_update_can_manage_group_setting(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Test sending id of can_manage_group.
+        support_group = check_add_user_group(
+            hamlet.realm, "support", [hamlet], acting_user=self.example_user("othello")
+        )
+        marketing_group = check_add_user_group(
+            hamlet.realm, "marketing", [hamlet], acting_user=self.example_user("othello")
+        )
+
+        moderators_group = UserGroup.objects.get(
+            name="role:moderators", realm=hamlet.realm, is_system_group=True
+        )
+
+        self.login("hamlet")
+        params = {
+            "can_manage_group": orjson.dumps(moderators_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, moderators_group)
+
+        params = {
+            "can_manage_group": orjson.dumps(marketing_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, marketing_group)
+
+        owners_group = UserGroup.objects.get(
+            name="role:owners", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "can_manage_group": orjson.dumps(owners_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group, owners_group)
+
+        nobody_group = UserGroup.objects.get(
+            name="role:nobody", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "can_manage_group": orjson.dumps(nobody_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:nobody' group."
+        )
+
+        internet_group = UserGroup.objects.get(
+            name="role:internet", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "can_manage_group": orjson.dumps(internet_group.id).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(
+            result, "'can_manage_group' setting cannot be set to 'role:internet' group."
+        )
+
+        params = {
+            "can_mention_group": orjson.dumps(1111).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid user group")
+
+        # Test sending name of can_manage_group.
+        params = {
+            "can_manage_group": orjson.dumps("Random string").decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        invalid_single_user_group_name = "user:99"
+        params = {
+            "can_manage_group": orjson.dumps(invalid_single_user_group_name).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid group name")
+
+        expected_can_manage_group_name = get_single_user_group_name_from_user_id(hamlet.id)
+        params = {
+            "can_manage_group": orjson.dumps(expected_can_manage_group_name).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_manage_group.name, expected_can_manage_group_name)
+        self.assertEqual(support_group.can_manage_group.can_mention_group.name, SystemGroups.NOBODY)
+        self.assertTrue(support_group.can_manage_group.is_system_group)
+        self.assert_user_membership(support_group.can_manage_group, [hamlet])
+
+        # Test trying to update the setting to already set value to ensure
+        # coverage.
+        current_setting_value: Union[int, str] = support_group.can_manage_group.id
+        params = {
+            "can_manage_group": orjson.dumps(current_setting_value).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        self.assertEqual(support_group.can_manage_group.id, current_setting_value)
+
+        current_setting_value = support_group.can_manage_group.name
+        params = {
+            "can_manage_group": orjson.dumps(current_setting_value).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        self.assertEqual(support_group.can_manage_group.name, current_setting_value)
+
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         realm = get_realm("zulip")
-        support_user_group = check_add_user_group(realm, "support", [hamlet], acting_user=None)
-        marketing_user_group = check_add_user_group(realm, "marketing", [hamlet], acting_user=None)
+        support_user_group = check_add_user_group(
+            realm, "support", [hamlet], acting_user=self.example_user("othello")
+        )
+        marketing_user_group = check_add_user_group(
+            realm, "marketing", [hamlet], acting_user=self.example_user("othello")
+        )
 
         params = {
             "name": marketing_user_group.name,
@@ -599,13 +887,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.client_post("/json/user_groups/create", info=params)
         user_group = UserGroup.objects.get(name="support")
         # Test success
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 10)
-        self.assertEqual(UserGroupMembership.objects.count(), 45)
+        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 11)
+        self.assertEqual(UserGroupMembership.objects.count(), 46)
         self.assertTrue(UserGroup.objects.filter(id=user_group.id).exists())
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
-        self.assertEqual(UserGroupMembership.objects.count(), 44)
+        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 10)
+        self.assertEqual(UserGroupMembership.objects.count(), 45)
         self.assertFalse(UserGroup.objects.filter(id=user_group.id).exists())
         # Test when invalid user group is supplied; transaction needed for
         # error handling
@@ -615,7 +903,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         lear_realm = get_realm("lear")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm,
+            "test",
+            [self.lear_user("cordelia")],
+            acting_user=self.example_user("othello"),
         )
         result = self.client_delete(f"/json/user_groups/{lear_test_group.id}")
         self.assert_json_error(result, "Invalid user group")
@@ -636,7 +927,22 @@ class UserGroupAPITestCase(UserGroupTestCase):
             for i in range(50)
         ]
 
-        with self.assert_database_query_count(4):
+        admins_group = UserGroup.objects.get(
+            realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
+        )
+        with self.assert_database_query_count(5):
+            user_group = create_user_group_in_database(
+                name="backend",
+                members=[hamlet, cordelia, *original_users],
+                realm=realm,
+                acting_user=hamlet,
+                group_settings_map={"can_manage_group": admins_group},
+            )
+        self.assert_user_membership(user_group, [hamlet, cordelia, *original_users])
+
+        # Default value for can_manage_group is system group corresponding to acting user.
+        # So, a single member system group corresponding to hamlet will also be created.
+        with self.assert_database_query_count(12):
             user_group = create_user_group_in_database(
                 name="support",
                 members=[hamlet, cordelia, *original_users],
@@ -671,6 +977,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         self.assert_length(all_user_ids, 102)
         self.assert_user_membership(user_group, [hamlet, cordelia, *new_users, *original_users])
+
+        # Test query count when user is allowed to update members
+        # as per group-level setting.
+        do_set_realm_property(
+            realm, "user_group_edit_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        params = dict(delete=munge(new_user_ids))
+        with mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"):
+            with self.assert_database_query_count(12):
+                result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_success(result)
+        self.assert_user_membership(user_group, [hamlet, cordelia, *original_users])
 
     def test_update_members_of_user_group(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -789,7 +1107,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
             self.subscribe(user, stream_name)
 
         check_add_user_group(
-            name=group_name, initial_members=list(support_team), realm=realm, acting_user=None
+            name=group_name,
+            initial_members=list(support_team),
+            realm=realm,
+            acting_user=self.example_user("othello"),
         )
 
         payload = dict(
@@ -811,12 +1132,14 @@ class UserGroupAPITestCase(UserGroupTestCase):
             um = most_recent_usermessage(user)
             self.assertFalse(um.flags.mentioned)
 
-    def test_user_group_edit_policy_for_creating_and_deleting_user_group(self) -> None:
+    def test_user_group_edit_policy_for_creating_user_group(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
-        def check_create_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
-            self.login(acting_user)
+        def check_create_user_group(
+            acting_user: UserProfile, error_msg: Optional[str] = None
+        ) -> None:
+            self.login_user(acting_user)
             params = {
                 "name": "support",
                 "members": orjson.dumps([hamlet.id]).decode(),
@@ -826,9 +1149,76 @@ class UserGroupAPITestCase(UserGroupTestCase):
             if error_msg is None:
                 self.assert_json_success(result)
                 # One group already exists in the test database.
-                self.assert_length(UserGroup.objects.filter(realm=realm), 10)
+                self.assert_length(UserGroup.objects.filter(realm=realm), 11)
             else:
                 self.assert_json_error(result, error_msg)
+
+        # Check only admins are allowed to create user group.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_ADMINS_ONLY,
+            acting_user=None,
+        )
+        shiva = self.example_user("shiva")
+        check_create_user_group(shiva, "Insufficient permission")
+
+        # Groups count will increase by 2 because the value for can_manage_group
+        # setting for the created group will be a single member system group
+        # corresponding to iago. So a single member system group will also be created.
+        iago = self.example_user("iago")
+        check_create_user_group(iago)
+        UserGroup.objects.get(name="support").delete()
+        # We delete the single user system group as well to make it easy to test
+        # the user group count.
+        UserGroup.objects.get(name=get_single_user_group_name_from_user_id(iago.id)).delete()
+
+        # Check moderators are allowed to create user group but not members.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_MODERATORS_ONLY,
+            acting_user=None,
+        )
+        cordelia = self.example_user("cordelia")
+        check_create_user_group(cordelia, "Insufficient permission")
+        check_create_user_group(shiva)
+        UserGroup.objects.get(name="support").delete()
+        UserGroup.objects.get(name=get_single_user_group_name_from_user_id(shiva.id)).delete()
+
+        # Check only members are allowed to create the user group.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_MEMBERS_ONLY,
+            acting_user=None,
+        )
+        polonius = self.example_user("polonius")
+        check_create_user_group(polonius, "Not allowed for guest users")
+        check_create_user_group(cordelia)
+        UserGroup.objects.get(name="support").delete()
+        UserGroup.objects.get(name=get_single_user_group_name_from_user_id(cordelia.id)).delete()
+
+        # Check only full members are allowed to create the user group.
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_FULL_MEMBERS_ONLY,
+            acting_user=None,
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+
+        cordelia.date_joined = timezone_now() - timedelta(days=9)
+        cordelia.save()
+        check_create_user_group(cordelia, "Insufficient permission")
+
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
+        cordelia.save()
+        check_create_user_group(cordelia)
+
+    def test_realm_level_setting_for_deleting_user_groups(self) -> None:
+        othello = self.example_user("othello")
+        realm = othello.realm
 
         def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
             self.login(acting_user)
@@ -841,88 +1231,146 @@ class UserGroupAPITestCase(UserGroupTestCase):
             else:
                 self.assert_json_error(result, error_msg)
 
-        # Check only admins are allowed to create/delete user group. Admins are allowed even if
+        # Check only admins are allowed to delete user group. Admins are allowed even if
         # they are not a member of the group.
+        self.create_user_group_for_test("support")
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
             Realm.POLICY_ADMINS_ONLY,
             acting_user=None,
         )
-        check_create_user_group("shiva", "Insufficient permission")
-        check_create_user_group("iago")
-
         check_delete_user_group("shiva", "Insufficient permission")
         check_delete_user_group("iago")
 
-        # Check moderators are allowed to create/delete user group but not members. Moderators are
+        # Check moderators are allowed to delete user group but not members. Moderators are
         # allowed even if they are not a member of the group.
+        self.create_user_group_for_test("support")
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
             Realm.POLICY_MODERATORS_ONLY,
             acting_user=None,
         )
-        check_create_user_group("cordelia", "Insufficient permission")
-        check_create_user_group("shiva")
-
         check_delete_user_group("hamlet", "Insufficient permission")
         check_delete_user_group("shiva")
 
-        # Check only members are allowed to create the user group and they are allowed to delete
+        # Check only members are allowed to delete the user group and they are allowed to delete
         # a user group only if they are a member of that group.
+        self.create_user_group_for_test("support")
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
             Realm.POLICY_MEMBERS_ONLY,
             acting_user=None,
         )
-        check_create_user_group("polonius", "Not allowed for guest users")
-        check_create_user_group("cordelia")
-
         check_delete_user_group("polonius", "Not allowed for guest users")
         check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet")
+        check_delete_user_group("othello")
 
-        # Check only full members are allowed to create the user group and they are allowed to delete
+        # Check only full members are allowed to delete the user group and they are allowed to delete
         # a user group only if they are a member of that group.
+        self.create_user_group_for_test("support")
         do_set_realm_property(
             realm,
             "user_group_edit_policy",
             Realm.POLICY_FULL_MEMBERS_ONLY,
             acting_user=None,
         )
-        cordelia = self.example_user("cordelia")
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
 
-        cordelia.date_joined = timezone_now() - timedelta(days=9)
-        cordelia.save()
-        check_create_user_group("cordelia", "Insufficient permission")
-
+        cordelia = self.example_user("cordelia")
         cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
-        check_create_user_group("cordelia")
 
-        hamlet.date_joined = timezone_now() - timedelta(days=9)
-        hamlet.save()
+        othello.date_joined = timezone_now() - timedelta(days=9)
+        othello.save()
 
         check_delete_user_group("cordelia", "Insufficient permission")
-        check_delete_user_group("hamlet", "Insufficient permission")
+        check_delete_user_group("othello", "Insufficient permission")
 
-        hamlet.date_joined = timezone_now() - timedelta(days=11)
-        hamlet.save()
-        check_delete_user_group("hamlet")
+        othello.date_joined = timezone_now() - timedelta(days=11)
+        othello.save()
+        check_delete_user_group("othello")
 
-    def test_user_group_edit_policy_for_updating_user_groups(self) -> None:
+    def test_group_level_setting_for_deleting_user_groups(self) -> None:
+        othello = self.example_user("othello")
+        realm = othello.realm
+
+        def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
+            self.login(acting_user)
+            user_group = UserGroup.objects.get(name="support")
+            with transaction.atomic():
+                result = self.client_delete(f"/json/user_groups/{user_group.id}")
+            if error_msg is None:
+                self.assert_json_success(result)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+
+        check_add_user_group(get_realm("zulip"), "support", [othello], acting_user=othello)
+        # Default value of can_manage_group is single user group corresponding to othello.
+        check_delete_user_group("desdemona", "Insufficient permission")
+        check_delete_user_group("othello")
+
+        system_group_dict = get_role_based_system_groups_dict(realm)
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.OWNERS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("iago", "Insufficient permission")
+        check_delete_user_group("desdemona")
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.ADMINISTRATORS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("shiva", "Insufficient permission")
+        check_delete_user_group("iago")
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.MODERATORS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("othello", "Insufficient permission")
+        check_delete_user_group("shiva")
+
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [othello],
+            "",
+            {"can_manage_group": system_group_dict[SystemGroups.MEMBERS]},
+            acting_user=othello,
+        )
+        check_delete_user_group("polonius", "Not allowed for guest users")
+        check_delete_user_group(
+            "cordelia",
+        )
+
+    def test_realm_level_setting_for_updating_user_groups(self) -> None:
         othello = self.example_user("othello")
         self.login("othello")
-        params = {
-            "name": "support",
-            "members": orjson.dumps([othello.id]).decode(),
-            "description": "Support team",
-        }
-        self.client_post("/json/user_groups/create", info=params)
-        user_group = UserGroup.objects.get(name="support")
+        user_group = self.create_user_group_for_test("support")
 
         def check_update_user_group(
             new_name: str,
@@ -1016,7 +1464,79 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello.save()
         check_update_user_group("support", "Support team", "othello")
 
-    def test_user_group_edit_policy_for_updating_members(self) -> None:
+    def test_group_level_setting_for_updating_user_groups(self) -> None:
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        user_group = check_add_user_group(
+            get_realm("zulip"), "support", [othello, iago], acting_user=othello
+        )
+
+        def check_update_user_group(
+            new_name: str,
+            new_description: str,
+            acting_user: str,
+            error_msg: Optional[str] = None,
+        ) -> None:
+            self.login(acting_user)
+            params = {
+                "name": new_name,
+                "description": new_description,
+            }
+            # Ensure that this update request is not a no-op.
+            self.assertNotEqual(user_group.name, new_name)
+            self.assertNotEqual(user_group.description, new_description)
+
+            result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+            if error_msg is None:
+                self.assert_json_success(result)
+                user_group.refresh_from_db()
+                self.assertEqual(user_group.name, new_name)
+                self.assertEqual(user_group.description, new_description)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        realm = othello.realm
+
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+
+        # Default value of can_manage_group is single user group corresponding to othello.
+        check_update_user_group("help", "Troubleshooting team", "iago", "Insufficient permission")
+        check_update_user_group("help", "Troubleshooting team", "othello")
+
+        system_group_dict = get_role_based_system_groups_dict(realm)
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.OWNERS]
+        user_group.save()
+        check_update_user_group("support", "Support team", "iago", "Insufficient permission")
+        check_update_user_group("support", "Support team", "desdemona")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.ADMINISTRATORS]
+        user_group.save()
+        check_update_user_group("help", "Troubleshooting team", "shiva", "Insufficient permission")
+        check_update_user_group("help", "Troubleshooting team", "iago")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MODERATORS]
+        user_group.save()
+        check_update_user_group("support", "Support team", "othello", "Insufficient permission")
+        check_update_user_group("support", "Support team", "shiva")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MEMBERS]
+        user_group.save()
+        check_update_user_group(
+            "help", "Troubleshooting team", "polonius", "Not allowed for guest users"
+        )
+        check_update_user_group(
+            "help",
+            "Troubleshooting team",
+            "cordelia",
+        )
+
+    def test_realm_level_setting_for_updating_members(self) -> None:
         user_group = self.create_user_group_for_test("support")
         aaron = self.example_user("aaron")
         othello = self.example_user("othello")
@@ -1125,6 +1645,88 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello.save()
         check_removing_members_from_group("othello")
 
+    def test_group_level_setting_for_updating_members(self) -> None:
+        othello = self.example_user("othello")
+        user_group = check_add_user_group(
+            get_realm("zulip"), "support", [othello], acting_user=othello
+        )
+        aaron = self.example_user("aaron")
+
+        def check_adding_members_to_group(
+            acting_user: str, error_msg: Optional[str] = None
+        ) -> None:
+            self.login(acting_user)
+            params = {"add": orjson.dumps([aaron.id]).decode()}
+            self.assert_user_membership(user_group, [othello])
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+            if error_msg is None:
+                self.assert_json_success(result)
+                self.assert_user_membership(user_group, [aaron, othello])
+            else:
+                self.assert_json_error(result, error_msg)
+
+        def check_removing_members_from_group(
+            acting_user: str, error_msg: Optional[str] = None
+        ) -> None:
+            self.login(acting_user)
+            params = {"delete": orjson.dumps([aaron.id]).decode()}
+            self.assert_user_membership(user_group, [aaron, othello])
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+            if error_msg is None:
+                self.assert_json_success(result)
+                self.assert_user_membership(user_group, [othello])
+            else:
+                self.assert_json_error(result, error_msg)
+
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm,
+            "user_group_edit_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+
+        # Default value of can_manage_group is single user group corresponding to othello.
+        check_adding_members_to_group("iago", "Insufficient permission")
+        check_adding_members_to_group("othello")
+
+        check_removing_members_from_group("iago", "Insufficient permission")
+        check_removing_members_from_group("othello")
+
+        system_group_dict = get_role_based_system_groups_dict(realm)
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.OWNERS]
+        user_group.save()
+        check_adding_members_to_group("iago", "Insufficient permission")
+        check_adding_members_to_group("desdemona")
+
+        check_removing_members_from_group("iago", "Insufficient permission")
+        check_removing_members_from_group("desdemona")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.ADMINISTRATORS]
+        user_group.save()
+        check_adding_members_to_group("shiva", "Insufficient permission")
+        check_adding_members_to_group("iago")
+
+        check_removing_members_from_group("shiva", "Insufficient permission")
+        check_removing_members_from_group("iago")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MODERATORS]
+        user_group.save()
+        check_adding_members_to_group("othello", "Insufficient permission")
+        check_adding_members_to_group("shiva")
+
+        check_removing_members_from_group("othello", "Insufficient permission")
+        check_removing_members_from_group("shiva")
+
+        user_group.can_manage_group = system_group_dict[SystemGroups.MEMBERS]
+        user_group.save()
+        check_adding_members_to_group("polonius", "Not allowed for guest users")
+        check_adding_members_to_group("cordelia")
+
+        check_removing_members_from_group("polonius", "Not allowed for guest users")
+        check_removing_members_from_group("cordelia")
+
     def test_editing_system_user_groups(self) -> None:
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
@@ -1206,10 +1808,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello = self.example_user("othello")
 
         leadership_group = check_add_user_group(
-            realm, "leadership", [desdemona, iago, hamlet], acting_user=None
+            realm, "leadership", [desdemona, iago, hamlet], acting_user=hamlet
         )
-        support_group = check_add_user_group(realm, "support", [hamlet, othello], acting_user=None)
-        test_group = check_add_user_group(realm, "test", [hamlet], acting_user=None)
+        support_group = check_add_user_group(
+            realm, "support", [hamlet, othello], acting_user=hamlet
+        )
+        test_group = check_add_user_group(realm, "test", [hamlet], acting_user=hamlet)
 
         self.login("cordelia")
         # Non-admin and non-moderators who are not a member of group cannot add or remove subgroups.
@@ -1304,7 +1908,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         lear_realm = get_realm("lear")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm,
+            "test",
+            [self.lear_user("cordelia")],
+            acting_user=self.example_user("othello"),
         )
         result = self.client_post(f"/json/user_groups/{lear_test_group.id}/subgroups", info=params)
         self.assert_json_error(result, "Invalid user group")
@@ -1342,7 +1949,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         lear_realm = get_realm("lear")
         lear_cordelia = self.lear_user("cordelia")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [lear_cordelia], acting_user=None
+            lear_realm, "test", [lear_cordelia], acting_user=self.example_user("othello")
         )
         result = self.client_get(
             f"/json/user_groups/{lear_test_group.id}/members/{lear_cordelia.id}"
@@ -1404,7 +2011,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         lear_realm = get_realm("lear")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm,
+            "test",
+            [self.lear_user("cordelia")],
+            acting_user=self.example_user("othello"),
         )
         result = self.client_get(f"/json/user_groups/{lear_test_group.id}/members")
         self.assert_json_error(result, "Invalid user group")
@@ -1452,7 +2062,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         lear_realm = get_realm("lear")
         lear_test_group = check_add_user_group(
-            lear_realm, "test", [self.lear_user("cordelia")], acting_user=None
+            lear_realm,
+            "test",
+            [self.lear_user("cordelia")],
+            acting_user=self.example_user("othello"),
         )
         result = self.client_get(f"/json/user_groups/{lear_test_group.id}/subgroups")
         self.assert_json_error(result, "Invalid user group")
@@ -1487,10 +2100,30 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_add_subgroup_from_wrong_realm(self) -> None:
         other_realm = do_create_realm("other", "Other Realm")
-        other_user_group = check_add_user_group(other_realm, "user_group", [], acting_user=None)
+        other_realm_admins_group = UserGroup.objects.get(
+            realm=other_realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
+        )
+        other_user_group = check_add_user_group(
+            other_realm,
+            "user_group",
+            [],
+            "",
+            {"can_manage_group": other_realm_admins_group},
+            acting_user=None,
+        )
 
         realm = get_realm("zulip")
-        zulip_group = check_add_user_group(realm, "zulip_test", [], acting_user=None)
+        zulip_admins_group = UserGroup.objects.get(
+            realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
+        )
+        zulip_group = check_add_user_group(
+            realm,
+            "zulip_test",
+            [],
+            "",
+            {"can_manage_group": zulip_admins_group},
+            acting_user=None,
+        )
 
         self.login("iago")
         result = self.client_post(

@@ -2777,10 +2777,13 @@ class StreamAdminTest(ZulipTestCase):
             realm,
             "leadership",
             [self.example_user("iago"), self.example_user("shiva")],
-            acting_user=None,
+            acting_user=self.example_user("hamlet"),
         )
         managers_group = check_add_user_group(
-            realm, "managers", [self.example_user("hamlet")], acting_user=None
+            realm,
+            "managers",
+            [self.example_user("hamlet")],
+            acting_user=self.example_user("hamlet"),
         )
         add_subgroups_to_user_group(managers_group, [leadership_group], acting_user=None)
         cordelia = self.example_user("cordelia")

@@ -3107,6 +3107,7 @@ paths:
                                       "id": 2,
                                       "is_system_group": false,
                                       "can_mention_group": 11,
+                                      "can_manage_group": 16,
                                     },
                                   "id": 0,
                                 }
@@ -3158,6 +3159,13 @@ paths:
 
                                         New in Zulip 8.0 (feature level 191). Previously, groups
                                         could be mentioned if and only if they were not system groups.
+                                    can_manage_group:
+                                      type: integer
+                                      description: |
+                                        ID of the new user group whose members are allowed to manage the
+                                        group.
+
+                                        **Changes**: New in Zulip 9.0 (feature level 240).
                               example:
                                 {
                                   "type": "user_group",
@@ -17484,6 +17492,22 @@ paths:
             type: integer
           example: 11
           required: false
+        - name: can_manage_group
+          in: query
+          description: |
+            ID of the user group whose members are allowed to manage the
+            user group.
+
+            This setting cannot be set to `"role:internet"` and `"role:nobody"`
+            system groups.
+
+            **Changes**: New in Zulip 9.0 (feature level 240).
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+          example: 11
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -17623,6 +17647,22 @@ paths:
             type: integer
           example: 12
           required: false
+        - name: can_manage_group
+          in: query
+          description: |
+            ID of the user group whose members are allowed to manage the
+            user group.
+
+            This setting cannot be set to `"role:internet"` and `"role:nobody"`
+            system groups.
+
+            **Changes**: New in Zulip 9.0 (feature level 240).
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+          example: 11
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -17748,6 +17788,12 @@ paths:
 
                                 New in Zulip 8.0 (feature level 191). Previously, groups
                                 could be mentioned if and only if they were not system groups.
+                            can_manage_group:
+                              type: integer
+                              description: |
+                                ID of the user group whose members are allowed to manage the group.
+
+                                **Changes**: New in Zulip 9.0 (feature level 240).
                         description: |
                           A list of `user_group` objects.
                     example:
@@ -17764,6 +17810,7 @@ paths:
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
                               "can_mention_group": 11,
+                              "can_manage_group": 16,
                             },
                             {
                               "description": "Administrators of this organization, including owners",
@@ -17773,6 +17820,7 @@ paths:
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
                               "can_mention_group": 12,
+                              "can_manage_group": 17,
                             },
                             {
                               "description": "Characters of Hamlet",
@@ -17782,6 +17830,7 @@ paths:
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
                               "can_mention_group": 13,
+                              "can_manage_group": 20,
                             },
                           ],
                       }
@@ -18872,6 +18921,12 @@ components:
 
             New in Zulip 8.0 (feature level 191). Previously, groups
             could be mentioned if and only if they were not system groups.
+        can_manage_group:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to manage the group.
+
+            **Changes**: New in Zulip 9.0 (feature level 240).
     Subscriptions:
       type: object
       additionalProperties: false

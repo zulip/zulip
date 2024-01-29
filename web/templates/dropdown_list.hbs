@@ -17,6 +17,13 @@
         <a class="dropdown-list-item-common-styles">
             {{#if stream}}
                 {{> inline_decorated_stream_name stream=stream show_colored_icon=true}}
+            {{else if user}}
+                <div class='pill-container pill-container-btn'>
+                    {{> input_pill deactivated=user.deactivated
+                      has_image=user.has_image
+                      img_src=user.img_src
+                      display_value=user.display_value}}
+                </div>
             {{else if is_direct_message}}
                 <i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> {{name}}
             {{else if is_setting_disabled}}

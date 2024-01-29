@@ -62,12 +62,14 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
+    UserGroup,
     UserMessage,
     UserPresence,
     UserProfile,
 )
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
@@ -1335,10 +1337,18 @@ def choose_date_sent(
 
 def create_user_groups() -> None:
     zulip = get_realm("zulip")
+    admins_system_group = UserGroup.objects.get(
+        name=SystemGroups.ADMINISTRATORS, realm=zulip, is_system_group=True
+    )
     members = [
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
     create_user_group_in_database(
-        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
+        "hamletcharacters",
+        members,
+        zulip,
+        description="Characters of Hamlet",
+        acting_user=None,
+        group_settings_map=dict(can_manage_group=admins_system_group),
     )

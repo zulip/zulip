@@ -22,6 +22,7 @@ export type UserGroupUpdateEvent = {
         name?: string;
         description?: string;
         can_mention_group?: number;
+        can_manage_group?: number;
     };
 };
 

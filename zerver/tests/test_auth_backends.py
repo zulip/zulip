@@ -117,6 +117,7 @@ from zerver.models import (
     UserGroup,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.users import PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
@@ -7445,8 +7446,14 @@ class LDAPGroupSyncTest(ZulipTestCase):
         ), self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log:
             self.assertFalse(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
 
+            admins_group = UserGroup.objects.get(realm=realm, name=SystemGroups.ADMINISTRATORS)
             create_user_group_in_database(
-                "cool_test_group", [], realm, acting_user=None, description="Created by LDAP sync"
+                "cool_test_group",
+                [],
+                realm,
+                acting_user=None,
+                description="Created by LDAP sync",
+                group_settings_map={"can_manage_group": admins_group},
             )
 
             self.assertTrue(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())

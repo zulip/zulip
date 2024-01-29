@@ -1153,7 +1153,10 @@ class TestRealmAuditLog(ZulipTestCase):
             [hamlet, cordelia],
             acting_user=hamlet,
             description="lorem",
-            group_settings_map={"can_mention_group": public_group},
+            group_settings_map={
+                "can_mention_group": public_group,
+                "can_manage_group": public_group,
+            },
         )
 
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1176,29 +1179,11 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
 
-        audit_log_entries = RealmAuditLog.objects.filter(
-            acting_user=hamlet,
-            realm=hamlet.realm,
-            event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-        )
-        self.assert_length(audit_log_entries, len(UserGroup.GROUP_PERMISSION_SETTINGS))
-        self.assertListEqual(
-            [audit_log.extra_data for audit_log in audit_log_entries],
-            [
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: public_group.id,
-                    "property": "can_mention_group",
-                }
-            ],
-        )
-
     def test_change_user_group_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         now = timezone_now()
-        user_group = check_add_user_group(hamlet.realm, "foo", [], acting_user=None)
+        user_group = check_add_user_group(hamlet.realm, "foo", [], acting_user=hamlet)
 
         bulk_add_members_to_user_groups([user_group], [hamlet.id, cordelia.id], acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1225,7 +1210,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_change_user_group_subgroups_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
-        user_group = check_add_user_group(hamlet.realm, "main", [], acting_user=None)
+        user_group = check_add_user_group(hamlet.realm, "main", [], acting_user=hamlet)
         subgroups = [
             check_add_user_group(hamlet.realm, f"subgroup{num}", [], acting_user=hamlet)
             for num in range(3)

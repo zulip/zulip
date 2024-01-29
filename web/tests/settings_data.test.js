@@ -167,9 +167,14 @@ test_policy(
     settings_data.user_can_move_messages_between_streams,
 );
 test_policy(
-    "user_can_edit_user_groups",
+    "user_can_create_user_groups",
     "realm_user_group_edit_policy",
-    settings_data.user_can_edit_user_groups,
+    settings_data.user_can_create_user_groups,
+);
+test_policy(
+    "user_can_edit_user_groups_from_realm_level_permission",
+    "realm_user_group_edit_policy",
+    settings_data.user_can_edit_user_groups_from_realm_level_permission,
 );
 test_policy(
     "user_can_add_custom_emoji",
@@ -373,35 +378,68 @@ run_test("user_can_create_multiuse_invite", () => {
 });
 
 run_test("can_edit_user_group", () => {
+    const admins = {
+        description: "Administrators",
+        name: "role:administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+        can_mention_group: 1,
+        can_manage_group: 2,
+    };
+    const nobody = {
+        description: "Nobody",
+        name: "role:nobody",
+        id: 2,
+        members: new Set([]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+        can_mention_group: 2,
+        can_manage_group: 2,
+    };
     const students = {
         description: "Students group",
         name: "Students",
-        id: 0,
+        id: 3,
         members: new Set([1, 2]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
-        can_mention_group: 2,
+        can_mention_group: 3,
+        can_manage_group: 1,
     };
     user_groups.initialize({
-        realm_user_groups: [students],
+        realm_user_groups: [admins, nobody, students],
     });
 
-    delete page_params.user_id;
-    assert.ok(!settings_data.can_edit_user_group(students.id));
-
+    // Test user is not allowed based on both realm-level
+    // and group-level permissions.
+    page_params.realm_user_group_edit_policy =
+        settings_config.common_policy_values.by_admins_only.code;
     page_params.user_id = 3;
-    page_params.is_guest = true;
+    page_params.is_admin = false;
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
-    page_params.is_guest = false;
+    // Test user is allowed as per realm-level permission.
+    page_params.is_admin = true;
+    assert.ok(settings_data.can_edit_user_group(students.id));
+
+    page_params.realm_user_group_edit_policy = settings_config.common_policy_values.by_members.code;
+    page_params.is_admin = false;
     page_params.is_moderator = true;
+    page_params.user_id = 6;
     assert.ok(settings_data.can_edit_user_group(students.id));
 
     page_params.is_moderator = false;
     assert.ok(!settings_data.can_edit_user_group(students.id));
 
     page_params.user_id = 2;
-    page_params.realm_waiting_period_threshold = 0;
+    assert.ok(settings_data.can_edit_user_group(students.id));
+
+    // Test user is allowed as per group-level permission.
+    page_params.realm_user_group_edit_policy =
+        settings_config.common_policy_values.by_admins_only.code;
+    page_params.user_id = 1;
     assert.ok(settings_data.can_edit_user_group(students.id));
 });
 

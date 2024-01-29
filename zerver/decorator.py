@@ -674,7 +674,7 @@ def require_member_or_admin(
     return _wrapped_view_func
 
 
-def require_user_group_edit_permission(
+def require_user_group_create_permission(
     view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @require_member_or_admin
@@ -686,7 +686,7 @@ def require_user_group_edit_permission(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not user_profile.can_edit_user_groups():
+        if not user_profile.can_create_user_groups():
             raise JsonableError(_("Insufficient permission"))
         return view_func(request, user_profile, *args, **kwargs)
 

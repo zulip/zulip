@@ -9,6 +9,7 @@ import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
+import * as group_permission_settings from "./group_permission_settings";
 import {$t, $t_html, get_language_name} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
@@ -25,7 +26,6 @@ import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_ui from "./settings_ui";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
-import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 const meta = {
@@ -481,6 +481,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_create_multiuse_invite_group":
         case "realm_can_access_all_users_group":
         case "can_mention_group":
+        case "can_manage_group":
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -716,7 +717,7 @@ export function init_dropdown_widgets() {
     const create_multiuse_invite_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "realm_create_multiuse_invite_group",
         get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
                 "create_multiuse_invite_group",
                 "realm",
             ),
@@ -745,7 +746,7 @@ export function init_dropdown_widgets() {
     const can_access_all_users_group_widget = new dropdown_widget.DropdownWidget({
         widget_name: "realm_can_access_all_users_group",
         get_options: () =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
                 "can_access_all_users_group",
                 "realm",
             ),

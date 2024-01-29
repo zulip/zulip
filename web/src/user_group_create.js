@@ -120,6 +120,8 @@ function create_user_group() {
     }
     data.name = group_name;
     data.description = description;
+    const can_manage_group_value = settings_components.new_group_can_manage_group_widget.value();
+    data.can_manage_group = JSON.stringify(can_manage_group_value);
 
     const user_ids = user_group_create_members.get_principals();
     data.members = JSON.stringify(user_ids);

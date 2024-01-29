@@ -1775,6 +1775,7 @@ group_type = DictType(
         ("description", str),
         ("is_system_group", bool),
         ("can_mention_group", int),
+        ("can_manage_group", int),
     ]
 )
 
@@ -1822,6 +1823,7 @@ user_group_data_type = DictType(
         ("name", str),
         ("description", str),
         ("can_mention_group", int),
+        ("can_manage_group", int),
     ],
 )
 
