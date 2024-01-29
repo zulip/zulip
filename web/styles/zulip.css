@@ -2930,10 +2930,6 @@ select.invite-as {
     margin-bottom: 0;
 }
 
-#pw_change_controls {
-    display: none;
-}
-
 .sub-unsub-message,
 .date_row {
     padding-bottom: 10px;
