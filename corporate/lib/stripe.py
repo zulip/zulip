@@ -1229,9 +1229,9 @@ class BillingSession(ABC):
                 )
             fixed_price_plan_params["billing_cycle_anchor"] = current_plan.end_date
             fixed_price_plan_params["next_invoice_date"] = current_plan.end_date
-            fixed_price_plan_params[
-                "invoicing_status"
-            ] = CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+            fixed_price_plan_params["invoicing_status"] = (
+                CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
+            )
             fixed_price_plan_params["billing_schedule"] = current_plan.billing_schedule
             fixed_price_plan_params["charge_automatically"] = current_plan.charge_automatically
             # Manual license management is not available for fixed price plan.
