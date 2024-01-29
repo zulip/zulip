@@ -216,6 +216,6 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     content = make_table(title, cols, rows, totals=total_row)
     return render(
         request,
-        "analytics/activity_details_template.html",
+        "corporate/activity/activity.html",
         context=dict(data=content, title=title, is_home=False),
     )

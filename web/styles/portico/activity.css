@@ -244,6 +244,10 @@ tr.admin td:first-child {
     }
 }
 
+.installation-activity-header {
+    text-align: center;
+}
+
 .remote-server-information,
 .remote-realm-information {
     padding-bottom: 15px;

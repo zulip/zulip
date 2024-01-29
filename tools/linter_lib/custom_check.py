@@ -720,7 +720,6 @@ html_rules: List["Rule"] = [
             "templates/zerver/accounts_send_confirm.html",
             "templates/zerver/integrations/index.html",
             "templates/zerver/documentation_main.html",
-            "templates/analytics/realm_summary_table.html",
             "templates/corporate/zephyr.html",
             "templates/corporate/zephyr-mirror.html",
         },

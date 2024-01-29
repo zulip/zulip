@@ -1,7 +1,7 @@
 <h3>{{ data.title }} {% if data.stats_link %}{{ data.stats_link }}{% endif %}</h3>
 
 {% if data.title == "Remote servers" %}
-{% include "analytics/remote_activity_key.html" %}
+{% include "corporate/activity/remote_activity_key.html" %}
 {% endif %}
 
 {{ data.rows|length}} rows
