@@ -1385,24 +1385,29 @@ def check_send_message(
     read_by_sender: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
+    pieces = message_content.split("\n\n\n")
+    message_split = [s for s in pieces if s]
+    messages_to_send = []
     try:
-        message = check_message(
-            sender,
-            client,
-            addressee,
-            message_content,
-            realm,
-            forged,
-            forged_timestamp,
-            forwarder_user_profile,
-            local_id,
-            sender_queue_id,
-            widget_content,
-            skip_stream_access_check=skip_stream_access_check,
-        )
+        for message_content in message_split:
+            message = check_message(
+                sender,
+                client,
+                addressee,
+                message_content,
+                realm,
+                forged,
+                forged_timestamp,
+                forwarder_user_profile,
+                local_id,
+                sender_queue_id,
+                widget_content,
+                skip_stream_access_check=skip_stream_access_check,
+            )
+            messages_to_send.append(message)
     except ZephyrMessageAlreadySentError as e:
         return SentMessageResult(message_id=e.message_id)
-    return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
+    return do_send_messages(messages_to_send, mark_as_read=[sender.id] if read_by_sender else [])[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
