@@ -362,8 +362,8 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
-        if realm.notifications_stream and not realm.notifications_stream.deactivated:
-            notifications_stream = realm.notifications_stream
+        notifications_stream = realm.get_notifications_stream()
+        if notifications_stream:
             state["realm_notifications_stream_id"] = notifications_stream.id
         else:
             state["realm_notifications_stream_id"] = -1
