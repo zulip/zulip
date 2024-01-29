@@ -5,7 +5,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from corporate.lib.analytics import get_remote_server_audit_logs
+from corporate.lib.activity import get_remote_server_audit_logs
 from corporate.lib.stripe import add_months
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.lib.test_classes import ZulipTestCase

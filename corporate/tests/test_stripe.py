@@ -40,7 +40,7 @@ from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
 from typing_extensions import ParamSpec, override
 
-from corporate.lib.analytics import get_realms_with_default_discount_dict
+from corporate.lib.activity import get_realms_with_default_discount_dict
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MAX_INVOICED_LICENSES,

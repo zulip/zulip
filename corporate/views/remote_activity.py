@@ -2,20 +2,18 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from psycopg2.sql import SQL
 
-from analytics.views.activity_common import (
+from corporate.lib.activity import (
     fix_rows,
     format_date_for_activity_reports,
     format_none_as_zero,
+    get_plan_data_by_remote_realm,
+    get_plan_data_by_remote_server,
     get_query_data,
+    get_remote_realm_user_counts,
+    get_remote_server_audit_logs,
     make_table,
     remote_installation_stats_link,
     remote_installation_support_link,
-)
-from corporate.lib.analytics import (
-    get_plan_data_by_remote_realm,
-    get_plan_data_by_remote_server,
-    get_remote_realm_user_counts,
-    get_remote_server_audit_logs,
 )
 from corporate.lib.stripe import cents_to_dollar_string
 from zerver.decorator import require_server_admin

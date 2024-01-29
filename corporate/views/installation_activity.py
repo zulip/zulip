@@ -11,29 +11,25 @@ from markupsafe import Markup
 from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
-from analytics.views.activity_common import (
+from corporate.lib.activity import (
     dictfetchall,
+    estimate_annual_recurring_revenue_by_realm,
     fix_rows,
     format_date_for_activity_reports,
     get_query_data,
+    get_realms_with_default_discount_dict,
     make_table,
     realm_activity_link,
     realm_stats_link,
     realm_support_link,
     realm_url_link,
 )
-from analytics.views.support import get_plan_type_string
+from corporate.lib.stripe import cents_to_dollar_string
+from corporate.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.models import Realm
 from zerver.models.realms import get_org_type_display_name
-
-if settings.BILLING_ENABLED:
-    from corporate.lib.analytics import (
-        estimate_annual_recurring_revenue_by_realm,
-        get_realms_with_default_discount_dict,
-    )
-    from corporate.lib.stripe import cents_to_dollar_string
 
 
 def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
