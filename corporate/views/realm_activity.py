@@ -164,7 +164,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
 
     return render(
         request,
-        "analytics/activity_details_template.html",
+        "corporate/activity/activity.html",
         context=dict(
             data=content,
             title=title,

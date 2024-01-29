@@ -66,7 +66,7 @@ def make_table(
     data = dict(title=title, cols=cols, rows=rows, totals=totals, stats_link=stats_link)
 
     content = loader.render_to_string(
-        "analytics/ad_hoc_query.html",
+        "corporate/activity/activity_table.html",
         dict(data=data),
     )
 

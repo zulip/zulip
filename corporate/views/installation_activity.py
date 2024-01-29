@@ -271,7 +271,7 @@ def realm_summary_table() -> str:
     ]
 
     content = loader.render_to_string(
-        "analytics/realm_summary_table.html",
+        "corporate/activity/installation_activity_table.html",
         dict(
             rows=rows,
             totals=total_row,
@@ -291,7 +291,7 @@ def get_installation_activity(request: HttpRequest) -> HttpResponse:
 
     return render(
         request,
-        "analytics/activity_details_template.html",
+        "corporate/activity/activity.html",
         context=dict(data=content, title=title, is_home=True),
     )
 
@@ -344,7 +344,7 @@ def get_integrations_activity(request: HttpRequest) -> HttpResponse:
     content = make_table(title, cols, rows)
     return render(
         request,
-        "analytics/activity_details_template.html",
+        "corporate/activity/activity.html",
         context=dict(
             data=content,
             title=title,
