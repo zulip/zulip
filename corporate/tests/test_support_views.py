@@ -304,7 +304,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         check_remote_server_with_no_realms(result)
 
         server = 2
-        with mock.patch("analytics.views.support.compute_max_monthly_messages", return_value=1000):
+        with mock.patch("corporate.views.support.compute_max_monthly_messages", return_value=1000):
             result = self.client_get(
                 "/activity/remote/support", {"q": f"zulip-{server}.example.com"}
             )
@@ -314,7 +314,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         check_sponsorship_request_no_website(result)
 
         with mock.patch(
-            "analytics.views.support.compute_max_monthly_messages", side_effect=MissingDataError
+            "corporate.views.support.compute_max_monthly_messages", side_effect=MissingDataError
         ):
             result = self.client_get(
                 "/activity/remote/support", {"q": f"zulip-{server}.example.com"}
@@ -875,7 +875,7 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        with mock.patch("analytics.views.support.do_change_realm_plan_type") as m:
+        with mock.patch("corporate.views.support.do_change_realm_plan_type") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "2"}
             )
@@ -884,7 +884,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 ["Plan type of zulip changed from Self-hosted to Limited"], result
             )
 
-        with mock.patch("analytics.views.support.do_change_realm_plan_type") as m:
+        with mock.patch("corporate.views.support.do_change_realm_plan_type") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "10"}
             )
@@ -906,7 +906,7 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        with mock.patch("analytics.views.support.do_change_realm_org_type") as m:
+        with mock.patch("corporate.views.support.do_change_realm_org_type") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{iago.realm_id}", "org_type": "70"}
             )
@@ -941,7 +941,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(customer.default_discount, Decimal(25))
         self.assertEqual(plan.discount, Decimal(25))
         start_next_billing_cycle = start_of_next_billing_cycle(plan, timezone_now())
-        biling_cycle_string = start_next_billing_cycle.strftime("%d %B %Y")
+        billing_cycle_string = start_next_billing_cycle.strftime("%d %B %Y")
 
         result = self.client_get("/activity/support", {"q": "lear"})
         self.assert_in_success_response(
@@ -953,7 +953,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 "<b>Licenses</b>: 2/10 (Manual)",
                 "<b>Price per license</b>: $6.00",
                 "<b>Annual recurring revenue</b>: $720.00",
-                f"<b>Start of next billing cycle</b>: {biling_cycle_string}",
+                f"<b>Start of next billing cycle</b>: {billing_cycle_string}",
             ],
             result,
         )
@@ -1043,14 +1043,14 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
-        with mock.patch("analytics.views.support.do_deactivate_realm") as m:
+        with mock.patch("corporate.views.support.do_deactivate_realm") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"}
             )
             m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(["lear deactivated"], result)
 
-        with mock.patch("analytics.views.support.do_send_realm_reactivation_email") as m:
+        with mock.patch("corporate.views.support.do_send_realm_reactivation_email") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "active"}
             )
@@ -1192,14 +1192,14 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
-        with mock.patch("analytics.views.support.do_scrub_realm") as m:
+        with mock.patch("corporate.views.support.do_scrub_realm") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "true"}
             )
             m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(["lear scrubbed"], result)
 
-        with mock.patch("analytics.views.support.do_scrub_realm") as m:
+        with mock.patch("corporate.views.support.do_scrub_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
             self.assert_json_error(result, "Invalid parameters")
             m.assert_not_called()
@@ -1219,7 +1219,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
-        with mock.patch("analytics.views.support.do_delete_user_preserving_messages") as m:
+        with mock.patch("corporate.views.support.do_delete_user_preserving_messages") as m:
             result = self.client_post(
                 "/activity/support",
                 {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},

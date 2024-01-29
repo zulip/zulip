@@ -49,14 +49,14 @@ not_yet_fully_covered = [
     # runs before tests.
     "analytics/lib/fixtures.py",
     # We have 100% coverage on the new stuff; need to refactor old stuff.
-    "analytics/views/activity_common.py",
-    "analytics/views/installation_activity.py",
-    "analytics/views/realm_activity.py",
     "analytics/views/stats.py",
-    "analytics/views/support.py",
     # TODO: This is a work in progress and therefore without
     # tests yet.
+    "corporate/views/installation_activity.py",
+    "corporate/views/realm_activity.py",
     "corporate/views/remote_billing_page.py",
+    "corporate/views/support.py",
+    "corporate/lib/activity.py",
     "corporate/lib/remote_billing_util.py",
     # Major lib files should have 100% coverage
     "zerver/lib/addressee.py",

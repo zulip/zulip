@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
 
-from analytics.views.activity_common import (
+from corporate.lib.activity import (
     format_date_for_activity_reports,
     make_table,
     realm_stats_link,

@@ -1,17 +1,13 @@
 from typing import Any, List
 
-from django.conf import settings
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from analytics.views.activity_common import format_date_for_activity_reports, make_table
+from corporate.lib.activity import format_date_for_activity_reports, make_table
 from zerver.decorator import require_server_admin
 from zerver.models import UserActivity, UserProfile
 from zerver.models.users import get_user_profile_by_id
-
-if settings.BILLING_ENABLED:
-    pass
 
 
 def get_user_activity_records(
