@@ -479,6 +479,9 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const $elem = toggler.get();
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
+    setTimeout(() => {
+        $(".ind-tab.selected").trigger("focus");
+    }, 0);
     if (show_user_subscribe_widget) {
         reset_subscribe_widget();
     }
