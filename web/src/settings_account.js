@@ -453,7 +453,7 @@ export function set_up() {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
             password_quality = (await import("./password_quality")).password_quality;
-            $("#pw_strength .bar").removeClass("fade");
+            $("#pw_strength .bar").removeClass("hide");
 
             $("#new_password").on("input", () => {
                 const $field = $("#new_password");
