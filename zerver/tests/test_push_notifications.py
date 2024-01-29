@@ -4475,7 +4475,7 @@ class TestPushApi(BouncerTestCase):
         # RemotePushDeviceToken will only include tokens of
         # the devices using push notification bouncer.
         remote_token_values = list(RemotePushDeviceToken.objects.values_list("token", flat=True))
-        self.assertEqual(remote_token_values, ["apple-tokenbb", "android-token-2"])
+        self.assertEqual(sorted(remote_token_values), ["android-token-2", "apple-tokenbb"])
 
         # Test removing tokens without using push notification bouncer.
         for endpoint, token, appid in no_bouncer_requests:
