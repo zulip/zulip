@@ -196,7 +196,7 @@ export async function check_form_contents(
 }
 
 export async function get_element_text(element: ElementHandle): Promise<string> {
-    const text = await (await element.getProperty("innerText"))!.jsonValue();
+    const text = await (await element.getProperty("innerText")).jsonValue();
     assert.ok(typeof text === "string");
     return text;
 }
