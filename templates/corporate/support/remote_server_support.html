@@ -69,7 +69,7 @@
                     {% set remote_type = "remote_server_id" %}
                     {% set format_discount = format_discount %}
                     {% set has_fixed_price = remote_servers_support_data[remote_server.id].plan_data.has_fixed_price %}
-                    {% include 'analytics/sponsorship_forms_support.html' %}
+                    {% include 'corporate/support/sponsorship_forms_support.html' %}
                 {% endwith %}
             {% endif %}
 
@@ -79,7 +79,7 @@
                     {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
                     {% set format_discount = format_discount %}
                     {% set dollar_amount = dollar_amount %}
-                    {% include 'analytics/current_plan_details.html' %}
+                    {% include 'corporate/support/current_plan_details.html' %}
                 {% endwith %}
             </div>
 
@@ -87,7 +87,7 @@
                 {% set current_plan = remote_servers_support_data[remote_server.id].plan_data.current_plan %}
                 {% set remote_id = remote_server.id %}
                 {% set remote_type = "remote_server_id" %}
-                {% include 'analytics/current_plan_forms_support.html' %}
+                {% include 'corporate/support/current_plan_forms_support.html' %}
             {% endwith %}
             {% endif %}
 
@@ -97,14 +97,14 @@
                     {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
                     {% set format_discount = format_discount %}
                     {% set dollar_amount = dollar_amount %}
-                    {% include 'analytics/next_plan_details.html' %}
+                    {% include 'corporate/support/next_plan_details.html' %}
                 {% endwith %}
             </div>
             {% else %}
             {% with %}
                 {% set remote_id = remote_server.id %}
                 {% set remote_type = "remote_server_id" %}
-                {% include 'analytics/next_plan_forms_support.html' %}
+                {% include 'corporate/support/next_plan_forms_support.html' %}
             {% endwith %}
             {% endif %}
 
@@ -116,7 +116,7 @@
                     {% set get_plan_type_name = get_plan_type_name %}
                     {% set format_discount = format_discount %}
                     {% set dollar_amount = dollar_amount %}
-                    {% include "analytics/remote_realm_details.html" %}
+                    {% include "corporate/support/remote_realm_details.html" %}
                 {% endwith %}
             </div>
             {% endfor %}

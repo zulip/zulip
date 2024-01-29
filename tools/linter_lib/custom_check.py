@@ -538,8 +538,8 @@ html_rules: List["Rule"] = [
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
             "templates/corporate/for/business.html",
-            "templates/corporate/support_request.html",
-            "templates/corporate/support_request_thanks.html",
+            "templates/corporate/support/support_request.html",
+            "templates/corporate/support/support_request_thanks.html",
             "templates/zerver/emails/support_request.html",
         },
         "exclude_pattern": "email subject",
@@ -555,8 +555,6 @@ html_rules: List["Rule"] = [
             ("templates/zerver/realm_creation_form.html", 'placeholder="Acme or Ακμή"'),
         },
         "exclude": {
-            "templates/analytics/support.html",
-            "templates/analytics/remote_server_support.html",
             "templates/corporate",
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
@@ -630,9 +628,9 @@ html_rules: List["Rule"] = [
         "pattern": r'title="[^{\:]',
         "exclude": {
             "templates/zerver/emails",
-            "templates/analytics/realm_details.html",
-            "templates/analytics/remote_server_support.html",
-            "templates/analytics/support.html",
+            "templates/corporate/support/realm_details.html",
+            "templates/corporate/support/remote_server_support.html",
+            "templates/corporate/support/support.html",
         },
         "description": "`title` value should be translatable.",
     },
