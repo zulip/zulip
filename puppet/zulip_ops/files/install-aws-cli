@@ -20,6 +20,12 @@ if [ -L "/srv/zulip-aws-tools/v2/current" ] \
     exit 0
 fi
 
+# If not running in the initial host bootstrap, and was called with
+# arguments, this is just a check.
+if [ -z "${RUNNING_IN_CLOUD_INIT+x}" ] && [[ $# -gt 0 ]]; then
+    exit 1
+fi
+
 mkdir -p /srv/zulip-aws-tools
 
 cd /srv/zulip-aws-tools || exit 1
