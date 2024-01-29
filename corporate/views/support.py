@@ -120,10 +120,12 @@ def support_request(request: HttpRequest) -> HttpResponse:
                 context=email_context,
             )
 
-            response = render(request, "corporate/support_request_thanks.html", context=context)
+            response = render(
+                request, "corporate/support/support_request_thanks.html", context=context
+            )
             return response
 
-    response = render(request, "corporate/support_request.html", context=context)
+    response = render(request, "corporate/support/support_request.html", context=context)
     return response
 
 
@@ -457,7 +459,7 @@ def support(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
 
-    return render(request, "analytics/support.html", context=context)
+    return render(request, "corporate/support/support.html", context=context)
 
 
 def get_remote_servers_for_support(
@@ -643,6 +645,6 @@ def remote_servers_support(
 
     return render(
         request,
-        "analytics/remote_server_support.html",
+        "corporate/support/remote_server_support.html",
         context=context,
     )

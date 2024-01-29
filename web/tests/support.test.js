@@ -11,7 +11,7 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 const template = fs.readFileSync(
-    path.resolve(__dirname, "../../templates/analytics/realm_details.html"),
+    path.resolve(__dirname, "../../templates/corporate/support/realm_details.html"),
     "utf8",
 );
 const dom = new JSDOM(template, {pretendToBeVisual: true});
