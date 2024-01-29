@@ -9,7 +9,7 @@ import type {Message} from "./message_store";
 // one needs an outer element wrapping an object to use this
 // construction.
 function is_element_in_message_content(message: Message, element_selector: string): boolean {
-    return $(`<div>${message.content}</div>`).find(`${element_selector}`).length > 0;
+    return $(`<div>${message.content}</div>`).find(element_selector).length > 0;
 }
 
 export function message_has_link(message: Message): boolean {
