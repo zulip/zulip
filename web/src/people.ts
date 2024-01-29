@@ -118,6 +118,22 @@ export function init(): void {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
+// A function that sorts Email according to the user's full name
+export function sort_emails(emails: string[], user_ids: number[]): string[] {
+    const name_email_dict = user_ids.map((user_id, index) => ({
+        name: people_by_user_id_dict.has(user_id)
+            ? people_by_user_id_dict.get(user_id)?.full_name
+            : "?",
+        email: emails[index],
+    }));
+
+    const sorted_emails = name_email_dict
+        .sort((a, b) => util.strcmp(a.name!, b.name!))
+        .map(({email}) => email);
+
+    return sorted_emails;
+}
+
 export function split_to_ints(lst: string): number[] {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
@@ -310,10 +326,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
     }
 
     emails = emails.map((email) => email.toLowerCase());
-
-    emails.sort();
-
-    return emails.join(",");
+    return sort_emails(emails, user_ids).join(",");
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
@@ -367,16 +380,17 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
 }
 
 export function emails_to_full_names_string(emails: string[]): string {
-    return emails
-        .map((email) => {
-            email = email.trim();
-            const person = get_by_email(email);
-            if (person !== undefined) {
-                return person.full_name;
-            }
-            return INACCESSIBLE_USER_NAME;
-        })
-        .join(", ");
+    const names = emails.map((email) => {
+        email = email.trim();
+        const person = get_by_email(email);
+        if (person !== undefined) {
+            return person.full_name;
+        }
+        return INACCESSIBLE_USER_NAME;
+    });
+
+    const sortedNames = names.sort(util.make_strcmp());
+    return sortedNames.join(", ");
 }
 
 export function get_user_time(user_id: number): string | undefined {
@@ -475,8 +489,10 @@ export function get_recipients(user_ids_string: string): string {
         return my_full_name();
     }
 
-    const names = get_display_full_names(other_ids).sort();
-    return names.join(", ");
+    const names = get_display_full_names(other_ids);
+    const sortedNames = names.sort(util.make_strcmp());
+
+    return sortedNames.join(", ");
 }
 
 export function pm_reply_user_string(message: Message): string | undefined {
@@ -505,9 +521,7 @@ export function pm_reply_to(message: Message): string | undefined {
         return person.email;
     });
 
-    emails.sort();
-
-    const reply_to = emails.join(",");
+    const reply_to = sort_emails(emails, user_ids).join(",");
 
     return reply_to;
 }

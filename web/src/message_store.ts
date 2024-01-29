@@ -1,6 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as people from "./people";
 import type {Submessage, TopicLink} from "./types";
+import * as util from "./util";
 
 const stored_messages = new Map();
 
@@ -161,25 +162,26 @@ export function get(message_id: number): Message | undefined {
 
 export function get_pm_emails(message: Message): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
-    const emails = user_ids
-        .map((user_id) => {
-            const person = people.maybe_get_user_by_id(user_id);
-            if (!person) {
-                blueslip.error("Unknown user id", {user_id});
-                return "?";
-            }
-            return person.email;
-        })
-        .sort();
+    const emails = user_ids.map((user_id) => {
+        const person = people.maybe_get_user_by_id(user_id);
+        if (!person) {
+            blueslip.error("Unknown user id", {user_id});
+            return "?";
+        }
+        return person.email;
+    });
 
-    return emails.join(", ");
+    const reply_to = people.sort_emails(emails, user_ids).join(",");
+
+    return reply_to;
 }
 
 export function get_pm_full_names(message: Message): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
-    const names = people.get_display_full_names(user_ids).sort();
+    const names = people.get_display_full_names(user_ids);
+    const sortedNames = names.sort(util.make_strcmp());
 
-    return names.join(", ");
+    return sortedNames.join(", ");
 }
 
 export function set_message_booleans(message: Message): void {
