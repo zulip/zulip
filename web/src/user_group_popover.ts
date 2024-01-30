@@ -96,7 +96,7 @@ export function toggle_user_group_info_popover(
                     group_name: group.name,
                     group_description: group.description,
                     members: sort_group_members(fetch_group_members([...group.members])),
-                    group_edit_url: hash_util.group_edit_url(group),
+                    group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));

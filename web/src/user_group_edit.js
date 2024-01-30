@@ -38,11 +38,6 @@ let group_list_widget;
 let group_list_toggler;
 let active_group_id;
 
-function setup_group_edit_hash(group) {
-    const hash = hash_util.group_edit_url(group);
-    browser_history.update(hash);
-}
-
 function get_user_group_id(target) {
     const $row = $(target).closest(
         ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header",
@@ -303,6 +298,8 @@ export function setup_group_settings(group) {
             $(".group_setting_section").hide();
             $(`[data-group-section="${CSS.escape(key)}"]`).show();
             select_tab = key;
+            const hash = hash_util.group_edit_url(group, select_tab);
+            browser_history.update(hash);
         },
     });
 
@@ -413,7 +410,6 @@ export function show_group_settings(group) {
     $(".group-row.active").removeClass("active");
     show_user_group_settings_pane.settings(group);
     row_for_group_id(group.id).addClass("active");
-    setup_group_edit_hash(group);
     setup_group_settings(group);
 }
 
@@ -559,7 +555,7 @@ export function update_group(group_id) {
     }
 }
 
-export function change_state(section) {
+export function change_state(section, right_side_tab) {
     if (section === "new") {
         do_open_create_user_group();
         redraw_user_group_list();
@@ -592,6 +588,7 @@ export function change_state(section) {
             // based on the tab that is active. It is `your-groups`
             // tab by default.
             redraw_user_group_list();
+            select_tab = right_side_tab;
             switch_to_group_row(group);
         }
         return;
@@ -970,7 +967,7 @@ export function initialize() {
     );
 }
 
-export function launch(section) {
+export function launch(section, right_side_tab) {
     setup_page(() => {
         overlays.open_overlay({
             name: "group_subscriptions",
@@ -979,7 +976,7 @@ export function launch(section) {
                 browser_history.exit_overlay();
             },
         });
-        change_state(section);
+        change_state(section, right_side_tab);
     });
     if (!get_active_data().id) {
         if (section === "new") {
