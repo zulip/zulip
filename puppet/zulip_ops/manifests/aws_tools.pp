@@ -68,4 +68,14 @@ class zulip_ops::aws_tools {
     group   => 'root',
     content => template('zulip_ops/dotfiles/aws_config.erb'),
   }
+
+  # Pull keys from AWS secretsmanager
+  file { '/usr/local/bin/install-ssh-keys':
+    ensure  => file,
+    require => File['/root/.aws/config'],
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    source  => 'puppet:///modules/zulip_ops/install-ssh-keys',
+  }
 }
