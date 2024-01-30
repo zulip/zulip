@@ -1,17 +1,29 @@
 import os
+import re
 
-ZULIP_VERSION = "9.0-dev+git"
+ZULIP_BASE_VERSION = "9.0-dev+git"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "zulip-git-version"
 )
-lines = [ZULIP_VERSION, ""]
 if os.path.exists(zulip_git_version_file):
     with open(zulip_git_version_file) as f:
         lines = [*f, "", ""]
-ZULIP_VERSION = lines.pop(0).strip()
+else:
+    lines = [ZULIP_BASE_VERSION, ""]
+
+ZULIP_VERSION_CACHED = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
+if not re.match("^[0-9]+[.][0-9]+", ZULIP_VERSION_CACHED):
+    # We could construct something invalid like the following, but
+    # this should never happen, so it seems better to assert.
+    #
+    # ZULIP_VERSION = f"{ZULIP_BASE_VERSION}+invalid+{ZULIP_VERSION_CACHED}"
+    raise AssertionError(f"Invalid cached Zulip version in {zulip_git_version_file}.")
+else:
+    ZULIP_VERSION = ZULIP_VERSION_CACHED
+
 
 LATEST_MAJOR_VERSION = "8.0"
 LATEST_RELEASE_VERSION = "8.1"
