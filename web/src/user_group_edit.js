@@ -277,7 +277,7 @@ export function show_settings_for(group) {
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
-    update_toggler_for_group_setting(group);
+    update_toggler_for_group_setting();
 
     if (!settings_data.can_edit_user_group(group.id)) {
         initialize_tooltip_for_membership_button(group.id);
