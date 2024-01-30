@@ -115,4 +115,5 @@ confusing.”
 
 Check out our guide on [using Zulip for business](/for/business/). You can also
 learn how Zulip is being used at the [iDrift AS](/case-studies/idrift/) company,
-and the [End Point Dev](/case-studies/end-point/) software consultancy.
+and the [End Point Dev](/case-studies/end-point/) software consultancy, and the
+[GUT contact](/case-studies/gut-contact/) support agency.
