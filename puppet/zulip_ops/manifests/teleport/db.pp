@@ -5,6 +5,8 @@
 class zulip_ops::teleport::db {
   include zulip_ops::teleport::base
 
+  $is_ec2 = zulipconf('machine', 'hosting_provider', 'ec2') == 'ec2'
+  $join_token = zulipsecret('secrets', 'teleport_join_token', '')
   file { '/etc/teleport_db.yaml':
     ensure  => file,
     owner   => 'root',

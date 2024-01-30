@@ -5,7 +5,15 @@ teleport:
     # Use the proxy address, to support running the app_service, which requires
     # a reverse tunnel.
     - teleport.zulipchat.net:443
-
+<% if @is_ec2 -%>
+  join_params:
+    method: iam
+    token_name: iam-token
+<% else -%>
+  join_params:
+    method: token
+    token_name: <%= @join_token %>
+<% end %>
 ssh_service:
   enabled: "yes"
   commands:
