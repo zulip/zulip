@@ -1218,7 +1218,6 @@ class BillingSession(ABC):
         fixed_price_plan_params: Dict[str, Any] = {
             "fixed_price": fixed_price_cents,
             "tier": customer.required_plan_tier,
-            "status": CustomerPlan.NEVER_STARTED,
         }
 
         current_plan = get_current_plan_by_customer(customer)
@@ -1228,6 +1227,7 @@ class BillingSession(ABC):
                     f"Configure {self.billing_entity_display_name} current plan end-date, before scheduling a new plan."
                 )
             fixed_price_plan_params["billing_cycle_anchor"] = current_plan.end_date
+            fixed_price_plan_params["status"] = CustomerPlan.NEVER_STARTED
             fixed_price_plan_params["next_invoice_date"] = current_plan.end_date
             fixed_price_plan_params["invoicing_status"] = (
                 CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
