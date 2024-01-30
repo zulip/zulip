@@ -26,7 +26,6 @@ repo_url=git@github.com:zulip/zulip.git
 zone_id=Z2U988IEXAMPLE
 security_groups=sg-01234567
 instance_type=m4.large
-ssh_secret_id=prod/git/deploy
 EOF
 }
 
@@ -107,7 +106,6 @@ AWS_ZONE_ID=$(lookup zone_id)
 SECURITY_GROUPS=$(lookup security_groups)
 INSTANCE_TYPE=$(lookup instance_type)
 IAM_PROFILE=$(lookup iam_profile)
-SSH_SECRET_ID=$(lookup ssh_secret_id)
 AZ=$(lookup availability_zone)
 DISK_SIZE=$(lookup disk_size)
 
@@ -157,7 +155,6 @@ BOOTDATA=$(mktemp)
     echo "FULL_ROLES=$FULL_ROLES"
     echo "REPO_URL=$REPO_URL"
     echo "BRANCH=$BRANCH"
-    echo "SSH_SECRET_ID=$SSH_SECRET_ID"
     # Replace anything which looks like FOO="inline!bar/baz" with the
     # output of pack-local-script, which will make "$FOO" inside the
     # $BOOTDATA be the path to that script (smuggled inline and

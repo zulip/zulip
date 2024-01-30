@@ -2,6 +2,7 @@ class zulip_ops::profile::nagios {
   include zulip_ops::profile::base
   include zulip_ops::apache
 
+  zulip::ssh_keys { 'nagios': }
   $nagios_packages = [# Packages needed for Nagios
                       'nagios4',
                       # For sending outgoing email

@@ -1,5 +1,6 @@
 define zulip_ops::user_dotfiles (
   $home = '',
+  $keys = false,
 ) {
   $user = $name
 
@@ -36,5 +37,12 @@ define zulip_ops::user_dotfiles (
     group   => $user,
     mode    => '0644',
     content => '',
+  }
+
+  if $keys != false {
+    zulip_ops::ssh_keys{ $user:
+      keys    => $keys,
+      require => File["${homedir}/.ssh"],
+    }
   }
 }

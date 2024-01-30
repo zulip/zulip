@@ -61,9 +61,14 @@ class zulip_ops::profile::base {
   }
 
   user { 'root': }
-  zulip_ops::user_dotfiles { 'root': home => '/root' }
+  zulip_ops::user_dotfiles { 'root':
+    home => '/root',
+    keys => 'common',
+  }
 
-  zulip_ops::user_dotfiles { 'zulip': }
+  zulip_ops::user_dotfiles { 'zulip':
+    keys => 'common',
+  }
 
   file { '/etc/pam.d/common-session':
     ensure  => file,
