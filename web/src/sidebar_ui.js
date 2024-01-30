@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
+import {buddy_list} from "./buddy_list";
 import {page_params} from "./page_params";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -200,6 +201,10 @@ export function initialize_right_sidebar() {
                 "fa-caret-right",
                 is_collapsed,
             );
+
+            // Collapsing and uncollapsing sections has a similar effect to
+            // scrolling, so we make sure to fill screen with content here as well.
+            buddy_list.fill_screen_with_content();
         },
     );
 
@@ -215,5 +220,9 @@ export function initialize_right_sidebar() {
             "fa-caret-right",
             is_collapsed,
         );
+
+        // Collapsing and uncollapsing sections has a similar effect to
+        // scrolling, so we make sure to fill screen with content here as well.
+        buddy_list.fill_screen_with_content();
     });
 }
