@@ -253,6 +253,11 @@ Copyright: Google, Inc.
 License: Apache-2.0
 Comment: Material volume up icon (rounded)
 
+Files: web/shared/icons/recent.svg
+Source: https://lucide.dev/icons/history
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
 Files: web/styles/pygments.css
 Copyright: 2022, Quansight Labs
 License: BSD-3-Clause
@@ -1471,3 +1476,20 @@ License: GPL-2.0+
  .
  On Debian systems, the complete text of the GNU General Public
  License can be found in /usr/share/common-licenses/GPL-2 file.
+
+License: ISC License
+ Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022
+ as part of Feather (MIT). All other copyright (c) for Lucide are held
+ by Lucide Contributors 2022.
+ .
+ Permission to use, copy, modify, and/or distribute this software for
+ any purpose with or without fee is hereby granted, provided that the
+ above copyright notice and this permission notice appear in all copies.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+ FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY
+ DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
+ ARISING OUT OF OR IN CONNECTION  WITH THE USE ORPERFORMANCE OF THIS SOFTWARE

@@ -15,7 +15,7 @@ function get_message_view_header_context(filter) {
     if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
-            zulip_icon: "clock",
+            zulip_icon: "recent",
         };
     }
     if (inbox_util.is_visible()) {
