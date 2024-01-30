@@ -32,7 +32,7 @@ import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 export let toggler;
-export let select_tab = "group_general_settings";
+export let select_tab = "general";
 
 let group_list_widget;
 let group_list_toggler;
@@ -296,12 +296,12 @@ export function setup_group_settings(group) {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
-            {label: $t({defaultMessage: "General"}), key: "group_general_settings"},
-            {label: $t({defaultMessage: "Members"}), key: "group_member_settings"},
+            {label: $t({defaultMessage: "General"}), key: "general"},
+            {label: $t({defaultMessage: "Members"}), key: "members"},
         ],
         callback(_name, key) {
             $(".group_setting_section").hide();
-            $(`.${CSS.escape(key)}`).show();
+            $(`[data-group-section="${CSS.escape(key)}"]`).show();
             select_tab = key;
         },
     });
