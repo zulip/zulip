@@ -10,6 +10,7 @@
 ## Customer stories
 
 * [iDrift AS company](/case-studies/idrift/)
+* [GUT contact support agency](/case-studies/gut-contact/)
 * [End Point Dev software consultancy](/case-studies/end-point/)
 * [Atolio startup](/case-studies/atolio/)
 * [Technical University of Munich](/case-studies/tum/)
