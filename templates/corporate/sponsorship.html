@@ -71,6 +71,12 @@
                         {% endif %}
                     </div>
                 </div>
+                <div class="input-box sponsorship-form-field no-validation">
+                    <label class="inline-block label-title">Sponsorship request contact</label>
+                    <div class="not-editable-realm-field">
+                        {{ ", ".join(sponsorship_billing_contacts) }}
+                    </div>
+                </div>
             </div>
         </div>
         {% if is_sponsored %}

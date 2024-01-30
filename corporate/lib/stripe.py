@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypedDict, TypeVar, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, TypedDict, TypeVar, Union
 from urllib.parse import urlencode, urljoin
 
 import stripe
@@ -869,6 +869,10 @@ class BillingSession(ABC):
         # customer's current plan at some point after
         # last_ledger.event_time but before the event times for the
         # audit logs we will be processing.
+        pass
+
+    @abstractmethod
+    def get_sponsorship_billing_contacts(self) -> List[str]:
         pass
 
     def is_sponsored_or_pending(self, customer: Optional[Customer]) -> bool:
@@ -2814,9 +2818,11 @@ class BillingSession(ABC):
                 return None
 
             context["is_sponsorship_pending"] = True
+            context["sponsorship_billing_contacts"] = self.get_sponsorship_billing_contacts()
 
         if self.is_sponsored():
             context["is_sponsored"] = True
+            context["sponsorship_billing_contacts"] = self.get_sponsorship_billing_contacts()
 
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
@@ -3378,6 +3384,13 @@ class RealmBillingSession(BillingSession):
         plan.save(update_fields=["status"])
 
     @override
+    def get_sponsorship_billing_contacts(self) -> List[str]:
+        return [
+            user.delivery_email
+            for user in self.realm.get_human_billing_admin_and_realm_owner_users()
+        ]
+
+    @override
     def approve_sponsorship(self) -> str:
         # Sponsorship approval is only a support admin action.
         assert self.support_session
@@ -3752,6 +3765,14 @@ class RemoteRealmBillingSession(BillingSession):
         )
 
     @override
+    def get_sponsorship_billing_contacts(self) -> List[str]:  # nocoverage
+        return list(
+            RemoteRealmBillingUser.objects.filter(remote_realm_id=self.remote_realm.id).values_list(
+                "email", flat=True
+            )
+        )
+
+    @override
     def approve_sponsorship(self) -> str:  # nocoverage
         # Sponsorship approval is only a support admin action.
         assert self.support_session
@@ -3779,11 +3800,7 @@ class RemoteRealmBillingSession(BillingSession):
                 event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
             )
         emailed_string = ""
-        billing_emails = list(
-            RemoteRealmBillingUser.objects.filter(remote_realm_id=self.remote_realm.id).values_list(
-                "email", flat=True
-            )
-        )
+        billing_emails = self.get_sponsorship_billing_contacts()
         if len(billing_emails) > 0:
             send_email(
                 "zerver/emails/sponsorship_approved_community_plan",
@@ -4172,6 +4189,14 @@ class RemoteServerBillingSession(BillingSession):
         )
 
     @override
+    def get_sponsorship_billing_contacts(self) -> List[str]:  # nocoverage
+        return list(
+            RemoteServerBillingUser.objects.filter(remote_server=self.remote_server).values_list(
+                "email", flat=True
+            )
+        )
+
+    @override
     def approve_sponsorship(self) -> str:  # nocoverage
         # Sponsorship approval is only a support admin action.
         assert self.support_session
@@ -4208,11 +4233,7 @@ class RemoteServerBillingSession(BillingSession):
             self.write_to_audit_log(
                 event_type=AuditLogEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
             )
-        billing_emails = list(
-            RemoteServerBillingUser.objects.filter(remote_server=self.remote_server).values_list(
-                "email", flat=True
-            )
-        )
+        billing_emails = self.get_sponsorship_billing_contacts()
         send_email(
             "zerver/emails/sponsorship_approved_community_plan",
             to_emails=billing_emails,
