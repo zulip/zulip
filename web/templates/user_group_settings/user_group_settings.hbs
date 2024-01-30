@@ -18,7 +18,7 @@
 <div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
     <div class="inner-box">
 
-        <div class="group_general_settings group_setting_section">
+        <div class="group_general_settings group_setting_section" data-group-section="general">
             <div class="group-header">
                 <div class="group-name-wrapper">
                     <span class="group-name" title="{{group.name}}">{{group.name}}</span>
@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        <div class="group_member_settings group_setting_section">
+        <div class="group_member_settings group_setting_section" data-group-section="members">
             <div class="edit_members_for_user_group">
                 {{> user_group_members}}
             </div>
