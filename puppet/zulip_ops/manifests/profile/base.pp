@@ -7,6 +7,7 @@ class zulip_ops::profile::base {
   include zulip_ops::prometheus::node
 
   zulip_ops::firewall_allow { 'ssh': order => '10'}
+  $is_ec2 = zulipconf('machine', 'hosting_provider', 'ec2') == 'ec2'
 
   $org_base_packages = [
     # Standard kernel, not AWS', so ksplice works
@@ -116,12 +117,12 @@ class zulip_ops::profile::base {
     require => User['zulip'],
   }
 
-  $hosting_provider = zulipconf('machine', 'hosting_provider', 'ec2')
-  if $hosting_provider == 'ec2' {
-    # This conditional block is for whether it's not
-    # chat.zulip.org, which uses a different hosting provider.
+  if $is_ec2 {
+    # The AWS tools are not useful unless the host can auth to AWS.
     include zulip_ops::aws_tools
 
+    # Non-EC2 (e.g. CZO) don't have the private commit that adds these
+    # zulip_ops files.
     file { '/root/.ssh/authorized_keys':
       ensure => file,
       mode   => '0600',
@@ -146,6 +147,7 @@ class zulip_ops::profile::base {
       source  => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
     }
 
+    # EC2 hosts can use the in-VPC timeserver
     file { '/etc/chrony/chrony.conf':
       ensure  => file,
       mode    => '0644',
