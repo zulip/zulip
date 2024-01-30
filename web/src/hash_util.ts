@@ -147,8 +147,8 @@ export function stream_edit_url(sub: StreamSubscription, right_side_tab: string)
     )}/${right_side_tab}`;
 }
 
-export function group_edit_url(group: UserGroup): string {
-    const hash = `#groups/${group.id}/${internal_url.encodeHashComponent(group.name)}`;
+export function group_edit_url(group: UserGroup, right_side_tab: string): string {
+    const hash = `#groups/${group.id}/${internal_url.encodeHashComponent(group.name)}/${right_side_tab}`;
     return hash;
 }
 

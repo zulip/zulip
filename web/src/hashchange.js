@@ -262,7 +262,8 @@ function do_hashchange_overlay(old_hash) {
         }
 
         if (base === "groups") {
-            user_group_edit.change_state(section);
+            const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+            user_group_edit.change_state(section, right_side_tab);
         }
 
         if (base === "settings") {
@@ -329,7 +330,8 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "groups") {
-        user_group_edit.launch(section);
+        const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+        user_group_edit.launch(section, right_side_tab);
         return;
     }
 
