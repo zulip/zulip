@@ -148,10 +148,17 @@ class zulip::app_frontend_base {
     'user_activity_interval',
     'user_presence',
   ]
-  if $queues_multiprocess {
+
+  if $zulip::common::total_memory_mb > 24000 {
+    $uwsgi_default_processes = 16
+  } elsif $zulip::common::total_memory_mb > 12000 {
+    $uwsgi_default_processes = 8
+  } elsif $zulip::common::total_memory_mb > 6000 {
     $uwsgi_default_processes = 6
-  } else {
+  } elsif $zulip::common::total_memory_mb > 3000 {
     $uwsgi_default_processes = 4
+  } else {
+    $uwsgi_default_processes = 3
   }
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
 
