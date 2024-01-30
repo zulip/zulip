@@ -2398,6 +2398,14 @@ button {
     }
 }
 
+.quote-in-feature-text blockquote {
+    background: transparent;
+    padding: 10px 20px;
+    margin: 20px 0;
+    font-style: italic;
+    border-left: 6px solid hsl(168.1deg 49.15% 46.27%);
+}
+
 .case-study-page,
 .solutions-page {
     .bottom-register-buttons.extra_margin_before_footer {
