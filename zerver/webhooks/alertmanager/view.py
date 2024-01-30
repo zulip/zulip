@@ -35,7 +35,7 @@ def api_alertmanager_webhook(
 
         url = alert["generatorURL"].tame(check_string).replace("tab=1", "tab=0")
 
-        body = f"{desc} ([graph]({url}))"
+        body = f"{desc} ([source]({url}))"
         if name not in topics:
             topics[name] = {"firing": [], "resolved": []}
         topics[name][alert["status"].tame(check_string)].append(body)
