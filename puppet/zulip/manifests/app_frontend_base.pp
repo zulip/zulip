@@ -131,7 +131,15 @@ class zulip::app_frontend_base {
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
-  $queues_multiprocess_default = $zulip::common::total_memory_mb > 3500
+  #
+  # Because Zulip can run in the multiprocess mode with 4GB of memory,
+  # and it's a common instance size, we aim for that to be the cutoff
+  # for this higher-performance mode.
+  #
+  # We use a cutoff less than 4000 here to detect systems advertised
+  # as "4GB"; some may have as little as 4 x 1000^3 / 1024^2 ≈ 3815 MiB
+  # of memory.
+  $queues_multiprocess_default = $zulip::common::total_memory_mb > 3800
   $queues_multiprocess = zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default)
   $queues = [
     'deferred_work',
