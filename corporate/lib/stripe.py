@@ -1312,7 +1312,6 @@ class BillingSession(ABC):
         if customer is not None:
             plan = get_current_plan_by_customer(customer)
             if plan is not None:
-                assert plan.end_date is not None
                 assert plan.status == CustomerPlan.ACTIVE
                 old_end_date = plan.end_date
                 plan.end_date = new_end_date
