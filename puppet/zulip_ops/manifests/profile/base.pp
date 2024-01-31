@@ -14,7 +14,6 @@ class zulip_ops::profile::base {
     'linux-image-virtual',
     # Management for our systems
     'openssh-server',
-    'mosh',
     # package management
     'aptitude',
     # SSL certificates
