@@ -108,7 +108,7 @@ export function page_up() {
 }
 
 export function page_down() {
-    if (message_viewport.at_bottom() && !message_lists.current.visibly_empty()) {
+    if (message_viewport.at_rendered_bottom() && !message_lists.current.visibly_empty()) {
         message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
         unread_ops.process_visible();
     } else {

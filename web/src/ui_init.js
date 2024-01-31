@@ -199,7 +199,7 @@ export function initialize_kitchen_sink_stuff() {
 
         if (delta < 0 && message_viewport.at_top()) {
             navigate.up();
-        } else if (delta > 0 && message_viewport.at_bottom()) {
+        } else if (delta > 0 && message_viewport.at_rendered_bottom()) {
             navigate.down();
         }
 
