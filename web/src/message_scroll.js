@@ -14,7 +14,10 @@ import * as unread_ui from "./unread_ui";
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
-    if (message_viewport.bottom_message_visible() || message_lists.current.visibly_empty()) {
+    if (
+        message_viewport.bottom_rendered_message_visible() ||
+        message_lists.current.visibly_empty()
+    ) {
         // If last message is visible, just hide the
         // scroll to bottom button.
         $show_scroll_to_bottom_button.removeClass("show");
@@ -34,7 +37,7 @@ export function hide_scroll_to_bottom() {
 }
 
 export function show_scroll_to_bottom_button() {
-    if (message_viewport.bottom_message_visible()) {
+    if (message_viewport.bottom_rendered_message_visible()) {
         // Only show scroll to bottom button when
         // last message is not visible in the
         // current scroll position.

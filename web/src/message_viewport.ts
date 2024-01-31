@@ -88,7 +88,7 @@ export function at_bottom(): boolean {
 
 // This differs from at_bottom in that it only requires the bottom message to
 // be visible, but you may be able to scroll down further.
-export function bottom_message_visible(): boolean {
+export function bottom_rendered_message_visible(): boolean {
     const $last_row = rows.last_visible();
     if ($last_row.length) {
         const message_bottom = $last_row[0].getBoundingClientRect().bottom;

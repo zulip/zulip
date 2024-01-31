@@ -463,7 +463,7 @@ function process_scrolled_to_bottom() {
 export function process_visible() {
     if (
         viewport_is_visible_and_focused() &&
-        message_viewport.bottom_message_visible() &&
+        message_viewport.bottom_rendered_message_visible() &&
         message_lists.current.view.is_end_rendered()
     ) {
         process_scrolled_to_bottom();
