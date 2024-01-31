@@ -473,7 +473,7 @@ export function activate(raw_operators, opts) {
                 anchor,
                 cont() {
                     if (!select_immediately) {
-                        update_selection({
+                        render_message_list_with_selected_message({
                             id_info,
                             select_offset: then_select_offset,
                             msg_list: message_lists.current,
@@ -485,14 +485,14 @@ export function activate(raw_operators, opts) {
         }
 
         // Important: We need to consider opening the compose box
-        // before calling update_selection, so that the logic in
+        // before calling render_message_list_with_selected_message, so that the logic in
         // recenter_view for positioning the currently selected
         // message can take into account the space consumed by the
         // open compose box.
         compose_actions.on_narrow(opts);
 
         if (select_immediately) {
-            update_selection({
+            render_message_list_with_selected_message({
                 id_info,
                 select_offset: then_select_offset,
                 msg_list: message_lists.current,
@@ -507,7 +507,6 @@ export function activate(raw_operators, opts) {
         }
 
         handle_post_view_change(msg_list);
-
 
         unread_ui.update_unread_banner();
 
@@ -716,7 +715,7 @@ export function maybe_add_local_messages(opts) {
     return;
 }
 
-export function update_selection(opts) {
+export function render_message_list_with_selected_message(opts) {
     if (message_lists.current !== opts.msg_list) {
         // If we navigated away from a view while we were fetching
         // messages for it, don't attempt to move the currently
@@ -742,6 +741,11 @@ export function update_selection(opts) {
 
     const then_scroll = !preserve_pre_narrowing_screen_position;
 
+    // Here we render the actual message list to the DOM with the
+    // target selected message, using the force_rerender parameter.
+    //
+    // TODO: Probably this should accept the offset parameter rather
+    // than calling `set_message_offset` just after.
     message_lists.current.select_id(msg_id, {
         then_scroll,
         use_closest: true,
