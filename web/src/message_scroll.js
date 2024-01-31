@@ -82,7 +82,7 @@ export function scroll_finished() {
         message_scroll_state.set_update_selection_on_next_scroll(true);
     }
 
-    if (message_viewport.at_top()) {
+    if (message_viewport.at_rendered_top()) {
         message_fetch.maybe_load_older_messages({
             msg_list: message_lists.current,
         });

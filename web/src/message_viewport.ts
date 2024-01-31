@@ -38,7 +38,7 @@ export function set_last_movement_direction(value: number): void {
     last_movement_direction = value;
 }
 
-export function at_top(): boolean {
+export function at_rendered_top(): boolean {
     return scrollTop() <= 0;
 }
 
@@ -461,7 +461,7 @@ export function keep_pointer_in_view(): void {
     const bottom_threshold = info.visible_top + (9 / 10) * info.visible_height;
 
     function message_is_far_enough_down(): boolean {
-        if (at_top()) {
+        if (at_rendered_top()) {
             return true;
         }
 

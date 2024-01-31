@@ -197,7 +197,7 @@ export function initialize_kitchen_sink_stuff() {
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
 
-        if (delta < 0 && message_viewport.at_top()) {
+        if (delta < 0 && message_viewport.at_rendered_top()) {
             navigate.up();
         } else if (delta > 0 && message_viewport.at_rendered_bottom()) {
             navigate.down();

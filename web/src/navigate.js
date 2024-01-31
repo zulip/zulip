@@ -100,7 +100,7 @@ export function page_down_the_right_amount() {
 }
 
 export function page_up() {
-    if (message_viewport.at_top() && !message_lists.current.visibly_empty()) {
+    if (message_viewport.at_rendered_top() && !message_lists.current.visibly_empty()) {
         message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
     } else {
         page_up_the_right_amount();
