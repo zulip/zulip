@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -eu
+
+username="$1"
+ssh_secret_name="$2"
+
+homedir="$(getent passwd "$username" | cut -d: -f6)"
+sshdir="$homedir/.ssh"
+
+workfile=$(mktemp)
+cleanup() { rm "$workfile"; }
+trap cleanup EXIT
+
+/srv/zulip-aws-tools/bin/aws --output text \
+    secretsmanager get-secret-value \
+    --secret-id "$ssh_secret_name" \
+    --query SecretString \
+    | jq -r 'keys[] as $k | "\(.[$k]) \($k)"' \
+        >"$workfile"
+
+chmod 644 "$workfile"
+chown "$username:$username" "$workfile"
+
+if [ "$#" -gt 2 ]; then
+    diff -N "$workfile" "$sshdir/authorized_keys"
+    exit 0
+fi
+
+rsync -v "$workfile" "$sshdir/authorized_keys"

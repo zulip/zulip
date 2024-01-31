@@ -62,12 +62,14 @@ class zulip_ops::profile::base {
 
   user { 'root': }
   zulip_ops::user_dotfiles { 'root':
-    home => '/root',
-    keys => 'common',
+    home            => '/root',
+    keys            => 'common',
+    authorized_keys => 'common',
   }
 
   zulip_ops::user_dotfiles { 'zulip':
-    keys => 'common',
+    keys            => 'common',
+    authorized_keys => 'common',
   }
 
   file { '/etc/pam.d/common-session':
@@ -97,32 +99,6 @@ class zulip_ops::profile::base {
   include zulip_ops::aws_tools
 
   if $is_ec2 {
-    # Non-EC2 (e.g. CZO) don't have the private commit that adds these
-    # zulip_ops files.
-    file { '/root/.ssh/authorized_keys':
-      ensure => file,
-      mode   => '0600',
-      owner  => 'root',
-      group  => 'root',
-      source => 'puppet:///modules/zulip_ops/root_authorized_keys',
-    }
-    file { '/home/zulip/.ssh/authorized_keys':
-      ensure  => file,
-      require => File['/home/zulip/.ssh'],
-      mode    => '0600',
-      owner   => 'zulip',
-      group   => 'zulip',
-      source  => 'puppet:///modules/zulip_ops/authorized_keys',
-    }
-    file { '/var/lib/nagios/.ssh/authorized_keys':
-      ensure  => file,
-      require => File['/var/lib/nagios/.ssh'],
-      mode    => '0600',
-      owner   => 'nagios',
-      group   => 'nagios',
-      source  => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
-    }
-
     # EC2 hosts can use the in-VPC timeserver
     file { '/etc/chrony/chrony.conf':
       ensure  => file,
@@ -152,7 +128,10 @@ class zulip_ops::profile::base {
     group   => 'nagios',
     mode    => '0700',
   }
-  zulip_ops::user_dotfiles { 'nagios': home => '/var/lib/nagios' }
+  zulip_ops::user_dotfiles { 'nagios':
+    home            => '/var/lib/nagios',
+    authorized_keys => true,
+  }
   file { '/home/nagios':
     ensure  => absent,
     force   => true,
