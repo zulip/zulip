@@ -60,6 +60,7 @@ if has_application_server():
         # do not exist.
         services.append("zulip_deliver_scheduled_emails")
         services.append("zulip_deliver_scheduled_messages")
+        services.append("zulip_clear_expired_user_statuses")
 
 services = list_supervisor_processes(services, only_running=True)
 if services:

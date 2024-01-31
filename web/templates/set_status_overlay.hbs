@@ -23,3 +23,9 @@
         </li>
     {{/each}}
 </ul>
+
+<ul class="user-status-options modal-options-list">
+    <label for="scheduled_end_time" class="modal-field-label">{{t "Automatically clear status" }}</label>
+    {{> dropdown_widget widget_name="scheduled_end_time"}}
+    <p id="scheduled_end_time"></p>
+</ul>

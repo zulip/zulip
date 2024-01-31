@@ -103,3 +103,4 @@ class UserStatus(AbstractEmoji):
     emoji_code = models.TextField(default="")
 
     status_text = models.CharField(max_length=255, default="")
+    scheduled_end_time = models.DateTimeField(db_index=True, null=True)
