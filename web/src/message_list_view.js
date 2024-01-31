@@ -1439,6 +1439,18 @@ export class MessageListView {
         this.message_containers.clear();
     }
 
+    is_end_rendered() {
+        // Used as a helper in checks for whether a given scroll
+        // position is actually the very end of this view. It could
+        // fail to be for two reasons: Either some newer messages are
+        // not rendered due to a render window, or we haven't finished
+        // fetching the newest messages for this view from the server.
+        return (
+            this._render_win_end === this.list.num_items() &&
+            this.list.data.fetch_status.has_found_newest()
+        );
+    }
+
     get_row(id) {
         const $row = this._rows.get(id);
 
