@@ -228,7 +228,8 @@
 * [Configure multi-language search](/help/configure-multi-language-search)
 
 ## Bots & integrations
-* [Bots and integrations](/help/bots-and-integrations)
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Generate integration URL](/help/generate-integration-url)
 * [Edit a bot](/help/edit-a-bot)
