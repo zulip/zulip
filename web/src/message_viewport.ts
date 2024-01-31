@@ -71,6 +71,10 @@ export function message_viewport_info(): MessageViewportInfo {
     };
 }
 
+// Important note: These functions just look at the state of the
+// rendered message feed; messages that are not displayed due to a
+// limited render window or because they have not been fetched from
+// the server are not considered.
 export function at_bottom(): boolean {
     const bottom = scrollTop() + height();
     const full_height = $scroll_container.prop("scrollHeight");
