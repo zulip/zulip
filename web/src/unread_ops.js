@@ -439,7 +439,7 @@ export function notify_server_message_read(message, options) {
     notify_server_messages_read([message], options);
 }
 
-export function process_scrolled_to_bottom() {
+function process_scrolled_to_bottom() {
     if (!narrow_state.is_message_feed_visible()) {
         // First, verify the current message list is visible.
         return;
@@ -459,9 +459,13 @@ export function process_scrolled_to_bottom() {
 }
 
 // If we ever materially change the algorithm for this function, we
-// may need to update notifications.received_messages as well.
+// may need to update message_notifications.received_messages as well.
 export function process_visible() {
-    if (viewport_is_visible_and_focused() && message_viewport.bottom_message_visible()) {
+    if (
+        viewport_is_visible_and_focused() &&
+        message_viewport.bottom_message_visible() &&
+        message_lists.current.view.is_end_rendered()
+    ) {
         process_scrolled_to_bottom();
     }
 }
