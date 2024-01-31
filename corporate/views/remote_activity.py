@@ -79,6 +79,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     )
 
     cols = [
+        "Links",
         "IDs",
         "Realm name",
         "Realm host or server hostname",
@@ -94,20 +95,19 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Rate",
         "Total users",
         "Guest users",
-        "Links",
     ]
 
     # If the query or column order above changes, update the constants below
     SERVER_AND_REALM_IDS = 0
     SERVER_HOST = 2
     REALM_HOST = 3
-    LAST_AUDIT_LOG_DATE = 5
-    MOBILE_USER_COUNT = 6
-    MOBILE_PUSH_COUNT = 7
-    ORG_TYPE = 8
-    ARR = 11
-    TOTAL_USER_COUNT = 13
-    GUEST_COUNT = 14
+    LAST_AUDIT_LOG_DATE = 6
+    MOBILE_USER_COUNT = 7
+    MOBILE_PUSH_COUNT = 8
+    ORG_TYPE = 9
+    ARR = 12
+    TOTAL_USER_COUNT = 14
+    GUEST_COUNT = 15
 
     rows = get_query_data(query)
     plan_data_by_remote_server = get_plan_data_by_remote_server()
@@ -139,6 +139,12 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         else:
             row.pop(REALM_HOST)
             server_host = row[SERVER_HOST]
+
+        # Add server links
+        stats = remote_installation_stats_link(server_id)
+        support = remote_installation_support_link(server_host)
+        links = stats + " " + support
+        row.insert(0, links)
 
         # Count mobile users and pushes forwarded, once per server
         if server_id not in remote_server_mobile_data_counted:
@@ -189,12 +195,6 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             total_users = user_counts.non_guest_user_count + user_counts.guest_user_count
             row.append(total_users)
             row.append(user_counts.guest_user_count)
-
-        # Add server links
-        stats = remote_installation_stats_link(server_id)
-        support = remote_installation_support_link(server_host)
-        links = stats + " " + support
-        row.append(links)
 
     # Format column data and add total row
     for i, col in enumerate(cols):

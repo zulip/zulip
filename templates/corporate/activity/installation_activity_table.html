@@ -33,6 +33,7 @@
 
     <thead class="activity-head">
         <tr>
+            <th>Links</th>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
             {% if billing_enabled %}
@@ -41,7 +42,6 @@
             <th>ARR</th>
             <th>Rate (%)</th>
             {% endif %}
-            <th>Links</th>
             <th>DAU</th>
             <th>WAU</th>
             <th>Total users</th>
@@ -54,6 +54,12 @@
     <tbody>
         {% for row in rows %}
         <tr>
+
+            <td>
+                {{ row.realm_url }}
+                {{ row.stats_link }}
+                {{ row.support_link }}
+            </td>
 
             <td>
                 {{ row.string_id }}
@@ -88,12 +94,6 @@
                 {% endif %}
             </td>
             {% endif %}
-
-            <td>
-                {{ row.realm_url }}
-                {{ row.stats_link }}
-                {{ row.support_link }}
-            </td>
 
             <td class="number">
                 {{ row.dau_count }}
