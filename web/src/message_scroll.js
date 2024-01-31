@@ -83,12 +83,18 @@ export function scroll_finished() {
     }
 
     if (message_viewport.at_rendered_top()) {
+        // Subtle note: While we've only checked that we're at the
+        // very top of the render window (i.e. there may be some more
+        // cached messages to render), it's a good idea to fetch
+        // additional message history even if we're not actually at
+        // the edge of what we already have from the server.
         message_fetch.maybe_load_older_messages({
             msg_list: message_lists.current,
         });
     }
 
     if (message_viewport.at_rendered_bottom()) {
+        // See the similar message_viewport.at_rendered_top block.
         message_fetch.maybe_load_newer_messages({
             msg_list: message_lists.current,
         });
