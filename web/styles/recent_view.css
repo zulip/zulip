@@ -544,7 +544,7 @@
     position: relative;
 }
 
-#recent-view-filter_widget {
+#recent-view-filter-widget {
     display: inline-flex;
     width: 150px;
     margin: 0 5px 10px 0;
@@ -558,7 +558,7 @@
     }
 }
 
-.dropdown-widget-disabled-for-spectators #recent-view-filter_widget {
+.dropdown-widget-disabled-for-spectators #recent-view-filter-widget {
     cursor: not-allowed;
     opacity: 0.5;
 }

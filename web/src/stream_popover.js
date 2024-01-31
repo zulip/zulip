@@ -496,11 +496,11 @@ export async function build_move_topic_to_stream_popover(
         stream_bar.decorate(stream_id, $stream_header_colorblock);
         const stream = stream_data.get_sub_by_id(stream_id);
         if (stream === undefined) {
-            $("#move_topic_to_stream_widget .dropdown_widget_value").text(
+            $("#move_topic_to_stream-widget .dropdown_widget_value").text(
                 $t({defaultMessage: "Select a stream"}),
             );
         } else {
-            $("#move_topic_to_stream_widget .dropdown_widget_value").html(
+            $("#move_topic_to_stream-widget .dropdown_widget_value").html(
                 render_inline_decorated_stream_name({stream, show_colored_icon: true}),
             );
         }
@@ -563,7 +563,7 @@ export async function build_move_topic_to_stream_popover(
         }).setup();
 
         render_selected_stream();
-        $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
+        $("#move_topic_to_stream-widget").prop("disabled", disable_stream_input);
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
         });

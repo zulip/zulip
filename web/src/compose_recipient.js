@@ -152,11 +152,11 @@ function switch_message_type(message_type) {
 function update_recipient_label(stream_id) {
     const stream = stream_data.get_sub_by_id(stream_id);
     if (stream === undefined) {
-        $("#compose_select_recipient_widget .dropdown_widget_value").text(
+        $("#compose_select_recipient-widget .dropdown_widget_value").text(
             $t({defaultMessage: "Select a stream"}),
         );
     } else {
-        $("#compose_select_recipient_widget .dropdown_widget_value").html(
+        $("#compose_select_recipient-widget .dropdown_widget_value").html(
             render_inline_decorated_stream_name({stream, show_colored_icon: true}),
         );
     }
@@ -181,7 +181,7 @@ export function update_compose_for_message_type(message_type, opts) {
         // the "DM" button display string so we wouldn't have to manually change
         // it here.
         const direct_message_label = $t({defaultMessage: "DM"});
-        $("#compose_select_recipient_widget .dropdown_widget_value").html(
+        $("#compose_select_recipient-widget .dropdown_widget_value").html(
             `<i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> ${direct_message_label}`,
         );
     }
@@ -282,7 +282,7 @@ function compose_recipient_dropdown_on_show(dropdown) {
 }
 
 export function open_compose_recipient_dropdown() {
-    $("#compose_select_recipient_widget").trigger("click");
+    $("#compose_select_recipient-widget").trigger("click");
 }
 
 function focus_compose_recipient() {

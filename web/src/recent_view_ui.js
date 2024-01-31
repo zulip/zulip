@@ -369,7 +369,7 @@ export function revive_current_focus() {
     }
 
     if ($current_focus_elem.hasClass("dropdown-widget-button")) {
-        $("#recent-view-filter_widget").trigger("focus");
+        $("#recent-view-filter-widget").trigger("focus");
         return true;
     }
 
@@ -1516,7 +1516,7 @@ export function initialize({
         revive_current_focus();
     });
 
-    $("body").on("click", "#recent-view-filter_widget", (e) => {
+    $("body").on("click", "#recent-view-filter-widget", (e) => {
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.
             return;

@@ -155,7 +155,7 @@
 
     #compose-recipient {
         &.compose-recipient-direct-selected {
-            #compose_select_recipient_widget {
+            #compose_select_recipient-widget {
                 border-radius: 4px !important;
             }
 
@@ -822,7 +822,7 @@ textarea.new_message_textarea,
     }
 }
 
-#compose_select_recipient_widget {
+#compose_select_recipient-widget {
     border-radius: 0 4px 4px 0;
     width: auto;
     outline: none;

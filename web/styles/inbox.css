@@ -529,7 +529,7 @@
     color: hsl(200deg 100% 40%);
 }
 
-#inbox-filter_widget {
+#inbox-filter-widget {
     margin-right: 5px;
     height: 30px;
     max-width: var(--width-inbox-filters-dropdown);
@@ -551,8 +551,8 @@
     }
 }
 
-#recent-view-filter_widget .dropdown_widget_value,
-#inbox-filter_widget .dropdown_widget_value {
+#recent-view-filter-widget .dropdown_widget_value,
+#inbox-filter-widget .dropdown_widget_value {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -560,8 +560,8 @@
     text-align: left;
 }
 
-#recent-view-filter_widget .fa-chevron-down,
-#inbox-filter_widget .fa-chevron-down {
+#recent-view-filter-widget .fa-chevron-down,
+#inbox-filter-widget .fa-chevron-down {
     color: var(--color-icons-inbox);
     opacity: 0.4;
 }

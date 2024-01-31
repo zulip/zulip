@@ -216,7 +216,7 @@ export async function check_compose_state(
         assert.equal(
             await get_text_from_selector(
                 page,
-                "#compose_select_recipient_widget .dropdown_widget_value",
+                "#compose_select_recipient-widget .dropdown_widget_value",
             ),
             params.stream_name,
         );
@@ -397,11 +397,11 @@ export async function select_stream_in_compose_via_dropdown(
     page: Page,
     stream_name: string,
 ): Promise<void> {
-    console.log(`Clicking on 'compose_select_recipient_widget' to select ${stream_name}`);
+    console.log(`Clicking on 'compose_select_recipient-widget' to select ${stream_name}`);
     const menu_visible = (await page.$(".dropdown-list-container")) !== null;
     if (!menu_visible) {
-        await page.waitForSelector("#compose_select_recipient_widget", {visible: true});
-        await page.click("#compose_select_recipient_widget");
+        await page.waitForSelector("#compose_select_recipient-widget", {visible: true});
+        await page.click("#compose_select_recipient-widget");
         await page.waitForSelector(".dropdown-list-container .list-item", {
             visible: true,
         });

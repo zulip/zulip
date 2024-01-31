@@ -177,5 +177,5 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     hide_compose_spinner();
 
     // Open stream select dropdown.
-    $("#compose_select_recipient_widget").trigger("click");
+    $("#compose_select_recipient-widget").trigger("click");
 }

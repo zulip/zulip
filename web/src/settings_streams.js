@@ -55,7 +55,7 @@ function create_choice_row() {
         const selected_stream_name = $selected_stream.attr("data-name");
         const selected_stream_id = Number.parseInt($selected_stream.data("unique-id"), 10);
 
-        const $stream_dropdown_widget = $(`#${CSS.escape(stream_dropdown_widget_name)}_widget`);
+        const $stream_dropdown_widget = $(`#${CSS.escape(stream_dropdown_widget_name)}-widget`);
         const $stream_name = $stream_dropdown_widget.find(".dropdown_widget_value");
         $stream_name.text(selected_stream_name);
         $stream_name.data("stream-id", selected_stream_id);
