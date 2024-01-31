@@ -28,7 +28,9 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm
 from zilencer.models import (
     RemoteCustomerUserCount,
+    RemoteRealm,
     RemoteRealmAuditLog,
+    RemoteZulipServer,
     get_remote_customer_user_count,
 )
 
@@ -45,6 +47,7 @@ class RemoteActivityPlanData:
     current_status: str
     current_plan_name: str
     annual_revenue: int
+    rate: str
 
 
 def make_table(
@@ -159,6 +162,57 @@ def remote_installation_support_link(hostname: str) -> Markup:
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
+def get_plan_rate_percentage(discount: Optional[Decimal]) -> str:
+    if discount is None or discount == Decimal(0):
+        return "100%"
+
+    rate = 100 - discount
+    if rate * 100 % 100 == 0:
+        precision = 0
+    else:
+        precision = 2
+    return f"{rate:.{precision}f}%"
+
+
+def get_remote_activity_plan_data(
+    plan: CustomerPlan,
+    license_ledger: LicenseLedger,
+    *,
+    remote_realm: Optional[RemoteRealm] = None,
+    remote_server: Optional[RemoteZulipServer] = None,
+) -> RemoteActivityPlanData:
+    if plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY or plan.status in (
+        CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+    ):
+        renewal_cents = 0
+        current_rate = "---"
+    elif plan.tier == CustomerPlan.TIER_SELF_HOSTED_COMMUNITY:
+        renewal_cents = 0
+        current_rate = "0%"
+    elif remote_realm is not None:
+        renewal_cents = RemoteRealmBillingSession(
+            remote_realm=remote_realm
+        ).get_customer_plan_renewal_amount(plan, license_ledger)
+        current_rate = get_plan_rate_percentage(plan.discount)
+    else:
+        assert remote_server is not None
+        renewal_cents = RemoteServerBillingSession(
+            remote_server=remote_server
+        ).get_customer_plan_renewal_amount(plan, license_ledger)
+        current_rate = get_plan_rate_percentage(plan.discount)
+
+    if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
+        renewal_cents *= 12
+
+    return RemoteActivityPlanData(
+        current_status=plan.get_plan_status_as_text(),
+        current_plan_name=plan.name,
+        annual_revenue=renewal_cents,
+        rate=current_rate,
+    )
+
+
 def get_realms_with_default_discount_dict() -> Dict[str, Decimal]:
     realms_with_default_discount: Dict[str, Any] = {}
     customers = (
@@ -225,28 +279,17 @@ def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # no
     )
 
     for plan in plans:
-        renewal_cents = 0
         server_id = None
-
         assert plan.customer.remote_server is not None
         server_id = plan.customer.remote_server.id
         assert server_id is not None
+
         latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
         assert latest_ledger_entry is not None
-        if plan.tier in (
-            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
-            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
-        ) or plan.status in (
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-        ):
-            renewal_cents = 0
-        else:
-            renewal_cents = RemoteServerBillingSession(
-                remote_server=plan.customer.remote_server
-            ).get_customer_plan_renewal_amount(plan, latest_ledger_entry)
-        if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            renewal_cents *= 12
+
+        plan_data = get_remote_activity_plan_data(
+            plan, latest_ledger_entry, remote_server=plan.customer.remote_server
+        )
 
         current_data = remote_server_plan_data.get(server_id)
         if current_data is not None:
@@ -256,15 +299,12 @@ def get_plan_data_by_remote_server() -> Dict[int, RemoteActivityPlanData]:  # no
             # a status that is less than the CustomerPlan.LIVE_STATUS_THRESHOLD.
             remote_server_plan_data[server_id] = RemoteActivityPlanData(
                 current_status="ERROR: MULTIPLE PLANS",
-                current_plan_name=f"{current_plans}, {plan.name}",
-                annual_revenue=current_revenue + renewal_cents,
+                current_plan_name=f"{current_plans}, {plan_data.current_plan_name}",
+                annual_revenue=current_revenue + plan_data.annual_revenue,
+                rate="",
             )
         else:
-            remote_server_plan_data[server_id] = RemoteActivityPlanData(
-                current_status=plan.get_plan_status_as_text(),
-                current_plan_name=plan.name,
-                annual_revenue=renewal_cents,
-            )
+            remote_server_plan_data[server_id] = plan_data
     return remote_server_plan_data
 
 
@@ -289,33 +329,16 @@ def get_plan_data_by_remote_realm() -> Dict[int, Dict[int, RemoteActivityPlanDat
     )
 
     for plan in plans:
-        renewal_cents = 0
         server_id = None
-
         assert plan.customer.remote_realm is not None
         server_id = plan.customer.remote_realm.server_id
         assert server_id is not None
+
         latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
         assert latest_ledger_entry is not None
-        if plan.tier in (
-            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
-            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
-        ) or plan.status in (
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-        ):
-            renewal_cents = 0
-        else:
-            renewal_cents = RemoteRealmBillingSession(
-                remote_realm=plan.customer.remote_realm
-            ).get_customer_plan_renewal_amount(plan, latest_ledger_entry)
-        if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
-            renewal_cents *= 12
 
-        plan_data = RemoteActivityPlanData(
-            current_status=plan.get_plan_status_as_text(),
-            current_plan_name=plan.name,
-            annual_revenue=renewal_cents,
+        plan_data = get_remote_activity_plan_data(
+            plan, latest_ledger_entry, remote_realm=plan.customer.remote_realm
         )
 
         current_server_data = remote_server_plan_data_by_realm.get(server_id)
@@ -334,8 +357,9 @@ def get_plan_data_by_remote_realm() -> Dict[int, Dict[int, RemoteActivityPlanDat
                 current_plans = current_realm_data.current_plan_name
                 current_server_data[realm_id] = RemoteActivityPlanData(
                     current_status="ERROR: MULTIPLE PLANS",
-                    current_plan_name=f"{current_plans}, {plan.name}",
-                    annual_revenue=current_revenue + renewal_cents,
+                    current_plan_name=f"{current_plans}, {plan_data.current_plan_name}",
+                    annual_revenue=current_revenue + plan_data.annual_revenue,
+                    rate="",
                 )
             else:
                 current_server_data[realm_id] = plan_data

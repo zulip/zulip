@@ -91,6 +91,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Plan name",
         "Plan status",
         "ARR",
+        "Rate",
         "Total users",
         "Guest users",
         "Links",
@@ -105,8 +106,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     MOBILE_PUSH_COUNT = 7
     ORG_TYPE = 8
     ARR = 11
-    TOTAL_USER_COUNT = 12
-    GUEST_COUNT = 13
+    TOTAL_USER_COUNT = 13
+    GUEST_COUNT = 14
 
     rows = get_query_data(query)
     plan_data_by_remote_server = get_plan_data_by_remote_server()
@@ -171,12 +172,14 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             row.append("---")
             row.append("---")
             row.append("---")
+            row.append("---")
         else:
             total_revenue += plan_data.annual_revenue
             revenue = cents_to_dollar_string(plan_data.annual_revenue)
             row.append(plan_data.current_plan_name)
             row.append(plan_data.current_status)
             row.append(f"${revenue}")
+            row.append(plan_data.rate)
 
         # Add user counts
         if user_counts is None:
