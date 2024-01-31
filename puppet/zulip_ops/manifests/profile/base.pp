@@ -117,10 +117,9 @@ class zulip_ops::profile::base {
     require => User['zulip'],
   }
 
-  if $is_ec2 {
-    # The AWS tools are not useful unless the host can auth to AWS.
-    include zulip_ops::aws_tools
+  include zulip_ops::aws_tools
 
+  if $is_ec2 {
     # Non-EC2 (e.g. CZO) don't have the private commit that adds these
     # zulip_ops files.
     file { '/root/.ssh/authorized_keys':

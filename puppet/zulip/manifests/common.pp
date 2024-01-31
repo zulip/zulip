@@ -85,6 +85,16 @@ class zulip::common {
 
     ### zulip_ops packages
 
+    # https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html
+    'aws_signing_helper' => {
+      'version' => '1.1.1',
+      'sha256'  => {
+        'amd64' => '3761071497510ae1bde82aa31e34bbb63b9701deb932434e786a8479062b2b9b',
+        # aarch64 would need to compile from source:
+        # https://github.com/aws/rolesanywhere-credential-helper/tree/main
+      },
+    },
+
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
       'version' => '2.23.0',
