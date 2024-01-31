@@ -38,8 +38,13 @@ export DEBIAN_FRONTEND=noninteractive
     apt-get -qy autoclean
 )
 
-# The following line gets subbed in with the contents of install-aws-cli
-AWS=
+# The following line gets subbed in by a call to pack-local-script,
+# which will make $AWS_INSTALLER the path to a local copy of install-aws-cli
+AWS_INSTALLER="inline!puppet/zulip_ops/files/install-aws-cli"
+
+# We then call it, to install the AWS CLI
+"$AWS_INSTALLER"
+AWS=/srv/zulip-aws-tools/bin/aws
 
 # Set up a bare-bones AWS configuration
 mkdir -p /root/.aws

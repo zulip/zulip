@@ -78,7 +78,8 @@ set -x
 
 cd "$(dirname "$0")/../.."
 
-source ./puppet/zulip_ops/files/install-aws-cli
+./puppet/zulip_ops/files/install-aws-cli
+AWS=/srv/zulip-aws-tools/bin/aws
 
 zulip_install_config_file="$HOME/.zulip-install-server.conf"
 if [ ! -f "$zulip_install_config_file" ]; then
@@ -157,7 +158,11 @@ BOOTDATA=$(mktemp)
     echo "REPO_URL=$REPO_URL"
     echo "BRANCH=$BRANCH"
     echo "SSH_SECRET_ID=$SSH_SECRET_ID"
-    sed '/^AWS=/ r ./puppet/zulip_ops/files/install-aws-cli' bootstrap-aws-installer
+    # Replace anything which looks like FOO="inline!bar/baz" with the
+    # output of pack-local-script, which will make "$FOO" inside the
+    # $BOOTDATA be the path to that script (smuggled inline and
+    # unpacked before use).
+    perl -ple 's|^(\w+)="inline!([^"]+)"|qx(./tools/setup/pack-local-script $1 $2)|e' ./tools/setup/bootstrap-aws-installer
 } >>"$BOOTDATA"
 
 TAG_ROLE_NAMES="$ROLES"
