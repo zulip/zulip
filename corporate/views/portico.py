@@ -16,6 +16,7 @@ from corporate.lib.decorator import (
 from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
+    get_configured_fixed_price_plan_offer,
     get_free_trial_days,
 )
 from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
@@ -152,6 +153,15 @@ def remote_realm_plans_page(
     if customer is not None:  # nocoverage
         context.sponsorship_pending = customer.sponsorship_pending
         context.customer_plan = get_current_plan_by_customer(customer)
+
+        if customer.required_plan_tier is not None:
+            configure_fixed_price_plan = get_configured_fixed_price_plan_offer(
+                customer, customer.required_plan_tier
+            )
+            # Free trial is disabled for customers with fixed-price plan configured.
+            if configure_fixed_price_plan is not None:
+                context.free_trial_days = None
+
         if context.customer_plan is None:
             context.on_free_tier = not context.is_sponsored
         else:
@@ -209,6 +219,15 @@ def remote_server_plans_page(
     if customer is not None:  # nocoverage
         context.sponsorship_pending = customer.sponsorship_pending
         context.customer_plan = get_current_plan_by_customer(customer)
+
+        if customer.required_plan_tier is not None:
+            configure_fixed_price_plan = get_configured_fixed_price_plan_offer(
+                customer, customer.required_plan_tier
+            )
+            # Free trial is disabled for customers with fixed-price plan configured.
+            if configure_fixed_price_plan is not None:
+                context.free_trial_days = None
+
         if context.customer_plan is None:
             context.on_free_tier = not context.is_sponsored
         else:

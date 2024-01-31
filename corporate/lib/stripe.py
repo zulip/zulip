@@ -1656,8 +1656,16 @@ class BillingSession(ABC):
             "monthly": CustomerPlan.BILLING_SCHEDULE_MONTHLY,
         }[schedule]
         data: Dict[str, Any] = {}
+
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         free_trial = is_free_trial_offer_enabled(is_self_hosted_billing, upgrade_request.tier)
+        if customer is not None:
+            fixed_price_plan_offer = get_configured_fixed_price_plan_offer(
+                customer, upgrade_request.tier
+            )
+            if fixed_price_plan_offer is not None:
+                free_trial = False
+
         remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
         should_schedule_upgrade_for_legacy_remote_server = (
             remote_server_legacy_plan is not None
@@ -2225,7 +2233,7 @@ class BillingSession(ABC):
         free_trial_end_date = None
         # Don't show free trial for remote servers on legacy plan.
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
-        if remote_server_legacy_plan_end_date is None:
+        if fixed_price is None and remote_server_legacy_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
