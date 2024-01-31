@@ -76,9 +76,9 @@ SERVER="$1"
 
 set -x
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../.."
 
-source ./../../puppet/zulip_ops/files/install-aws-cli
+source ./puppet/zulip_ops/files/install-aws-cli
 
 zulip_install_config_file="$HOME/.zulip-install-server.conf"
 if [ ! -f "$zulip_install_config_file" ]; then
@@ -89,7 +89,7 @@ fi
 REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
 
 for role in ${ROLES//,/ }; do
-    if ! [ -f "../../puppet/zulip_ops/manifests/profile/$role.pp" ]; then
+    if ! [ -f "./puppet/zulip_ops/manifests/profile/$role.pp" ]; then
         echo "No such role zulip_ops::profile::$role !"
         exit 1
     fi
@@ -157,7 +157,7 @@ BOOTDATA=$(mktemp)
     echo "REPO_URL=$REPO_URL"
     echo "BRANCH=$BRANCH"
     echo "SSH_SECRET_ID=$SSH_SECRET_ID"
-    sed '/^AWS=/ r ./../../puppet/zulip_ops/files/install-aws-cli' bootstrap-aws-installer
+    sed '/^AWS=/ r ./puppet/zulip_ops/files/install-aws-cli' bootstrap-aws-installer
 } >>"$BOOTDATA"
 
 TAG_ROLE_NAMES="$ROLES"
