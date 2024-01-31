@@ -3,8 +3,6 @@
 """
 Script to provide information about send-receive times.
 
-It supports both munin and nagios outputs
-
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
@@ -33,31 +31,11 @@ usage = """Usage: send-receive.py [options] [config]
 parser = argparse.ArgumentParser(usage=usage)
 parser.add_argument("--site", default="https://api.zulip.com")
 
-parser.add_argument("--nagios", action="store_true")
-
 parser.add_argument("--insecure", action="store_true")
-
-parser.add_argument("--munin", action="store_true")
 
 parser.add_argument("config", nargs="?")
 
 options = parser.parse_args()
-
-if not options.nagios and not options.munin:
-    print("No output options specified! Please provide --munin or --nagios")
-    sys.exit(0)
-
-if options.munin and options.config == "config":
-    print(
-        """graph_title Send-Receive times
-graph_info The number of seconds it takes to send and receive a message from the server
-graph_args -u 5 -l 0
-graph_vlabel RTT (seconds)
-sendreceive.label Send-receive round trip time
-sendreceive.warning 3
-sendreceive.critical 5"""
-    )
-    sys.exit(0)
 
 sys.path.append("/home/zulip/deployments/current")
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
@@ -91,7 +69,7 @@ def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> NoRe
 
 def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
     result = sender.send_message(message)
-    if result["result"] != "success" and options.nagios:
+    if result["result"] != "success":
         report("CRITICAL", msg=f"Error sending Zulip, args were: {message}, {result}")
 
 
@@ -169,13 +147,9 @@ while msg_to_send not in msg_content:
 
 zulip_recipient.deregister(queue_id)
 
-if options.nagios:
-    if seconds_diff > 12:
-        report("CRITICAL", timestamp=seconds_diff)
-    if seconds_diff > 3:
-        report("WARNING", timestamp=seconds_diff)
-
-if options.munin:
-    print(f"sendreceive.value {seconds_diff}")
-elif options.nagios:
+if seconds_diff > 12:
+    report("CRITICAL", timestamp=seconds_diff)
+if seconds_diff > 3:
+    report("WARNING", timestamp=seconds_diff)
+else:
     report("OK", timestamp=seconds_diff)
