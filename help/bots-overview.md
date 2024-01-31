@@ -1,4 +1,4 @@
-# About bots
+# Bots overview
 
 Bots allow you to
 
@@ -7,7 +7,7 @@ Bots allow you to
 * Automate tasks a human user could do.
 
 A bot that sends content to or from another product is often called an
-**integration**.
+[integration](/help/integrations-overview).
 
 ## Pre-made bots
 
@@ -83,6 +83,7 @@ is visible and available for anyone to use.
 
 ## Related articles
 
+* [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Edit a bot](/help/edit-a-bot)
 * [Request an integration](/help/request-an-integration)
