@@ -1451,6 +1451,15 @@ export class MessageListView {
         );
     }
 
+    is_start_rendered() {
+        // Used as a helper in checks for whether a given scroll
+        // position is actually the very start of this view. It could
+        // fail to be for two reasons: Either some older messages are
+        // not rendered due to a render window, or we haven't finished
+        // fetching the oldest messages for this view from the server.
+        return this._render_win_start === 0 && this.list.data.fetch_status.has_found_oldest();
+    }
+
     get_row(id) {
         const $row = this._rows.get(id);
 
