@@ -72,15 +72,6 @@ class zulip_ops::profile::base {
     authorized_keys => 'common',
   }
 
-  file { '/etc/pam.d/common-session':
-    ensure  => file,
-    require => Package['openssh-server'],
-    source  => 'puppet:///modules/zulip_ops/common-session',
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-  }
-
   service { 'ssh':
     ensure     => running,
   }
