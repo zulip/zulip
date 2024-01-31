@@ -25,4 +25,16 @@ define zulip_ops::user_dotfiles (
     mode    => '0644',
     source  => 'puppet:///modules/zulip_ops/dotfiles/emacs.el',
   }
+
+  # Suppress MOTD printing, to fix load problems with Nagios caused by
+  # Ubuntu's default MOTD tools for things like "checking for the next
+  # release" being super slow.
+  file { "${homedir}/.hushlogin":
+    ensure  => file,
+    require => User[$user],
+    owner   => $user,
+    group   => $user,
+    mode    => '0644',
+    content => '',
+  }
 }

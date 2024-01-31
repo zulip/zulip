@@ -65,15 +65,6 @@ class zulip_ops::profile::base {
 
   zulip_ops::user_dotfiles { 'zulip': }
 
-  # Clear /etc/update-motd.d, to fix load problems with Nagios
-  # caused by Ubuntu's default MOTD tools for things like "checking
-  # for the next release" being super slow.
-  file { '/etc/update-motd.d':
-    ensure  => directory,
-    recurse => true,
-    purge   => true,
-  }
-
   file { '/etc/pam.d/common-session':
     ensure  => file,
     require => Package['openssh-server'],
