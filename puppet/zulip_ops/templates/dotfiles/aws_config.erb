@@ -1,0 +1,10 @@
+[default]
+region = us-east-1
+output = text
+<% if @is_ec2 -%>
+# Credentials are from the IAM role attached to the EC2 instance
+<% else -%>
+# We pull the Teleport host certificate and use that to auth to AWS
+# using IAM Roles Anywhere
+credential_process = /usr/local/bin/teleport-aws-credentials --trust-anchor-arn <%= @aws_trust_arn %> --profile-arn <%= @aws_profile_arn %> --role-arn <%= @aws_role_arn %>
+<% end %>
