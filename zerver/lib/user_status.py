@@ -1,10 +1,17 @@
 from typing import Dict, Optional, TypedDict
 
+from django.db import transaction
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
-from zerver.models import Realm, UserProfile, UserStatus
+from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.users import (
+    check_user_can_access_all_users,
+    get_accessible_user_ids,
+    get_user_ids_who_can_access_user,
+)
+from zerver.models import Realm, ScheduledUserStatus, UserProfile, UserStatus
+from zerver.tornado.django_api import send_event
 
 
 class UserInfoDict(TypedDict, total=False):
@@ -12,6 +19,7 @@ class UserInfoDict(TypedDict, total=False):
     emoji_name: str
     emoji_code: str
     reaction_type: str
+    status_end_time: str
     away: bool
 
 
@@ -22,6 +30,7 @@ class RawUserInfoDict(TypedDict):
     emoji_name: str
     emoji_code: str
     reaction_type: str
+    status_end_time: str
 
 
 def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
@@ -32,6 +41,7 @@ def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
     presence_enabled = row["user_profile__presence_enabled"]
     away = not presence_enabled
     status_text = row["status_text"]
+    status_end_time = row["status_end_time"]
     emoji_name = row["emoji_name"]
     emoji_code = row["emoji_code"]
     reaction_type = row["reaction_type"]
@@ -45,6 +55,8 @@ def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
         dct["emoji_name"] = emoji_name
         dct["emoji_code"] = emoji_code
         dct["reaction_type"] = reaction_type
+    if status_end_time:
+        dct["status_end_time"] = status_end_time
 
     return dct
 
@@ -72,6 +84,7 @@ def get_user_status_dict(realm: Realm, user_profile: UserProfile) -> Dict[str, U
         "emoji_name",
         "emoji_code",
         "reaction_type",
+        "status_end_time",
     )
 
     user_dict: Dict[str, UserInfoDict] = {}
@@ -83,12 +96,13 @@ def get_user_status_dict(realm: Realm, user_profile: UserProfile) -> Dict[str, U
 
 
 def update_user_status(
-    user_profile_id: int,
+    user_profile: UserProfile,
     status_text: Optional[str],
     client_id: int,
     emoji_name: Optional[str],
     emoji_code: Optional[str],
     reaction_type: Optional[str],
+    status_end_time: Optional[str],
 ) -> None:
     timestamp = timezone_now()
 
@@ -109,7 +123,76 @@ def update_user_status(
         if reaction_type is not None:
             defaults["reaction_type"] = reaction_type
 
+    if status_end_time is not None:
+        defaults["status_end_time"] = status_end_time
+    else:
+        defaults["status_end_time"] = ""
+
     UserStatus.objects.update_or_create(
-        user_profile_id=user_profile_id,
+        user_profile_id=user_profile.id,
         defaults=defaults,
     )
+    maybe_update_scheduled_status(user_profile=user_profile, client_id=client_id)
+
+    if status_end_time is not None and status_end_time != "":
+        scheduled_timestamp = timestamp_to_datetime(int(status_end_time))
+        ScheduledUserStatus.objects.create(
+            user_profile=user_profile,
+            realm=user_profile.realm,
+            client_id=client_id,
+            scheduled_timestamp=scheduled_timestamp,
+        )
+
+
+def maybe_update_scheduled_status(
+    user_profile: UserProfile,
+    client_id: int,
+) -> None:
+    try:
+        scheduled_user_status = ScheduledUserStatus.objects.get(
+            user_profile=user_profile,
+            realm=user_profile.realm,
+            client_id=client_id,
+        )
+        scheduled_user_status.delete()
+    except ScheduledUserStatus.DoesNotExist:
+        return None
+
+
+def clear_user_status(user_status: ScheduledUserStatus) -> None:
+    update_user_status(
+        user_profile=user_status.user_profile,
+        status_text="",
+        client_id=user_status.client_id,
+        emoji_name="",
+        emoji_code="",
+        reaction_type=UserStatus.UNICODE_EMOJI,
+        status_end_time="",
+    )
+    event = dict(
+        type="user_status",
+        user_id=user_status.user_profile.id,
+        status_text="",
+        emoji_name="",
+        emoji_code="",
+        reaction_type=UserStatus.UNICODE_EMOJI,
+    )
+    send_event(
+        user_status.user_profile.realm,
+        event,
+        get_user_ids_who_can_access_user(user_status.user_profile),
+    )
+
+
+@transaction.atomic
+def try_clear_scheduled_user_status() -> bool:
+    user_status_to_clear = (
+        ScheduledUserStatus.objects.filter(scheduled_timestamp__lte=timezone_now())
+        .order_by("scheduled_timestamp")
+        .first()
+    )
+    if user_status_to_clear:
+        clear_user_status(user_status_to_clear)
+        return True
+
+    return False

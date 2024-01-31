@@ -13,6 +13,7 @@ export type UserStatusEmojiInfo = EmojiRenderingDetails & {
 const user_status_schema = z.intersection(
     z.object({
         status_text: z.string().optional(),
+        status_end_time: z.string().optional(),
         away: z.boolean().optional(),
     }),
     z.union([
@@ -43,11 +44,22 @@ const user_status_param_schema = z.record(z.string(), user_status_schema);
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
 
+let user_status_end_time: number;
+
+export function set_user_status_end_time(status_end_time: string): void {
+    user_status_end_time = Number.parseInt(status_end_time, 10);
+}
+
+export function get_user_status_end_time(): number {
+    return user_status_end_time;
+}
+
 export function server_update_status(opts: {
     status_text: string;
     emoji_name: string;
     emoji_code: string;
     reaction_type?: string;
+    status_end_time?: number;
     success?: () => void;
 }): void {
     void channel.post({
@@ -57,6 +69,7 @@ export function server_update_status(opts: {
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
+            status_end_time: opts.status_end_time,
         },
         success() {
             if (opts.success) {
@@ -131,6 +144,10 @@ export function initialize(params: {user_status: unknown}): void {
 
         if (dct.status_text) {
             user_info.set(user_id, dct.status_text);
+        }
+
+        if (dct.status_end_time) {
+            set_user_status_end_time(dct.status_end_time);
         }
 
         if (dct.emoji_name) {

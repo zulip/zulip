@@ -253,3 +253,16 @@ EMAIL_TYPES = {
     "digest": ScheduledEmail.DIGEST,
     "invitation_reminder": ScheduledEmail.INVITATION_REMINDER,
 }
+
+
+class ScheduledUserStatus(AbstractScheduledJob):
+    user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE)
+    client = models.ForeignKey(Client, on_delete=CASCADE)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                name="zerver_scheduled_status_removal",
+                fields=["scheduled_timestamp"],
+            ),
+        ]

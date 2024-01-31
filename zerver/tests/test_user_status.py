@@ -1,10 +1,18 @@
 from typing import Any, Dict, Optional
 
 import orjson
+import time_machine
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_status import UserInfoDict, get_user_status_dict, update_user_status
-from zerver.models import UserProfile, UserStatus
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.user_status import (
+    UserInfoDict,
+    get_user_status_dict,
+    try_clear_scheduled_user_status,
+    update_user_status,
+)
+from zerver.models import ScheduledUserStatus, UserProfile, UserStatus
 from zerver.models.clients import get_client
 
 
@@ -23,12 +31,13 @@ class UserStatusTest(ZulipTestCase):
         client2 = get_client("ZT")
 
         update_user_status(
-            user_profile_id=hamlet.id,
+            user_profile=hamlet,
             status_text="working",
             emoji_name=None,
             emoji_code=None,
             reaction_type=None,
             client_id=client1.id,
+            status_end_time=None,
         )
 
         self.assertEqual(
@@ -48,12 +57,13 @@ class UserStatusTest(ZulipTestCase):
         # reference and to maybe reconcile timeout
         # situations.
         update_user_status(
-            user_profile_id=hamlet.id,
+            user_profile=hamlet,
             status_text="out to lunch",
             emoji_name="car",
             emoji_code="1f697",
             reaction_type=UserStatus.UNICODE_EMOJI,
             client_id=client2.id,
+            status_end_time=None,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -70,12 +80,13 @@ class UserStatusTest(ZulipTestCase):
 
         # Setting status_text and emoji_info to None causes it be ignored.
         update_user_status(
-            user_profile_id=hamlet.id,
+            user_profile=hamlet,
             status_text=None,
             emoji_name=None,
             emoji_code=None,
             reaction_type=None,
             client_id=client2.id,
+            status_end_time=None,
         )
 
         self.assertEqual(
@@ -90,12 +101,13 @@ class UserStatusTest(ZulipTestCase):
 
         # Clear the status_text and emoji_info now.
         update_user_status(
-            user_profile_id=hamlet.id,
+            user_profile=hamlet,
             status_text="",
             emoji_name="",
             emoji_code="",
             reaction_type=UserStatus.UNICODE_EMOJI,
             client_id=client2.id,
+            status_end_time=None,
         )
 
         self.assertEqual(
@@ -105,12 +117,13 @@ class UserStatusTest(ZulipTestCase):
 
         # Set Hamlet to in a meeting.
         update_user_status(
-            user_profile_id=hamlet.id,
+            user_profile=hamlet,
             status_text="in a meeting",
             emoji_name=None,
             emoji_code=None,
             reaction_type=None,
             client_id=client2.id,
+            status_end_time=None,
         )
 
         self.assertEqual(
@@ -122,12 +135,13 @@ class UserStatusTest(ZulipTestCase):
         self.set_up_db_for_testing_user_access()
         cordelia = self.example_user("cordelia")
         update_user_status(
-            user_profile_id=cordelia.id,
+            user_profile=cordelia,
             status_text="on vacation",
             emoji_name=None,
             emoji_code=None,
             reaction_type=None,
             client_id=client2.id,
+            status_end_time=None,
         )
         self.assertEqual(
             user_status_info(hamlet, self.example_user("polonius")),
@@ -311,4 +325,98 @@ class UserStatusTest(ZulipTestCase):
         self.assertEqual(
             user_status_info(hamlet),
             dict(status_text="at the beach", away=True),
+        )
+
+
+class ScheduledUserStatusTest(ZulipTestCase):
+    def test_basics(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        client1 = get_client("web")
+        client2 = get_client("ZT")
+        scheduled_clear_status_datetime = datetime_to_timestamp(timezone_now())
+        status_end_time_not_expired = str(scheduled_clear_status_datetime + 5 * 60)
+        status_end_time_expired = str(scheduled_clear_status_datetime - 5 * 60)
+
+        # Test setting status with a status end time
+        update_user_status(
+            user_profile=hamlet,
+            status_text="out to lunch",
+            emoji_name="car",
+            emoji_code="1f697",
+            reaction_type=UserStatus.UNICODE_EMOJI,
+            client_id=client1.id,
+            status_end_time=status_end_time_not_expired,
+        )
+
+        self.assertEqual(
+            user_status_info(hamlet),
+            dict(
+                status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+                status_end_time=status_end_time_not_expired,
+            ),
+        )
+        rec_count = ScheduledUserStatus.objects.filter(
+            user_profile_id=hamlet.id, realm=hamlet.realm
+        ).count()
+        self.assertEqual(rec_count, 1)
+
+        # Test if status removed when set with a status end time
+        with time_machine.travel(scheduled_clear_status_datetime, tick=False):
+            clear_status = try_clear_scheduled_user_status()
+
+        self.assertFalse(clear_status)
+        self.assertTrue(
+            ScheduledUserStatus.objects.filter(
+                user_profile=hamlet, realm=hamlet.realm, client_id=client1.id
+            ).exists()
+        )
+
+        update_user_status(
+            user_profile=iago,
+            status_text="out to lunch",
+            emoji_name="car",
+            emoji_code="1f697",
+            reaction_type=UserStatus.UNICODE_EMOJI,
+            client_id=client2.id,
+            status_end_time=status_end_time_expired,
+        )
+
+        with time_machine.travel(scheduled_clear_status_datetime, tick=False):
+            clear_status = try_clear_scheduled_user_status()
+
+        self.assertTrue(clear_status)
+        self.assertFalse(
+            ScheduledUserStatus.objects.filter(
+                user_profile=iago, realm=hamlet.realm, client_id=client2.id
+            ).exists()
+        )
+
+    def update_clear_status_and_assert_event(
+        self, payload: Dict[str, Any], expected_event: Dict[str, Any], num_events: int = 1
+    ) -> None:
+        with self.capture_send_event_calls(expected_num_events=num_events) as events:
+            result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_success(result)
+        self.assertEqual(events[0]["event"], expected_event)
+
+    def test_endpoints(self) -> None:
+        hamlet = self.example_user("hamlet")
+        scheduled_status_end_time = str(datetime_to_timestamp(timezone_now()))
+
+        self.login_user(hamlet)
+        self.update_clear_status_and_assert_event(
+            payload=dict(emoji_name="car", status_end_time=str(scheduled_status_end_time)),
+            expected_event=dict(
+                type="user_status",
+                user_id=hamlet.id,
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+                status_end_time=scheduled_status_end_time,
+            ),
+            num_events=1,
         )

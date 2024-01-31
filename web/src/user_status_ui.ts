@@ -1,19 +1,83 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
 import * as dialog_widget from "./dialog_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import * as emoji from "./emoji";
 import type {EmojiRenderingDetails} from "./emoji";
+import * as flatpickr from "./flatpickr";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as people from "./people";
+import * as timerender from "./timerender";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
 
 let selected_emoji_info: Partial<UserStatusEmojiInfo> = {};
 let default_status_messages_and_emoji_info: {status_text: string; emoji: EmojiRenderingDetails}[];
+let user_status_widget: dropdown_widget.DropdownWidget;
+let is_custom_time_selected: boolean;
+let status_end_time: number | undefined;
+let scheduled_timestamp: string;
+let custom_time_selected: number;
+
+type ClearExpiredStatusOption = {
+    name: string;
+    unique_id: number;
+};
+
+type UserStatusData = {
+    status_text: string;
+    emoji_name: string;
+    emoji_code: string;
+    reaction_type: string;
+};
+
+const clear_expired_status_option_vals: ClearExpiredStatusOption[] = [
+    {name: $t({defaultMessage: "Never"}), unique_id: 1},
+    {name: $t({defaultMessage: "In one hour"}), unique_id: 2},
+    {name: $t({defaultMessage: "Today at 5:00 PM"}), unique_id: 3},
+    {name: $t({defaultMessage: "Tomorrow at 9:00 AM"}), unique_id: 4},
+    {name: $t({defaultMessage: "Custom"}), unique_id: 5},
+];
+
+function compute_status_end_time(now = new Date()): void {
+    const today = new Date(now);
+    const tomorrow = new Date(new Date(now).setDate(now.getDate() + 1));
+
+    // today at 5pm
+    const today_at_five_pm = Math.floor(today.setHours(17, 0, 0, 0) / 1000);
+    // today 1 hour later
+    const one_hour_later = Math.floor((now.getTime() + 60 * 60 * 1000) / 1000);
+    // tomorrow at 9am
+    const tomorrow_nine_am = Math.floor(tomorrow.setHours(9, 0, 0, 0) / 1000);
+    // custom time
+    const custom_time = custom_time_selected;
+    switch (user_status_widget.current_value) {
+        case 1:
+            status_end_time = undefined;
+            break;
+        case 2:
+            status_end_time = one_hour_later;
+            break;
+        case 3:
+            status_end_time = today_at_five_pm;
+            break;
+        case 4:
+            status_end_time = tomorrow_nine_am;
+            break;
+        case 5:
+            status_end_time = custom_time;
+            break;
+    }
+    scheduled_timestamp = status_end_time
+        ? timerender.get_full_datetime(new Date(status_end_time * 1000), "time")
+        : "";
+}
 
 export function set_selected_emoji_info(emoji_info: Partial<UserStatusEmojiInfo>): void {
     selected_emoji_info = {...emoji_info};
@@ -35,6 +99,8 @@ export function open_user_status_modal(): void {
         selected_emoji_info,
     });
 
+    status_end_time = undefined;
+
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Set status"}),
         html_body: rendered_set_status_overlay,
@@ -46,6 +112,21 @@ export function open_user_status_modal(): void {
             input_field().trigger("focus");
         },
     });
+
+    render_clear_expired_status_widget();
+    if (user_status.get_user_status_end_time()) {
+        $("#clear_expired_user_status_widget .dropdown_widget_value").text(
+            $t(
+                {defaultMessage: "{N}"},
+                {
+                    N: timerender.get_full_datetime(
+                        new Date(user_status.get_user_status_end_time() * 1000),
+                        "time",
+                    ),
+                },
+            ),
+        );
+    }
 }
 
 export function submit_new_status(): void {
@@ -62,12 +143,26 @@ export function submit_new_status(): void {
         dialog_widget.close();
         return;
     }
-
-    user_status.server_update_status({
+    const data: UserStatusData = {
         status_text: new_status_text,
         emoji_name: selected_emoji_info.emoji_name ?? "",
         emoji_code: selected_emoji_info.emoji_code ?? "",
         reaction_type: selected_emoji_info.reaction_type ?? "",
+    };
+
+    if (status_end_time !== undefined) {
+        user_status.server_update_status({
+            ...data,
+            status_end_time,
+            success() {
+                dialog_widget.close();
+            },
+        });
+        return;
+    }
+
+    user_status.server_update_status({
+        ...data,
         success() {
             dialog_widget.close();
         },
@@ -83,8 +178,9 @@ export function update_button(): void {
     const $button = submit_button();
 
     if (
-        old_status_text === new_status_text &&
-        !emoji_status_fields_changed(selected_emoji_info, old_emoji_info)
+        (!new_status_text && !selected_emoji_info.emoji_name) ||
+        (old_status_text === new_status_text &&
+            !emoji_status_fields_changed(selected_emoji_info, old_emoji_info))
     ) {
         $button.prop("disabled", true);
     } else {
@@ -120,7 +216,8 @@ function emoji_status_fields_changed(
         old_emoji_info !== undefined &&
         old_emoji_info.emoji_name === selected_emoji_info.emoji_name &&
         old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&
-        old_emoji_info.emoji_code === selected_emoji_info.emoji_code
+        old_emoji_info.emoji_code === selected_emoji_info.emoji_code &&
+        user_status.get_user_status_end_time() === status_end_time
     ) {
         return false;
     }
@@ -181,6 +278,74 @@ function user_status_post_render(): void {
         set_selected_emoji_info({});
         update_button();
     });
+}
+
+function render_clear_expired_status_widget(): void {
+    const tippy_props: Partial<tippy.Props> = {
+        placement: "bottom-start",
+    };
+    const opts = {
+        widget_name: "clear_expired_user_status",
+        get_options: clear_expired_status_options,
+        item_click_callback: clear_expired_status_item_callback,
+        $events_container: $("#set-user-status-modal"),
+        tippy_props,
+        hide_search_box: true,
+        default_id: 1,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+    };
+    user_status_widget = new dropdown_widget.DropdownWidget(opts);
+    user_status_widget.setup();
+}
+
+export function clear_expired_status_options(): ClearExpiredStatusOption[] {
+    return clear_expired_status_option_vals;
+}
+
+function clear_expired_status_item_callback(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (user_status_widget.current_value === 5) {
+        is_custom_time_selected = false;
+        const current_time = new Date();
+        flatpickr.show_flatpickr(
+            $(".dropdown-list-item-common-styles")[4],
+            compute_custom_time_selected,
+            new Date(current_time.getTime() + 60 * 60 * 1000),
+            {
+                minDate: new Date(current_time.getTime()),
+                onClose() {
+                    // Return to normal state.
+                    user_status_widget.render();
+                    dropdown.hide();
+                    if (!is_custom_time_selected) {
+                        $("#dropdown-option-chosen").text($t({defaultMessage: "Time not chosen"}));
+                    }
+                },
+            },
+        );
+    } else {
+        user_status_widget.render();
+        compute_status_end_time();
+        dropdown.hide();
+        $("#dropdown-option-chosen").text(scheduled_timestamp);
+    }
+    update_button();
+}
+
+function compute_custom_time_selected(time: number | string): void {
+    is_custom_time_selected = true;
+    if (!Number.isInteger(time)) {
+        assert(typeof time === "string");
+        time = Math.floor(Date.parse(time) / 1000);
+    }
+    assert(typeof time === "number");
+    custom_time_selected = time;
+    compute_status_end_time();
+    $("#dropdown-option-chosen").text(scheduled_timestamp);
 }
 
 export function initialize(): void {

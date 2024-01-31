@@ -23,3 +23,11 @@
         </button>
     {{/each}}
 </div>
+
+<div class="header-section">
+    <h4 class="clear_user_status_header">{{t "Automatically clear status" }}</h4>
+</div>
+<span class="clear_status_dropdown">
+    {{> dropdown_widget widget_name="clear_expired_user_status"}}
+</span>
+<h4 id="dropdown-option-chosen" class="status_end_time"></h4>

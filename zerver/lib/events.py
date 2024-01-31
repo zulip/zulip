@@ -1476,6 +1476,7 @@ def apply_event(
         emoji_name = event.get("emoji_name")
         emoji_code = event.get("emoji_code")
         reaction_type = event.get("reaction_type")
+        status_end_time = event.get("status_end_time")
 
         if user_id_str not in user_status:
             user_status[user_id_str] = {}
@@ -1509,6 +1510,12 @@ def apply_event(
                         user_status[user_id_str].pop("reaction_type", None)
                     else:
                         user_status[user_id_str]["reaction_type"] = reaction_type
+
+        if status_end_time is not None:
+            if status_end_time == "":
+                user_status[user_id_str].pop("emoji_name", None)
+            else:
+                user_status[user_id_str]["status_end_time"] = status_end_time
 
         if not user_status[user_id_str]:
             user_status.pop(user_id_str, None)

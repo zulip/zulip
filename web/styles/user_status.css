@@ -1,6 +1,6 @@
 #set-user-status-modal {
     /* A narrower width is more attractive for this modal. */
-    width: 384px;
+    width: 430px;
 
     .user-status-content-wrapper {
         display: flex;
@@ -74,5 +74,23 @@
                 margin: 0 7px;
             }
         }
+    }
+
+    .clear_user_status_header {
+        margin: 0.5;
+        display: inline-block;
+        font-weight: inherit;
+        font-size: 18px;
+    }
+
+    .status_end_time {
+        display: inline-block;
+        font-weight: inherit;
+        font-size: 15px;
+        margin-left: 10px;
+    }
+
+    .clear_status_dropdown {
+        display: inline-block;
     }
 }

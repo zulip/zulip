@@ -55,6 +55,7 @@ from zerver.models.scheduled_jobs import ScheduledMessage as ScheduledMessage
 from zerver.models.scheduled_jobs import (
     ScheduledMessageNotificationEmail as ScheduledMessageNotificationEmail,
 )
+from zerver.models.scheduled_jobs import ScheduledUserStatus as ScheduledUserStatus
 from zerver.models.streams import DefaultStream as DefaultStream
 from zerver.models.streams import DefaultStreamGroup as DefaultStreamGroup
 from zerver.models.streams import Stream as Stream

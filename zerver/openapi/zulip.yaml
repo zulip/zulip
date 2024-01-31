@@ -1807,6 +1807,14 @@ paths:
                                     an emoji.
 
                                     **Changes**: New in Zulip 5.0 (feature level 86).
+                                status_end_time:
+                                  type: string
+                                  description: |
+                                    If present, it indicates a timestamp, at which the status of
+                                    the user is wiped out. Else, the status remains until the user
+                                    changes it.
+
+                                    **Changes**: New in Zulip 9.0 (feature level 245).
                                 user_id:
                                   type: integer
                                   description: |
@@ -1820,6 +1828,7 @@ paths:
                                   "emoji_name": "car",
                                   "emoji_code": "1f697",
                                   "reaction_type": "unicode_emoji",
+                                  "status_end_time": "1706625128",
                                   "id": 0,
                                 }
                             - type: object
@@ -8932,6 +8941,16 @@ paths:
 
                     **Changes**: New in Zulip 5.0 (feature level 86).
                   example: unicode_emoji
+                status_end_time:
+                  type: string
+                  description: |
+                    A string, if present indicating the timestamp at which the status of the user
+                    should be wiped out.
+
+                    If not present, then the status of the user stays until it is changed.
+
+                    **Changes**: New in Zulip 9.0 (feature level 245).
+                  example: "1706625128"
             encoding:
               away:
                 contentType: application/json
@@ -12941,6 +12960,14 @@ paths:
                                   "zulip").
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
+                            status_end_time:
+                              type: string
+                              description: |
+                                If present, it indicates a timestamp, at which the status of
+                                the user is wiped out. Else, the status remains until the user
+                                changes it.
+
+                                **Changes**: New in Zulip 9.0 (feature level 245).
                       user_settings:
                         type: object
                         description: |

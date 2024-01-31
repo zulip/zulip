@@ -213,7 +213,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
-from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
+from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.models import (
@@ -228,6 +228,7 @@ from zerver.models import (
     RealmFilter,
     RealmPlayground,
     RealmUserDefault,
+    ScheduledUserStatus,
     Service,
     Stream,
     UserGroup,
@@ -1670,6 +1671,7 @@ class NormalActionsTest(BaseAction):
                 emoji_code="1f697",
                 reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
+                status_end_time=None,
             ),
             num_events=4,
         )
@@ -1700,6 +1702,7 @@ class NormalActionsTest(BaseAction):
                 emoji_code="",
                 reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
+                status_end_time="",
             ),
             num_events=4,
         )
@@ -1707,7 +1710,7 @@ class NormalActionsTest(BaseAction):
         check_user_status(
             "events[0]",
             events[0],
-            {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
+            {"away", "status_text", "emoji_name", "emoji_code", "reaction_type", "status_end_time"},
         )
         check_user_settings_update("events[1]", events[1])
         check_update_global_notifications("events[2]", events[2], not away_val)
@@ -1730,6 +1733,7 @@ class NormalActionsTest(BaseAction):
                 emoji_code=None,
                 reaction_type=None,
                 client_id=client.id,
+                status_end_time=None,
             ),
             num_events=4,
         )
@@ -1755,6 +1759,7 @@ class NormalActionsTest(BaseAction):
                 emoji_code=None,
                 reaction_type=None,
                 client_id=client.id,
+                status_end_time=None,
             )
         )
 
@@ -1780,6 +1785,7 @@ class NormalActionsTest(BaseAction):
                     emoji_code="1f697",
                     reaction_type=UserStatus.UNICODE_EMOJI,
                     client_id=client.id,
+                    status_end_time=None,
                 ),
                 num_events=0,
                 state_change_expected=False,
@@ -1795,6 +1801,7 @@ class NormalActionsTest(BaseAction):
                 emoji_code=None,
                 reaction_type=None,
                 client_id=client.id,
+                status_end_time=None,
             ),
             num_events=1,
             state_change_expected=True,
@@ -1807,6 +1814,41 @@ class NormalActionsTest(BaseAction):
             # set the field to 'website' for backwards compatibility.
             presence_key="website",
             status="idle",
+        )
+
+    def test_clear_status_events(self) -> None:
+        client = get_client("website")
+        ScheduledUserStatus.objects.create(
+            user_profile=self.user_profile,
+            realm=self.user_profile.realm,
+            client_id=client.id,
+            scheduled_timestamp=timestamp_to_datetime(1706625128),
+        )
+        events = self.verify_action(
+            lambda: do_update_user_status(
+                user_profile=self.user_profile,
+                away=False,
+                status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+                client_id=client.id,
+                status_end_time="1706625127",
+            ),
+            num_events=4,
+            state_change_expected=True,
+        )
+        check_user_status(
+            "events[0]",
+            events[0],
+            {
+                "away",
+                "status_text",
+                "emoji_name",
+                "emoji_code",
+                "reaction_type",
+                "status_end_time",
+            },
         )
 
     def test_user_group_events(self) -> None:
