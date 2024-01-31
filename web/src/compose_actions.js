@@ -90,11 +90,11 @@ function clear_box() {
     $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
 }
 
-export function autosize_message_content() {
+export function autosize_message_content(opts) {
     if (!compose_ui.is_full_size()) {
         autosize($("textarea#compose-textarea"), {
             callback() {
-                maybe_scroll_up_selected_message();
+                maybe_scroll_up_selected_message(opts);
             },
         });
     }
@@ -112,7 +112,7 @@ export function complete_starting_tasks(msg_type, opts) {
     // by compose.start() for now.  Having this as a separate function
     // makes testing a bit easier.
 
-    maybe_scroll_up_selected_message();
+    maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(msg_type);
     if (msg_type === "stream") {
         stream_bar.decorate(
@@ -125,7 +125,11 @@ export function complete_starting_tasks(msg_type, opts) {
     compose_recipient.update_narrow_to_recipient_visibility();
 }
 
-export function maybe_scroll_up_selected_message() {
+export function maybe_scroll_up_selected_message(opts) {
+    if (!opts.skip_scrolling_selected_message) {
+        return;
+    }
+
     // If the compose box is obscuring the currently selected message,
     // scroll up until the message is no longer occluded.
     if (message_lists.current.selected_id() === -1) {
@@ -194,7 +198,7 @@ export function start(msg_type, opts) {
     }
 
     popovers.hide_all();
-    autosize_message_content();
+    autosize_message_content(opts);
 
     if (reload_state.is_in_progress()) {
         return;
@@ -456,7 +460,14 @@ export function on_narrow(opts) {
                 return;
             }
         }
-        start("private");
+
+        // Open the compose box, passing the option to skip attempting
+        // an animated adjustment to scroll position, which is useless
+        // because we are called before the narrowing process has set
+        // the view's scroll position. recenter_view is responsible
+        // for taking the open compose box into account when placing
+        // the selecting message.
+        start("private", {skip_scrolling_selected_message: true});
         return;
     }
 
