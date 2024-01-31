@@ -292,6 +292,15 @@ export class MessageList {
         this.data.set_selected_id(id);
 
         if (opts.force_rerender) {
+            // TODO: Because rerender() itself will call
+            // reselect_selected_id after doing the rendering, we
+            // actually end up with this function being called
+            // recursively in this case. The ordering will end up
+            // being that the message_selected.zulip event for that
+            // rerender is processed before execution returns here.
+            //
+            // The recursive call is unnecessary, so we should figure
+            // out how to avoid that, both here and in the next block.
             this.rerender();
         } else if (!opts.from_rendering) {
             this.view.maybe_rerender();
