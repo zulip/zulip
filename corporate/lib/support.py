@@ -13,6 +13,7 @@ from corporate.lib.stripe import (
     BillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
+    get_configured_fixed_price_plan_offer,
     start_of_next_billing_cycle,
 )
 from corporate.models import (
@@ -156,6 +157,15 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
         customer=customer,
         current_plan=plan,
     )
+
+    # A customer with or without a current plan can have a fixed_price next plan configured.
+    if customer and customer.required_plan_tier:
+        plan_data.next_plan = get_configured_fixed_price_plan_offer(
+            customer, customer.required_plan_tier
+        )
+        if plan_data.next_plan:
+            plan_data.estimated_next_plan_revenue = plan_data.next_plan.fixed_price
+
     if plan is not None:
         new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
             plan, timezone_now()
@@ -172,7 +182,8 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
                 )
         assert plan_data.current_plan is not None  # for mypy
 
-        plan_data.next_plan = billing_session.get_next_plan(plan_data.current_plan)
+        if plan_data.next_plan is None:
+            plan_data.next_plan = billing_session.get_next_plan(plan_data.current_plan)
 
         if plan_data.next_plan is not None:
             if plan_data.next_plan.fixed_price is not None:  # nocoverage
