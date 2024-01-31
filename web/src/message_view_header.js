@@ -54,7 +54,7 @@ function get_message_view_header_context(filter) {
         context.sub_count = sub_count;
         context.stream = current_stream;
         context.stream_settings_link =
-            "#streams/" + current_stream.stream_id + "/" + current_stream.name;
+            "#streams/" + current_stream.stream_id + "/" + current_stream.name + "/general";
     }
     return context;
 }
