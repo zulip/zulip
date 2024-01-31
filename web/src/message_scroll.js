@@ -88,7 +88,7 @@ export function scroll_finished() {
         });
     }
 
-    if (message_viewport.at_bottom()) {
+    if (message_viewport.at_rendered_bottom()) {
         message_fetch.maybe_load_newer_messages({
             msg_list: message_lists.current,
         });
