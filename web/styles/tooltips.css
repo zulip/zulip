@@ -7,13 +7,13 @@
     overflow-wrap: anywhere;
     /* Contains stylistic variant of upper-case character "I" in Source Sans 3 */
     font-feature-settings: "ss01" on;
-
     /* Affects all tippy tooltips not using any theme. */
     .tippy-box:not([data-theme]) {
         background: hsl(0deg 0% 20%);
         border-radius: 5px;
         min-height: 25px;
         box-sizing: border-box;
+
 
         .tippy-content {
             box-sizing: inherit;
@@ -25,6 +25,7 @@
             color: hsl(0deg 0% 100%);
         }
 
+        
         .tippy-arrow::before {
             /* This affects the arrow for tooltips and doesn't have any impact on arrows for popovers.
              * The transform property scales down the size of the arrow, giving it a thinner appearance.
@@ -36,6 +37,7 @@
         .tooltip-inner-content {
             line-height: 17px;
         }
+        
 
         &[data-placement^="top"] > .tippy-arrow::before {
             border-top-color: hsl(0deg 0% 20%);
@@ -52,6 +54,12 @@
         &[data-placement^="right"] > .tippy-arrow::before {
             border-right-color: hsl(0deg 0% 20%);
         }
+    }
+    @media(max-width:767px){
+        .tippy-box:not([data-theme]){
+            width: 170px;
+        }
+
     }
 
     .tippy-arrow::before {

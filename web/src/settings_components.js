@@ -650,6 +650,7 @@ function should_disable_save_button_for_jitsi_server_url_setting() {
     return isInvalidUrl;
 }
 
+
 function should_disable_save_button_for_time_limit_settings(time_limit_settings) {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
