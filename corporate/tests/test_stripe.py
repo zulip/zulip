@@ -6223,6 +6223,12 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(fixed_price_plan_offer.fixed_price, annual_fixed_price * 100)
         self.assertEqual(fixed_price_plan_offer.get_plan_status_as_text(), "Configured")
 
+        result = self.client_get("/activity/remote/support", {"q": "example.com"})
+        self.assert_in_success_response(
+            ["Next plan information:", "Zulip Basic", "Configured", "Plan has a fixed price."],
+            result,
+        )
+
         self.logout()
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -6886,7 +6892,6 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
         new_plan = self.billing_session.get_next_plan(realm_legacy_plan)
         assert new_plan is not None
-        assert type(new_plan) is CustomerPlan
         self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertEqual(new_plan.status, CustomerPlan.NEVER_STARTED)
         self.assertEqual(
@@ -7247,7 +7252,6 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(customer_plan.end_date, end_date)
         new_customer_plan = self.billing_session.get_next_plan(customer_plan)
         assert new_customer_plan is not None
-        assert type(new_customer_plan) is CustomerPlan
         self.assertEqual(new_customer_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertEqual(new_customer_plan.status, CustomerPlan.NEVER_STARTED)
         self.assertEqual(new_customer_plan.billing_cycle_anchor, end_date)
@@ -8082,7 +8086,6 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(legacy_plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
         new_plan = self.billing_session.get_next_plan(legacy_plan)
         assert new_plan is not None
-        assert type(new_plan) is CustomerPlan
         self.assertEqual(new_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertEqual(new_plan.status, CustomerPlan.NEVER_STARTED)
         self.assertEqual(

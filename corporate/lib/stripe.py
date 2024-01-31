@@ -1958,23 +1958,14 @@ class BillingSession(ABC):
             return None, None
         return None, last_ledger_entry
 
-    def get_next_plan(self, plan: CustomerPlan) -> Union[CustomerPlan, CustomerPlanOffer, None]:
-        customer = plan.customer
+    def get_next_plan(self, plan: CustomerPlan) -> Optional[CustomerPlan]:
         if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
             assert plan.end_date is not None
             return CustomerPlan.objects.filter(
-                customer=customer,
+                customer=plan.customer,
                 billing_cycle_anchor=plan.end_date,
                 status=CustomerPlan.NEVER_STARTED,
             ).first()
-        elif customer.required_plan_tier is not None:
-            # Currently, the only case when a next_plan is scheduled with the
-            # current_plan.status NOT SET to SWITCH_PLAN_TIER_AT_PLAN_END is a
-            # fixed price plan configured via /support which the customer is yet
-            # to buy or schedule a purchase.
-            return get_configured_fixed_price_plan_offer(
-                customer=customer, plan_tier=customer.required_plan_tier
-            )
         return None
 
     def get_customer_plan_renewal_amount(
@@ -2136,7 +2127,6 @@ class BillingSession(ABC):
 
         next_plan = self.get_next_plan(plan)
         if next_plan is not None:
-            assert type(next_plan) is CustomerPlan
             next_plan_context = self.get_billing_context_from_plan(
                 customer, next_plan, last_ledger_entry, now
             )
@@ -2394,9 +2384,8 @@ class BillingSession(ABC):
                     # Switch to a different plan was cancelled. We end the next plan
                     # and set the current one as active.
                     if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
-                        assert type(plan) is CustomerPlan
                         next_plan = self.get_next_plan(plan)
-                        assert type(next_plan) is CustomerPlan
+                        assert next_plan is not None
                         do_change_plan_status(next_plan, CustomerPlan.ENDED)
                     do_change_plan_status(plan, status)
             elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:

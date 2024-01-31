@@ -404,7 +404,6 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         assert plan is not None
         next_plan = billing_session.get_next_plan(plan)
         assert next_plan is not None
-        assert type(next_plan) is CustomerPlan
         self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
         self.assertEqual(next_plan.status, CustomerPlan.NEVER_STARTED)
 
