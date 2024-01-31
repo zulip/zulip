@@ -85,17 +85,6 @@ class zulip_ops::profile::base {
     ensure     => running,
   }
 
-  file { '/etc/ssh/sshd_config':
-    ensure  => file,
-    require => Package['openssh-server'],
-    source  => 'puppet:///modules/zulip_ops/sshd_config',
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    notify  => Service['ssh'],
-  }
-
-
   include zulip_ops::aws_tools
 
   if $is_ec2 {
