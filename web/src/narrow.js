@@ -484,6 +484,13 @@ export function activate(raw_operators, opts) {
             });
         }
 
+        // Important: We need to consider opening the compose box
+        // before calling update_selection, so that the logic in
+        // recenter_view for positioning the currently selected
+        // message can take into account the space consumed by the
+        // open compose box.
+        compose_actions.on_narrow(opts);
+
         if (select_immediately) {
             update_selection({
                 id_info,
@@ -501,7 +508,6 @@ export function activate(raw_operators, opts) {
 
         handle_post_view_change(msg_list);
 
-        compose_actions.on_narrow(opts);
 
         unread_ui.update_unread_banner();
 

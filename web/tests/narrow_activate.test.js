@@ -189,6 +189,7 @@ run_test("basics", ({override}) => {
         [message_feed_loading, "hide_indicators"],
         [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_banner, "clear_message_sent_banners"],
+        [compose_actions, "on_narrow"],
         [unread_ops, "process_visible"],
         [narrow_history, "save_narrow_state_and_flush"],
         [message_viewport, "stop_auto_scrolling"],
@@ -200,7 +201,6 @@ run_test("basics", ({override}) => {
         [narrow_title, "update_narrow_title"],
         [left_sidebar_navigation_area, "handle_narrow_activated"],
         [stream_list, "handle_narrow_activated"],
-        [compose_actions, "on_narrow"],
         [compose_recipient, "handle_middle_pane_transition"],
     ]);
 
