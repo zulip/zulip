@@ -138,6 +138,7 @@ EXTRA_ARGS+=(
     --monitoring Enabled=true
     --placement "AvailabilityZone=$AZ"
     --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
+    --metadata-options "InstanceMetadataTags=enabled"
 )
 
 if [ -n "$DEBUG_KEY" ]; then
