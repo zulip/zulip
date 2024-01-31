@@ -60,13 +60,10 @@ class zulip_ops::profile::base {
     }
   }
 
-  file { '/home/zulip/.ssh':
-    ensure  => directory,
-    require => User['zulip'],
-    owner   => 'zulip',
-    group   => 'zulip',
-    mode    => '0700',
-  }
+  user { 'root': }
+  zulip_ops::user_dotfiles { 'root': home => '/root' }
+
+  zulip_ops::user_dotfiles { 'zulip': }
 
   # Clear /etc/update-motd.d, to fix load problems with Nagios
   # caused by Ubuntu's default MOTD tools for things like "checking
@@ -100,22 +97,6 @@ class zulip_ops::profile::base {
     notify  => Service['ssh'],
   }
 
-  file { '/root/.emacs':
-    ensure => file,
-    mode   => '0600',
-    owner  => 'root',
-    group  => 'root',
-    source => 'puppet:///modules/zulip_ops/dot_emacs.el',
-  }
-
-  file { '/home/zulip/.emacs':
-    ensure  => file,
-    mode    => '0600',
-    owner   => 'zulip',
-    group   => 'zulip',
-    source  => 'puppet:///modules/zulip_ops/dot_emacs.el',
-    require => User['zulip'],
-  }
 
   include zulip_ops::aws_tools
 
@@ -168,20 +149,14 @@ class zulip_ops::profile::base {
     home       => '/var/lib/nagios',
     managehome => true,
   }
-  file { '/var/lib/nagios/':
+  file { '/var/lib/nagios':
     ensure  => directory,
     require => User['nagios'],
     owner   => 'nagios',
     group   => 'nagios',
     mode    => '0700',
   }
-  file { '/var/lib/nagios/.ssh':
-    ensure  => directory,
-    require => File['/var/lib/nagios/'],
-    owner   => 'nagios',
-    group   => 'nagios',
-    mode    => '0700',
-  }
+  zulip_ops::user_dotfiles { 'nagios': home => '/var/lib/nagios' }
   file { '/home/nagios':
     ensure  => absent,
     force   => true,
