@@ -35,6 +35,6 @@ mv /etc/zulip/sharding.json.tmp /etc/zulip/sharding.json
 supervisorctl restart zulip-django
 supervisorctl restart 'zulip-workers:*'
 if [ -f /etc/supervisor/conf.d/zulip/zulip-once.conf ]; then
-    supervisorctl restart zulip_deliver_scheduled_emails zulip_deliver_scheduled_messages
+    supervisorctl restart zulip_deliver_scheduled_emails zulip_deliver_scheduled_messages zulip_clear_expired_user_statuses
 fi
 service nginx reload
