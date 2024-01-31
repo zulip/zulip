@@ -1,6 +1,5 @@
 class kandra::profile::base {
   include zulip::profile::base
-  include kandra::munin_node
   include kandra::ksplice_uptrack
   include kandra::firewall
   include kandra::teleport::node
