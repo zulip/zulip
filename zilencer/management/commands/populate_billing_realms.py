@@ -199,6 +199,11 @@ class Command(BaseCommand):
                 is_remote_server=True,
             ),
             CustomerProfile(
+                unique_id="legacy-remote-realm",
+                tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                is_remote_realm=True,
+            ),
+            CustomerProfile(
                 unique_id="free-tier-remote-realm",
                 is_remote_realm=True,
             ),
@@ -553,7 +558,15 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
     else:
         customer = billing_session.update_or_create_customer()
     add_card_to_customer(customer)
-    if customer_profile.tier is not None:
+    if customer_profile.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+        renewal_date = datetime.strptime(customer_profile.renewal_date, TIMESTAMP_FORMAT).replace(
+            tzinfo=timezone.utc
+        )
+        end_date = datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
+            tzinfo=timezone.utc
+        )
+        billing_session.migrate_customer_to_legacy_plan(renewal_date, end_date)
+    elif customer_profile.tier is not None:
         billing_session.do_change_plan_type(
             tier=customer_profile.tier, is_sponsored=customer_profile.is_sponsored
         )
