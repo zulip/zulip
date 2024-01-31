@@ -13,7 +13,7 @@ When you deactivate a user:
   login and [any other login options](/help/configure-authentication-methods)
   enabled in your organization.
 
-* The user's [bots](/help/bots-and-integrations) will be deactivated.
+* The user's [bots](/help/bots-overview) will be deactivated.
 
 * [Email invitations and invite links](/help/invite-new-users) created by the
   user will be disabled.

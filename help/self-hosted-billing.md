@@ -15,7 +15,7 @@ For businesses with more than 10 Zulip users, both the Basic and Business plans
 include unlimited access to the Mobile Push Notification Service.
 
 The Business plan also includes commercial support for dozens of features and
-integrations that help businesses take full advantage of their Zulip
+[integrations](/help/integrations-overview) that help businesses take full advantage of their Zulip
 implementation. The minimum purchase is 25 licenses.
 
 If your organization requires hands-on support, such as real-time support during

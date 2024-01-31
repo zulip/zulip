@@ -67,3 +67,11 @@ us](/help/contact-support) and we'll see what we can do.
   something that isn't there check out Zulip's
   [REST endpoints](https://github.com/zulip/zulip/blob/main/zproject/urls.py)
   or [contact us](/help/contact-support) and we'll help you out.
+
+## Related articles
+
+* [Bots overview](/help/bots-overview)
+* [Set up integrations](/help/set-up-integrations)
+* [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Generate integration URL](/help/generate-integration-url)
+* [Request an integration](/help/request-an-integration)
