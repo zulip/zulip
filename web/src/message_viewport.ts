@@ -75,7 +75,7 @@ export function message_viewport_info(): MessageViewportInfo {
 // rendered message feed; messages that are not displayed due to a
 // limited render window or because they have not been fetched from
 // the server are not considered.
-export function at_bottom(): boolean {
+export function at_rendered_bottom(): boolean {
     const bottom = scrollTop() + height();
     const full_height = $scroll_container.prop("scrollHeight");
 
@@ -86,8 +86,9 @@ export function at_bottom(): boolean {
     return bottom + 2 >= full_height;
 }
 
-// This differs from at_bottom in that it only requires the bottom message to
-// be visible, but you may be able to scroll down further.
+// This differs from at_rendered_bottom in that it only requires the
+// bottom message to be visible, but you may be able to scroll down
+// further to see the rest of that message.
 export function bottom_rendered_message_visible(): boolean {
     const $last_row = rows.last_visible();
     if ($last_row.length) {
@@ -485,7 +486,7 @@ export function keep_pointer_in_view(): void {
     }
 
     function message_is_far_enough_up(): boolean {
-        return at_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
+        return at_rendered_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
     }
 
     function adjust(
