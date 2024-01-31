@@ -2,12 +2,7 @@ class kandra::profile::nagios inherits kandra::profile::base {
 
   include kandra::apache
 
-  $nagios_packages = [# Packages needed for Nagios
-                      'nagios4',
-                      # For sending outgoing email
-                      'msmtp',
-                      ]
-  package { $nagios_packages: ensure => installed }
+  package { ['nagios4', 'msmtp', 'autossh']: ensure => installed }
   $nagios_alert_email = zulipconf('nagios', 'alert_email', undef)
   $nagios_test_email = zulipconf('nagios', 'test_email', undef)
   $nagios_pager_email = zulipconf('nagios', 'pager_email', undef)
@@ -67,7 +62,7 @@ class kandra::profile::nagios inherits kandra::profile::base {
     notify  => Service['apache2'],
   }
   kandra::teleport::application{ 'nagios':
-    description => 'Monitoring: nagios and munin',
+    description => 'Monitoring: nagios',
     port        => '3000',
   }
 
@@ -121,6 +116,15 @@ class kandra::profile::nagios inherits kandra::profile::base {
     ensure     => absent,
   }
 
+  file { "${zulip::common::supervisor_conf_dir}/autossh_tunnels.conf":
+    ensure  => file,
+    require => Package['supervisor', 'autossh'],
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    content => template('kandra/supervisor/conf.d/autossh_tunnels.conf.erb'),
+    notify  => Service['supervisor'],
+  }
   file { '/etc/nagios4/conf.d/zulip_autossh.cfg':
     ensure  => file,
     mode    => '0644',
