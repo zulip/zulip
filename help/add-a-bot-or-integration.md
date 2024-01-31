@@ -2,7 +2,7 @@
 
 By default, anyone other than guests can add a bot to a Zulip organization.
 A bot that sends content to or from another product is often called an
-**integration**.
+[integration](/help/integrations-overview).
 
 Organization administrators can also
 [restrict bot creation](/help/restrict-bot-creation). Any bot that is added
@@ -32,7 +32,7 @@ is visible and available for anyone to use.
 
 !!! warn ""
 
-    See [bots and integrations](/help/bots-and-integrations) for more information about
+    See [bots overview](/help/bots-overview) for more information about
     the various fields.
     Nearly all third-party integrations should use **Incoming webhook**
     as the **bot type**.
@@ -43,7 +43,8 @@ Depending on the type of bot you're creating, you may need to download its
 
 ## Related articles
 
-* [Bots and integrations](/help/bots-and-integrations)
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
 * [Edit a bot](/help/edit-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)

@@ -2,8 +2,8 @@
 
 {!admin-only.md!}
 
-By default, anyone other than guests can [add a bot](/help/add-a-bot-or-integration) or
-integration to the Zulip organization. Organization administrators can
+By default, anyone other than guests can [add a bot](/help/add-a-bot-or-integration)
+or integration to the Zulip organization. Organization administrators can
 change who is allowed to add bots.
 
 ## Configure who can add bots
@@ -25,6 +25,7 @@ change who is allowed to add bots.
 
 ## Related articles
 
-* [Bots and integrations](/help/bots-and-integrations)
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)

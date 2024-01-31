@@ -34,7 +34,8 @@ active bot in the organization.
 
 ## Related articles
 
-* [Bots and integrations](/help/bots-and-integrations)
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)

@@ -3,7 +3,7 @@
 {!admin-only.md!}
 
 In Zulip, users can exchange direct messages with other users,
-[bots](/help/bots-and-integrations) and themselves. Organization
+[bots](/help/bots-overview) and themselves. Organization
 administrators can configure who is allowed to use direct messages.
 
 ## Configure who can use direct messages

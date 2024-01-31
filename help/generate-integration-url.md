@@ -56,7 +56,8 @@ integration URL.
 
 ## Related articles
 
-* [Bots and integrations](/help/bots-and-integrations)
+* [Integrations overview](/help/integrations-overview)
+* [Bots overview](/help/bots-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 * [Request an integration](/help/request-an-integration)
