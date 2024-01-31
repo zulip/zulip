@@ -125,6 +125,7 @@ run_test("unread_ops", ({override}) => {
     // data setup).
     override(message_lists.current, "can_mark_messages_read", () => can_mark_messages_read);
     override(message_lists.current, "has_unread_messages", () => true);
+    override(message_lists.current.view, "is_end_rendered", () => true);
 
     // First, test for a message list that cannot read messages.
     can_mark_messages_read = false;
@@ -134,6 +135,12 @@ run_test("unread_ops", ({override}) => {
 
     // Now flip the boolean, and get to the main thing we are testing.
     can_mark_messages_read = true;
+    // Don't mark messages as read until all messages in the narrow are fetched and rendered.
+    override(message_lists.current.view, "is_end_rendered", () => false);
+    unread_ops.process_visible();
+    assert.deepEqual(channel_post_opts, undefined);
+
+    override(message_lists.current.view, "is_end_rendered", () => true);
     unread_ops.process_visible();
 
     // The most important side effect of the above call is that
