@@ -6,16 +6,25 @@ class zulip_ops::app_frontend {
   include zulip::static_asset_compiler
   include zulip::hooks::sentry
   include zulip_ops::app_frontend_monitoring
-  $app_packages = [# Needed for the ssh tunnel to the redis server
-    'autossh',
-  ]
-  package { $app_packages: ensure => installed }
-  $redis_hostname = zulipconf('redis', 'hostname', undef)
 
   zulip_ops::firewall_allow{ 'smtp': }
   zulip_ops::firewall_allow{ 'http': }
   zulip_ops::firewall_allow{ 'https': }
 
+  user { 'redistunnel':
+    ensure     => present,
+    uid        => '1080',
+    gid        => '1080',
+    groups     => ['zulip'],
+    shell      => '/bin/true',
+    home       => '/home/redistunnel',
+    managehome => true,
+  }
+  zulip_ops::user_dotfiles { 'redistunnel':
+    keys => true,
+  }
+  package { 'autossh': ensure => installed }
+  $redis_hostname = zulipconf('redis', 'hostname', undef)
   file { "${zulip::common::supervisor_conf_dir}/redis_tunnel.conf":
     ensure  => file,
     require => Package['supervisor', 'autossh'],
