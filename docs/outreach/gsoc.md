@@ -314,23 +314,45 @@ Expert: Anders Kaseorg
   quickly. Experience with Rust and secure software design may be
   helpful.
 
-### Mobile apps
+### Mobile app
 
 Code:
-[React Native mobile app](https://github.com/zulip/zulip-mobile); [Flutter
-prototype app](https://github.com/zulip/zulip-flutter)
+[The next-generation Zulip mobile app,
+written with Flutter](https://github.com/zulip/zulip-flutter)
+(now in beta)
 
 Experts: Greg Price, Chris Bobbe
 
-We're exploring rewriting Zulip's mobile apps, which are currently implemented
-using React Native, using Flutter. See [this development community
-thread][flutter-thread] for details.
+- Work on the **upcoming Flutter-based Zulip client**.
+  We're in the midst of [rewriting Zulip's mobile app][flutter-why]
+  from scratch using Flutter, to replace the legacy React Native-based
+  app. The Flutter app [reached beta][flutter-beta] in
+  December 2023, we're working now toward a wider beta, and during the
+  GSoC 2024 period we expect to be working toward turning the beta
+  into a version we can roll out for all Zulip's mobile users.
 
-If you are a Flutter expert and excited about getting involved, feel free to
-introduce yourself in the [#mobile stream][mobile-stream] in the development
-community. However because the project and the development process around it are
-not yet established, **we expect not to accept any GSoC contributors for the Zulip
-mobile apps** for GSoC 2023.
+  This project will involve building features for the Flutter app,
+  including code for UI, data structures, and interacting with the
+  Zulip server and the Android and/or iOS platforms.
+  For a sense of the features we're working on, see our
+  [project board][flutter-board] for the new app;
+  the ["Launch" milestone][flutter-milestone-launch]
+  corresponds roughly to what we expect to be working on during GSoC.
+  For some features, we [may find][flutter-upstream-summary]
+  ourselves [contributing changes][flutter-upstream-autocomplete]
+  upstream to the Flutter project itself. 175 or 350 hours; difficult.
 
-[flutter-thread]: https://chat.zulip.org/#narrow/stream/2-general/topic/Flutter
-[mobile-stream]: https://chat.zulip.org/#narrow/stream/48-mobile
+  **Skills required**: Ability to learn quickly, check your work
+  carefully, and communicate clearly and accurately. The code for
+  this project will be written primarily in Dart atop Flutter;
+  previous experience may be helpful, but you can learn both during
+  the contributions leading up to your application. Previous
+  experience with Android or iOS may also be helpful but is not
+  necessary.
+
+[flutter-why]: https://chat.zulip.org/#narrow/stream/2-general/topic/Flutter/near/1582367
+[flutter-beta]: https://chat.zulip.org/#narrow/stream/2-general/topic/Flutter/near/1708728
+[flutter-board]: https://github.com/orgs/zulip/projects/5/views/4
+[flutter-milestone-launch]: https://github.com/zulip/zulip-flutter/milestone/3
+[flutter-upstream-summary]: https://chat.zulip.org/#narrow/stream/2-general/topic/Flutter/near/1524757
+[flutter-upstream-autocomplete]: https://github.com/flutter/flutter/pull/129802
