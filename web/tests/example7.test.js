@@ -100,7 +100,7 @@ run_test("unread_ops", ({override}) => {
     $("#message_feed_container").show();
 
     // Make our "test" message appear visible.
-    override(message_viewport, "bottom_message_visible", () => true);
+    override(message_viewport, "bottom_rendered_message_visible", () => true);
 
     // Set message_lists.current containing messages that can be marked read
     override(message_lists.current, "all_messages", () => test_messages);
