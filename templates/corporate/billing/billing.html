@@ -202,7 +202,7 @@
                         {% if renewal_amount %}
                             {% if downgrade_at_end_of_cycle %}
                             {% if is_self_hosted_billing %}
-                            Your organization will be downgraded to <strong>Self-managed</strong> at the end of the
+                            Your organization will be downgraded to the <strong>Free</strong> plan at the end of the
                             current billing period ({{ renewal_date }}). You will lose access to the
                             <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
                             of your current plan. For organizations with more than 10 users, this
@@ -215,7 +215,7 @@
                             {% endif %}
                             {% elif downgrade_at_end_of_free_trial %}
                             {% if is_self_hosted_billing %}
-                            Your organization will be downgraded to <strong>Self-managed</strong> at the end of the free trial
+                            Your organization will be downgraded to the <strong>Free</strong> plan at the end of the free trial
                             ({{ renewal_date }}). You will lose access to the
                             <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
                             of your current plan. For organizations with more than 10 users, this
@@ -355,7 +355,7 @@
                 <h1 class="modal__title dialog_heading">
                     Downgrade {{ org_name }} to
                     {% if is_self_hosted_billing %}
-                    Self-managed?
+                    Free plan?
                     {% else %}
                     Zulip Cloud Free?
                     {% endif %}
@@ -365,7 +365,7 @@
             <main class="modal__content">
                 <p>
                     {% if is_self_hosted_billing %}
-                    Your organization will be downgraded to <strong>Self-managed</strong> at the
+                    Your organization will be downgraded to the <strong>Free</strong> plan at the
                     end of your free trial ({{ renewal_date }}). You will lose access to the
                     <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
                     of your current plan. For organizations with more than 10 users, this
@@ -477,13 +477,13 @@
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
                 <h1 class="modal__title dialog_heading">
-                    Downgrade {{ org_name }} to Self-hosted?
+                    Downgrade {{ org_name }} to the Free plan?
                 </h1>
                 <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
                 <p>
-                    Your organization will be downgraded to <strong>Self-managed</strong> at the end of the
+                    Your organization will be downgraded to the <strong>Free</strong> plan at the end of the
                     current billing period ({{ renewal_date }}). You will lose access to the
                     <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">benefits</a>
                     of your current plan. For organizations with more than 10 users, this
