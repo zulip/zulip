@@ -27,32 +27,38 @@ EOF
 }
 
 merge=
+args=()
 
-while getopts ":-:" opt; do
-    case $opt in
-        -)
-            case "$OPTARG" in
-                help)
-                    usage
-                    exit 0
-                    ;;
-                merge)
-                    merge=t
-                    ;;
-                *)
-                    echo "Invalid option: --$OPTARG" >&2
-                    exit 1
-                    ;;
-            esac
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            exit 1
-            ;;
-    esac
+while ((OPTIND <= $#)); do
+    if getopts ":-:" opt; then
+        case $opt in
+            -)
+                case "$OPTARG" in
+                    help)
+                        usage
+                        exit 0
+                        ;;
+                    merge)
+                        merge=t
+                        ;;
+                    *)
+                        echo "Invalid option: --$OPTARG" >&2
+                        exit 1
+                        ;;
+                esac
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                exit 1
+                ;;
+        esac
+    else
+        args+=("${!OPTIND}")
+        ((OPTIND++))
+    fi
 done
 
-shift $((OPTIND - 1))
+set -- "${args[@]}"
 
 remote_default="$(git config zulip.zulipRemote || echo upstream)"
 pseudo_remote="$(git config zulip.prPseudoRemote || echo)"
