@@ -32,6 +32,7 @@ from zerver.openapi.markdown_extension import generate_curl_example, render_curl
 from zerver.openapi.openapi import (
     OPENAPI_SPEC_PATH,
     OpenAPISpec,
+    Parameter,
     SchemaError,
     find_openapi_endpoint,
     get_openapi_fixture,
@@ -96,14 +97,16 @@ class OpenAPIToolsTest(ZulipTestCase):
 
     def test_get_openapi_parameters(self) -> None:
         actual = get_openapi_parameters(TEST_ENDPOINT, TEST_METHOD)
-        expected_item = {
-            "name": "message_id",
-            "in": "path",
-            "description": "The target message's ID.\n",
-            "example": 43,
-            "required": True,
-            "schema": {"type": "integer"},
-        }
+        expected_item = Parameter(
+            kind="path",
+            name="message_id",
+            description="The target message's ID.\n",
+            json_encoded=False,
+            value_schema={"type": "integer"},
+            example=43,
+            required=True,
+            deprecated=False,
+        )
         assert expected_item in actual
 
     def test_validate_against_openapi_schema(self) -> None:
@@ -401,7 +404,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         raise AssertionError(msg)
 
     def validate_json_schema(
-        self, function: Callable[..., HttpResponse], openapi_parameters: List[Dict[str, Any]]
+        self, function: Callable[..., HttpResponse], openapi_parameters: List[Parameter]
     ) -> None:
         """Validate against the Pydantic generated JSON schema against our OpenAPI definitions"""
         USE_JSON_CONTENT_TYPE_HINT = f"""
@@ -427,21 +430,18 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         # The names of request variables that should have a content type of
         # application/json according to our OpenAPI definitions.
         json_request_var_names = set()
-        for expected_param_schema in openapi_parameters:
+        for openapi_parameter in openapi_parameters:
             # We differentiate JSON and non-JSON parameters here. Because
             # application/json is the only content type to be verify in the API,
             # we assume that as long as "content" is present in the OpenAPI
             # spec, the content type should be JSON.
-            expected_request_var_name = expected_param_schema["name"]
-            if "content" in expected_param_schema:
-                expected_param_schema = expected_param_schema["content"]["application/json"][
-                    "schema"
-                ]
+            expected_request_var_name = openapi_parameter.name
+            if openapi_parameter.json_encoded:
                 json_request_var_names.add(expected_request_var_name)
-            else:
-                expected_param_schema = expected_param_schema["schema"]
 
-            openapi_params.add((expected_request_var_name, schema_type(expected_param_schema)))
+            openapi_params.add(
+                (expected_request_var_name, schema_type(openapi_parameter.value_schema))
+            )
 
         for actual_param in parse_view_func_signature(function).parameters:
             actual_param_schema = TypeAdapter(actual_param.param_type).json_schema(
@@ -484,7 +484,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
             self.render_openapi_type_exception(function, openapi_params, function_params, diff)
 
     def check_argument_types(
-        self, function: Callable[..., HttpResponse], openapi_parameters: List[Dict[str, Any]]
+        self, function: Callable[..., HttpResponse], openapi_parameters: List[Parameter]
     ) -> None:
         """We construct for both the OpenAPI data and the function's definition a set of
         tuples of the form (var_name, type) and then compare those sets to see if the
@@ -507,12 +507,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
 
         openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
         json_params: Dict[str, Union[type, Tuple[type, object]]] = {}
-        for element in openapi_parameters:
-            name: str = element["name"]
-            schema = {}
-            if "content" in element:
-                # The only content-type we use in our API is application/json.
-                assert "schema" in element["content"]["application/json"]
+        for openapi_parameter in openapi_parameters:
+            name = openapi_parameter.name
+            if openapi_parameter.json_encoded:
                 # If content_type is application/json, then the
                 # parameter needs to be handled specially, as REQ can
                 # either return the application/json as a string or it
@@ -523,12 +520,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 #
                 # Meanwhile `profile_data` in /users/{user_id}: GET is
                 # taken as array of objects. So treat them separately.
-                schema = element["content"]["application/json"]["schema"]
-                json_params[name] = schema_type(schema)
+                json_params[name] = schema_type(openapi_parameter.value_schema)
                 continue
-            else:
-                schema = element["schema"]
-            openapi_params.add((name, schema_type(schema)))
+            openapi_params.add((name, schema_type(openapi_parameter.value_schema)))
 
         function_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
 
@@ -630,7 +624,7 @@ so maybe we shouldn't include it in pending_endpoints.
             # argument list matches what actually appears in the
             # codebase.
 
-            openapi_parameter_names = {parameter["name"] for parameter in openapi_parameters}
+            openapi_parameter_names = {parameter.name for parameter in openapi_parameters}
 
             if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
                 print("Undocumented parameters for", url_pattern, method, function_name)
