@@ -148,7 +148,7 @@ export const update_person = function update(person) {
             buddy_list.maybe_remove_user_id({user_id: person.user_id});
         }
         settings_account.maybe_update_deactivate_account_button();
-        if (people.user_is_bot(person.user_id)) {
+        if (people.is_valid_bot_user(person.user_id)) {
             settings_users.update_bot_data(person.user_id);
         }
     }
