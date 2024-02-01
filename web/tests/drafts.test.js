@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
-const {mock_esm, set_global, zrequire, with_overrides} = require("./lib/namespace");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {user_settings} = require("./lib/zpage_params");
@@ -65,23 +65,28 @@ const drafts_overlay_ui = zrequire("drafts_overlay_ui");
 const messages_overlay_ui = zrequire("messages_overlay_ui");
 const timerender = zrequire("timerender");
 
+const mock_current_timestamp = 1234;
+
 const draft_1 = {
     stream_id: 30,
     topic: "topic",
     type: "stream",
     content: "Test stream message",
+    updatedAt: mock_current_timestamp,
 };
 const draft_2 = {
     private_message_recipient: "aaron@zulip.com",
     reply_to: "aaron@zulip.com",
     type: "private",
     content: "Test direct message",
+    updatedAt: mock_current_timestamp,
 };
 const short_msg = {
     stream_id: 30,
     topic: "topic",
     type: "stream",
     content: "a",
+    updatedAt: mock_current_timestamp,
 };
 
 function test(label, f) {
@@ -92,7 +97,7 @@ function test(label, f) {
     });
 }
 
-test("draft_model add", ({override}) => {
+test("draft_model add", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -100,40 +105,26 @@ test("draft_model add", ({override}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    override(Date, "now", () => 1);
-    const expected = {...draft_1};
-    expected.updatedAt = 1;
-    const id = draft_model.addDraft({...draft_1});
-    assert.deepEqual(draft_model.getDraft(id), expected);
+    const id = draft_model.addDraft(draft_1);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
 });
 
 test("draft_model edit", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-    let id;
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    with_overrides(({override}) => {
-        override(Date, "now", () => 1);
-        const expected = {...draft_1};
-        expected.updatedAt = 1;
-        id = draft_model.addDraft({...draft_1});
-        assert.deepEqual(draft_model.getDraft(id), expected);
-    });
+    const id = draft_model.addDraft(draft_1);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
 
-    with_overrides(({override}) => {
-        override(Date, "now", () => 2);
-        const expected = {...draft_2};
-        expected.updatedAt = 2;
-        draft_model.editDraft(id, {...draft_2});
-        assert.deepEqual(draft_model.getDraft(id), expected);
-    });
+    draft_model.editDraft(id, draft_2);
+    assert.deepEqual(draft_model.getDraft(id), draft_2);
 });
 
-test("draft_model delete", ({override}) => {
+test("draft_model delete", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -141,17 +132,14 @@ test("draft_model delete", ({override}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    override(Date, "now", () => 1);
-    const expected = {...draft_1};
-    expected.updatedAt = 1;
-    const id = draft_model.addDraft({...draft_1});
-    assert.deepEqual(draft_model.getDraft(id), expected);
+    const id = draft_model.addDraft(draft_1);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
 
     draft_model.deleteDraft(id);
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", ({override_rewire}) => {
+test("snapshot_message", ({override, override_rewire}) => {
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
     mock_banners();
@@ -180,6 +168,8 @@ test("snapshot_message", ({override_rewire}) => {
     };
     stream_data.add_sub(stream);
     compose_state.set_stream_id(stream.stream_id);
+
+    override(Date, "now", () => mock_current_timestamp);
 
     curr_draft = draft_1;
     set_compose_state();

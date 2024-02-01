@@ -26,16 +26,16 @@ export function set_count(count) {
     ui_util.update_unread_count_in_dom($drafts_li, count);
 }
 
+function getTimestamp() {
+    return Date.now();
+}
+
 export const draft_model = (function () {
     const exports = {};
 
     // the key that the drafts are stored under.
     const KEY = "drafts";
     const ls = localstorage();
-
-    function getTimestamp() {
-        return Date.now();
-    }
 
     function get() {
         return ls.get(KEY) || {};
@@ -65,14 +65,13 @@ export const draft_model = (function () {
         // collisions to essentially zero.
         const id = getTimestamp().toString(16) + "-" + Math.random().toString(16).split(/\./).pop();
 
-        draft.updatedAt = getTimestamp();
         drafts[id] = draft;
         save(drafts, update_count);
 
         return id;
     };
 
-    exports.editDraft = function (id, draft, update_timestamp = true) {
+    exports.editDraft = function (id, draft) {
         const drafts = get();
         let changed = false;
 
@@ -82,9 +81,6 @@ export const draft_model = (function () {
 
         if (drafts[id]) {
             changed = !check_if_equal(drafts[id], draft);
-            if (update_timestamp) {
-                draft.updatedAt = getTimestamp();
-            }
             drafts[id] = draft;
             save(drafts);
         }
@@ -121,7 +117,7 @@ export function fix_drafts_with_undefined_topics() {
         if (draft.type === "stream" && draft.topic === undefined) {
             const draft = data[draft_id];
             draft.topic = "";
-            draft_model.editDraft(draft_id, draft, false);
+            draft_model.editDraft(draft_id, draft);
         }
     }
     fixed_buggy_drafts = true;
@@ -162,7 +158,7 @@ export function rename_stream_recipient(old_stream_id, old_topic, new_stream_id,
             if (new_topic !== undefined) {
                 draft.topic = new_topic;
             }
-            draft_model.editDraft(draft_id, draft, false);
+            draft_model.editDraft(draft_id, draft);
         }
     }
 }
@@ -178,6 +174,7 @@ export function snapshot_message() {
     const message = {
         type: compose_state.get_message_type(),
         content: compose_state.message_content(),
+        updatedAt: getTimestamp(),
     };
     if (message.type === "private") {
         const recipient = compose_state.private_message_recipient();
