@@ -96,6 +96,16 @@ export function initialize() {
             $row.addClass("has_actions_popover");
         },
         onMount(instance) {
+            const $row = $(instance.reference).closest(".message_row");
+            const message_id = rows.id($row);
+            let quote_content;
+            if (compose_reply.selection_within_message_id() === message_id) {
+                // If the user has selected text within this message, quote only that.
+                // We track the selection right now, before the popover option for Quote
+                // and reply is clicked, since by then the selection is lost, due to the
+                // change in focus.
+                quote_content = compose_reply.get_message_selection();
+            }
             if (message_actions_popover_keyboard_toggle) {
                 focus_first_action_popover_item();
                 message_actions_popover_keyboard_toggle = false;
@@ -106,8 +116,11 @@ export function initialize() {
             // instance.hide gets called.
             const $popper = $(instance.popper);
             $popper.one("click", ".respond_button", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                compose_reply.quote_and_reply({trigger: "popover respond", message_id});
+                compose_reply.quote_and_reply({
+                    trigger: "popover respond",
+                    message_id,
+                    quote_content,
+                });
                 e.preventDefault();
                 e.stopPropagation();
                 instance.hide();

@@ -355,6 +355,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 
 test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_reply, "selection_within_message_id", () => undefined);
 
     mock_banners();
     mock_stream_header_colorblock();
