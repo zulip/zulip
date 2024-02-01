@@ -21,11 +21,14 @@ from typing_extensions import override
 import zerver.openapi.python_examples
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 from zerver.openapi.openapi import (
+    NO_EXAMPLE,
+    Parameter,
     check_additional_imports,
     check_requires_administrator,
     generate_openapi_fixture,
     get_curl_include_exclude,
     get_openapi_description,
+    get_openapi_parameters,
     get_openapi_summary,
     get_parameters_description,
     get_responses_description,
@@ -217,46 +220,45 @@ def curl_method_arguments(endpoint: str, method: str, api_url: str) -> List[str]
 
 
 def get_openapi_param_example_value_as_string(
-    endpoint: str, method: str, param: Dict[str, Any], curl_argument: bool = False
+    endpoint: str, method: str, parameter: Parameter, curl_argument: bool = False
 ) -> str:
-    jsonify = False
-    param_name = param["name"]
-    if "content" in param:
-        param = param["content"]["application/json"]
-        jsonify = True
-    if "type" in param["schema"]:
-        param_type = param["schema"]["type"]
+    if "type" in parameter.value_schema:
+        param_type = parameter.value_schema["type"]
     else:
         # Hack: Ideally, we'd extract a common function for handling
         # oneOf values in types and do something with the resulting
         # union type.  But for this logic's purpose, it's good enough
         # to just check the first parameter.
-        param_type = param["schema"]["oneOf"][0]["type"]
+        param_type = parameter.value_schema["oneOf"][0]["type"]
 
     if param_type in ["object", "array"]:
-        example_value = param.get("example", None)
-        if not example_value:
+        if parameter.example is NO_EXAMPLE:
             msg = f"""All array and object type request parameters must have
 concrete examples. The openAPI documentation for {endpoint}/{method} is missing an example
-value for the {param_name} parameter. Without this we cannot automatically generate a
+value for the {parameter.name} parameter. Without this we cannot automatically generate a
 cURL example."""
             raise ValueError(msg)
-        ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
+        ordered_ex_val_str = json.dumps(parameter.example, sort_keys=True)
         # We currently don't have any non-JSON encoded arrays.
-        assert jsonify
+        assert parameter.json_encoded
         if curl_argument:
-            return "    --data-urlencode " + shlex.quote(f"{param_name}={ordered_ex_val_str}")
+            return "    --data-urlencode " + shlex.quote(f"{parameter.name}={ordered_ex_val_str}")
         return ordered_ex_val_str  # nocoverage
     else:
-        example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
-        if isinstance(example_value, bool):
-            # Booleans are effectively JSON-encoded, in that we pass
-            # true/false, not the Python str(True) = "True"
-            jsonify = True
-        if jsonify:
+        if parameter.example is NO_EXAMPLE:
+            example_value = DEFAULT_EXAMPLE[param_type]
+        else:
+            example_value = parameter.example
+
+        # Booleans are effectively JSON-encoded, in that we pass
+        # true/false, not the Python str(True) = "True"
+        if parameter.json_encoded or isinstance(example_value, (bool, float, int)):
             example_value = json.dumps(example_value)
+        else:
+            assert isinstance(example_value, str)
+
         if curl_argument:
-            return "    --data-urlencode " + shlex.quote(f"{param_name}={example_value}")
+            return "    --data-urlencode " + shlex.quote(f"{parameter.name}={example_value}")
         return example_value
 
 
@@ -274,23 +276,23 @@ def generate_curl_example(
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     global_security = openapi_spec.openapi()["security"]
 
-    operation_params = operation_entry.get("parameters", [])
+    parameters = get_openapi_parameters(endpoint, method)
     operation_request_body = operation_entry.get("requestBody", None)
     operation_security = operation_entry.get("security", None)
 
     if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
         from zerver.openapi.curl_param_value_generators import patch_openapi_example_values
 
-        operation_params, operation_request_body = patch_openapi_example_values(
-            operation, operation_params, operation_request_body
+        parameters, operation_request_body = patch_openapi_example_values(
+            operation, parameters, operation_request_body
         )
 
     format_dict = {}
-    for param in operation_params:
-        if param["in"] != "path":
+    for parameter in parameters:
+        if parameter.kind != "path":
             continue
-        example_value = get_openapi_param_example_value_as_string(endpoint, method, param)
-        format_dict[param["name"]] = example_value
+        example_value = get_openapi_param_example_value_as_string(endpoint, method, parameter)
+        format_dict[parameter.name] = example_value
     example_endpoint = endpoint.format_map(format_dict)
 
     curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method, api_url)]
@@ -319,19 +321,18 @@ def generate_curl_example(
     if authentication_required:
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
 
-    for param in operation_params:
-        if param["in"] == "path":
-            continue
-        param_name = param["name"]
-
-        if include is not None and param_name not in include:
+    for parameter in parameters:
+        if parameter.kind == "path":
             continue
 
-        if exclude is not None and param_name in exclude:
+        if include is not None and parameter.name not in include:
+            continue
+
+        if exclude is not None and parameter.name in exclude:
             continue
 
         example_value = get_openapi_param_example_value_as_string(
-            endpoint, method, param, curl_argument=True
+            endpoint, method, parameter, curl_argument=True
         )
         lines.append(example_value)
 
