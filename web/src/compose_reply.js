@@ -2,21 +2,26 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as fenced_code from "../shared/src/fenced_code";
+import render_quote_selection_popover from "../templates/popovers/quote_selection_popover.hbs";
 
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as copy_and_paste from "./copy_and_paste";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as stream_data from "./stream_data";
+import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 
 export function respond_to_message(opts) {
@@ -154,7 +159,7 @@ export function quote_and_reply(opts) {
 
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 
-    function replace_content(message) {
+    function replace_content(message, raw_content) {
         // Final message looks like:
         //     @_**Iago|5** [said](link to message):
         //     ```quote
@@ -168,29 +173,213 @@ export function quote_and_reply(opts) {
             },
         );
         content += "\n";
-        const fence = fenced_code.get_unused_fence(message.raw_content);
-        content += `${fence}quote\n${message.raw_content}\n${fence}`;
+        const fence = fenced_code.get_unused_fence(raw_content);
+        content += `${fence}quote\n${raw_content}\n${fence}`;
 
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($textarea);
     }
 
-    if (message && message.raw_content) {
-        replace_content(message);
+    const quote_content = opts.selected_message_content_raw ?? message.raw_content;
+    if (message && quote_content) {
+        replace_content(message, quote_content);
         return;
     }
 
     channel.get({
         url: "/json/messages/" + message_id,
         success(data) {
-            message.raw_content = data.raw_content;
-            replace_content(message);
+            replace_content(message, data.raw_content);
         },
     });
+}
+
+function combine_bounding_rects(combined_rect, new_rect) {
+    if (combined_rect === null) {
+        return new_rect;
+    }
+    return {
+        top: Math.min(combined_rect.top, new_rect.top),
+        right: Math.max(combined_rect.right, new_rect.right),
+        bottom: Math.max(combined_rect.bottom, new_rect.bottom),
+        left: Math.min(combined_rect.left, new_rect.left),
+    };
+}
+
+function extract_range_html(range, preserve_ancestors = false) {
+    // Returns the html of the range as a string, optionally preserving 2
+    // levels of ancestors.
+    const temp_div = document.createElement("div");
+    if (!preserve_ancestors) {
+        temp_div.append(range.cloneContents());
+        return temp_div.innerHTML;
+    }
+    let container =
+        range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+            ? range.commonAncestorContainer
+            : range.commonAncestorContainer.parentElement;
+    // The reason for preserving 2, not just 1, ancestors is code blocks; a
+    // selection completely inside a code block has a code element as its
+    // container element, inside a pre element, which is needed to identify
+    // the selection as being part of a code block as opposed to inline code.
+    const outer_container = container.parentElement.cloneNode();
+    container = container.cloneNode();
+    container.append(range.cloneContents());
+    outer_container.append(container);
+    temp_div.append(outer_container);
+    return temp_div.innerHTML;
+}
+
+function get_range_intersection_with_element(range, element) {
+    // Returns a new range that is a subset of range and is inside element.
+    const intersection = document.createRange();
+    intersection.selectNodeContents(element);
+
+    if (intersection.compareBoundaryPoints(Range.START_TO_START, range) < 0) {
+        intersection.setStart(range.startContainer, range.startOffset);
+    }
+
+    if (intersection.compareBoundaryPoints(Range.END_TO_END, range) > 0) {
+        intersection.setEnd(range.endContainer, range.endOffset);
+    }
+
+    return intersection;
+}
+
+function get_message_selection(selection) {
+    let selected_message_content_raw = "";
+    let selection_bounds = null;
+
+    // We iterate over all ranges in the selection, to find the ranges containing
+    // the message_content div or its descendants, if any, then convert the html
+    // in those ranges to markdown for quoting (firefox can have multiple ranges
+    // in one selection), and also compute their combined bounding rect.
+    for (let i = 0; i < selection.rangeCount; i = i + 1) {
+        let range = selection.getRangeAt(i);
+        const range_common_ancestor = range.commonAncestorContainer;
+        let html_to_convert = "";
+
+        // If the common ancestor is the message_content div or its child, we can quote
+        // this entire range at least.
+        if (range_common_ancestor.classList?.contains("message_content")) {
+            html_to_convert = extract_range_html(range);
+        } else if ($(range_common_ancestor).parents(".message_content").length) {
+            // We want to preserve the structure of the html with 2 levels of
+            // ancestors (to retain code block / list formatting) in such a range.
+            html_to_convert = extract_range_html(range, true);
+        } else if (
+            // If the common ancestor contains the message_content div, we can quote the part
+            // of this range that is in the message_content div, if any.
+            range_common_ancestor instanceof Element &&
+            range_common_ancestor.querySelector(".message_content") &&
+            range.cloneContents().querySelector(".message_content")
+        ) {
+            // Narrow down the range to the part that is in the message_content div.
+            range = get_range_intersection_with_element(
+                range,
+                range_common_ancestor.querySelector(".message_content"),
+            );
+            html_to_convert = extract_range_html(range);
+        } else {
+            continue;
+        }
+        const markdown_text = copy_and_paste.paste_handler_converter(html_to_convert);
+        selected_message_content_raw = selected_message_content_raw + "\n" + markdown_text;
+        selection_bounds = combine_bounding_rects(selection_bounds, range.getBoundingClientRect());
+    }
+    selected_message_content_raw = selected_message_content_raw.trim();
+    return {selected_message_content_raw, selection_bounds};
+}
+
+function create_popover_reference_in_message(message_content_div, selection_bounds) {
+    // We create a reference div with the dimensions of the selection, positioned
+    // relative to the message element so that the popover is as close to the selection
+    // as possible and moves along with the message.
+    const message_content_rect = message_content_div.getBoundingClientRect();
+    const relative_rect = {
+        top: selection_bounds.top - message_content_rect.top,
+        left: selection_bounds.left - message_content_rect.left,
+        width: selection_bounds.right - selection_bounds.left,
+        height: selection_bounds.bottom - selection_bounds.top,
+    };
+    const reference_div = document.createElement("div");
+    reference_div.style.position = "absolute";
+    reference_div.style.top = `${relative_rect.top}px`;
+    reference_div.style.left = `${relative_rect.left}px`;
+    reference_div.style.width = `${relative_rect.width}px`;
+    reference_div.style.height = `${relative_rect.height}px`;
+    // Allow clicks to go through.
+    reference_div.style.pointerEvents = "none";
+    message_content_div.append(reference_div);
+    return reference_div;
+}
+
+function show_quote_selection_popover(message_id, selected_message_content_raw, selection_bounds) {
+    const message_content_element = document.querySelector(
+        `.focused-message-list [data-message-id="${message_id}"] .message_content`,
+    );
+    const reference_element = create_popover_reference_in_message(
+        message_content_element,
+        selection_bounds,
+    );
+    popover_menus.toggle_popover_menu(reference_element, {
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: ["bottom", "left", "right"],
+                    },
+                },
+            ],
+        },
+        onShow(instance) {
+            popover_menus.popover_instances.quote = instance;
+            instance.setContent(parse_html(render_quote_selection_popover()));
+            return true;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            reference_element.remove();
+            popover_menus.popover_instances.quote = undefined;
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.on("click", ".quote_selection", (e) => {
+                quote_and_reply({
+                    message_id,
+                    selected_message_content_raw,
+                });
+                instance.hide();
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        },
+    });
+}
+
+function suggest_quoting_message_selection(selection = window.getSelection()) {
+    if (page_params.is_spectator || !selection?.toString()) {
+        return;
+    }
+    const {start_id, end_id} = copy_and_paste.analyze_selection(selection);
+    // If selection spans multiple messages, do nothing.
+    if (start_id !== end_id) {
+        return;
+    }
+    const {selected_message_content_raw, selection_bounds} = get_message_selection(selection);
+
+    if (selected_message_content_raw) {
+        show_quote_selection_popover(start_id, selected_message_content_raw, selection_bounds);
+    }
 }
 
 export function initialize() {
     $("body").on("click", ".compose_reply_button", () => {
         respond_to_message({trigger: "reply button"});
+    });
+
+    $("body").on("click", ".messagebox", () => {
+        suggest_quoting_message_selection();
     });
 }
