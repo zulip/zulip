@@ -99,6 +99,11 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.ruff]
+line-length = 100
+src = [".", "tools"]
+target-version = "py38"
+
+[tool.ruff.lint]
 # See https://github.com/astral-sh/ruff#rules for error code definitions.
 select = [
     "ANN", # annotations
@@ -180,13 +185,10 @@ ignore = [
     "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
 ]
-line-length = 100
-src = [".", "tools"]
-target-version = "py38"
 
-[tool.ruff.flake8-gettext]
+[tool.ruff.lint.flake8-gettext]
 extend-function-names = ["gettext_lazy"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-third-party = ["zulip"]
 split-on-trailing-comma = false
