@@ -336,10 +336,10 @@ def generate_curl_example(
         )
         lines.append(example_value)
 
-    if "requestBody" in operation_entry:
-        properties = operation_entry["requestBody"]["content"]["multipart/form-data"]["schema"][
-            "properties"
-        ]
+    if "requestBody" in operation_entry and "multipart/form-data" in (
+        content := operation_entry["requestBody"]["content"]
+    ):
+        properties = content["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
             lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
 
