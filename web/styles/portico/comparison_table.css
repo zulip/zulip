@@ -195,6 +195,11 @@
         margin-top: 2px;
     }
 
+    .comparison-value-null {
+        /* Temporary red value to make em-dashes more visible for content audit. */
+        color: hsl(0deg 100% 50%);
+    }
+
     .comparison-value-positive {
         color: hsl(147deg 80% 29% / 100%);
     }
