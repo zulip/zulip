@@ -1,6 +1,6 @@
 import logging
 from contextlib import suppress
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from urllib.parse import urlencode, urljoin
 
 import orjson
@@ -1134,6 +1134,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # one outgoing email per provided email address, with each
             # email listing all of the accounts that email address has
             # with the current Zulip server.
+            emails_account_found: Set[str] = set()
             context: Dict[str, Dict[str, Any]] = {}
             for user in user_profiles:
                 key = user.delivery_email.lower()
@@ -1144,6 +1145,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 # matching accounts; since it's only used for minor
                 # details like language, that arbitrary choice is OK.
                 context[key]["to_user_id"] = user.id
+                emails_account_found.add(user.delivery_email)
 
             # Links in find_team emails use the server's information
             # and not any particular realm's information.
@@ -1152,18 +1154,42 @@ def find_account(request: HttpRequest) -> HttpResponse:
             help_reset_password_link = (
                 f"{help_base_url}/change-your-password#if-youve-forgotten-or-never-had-a-password"
             )
+            help_logging_in_link = f"{help_base_url}/logging-in#find-the-zulip-log-in-url"
+            find_accounts_link = f"{external_host_base_url}/accounts/find/"
 
             for delivery_email, realm_context in context.items():
                 send_email(
                     "zerver/emails/find_team",
                     to_user_ids=[realm_context["to_user_id"]],
                     context={
+                        "account_found": True,
                         "external_host": settings.EXTERNAL_HOST,
                         "corporate_enabled": settings.CORPORATE_ENABLED,
                         "help_reset_password_link": help_reset_password_link,
                         "realms": realm_context["realms"],
                         "email": delivery_email,
                     },
+                    from_address=FromAddress.SUPPORT,
+                    request=request,
+                )
+
+            emails_lower_with_account = {email.lower() for email in emails_account_found}
+            emails_without_account: Set[str] = {
+                email for email in emails if email.lower() not in emails_lower_with_account
+            }
+            if emails_without_account:
+                send_email(
+                    "zerver/emails/find_team",
+                    to_emails=list(emails_without_account),
+                    context=(
+                        {
+                            "account_found": False,
+                            "external_host": settings.EXTERNAL_HOST,
+                            "corporate_enabled": settings.CORPORATE_ENABLED,
+                            "find_accounts_link": find_accounts_link,
+                            "help_logging_in_link": help_logging_in_link,
+                        }
+                    ),
                     from_address=FromAddress.SUPPORT,
                     request=request,
                 )

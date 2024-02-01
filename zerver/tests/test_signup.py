@@ -4253,7 +4253,7 @@ class TestFindMyTeam(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 200)
         content = result.content.decode()
-        self.assertIn("Emails sent! You will only receive emails", content)
+        self.assertIn("Emails sent! The addresses entered on", content)
         self.assertIn("iago@zulip.com", content)
         self.assertIn("cordeliA@zulip.com", content)
         from django.core.mail import outbox
@@ -4266,18 +4266,17 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Zulip Dev", cordelia_message.body)
         self.assertIn("Lear & Co", cordelia_message.body)
 
-    def test_find_team_ignore_invalid_email(self) -> None:
-        result = self.client_post(
-            "/accounts/find/", dict(emails="iago@zulip.com,invalid_email@zulip.com")
-        )
+    def test_find_team_email_with_no_account(self) -> None:
+        result = self.client_post("/accounts/find/", dict(emails="no_account_email@zulip.com"))
         self.assertEqual(result.status_code, 200)
         content = result.content.decode()
-        self.assertIn("Emails sent! You will only receive emails", content)
-        self.assertIn(self.example_email("iago"), content)
-        self.assertIn("invalid_email@", content)
+        self.assertIn("Emails sent! The addresses entered on", content)
+        self.assertIn("no_account_email@", content)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no accounts", message.body)
 
     def test_find_team_reject_invalid_email(self) -> None:
         result = self.client_post("/accounts/find/", dict(emails="invalid_string"))
@@ -4307,6 +4306,8 @@ class TestFindMyTeam(ZulipTestCase):
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Zulip Dev", message.body)
 
     def test_find_team_deactivated_user(self) -> None:
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
@@ -4315,7 +4316,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
-        self.assert_length(outbox, 0)
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no accounts", message.body)
 
     def test_find_team_deactivated_realm(self) -> None:
         do_deactivate_realm(get_realm("zulip"), acting_user=None)
@@ -4324,7 +4327,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
-        self.assert_length(outbox, 0)
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no accounts", message.body)
 
     def test_find_team_bot_email(self) -> None:
         data = {"emails": self.example_email("webhook_bot")}
@@ -4332,7 +4337,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
-        self.assert_length(outbox, 0)
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no accounts", message.body)
 
     def test_find_team_more_than_ten_emails(self) -> None:
         data = {"emails": ",".join(f"hamlet-{i}@zulip.com" for i in range(11))}
