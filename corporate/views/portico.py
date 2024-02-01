@@ -14,6 +14,7 @@ from corporate.lib.decorator import (
     authenticated_remote_server_management_endpoint,
 )
 from corporate.lib.stripe import (
+    RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
@@ -21,7 +22,7 @@ from corporate.lib.stripe import (
 )
 from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
-from zerver.decorator import add_google_analytics
+from zerver.decorator import add_google_analytics, zulip_login_required
 from zerver.lib.github import (
     InvalidPlatformError,
     get_latest_github_release_download_link_for_platform,
@@ -359,3 +360,32 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             "org_types": org_types,
         },
     )
+
+
+@zulip_login_required
+def invoices_page(request: HttpRequest) -> HttpResponseRedirect:
+    user = request.user
+    assert user.is_authenticated
+
+    if not user.has_billing_access:
+        return HttpResponseRedirect(reverse("billing_page"))
+
+    billing_session = RealmBillingSession(user=user, realm=user.realm)
+    list_invoices_session_url = billing_session.get_past_invoices_session_url()
+    return HttpResponseRedirect(list_invoices_session_url)
+
+
+@authenticated_remote_realm_management_endpoint
+def remote_realm_invoices_page(
+    request: HttpRequest, billing_session: RemoteRealmBillingSession
+) -> HttpResponseRedirect:
+    list_invoices_session_url = billing_session.get_past_invoices_session_url()
+    return HttpResponseRedirect(list_invoices_session_url)
+
+
+@authenticated_remote_server_management_endpoint
+def remote_server_invoices_page(
+    request: HttpRequest, billing_session: RemoteServerBillingSession
+) -> HttpResponseRedirect:
+    list_invoices_session_url = billing_session.get_past_invoices_session_url()
+    return HttpResponseRedirect(list_invoices_session_url)

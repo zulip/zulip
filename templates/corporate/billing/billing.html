@@ -275,6 +275,14 @@
                         {% endif %}
                     </div>
                 </div>
+                <div class="input-box billing-page-field no-validation">
+                    <label class="inline-block label-title">Invoices</label>
+                    <div class="not-editable-realm-field">
+                        <a href="{{ billing_base_url }}/invoices/">
+                            View past invoices
+                        </a>
+                    </div>
+                </div>
                 <div id="planchange-error" class="alert alert-danger"></div>
                 <div id="planchange-input-section">
                     {% if free_trial and not downgrade_at_end_of_free_trial %}

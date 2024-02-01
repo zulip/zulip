@@ -295,6 +295,8 @@ def normalize_fixture_data(
 MOCKED_STRIPE_FUNCTION_NAMES = [
     f"stripe.{name}"
     for name in [
+        "billing_portal.Configuration.create",
+        "billing_portal.Session.create",
         "checkout.Session.create",
         "checkout.Session.list",
         "Charge.create",
@@ -784,6 +786,15 @@ class StripeTest(StripeTestCase):
             self.login_user(iago)
             response = self.client_get("/upgrade/", follow=True)
             self.assertEqual(response.status_code, 404)
+
+    @mock_stripe()
+    def test_get_past_invoices_session_url(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        self.add_card_and_upgrade(user)
+        response = self.client_get("/invoices/")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
 
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_by_card(self, *mocks: Mock) -> None:
@@ -1943,6 +1954,10 @@ class StripeTest(StripeTestCase):
             ["You must be an organization owner or a billing administrator to view this page."],
             response,
         )
+
+        response = self.client_get("/invoices/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/billing/")
 
         user.realm.plan_type = Realm.PLAN_TYPE_PLUS
         user.realm.save()
@@ -5929,6 +5944,25 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
     @responses.activate
     @mock_stripe()
+    def test_get_past_invoices_session_url_for_remote_realm(self, *mocks: Mock) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.execute_remote_billing_authentication_flow(hamlet)
+        self.add_card_and_upgrade()
+
+        response = self.client_get(
+            f"{self.billing_session.billing_base_url}/invoices/", subdomain="selfhosting"
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+
+    @responses.activate
+    @mock_stripe()
     def test_upgrade_user_to_basic_plan_free_trial(self, *mocks: Mock) -> None:
         with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
             self.login("hamlet")
@@ -7543,6 +7577,25 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(
             self.billing_session.min_licenses_for_plan(CustomerPlan.TIER_SELF_HOSTED_BASIC), 1
         )
+
+    @responses.activate
+    @mock_stripe()
+    def test_get_past_invoices_session_url_for_remote_server(self, *mocks: Mock) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.execute_remote_billing_authentication_flow(hamlet.delivery_email, hamlet.full_name)
+        self.add_card_and_upgrade()
+
+        response = self.client_get(
+            f"{self.billing_session.billing_base_url}/invoices/", subdomain="selfhosting"
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
 
     @responses.activate
     @mock_stripe()
