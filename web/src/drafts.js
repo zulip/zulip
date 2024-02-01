@@ -32,7 +32,6 @@ export const draft_model = (function () {
     // the key that the drafts are stored under.
     const KEY = "drafts";
     const ls = localstorage();
-    ls.version = 1;
 
     function getTimestamp() {
         return Date.now();
