@@ -15,6 +15,14 @@
     --color-table-link-decoration-active: hsl(210deg 100% 40%);
     --border-radius-table: 11px;
 
+    .icon-cloud {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='%23313F68' d='M4.333 13.333c-1.01 0-1.875-.35-2.591-1.05-.717-.7-1.075-1.555-1.075-2.566 0-.867.26-1.64.783-2.317A3.465 3.465 0 0 1 3.5 6.1a4.525 4.525 0 0 1 1.667-2.483A4.561 4.561 0 0 1 8 2.667c1.3 0 2.403.452 3.308 1.358.906.906 1.359 2.008 1.359 3.308a2.91 2.91 0 0 1 1.908.992c.506.572.758 1.242.758 2.008 0 .834-.291 1.542-.875 2.125a2.893 2.893 0 0 1-2.125.875h-8Z' opacity='.5'/%3e%3c/svg%3e");
+    }
+
+    .icon-self-hosted {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='%23313F68' fill-opacity='.5' d='M11.333 10.667a.98.98 0 0 0 .709-.284.957.957 0 0 0 .291-.716.964.964 0 0 0-.291-.709.965.965 0 0 0-.709-.291.957.957 0 0 0-.716.291.979.979 0 0 0-.284.709.971.971 0 0 0 1 1ZM1.333 6 3.6 3.733c.122-.122.264-.22.425-.291.161-.073.336-.109.525-.109h6.883c.19 0 .364.036.525.109.161.072.303.17.425.291L14.667 6H1.333Zm1.334 6.667a1.29 1.29 0 0 1-.95-.384 1.29 1.29 0 0 1-.384-.95v-4h13.334v4c0 .378-.13.695-.392.95a1.298 1.298 0 0 1-.942.384H2.667Z'/%3e%3c/svg%3e");
+    }
+
     .icon-infinity {
         --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cpath fill='black' fill-rule='evenodd' d='M2.464 8.464A5 5 0 0 1 6 7c2.16 0 4.155 1.251 6 3.4C13.845 8.251 15.84 7 18 7a5 5 0 1 1 0 10c-2.16 0-4.155-1.251-6-3.4-1.845 2.149-3.84 3.4-6 3.4a5 5 0 0 1-3.536-8.536ZM10.731 12C8.983 9.857 7.4 9 6 9a3 3 0 1 0 0 6c1.4 0 2.983-.857 4.731-3Zm2.538 0c1.748 2.143 3.331 3 4.731 3a3 3 0 0 0 0-6c-1.4 0-2.983.857-4.731 3Z' clip-rule='evenodd'/%3e%3c/svg%3e");
     }
@@ -43,11 +51,23 @@
         height: 24px;
     }
 
+    .icon-plan {
+        /* Smaller icons within the table headings. */
+        width: 16px;
+        height: 16px;
+    }
+
     .icon-with-copy {
         /* Treat copy and a nearby icon as
            a unit when reflowing text for narrower
            viewports. */
         display: inline-block;
+    }
+
+    .grouped-icons {
+        display: flex;
+        justify-content: center;
+        gap: 4px;
     }
 
     h2 {
@@ -82,6 +102,50 @@
                 transition: none;
             }
         }
+    }
+
+    .comparison-tabs {
+        width: max-content;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        gap: 3px;
+        background-color: hsl(0deg 0% 100% / 70%);
+        padding: 3px;
+        border-radius: 6px;
+    }
+
+    .comparison-tab {
+        font-family: var(--font-ops);
+        font-size: 14px;
+        padding: 4px 16px;
+        color: hsl(223deg 40% 30%);
+        font-weight: 600;
+        border: none;
+        background-color: hsl(0deg 0% 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        align-items: center;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 120ms ease-out;
+    }
+
+    .comparison-tab:hover {
+        transition: none;
+        background-color: hsl(0deg 0% 100% / 40%);
+    }
+
+    .comparison-tab:active {
+        transition: all 120ms ease-out;
+        background-color: hsl(0deg 0% 100% / 70%);
+    }
+
+    .comparison-tab._selected {
+        background-color: hsl(0deg 0% 100% / 80%);
+        cursor: default;
     }
 
     .comparison-table {

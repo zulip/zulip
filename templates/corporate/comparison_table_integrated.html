@@ -13,6 +13,27 @@
         </p>
     </div>
 
+    <div class="comparison-tabs">
+        <button class="comparison-tab" data-label="tab-cloud" type="button">
+            <span class="grouped-icons">
+                <i class="icon icon-plan icon-cloud"></i>
+            </span>
+            Cloud
+        </button>
+        <button class="comparison-tab" data-label="tab-hosted" type="button">
+            <span class="grouped-icons">
+                <i class="icon icon-plan icon-self-hosted"></i>
+            </span>
+            Self-hosted
+        </button>
+        <button class="comparison-tab" data-label="tab-all" type="button">
+            <span class="grouped-icons">
+                <i class="icon icon-plan icon-cloud"></i>
+                <i class="icon icon-plan icon-self-hosted"></i>
+            </span>
+            All plans
+        </button>
+    </div>
     <!-- comparison-table-top is important to observe sticky table header -->
     <div class="comparison-table-top"></div>
     <table class="comparison-table">
@@ -22,15 +43,51 @@
         </colgroup>
         <thead>
             <tr>
-                <th class="comparison-table-feature">Features</th>
-                <th class="cloud-cell">Free</th>
-                <th class="cloud-cell">Stan<wbr />dard</th>
-                <th class="cloud-cell last-cloud-th">Plus</th>
-
-                <th class="self-hosted-cell">Free</th>
-                <th class="self-hosted-cell">Basic</th>
-                <th class="self-hosted-cell">Busi<wbr />ness</th>
-                <th class="self-hosted-cell">Enter<wbr />prise</th>
+                <th class="comparison-table-feature">
+                    <span class="label-features">Features</span>
+                </th>
+                <th class="cloud-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-cloud"></i>
+                    </div>
+                    <span class="label-plan">Free</span>
+                </th>
+                <th class="cloud-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-cloud"></i>
+                    </div>
+                    <span class="label-plan">Stan<wbr />dard</span>
+                </th>
+                <th class="cloud-cell last-cloud-th">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-cloud"></i>
+                    </div>
+                    <span class="label-plan">Plus</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Free</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Basic</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Busi<wbr />ness</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Enter<wbr />prise</span>
+                </th>
             </tr>
         </thead>
         <tbody>
