@@ -753,6 +753,37 @@ class BillingSession(ABC):
     def org_name(self) -> str:
         pass
 
+    def get_past_invoices_session_url(self) -> str:
+        headline = "List of past invoices"
+        customer = self.get_customer()
+        assert customer is not None and customer.stripe_customer_id is not None
+
+        # Check if customer has any $0 invoices.
+        if stripe.Invoice.list(
+            customer=customer.stripe_customer_id,
+            limit=1,
+            status="paid",
+            total=0,
+        ).data:  # nocoverage
+            # These are payment for upgrades which were paid directly by the customer and then we
+            # created an invoice for them resulting in `$0` invoices since there was no amount due.
+            headline += " ($0 invoices include payment)"
+
+        configuration = stripe.billing_portal.Configuration.create(
+            business_profile={
+                "headline": headline,
+            },
+            features={
+                "invoice_history": {"enabled": True},
+            },
+        )
+
+        return stripe.billing_portal.Session.create(
+            customer=customer.stripe_customer_id,
+            configuration=configuration.id,
+            return_url=f"{self.billing_session_url}/billing/",
+        ).url
+
     def get_data_for_stripe_payment_intent(
         self,
         customer: Customer,
