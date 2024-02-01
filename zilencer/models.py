@@ -373,6 +373,13 @@ class RemoteInstallationCount(BaseRemoteCount):
                 name="unique_remote_installation_count_server_id_remote_id",
             ),
         ]
+        indexes = [
+            models.Index(
+                fields=["server_id", "end_time"],
+                condition=Q(property="mobile_pushes_forwarded::day"),
+                name="zilencer_remoteinstallationcount_server_end_time_mobile_pushes_forwarded",
+            )
+        ]
 
     @override
     def __str__(self) -> str:
