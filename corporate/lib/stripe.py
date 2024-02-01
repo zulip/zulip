@@ -749,6 +749,10 @@ class BillingSession(ABC):
     ) -> Dict[str, Any]:
         pass
 
+    @abstractmethod
+    def org_name(self) -> str:
+        pass
+
     def get_data_for_stripe_payment_intent(
         self,
         customer: Customer,
@@ -2807,6 +2811,7 @@ class BillingSession(ABC):
             "is_remotely_hosted": is_remotely_hosted,
             "sponsorship_plan_name": self.get_sponsorship_plan_name(customer, is_remotely_hosted),
             "plan_name": plan_name,
+            "org_name": self.org_name(),
         }
 
         if customer is not None and customer.sponsorship_pending:
@@ -3481,6 +3486,10 @@ class RealmBillingSession(BillingSession):
         return self.realm.plan_type in self.PAID_PLANS
 
     @override
+    def org_name(self) -> str:
+        return self.realm.name
+
+    @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.realm.org_type,
@@ -3493,7 +3502,6 @@ class RealmBillingSession(BillingSession):
                 key=sponsorship_org_type_key_helper,
             ),
         )
-        context["org_name"] = self.realm.name
 
     @override
     def get_sponsorship_request_session_specific_context(
@@ -3898,6 +3906,10 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_realm.plan_type in self.PAID_PLANS
 
     @override
+    def org_name(self) -> str:
+        return self.remote_realm.host
+
+    @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:
         context.update(
             realm_org_type=self.remote_realm.org_type,
@@ -3910,7 +3922,6 @@ class RemoteRealmBillingSession(BillingSession):
                 key=sponsorship_org_type_key_helper,
             ),
         )
-        context["org_name"] = self.remote_realm.host
 
     @override
     def get_sponsorship_request_session_specific_context(
@@ -4333,6 +4344,10 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_server.plan_type in self.PAID_PLANS
 
     @override
+    def org_name(self) -> str:
+        return self.remote_server.hostname
+
+    @override
     def add_sponsorship_info_to_context(self, context: Dict[str, Any]) -> None:  # nocoverage
         context.update(
             realm_org_type=self.remote_server.org_type,
@@ -4345,7 +4360,6 @@ class RemoteServerBillingSession(BillingSession):
                 key=sponsorship_org_type_key_helper,
             ),
         )
-        context["org_name"] = self.remote_server.hostname
 
     @override
     def get_sponsorship_request_session_specific_context(

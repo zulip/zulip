@@ -57,7 +57,7 @@ def billing_page(
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
-        "org_name": user.realm.name,
+        "org_name": billing_session.org_name(),
         "billing_base_url": "",
     }
 
@@ -102,7 +102,7 @@ def remote_realm_billing_page(
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
-        "org_name": billing_session.remote_realm.name,
+        "org_name": billing_session.org_name(),
         "billing_base_url": billing_session.billing_base_url,
     }
 
@@ -160,7 +160,7 @@ def remote_server_billing_page(
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
-        "org_name": billing_session.remote_server.hostname,
+        "org_name": billing_session.org_name(),
         "billing_base_url": billing_session.billing_base_url,
     }
 
