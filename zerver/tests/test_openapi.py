@@ -465,7 +465,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 # https://docs.pydantic.dev/latest/api/json_schema/#pydantic.json_schema.GenerateJsonSchema.json_schema
                 actual_param_schema = actual_param_schema["contentSchema"]
             elif "contentMediaType" in actual_param_schema:
-                function_schema_type = schema_type(actual_param_schema)
+                function_schema_type = schema_type(actual_param_schema, defs_mapping)
                 # We do not specify that the content type of int or bool
                 # parameters should be JSON encoded, while our code does expect
                 # that. In this case, we exempt this parameter from the content
