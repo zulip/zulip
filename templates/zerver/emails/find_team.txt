@@ -1,3 +1,4 @@
+{% if account_found %}
 {{ _("Thanks for your request!") }}
 
 {% if corporate_enabled %}
@@ -15,4 +16,21 @@
 
 {{ help_reset_password_link }}
 
-{{ _("Thanks for using Zulip!") }}
+{% else %}
+{% if corporate_enabled %}
+{{ _("You have requested a list of Zulip accounts for this email address.") }} {{ _("Unfortunately, no accounts in Zulip Cloud organizations were found.") }}
+
+{% trans %}You can check for accounts with another email ({{ find_accounts_link }}), or try another way to find your account ({{ help_logging_in_link }}).{% endtrans %}
+
+
+{{ _("If you do not recognize this request, you can safely ignore this email.") }}
+{% else %}
+{{ _("You have requested a list of Zulip accounts for this email address.") }} {% trans%}Unfortunately, no accounts were found in Zulip organizations hosted by {{external_host}}.{% endtrans %}
+
+
+{% trans %}You can check for accounts with another email ({{ find_accounts_link }}), or try another way to find your account ({{ help_logging_in_link }}).{% endtrans %}
+
+
+{{ _("If you do not recognize this request, you can safely ignore this email.") }}
+{% endif %}
+{% endif %}
