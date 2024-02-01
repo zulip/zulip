@@ -122,6 +122,12 @@ function test(label, f) {
     });
 }
 
+test("get_cleaned_pm_recipients", () => {
+    const query_string = "user1, user2,  user3, , user4";
+    const result = th.get_cleaned_pm_recipients(query_string);
+    assert.deepStrictEqual(result, ["user1", "user2", "user3", "user4"]);
+});
+
 test("sort_streams", ({override, override_rewire}) => {
     let test_streams = [
         {

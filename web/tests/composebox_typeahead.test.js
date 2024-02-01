@@ -1151,10 +1151,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         on_enter_send: compose.finish,
     });
 
-    $("#private_message_recipient").val("othello@zulip.com, ");
-    $("#private_message_recipient").trigger("blur");
-    assert.equal($("#private_message_recipient").val(), "othello@zulip.com");
-
     // the UI of selecting a stream is tested in puppeteer tests.
     compose_state.set_stream_id(sweden_stream.stream_id);
 
