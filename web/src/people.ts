@@ -785,9 +785,9 @@ export function sender_is_guest(message: Message): boolean {
     return false;
 }
 
-export function user_is_bot(user_id: number): boolean {
-    const user = get_by_user_id(user_id);
-    return user.is_bot;
+export function is_valid_bot_user(user_id: number): boolean {
+    const user = maybe_get_user_by_id(user_id, true);
+    return user !== undefined && user.is_bot;
 }
 
 export function should_add_guest_user_indicator(user_id: number): boolean {
@@ -806,7 +806,7 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
 
     // Regardless of policy, we allow sending direct messages to bots.
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (recipient_ids.length === 1 && user_is_bot(recipient_ids[0])) {
+    if (recipient_ids.length === 1 && is_valid_bot_user(recipient_ids[0])) {
         return true;
     }
 
