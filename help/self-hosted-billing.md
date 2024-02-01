@@ -8,8 +8,8 @@ reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 ## Paid plan details and upgrades
 
-For businesses with up to 10 Zulip users, the Self-managed plan is a good
-option, and includes free access to the Mobile Push Notification Service.
+For businesses with up to 10 Zulip users, the Free plan is a good option, and
+includes free access to the Mobile Push Notification Service.
 
 For businesses with more than 10 Zulip users, both the Basic and Business plans
 include unlimited access to the Mobile Push Notification Service.
@@ -258,7 +258,7 @@ organization is considered to be a new customer if:
 {!self-hosted-billing-multiple-organizations.md!}
 
 If you cancel your plan, your organization will be downgraded to the
-**Self-managed** plan at the end of the current billing period.
+**Free** plan at the end of the current billing period.
 
 {start_tabs}
 
@@ -297,7 +297,7 @@ types of organizations are generally eligible for the free Community plan.
   friends, volunteer groups, etc.).
 
 Organizations that have up to 10 users, or do not require mobile push
-notifications, will likely find the Self-managed plan to be the most convenient
+notifications, will likely find the Free plan to be the most convenient
 option. Larger organizations are encouraged to apply for the free Community
 plan, which includes unlimited push notifications and support for many Zulip
 features.
