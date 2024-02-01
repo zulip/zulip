@@ -402,6 +402,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // quoting a message, the quoted message should be placed
     // at the beginning of compose-box.
     override(message_lists.current, "selected_id", () => 100);
+    override_rewire(compose_reply, "selection_within_message_id", () => undefined);
     compose_reply.quote_and_reply({});
 
     quote_text = "Testing with compose-box closed initially.";
