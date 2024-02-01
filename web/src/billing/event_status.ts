@@ -81,10 +81,10 @@ async function stripe_checkout_session_status_check(stripe_session_id: string): 
 }
 
 export async function stripe_payment_intent_status_check(
-    stripe_payment_intent_id: string,
+    stripe_invoice_id: string,
 ): Promise<boolean> {
     const response: unknown = await $.get(`/json${billing_base_url}/billing/event/status`, {
-        stripe_payment_intent_id,
+        stripe_invoice_id,
     });
 
     const response_schema = z.object({
@@ -132,7 +132,7 @@ export async function check_status(): Promise<boolean> {
         );
     }
     return await stripe_payment_intent_status_check(
-        $("#data").attr("data-stripe-payment-intent-id")!,
+        $("#data").attr("data-stripe-invoice-id")!,
     );
 }
 

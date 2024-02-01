@@ -34,7 +34,7 @@ let current_license_count = page_params.seat_count;
 
 const upgrade_response_schema = z.object({
     // Returned if we charged the user and need to verify.
-    stripe_payment_intent_id: z.string().optional(),
+    stripe_invoice_id: z.string().optional(),
     // Returned if we directly upgraded the org (for free trial or invoice payments).
     organization_upgrade_successful: z.boolean().optional(),
 });
@@ -142,9 +142,9 @@ export const initialize = (): void => {
             "POST",
             (response) => {
                 const response_data = upgrade_response_schema.parse(response);
-                if (response_data.stripe_payment_intent_id) {
+                if (response_data.stripe_invoice_id) {
                     window.location.replace(
-                        `${page_params.billing_base_url}/billing/event_status?stripe_payment_intent_id=${response_data.stripe_payment_intent_id}`,
+                        `${page_params.billing_base_url}/billing/event_status?stripe_invoice_id=${response_data.stripe_invoice_id}`,
                     );
                 } else if (response_data.organization_upgrade_successful) {
                     helpers.redirect_to_billing_with_successful_upgrade(
