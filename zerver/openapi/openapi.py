@@ -323,7 +323,7 @@ NO_EXAMPLE = object()
 
 
 class Parameter(BaseModel):
-    kind: Literal["query", "path"]
+    kind: Literal["query", "path", "formData"]
     name: str
     description: str
     json_encoded: bool
@@ -372,6 +372,31 @@ def get_openapi_parameters(
                 deprecated=parameter.get("deprecated", False),
             )
         )
+
+    if "requestBody" in operation and "application/x-www-form-urlencoded" in (
+        content := operation["requestBody"]["content"]
+    ):
+        media_type = content["application/x-www-form-urlencoded"]
+        required = media_type["schema"].get("required", [])
+        for key, schema in media_type["schema"]["properties"].items():
+            json_encoded = (
+                "encoding" in media_type
+                and key in (encodings := media_type["encoding"])
+                and encodings[key].get("contentType") == "application/json"
+            ) or schema.get("type") == "object"
+
+            parameters.append(
+                Parameter(
+                    kind="formData",
+                    name=key,
+                    description=schema["description"],
+                    json_encoded=json_encoded,
+                    value_schema=schema,
+                    example=schema.get("example"),
+                    required=key in required,
+                    deprecated=schema.get("deprecated", False),
+                )
+            )
 
     return parameters
 
