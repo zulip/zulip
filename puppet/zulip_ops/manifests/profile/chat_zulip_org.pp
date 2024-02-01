@@ -10,4 +10,11 @@ class zulip_ops::profile::chat_zulip_org inherits zulip_ops::profile::base {
   zulip_ops::firewall_allow { 'http': }
   zulip_ops::firewall_allow { 'https': }
   zulip_ops::firewall_allow { 'smtp': }
+
+  Zulip_Ops::User_Dotfiles['root'] {
+    keys => false,
+  }
+  Zulip_Ops::User_Dotfiles['zulip'] {
+    keys => false,
+  }
 }

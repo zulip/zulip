@@ -2,6 +2,13 @@ class zulip_ops::profile::prod_app_frontend inherits zulip_ops::profile::base {
   include zulip_ops::app_frontend
   include zulip::hooks::zulip_notify
 
+  Zulip_Ops::User_Dotfiles['root'] {
+    keys => 'internal-limited-write-deploy-key',
+  }
+  Zulip_Ops::User_Dotfiles['zulip'] {
+    keys => 'internal-limited-write-deploy-key',
+  }
+
   $conntrack_max = zulipconf('application_server', 'conntrack_max', 262144)
   zulip::sysctl { 'conntrack':
     content => template('zulip_ops/sysctl.d/40-conntrack.conf.erb'),

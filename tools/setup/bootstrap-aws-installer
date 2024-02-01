@@ -58,7 +58,7 @@ EOF
 # smuggles the install-ssh-keys binary into this one.
 # install-ssh-keys, in turn, pulls key data from AWS' secret manager.
 INSTALL_SSH_KEYS="inline!puppet/zulip_ops/files/install-ssh-keys"
-"$INSTALL_SSH_KEYS" root prod/ssh/keys/common
+"$INSTALL_SSH_KEYS" root prod/ssh/keys/internal-read-only-deploy-key
 
 # Provide GitHub known_hosts setup; you can verify against fingerprints at
 # https://docs.github.com/en/github/authenticating-to-github/githubs-ssh-key-fingerprints

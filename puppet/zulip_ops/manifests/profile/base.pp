@@ -62,12 +62,12 @@ class zulip_ops::profile::base {
   user { 'root': }
   zulip_ops::user_dotfiles { 'root':
     home            => '/root',
-    keys            => 'common',
+    keys            => 'internal-read-only-deploy-key',
     authorized_keys => 'common',
   }
 
   zulip_ops::user_dotfiles { 'zulip':
-    keys            => 'common',
+    keys            => 'internal-read-only-deploy-key',
     authorized_keys => 'common',
   }
 
