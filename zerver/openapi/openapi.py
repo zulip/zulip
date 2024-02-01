@@ -8,12 +8,13 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Literal, Mapping, Optional, Set, Tuple, Union
 
 import orjson
 from openapi_core import OpenAPI
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
+from pydantic import BaseModel
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -294,7 +295,9 @@ def get_openapi_description(endpoint: str, method: str) -> str:
     """Fetch a description from the full spec object."""
     endpoint_documentation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     endpoint_description = endpoint_documentation["description"]
-    check_deprecated_consistency(endpoint_documentation, endpoint_description)
+    check_deprecated_consistency(
+        endpoint_documentation.get("deprecated", False), endpoint_description
+    )
     return endpoint_description
 
 
@@ -316,17 +319,60 @@ def get_openapi_paths() -> Set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
 
 
+NO_EXAMPLE = object()
+
+
+class Parameter(BaseModel):
+    kind: Literal["query", "path"]
+    name: str
+    description: str
+    json_encoded: bool
+    value_schema: Dict[str, Any]
+    example: object
+    required: bool
+    deprecated: bool
+
+
 def get_openapi_parameters(
     endpoint: str, method: str, include_url_parameters: bool = True
-) -> List[Dict[str, Any]]:
+) -> List[Parameter]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
+    parameters = []
+
     # We do a `.get()` for this last bit to distinguish documented
     # endpoints with no parameters (empty list) from undocumented
     # endpoints (KeyError exception).
-    parameters = operation.get("parameters", [])
-    # Also, we skip parameters defined in the URL.
-    if not include_url_parameters:
-        parameters = [parameter for parameter in parameters if parameter["in"] != "path"]
+    for parameter in operation.get("parameters", []):
+        # Also, we skip parameters defined in the URL.
+        if not include_url_parameters and parameter["in"] == "path":
+            continue
+
+        json_encoded = "content" in parameter
+        if json_encoded:
+            schema = parameter["content"]["application/json"]["schema"]
+        else:
+            schema = parameter["schema"]
+
+        if "example" in parameter:
+            example = parameter["example"]
+        elif json_encoded and "example" in parameter["content"]["application/json"]:
+            example = parameter["content"]["application/json"]["example"]
+        else:
+            example = schema.get("example", NO_EXAMPLE)
+
+        parameters.append(
+            Parameter(
+                kind=parameter["in"],
+                name=parameter["name"],
+                description=parameter["description"],
+                json_encoded=json_encoded,
+                value_schema=schema,
+                example=example,
+                required=parameter.get("required", False),
+                deprecated=parameter.get("deprecated", False),
+            )
+        )
+
     return parameters
 
 
@@ -433,11 +479,11 @@ def deprecated_note_in_description(description: str) -> bool:
     return "**Deprecated**" in description
 
 
-def check_deprecated_consistency(argument: Mapping[str, Any], description: str) -> None:
+def check_deprecated_consistency(deprecated: bool, description: str) -> None:
     # Test to make sure deprecated parameters are marked so.
     if deprecated_note_in_description(description):
-        assert argument["deprecated"]
-    if "deprecated" in argument:
+        assert deprecated
+    if deprecated:
         assert deprecated_note_in_description(description)
 
 
