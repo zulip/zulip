@@ -468,7 +468,7 @@ export function dispatch_normal_event(event) {
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
-                    if (people.user_is_bot(event.person.user_id)) {
+                    if (people.is_valid_bot_user(event.person.user_id)) {
                         settings_users.update_bot_data(event.person.user_id);
                     }
                     break;
