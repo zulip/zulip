@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Dict, List, Mapping, Sequence
+from typing import Any, List, Mapping, Sequence
 
 import markdown
 from django.utils.html import escape as escape_html
@@ -10,6 +10,7 @@ from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 from zerver.openapi.openapi import (
+    Parameter,
     check_deprecated_consistency,
     get_openapi_parameters,
     get_parameters_description,
@@ -76,19 +77,9 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
                 doc_name = match.group(2)
                 endpoint, method = doc_name.rsplit(":", 1)
-                arguments: List[Dict[str, Any]] = []
-
-                try:
-                    arguments = get_openapi_parameters(endpoint, method)
-                except KeyError as e:
-                    # Don't raise an exception if the "parameters"
-                    # field is missing; we assume that's because the
-                    # endpoint doesn't accept any parameters
-                    if e.args != ("parameters",):
-                        raise e
-
-                if arguments:
-                    text = self.render_parameters(arguments)
+                parameters = get_openapi_parameters(endpoint, method)
+                if parameters:
+                    text = self.render_parameters(parameters)
                 # We want to show this message only if the parameters
                 # description doesn't say anything else.
                 elif get_parameters_description(endpoint, method) == "":
@@ -109,58 +100,51 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_parameters(self, arguments: Sequence[Mapping[str, Any]]) -> List[str]:
-        parameters = []
+    def render_parameters(self, parameters: Sequence[Parameter]) -> List[str]:
+        lines = []
 
         md_engine = markdown.Markdown(extensions=[])
-        arguments = sorted(arguments, key=lambda argument: "deprecated" in argument)
-        for argument in arguments:
-            name = argument.get("argument") or argument.get("name")
-            description = argument["description"]
-            enums = argument.get("schema", {}).get("enum")
+        parameters = sorted(parameters, key=lambda parameter: parameter.deprecated)
+        for parameter in parameters:
+            name = parameter.name
+            description = parameter.description
+            enums = parameter.value_schema.get("enum")
             if enums is not None:
                 formatted_enums = [
                     OBJECT_CODE_TEMPLATE.format(value=json.dumps(enum)) for enum in enums
                 ]
                 description += "\nMust be one of: {}. ".format(", ".join(formatted_enums))
 
-            default = argument.get("schema", {}).get("default")
+            default = parameter.value_schema.get("default")
             if default is not None:
                 description += f"\nDefaults to `{json.dumps(default)}`."
-            data_type = ""
-            if "schema" in argument:
-                data_type = generate_data_type(argument["schema"])
-            else:
-                data_type = generate_data_type(argument["content"]["application/json"]["schema"])
+            data_type = generate_data_type(parameter.value_schema)
 
             # TODO: OpenAPI allows indicating where the argument goes
             # (path, querystring, form data...).  We should document this detail.
-            example = ""
-            if "example" in argument:
-                # We use this style without explicit JSON encoding for
-                # integers, strings, and booleans.
-                # * For booleans, JSON encoding correctly corrects for Python's
-                #   str(True)="True" not matching the encoding of "true".
-                # * For strings, doing so nicely results in strings being quoted
-                #   in the documentation, improving readability.
-                # * For integers, it is a noop, since json.dumps(3) == str(3) == "3".
-                example = json.dumps(argument["example"])
-            else:
-                example = json.dumps(argument["content"]["application/json"]["example"])
+
+            # We use this style without explicit JSON encoding for
+            # integers, strings, and booleans.
+            # * For booleans, JSON encoding correctly corrects for Python's
+            #   str(True)="True" not matching the encoding of "true".
+            # * For strings, doing so nicely results in strings being quoted
+            #   in the documentation, improving readability.
+            # * For integers, it is a noop, since json.dumps(3) == str(3) == "3".
+            example = json.dumps(parameter.example)
 
             required_string: str = "required"
-            if argument.get("in", "") == "path":
+            if parameter.kind == "path":
                 # Any path variable is required
-                assert argument["required"]
+                assert parameter.required
                 required_string = "required in path"
 
-            if argument.get("required", False):
+            if parameter.required:
                 required_block = f'<span class="api-argument-required">{required_string}</span>'
             else:
                 required_block = '<span class="api-argument-optional">optional</span>'
 
-            check_deprecated_consistency(argument, description)
-            if argument.get("deprecated", False):
+            check_deprecated_consistency(parameter.deprecated, description)
+            if parameter.deprecated:
                 deprecated_block = '<span class="api-argument-deprecated">Deprecated</span>'
             else:
                 deprecated_block = ""
@@ -169,17 +153,14 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             # TODO: There are some endpoint parameters with object properties
             # that are not defined in `zerver/openapi/zulip.yaml`
             if "object" in data_type:
-                if "schema" in argument:
-                    object_schema = argument["schema"]
-                else:
-                    object_schema = argument["content"]["application/json"]["schema"]
+                object_schema = parameter.value_schema
 
                 if "items" in object_schema and "properties" in object_schema["items"]:
                     object_block = self.render_object_details(object_schema["items"], str(name))
                 elif "properties" in object_schema:
                     object_block = self.render_object_details(object_schema, str(name))
 
-            parameters.append(
+            lines.append(
                 API_PARAMETER_TEMPLATE.format(
                     argument=name,
                     example=escape_html(example),
@@ -191,7 +172,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 )
             )
 
-        return parameters
+        return lines
 
     def render_object_details(self, schema: Mapping[str, Any], name: str) -> str:
         md_engine = markdown.Markdown(extensions=[])
