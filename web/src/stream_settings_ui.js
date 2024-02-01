@@ -702,17 +702,8 @@ function show_right_section() {
 export function change_state(section, right_side_tab) {
     // if in #streams/new form.
     if (section === "new") {
-        const can_create_streams =
-            settings_data.user_can_create_private_streams() ||
-            settings_data.user_can_create_public_streams() ||
-            settings_data.user_can_create_web_public_streams();
-        if (can_create_streams) {
-            do_open_create_stream();
-            show_right_section();
-        } else {
-            toggler.goto("subscribed");
-            stream_edit.empty_right_panel();
-        }
+        do_open_create_stream();
+        show_right_section();
         return;
     }
 
@@ -722,36 +713,15 @@ export function change_state(section, right_side_tab) {
         return;
     }
 
-    if (section === "subscribed") {
-        toggler.goto("subscribed");
-        stream_edit.empty_right_panel();
-        return;
-    }
-
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
-        const sub = sub_store.get(stream_id);
-        // There are a few situations where we can't display stream settings:
-        // 1. This is a stream that's been archived. (sub=undefined)
-        // 2. The stream ID is invalid. (sub=undefined)
-        // 3. The current user is a guest, and was unsubscribed from the stream
-        //    stream in the current session. (In future sessions, the stream will
-        //    not be in sub_store).
-        //
-        // In all these cases we redirect the user to 'subscribed' tab.
-        if (!sub || (current_user.is_guest && !stream_data.is_subscribed(stream_id))) {
-            toggler.goto("subscribed");
-            stream_edit.empty_right_panel();
-        } else {
-            show_right_section();
-            stream_edit_toggler.set_select_tab(right_side_tab);
-            switch_to_stream_row(stream_id);
-        }
+        show_right_section();
+        stream_edit_toggler.set_select_tab(right_side_tab);
+        switch_to_stream_row(stream_id);
         return;
     }
 
-    blueslip.warn("invalid section for streams: " + section);
     toggler.goto("subscribed");
     stream_edit.empty_right_panel();
 }

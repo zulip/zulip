@@ -260,7 +260,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [ui_report, "error"],
     ]);
 
-    window.location.hash = "#streams/whatever";
+    window.location.hash = "#streams/subscribed";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");

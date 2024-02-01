@@ -240,8 +240,12 @@ function do_hashchange_overlay(old_hash) {
         );
     }
 
-    if (base === "streams" && !section) {
-        history.replaceState(null, "", browser_history.get_full_url("streams/subscribed"));
+    if (base === "streams") {
+        const valid_hash = hash_util.validate_stream_settings_hash(window.location.hash);
+        if (valid_hash !== window.location.hash) {
+            history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_current_hash_section();
+        }
     }
 
     if (base === "groups" && !section) {
