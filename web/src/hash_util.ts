@@ -1,7 +1,10 @@
 import * as internal_url from "../shared/src/internal_url";
 
+import * as blueslip from "./blueslip";
 import type {Message} from "./message_store";
+import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
@@ -187,4 +190,51 @@ export function parse_narrow(hash: string): Term[] | undefined {
         terms.push({negated, operator, operand});
     }
     return terms;
+}
+
+export function validate_stream_settings_hash(hash: string): string {
+    const hash_components = hash.slice(1).split(/\//);
+    const section = hash_components[1];
+
+    const can_create_streams =
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams() ||
+        settings_data.user_can_create_private_streams();
+    if (section === "new" && !can_create_streams) {
+        return "#streams/subscribed";
+    }
+
+    if (/\d+/.test(section)) {
+        const stream_id = Number.parseInt(section, 10);
+        const sub = sub_store.get(stream_id);
+        // There are a few situations where we can't display stream settings:
+        // 1. This is a stream that's been archived. (sub=undefined)
+        // 2. The stream ID is invalid. (sub=undefined)
+        // 3. The current user is a guest, and was unsubscribed from the stream
+        //    stream in the current session. (In future sessions, the stream will
+        //    not be in sub_store).
+        //
+        // In all these cases we redirect the user to 'subscribed' tab.
+        if (sub === undefined || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
+            return "#streams/subscribed";
+        }
+
+        const stream_name = hash_components[2];
+        let right_side_tab = hash_components[3];
+        const valid_right_side_tab_values = new Set(["general", "personal", "subscribers"]);
+        if (sub.name === stream_name && valid_right_side_tab_values.has(right_side_tab)) {
+            return hash;
+        }
+        if (!valid_right_side_tab_values.has(right_side_tab)) {
+            right_side_tab = "general";
+        }
+        return stream_edit_url(sub, right_side_tab);
+    }
+
+    const valid_section_values = ["new", "subscribed", "all"];
+    if (!valid_section_values.includes(section)) {
+        blueslip.warn("invalid section for streams: " + section);
+        return "#streams/subscribed";
+    }
+    return hash;
 }
