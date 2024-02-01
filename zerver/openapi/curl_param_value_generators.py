@@ -84,8 +84,8 @@ def patch_openapi_example_values(
         if parameter.name in realm_example_values:
             parameter.example = realm_example_values[parameter.name]
 
-    if request_body is not None:
-        properties = request_body["content"]["multipart/form-data"]["schema"]["properties"]
+    if request_body is not None and "multipart/form-data" in (content := request_body["content"]):
+        properties = content["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
             if key in realm_example_values:
                 property["example"] = realm_example_values[key]
