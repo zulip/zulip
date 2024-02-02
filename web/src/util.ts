@@ -410,9 +410,12 @@ export function call_function_periodically(callback: () => void, delay: number):
     // calling "callback".
     setTimeout(() => {
         call_function_periodically(callback, delay);
-    }, delay);
 
-    callback();
+        // Do the callback after scheduling the next call, so that we
+        // are certain to call it again even if the callback throws an
+        // exception.
+        callback();
+    }, delay);
 }
 
 export function get_string_diff(string1: string, string2: string): [number, number, number] {
