@@ -1114,6 +1114,10 @@ export class Filter {
         return this.has_operand("stream", stream_name) && this.has_operand("topic", topic);
     }
 
+    has_stream(stream_name: string): boolean {
+        return this.has_operand("stream", stream_name);
+    }
+
     sorted_term_types(): string[] {
         if (this._sorted_term_types === undefined) {
             this._sorted_term_types = this._build_sorted_term_types();
