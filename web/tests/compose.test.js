@@ -219,6 +219,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     MockDate.set(new Date(fake_now * 1000));
+    override_rewire(drafts, "sync_count", noop);
 
     // This is the common setup stuff for all of the four tests.
     let stub_state;
