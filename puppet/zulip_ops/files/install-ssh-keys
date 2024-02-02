@@ -34,6 +34,6 @@ if [ "$#" -gt 2 ]; then
     exit 0
 fi
 
-rsync -rv --delete \
+rsync -av --delete \
     --exclude config --exclude authorized_keys --exclude known_hosts \
     "$workdir/" "$sshdir/"

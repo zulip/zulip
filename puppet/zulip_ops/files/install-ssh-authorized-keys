@@ -26,4 +26,4 @@ if [ "$#" -gt 2 ]; then
     exit 0
 fi
 
-rsync -v "$workfile" "$sshdir/authorized_keys"
+rsync -av "$workfile" "$sshdir/authorized_keys"
