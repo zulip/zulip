@@ -755,7 +755,3 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
             return response
 
         return None
-
-
-class ZulipNoopMiddleware(MiddlewareMixin):
-    pass
