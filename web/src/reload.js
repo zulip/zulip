@@ -175,10 +175,17 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     // broken state and cause lots of confusing tracebacks.  So, we
     // set ourselves to try reloading a bit later, both periodically
     // and when the user focuses the window.
-    $(window).one("focus", () => {
-        blueslip.log("Retrying on-focus page reload");
-        window.location.reload(true);
-    });
+    setTimeout(() => {
+        // We add this handler after a bit of delay, because in some
+        // browsers, processing window.location.reload causes the
+        // window to gain focus, and duplicate reload attempts result
+        // in the browser sending duplicate requests to `/`.
+        $(window).one("focus", () => {
+            blueslip.log("Retrying on-focus page reload");
+
+            window.location.reload(true);
+        });
+    }, 5000);
 
     function retry_reload() {
         blueslip.log("Retrying page reload due to 30s timer");
