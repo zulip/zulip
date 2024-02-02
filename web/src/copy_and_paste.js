@@ -385,55 +385,6 @@ export function paste_handler_converter(paste_html) {
             return prefix + content + (node.nextSibling && !/\n$/.test(content) ? "\n" : "");
         },
     });
-    turndownService.addRule("zulipCodeBlock", {
-        // We create a new rule to exclusively handle code blocks in Zulip messages since
-        // the `fencedCodeBlock` rule in upstream won't work for them. The reason is that
-        // `fencedCodeBlock` only works for `pre` elements that have `code` elements as
-        // their 1st child, while Zulip code blocks have an empty span as the 1st child
-        // of the `pre` element, and then the `code` element. This new rule is a variation
-        // of upstream's `fencedCodeBlock` rule.
-
-        // We modify the filter of upstream's `fencedCodeBlock` rule to only apply to
-        // Zulip code blocks with the Zulip specific class of `zulip-code-block`.
-        filter(node, options) {
-            return (
-                options.codeBlockStyle === "fenced" &&
-                node.nodeName === "CODE" &&
-                node.parentElement?.nodeName === "PRE" &&
-                node.parentElement.parentElement?.classList.contains("zulip-code-block")
-            );
-        },
-
-        // We modify the replacement of upstream's `fencedCodeBlock` rule only slightly
-        // to extract and add the language of the code block (if any) to the fence.
-        replacement(content, node, options) {
-            const language = node.closest(".codehilite")?.dataset?.codeLanguage || "";
-
-            const fenceChar = options.fence.charAt(0);
-            let fenceSize = 3;
-            const fenceInCodeRegex = new RegExp("^" + fenceChar + "{3,}", "gm");
-
-            let match;
-            while ((match = fenceInCodeRegex.exec(content))) {
-                if (match[0].length >= fenceSize) {
-                    fenceSize = match[0].length + 1;
-                }
-            }
-
-            const fence = fenceChar.repeat(fenceSize);
-
-            return (
-                "\n\n" +
-                fence +
-                language +
-                "\n" +
-                content.replace(/\n$/, "") +
-                "\n" +
-                fence +
-                "\n\n"
-            );
-        },
-    });
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
             // select image previews in Zulip messages
@@ -481,20 +432,30 @@ export function paste_handler_converter(paste_html) {
         },
     });
 
-    // We override the original upstream implementation of this rule to turn any
-    // single line code blocks into inline markdown code. Everything else is the same.
+    // We override the original upstream implementation of this rule to make
+    // several tweaks:
+    // - We turn any single line code blocks into inline markdown code.
+    // - We generalise the filter condition to allow a `pre` element with a
+    // `code` element as its only non-empty child, which applies to Zulip code
+    // blocks too.
+    // - For Zulip code blocks, we extract the language of the code block (if
+    // any) correctly.
+    // Everything else works the same.
     turndownService.addRule("fencedCodeBlock", {
         filter(node, options) {
             return (
                 options.codeBlockStyle === "fenced" &&
                 node.nodeName === "PRE" &&
-                node.firstChild &&
-                node.firstChild.nodeName === "CODE"
+                [...node.childNodes].filter((child) => child.textContent.trim() !== "").length ===
+                    1 &&
+                [...node.childNodes].find((child) => child.textContent.trim() !== "").nodeName ===
+                    "CODE"
             );
         },
 
         replacement(_content, node, options) {
-            const code = node.firstChild.textContent;
+            const codeElement = [...node.childNodes].find((child) => child.nodeName === "CODE");
+            const code = codeElement.textContent;
 
             // We convert single line code inside a code block to inline markdown code,
             // and the code for this is taken from upstream's `code` rule.
@@ -515,8 +476,10 @@ export function paste_handler_converter(paste_html) {
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
 
-            const className = node.firstChild.getAttribute("class") || "";
-            const language = (className.match(/language-(\S+)/) || [null, ""])[1];
+            const className = codeElement.getAttribute("class") || "";
+            const language = node.parentElement?.classList.contains("zulip-code-block")
+                ? node.closest(".codehilite")?.dataset?.codeLanguage || ""
+                : (className.match(/language-(\S+)/) || [null, ""])[1];
 
             const fenceChar = options.fence.charAt(0);
             let fenceSize = 3;
