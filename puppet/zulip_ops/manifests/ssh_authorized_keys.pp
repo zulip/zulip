@@ -4,6 +4,8 @@ define zulip_ops::ssh_authorized_keys(
   $user = $name
   if $keys == true {
     $keypath = "prod/ssh/authorized_keys/${user}"
+  } elsif $keys.is_a(Array) {
+    $keypath = join($keys.map |$k| {"prod/ssh/authorized_keys/${k}"}, ' ')
   } else {
     $keypath = "prod/ssh/authorized_keys/${keys}"
   }
