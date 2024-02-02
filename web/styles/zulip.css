@@ -2336,17 +2336,6 @@ div.focused-message-list {
     font-weight: bold;
 }
 
-.search_icon {
-    /* These rules match the .dropdown-toggle CSS for the gear menu. */
-    color: inherit;
-    opacity: 0.5;
-    text-decoration: none;
-
-    &:hover {
-        opacity: 1;
-    }
-}
-
 .top-navbar-container {
     /* Calculate right margin so that title and description
        elements can truncate and not collide with or run underneath
