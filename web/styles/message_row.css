@@ -611,7 +611,6 @@ $time_column_min_width: 42px; /* + padding */
         border-radius: 1px 4px 4px 1px !important;
     }
 
-    .dropdown-list-widget,
     .stream_header_colorblock {
         margin-bottom: 10px;
     }

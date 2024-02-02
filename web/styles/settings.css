@@ -346,8 +346,7 @@ td .button {
         color: hsl(0deg 0% 20%);
     }
 
-    .settings_select,
-    .dropdown-list-widget .dropdown-toggle {
+    .settings_select {
         height: 30px;
         min-width: 325px;
         max-width: 100%;
@@ -1536,72 +1535,6 @@ $option_title_width: 180px;
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
         margin-top: 5px;
-    }
-}
-
-.dropdown-list-widget {
-    & button.dropdown-toggle {
-        text-align: left;
-
-        .fa-chevron-down {
-            float: right;
-            position: relative;
-            top: 2px;
-            padding-left: 5px;
-            color: hsl(0deg 0% 58%);
-            font-weight: 200;
-        }
-
-        &.dropdown-toggle {
-            /* Match settings for select elements. */
-            padding: 4px 6px;
-
-            & span {
-                line-height: 20px;
-                height: 1.4em;
-            }
-        }
-
-        &:disabled i.fa-chevron-down {
-            display: none;
-        }
-    }
-
-    & button.multiselect_btn {
-        /* Matches the dropdown input margin so as to keep it aligned */
-        margin-left: 9px;
-        margin-top: 4px;
-    }
-
-    & a.dropdown_list_reset_button {
-        /* Prevent dark theme from overriding background. */
-        background: unset !important;
-        border: none;
-        margin-left: 10px;
-
-        &:disabled {
-            display: none;
-        }
-    }
-
-    .dropdown-search > input[type="text"] {
-        margin: 9px;
-        /* 100% - 2* (9px (margin) + 1px (border) + 6px (padding)) */
-        width: calc(100% - 32px);
-    }
-
-    .dropdown-menu {
-        top: -7px; /* -(margin+padding), both are set by bootstrap. */
-        bottom: auto;
-    }
-
-    .dropdown-list-wrapper {
-        position: relative;
-        height: auto;
-        max-height: 200px;
-        overflow-y: auto;
-        margin-top: 0;
-        display: block;
     }
 }
 

@@ -936,20 +936,6 @@ div.overlay {
     }
 }
 
-#settings_content,
-#stream_settings,
-#stream-creation,
-#edit_bot_modal {
-    .dropdown-list-widget .dropdown-list-wrapper {
-        width: fit-content;
-
-        & span {
-            min-width: 210px;
-            width: fit-content;
-        }
-    }
-}
-
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
     position: relative;
