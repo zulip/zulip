@@ -173,7 +173,7 @@ jobs:
       - name: Run backend tests
         run: |
           source tools/ci/activate-venv
-          ./tools/test-backend --coverage --xml-report --no-html-report --include-webhooks --include-transaction-tests --no-cov-cleanup --ban-console-output
+          ./tools/test-backend ${{ matrix.os != 'bookworm' && '--coverage' || '' }} --xml-report --no-html-report --include-webhooks --include-transaction-tests --no-cov-cleanup --ban-console-output
 
       - name: Run mypy
         run: |
