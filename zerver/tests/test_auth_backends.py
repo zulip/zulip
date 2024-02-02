@@ -7167,24 +7167,38 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assertTrue(password_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled(realm))
 
-    def test_supported_backends_only_updated(self) -> None:
+    def test_only_supported_backends_allowed(self) -> None:
         # Log in as admin
         self.login("desdemona")
-        # Set some supported and unsupported backends
-        result = self.client_patch(
-            "/json/realm",
-            {
-                "authentication_methods": orjson.dumps(
-                    {"Email": False, "Dev": True, "GitHub": False}
-                ).decode()
-            },
-        )
-        self.assert_json_success(result)
-        realm = get_realm("zulip")
-        # Check that unsupported backend is not enabled
-        self.assertFalse(github_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled(realm))
-        self.assertFalse(password_auth_enabled(realm))
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.DevAuthBackend",
+            )
+        ):
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    "authentication_methods": orjson.dumps(
+                        # Github is not a supported authentication backend right now.
+                        {"Email": False, "Dev": True, "GitHub": False}
+                    ).decode()
+                },
+            )
+            self.assert_json_error(
+                result, "Invalid authentication method: GitHub. Valid methods are: ['Dev', 'Email']"
+            )
+
+            # Also protects from completely invalid input like a backend name that doesn't exist.
+            result = self.client_patch(
+                "/json/realm",
+                {"authentication_methods": orjson.dumps({"NoSuchBackend": True}).decode()},
+            )
+            self.assert_json_error(
+                result,
+                "Invalid authentication method: NoSuchBackend. Valid methods are: ['Dev', 'Email']",
+            )
 
 
 class EmailValidatorTestCase(ZulipTestCase):

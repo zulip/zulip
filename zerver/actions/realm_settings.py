@@ -5,12 +5,14 @@ from typing import Any, Dict, Literal, Optional, Tuple, Union
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email_to_admins
@@ -206,6 +208,19 @@ def parse_and_set_setting_value_if_required(
         setting_value_changed = True
 
     return parsed_value, setting_value_changed
+
+
+def validate_authentication_methods_dict_from_api(
+    realm: Realm, authentication_methods: Dict[str, bool]
+) -> None:
+    current_authentication_methods = realm.authentication_methods_dict()
+    for name in authentication_methods:
+        if name not in current_authentication_methods:
+            raise JsonableError(
+                _("Invalid authentication method: {name}. Valid methods are: {methods}").format(
+                    name=name, methods=sorted(current_authentication_methods.keys())
+                )
+            )
 
 
 def do_set_realm_authentication_methods(

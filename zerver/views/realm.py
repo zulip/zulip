@@ -19,6 +19,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
     parse_and_set_setting_value_if_required,
+    validate_authentication_methods_dict_from_api,
 )
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
@@ -196,8 +197,11 @@ def update_realm(
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
+
+        validate_authentication_methods_dict_from_api(realm, authentication_methods)
         if True not in authentication_methods.values():
             raise JsonableError(_("At least one authentication method must be enabled."))
+
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
