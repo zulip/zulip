@@ -117,10 +117,6 @@
         </div>
     </div>
 
-    <div id="cloud-plan-comparison" class="cloud-comparison">
-        {% include "corporate/comparison_table_integrated.html" %}
-    </div>
-
     <!-- This is the subsection that displays with self-hosted plans. -->
 
     <div class="additional-pricing-information self-hosted-additional-pricing">
@@ -218,9 +214,10 @@
         </div>
     </div>
 
-    <div id="self-hosted-plan-comparison" class="self-hosted-comparison">
-        {% include "corporate/comparison_table_self_hosted.html" %}
+    <div id="feature-comparison-table">
+        {% include "corporate/comparison_table_integrated.html" %}
     </div>
+
 </div>
 
 {% if not is_self_hosted_realm %}
