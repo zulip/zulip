@@ -9,8 +9,13 @@ class zulip_ops::profile::postgresql inherits zulip_ops::profile::base {
 
   zulip_ops::firewall_allow{ 'postgresql': }
 
-  zulip::sysctl { 'postgresql':
-    source => 'puppet:///modules/zulip_ops/postgresql/40-postgresql.conf',
+  zulip::sysctl { 'postgresql-swappiness':
+    key   => 'vm.swappiness',
+    value => '0',
+  }
+  zulip::sysctl { 'postgresql-overcommit':
+    key   => 'vm.overcommit_memory',
+    value => '2',
   }
 
   file { '/root/setup_disks.sh':

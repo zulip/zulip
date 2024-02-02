@@ -206,8 +206,9 @@ class zulip::app_frontend_base {
     notify  => Service[$zulip::common::supervisor_service],
   }
   zulip::sysctl { 'uwsgi':
-    content     => template('zulip/sysctl.d/40-uwsgi.conf.erb'),
-    skip_docker => true,
+    comment => 'Allow larger listen backlog',
+    key     => 'net.core.somaxconn',
+    value   => $somaxconn,
   }
 
   file { [

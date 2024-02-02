@@ -9,9 +9,10 @@ class zulip_ops::profile::prod_app_frontend inherits zulip_ops::profile::base {
     keys => 'internal-limited-write-deploy-key',
   }
 
-  $conntrack_max = zulipconf('application_server', 'conntrack_max', 262144)
   zulip::sysctl { 'conntrack':
-    content => template('zulip_ops/sysctl.d/40-conntrack.conf.erb'),
+    comment => 'Increase conntrack kernel table size',
+    key     => 'net.nf_conntrack_max',
+    value   => zulipconf('application_server', 'conntrack_max', 262144),
   }
 
   file { '/etc/nginx/sites-available/zulip':
