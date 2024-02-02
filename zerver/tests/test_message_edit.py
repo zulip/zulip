@@ -996,8 +996,7 @@ class EditMessageTest(EditMessageTestCase):
 
         # We reverse the message history view output so that the IDs line up with the above.
         message_history = list(reversed(json_response["message_history"]))
-        i = 0
-        for entry in message_history:
+        for i, entry in enumerate(message_history):
             expected_entries = {"content", "rendered_content", "topic", "timestamp", "user_id"}
             if i in {0, 2, 4}:
                 expected_entries.add("prev_topic")
@@ -1009,7 +1008,6 @@ class EditMessageTest(EditMessageTestCase):
             if i in {0, 3}:
                 expected_entries.add("prev_stream")
                 expected_entries.add("stream")
-            i += 1
             self.assertEqual(expected_entries, set(entry.keys()))
         self.assert_length(message_history, 7)
         self.assertEqual(message_history[0]["topic"], "topic 4")

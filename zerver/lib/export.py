@@ -1715,9 +1715,8 @@ def export_files_from_s3(
 def export_uploads_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
 ) -> None:
-    count = 0
     records = []
-    for attachment in attachments:
+    for count, attachment in enumerate(attachments, 1):
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
         # are user controlled
@@ -1740,8 +1739,6 @@ def export_uploads_from_local(
             content_type=None,
         )
         records.append(record)
-
-        count += 1
 
         if count % 100 == 0:
             logging.info("Finished %s", count)
@@ -1831,9 +1828,8 @@ def get_emoji_path(realm_emoji: RealmEmoji) -> str:
 def export_emoji_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
 ) -> None:
-    count = 0
     records = []
-    for realm_emoji in realm_emojis:
+    for count, realm_emoji in enumerate(realm_emojis, 1):
         emoji_path = get_emoji_path(realm_emoji)
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
@@ -1862,7 +1858,6 @@ def export_emoji_from_local(
         )
         records.append(record)
 
-        count += 1
         if count % 100 == 0:
             logging.info("Finished %s", count)
 
