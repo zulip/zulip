@@ -25,7 +25,7 @@ from typing import (
     cast,
 )
 from unittest import mock
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import orjson
 import responses
@@ -84,6 +84,7 @@ from corporate.models import (
     CustomerPlan,
     CustomerPlanOffer,
     Event,
+    Invoice,
     LicenseLedger,
     PaymentIntent,
     ZulipSponsorshipRequest,
@@ -4188,6 +4189,56 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         m.assert_not_called()
 
+    def test_stripe_webhook_for_invoice_paid_events(self) -> None:
+        customer = Customer.objects.create(realm=get_realm("zulip"))
+
+        stripe_event_id = "stripe_event_id"
+        stripe_invoice_id = "stripe_invoice_id"
+        valid_invoice_paid_event_data = {
+            "id": stripe_event_id,
+            "type": "invoice.paid",
+            "api_version": STRIPE_API_VERSION,
+            "data": {"object": {"object": "invoice", "id": stripe_invoice_id}},
+        }
+
+        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_invoice_paid_event_data,
+                content_type="application/json",
+            )
+        self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 0)
+        self.assertEqual(result.status_code, 200)
+        m.assert_not_called()
+
+        Invoice.objects.create(
+            stripe_invoice_id=stripe_invoice_id,
+            customer=customer,
+            status=Invoice.SENT,
+        )
+
+        self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 0)
+        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_invoice_paid_event_data,
+                content_type="application/json",
+            )
+        [event] = Event.objects.filter(stripe_event_id=stripe_event_id)
+        self.assertEqual(result.status_code, 200)
+        strip_event = stripe.Event.construct_from(valid_invoice_paid_event_data, stripe.api_key)
+        m.assert_called_once_with(strip_event.data.object, event)
+
+        with patch("corporate.views.webhook.handle_invoice_paid_event") as m:
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_invoice_paid_event_data,
+                content_type="application/json",
+            )
+        self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 1)
+        self.assertEqual(result.status_code, 200)
+        m.assert_not_called()
+
 
 class EventStatusTest(StripeTestCase):
     def test_event_status_json_endpoint_errors(self) -> None:
@@ -6313,6 +6364,143 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
     @responses.activate
     @mock_stripe()
+    def test_upgrade_user_to_fixed_price_plan_pay_by_invoice(self, *mocks: Mock) -> None:
+        self.login("iago")
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.assertFalse(CustomerPlanOffer.objects.exists())
+
+        # Configure required_plan_tier.
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{self.remote_realm.id}",
+                "required_plan_tier": CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier for Zulip Dev set to Zulip Basic."], result
+        )
+
+        # Configure fixed-price plan with ID of manually sent invoice.
+        # Invalid 'sent_invoice_id' entered.
+        annual_fixed_price = 1200
+        with mock.patch("stripe.Invoice.retrieve", side_effect=Exception):
+            result = self.client_post(
+                "/activity/remote/support",
+                {
+                    "remote_realm_id": f"{self.remote_realm.id}",
+                    "fixed_price": annual_fixed_price,
+                    "sent_invoice_id": "invalid_sent_invoice_id",
+                },
+            )
+        self.assert_not_in_success_response(
+            ["Customer can now buy a fixed price Zulip Basic plan."], result
+        )
+
+        # Invoice status is not 'open'.
+        mock_invoice = MagicMock()
+        mock_invoice.status = "paid"
+        mock_invoice.sent_invoice_id = "paid_invoice_id"
+        with mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice):
+            result = self.client_post(
+                "/activity/remote/support",
+                {
+                    "remote_realm_id": f"{self.remote_realm.id}",
+                    "fixed_price": annual_fixed_price,
+                    "sent_invoice_id": mock_invoice.sent_invoice_id,
+                },
+            )
+        self.assert_in_success_response(
+            ["Invoice status should be open. Please verify sent_invoice_id."], result
+        )
+
+        sent_invoice_id = "test_sent_invoice_id"
+        mock_invoice = MagicMock()
+        mock_invoice.status = "open"
+        mock_invoice.sent_invoice_id = sent_invoice_id
+        with mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice):
+            result = self.client_post(
+                "/activity/remote/support",
+                {
+                    "remote_realm_id": f"{self.remote_realm.id}",
+                    "fixed_price": annual_fixed_price,
+                    "sent_invoice_id": sent_invoice_id,
+                },
+            )
+        self.assert_in_success_response(
+            ["Customer can now buy a fixed price Zulip Basic plan."], result
+        )
+        fixed_price_plan_offer = CustomerPlanOffer.objects.filter(
+            status=CustomerPlanOffer.CONFIGURED
+        ).first()
+        assert fixed_price_plan_offer is not None
+        self.assertEqual(fixed_price_plan_offer.tier, CustomerPlanOffer.TIER_SELF_HOSTED_BASIC)
+        self.assertEqual(fixed_price_plan_offer.fixed_price, annual_fixed_price * 100)
+        self.assertEqual(fixed_price_plan_offer.sent_invoice_id, sent_invoice_id)
+        self.assertEqual(fixed_price_plan_offer.get_plan_status_as_text(), "Configured")
+
+        invoice = Invoice.objects.get(stripe_invoice_id=sent_invoice_id)
+        self.assertEqual(invoice.status, Invoice.SENT)
+
+        self.logout()
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        # Customer don't need to visit /upgrade to buy plan.
+        # In case they visit, we inform them about the mail to which
+        # invoice was sent and also display the link for payment.
+        self.execute_remote_billing_authentication_flow(hamlet)
+        mock_invoice = MagicMock()
+        mock_invoice.hosted_invoice_url = "payments_page_url"
+        with time_machine.travel(self.now, tick=False), mock.patch(
+            "stripe.Invoice.retrieve", return_value=mock_invoice
+        ):
+            result = self.client_get(
+                f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                subdomain="selfhosting",
+            )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["payments_page_url", hamlet.delivery_email], result)
+
+        # When customer makes a payment, 'stripe_webhook' handles 'invoice.paid' event.
+        stripe_event_id = "stripe_event_id"
+        valid_invoice_paid_event_data = {
+            "id": stripe_event_id,
+            "type": "invoice.paid",
+            "api_version": STRIPE_API_VERSION,
+            "data": {
+                "object": {
+                    "object": "invoice",
+                    "id": sent_invoice_id,
+                    "collection_method": "send_invoice",
+                }
+            },
+        }
+        with time_machine.travel(self.now, tick=False):
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_invoice_paid_event_data,
+                content_type="application/json",
+            )
+            self.assertEqual(result.status_code, 200)
+
+        # Verify that the customer is upgraded after payment.
+        customer = self.billing_session.get_customer()
+        current_plan = CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
+        self.assertEqual(current_plan.fixed_price, annual_fixed_price * 100)
+        self.assertIsNone(current_plan.price_per_license)
+
+        invoice.refresh_from_db()
+        fixed_price_plan_offer.refresh_from_db()
+        self.assertEqual(invoice.status, Invoice.PAID)
+        self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.PROCESSED)
+
+    @responses.activate
+    @mock_stripe()
     def test_schedule_upgrade_to_fixed_price_annual_business_plan(self, *mocks: Mock) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -7682,6 +7870,112 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Update card",
         ]:
             self.assert_in_response(substring, response)
+
+    @responses.activate
+    @mock_stripe()
+    def test_upgrade_server_to_fixed_price_plan_pay_by_invoice(self, *mocks: Mock) -> None:
+        self.login("iago")
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.assertFalse(CustomerPlanOffer.objects.exists())
+
+        # Configure required_plan_tier.
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_server_id": f"{self.remote_server.id}",
+                "required_plan_tier": CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            },
+        )
+        self.assert_in_success_response(
+            ["Required plan tier for demo.example.com set to Zulip Basic."], result
+        )
+
+        # Configure fixed-price plan with ID of manually sent invoice.
+        sent_invoice_id = "test_sent_invoice_id"
+        annual_fixed_price = 1200
+        mock_invoice = MagicMock()
+        mock_invoice.status = "open"
+        mock_invoice.sent_invoice_id = sent_invoice_id
+        with mock.patch("stripe.Invoice.retrieve", return_value=mock_invoice):
+            result = self.client_post(
+                "/activity/remote/support",
+                {
+                    "remote_server_id": f"{self.remote_server.id}",
+                    "fixed_price": annual_fixed_price,
+                    "sent_invoice_id": sent_invoice_id,
+                },
+            )
+        self.assert_in_success_response(
+            ["Customer can now buy a fixed price Zulip Basic plan."], result
+        )
+        fixed_price_plan_offer = CustomerPlanOffer.objects.filter(
+            status=CustomerPlanOffer.CONFIGURED
+        ).first()
+        assert fixed_price_plan_offer is not None
+        self.assertEqual(fixed_price_plan_offer.tier, CustomerPlanOffer.TIER_SELF_HOSTED_BASIC)
+        self.assertEqual(fixed_price_plan_offer.fixed_price, annual_fixed_price * 100)
+        self.assertEqual(fixed_price_plan_offer.sent_invoice_id, sent_invoice_id)
+        self.assertEqual(fixed_price_plan_offer.get_plan_status_as_text(), "Configured")
+
+        invoice = Invoice.objects.get(stripe_invoice_id=sent_invoice_id)
+        self.assertEqual(invoice.status, Invoice.SENT)
+
+        self.logout()
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        # Customer don't need to visit /upgrade to buy plan.
+        # In case they visit, we inform them about the mail to which
+        # invoice was sent and also display the link for payment.
+        self.execute_remote_billing_authentication_flow(hamlet.delivery_email, hamlet.full_name)
+        mock_invoice = MagicMock()
+        mock_invoice.hosted_invoice_url = "payments_page_url"
+        with time_machine.travel(self.now, tick=False), mock.patch(
+            "stripe.Invoice.retrieve", return_value=mock_invoice
+        ):
+            result = self.client_get(
+                f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                subdomain="selfhosting",
+            )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["payments_page_url", hamlet.delivery_email], result)
+
+        # When customer makes a payment, 'stripe_webhook' handles 'invoice.paid' event.
+        stripe_event_id = "stripe_event_id"
+        valid_invoice_paid_event_data = {
+            "id": stripe_event_id,
+            "type": "invoice.paid",
+            "api_version": STRIPE_API_VERSION,
+            "data": {
+                "object": {
+                    "object": "invoice",
+                    "id": sent_invoice_id,
+                    "collection_method": "send_invoice",
+                }
+            },
+        }
+        with time_machine.travel(self.now, tick=False):
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_invoice_paid_event_data,
+                content_type="application/json",
+            )
+            self.assertEqual(result.status_code, 200)
+
+        # Verify that the customer is upgraded after payment.
+        customer = self.billing_session.get_customer()
+        current_plan = CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
+        self.assertEqual(current_plan.fixed_price, annual_fixed_price * 100)
+        self.assertIsNone(current_plan.price_per_license)
+
+        invoice.refresh_from_db()
+        fixed_price_plan_offer.refresh_from_db()
+        self.assertEqual(invoice.status, Invoice.PAID)
+        self.assertEqual(fixed_price_plan_offer.status, CustomerPlanOffer.PROCESSED)
 
     @responses.activate
     @mock_stripe()

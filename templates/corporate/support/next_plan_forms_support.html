@@ -1,8 +1,14 @@
 <h4>⏱️ Schedule fixed price plan:</h4>
 <form method="POST" class="remote-form">
     <b>Fixed price</b><br />
+    {% if not is_current_plan_billable %}
+    <i>Enter Invoice ID only if the customer chose to pay by invoice.</i><br />
+    {% endif %}
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     <input type="number" name="fixed_price" placeholder="Annual amount in dollars" required />
+    {% if not is_current_plan_billable %}
+    <input type="text" name="sent_invoice_id" placeholder="Sent invoice ID" />
+    {% endif %}
     <button type="submit" class="support-submit-button">Schedule</button>
 </form>
