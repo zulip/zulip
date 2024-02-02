@@ -355,7 +355,6 @@ export function remove_old_drafts() {
 
 export function format_draft(draft) {
     const id = draft.id;
-    let formatted;
     const time = new Date(draft.updatedAt);
     let invite_only = false;
     let is_web_public = false;
@@ -363,6 +362,28 @@ export function format_draft(draft) {
     if (time_stamp === $t({defaultMessage: "Today"})) {
         time_stamp = timerender.stringify_time(time);
     }
+
+    let markdown_data;
+    try {
+        markdown_data = markdown.render(draft.content);
+    } catch (error) {
+        // In the unlikely event that there is syntax in the
+        // draft content which our Markdown processor is
+        // unable to process, we delete the draft, so that the
+        // drafts overlay can be opened without any errors.
+        // We also report the exception to the server so that
+        // the bug can be fixed.
+        draft_model.deleteDraft(id);
+        blueslip.error(
+            "Error in rendering draft.",
+            {
+                draft_content: draft.content,
+            },
+            error,
+        );
+        return undefined;
+    }
+
     if (draft.type === "stream") {
         // In case there is no stream for the draft, we need a
         // single space char for proper rendering of the stream label
@@ -386,7 +407,7 @@ export function format_draft(draft) {
         const draft_topic = draft.topic || compose_state.empty_topic_placeholder();
         const draft_stream_color = stream_data.get_color(draft.stream_id);
 
-        formatted = {
+        return {
             draft_id: draft.id,
             is_stream: true,
             stream_name,
@@ -399,44 +420,20 @@ export function format_draft(draft) {
             time_stamp,
             invite_only,
             is_web_public,
-        };
-    } else {
-        const emails = util.extract_pm_recipients(draft.private_message_recipient);
-        const recipients = people.emails_to_full_names_string(emails);
-
-        formatted = {
-            draft_id: draft.id,
-            is_stream: false,
-            recipients,
-            raw_content: draft.content,
-            time_stamp,
+            ...markdown_data,
         };
     }
 
-    try {
-        formatted = {
-            ...formatted,
-            ...markdown.render(formatted.raw_content),
-        };
-    } catch (error) {
-        // In the unlikely event that there is syntax in the
-        // draft content which our Markdown processor is
-        // unable to process, we delete the draft, so that the
-        // drafts overlay can be opened without any errors.
-        // We also report the exception to the server so that
-        // the bug can be fixed.
-        draft_model.deleteDraft(id);
-        blueslip.error(
-            "Error in rendering draft.",
-            {
-                draft_content: draft.content,
-            },
-            error,
-        );
-        return undefined;
-    }
-
-    return formatted;
+    const emails = util.extract_pm_recipients(draft.private_message_recipient);
+    const recipients = people.emails_to_full_names_string(emails);
+    return {
+        draft_id: draft.id,
+        is_stream: false,
+        recipients,
+        raw_content: draft.content,
+        time_stamp,
+        ...markdown_data,
+    };
 }
 
 export function initialize() {
