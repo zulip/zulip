@@ -851,7 +851,7 @@ export function initialize() {
     // Workaround for Bootstrap issue #5900, which basically makes dropdowns
     // unclickable on mobile devices.
     // https://github.com/twitter/bootstrap/issues/5900
-    $("a.dropdown-toggle, .dropdown-menu a").on("touchstart", (e) => {
+    $(".dropdown-menu a").on("touchstart", (e) => {
         e.stopPropagation();
     });
 
