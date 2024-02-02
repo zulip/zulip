@@ -186,7 +186,7 @@ EXEMPT_FILES = make_set(
         "web/src/resize_handler.js",
         "web/src/rows.ts",
         "web/src/scheduled_messages.ts",
-        "web/src/scheduled_messages_feed_ui.js",
+        "web/src/scheduled_messages_feed_ui.ts",
         "web/src/scheduled_messages_overlay_ui.js",
         "web/src/scheduled_messages_popover.js",
         "web/src/scheduled_messages_ui.js",

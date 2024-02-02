@@ -2,7 +2,7 @@ import * as channel from "./channel";
 import {$t} from "./i18n";
 import * as timerender from "./timerender";
 
-type ScheduledMessage = {
+export type ScheduledMessage = {
     scheduled_message_id: number;
     content: string;
     rendered_content: string;

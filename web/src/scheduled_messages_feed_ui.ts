@@ -4,9 +4,10 @@ import render_scheduled_messages_indicator from "../templates/scheduled_messages
 
 import * as narrow_state from "./narrow_state";
 import * as scheduled_messages from "./scheduled_messages";
+import type {ScheduledMessage} from "./scheduled_messages";
 import * as util from "./util";
 
-function get_scheduled_messages_matching_narrow() {
+function get_scheduled_messages_matching_narrow(): ScheduledMessage[] {
     const scheduled_messages_list = [...scheduled_messages.scheduled_messages_data.values()];
     const filter = narrow_state.filter();
     const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
@@ -55,7 +56,7 @@ function get_scheduled_messages_matching_narrow() {
     return matching_scheduled_messages;
 }
 
-export function update_schedule_message_indicator() {
+export function update_schedule_message_indicator(): void {
     $("#scheduled_message_indicator").empty();
     const matching_scheduled_messages = get_scheduled_messages_matching_narrow();
     const scheduled_message_count = matching_scheduled_messages.length;
