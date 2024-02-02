@@ -1,5 +1,5 @@
-class zulip_ops::profile::nagios {
-  include zulip_ops::profile::base
+class zulip_ops::profile::nagios inherits zulip_ops::profile::base {
+
   include zulip_ops::apache
 
   zulip::ssh_keys { 'nagios': }

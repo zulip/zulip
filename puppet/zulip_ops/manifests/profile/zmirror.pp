@@ -1,5 +1,5 @@
-class zulip_ops::profile::zmirror {
-  include zulip_ops::profile::base
+class zulip_ops::profile::zmirror inherits zulip_ops::profile::base {
+
   include zulip::supervisor
 
   $zmirror_packages = [# Packages needed to run the mirror

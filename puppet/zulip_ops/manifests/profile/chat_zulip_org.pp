@@ -1,9 +1,8 @@
-class zulip_ops::profile::chat_zulip_org {
+class zulip_ops::profile::chat_zulip_org inherits zulip_ops::profile::base {
   include zulip::profile::standalone
   include zulip::postfix_localmail
   include zulip::hooks::sentry
 
-  include zulip_ops::profile::base
   include zulip_ops::app_frontend_monitoring
   include zulip_ops::prometheus::redis
   include zulip_ops::prometheus::postgresql

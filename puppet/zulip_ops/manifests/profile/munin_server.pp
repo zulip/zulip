@@ -1,5 +1,5 @@
-class zulip_ops::profile::munin_server {
-  include zulip_ops::profile::base
+class zulip_ops::profile::munin_server inherits zulip_ops::profile::base {
+
   include zulip_ops::apache
   include zulip::supervisor
 

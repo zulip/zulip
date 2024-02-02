@@ -1,5 +1,5 @@
-class zulip_ops::profile::teleport {
-  include zulip_ops::profile::base
+class zulip_ops::profile::teleport inherits zulip_ops::profile::base {
+
 
   file { '/etc/teleport_server.yaml':
     owner  => 'root',
