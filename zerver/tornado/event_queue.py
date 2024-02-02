@@ -343,7 +343,7 @@ class EventQueue:
     def from_dict(cls, d: Dict[str, Any]) -> "EventQueue":
         ret = cls(d["id"])
         ret.next_event_id = d["next_event_id"]
-        ret.newest_pruned_id = d.get("newest_pruned_id", None)
+        ret.newest_pruned_id = d.get("newest_pruned_id")
         ret.queue = deque(d["queue"])
         ret.virtual_events = d.get("virtual_events", {})
         return ret
