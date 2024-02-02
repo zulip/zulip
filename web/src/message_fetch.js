@@ -33,6 +33,9 @@ const consts = {
     narrowed_view_forward_batch_size: 100,
     recent_view_fetch_more_batch_size: 1000,
     catch_up_batch_size: 1000,
+    // Delay in milliseconds after processing a catch-up request
+    // before sending the next one.
+    catch_up_backfill_delay: 150,
 };
 
 function process_result(data, opts) {
@@ -551,16 +554,19 @@ export function initialize(home_view_loaded) {
 
         // If we fall through here, we need to keep fetching more data, and
         // we'll call back to the function we're in.
-        const messages = data.messages;
-        const latest_id = messages.at(-1).id;
-
-        load_messages({
-            anchor: latest_id,
-            num_before: 0,
-            num_after: consts.catch_up_batch_size,
-            msg_list: message_lists.home,
-            cont: load_more,
-        });
+        //
+        // But we do it with a bit of delay, to reduce risk that we
+        // hit rate limits with these backfills.
+        const latest_id = data.messages.at(-1).id;
+        setTimeout(() => {
+            load_messages({
+                anchor: latest_id,
+                num_before: 0,
+                num_after: consts.catch_up_batch_size,
+                msg_list: message_lists.home,
+                cont: load_more,
+            });
+        }, consts.catch_up_backfill_delay);
     }
 
     let anchor;

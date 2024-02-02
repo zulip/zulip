@@ -224,6 +224,12 @@ function forward_fill_step() {
     let fetch;
 
     self.prep = () => {
+        /* Don't wait for the timeout before recursively calling `load_messages`. */
+        const expected_delay = 150;
+        set_global("setTimeout", (f, delay) => {
+            assert.equal(delay, expected_delay);
+            f();
+        });
         fetch = config_fake_channel({
             expected_opts_data: initialize_data.forward_fill.req,
         });
