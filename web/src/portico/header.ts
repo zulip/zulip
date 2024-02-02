@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+const EXTRA_SUBMENU_BOTTOM_PADDING = 16;
+
 $(() => {
     function on_tab_menu_selection_change(
         event?: JQuery.ChangeEvent<HTMLElement> | JQuery.ClickEvent<HTMLElement>,
@@ -11,7 +13,10 @@ $(() => {
         }
         const el = event.target.parentElement.querySelector(".top-menu-submenu");
         if (el) {
-            $("#top-menu-submenu-backdrop").css("height", Number(el.offsetHeight) + 16);
+            $("#top-menu-submenu-backdrop").css(
+                "height",
+                Number(el.offsetHeight) + EXTRA_SUBMENU_BOTTOM_PADDING,
+            );
         } else {
             $("#top-menu-submenu-backdrop").css("height", 0);
         }
@@ -23,12 +28,25 @@ $(() => {
         on_tab_menu_selection_change();
     }
 
+    function update_submenu_height_if_visible(): void {
+        if ($(".top-menu-tab-input:checked").length === 1) {
+            const sub_menu_height =
+                $(".top-menu-tab-input:checked ~ .top-menu-submenu").height() ?? 0;
+            $("#top-menu-submenu-backdrop").css(
+                "height",
+                sub_menu_height + EXTRA_SUBMENU_BOTTOM_PADDING,
+            );
+        }
+    }
+
     // In case user presses `back` with menu open.
     // See https://github.com/zulip/zulip/pull/24301#issuecomment-1418547337.
-    if ($(".top-menu-tab-input:checked").length === 1) {
-        const sub_menu_height = $(".top-menu-tab-input:checked ~ .top-menu-submenu").height() ?? 0;
-        $("#top-menu-submenu-backdrop").css("height", sub_menu_height + 16);
-    }
+    update_submenu_height_if_visible();
+
+    // Update the height again if window is resized.
+    $(window).on("resize", () => {
+        update_submenu_height_if_visible();
+    });
 
     // Close navbar if already open when user clicks outside the navbar.
     $("body").on("click", (e) => {
