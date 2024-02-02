@@ -13,7 +13,7 @@ function get_scheduled_messages_matching_narrow() {
     const current_view_type = narrow_state.narrowed_to_pms() ? "private" : "stream";
 
     if (!is_conversation_view) {
-        return false;
+        return [];
     }
 
     const matching_scheduled_messages = scheduled_messages_list.filter((scheduled_message) => {
