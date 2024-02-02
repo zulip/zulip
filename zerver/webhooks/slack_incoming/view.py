@@ -61,16 +61,16 @@ def api_slack_incoming_webhook(
         user_specified_topic = "(no topic)"
 
     pieces: List[str] = []
-    if "blocks" in payload and payload["blocks"]:
+    if payload.get("blocks"):
         pieces += map(render_block, payload["blocks"])
 
-    if "attachments" in payload and payload["attachments"]:
+    if payload.get("attachments"):
         pieces += map(render_attachment, payload["attachments"])
 
     body = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
-    if body == "" and "text" in payload and payload["text"]:
-        if "icon_emoji" in payload and payload["icon_emoji"]:
+    if body == "" and payload.get("text"):
+        if payload.get("icon_emoji"):
             body = payload["icon_emoji"].tame(check_string) + " "
         body += payload["text"].tame(check_string)
         body = body.strip()
@@ -192,16 +192,16 @@ def render_attachment(attachment: WildValue) -> str:
     # rest of the fields we handle here are legacy fields. These fields are
     # optional and may contain null values.
     pieces = []
-    if "title" in attachment and attachment["title"]:
+    if attachment.get("title"):
         title = attachment["title"].tame(check_string)
-        if "title_link" in attachment and attachment["title_link"]:
+        if attachment.get("title_link"):
             title_link = attachment["title_link"].tame(check_url)
             pieces.append(f"## [{title}]({title_link})")
         else:
             pieces.append(f"## {title}")
-    if "pretext" in attachment and attachment["pretext"]:
+    if attachment.get("pretext"):
         pieces.append(attachment["pretext"].tame(check_string))
-    if "text" in attachment and attachment["text"]:
+    if attachment.get("text"):
         pieces.append(attachment["text"].tame(check_string))
     if "fields" in attachment:
         fields = []
@@ -210,20 +210,20 @@ def render_attachment(attachment: WildValue) -> str:
                 title = field["title"].tame(check_string)
                 value = field["value"].tame(check_string)
                 fields.append(f"*{title}*: {value}")
-            elif "title" in field and field["title"]:
+            elif field.get("title"):
                 title = field["title"].tame(check_string)
                 fields.append(f"*{title}*")
-            elif "value" in field and field["value"]:
+            elif field.get("value"):
                 value = field["value"].tame(check_string)
                 fields.append(f"{value}")
         pieces.append("\n".join(fields))
-    if "blocks" in attachment and attachment["blocks"]:
+    if attachment.get("blocks"):
         pieces += map(render_block, attachment["blocks"])
-    if "image_url" in attachment and attachment["image_url"]:
+    if attachment.get("image_url"):
         pieces.append("[]({})".format(attachment["image_url"].tame(check_url)))
-    if "footer" in attachment and attachment["footer"]:
+    if attachment.get("footer"):
         pieces.append(attachment["footer"].tame(check_string))
-    if "ts" in attachment and attachment["ts"]:
+    if attachment.get("ts"):
         time = attachment["ts"].tame(check_int)
         pieces.append(f"<time:{time}>")
 
