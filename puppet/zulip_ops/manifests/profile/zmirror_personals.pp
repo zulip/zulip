@@ -2,7 +2,14 @@ class zulip_ops::profile::zmirror_personals inherits zulip_ops::profile::base {
 
   include zulip::supervisor
 
-  $zmirror_packages = [# Packages needed to run the mirror
+  Zulip_Ops::User_Dotfiles['zulip'] {
+    authorized_keys => [
+      'common',
+      'production-write-ccache',
+    ],
+  }
+
+  $zmirror_packages = [ # Packages needed to run the mirror
     'libzephyr4-krb5',
     'zephyr-clients',
     'krb5-config',
@@ -10,9 +17,33 @@ class zulip_ops::profile::zmirror_personals inherits zulip_ops::profile::base {
     # Packages needed to for ctypes access to Zephyr
     'python3-dev',
     'python3-typing-extensions',
+    'restricted-ssh-commands',
   ]
   package { $zmirror_packages:
     ensure  => installed,
+  }
+
+  # The production-write-ccache key uses
+  # `command="/usr/lib/restricted-ssh-commands"` which allows us to
+  # limit the commands it can run.
+  file { '/etc/restricted-ssh-commands':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  file { '/etc/restricted-ssh-commands/zulip':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => join([
+      '^/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache ',
+      '[a-z0-9_.-]+ ',
+      '[A-Za-z0-9]{32} ',
+      '[-A-Za-z0-9+/]*={0,3}$',
+      "\n",
+    ], ''),
   }
 
   file { '/etc/krb5.conf':
