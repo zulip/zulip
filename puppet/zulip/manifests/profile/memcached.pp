@@ -1,7 +1,6 @@
 class zulip::profile::memcached {
   include zulip::profile::base
   include zulip::sasl_modules
-  include zulip::systemd_daemon_reload
 
   case $::os['family'] {
     'Debian': {
@@ -92,6 +91,6 @@ saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
   service { 'memcached':
     ensure    => running,
     subscribe => File['/etc/memcached.conf'],
-    require   => [File['/run/memcached'], Class['zulip::systemd_daemon_reload']],
+    require   => File['/run/memcached'],
   }
 }
