@@ -565,16 +565,14 @@ export async function build_move_topic_to_stream_popover(
         }).setup();
 
         render_selected_stream();
-        $("#select_stream_widget .dropdown-toggle").prop("disabled", disable_stream_input);
+        $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
         });
     }
 
     function focus_on_move_modal_render() {
-        if (!disable_stream_input && args.disable_topic_input) {
-            $("#select_stream_widget .button").trigger("focus");
-        } else {
+        if (!args.disable_topic_input) {
             ui_util.place_caret_at_end($(".move_messages_edit_topic")[0]);
         }
     }
