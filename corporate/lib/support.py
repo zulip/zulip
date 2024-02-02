@@ -66,6 +66,7 @@ class PlanData:
     next_billing_cycle_start: Optional[datetime] = None
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
+    is_current_plan_billable: bool = False
     warning: Optional[str] = None
     annual_recurring_revenue: Optional[int] = None
     estimated_next_plan_revenue: Optional[int] = None
@@ -215,6 +216,9 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
             plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         )
         plan_data.has_fixed_price = plan_data.current_plan.fixed_price is not None
+        plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
+            plan_tier=plan_data.current_plan.tier
+        )
         annual_invoice_count = get_annual_invoice_count(plan_data.current_plan.billing_schedule)
         if last_ledger_entry is not None:
             plan_data.annual_recurring_revenue = (

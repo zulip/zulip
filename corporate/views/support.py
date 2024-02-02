@@ -58,6 +58,7 @@ from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.validator import (
     check_bool,
     check_date,
+    check_string,
     check_string_in,
     to_decimal,
     to_non_negative_int,
@@ -492,6 +493,7 @@ def remote_servers_support(
     minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     fixed_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    sent_invoice_id: Optional[str] = REQ(default=None, str_validator=check_string),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
     billing_modality: Optional[str] = REQ(
@@ -511,14 +513,9 @@ def remote_servers_support(
     acting_user = request.user
     assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
-        # We check that request.POST only has two keys in it:
-        # either the remote_server_id or a remote_realm_id,
-        # and a field to change.
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
-        if len(keys) != 2:
-            raise JsonableError(_("Invalid parameters"))
 
         if remote_realm_id is not None:
             remote_realm_support_request = True
@@ -553,9 +550,13 @@ def remote_servers_support(
                 required_plan_tier=required_plan_tier,
             )
         elif fixed_price is not None:
+            # Treat empty field submitted as None.
+            if sent_invoice_id is not None and sent_invoice_id.strip() == "":
+                sent_invoice_id = None
             support_view_request = SupportViewRequest(
                 support_type=SupportType.configure_fixed_price_plan,
                 fixed_price=fixed_price,
+                sent_invoice_id=sent_invoice_id,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(
