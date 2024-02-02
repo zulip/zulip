@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 import posixpath
@@ -754,17 +755,7 @@ def convert_slack_workspace_messages(
         zerver_subscription=realm["zerver_subscription"],
     )
 
-    while True:
-        message_data = []
-        _counter = 0
-        for msg in all_messages:
-            _counter += 1
-            message_data.append(msg)
-            if _counter == chunk_size:
-                break
-        if len(message_data) == 0:
-            break
-
+    while message_data := list(itertools.islice(all_messages, chunk_size)):
         (
             zerver_message,
             zerver_usermessage,

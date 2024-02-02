@@ -15,10 +15,9 @@ def reset_is_private_flag(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
     # zerver/migrations/0100_usermessage_remove_is_me_message.py
     # didn't clean the field after removing it.
 
-    i = 0
     total = len(user_profile_ids)
     print("Setting default values for the new flag...", flush=True)
-    for user_id in user_profile_ids:
+    for i, user_id in enumerate(user_profile_ids, 1):
         while True:
             # Ideally, we'd just do a single database query per user.
             # Unfortunately, Django doesn't use the fancy new index on
@@ -39,7 +38,6 @@ def reset_is_private_flag(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
             if count < 1000:
                 break
 
-        i += 1
         if i % 50 == 0 or i == total:
             percent = round((i / total) * 100, 2)
             print(f"Processed {i}/{total} {percent}%", flush=True)
