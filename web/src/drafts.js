@@ -3,6 +3,7 @@ import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 import _ from "lodash";
 import tippy from "tippy.js";
+import {z} from "zod";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 
@@ -30,17 +31,93 @@ function getTimestamp() {
     return Date.now();
 }
 
+const possibly_buggy_draft_schema = z.intersection(
+    z.object({
+        content: z.string(),
+        updatedAt: z.number(),
+    }),
+    z.union([
+        z.object({
+            type: z.literal("stream"),
+            topic: z.string().optional(),
+            stream_id: z.number().optional(),
+            stream: z.string().optional(),
+        }),
+        z.object({
+            type: z.literal("private"),
+            reply_to: z.string(),
+            private_message_recipient: z.string(),
+        }),
+    ]),
+);
+
+const possibly_buggy_drafts_schema = z.record(z.string(), possibly_buggy_draft_schema);
+
 export const draft_model = (function () {
     const exports = {};
 
     // the key that the drafts are stored under.
     const KEY = "drafts";
     const ls = localstorage();
+    let fixed_buggy_drafts = false;
 
     function get() {
-        return ls.get(KEY) || {};
+        const drafts = ls.get(KEY);
+        if (ls.get(KEY) === undefined) {
+            return {};
+        }
+        if (!fixed_buggy_drafts) {
+            fix_buggy_drafts();
+            return ls.get(KEY);
+        }
+        return drafts;
     }
     exports.get = get;
+
+    function fix_buggy_drafts() {
+        const drafts = ls.get(KEY);
+        const parsed_drafts = possibly_buggy_drafts_schema.parse(drafts);
+        const valid_drafts = {};
+        for (const [draft_id, draft] of Object.entries(parsed_drafts)) {
+            if (draft.type !== "stream") {
+                valid_drafts[draft_id] = draft;
+                continue;
+            }
+
+            // draft.stream is deprecated but might still exist on old drafts
+            if (draft.stream !== undefined) {
+                const sub = stream_data.get_sub(draft.stream);
+                if (sub) {
+                    draft.stream_id = sub.stream_id;
+                }
+                delete draft.stream;
+            }
+
+            // A one-time fix for buggy drafts that had their topics renamed to
+            // `undefined` when the topic was moved to another stream without
+            // changing the topic. The bug was introduced in
+            // 4c8079c49a81b08b29871f9f1625c6149f48b579 and fixed in
+            // aebdf6af8c6675fbd2792888d701d582c4a1110a; but servers running
+            // intermediate versions may have generated some bugged drafts with
+            // this invalid topic value.
+            //
+            // TODO/compatibility: This can be deleted once servers can no longer
+            // directly upgrade from Zulip 6.0beta1 and earlier development branch where the bug was present,
+            // since we expect bugged drafts will have either been run through
+            // this code or else been deleted after 30 (DRAFT_LIFETIME) days.
+            if (draft.topic === undefined) {
+                draft.topic = "";
+            }
+
+            valid_drafts[draft_id] = {
+                ...draft,
+                topic: draft.topic,
+            };
+        }
+        ls.set(KEY, valid_drafts);
+        set_count(Object.keys(valid_drafts).length);
+        fixed_buggy_drafts = true;
+    }
 
     exports.getDraft = function (id) {
         return get()[id] || false;
@@ -96,32 +173,6 @@ export const draft_model = (function () {
 
     return exports;
 })();
-
-// A one-time fix for buggy drafts that had their topics renamed to
-// `undefined` when the topic was moved to another stream without
-// changing the topic. The bug was introduced in
-// 4c8079c49a81b08b29871f9f1625c6149f48b579 and fixed in
-// aebdf6af8c6675fbd2792888d701d582c4a1110a; but servers running
-// intermediate versions may have generated some bugged drafts with
-// this invalid topic value.
-//
-// TODO/compatibility: This can be deleted once servers can no longer
-// directly upgrade from Zulip 6.0beta1 and earlier development branch where the bug was present,
-// since we expect bugged drafts will have either been run through
-// this code or else been deleted after 30 (DRAFT_LIFETIME) days.
-let fixed_buggy_drafts = false;
-export function fix_drafts_with_undefined_topics() {
-    const data = draft_model.get();
-    for (const draft_id of Object.keys(data)) {
-        const draft = data[draft_id];
-        if (draft.type === "stream" && draft.topic === undefined) {
-            const draft = data[draft_id];
-            draft.topic = "";
-            draft_model.editDraft(draft_id, draft);
-        }
-    }
-    fixed_buggy_drafts = true;
-}
 
 export function sync_count() {
     const drafts = draft_model.get();
@@ -391,13 +442,6 @@ export function format_draft(draft) {
         let sub;
         if (draft.stream_id) {
             sub = sub_store.get(draft.stream_id);
-        } else if (draft.stream && draft.stream.length > 0) {
-            // draft.stream is deprecated but might still exist on old drafts
-            stream_name = draft.stream;
-            const sub = stream_data.get_sub(stream_name);
-            if (sub) {
-                draft.stream_id = sub.stream_id;
-            }
         }
         if (sub) {
             stream_name = sub.name;
@@ -438,10 +482,6 @@ export function format_draft(draft) {
 
 export function initialize() {
     remove_old_drafts();
-
-    if (!fixed_buggy_drafts) {
-        fix_drafts_with_undefined_topics();
-    }
 
     window.addEventListener("beforeunload", () => {
         update_draft();

@@ -9,7 +9,6 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {user_settings} = require("./lib/zpage_params");
 
-const blueslip = zrequire("blueslip");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const user_pill = zrequire("user_pill");
 const people = zrequire("people");
@@ -96,6 +95,54 @@ function test(label, f) {
         f(helpers);
     });
 }
+
+// There were some buggy drafts that had their topics
+// renamed to `undefined` in #23238.
+// TODO/compatibility: The next two tests can be deleted
+// when we get to delete drafts.fix_drafts_with_undefined_topics.
+//
+// This test must run before others, so that
+// fixed_buggy_drafts is false.
+test("fix buggy drafts", ({override_rewire}) => {
+    override_rewire(drafts, "set_count", noop);
+
+    const stream_A = {
+        subscribed: false,
+        name: "A",
+        stream_id: 1,
+    };
+    stream_data.add_sub(stream_A);
+    const stream_B = {
+        subscribed: false,
+        name: "B",
+        stream_id: 2,
+    };
+    stream_data.add_sub(stream_B);
+
+    const buggy_draft = {
+        stream_id: stream_B.stream_id,
+        topic: undefined,
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const data = {id1: buggy_draft};
+    const ls = localstorage();
+    ls.set("drafts", data);
+    const draft_model = drafts.draft_model;
+
+    // The draft is fixed in this codepath.
+    drafts.rename_stream_recipient(
+        stream_B.stream_id,
+        "old_topic",
+        stream_A.stream_id,
+        "new_topic",
+    );
+
+    const draft = draft_model.getDraft("id1");
+    assert.equal(draft.stream_id, stream_B.stream_id);
+    assert.equal(draft.topic, "");
+});
 
 test("draft_model add", () => {
     const draft_model = drafts.draft_model;
@@ -376,72 +423,6 @@ test("rename_stream_recipient", ({override_rewire}) => {
     assert_draft("id2", stream_A.stream_id, "b");
     assert_draft("id3", stream_B.stream_id, "e");
     assert_draft("id4", stream_B.stream_id, "e");
-});
-
-// There were some buggy drafts that had their topics
-// renamed to `undefined` in #23238.
-// TODO/compatibility: The next two tests can be deleted
-// when we get to delete drafts.fix_drafts_with_undefined_topics.
-test("catch_buggy_draft_error", () => {
-    const stream_A = {
-        subscribed: false,
-        name: "A",
-        stream_id: 1,
-    };
-    stream_data.add_sub(stream_A);
-    const stream_B = {
-        subscribed: false,
-        name: "B",
-        stream_id: 2,
-    };
-    stream_data.add_sub(stream_B);
-
-    const buggy_draft = {
-        stream_id: stream_B.stream_id,
-        topic: undefined,
-        type: "stream",
-        content: "Test stream message",
-        updatedAt: Date.now(),
-    };
-    const data = {id1: buggy_draft};
-    const ls = localstorage();
-    ls.set("drafts", data);
-    const draft_model = drafts.draft_model;
-
-    // An error is logged but the draft isn't fixed in this codepath.
-    blueslip.expect("error", "Cannot compare strings; at least one value is undefined");
-    drafts.rename_stream_recipient(
-        stream_B.stream_id,
-        "old_topic",
-        stream_A.stream_id,
-        "new_topic",
-    );
-    const draft = draft_model.getDraft("id1");
-    assert.equal(draft.stream_id, stream_B.stream_id);
-    assert.equal(draft.topic, undefined);
-});
-
-test("fix_buggy_draft", ({override_rewire}) => {
-    override_rewire(drafts, "set_count", noop);
-
-    const buggy_draft = {
-        stream_id: 1,
-        // This is the bug: topic never be undefined for a stream
-        // message draft.
-        topic: undefined,
-        type: "stream",
-        content: "Test stream message",
-        updatedAt: Date.now(),
-    };
-    const data = {id1: buggy_draft};
-    const ls = localstorage();
-    ls.set("drafts", data);
-    const draft_model = drafts.draft_model;
-
-    drafts.fix_drafts_with_undefined_topics();
-    const draft = draft_model.getDraft("id1");
-    assert.equal(draft.stream_id, buggy_draft.stream_id);
-    assert.equal(draft.topic, "");
 });
 
 test("delete_all_drafts", () => {
