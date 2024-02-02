@@ -308,25 +308,7 @@ function stream_notification_reset(e) {
     );
 }
 
-function stream_is_muted_changed(e) {
-    const sub = get_sub_for_target(e.target);
-    if (!sub) {
-        blueslip.error("stream_is_muted_changed() fails");
-        return;
-    }
-
-    stream_settings_api.set_stream_property(
-        sub,
-        {property: "is_muted", value: e.target.checked},
-        $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
-    );
-}
-
 function stream_setting_changed(e) {
-    if (e.target.name === "is_muted") {
-        return;
-    }
-
     const sub = get_sub_for_target(e.target);
     const $status_element = $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
     const setting = e.target.name;
@@ -560,12 +542,6 @@ export function initialize() {
         "click",
         ".subsection-parent .reset-stream-notifications-button",
         stream_notification_reset,
-    );
-
-    $("#streams_overlay_container").on(
-        "change",
-        "#sub_is_muted_setting .sub_setting_control",
-        stream_is_muted_changed,
     );
 
     $("#streams_overlay_container").on(
