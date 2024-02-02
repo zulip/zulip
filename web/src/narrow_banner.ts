@@ -239,6 +239,10 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     return {
                         title: $t({defaultMessage: "No topics are marked as resolved."}),
                     };
+                case "followed":
+                    return {
+                        title: $t({defaultMessage: "No topics are followed by you."}),
+                    };
             }
             // fallthrough to default case if no match is found
             break;
