@@ -634,12 +634,10 @@ def run_parallel_wrapper(
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
     with ProcessPoolExecutor(max_workers=threads) as executor:
-        count = 0
-        for future in as_completed(
-            executor.submit(wrapping_function, f, item) for item in full_items
+        for count, future in enumerate(
+            as_completed(executor.submit(wrapping_function, f, item) for item in full_items), 1
         ):
             future.result()
-            count += 1
             if count % 1000 == 0:
                 logging.info("Finished %s items", count)
 

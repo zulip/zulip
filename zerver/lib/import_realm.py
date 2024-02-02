@@ -786,12 +786,7 @@ def import_uploads(
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         bucket = get_bucket(bucket_name)
 
-    count = 0
-    for record in records:
-        count += 1
-        if count % 1000 == 0:
-            logging.info("Processed %s/%s uploads", count, len(records))
-
+    for count, record in enumerate(records, 1):
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
@@ -877,6 +872,9 @@ def import_uploads(
             orig_file_path = os.path.join(import_dir, record["path"])
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             shutil.copy(orig_file_path, file_path)
+
+        if count % 1000 == 0:
+            logging.info("Processed %s/%s uploads", count, len(records))
 
     if processing_avatars:
         # Ensure that we have medium-size avatar images for every
