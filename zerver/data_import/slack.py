@@ -1318,7 +1318,7 @@ def fetch_team_icons(
     records = []
 
     team_icons_dict = team_info_dict["icon"]
-    if "image_default" in team_icons_dict and team_icons_dict["image_default"]:
+    if team_icons_dict.get("image_default", False):
         return []
 
     icon_url = (
