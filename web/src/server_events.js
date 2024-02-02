@@ -231,7 +231,7 @@ function get_events({dont_block = false} = {}) {
                     get_events_failures += 1;
                 }
 
-                if (get_events_failures >= 5) {
+                if (get_events_failures >= 8) {
                     show_ui_connection_error();
                 } else {
                     hide_ui_connection_error();
@@ -243,7 +243,12 @@ function get_events({dont_block = false} = {}) {
             // We need to respect the server's rate-limiting headers, but beyond
             // that, we also want to avoid contributing to a thundering herd if
             // the server is giving us 500s/502s.
-            const backoff_delay_secs = Math.min(90, Math.exp(get_events_failures / 2));
+            //
+            // So we do the maximum of the retry-after header and an exponential
+            // backoff with ratio sqrt(2) and half jitter. Starts at 1-2s and ends at
+            // 45-90s after enough failures.
+            const backoff_scale = Math.min(2 ** ((get_events_failures + 1) / 2), 90);
+            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
             let rate_limit_delay_secs = 0;
             if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
                 // Add a bit of jitter to the required delay suggested

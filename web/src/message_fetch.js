@@ -377,11 +377,10 @@ export function load_messages(opts, attempt = 1) {
             // the server is giving us 500s/502s.
             //
             // So we do the maximum of the retry-after header and an exponential
-            // backoff with full jitter: up to 2s, 4s, 8s, 16s, 32s
-            let backoff_delay_secs = Math.random() * 2 ** attempt * 2;
-            if (attempt >= 5) {
-                backoff_delay_secs = 30;
-            }
+            // backoff with ratio 2 and half jitter. Starts at 1-2s and ends at
+            // 16-32s after 5 failures.
+            const backoff_scale = Math.min(2 ** attempt, 32);
+            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
             let rate_limit_delay_secs = 0;
             if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
                 // Add a bit of jitter to the required delay suggested by the
