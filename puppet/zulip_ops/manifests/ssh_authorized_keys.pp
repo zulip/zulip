@@ -10,6 +10,6 @@ define zulip_ops::ssh_authorized_keys(
   exec { "ssh_authorized_keys ${user}":
     require => File['/usr/local/bin/install-ssh-authorized-keys'],
     command => "/usr/local/bin/install-ssh-authorized-keys ${user} ${keypath}",
-    unless  => "[ -f /usr/local/bin/install-ssh-authorized-keys ] && /usr/local/bin/install-ssh-authorized-keys ${user} ${keypath} check",
+    unless  => "[ -f /usr/local/bin/install-ssh-authorized-keys ] && /usr/local/bin/install-ssh-authorized-keys --check ${user} ${keypath}",
   }
 }
