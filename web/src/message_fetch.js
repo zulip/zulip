@@ -370,15 +370,29 @@ export function load_messages(opts, attempt = 1) {
                 return;
             }
 
-            // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
-            let delay = Math.random() * 2 ** attempt * 2000;
-            if (attempt >= 5) {
-                delay = 30000;
-            }
             ui_report.show_error($("#connection-error"));
+
+            // We need to respect the server's rate-limiting headers, but beyond
+            // that, we also want to avoid contributing to a thundering herd if
+            // the server is giving us 500s/502s.
+            //
+            // So we do the maximum of the retry-after header and an exponential
+            // backoff with full jitter: up to 2s, 4s, 8s, 16s, 32s
+            let backoff_delay_secs = Math.random() * 2 ** attempt * 2;
+            if (attempt >= 5) {
+                backoff_delay_secs = 30;
+            }
+            let rate_limit_delay_secs = 0;
+            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                // Add a bit of jitter to the required delay suggested by the
+                // server, because we may be racing with other copies of the web
+                // app.
+                rate_limit_delay_secs = xhr.responseJSON["retry-after"] + Math.random() * 0.5;
+            }
+            const delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
             setTimeout(() => {
                 load_messages(opts, attempt + 1);
-            }, delay);
+            }, delay_secs * 1000);
         },
     });
 }
