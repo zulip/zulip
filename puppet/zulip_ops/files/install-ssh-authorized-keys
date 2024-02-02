@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+args="$(getopt -o '' --long check -- "$@")"
+eval "set -- $args"
+check=false
+while true; do
+    case "$1" in
+        --check)
+            check=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
 username="$1"
 ssh_secret_name="$2"
 
@@ -21,7 +37,7 @@ trap cleanup EXIT
 chmod 644 "$workfile"
 chown "$username:$username" "$workfile"
 
-if [ "$#" -gt 2 ]; then
+if [ "$check" = "true" ]; then
     diff -N "$workfile" "$sshdir/authorized_keys"
     exit 0
 fi
