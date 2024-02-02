@@ -237,8 +237,21 @@ function get_events({dont_block = false} = {}) {
             } catch (error) {
                 blueslip.error("Failed to handle get_events error", undefined, error);
             }
-            const retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
-            get_events_timeout = setTimeout(get_events, retry_sec * 1000);
+
+            // We need to respect the server's rate-limiting headers, but beyond
+            // that, we also want to avoid contributing to a thundering herd if
+            // the server is giving us 500s/502s.
+            const backoff_delay_secs = Math.min(90, Math.exp(get_events_failures / 2));
+            let rate_limit_delay_secs = 0;
+            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                // Add a bit of jitter to the required delay suggested
+                // by the server, because we may be racing with other
+                // copies of the web app.
+                rate_limit_delay_secs = xhr.responseJSON["retry-after"] + Math.random() * 0.5;
+            }
+
+            const retry_delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
+            get_events_timeout = setTimeout(get_events, retry_delay_secs * 1000);
         },
     });
 }
