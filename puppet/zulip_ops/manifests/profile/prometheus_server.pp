@@ -2,8 +2,8 @@
 #
 # Only one instance is necessary.
 #
-class zulip_ops::profile::prometheus_server {
-  include zulip_ops::profile::base
+class zulip_ops::profile::prometheus_server inherits zulip_ops::profile::base {
+
   include zulip_ops::prometheus::base
 
   # This blackbox monitoring of the backup system runs locally

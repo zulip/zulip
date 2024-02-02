@@ -1,7 +1,7 @@
 # @summary Observability using Grafana
 #
-class zulip_ops::profile::grafana {
-  include zulip_ops::profile::base
+class zulip_ops::profile::grafana inherits zulip_ops::profile::base {
+
   include zulip::supervisor
 
   $version = $zulip::common::versions['grafana']['version']

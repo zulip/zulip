@@ -1,5 +1,5 @@
-class zulip_ops::profile::zulipbot_zulip_org {
-  include zulip_ops::profile::base
+class zulip_ops::profile::zulipbot_zulip_org inherits zulip_ops::profile::base {
+
   zulip_ops::firewall_allow { 'http': }
   zulip_ops::firewall_allow { 'https': }
 
