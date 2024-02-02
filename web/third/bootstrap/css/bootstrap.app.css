@@ -329,9 +329,6 @@ button.close {
 .show {
   display: block;
 }
-.invisible {
-  visibility: hidden;
-}
 @-ms-viewport {
   width: device-width;
 }
