@@ -17,31 +17,25 @@
                 <label for="top-menu-tab-product" class="nav-menu-label" tabindex="0">Product</label>
                 <div class="top-menu-submenu">
                     <div class="top-menu-submenu-column">
+                        <span class="top-menu-submenu-section">OVERVIEW</span>
                         <ul class="top-menu-submenu-list">
-                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com">Home</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/why-zulip/">Why Zulip</a></li>
-                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/features/">Features</a></li>
+                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/self-hosting/">Self-hosting</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/security/">Security</a></li>
-                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/integrations/">Integrations</a></li>
-                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/">Apps</a></li>
+                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/help/getting-your-organization-started-with-zulip">Moving to Zulip</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/try-zulip/">Try Zulip</a></li>
                         </ul>
                     </div>
                     <div class="top-menu-submenu-column">
+                        <span class="top-menu-submenu-section">FEATURES</span>
                         <ul class="top-menu-submenu-list">
-                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/self-hosting/">Self-hosting</a></li>
-                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/help/getting-your-organization-started-with-zulip">Moving to Zulip</a></li>
+                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/features/">Feature matrix</a></li>
+                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/">Desktop and mobile apps</a></li>
+                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/integrations/">Integrations</a></li>
                             <li class="top-menu-submenu-list-item"><a href="/api/">API</a></li>
-                            <li class="top-menu-submenu-list-item"><a href="https://github.com/zulip/zulip" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                            <li class="top-menu-submenu-list-item"><a href="/help/">Help center</a></li>
                         </ul>
                     </div>
-                </div>
-            </div>
-            <div class='top-menu-item top-menu-tab'>
-                <div class="top-menu-tab-unselect"></div>
-                <input type="radio" name="top-menu-tabs" class="top-menu-tab-input" id="top-menu-tab-solutions" />
-                <label for="top-menu-tab-solutions" class="nav-menu-label" tabindex="0">Solutions</label>
-                <div class="top-menu-submenu">
                     <div class="top-menu-submenu-column">
                         <span class="top-menu-submenu-section">USE CASES</span>
                         <ul class="top-menu-submenu-list">
@@ -53,8 +47,15 @@
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/communities/">Communities</a></li>
                         </ul>
                     </div>
+                </div>
+            </div>
+            <div class='top-menu-item top-menu-tab'>
+                <div class="top-menu-tab-unselect"></div>
+                <input type="radio" name="top-menu-tabs" class="top-menu-tab-input" id="top-menu-tab-case-studies"/>
+                <label for="top-menu-tab-case-studies" class="nav-menu-label" tabindex="0">Case studies</label>
+                <div class="top-menu-submenu" id="case-studies-submenu">
                     <div class="top-menu-submenu-column">
-                        <span class="top-menu-submenu-section">CUSTOMER STORIES</span>
+                        <span class="top-menu-submenu-section">BUSINESS</span>
                         <ul class="top-menu-submenu-list">
                             <li class="top-menu-submenu-list-item">
                                 <a href="https://zulip.com/case-studies/idrift/">
@@ -62,23 +63,33 @@
                                 </a>
                             </li>
                             <li class="top-menu-submenu-list-item">
-                                <a href="/case-studies/gut-contact/">
+                                <a href="https://zulip.com/case-studies/gut-contact/">
                                 Easy communication for 1000 agents at GUT contact
                                 </a>
                             </li>
                             <li class="top-menu-submenu-list-item">
-                                <a href="/case-studies/end-point/">
+                                <a href="https://zulip.com/case-studies/end-point/">
                                 Managing hundreds of projects at End Point Dev
                                 </a>
                             </li>
                             <li class="top-menu-submenu-list-item">
-                                <a href="/case-studies/atolio/">
+                                <a href="https://zulip.com/case-studies/atolio/">
                                 Open distributed communication at Atolio
                                 </a>
                             </li>
+                        </ul>
+                    </div>
+                    <div class="top-menu-submenu-column" id="education-and-research-submenu-column">
+                        <span class="top-menu-submenu-section">EDUCATION and RESEARCH</span>
+                        <ul class="top-menu-submenu-list">
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/tum/">Organized chat for 1000s of students at TUM</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/ucsd/">Communication hub across 6 continents at UCSD</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/lean/">Research collaboration at scale in the Lean mathematical community</a></li>
+                        </ul>
+                    </div>
+                    <div class="top-menu-submenu-column" id="one-source-and-communities-submenu-column">
+                        <span class="top-menu-submenu-section">OPEN SOURCE and COMMUNITIES</span>
+                        <ul class="top-menu-submenu-list">
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/asciidoctor/">Inclusive discussion in the open-source Asciidoctor community</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/rust/">Faster decision-making in the Rust language community</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/recurse-center/">Platform for a worldwide community since 2013 at Recurse Center</a></li>
@@ -173,27 +184,25 @@
         <details>
             <summary class="top-menu-mobile-item-summary">Product</summary>
             <div class="top-menu-mobile-submenu">
+                <span class="top-menu-mobile-submenu-section">OVERVIEW</span>
                 <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com">Home</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/why-zulip/">Why Zulip</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/features/">Features</a></li>
+                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/self-hosting/">Self-hosting</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/security/">Security</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/integrations/">Integrations</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps">Apps</a></li>
+                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/help/getting-your-organization-started-with-zulip">Moving to Zulip</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/try-zulip/">Try Zulip</a></li>
                 </ul>
             </div>
             <div class="top-menu-mobile-submenu">
+                <span class="top-menu-mobile-submenu-section">FEATURES</span>
                 <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/self-hosting/">Self-hosting</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/help/getting-your-organization-started-with-zulip">Moving to Zulip</a></li>
+                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/features/">Feature matrix</a></li>
+                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/">Desktop and mobile apps</a></li>
+                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/integrations/">Integrations</a></li>
                     <li class="top-menu-submenu-list-item"><a href="/api/">API</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://github.com/zulip/zulip" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                    <li class="top-menu-submenu-list-item"><a href="/help/">Help center</a></li>
                 </ul>
             </div>
-        </details>
-        <details>
-            <summary class="top-menu-mobile-item-summary">Solutions</summary>
             <div class="top-menu-mobile-submenu">
                 <span class="top-menu-mobile-submenu-section">USE CASES</span>
                 <ul class="top-menu-submenu-list">
@@ -204,13 +213,42 @@
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/open-source/">Open source projects</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/communities/">Communities</a></li>
                 </ul>
-                <span class="top-menu-mobile-submenu-section">CUSTOMER STORIES</span>
+            </div>
+        </details>
+        <details>
+            <summary class="top-menu-mobile-item-summary">Case Studies</summary>
+            <div class="top-menu-mobile-submenu">
+                <span class="top-menu-mobile-submenu-section">BUSINESS</span>
                 <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/idrift/">Efficient distributed team management at iDrift AS</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="/case-studies/end-point/">Managing hundreds of projects at End Point Dev</a></li>
+                    <li class="top-menu-submenu-list-item">
+                        <a href="https://zulip.com/case-studies/idrift/">
+                        Efficient distributed team management at iDrift AS
+                        </a>
+                    </li>
+                    <li class="top-menu-submenu-list-item">
+                        <a href="https://zulip.com/case-studies/gut-contact/">
+                        Easy communication for 1000 agents at GUT contact
+                        </a>
+                    </li>
+                    <li class="top-menu-submenu-list-item">
+                        <a href="https://zulip.com/case-studies/end-point/">
+                        Managing hundreds of projects at End Point Dev
+                        </a>
+                    </li>
+                    <li class="top-menu-submenu-list-item">
+                        <a href="https://zulip.com/case-studies/atolio/">
+                        Open distributed communication at Atolio
+                        </a>
+                    </li>
+                </ul>
+                <span class="top-menu-mobile-submenu-section">EDUCATION and RESEARCH</span>
+                <ul class="top-menu-submenu-list">
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/tum/">Organized chat for 1000s of students at TUM</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/ucsd/">Communication hub across 6 continents at UCSD</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/lean/">Research collaboration at scale in the Lean mathematical community</a></li>
+                </ul>
+                <span class="top-menu-mobile-submenu-section">OPEN SOURCE and COMMUNITIES</span>
+                <ul class="top-menu-submenu-list">
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/asciidoctor/">Inclusive discussion in the open-source Asciidoctor community</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/rust/">Faster decision-making in the Rust language community</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/recurse-center/">Platform for a worldwide community since 2013 at Recurse Center</a></li>
