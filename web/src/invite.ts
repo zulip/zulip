@@ -41,6 +41,7 @@ function reset_error_messages(): void {
 function get_common_invitation_data(): {
     csrfmiddlewaretoken: string;
     invite_as: number;
+    send_notification: boolean;
     stream_ids: string;
     invite_expires_in_minutes: string;
     invitee_emails?: string;
@@ -49,6 +50,7 @@ function get_common_invitation_data(): {
         $<HTMLSelectElement & {type: "select-one"}>("select:not([multiple])#invite_as").val()!,
         10,
     );
+    const send_notification = $("#receive-invite-acceptance-notification").is(":checked");
     const raw_expires_in = $<HTMLSelectElement & {type: "select-one"}>(
         "select:not([multiple])#expires_in",
     ).val()!;
@@ -77,6 +79,7 @@ function get_common_invitation_data(): {
     const data = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
+        send_notification,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
     };
@@ -374,6 +377,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 "loading-text",
                 $t({defaultMessage: "Inviting..."}),
             );
+            $("#receive-invite-acceptance-notification-container").show();
             toggle_invite_submit_button();
             reset_error_messages();
         });
@@ -388,6 +392,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 $t({defaultMessage: "Generating link..."}),
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            $("#receive-invite-acceptance-notification-container").hide();
             reset_error_messages();
         });
 
