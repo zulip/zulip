@@ -860,3 +860,8 @@ CAMO_URI = "/external_content/"
 
 ## Directory containing Markdown files for the server's policies.
 # POLICIES_DIRECTORY = "/etc/zulip/policies/"
+
+## The max connect minutes of smtp to reopen connect
+## when the value more than 0 , smtp connect will reopen after
+## minutes of value
+# SMTP_MAX_CONNECTION_MINUTES = 0
