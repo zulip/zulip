@@ -14,4 +14,4 @@ remote="$(git config zulip.zulipRemote)" || remote=upstream
     else
         echo "$OVERRIDE_MERGE_BASE"
     fi
-} >zulip-git-version
+} >zulip-git-version || rm -f zulip-git-version
