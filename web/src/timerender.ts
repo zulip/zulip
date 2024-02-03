@@ -429,8 +429,15 @@ function get_current_time_to_hour(): Date {
     return timestamp;
 }
 
-export function get_timestamp_for_flatpickr(timestring: string): Date {
+export function get_timestamp_for_flatpickr(timestring?: string): Date {
     let timestamp;
+
+    // timestring is undefined when first opening the picker from the
+    // compose box button.
+    if (timestring === undefined) {
+        return get_current_time_to_hour();
+    }
+
     try {
         // If there's already a valid time in the compose box,
         // we use it to initialize the flatpickr instance.
