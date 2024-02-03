@@ -210,8 +210,15 @@
         }
     }
 
+    a .alert-word {
+        background-color: var(--color-background-alert-word);
+        color: hsl(210deg 100% 25%);
+        font-weight: 500;
+    }
+
     .alert-word {
         background-color: var(--color-background-alert-word);
+        color: hsl(0deg 0% 15%);
     }
 
     /* Timestamps */
