@@ -629,3 +629,8 @@ CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
 SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
 
 CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Optional["UserProfile"]]] = None
+
+# The max connect minutes of smtp to reopen connect
+# when the value more than 0 , smtp connect will reopen after
+# minutes of value
+SMTP_MAX_CONNECTION_MINUTES = 0
