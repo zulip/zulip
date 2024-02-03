@@ -251,21 +251,6 @@ input:focus:invalid:focus {
   background-color: #e5e5e5;
   border-bottom: 1px solid #ffffff;
 }
-.nav .dropdown-toggle .caret {
-  border-top-color: #0088cc;
-  border-bottom-color: #0088cc;
-  margin-top: 6px;
-}
-.nav .dropdown-toggle:hover .caret,
-.nav .dropdown-toggle:focus .caret {
-  border-top-color: #005580;
-  border-bottom-color: #005580;
-}
-/* move down carets for tabs */
-.nav .active .dropdown-toggle .caret {
-  border-top-color: #fff;
-  border-bottom-color: #fff;
-}
 .nav > .dropdown.active > a:hover,
 .nav > .dropdown.active > a:focus {
   cursor: pointer;
@@ -295,10 +280,6 @@ input:focus:invalid:focus {
 }
 .dropdown {
   position: relative;
-}
-.dropdown-toggle:active,
-.open .dropdown-toggle {
-  outline: 0;
 }
 .close {
   float: right;
