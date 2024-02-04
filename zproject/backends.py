@@ -1546,7 +1546,7 @@ def sync_user_profile_custom_fields(
 
 
 @external_auth_method
-class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
+class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMethod):
     """Authentication backend that reads the Apache REMOTE_USER variable.
     Used primarily in enterprise environments with an SSO solution
     that has an Apache REMOTE_USER integration.  For manual testing, see
