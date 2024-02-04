@@ -4,7 +4,6 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
@@ -373,7 +372,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("textarea#compose-textarea").toggleClass = noop;
-    mock_stream_header_colorblock();
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
@@ -423,7 +421,6 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
-    mock_stream_header_colorblock();
 
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
@@ -615,8 +612,6 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
 });
 
 test_ui("on_events", ({override, override_rewire}) => {
-    mock_stream_header_colorblock();
-
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", noop);
@@ -790,7 +785,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 });
 
 test_ui("create_message_object", ({override, override_rewire}) => {
-    mock_stream_header_colorblock();
     mock_banners();
 
     compose_state.set_stream_id(social.stream_id);

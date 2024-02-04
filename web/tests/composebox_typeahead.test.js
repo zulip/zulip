@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
@@ -717,7 +716,6 @@ function sorted_names_from(subs) {
 const sweden_topics_to_show = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
 
 test("initialize", ({override, override_rewire, mock_template}) => {
-    mock_stream_header_colorblock();
     mock_banners();
 
     let pill_items = [];
@@ -1877,7 +1875,6 @@ test("direct message recipients sorted according to stream / topic being viewed"
         (stream_id, user_id) =>
             stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
     );
-    mock_stream_header_colorblock();
     mock_banners();
 
     // When viewing no stream, sorting is alphabetical

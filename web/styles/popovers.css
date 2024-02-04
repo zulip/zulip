@@ -1026,17 +1026,10 @@ ul {
         margin-bottom: 10px;
 
         .dropdown-widget-button {
-            /* Override the default border-radius to properly align
-            the button corners with `stream_header_colorblock`. */
-            border-radius: 1px 4px 4px 1px !important;
             outline: none;
             line-height: 24px;
             width: auto;
             max-width: 206px;
-        }
-
-        .stream_header_colorblock {
-            margin: 0;
         }
 
         .dropdown_widget_value {

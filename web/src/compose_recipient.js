@@ -17,7 +17,6 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
-import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
@@ -205,12 +204,8 @@ export function on_compose_select_recipient_update() {
 
     if (curr_message_type === "stream") {
         // Update stream name in the recipient box.
-        const $stream_header_colorblock = $(
-            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
-        );
         const stream_id = compose_state.stream_id();
         update_recipient_label(stream_id);
-        stream_bar.decorate(stream_id, $stream_header_colorblock);
     }
 
     update_on_recipient_change();
