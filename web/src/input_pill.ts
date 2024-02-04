@@ -19,6 +19,8 @@ export type InputPillItem<T> = {
     deactivated?: boolean;
     status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean}; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
+    user_id?: number;
+    id?: number;
 } & T;
 
 export type InputPillConfig = {
@@ -62,6 +64,8 @@ type InputPillRenderingDetails = {
     has_status?: boolean;
     status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean};
     should_add_guest_user_indicator?: boolean;
+    user_id?: number;
+    group_id?: number;
 };
 
 // These are the functions that are exposed to other modules.
@@ -150,6 +154,13 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 deactivated: item.deactivated,
                 should_add_guest_user_indicator: item.should_add_guest_user_indicator,
             };
+
+            if (item.user_id) {
+                opts.user_id = item.user_id;
+            }
+            if (item.id) {
+                opts.group_id = item.id;
+            }
 
             if (has_image) {
                 opts.img_src = item.img_src;
