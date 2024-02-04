@@ -126,7 +126,7 @@ export function complete_starting_tasks(msg_type, opts) {
 }
 
 export function maybe_scroll_up_selected_message(opts) {
-    if (!opts.skip_scrolling_selected_message) {
+    if (opts.skip_scrolling_selected_message) {
         return;
     }
 
