@@ -62,7 +62,7 @@
             margin-right: 3px;
         }
 
-        &:hover .exit {
+        .exit:hover {
             opacity: 1;
         }
     }
