@@ -484,12 +484,6 @@ div.overlay {
     border-bottom: 0;
 }
 
-.stream_header_colorblock {
-    @extend .stream-selection-header-colorblock;
-    margin-bottom: 5px;
-    z-index: 1;
-}
-
 .edit-controls .fa-angle-right,
 .topic_stream_edit_header .fa-angle-right {
     font-size: 0.9em;

@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
@@ -195,8 +194,6 @@ test("snapshot_message", ({override, override_rewire}) => {
     mock_banners();
 
     $(".narrow_to_compose_recipients").toggleClass = noop;
-
-    mock_stream_header_colorblock();
 
     let curr_draft;
 

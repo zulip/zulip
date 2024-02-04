@@ -163,10 +163,6 @@
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
             }
-
-            .stream_header_colorblock {
-                display: none;
-            }
         }
 
         .topic-marker-container {
@@ -828,12 +824,12 @@ textarea.new_message_textarea,
 }
 
 #compose_select_recipient_widget {
-    border-radius: 0 4px 4px 0;
     width: auto;
     outline: none;
 
     &.dropdown-widget-button {
         padding: 0 6px;
+        border-radius: 4px;
     }
 }
 
@@ -1163,13 +1159,8 @@ textarea.new_message_textarea,
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
 
-    .stream_header_colorblock {
-        margin: 0;
-    }
-
     .dropdown_widget_value {
         flex-grow: 1;
-        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--color-text-default);

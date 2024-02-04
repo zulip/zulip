@@ -23,7 +23,6 @@ import * as resize from "./resize";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import {realm} from "./state_data";
-import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 
 const compose_clear_box_hooks = [];
@@ -115,12 +114,6 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(msg_type);
-    if (msg_type === "stream") {
-        stream_bar.decorate(
-            opts.stream_id,
-            $("#stream_message_recipient_topic .message_header_stream"),
-        );
-    }
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -243,13 +236,6 @@ export function start(msg_type, opts) {
     ) {
         drafts.update_draft();
         clear_box();
-    }
-
-    if (msg_type === "stream") {
-        const $stream_header_colorblock = $(
-            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
-        );
-        stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
     }
 
     if (msg_type === "private") {

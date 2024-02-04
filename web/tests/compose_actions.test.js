@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
@@ -123,7 +122,6 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_stream_name.hbs", false, noop);
-    mock_stream_header_colorblock();
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -249,7 +247,6 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_private_message_recipient({override});
     mock_template("inline_decorated_stream_name.hbs", false, noop);
-    mock_stream_header_colorblock();
 
     // Test direct message
     const person = {
@@ -297,7 +294,6 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
 
 test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_actions, "complete_starting_tasks", noop);
@@ -359,7 +355,6 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_rewire(compose_reply, "selection_within_message_id", () => undefined);
 
     mock_banners();
-    mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,
