@@ -52,22 +52,32 @@ export function handle_keyboard(key: string): void {
     popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
-// element is the target element to pop off of;
-// message_id is the message id containing it, which should be selected;
+// Function called with `message_id` when user-group-mention is clicked.
+// Function called with user_group object when input_pill is clicked.
+// `element` is the target element to pop off of;
+// `message_id` is the message id containing it, which should be selected;
 export function toggle_user_group_info_popover(
     element: ReferenceElement,
-    message_id: number,
+    group_or_message: number | user_groups.UserGroup,
 ): void {
     if (is_open()) {
         hide();
         return;
     }
-    const $elt = $(element);
-    const user_group_id_str = $elt.attr("data-user-group-id");
-    assert(user_group_id_str !== undefined);
 
-    const user_group_id = Number.parseInt(user_group_id_str, 10);
-    const group = user_groups.get_user_group_from_id(user_group_id);
+    let group: user_groups.UserGroup;
+    let message_id: number | undefined;
+
+    if (typeof group_or_message === "number") {
+        message_id = group_or_message;
+        const $elt = $(element);
+        const user_group_id_str = $elt.attr("data-user-group-id");
+        assert(user_group_id_str !== undefined);
+        const user_group_id = Number.parseInt(user_group_id_str, 10);
+        group = user_groups.get_user_group_from_id(user_group_id);
+    } else {
+        group = group_or_message;
+    }
 
     popover_menus.toggle_popover_menu(
         element,
