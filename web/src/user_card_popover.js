@@ -337,6 +337,10 @@ function show_user_card_popover(
         popover_html = render_user_card_popover(args);
     }
 
+    function hide_popover_on_back_navigation() {
+        user_card_popovers[template_class].hide();
+    }
+
     popover_menus.toggle_popover_menu(
         $popover_element[0],
         {
@@ -357,8 +361,10 @@ function show_user_card_popover(
                         user_is_guest: user.is_guest,
                     }),
                 );
+                $(window).on("popstate", hide_popover_on_back_navigation);
             },
             onHidden() {
+                $(window).off("popstate", hide_popover_on_back_navigation);
                 user_card_popovers[template_class].hide();
             },
             onMount(instance) {
@@ -874,6 +880,18 @@ function register_click_handlers() {
         const user = people.get_by_user_id(user_id);
         toggle_user_card_popover_manage_menu(e.target, user);
     });
+
+    // Show user_card_popover when pill clicked in stream settings and group settings.
+    $("body").on("click", ".pill[user-id]", (e) => {
+        const $pill = $(e.target).closest(".pill");
+        const user_id_string = $pill.attr("user-id");
+        if (user_id_string !== undefined) {
+            const user_id = Number.parseInt(user_id_string, 10);
+            const user = people.get_by_user_id(user_id);
+            toggle_user_card_popover($pill[0], user);
+        }
+    });
+
     new ClipboardJS(".copy-custom-field-url", {
         text(trigger) {
             return $(trigger)
