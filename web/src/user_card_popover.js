@@ -785,7 +785,7 @@ function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".view_user_profile", (e) => {
+    $("body").on("click", ".view_user_profile, .person_picker .pill[data-user-id]", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
         toggle_user_card_popover(e.target, user);
