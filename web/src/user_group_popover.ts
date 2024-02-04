@@ -110,9 +110,11 @@ export function toggle_user_group_info_popover(
                     is_guest: current_user.is_guest,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
+                $(window).on("popstate", hide);
             },
             onHidden() {
                 hide();
+                $(window).off("popstate", hide);
             },
         },
         {
@@ -139,6 +141,17 @@ export function register_click_handlers(): void {
         } catch {
             // This user group has likely been deleted.
             blueslip.info("Unable to find user group in message" + message.sender_id);
+        }
+    });
+
+    // Show the user_group_popover when pill clicked in subscriber settings.
+    $("body").on("click", ".pill[group-id]", (e) => {
+        const $pill = $(e.target).closest(".pill");
+        const group_id_string = $pill.attr("group-id");
+        if (group_id_string !== undefined) {
+            const group_id = Number.parseInt(group_id_string, 10);
+            const group = user_groups.get_user_group_from_id(group_id);
+            toggle_user_group_info_popover($pill[0], group);
         }
     });
 }
