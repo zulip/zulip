@@ -53,10 +53,12 @@ export function handle_keyboard(key: string): void {
 }
 
 // element is the target element to pop off of;
-// message_id is the message id containing it, which should be selected;
+// the element could be user group pill or mentions in a message;
+// in case of message, message_id is the message id containing it;
+// in case of user group pill, message_id is not used;
 export function toggle_user_group_info_popover(
     element: ReferenceElement,
-    message_id: number,
+    message_id: number | undefined,
 ): void {
     if (is_open()) {
         hide();
@@ -130,6 +132,16 @@ export function register_click_handlers(): void {
             blueslip.info("Unable to find user group in message" + message.sender_id);
         }
     });
+
+    // Show the user_group_popover when pill clicked in subscriber settings.
+    $("body").on(
+        "click",
+        ".person_picker .pill[data-user-group-id]",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            toggle_user_group_info_popover(this, undefined);
+        },
+    );
 }
 
 function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
