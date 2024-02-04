@@ -215,14 +215,9 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
         removePill(element: HTMLElement) {
-            let idx: number | undefined;
-            for (let x = 0; x < store.pills.length; x += 1) {
-                if (store.pills[x].$element[0] === element) {
-                    idx = x;
-                }
-            }
+            const idx = store.pills.findIndex((pill) => pill.$element[0] === element);
 
-            if (idx !== undefined) {
+            if (idx !== -1) {
                 store.pills[idx].$element.remove();
                 const pill = store.pills.splice(idx, 1);
                 if (store.removePillFunction !== undefined) {
