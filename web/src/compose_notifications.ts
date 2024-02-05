@@ -115,7 +115,11 @@ export function get_muted_narrow(message: Message): string | undefined {
 }
 
 export function get_local_notify_mix_reason(message: Message): string | undefined {
-    assert(message_lists.current !== undefined);
+    if (message_lists.current === undefined) {
+        // For non-message list views like Inbox, the message is not visible after sending it.
+        return undefined;
+    }
+
     const $row = message_lists.current.get_row(message.id);
     if ($row.length > 0) {
         // If our message is in the current message list, we do

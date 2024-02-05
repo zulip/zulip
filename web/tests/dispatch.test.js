@@ -100,6 +100,9 @@ message_lists.current = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
+        filter: {
+            is_in_home: () => true,
+        },
     },
 };
 message_lists.home = {

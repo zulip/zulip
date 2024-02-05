@@ -78,6 +78,7 @@ export function show(opts) {
     // a messages narrow. We hide it and show the view.
     $("#message_feed_container").hide();
     opts.$view.show();
+    message_lists.update_current_message_list(undefined);
     opts.set_visible(true);
 
     unread_ui.hide_unread_banner();

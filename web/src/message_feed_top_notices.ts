@@ -37,7 +37,7 @@ function show_end_of_results_notice(): void {
 export function update_top_of_narrow_notices(msg_list: MessageList): void {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
-    if (msg_list !== message_lists.current) {
+    if (message_lists.current === undefined || msg_list !== message_lists.current) {
         return;
     }
 

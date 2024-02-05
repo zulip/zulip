@@ -49,9 +49,7 @@ const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const narrow = mock_esm("../src/narrow");
-const narrow_state = mock_esm("../src/narrow_state", {
-    is_message_feed_visible: () => true,
-});
+const narrow_state = mock_esm("../src/narrow_state");
 const navigate = mock_esm("../src/navigate");
 const modals = mock_esm("../src/modals", {
     any_active: () => false,

@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 
@@ -15,7 +16,6 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
-import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
@@ -201,6 +201,7 @@ export function mark_as_unread_from_here(
     num_after = INITIAL_BATCH_SIZE - 1,
     narrow,
 ) {
+    assert(message_lists.current !== undefined);
     if (narrow === undefined) {
         narrow = JSON.stringify(message_lists.current.data.filter.terms());
     }
@@ -312,7 +313,7 @@ export function process_read_messages_event(message_ids) {
     }
 
     for (const message_id of message_ids) {
-        if (message_lists.current.narrowed) {
+        if (message_lists.current?.narrowed) {
             // I'm not sure this entirely makes sense for all server
             // notifications.
             unread.set_messages_read_in_narrow(true);
@@ -340,7 +341,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
         return;
     }
 
-    if (message_lists.current.narrowed) {
+    if (message_lists.current?.narrowed) {
         unread.set_messages_read_in_narrow(false);
     }
 
@@ -400,6 +401,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
     recent_view_ui.complete_rerender();
 
     if (
+        message_lists.current !== undefined &&
         !message_lists.current.can_mark_messages_read() &&
         message_lists.current.has_unread_messages()
     ) {
@@ -420,7 +422,7 @@ export function notify_server_messages_read(messages, options = {}) {
     message_flags.send_read(messages);
 
     for (const message of messages) {
-        if (message_lists.current.narrowed) {
+        if (message_lists.current?.narrowed) {
             unread.set_messages_read_in_narrow(true);
         }
 
@@ -436,8 +438,8 @@ export function notify_server_message_read(message, options) {
 }
 
 function process_scrolled_to_bottom() {
-    if (!narrow_state.is_message_feed_visible()) {
-        // First, verify the current message list is visible.
+    if (message_lists.current === undefined) {
+        // First, verify that user is narrowed to a list of messages.
         return;
     }
 
@@ -465,6 +467,7 @@ function process_scrolled_to_bottom() {
 // may need to update message_notifications.received_messages as well.
 export function process_visible() {
     if (
+        message_lists.current !== undefined &&
         viewport_is_visible_and_focused() &&
         message_viewport.bottom_rendered_message_visible() &&
         message_lists.current.view.is_fetched_end_rendered()

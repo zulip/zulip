@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
@@ -226,6 +227,7 @@ async function get_message_placement_in_conversation(
     topic_name,
     current_message_id,
 ) {
+    assert(message_lists.current !== undefined);
     // First we check if the placement of the message can be determined
     // in the current message list. This allows us to avoid a server call
     // in most cases.

@@ -91,6 +91,7 @@ function process_result(data, opts) {
     stream_list.maybe_scroll_narrow_into_view();
 
     if (
+        message_lists.current !== undefined &&
         opts.msg_list === message_lists.current &&
         opts.msg_list.narrowed &&
         opts.msg_list.visibly_empty()
@@ -121,7 +122,8 @@ function process_result(data, opts) {
 }
 
 function get_messages_success(data, opts) {
-    const update_loading_indicator = opts.msg_list === message_lists.current;
+    const update_loading_indicator =
+        message_lists.current !== undefined && opts.msg_list === message_lists.current;
     const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
     if (opts.num_before > 0) {
         msg_list_data.fetch_status.finish_older_batch({
@@ -266,7 +268,8 @@ export function load_messages(opts, attempt = 1) {
         data.narrow = JSON.stringify(terms);
     }
 
-    let update_loading_indicator = opts.msg_list === message_lists.current;
+    let update_loading_indicator =
+        message_lists.current !== undefined && opts.msg_list === message_lists.current;
     if (opts.num_before > 0) {
         msg_list_data.fetch_status.start_older_batch({
             update_loading_indicator,
@@ -356,6 +359,7 @@ export function load_messages(opts, attempt = 1) {
                 message_feed_loading.hide_indicators();
 
                 if (
+                    message_lists.current !== undefined &&
                     opts.msg_list === message_lists.current &&
                     opts.msg_list.narrowed &&
                     opts.msg_list.visibly_empty()
@@ -506,7 +510,11 @@ export function maybe_load_newer_messages(opts) {
     const anchor = get_frontfill_anchor(msg_list);
 
     function load_more(_data, args) {
-        if (args.fetch_again && args.msg_list === message_lists.current) {
+        if (
+            args.fetch_again &&
+            message_lists.current !== undefined &&
+            args.msg_list === message_lists.current
+        ) {
             maybe_load_newer_messages({msg_list: message_lists.current});
         }
     }

@@ -1,6 +1,8 @@
 /* This module provides relevant data to render popovers that require multiple args.
    This helps keep the popovers code small and keep it focused on rendering side of things. */
 
+import assert from "minimalistic-assert";
+
 import * as resolved_topic from "../shared/src/resolved_topic";
 
 import * as buddy_data from "./buddy_data";
@@ -23,6 +25,7 @@ import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 export function get_actions_popover_content_context(message_id) {
+    assert(message_lists.current !== undefined);
     const message = message_lists.current.get(message_id);
     const message_container = message_lists.current.view.message_containers.get(message.id);
     const not_spectator = !page_params.is_spectator;

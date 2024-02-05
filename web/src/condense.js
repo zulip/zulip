@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -40,6 +41,8 @@ function uncondense_row($row) {
 }
 
 export function uncollapse($row) {
+    assert(message_lists.current !== undefined);
+
     // Uncollapse a message, restoring the condensed message "Show more" or
     // "Show less" button if necessary.
     const message = message_lists.current.get(rows.id($row));
@@ -75,6 +78,7 @@ export function uncollapse($row) {
 }
 
 export function collapse($row) {
+    assert(message_lists.current !== undefined);
     // Collapse a message, hiding the condensed message [More] or
     // [Show less] link if necessary.
     const message = message_lists.current.get(rows.id($row));
@@ -118,6 +122,7 @@ export function toggle_collapse(message) {
     // * If the message is fully visible, either because it's too short to
     //   condense or because it's already uncondensed, collapse it
 
+    assert(message_lists.current !== undefined);
     const $row = message_lists.current.get_row(message.id);
     if (!$row) {
         return;
@@ -178,6 +183,10 @@ export function show_message_condenser($row) {
 }
 
 export function condense_and_collapse(elems) {
+    if (message_lists.current === undefined) {
+        return;
+    }
+
     const height_cutoff = message_viewport.max_message_height();
     const rows_to_resize = [];
 
@@ -259,6 +268,7 @@ export function initialize() {
         // uncondensing it.
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
+        assert(message_lists.current !== undefined);
         const message = message_lists.current.get(id);
         // Focus on the expanded message.
         message_lists.current.select_id(id);
@@ -281,6 +291,7 @@ export function initialize() {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
         // Focus on the condensed message.
+        assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
         message_lists.current.get(id).condensed = true;
         condense_row($row);

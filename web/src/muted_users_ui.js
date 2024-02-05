@@ -8,9 +8,8 @@ import * as recent_view_ui from "./recent_view_ui";
 import * as settings_muted_users from "./settings_muted_users";
 
 export function rerender_for_muted_user() {
-    message_lists.current.update_muting_and_rerender();
-    if (message_lists.current !== message_lists.home) {
-        message_lists.home.update_muting_and_rerender();
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        msg_list.update_muting_and_rerender();
     }
 
     if (overlays.settings_open() && settings_muted_users.loaded) {

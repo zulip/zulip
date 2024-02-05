@@ -1,6 +1,7 @@
 import {Uppy} from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
@@ -122,6 +123,7 @@ export function get_item(key, config, file_id) {
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
+                assert(message_lists.current !== undefined);
                 return $(
                     `#message-row-${message_lists.current.id}-${CSS.escape(
                         config.row,
@@ -532,7 +534,7 @@ export function initialize() {
             const edit_upload_object = upload_objects_by_message_edit_row.get(row_id);
 
             upload_files(edit_upload_object, {mode: "edit", row: row_id}, files);
-        } else if (message_lists.current.selected_message()) {
+        } else if (message_lists.current?.selected_message()) {
             // Start a reply to selected message, if viewing a message feed.
             compose_reply.respond_to_message({trigger: "drag_drop_file"});
             upload_files(compose_upload_object, {mode: "compose"}, files);

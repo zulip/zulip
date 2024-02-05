@@ -47,8 +47,8 @@ const {buddy_list} = zrequire("buddy_list");
 const activity = zrequire("activity");
 const activity_ui = zrequire("activity_ui");
 const stream_data = zrequire("stream_data");
-const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
+const message_lists = zrequire("message_lists");
 const util = zrequire("util");
 const {Filter} = zrequire("../src/filter");
 
@@ -105,7 +105,12 @@ const $fred_stub = $.create("fred stub");
 const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
 function add_sub_and_set_as_current_narrow(sub) {
     stream_data.add_sub(sub);
-    narrow_state.set_current_filter(new Filter([{operator: "stream", operand: sub.name}]));
+    const filter = new Filter([{operator: "stream", operand: sub.name}]);
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+    });
 }
 
 function test(label, f) {

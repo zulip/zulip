@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as fenced_code from "../shared/src/fenced_code";
 
@@ -42,6 +43,8 @@ export function respond_to_message(opts) {
         }
         message = message_opts.message;
     } else {
+        assert(message_lists.current !== undefined);
+
         message =
             message_lists.current.get(opts.message_id) || message_lists.current.selected_message();
 
@@ -119,6 +122,7 @@ export function respond_to_message(opts) {
 }
 
 export function reply_with_mention(opts) {
+    assert(message_lists.current !== undefined);
     respond_to_message(opts);
     const message = message_lists.current.selected_message();
     const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
@@ -126,6 +130,7 @@ export function reply_with_mention(opts) {
 }
 
 export function quote_and_reply(opts) {
+    assert(message_lists.current !== undefined);
     const message_id = opts.message_id || message_lists.current.selected_id();
     const message = message_lists.current.get(message_id);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});

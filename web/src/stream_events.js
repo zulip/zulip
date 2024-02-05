@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
@@ -146,6 +147,7 @@ export function mark_subscribed(sub, subscribers, color) {
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
+        assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend();
         activity_ui.build_user_sidebar();
     }
@@ -178,6 +180,7 @@ export function mark_unsubscribed(sub) {
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         // Update UI components if we just unsubscribed from the
         // currently viewed stream.
+        assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend();
 
         // This update would likely be better implemented by having it

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import {delegate} from "tippy.js";
 
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
@@ -210,6 +211,7 @@ export function initialize() {
         onShow(instance) {
             const $time_elem = $(instance.reference);
             const $row = $time_elem.closest(".message_row");
+            assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             // Don't show time tooltip for locally echoed message.
             if (message.locally_echoed) {

@@ -14,6 +14,10 @@ export function get_recipient_label(message) {
     // couple fields, both those constructed here and potentially
     // passed in.
 
+    if (message_lists.current === undefined) {
+        return "";
+    }
+
     if (message === undefined) {
         if (message_lists.current.visibly_empty()) {
             // For empty narrows where there's a clear reply target,

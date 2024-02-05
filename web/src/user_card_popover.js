@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
@@ -569,6 +570,7 @@ export function toggle_sender_info() {
         $sender = $message.find(".message_sender");
     }
 
+    assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     toggle_user_card_popover_for_message($sender[0], user, message, () => {
@@ -644,6 +646,7 @@ function register_click_handlers() {
     $("#main_div").on("click", ".sender_name, .inline_profile_picture", function (e) {
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
+        assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         const user = people.get_by_user_id(message.sender_id);
         toggle_user_card_popover_for_message(this, user, message);
@@ -659,6 +662,7 @@ function register_click_handlers() {
         }
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
+        assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         let user;
         if (id_string) {

@@ -88,7 +88,7 @@ export function activate(in_opts) {
 
 export function set_widgets_for_list() {
     for (const [idx, $widget_elem] of widget_contents) {
-        if (message_lists.current.get(idx) !== undefined) {
+        if (message_lists.current?.get(idx) !== undefined) {
             const $row = message_lists.current.get_row(idx);
             set_widget_in_message($row, $widget_elem);
         }

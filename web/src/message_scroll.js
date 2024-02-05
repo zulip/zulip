@@ -13,6 +13,10 @@ import * as unread_ui from "./unread_ui";
 
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
+    if (message_lists.current === undefined) {
+        return;
+    }
+
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
     if (
         message_viewport.bottom_rendered_message_visible() ||
@@ -60,12 +64,15 @@ $(document).on("keydown", (e) => {
 
 export function scroll_finished() {
     message_scroll_state.set_actively_scrolling(false);
-    message_lists.current.view.update_sticky_recipient_headers();
     hide_scroll_to_bottom();
 
-    if (!narrow_state.is_message_feed_visible()) {
+    if (message_lists.current === undefined) {
         return;
     }
+
+    // It's possible that we are in transit and message_lists.current is not defined.
+    // We still want the rest of the code to run but it's fine to skip this.
+    message_lists.current.view.update_sticky_recipient_headers();
 
     if (compose_banner.scroll_to_message_banner_message_id !== null) {
         const $message_row = message_lists.current.get_row(
@@ -127,7 +134,7 @@ export function initialize() {
         "scroll",
         _.throttle(() => {
             unread_ops.process_visible();
-            message_lists.current.view.update_sticky_recipient_headers();
+            message_lists.current?.view.update_sticky_recipient_headers();
             scroll_finish();
         }, 50),
     );
