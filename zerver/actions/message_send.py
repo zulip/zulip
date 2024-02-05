@@ -1978,9 +1978,15 @@ def internal_prep_huddle_message(
     realm: Realm,
     sender: UserProfile,
     content: str,
-    emails: List[str],
+    *,
+    emails: Optional[List[str]] = None,
+    recipient_users: Optional[List[UserProfile]] = None,
 ) -> Optional[SendMessageRequest]:
-    addressee = Addressee.for_private(emails, realm)
+    if recipient_users is not None:
+        addressee = Addressee.for_user_profiles(recipient_users)
+    else:
+        assert emails is not None
+        addressee = Addressee.for_private(emails, realm)
 
     return _internal_prep_message(
         realm=realm,
@@ -1993,7 +1999,7 @@ def internal_prep_huddle_message(
 def internal_send_huddle_message(
     realm: Realm, sender: UserProfile, emails: List[str], content: str
 ) -> Optional[int]:
-    message = internal_prep_huddle_message(realm, sender, content, emails)
+    message = internal_prep_huddle_message(realm, sender, content, emails=emails)
 
     if message is None:
         return None
