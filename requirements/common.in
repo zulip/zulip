@@ -91,7 +91,7 @@ redis
 tornado
 
 # Fast JSON parser
-orjson
+orjson<3.9.11  # https://github.com/ijl/orjson/issues/452
 
 # Needed for iOS push notifications
 https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git  # https://github.com/Fatal1ty/aioapns/pull/52
