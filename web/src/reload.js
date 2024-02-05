@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
@@ -85,6 +86,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
                 url += "+offset=" + $row.get_offset_to_window().top;
             }
         } else {
+            assert(message_lists.current !== undefined);
             url += "+offset=" + message_lists.home.pre_narrow_offset;
 
             // narrow_state.active() is true, so this is the current

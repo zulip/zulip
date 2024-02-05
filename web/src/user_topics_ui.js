@@ -17,7 +17,7 @@ export function handle_topic_updates(user_topic_event) {
 
     stream_list.update_streams_sidebar();
     unread_ui.update_unread_counts();
-    message_lists.current.update_muting_and_rerender();
+    message_lists.current?.update_muting_and_rerender();
     recent_view_ui.update_topic_visibility_policy(
         user_topic_event.stream_id,
         user_topic_event.topic_name,

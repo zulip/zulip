@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import tippy from "tippy.js";
 
 // You won't find every click handler here, but it's a good place to start!
@@ -60,6 +61,7 @@ export function initialize() {
             if (!id) {
                 return;
             }
+            assert(message_lists.current !== undefined);
             message_lists.current.select_id(id);
             setTimeout(() => {
                 // The algorithm to trigger long tap is that first, we check
@@ -179,6 +181,7 @@ export function initialize() {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
 
+        assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
 
         if (message_edit.is_editing(id)) {
@@ -259,6 +262,7 @@ export function initialize() {
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {
+        assert(message_lists.current !== undefined);
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
@@ -287,12 +291,14 @@ export function initialize() {
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
+        assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
         message_edit.start($row);
         e.stopPropagation();
     });
     $("body").on("click", ".move_message_button", function (e) {
+        assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         const message_id = rows.id($row);
         const message = message_lists.current.get(message_id);
@@ -447,6 +453,7 @@ export function initialize() {
         const $group = rows.get_closest_group(narrow_link_elem);
         const msg_id = rows.id_for_recipient_row($group);
 
+        assert(message_lists.current !== undefined);
         const nearest = message_lists.current.get(msg_id);
         const selected = message_lists.current.selected_message();
         if (util.same_recipient(nearest, selected)) {

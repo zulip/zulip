@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_actions_popover from "../templates/popovers/actions_popover.hbs";
 
@@ -114,6 +115,7 @@ export function initialize() {
 
             $popper.one("click", ".popover_edit_message, .popover_view_source", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
+                assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 message_edit.start($row);
                 e.preventDefault();
@@ -123,6 +125,7 @@ export function initialize() {
 
             $popper.one("click", ".popover_move_message", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
+                assert(message_lists.current !== undefined);
                 message_lists.current.select_id(message_id);
                 const message = message_lists.current.get(message_id);
                 stream_popover.build_move_topic_to_stream_popover(
@@ -146,6 +149,7 @@ export function initialize() {
 
             $popper.one("click", ".popover_toggle_collapse", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
+                assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 const message = message_lists.current.get(rows.id($row));
                 if ($row) {
@@ -162,6 +166,7 @@ export function initialize() {
 
             $popper.one("click", ".rehide_muted_user_message", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
+                assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 const message = message_lists.current.get(rows.id($row));
                 const message_container = message_lists.current.view.message_containers.get(

@@ -131,6 +131,10 @@ export function maybe_scroll_up_selected_message(opts) {
         return;
     }
 
+    if (message_lists.current === undefined) {
+        return;
+    }
+
     // If the compose box is obscuring the currently selected message,
     // scroll up until the message is no longer occluded.
     if (message_lists.current.selected_id() === -1) {

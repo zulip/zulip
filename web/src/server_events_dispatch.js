@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui";
 import * as alert_words from "./alert_words";
@@ -547,6 +548,7 @@ export function dispatch_normal_event(event) {
                             stream.stream_id,
                         );
                         if (is_narrowed_to_stream) {
+                            assert(message_lists.current !== undefined);
                             message_lists.current.update_trailing_bookend();
                         }
                         stream_data.delete_sub(stream.stream_id);

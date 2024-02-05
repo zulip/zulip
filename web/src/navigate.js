@@ -1,12 +1,16 @@
+import assert from "minimalistic-assert";
+
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as unread_ops from "./unread_ops";
 
 function go_to_row(msg_id) {
+    assert(message_lists.current !== undefined);
     message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
 export function up() {
+    assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
     const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
@@ -16,6 +20,7 @@ export function up() {
 }
 
 export function down(with_centering) {
+    assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(1);
 
     if (message_lists.current.is_at_end()) {
@@ -41,12 +46,14 @@ export function down(with_centering) {
 }
 
 export function to_home() {
+    assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
     const first_id = message_lists.current.first().id;
     message_lists.current.select_id(first_id, {then_scroll: true, from_scroll: true});
 }
 
 export function to_end() {
+    assert(message_lists.current !== undefined);
     const next_id = message_lists.current.last().id;
     message_viewport.set_last_movement_direction(1);
     message_lists.current.select_id(next_id, {then_scroll: true, from_scroll: true});
@@ -100,6 +107,7 @@ export function page_down_the_right_amount() {
 }
 
 export function page_up() {
+    assert(message_lists.current !== undefined);
     if (message_viewport.at_rendered_top() && !message_lists.current.visibly_empty()) {
         if (message_lists.current.view.is_fetched_start_rendered()) {
             message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
@@ -117,6 +125,7 @@ export function page_up() {
 }
 
 export function page_down() {
+    assert(message_lists.current !== undefined);
     if (message_viewport.at_rendered_bottom() && !message_lists.current.visibly_empty()) {
         if (message_lists.current.view.is_fetched_end_rendered()) {
             message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});

@@ -210,6 +210,10 @@ export function is_slash_command(content) {
 }
 
 export function try_deliver_locally(message_request, insert_new_messages) {
+    if (message_lists.current === undefined) {
+        return undefined;
+    }
+
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }
@@ -453,7 +457,7 @@ export function message_send_error(message_id, error_response) {
 function abort_message(message) {
     // Remove in all lists in which it exists
     all_messages_data.remove([message.id]);
-    for (const msg_list of [message_lists.home, message_lists.current]) {
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
     }
 }

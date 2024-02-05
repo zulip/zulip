@@ -40,7 +40,7 @@ export function set_focused_recipient(msg_type) {
 }
 
 function display_messages_normally() {
-    message_lists.current.view.$list.find(".recipient_row").removeClass("message-fade");
+    message_lists.current?.view.$list.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
 }
@@ -54,6 +54,10 @@ function change_fade_state($elt, should_fade_group) {
 }
 
 function fade_messages() {
+    if (message_lists.current === undefined) {
+        return;
+    }
+
     let i;
     let first_message;
     let $first_row;
@@ -74,8 +78,6 @@ function fade_messages() {
     // Defer updating all message groups so that the compose box can open sooner
     setTimeout(
         (expected_msg_list, expected_recipient) => {
-            const $all_groups = message_lists.current.view.$list.find(".recipient_row");
-
             if (
                 message_lists.current !== expected_msg_list ||
                 !compose_state.composing() ||
@@ -85,7 +87,7 @@ function fade_messages() {
             }
 
             should_fade_group = false;
-
+            const $all_groups = message_lists.current.view.$list.find(".recipient_row");
             // Note: The below algorithm relies on the fact that all_elts is
             // sorted as it would be displayed in the message view
             for (i = 0; i < $all_groups.length; i += 1) {

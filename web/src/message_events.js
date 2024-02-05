@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
@@ -273,8 +274,10 @@ export function update_messages(events) {
             const orig_topic = util.get_edit_event_orig_topic(event);
 
             const current_filter = narrow_state.filter();
-            const current_selected_id = message_lists.current.selected_id();
-            const selection_changed_topic = event.message_ids.includes(current_selected_id);
+            const current_selected_id = message_lists.current?.selected_id();
+            const selection_changed_topic =
+                message_lists.current !== undefined &&
+                event.message_ids.includes(current_selected_id);
             const event_messages = [];
             for (const message_id of event.message_ids) {
                 // We don't need to concern ourselves updating data structures
@@ -450,9 +453,10 @@ export function update_messages(events) {
                     // list and then pass these to the remove messages codepath.
                     // While we can pass all our messages to the add messages
                     // codepath as the filtering is done within the method.
+                    assert(message_lists.current !== undefined);
                     message_lists.current.remove_and_rerender(message_ids_to_remove);
                     message_lists.current.add_messages(event_messages);
-                } else {
+                } else if (message_lists.current !== undefined) {
                     // Remove existing message that were updated, since
                     // they may not be a part of the filter now. Also,
                     // this will help us rerender them via
@@ -538,7 +542,7 @@ export function update_messages(events) {
         // edit.  Doing so could save significant work, since most
         // topic edits will not match the current topic narrow in
         // large organizations.
-        if (!changed_narrow && message_lists.current.narrowed) {
+        if (!changed_narrow && message_lists.current?.narrowed) {
             message_lists.current.update_muting_and_rerender();
         }
     } else {

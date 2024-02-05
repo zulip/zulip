@@ -33,7 +33,7 @@ export function handler() {
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
-    if (message_lists.current.selected_id() !== -1) {
+    if (message_lists.current !== undefined && message_lists.current.selected_id() !== -1) {
         message_viewport.scroll_to_selected();
     }
 }

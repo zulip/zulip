@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
@@ -17,6 +18,7 @@ export function message_unhover() {
 
 export function message_hover($message_row) {
     const id = rows.id($message_row);
+    assert(message_lists.current !== undefined);
     const message = message_lists.current.get(id);
 
     if ($current_message_hover && rows.id($current_message_hover) === id) {

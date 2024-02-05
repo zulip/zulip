@@ -66,6 +66,9 @@ how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
 function construct_copy_div($div, start_id, end_id) {
+    if (message_lists.current === undefined) {
+        return;
+    }
     const copy_rows = rows.visible_range(start_id, end_id);
 
     const $start_row = copy_rows[0];

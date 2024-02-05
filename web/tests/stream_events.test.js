@@ -19,7 +19,7 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
 });
 const unread_ui = mock_esm("../src/unread_ui");
 const message_lists = mock_esm("../src/message_lists", {
-    current: {},
+    current: undefined,
 });
 const message_view_header = mock_esm("../src/message_view_header", {
     maybe_rerender_title_area_for_stream() {},
