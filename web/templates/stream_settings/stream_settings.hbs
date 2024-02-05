@@ -99,48 +99,45 @@
                 <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
                 <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
             </div>
-            <div class="subscription-config">
-                <div class="subsection-parent">
-                    {{#each other_settings}}
-                        <div class="input-group">
-                            {{> stream_settings_checkbox
-                              setting_name=name
-                              is_checked=is_checked
-                              is_muted=(lookup ../sub "is_muted")
-                              stream_id=(lookup ../sub "stream_id")
-                              notification_setting=false
-                              disabled_realm_setting=disabled_realm_setting
-                              is_disabled=is_disabled
-                              label=label}}
-                        </div>
-                    {{/each}}
-
+            <div class="subsection-parent">
+                {{#each other_settings}}
                     <div class="input-group">
-                        <label for="streamcolor">{{t "Stream color" }}</label>
-                        <span class="sub_setting_control">
-                            <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
-                        </span>
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          is_muted=(lookup ../sub "is_muted")
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=false
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
                     </div>
+                {{/each}}
+                <div class="input-group">
+                    <label for="streamcolor">{{t "Stream color" }}</label>
+                    <span class="sub_setting_control">
+                        <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
+                    </span>
                 </div>
-                <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
-                <p>{{t "In muted streams, stream notification settings apply only to unmuted topics." }}</p>
-                <div class="subsection-parent">
+            </div>
+            <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
+            <p>{{t "In muted streams, stream notification settings apply only to unmuted topics." }}</p>
+            <div class="subsection-parent">
+                <div class="input-group">
+                    <button class="button small rounded reset-stream-notifications-button" type="button">{{t "Reset to default notifications" }}</button>
+                </div>
+                {{#each notification_settings}}
                     <div class="input-group">
-                        <button class="button small rounded reset-stream-notifications-button" type="button">{{t "Reset to default notifications" }}</button>
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=true
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
                     </div>
-                    {{#each notification_settings}}
-                        <div class="input-group">
-                            {{> stream_settings_checkbox
-                              setting_name=name
-                              is_checked=is_checked
-                              stream_id=(lookup ../sub "stream_id")
-                              notification_setting=true
-                              disabled_realm_setting=disabled_realm_setting
-                              is_disabled=is_disabled
-                              label=label}}
-                        </div>
-                    {{/each}}
-                </div>
+                {{/each}}
             </div>
         </div>
 
