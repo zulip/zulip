@@ -12,19 +12,22 @@ how to apply](./apply.md)** to a Zulip outreach program. As noted in the guide:
 
 ## Project size
 
-GSoC offers two project size options: 175 hours and 350 hours. We have
-designed all our projects to have incremental milestones that can be
-completed throughout the program. Consequently, Zulip projects
-described below are generally compatible with either project size. Of
-course, the amount of progress you will be expected to make depends on
-whether you are doing a 175-hour or 350-hour project.
+We have designed all our projects to have incremental milestones that can be
+completed throughout the program. Consequently, Zulip projects described below
+are generally compatible with both large-sized (350 hours) and medium-sized (175
+hours) projects. Of course, the amount of progress you will be expected to make
+depends on whether you are doing a 175-hour or 350-hour project. Because it
+takes significant time investment to learn how to contribute complex features to
+Zulip's codebase, we are not planning to offer small-size projects.
 
-It's also important to understand that how much progress one can
-accomplish over the course of the summer is as much a function of the
-project as of the contributor. Contributors who learn to consistently
-package their work into [reviewable pull
-requests](../contributing/reviewable-prs.md) tend to accomplish the
-most during GSoC.
+Contributors who master the art of consistently packaging their work
+into correct, [reviewable pull
+requests](../contributing/reviewable-prs.md) are able to make major
+improvements to the Zulip app. If you pay attention to the contributor
+guidelines, carefully review your own work before asking anyone else
+for review, take the time to clearly communicate your changes, and
+apply the feedback you receive to your next contribution, you'll be
+amazed at what you can accomplish.
 
 ## Focus areas
 
@@ -53,7 +56,100 @@ problems in one part of the Zulip project that we'd love to improve.
 ### Full stack and web frontend focused projects
 
 Code: [github.com/zulip/zulip](https://github.com/zulip/zulip/) -- Python,
-Django, JavaScript, and CSS.
+Django, TypeScript/JavaScript, and CSS.
+
+- **Cluster of priority features**. Implement a cluster of new full
+  stack features for Zulip. The [high priority
+  label](https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22)
+  documents hundreds of issues that we've identified as important to
+  the project. A great project can be 3-5 significant features around
+  a theme (often, but not necessarily, an [area
+  label](https://github.com/zulip/zulip/labels); the goal will be to
+  implement and get fully merged a cluster of features with a
+  meaningful impact on the project. Zulip has a lot of half-finished
+  PRs, so some features might be completed by reading, understanding,
+  rebasing, and reviving an existing pull request. 175 or 350
+  hours; difficulty will vary. **Skills required**: Depends on the
+  features; Tim Abbott will help you select an appropriate cluster
+  once we've gotten to know you and your strengths through your getting
+  involved in the project.
+
+  Experts: Varies with project area.
+
+- **Complete some unfinished projects**. This is a variant of the
+  previous project idea category, but focused on projects with
+  significant existing work to start from and polish, rather than
+  projects that have not been seriously attempted previously.
+
+  Recent sweeps through the Zulip server and web app tracker have
+  identified about 100 older pull requests where a previous
+  contributor (sometimes via GSoC!) did significant work towards
+  something valuable, and there's significant feedback from
+  maintainers, but the project was never finished, and requires
+  significant further effort from a new contributor in order to
+  progress. These are tracked via the [completion candidate
+  label][completion-candidate]. One of our goals for this summer's
+  GSoC is to complete many of these issues. Start by picking something
+  that's interesting to you and you feel you have the skills required
+  to complete, reading the code and the feedback, and then creating
+  your own PR for the issue, doing your own careful testing and
+  cross-linking the original work. Remember to credit the original
+  contributor [as documented in our commit
+  guidelines](../contributing/commit-discipline.md). We expect to have
+  a more detailed guide on this process available this Spring.
+  **Skills required**: Varies with project; a common skill will be
+  good reading comprehension and organization/communication skills, to
+  walk maintainers through how you resolved problems, addressed any
+  pending feedback on the previous PR, and your understanding of the
+  outstanding questions for a given project. Taking the time to get
+  really good at resolving merge conflicts is likely to be valuable
+  here as well.
+
+  Experts: Varies with project area.
+
+[completion-candidate]: https://github.com/zulip/zulip/pulls?q=is%3Aopen+is%3Apr+label%3A%22completion+candidate%22
+
+- Help **migrate our JavaScript codebase to Typescript**. Zulip is in
+  the process of porting the main web app JavaScript codebase to
+  TypeScript; at present, about 40% of the project is written in
+  TypeScript. We've resolved most of the roadblocks to completing this
+  migration, so it's mostly a matter of carefully translating modules,
+  putting in the effort with preparatory commits to make it any
+  refactoring easy to verify. Our goal is to leave the resulting code
+  more readable than it was before, always test the module works after
+  the migration, and avoid introducing logic bugs during this large
+  refactor. [This topic in the Zulip development
+  community][typescript-migration] is a good place to coordinate work
+  on this project. Multiple students are possible; 175 or 350 hours;
+  difficult. **Skills required**: TypeScript and refactoring
+  expertise; we're specifically interested in students who are a type
+  theory nerd and are invested in writing types precisely (Often using
+  [Zod](https://zod.dev/) to parse and verify data received from the
+  server) and checking their work carefully.
+
+  Experts: Zixuan James Li, Evy Kassirer, Anders Kaseorg
+
+[typescript-migration]: https://chat.zulip.org/#narrow/stream/6-frontend/topic/typescript.20migration
+
+- Migrate server's Python codebase from the legacy
+  `@has_request_variables` decorator to the new `@typed_endpoint`
+  decorator, and update our contributor documentation to recommend the
+  new system. The `@typed_endpoint` framework uses [Pydantic
+  V2](https://docs.pydantic.dev/latest/) in order to better express
+  how we want to parse API requests and turn them into fully typed
+  Python objects. **Skills required**: A good understanding of the
+  Python 3 / mypy type system and Pydantic 2, and the ability to
+  efficiently read Python code and write clear, structured commits. No
+  prior Pydantic experience required, but please take the time to go
+  through the Pydantic upstream tutorials and skim all the existing
+  endpoints using `typed_endpoint` before doing your first Zulip
+  changes (likely to migrate a smaller views file to the new
+  framework; one commit per smaller file is likely to be a good
+  structure). See the last commits from [the new framework's main
+  PR](https://github.com/zulip/zulip/pull/26365) for examples of
+  well-written migration commits.
+
+  Expert: Zixuan James Li, Anders Kaseorg
 
 - Contribute to Zulip's [**migration to user groups for
   permissions**][user-group-permissions]. This migration is intended to replace
@@ -72,83 +168,53 @@ Django, JavaScript, and CSS.
   Attention to detail around code reuse/duplication, thoughtful testing, and
   splitting large migrations into reviewable chunks.
 
+  Experts: Sahil Batra
+
+- Improve the framework and UI in **Zulip's overlays for managing
+  streams and groups**. These two components have very parallel design
+  patterns and implementations (the groups one is quite new!). Coupled
+  with the user groups permissions migration, the goal of this project
+  is to make these important settings panels ergonomic for the large
+  number of new settings that we expect to migrate or add via the
+  groups migration. See the [user groups
+  settings][group-settings-issues] and [stream
+  settings][stream-settings-issues] area labels for starter projects.
+
   Experts: Purushottam Tiwari, Sahil Batra
 
+[group-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A+settings+%28user+groups%29%22
+[stream-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+stream+settings%22
 [user-group-permissions]: https://github.com/zulip/zulip/issues/19525
 [organization-settings-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22
 
-- Help **migrate our JavaScript codebase to Typescript**. Zulip is in the process of
-  porting the main web app JavaScript codebase to TypeScript; at present we've
-  done much of the necessary tooling setup, and about 8% of lines have been
-  migrated (mostly in libraries used widely); the goal for this project will be
-  to get that to ~75%. [This topic in the Zulip development
-  community][typescript-migration] is a good place to coordinate work on this
-  project. Multiple students are possible; 175 or 350 hours; difficult.
-  **Skills required**: TypeScript and refactoring expertise; we're specifically
-  interested in students who are a type theory nerd and are invested in writing
-  types precisely and checking their work carefully.
+- Migrate Zulip's **[direct message recipient data
+  structures](https://github.com/zulip/zulip/issues/25713)** to a new
+  model with better performance characteristics and that more
+  importantly enables personal settings associated with a direct
+  message conversation, and add several settings (see the linked
+  issues) enabled by that infrastructure work. **Skills required**:
+  This project will be deep Python 3/PostgreSQL work. Concretely,
+  challenging parts of this project include thinking about races and
+  database transactions, writing database migrations intended to be
+  run live at scale, complex internal refactors, and carefully
+  verifying the indexes used by migrated database queries.
 
-  Experts: Zixuan James Li, Priyank Patel, Anders Kaseorg
+  Experts: Tim Abbott, Mateusz Mandera, Prakhar Pratyush
 
-[typescript-migration]: https://chat.zulip.org/#narrow/stream/6-frontend/topic/typescript.20migration
+- Add the core infrastructure for **topic-based permissions and settings**
+  like [pinned topics](https://github.com/zulip/zulip/issues/19483)
+  and [read-only topics](https://github.com/zulip/zulip/issues/26944),
+  and then build some of those settings. This project will be a
+  mixture of Python 3/PostgreSQL work, including thinking about
+  database transactions and races, writing database migrations
+  intended to be run live at scale, and complex logic to handle moving
+  messages correctly in the context of these settings, including
+  significant changes to the Zulip API and API documentation.
 
-- **Add an Inbox view** to the web app. We intend to add a new
-  home screen option for the Zulip web application that works like
-  the mobile app's home screen -- showing just topics containing
-  unread messages, in an organized fashion, in the web app's center
-  pane. Details are available in the
-  [issue](https://github.com/zulip/zulip/issues/22189) and a [draft pull
-  request](https://github.com/zulip/zulip/pull/22408) with prototyping
-  towards this was done in GSoC 2022. The goal for this project would be
-  to extract preparatory refactoring changes to make it nicely
-  parallel to the similar "Recent conversations" panel so that it can be
-  merged in a maintainable fashion, work with the community to
-  integrate those changes, complete the Inbox feature through being
-  merged, and then spend the remainder of the summer polishing it. 175
-  or 350 hours; moderate difficulty. **Skills required**: JavaScript,
-  CSS, and reading and understanding a complex code path.
+  **Skills required**: A high level of fluency with writing readable
+  Python 3 and thinking about corner cases.
 
-  Experts: Aman Agrawal, Shlok Patel
-
-- **Extended notification settings**. Extend Zulip's powerful
-  notification settings model to support additional configuration
-  options. The top priorities in this area are [unmuting topics in
-  muted streams](https://github.com/zulip/zulip/issues/2517) and
-  [following a topic](https://github.com/zulip/zulip/issues/6027);
-  these are two of the 5 most requested features for the Zulip project
-  overall. For this project, one will likely want to start with some
-  simpler issues in the [notifications (messages)
-  area][notifications-messages] in order to get familiarity with the
-  code paths in question. There is enough to do in this project that
-  we could have two students working in this area. 175 or 350 hours;
-  moderate difficulty. **Skills required**: Python and JavaScript,
-  with a bit of CSS, database design, and other aspects of full-stack
-  feature development. Attention to detail, thinking through subtle
-  corner cases, designing good abstractions to help ensure
-  correctness, and writing tests to verify correct behavior in them
-  will be important for this work.
-
-  Experts: Abhijeet Bodas, Ryan Rehman
-
-[notifications-messages]: https://github.com/zulip/zulip/labels/area%3A%20notifications%20%28messages%29
-
-- **Cluster of priority features**. Implement a cluster of new full
-  stack features for Zulip. The [high priority
-  label](https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22)
-  documents hundreds of issues that we've identified as important to
-  the project. A great project can be 3-5 significant features around
-  a theme (often, but not necessarily, an [area
-  label](https://github.com/zulip/zulip/labels); the goal will be to
-  implement and get fully merged a cluster of features with a
-  meaningful impact on the project. Zulip has a lot of half-finished
-  PRs, so some features might be completed by reading, understanding,
-  rebasing, and reviving an existing pull request. 175 or 350
-  hours; difficulty will vary. **Skills required**: Depends on the
-  features; Tim Abbott will help you select an appropriate cluster
-  once we've gotten to know you and your strengths through your getting
-  involved in the project.
-
-  Experts: it depends
+  Experts: Tim Abbott, Prakhar Pratyush
 
 - Zulip's [**REST API documentation**](https://zulip.com/api), which is an
   important resource for any organization integrating with Zulip, as
@@ -187,7 +253,7 @@ Django, JavaScript, and CSS.
   small, clean improvements to the Zulip UI (whether logged-in or logged-out
   pages).
 
-  Experts: Aman Agrawal, Alya Abbott
+  Experts: Aman Agrawal, Karl Stolley, Alya Abbott
 
 [redesign-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3Aredesign
 
@@ -206,7 +272,7 @@ Django, JavaScript, and CSS.
   [performance label][perf-label] may be helpful reading for the
   backend part of this.
 
-  Experts: Tim Abbott, Yash RE
+  Experts: Tim Abbott
 
 [perf-label]: https://github.com/zulip/zulip/labels/area%3A%20performance
 
@@ -223,7 +289,7 @@ Django, JavaScript, and CSS.
   do careful manual testing of third-party products. Fluent English, usability
   sense and/or technical writing skills are all pluses.
 
-  Expert: Zixuan Li
+  Experts: Zixuan James Li, Lauryn Menard
 
 - **Make Zulip integrations easier for nontechnical users to set up**.
   This includes adding a backend permissions system for managing bot
@@ -245,7 +311,7 @@ Django, JavaScript, and CSS.
   has a bunch of good starter issues to demonstrate your skills if
   you're interested in this area.
 
-  Expert: Zixuan James Li
+  Experts: Zixuan James Li, Lauryn Menard
 
   [all-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22%2C%22area%3A+settings+%28user%29%22%2C%22area%3A+stream+settings%22%2C%22area%3A+settings+UI%22
 
