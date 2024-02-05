@@ -537,5 +537,5 @@ export function initialize() {
         excludes_muted_topics: true,
     });
     message_lists.set_home(home_msg_list);
-    message_lists.set_current(home_msg_list);
+    message_lists.update_current_message_list(home_msg_list);
 }

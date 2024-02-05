@@ -55,8 +55,23 @@ export type MessageList = {
 export let home: MessageList | undefined;
 export let current: MessageList | undefined;
 
-export function set_current(msg_list: MessageList): void {
+function set_current(msg_list: MessageList): void {
+    // NOTE: Use update_current_message_list instead of this function.
     current = msg_list;
+}
+
+export function update_current_message_list(msg_list: MessageList): void {
+    if (msg_list !== home) {
+        home?.view.$list.removeClass("focused-message-list");
+    }
+
+    if (current !== home) {
+        // Remove old msg list from DOM.
+        current?.view.$list.remove();
+    }
+
+    set_current(msg_list);
+    current?.view.$list.addClass("focused-message-list");
 }
 
 export function set_home(msg_list: MessageList): void {

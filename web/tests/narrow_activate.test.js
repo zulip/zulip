@@ -38,7 +38,7 @@ const message_lists = mock_esm("../src/message_lists", {
             },
         },
     },
-    set_current(msg_list) {
+    update_current_message_list(msg_list) {
         message_lists.current = msg_list;
     },
 });
