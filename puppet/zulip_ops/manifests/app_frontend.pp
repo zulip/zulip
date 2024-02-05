@@ -11,6 +11,10 @@ class zulip_ops::app_frontend {
   zulip_ops::firewall_allow{ 'http': }
   zulip_ops::firewall_allow{ 'https': }
 
+  group { 'redistunnel':
+    ensure => present,
+    gid    => '1080',
+  }
   user { 'redistunnel':
     ensure     => present,
     uid        => '1080',

@@ -16,6 +16,10 @@ class zulip_ops::profile::redis inherits zulip_ops::profile::base {
     content => "${zulip::profile::redis::redis_password}\n",
   }
 
+  group { 'redistunnel':
+    ensure => present,
+    gid    => '1080',
+  }
   user { 'redistunnel':
     ensure     => present,
     uid        => '1080',
