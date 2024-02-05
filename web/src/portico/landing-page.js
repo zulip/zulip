@@ -147,6 +147,19 @@ $(() => {
         const $pricing_wrapper = $(".portico-pricing");
         $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
         $pricing_wrapper.addClass(`showing-${tab_to_show.slice(1)}`);
+
+        const $comparison_table = $(".zulip-plans-comparison");
+
+        // Not all pages that show plans include the comparison
+        // table, but when it's present, make sure to align the
+        // comparison table with the current active plans tab
+        if ($comparison_table.length > 0) {
+            const plans_columns_count = tab_to_show.slice(1) === "self-hosted" ? 4 : 3;
+
+            // Set the correct values for span and colspan
+            $(".features-col-group").attr("span", plans_columns_count);
+            $(".subheader-filler").attr("colspan", plans_columns_count);
+        }
     }
 });
 
@@ -162,5 +175,41 @@ $(document).on("click", ".pricing-tab", function () {
     const $pricing_wrapper = $(".portico-pricing");
     $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
     $pricing_wrapper.addClass(`showing-${id}`);
+
+    const $comparison_table = $(".zulip-plans-comparison");
+    const comparison_table_id = $comparison_table.attr(id);
+
+    // Not all pages that show plans include the comparison
+    // table, but when it's present, make sure to set the
+    // comparison table features to match the current active tab
+    // However, once a user has begun to interact with the
+    // comparison table, giving the `id` attribute a value, we
+    // no longer apply this logic
+    if ($comparison_table.length > 0 && !comparison_table_id) {
+        const plans_columns_count = id === "self-hosted" ? 4 : 3;
+
+        // Set the correct values for span and colspan
+        $(".features-col-group").attr("span", plans_columns_count);
+        $(".subheader-filler").attr("colspan", plans_columns_count);
+    }
+
     history.pushState(null, null, `#${id}`);
+});
+
+$(document).on("click", ".comparison-tab", function () {
+    const plans_columns_counts = {
+        "tab-cloud": 3,
+        "tab-hosted": 4,
+        "tab-all": 7,
+    };
+
+    const tab_label = $(this)[0].dataset.label;
+    const plans_columns_count = plans_columns_counts[tab_label];
+    const visible_plans_id = `showing-${tab_label}`;
+
+    $(".zulip-plans-comparison").attr("id", visible_plans_id);
+
+    // Set the correct values for span and colspan
+    $(".features-col-group").attr("span", plans_columns_count);
+    $(".subheader-filler").attr("colspan", plans_columns_count);
 });
