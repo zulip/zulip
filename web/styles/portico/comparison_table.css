@@ -122,7 +122,7 @@
         color: hsl(223deg 40% 30%);
         font-weight: 600;
         border: none;
-        background-color: hsl(0deg 0% 100%);
+        background-color: hsl(0deg 0% 100% / 0%);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -200,6 +200,10 @@
         color: hsl(223deg 40% 30% / 100%);
         background: hsl(209deg 41% 94%);
         transition: all 200ms ease-out;
+    }
+
+    .comparison-table th .icon {
+        display: none;
     }
 
     .subheader-filler {
@@ -421,19 +425,117 @@
 /* Change comparison-table visibility on /plans
    based on active plan tab. */
 
-.showing-cloud {
+#showing-tab-cloud,
+#showing-tab-hosted,
+#showing-tab-all {
+    .comparison-tab-cloud,
+    .comparison-tab-self-hosted,
+    .comparison-tab-all {
+        background-color: hsl(0deg 0% 100% / 0%);
+        cursor: pointer;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100% / 40%);
+        }
+    }
+}
+
+.showing-cloud,
+#showing-tab-cloud {
+    .comparison-tab-cloud {
+        background-color: hsl(0deg 0% 100%);
+        cursor: default;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100%);
+        }
+    }
+
     #self-hosted-plan-comparison,
     #all-plan-comparison,
+    .subheader-open-source,
+    .subheader-self-hosted-legend,
     .self-hosted-feature-only,
     .self-hosted-cell {
         display: none;
     }
+
+    #cloud-plan-comparison,
+    .cloud-cell {
+        display: revert;
+    }
+
+    /* When only Cloud plans appear in the comparison table,
+       we need to set the border-radius here that is otherwise
+       displayed on the table itself.
+
+       TODO: Unset this property when the header row is stuck,
+       so that the little flutter of feature-table lines cannot
+       be seen by eagle-eyed users. */
+    th.last-cloud-th {
+        border-top-right-radius: var(--border-radius-table);
+    }
 }
 
-.showing-self-hosted {
+.showing-self-hosted,
+#showing-tab-hosted {
+    .comparison-tab-self-hosted {
+        background-color: hsl(0deg 0% 100%);
+        cursor: default;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100%);
+        }
+    }
+
     #cloud-plan-comparison,
     #all-plan-comparison,
     .cloud-cell {
         display: none;
+    }
+
+    #self-hosted-plan-comparison,
+    .subheader-open-source,
+    .subheader-self-hosted-legend,
+    .self-hosted-feature-only,
+    .self-hosted-cell {
+        display: revert;
+    }
+
+    th.last-cloud-th {
+        border-top-right-radius: unset;
+    }
+}
+
+#showing-tab-all {
+    .comparison-tab-all {
+        background-color: hsl(0deg 0% 100%);
+        cursor: default;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100%);
+        }
+    }
+
+    #cloud-plan-comparison,
+    #self-hosted-plan-comparison {
+        display: none;
+    }
+
+    .subheader-open-source,
+    .subheader-self-hosted-legend,
+    #all-plan-comparison,
+    .cloud-cell,
+    .self-hosted-cell,
+    .self-hosted-feature-only {
+        display: revert;
+    }
+
+    th.last-cloud-th {
+        border-top-right-radius: unset;
+    }
+
+    .comparison-table th .icon {
+        display: revert;
     }
 }
