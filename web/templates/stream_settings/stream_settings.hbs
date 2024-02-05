@@ -95,11 +95,11 @@
         </div>
 
         <div id="personal-stream-settings" class="stream_section" data-stream-section="personal">
-            <div class="subsection-header">
-                <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
-                <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
-            </div>
             <div class="subsection-parent">
+                <div class="subsection-header">
+                    <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
+                    <div class="stream_change_property_status alert-notification"></div>
+                </div>
                 {{#each other_settings}}
                     <div class="input-group">
                         {{> stream_settings_checkbox
@@ -120,9 +120,12 @@
                     </span>
                 </div>
             </div>
-            <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
-            <p>{{t "In muted streams, stream notification settings apply only to unmuted topics." }}</p>
             <div class="subsection-parent">
+                <div class="subsection-header">
+                    <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
+                    <div class="stream_change_property_status alert-notification"></div>
+                    <p>{{t "In muted streams, stream notification settings apply only to unmuted topics." }}</p>
+                </div>
                 <div class="input-group">
                     <button class="button small rounded reset-stream-notifications-button" type="button">{{t "Reset to default notifications" }}</button>
                 </div>
