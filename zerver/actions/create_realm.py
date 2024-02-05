@@ -22,6 +22,7 @@ from zerver.lib.user_groups import (
     create_system_user_groups_for_realm,
     get_role_based_system_groups_dict,
 )
+from zerver.lib.zulip_update_announcements import get_latest_zulip_update_announcements_level
 from zerver.models import (
     DefaultStream,
     PreregistrationRealm,
@@ -294,11 +295,16 @@ def do_create_realm(
     )
     realm.signup_announcements_stream = signup_announcements_stream
 
+    # New realm is initialized with the latest zulip update announcements
+    # level as it shouldn't receive a bunch of old updates.
+    realm.zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
+
     realm.save(
         update_fields=[
             "new_stream_announcements_stream",
             "signup_announcements_stream",
             "zulip_update_announcements_stream",
+            "zulip_update_announcements_level",
         ]
     )
 
