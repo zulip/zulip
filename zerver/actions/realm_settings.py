@@ -210,6 +210,57 @@ def parse_and_set_setting_value_if_required(
     return parsed_value, setting_value_changed
 
 
+def get_realm_authentication_methods_for_page_params_api(
+    realm: Realm, authentication_methods: Dict[str, bool]
+) -> Dict[str, Any]:
+    # To avoid additional queries, this expects passing in the authentication_methods
+    # dictionary directly, which is useful when the caller already has to fetch it
+    # for other purposes - and that's the circumstance in which this function is
+    # currently used. We can trivially make this argument optional if needed.
+
+    from zproject.backends import AUTH_BACKEND_NAME_MAP
+
+    result_dict: Dict[str, Dict[str, Union[str, bool]]] = {
+        backend_name: {"enabled": enabled, "available": True}
+        for backend_name, enabled in authentication_methods.items()
+    }
+
+    if not settings.BILLING_ENABLED:
+        return result_dict
+
+    # The rest of the function is only for the mechanism of restricting
+    # certain backends based on the realm's plan type on Zulip Cloud.
+
+    from corporate.models import CustomerPlan
+
+    for backend_name in result_dict:
+        available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans
+
+        if available_for is not None and realm.plan_type not in available_for:
+            result_dict[backend_name]["available"] = False
+
+            required_upgrade_plan_number = min(
+                set(available_for).intersection({Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS})
+            )
+            if required_upgrade_plan_number == Realm.PLAN_TYPE_STANDARD:
+                required_upgrade_plan_name = CustomerPlan.name_from_tier(
+                    CustomerPlan.TIER_CLOUD_STANDARD
+                )
+            else:
+                assert required_upgrade_plan_number == Realm.PLAN_TYPE_PLUS
+                required_upgrade_plan_name = CustomerPlan.name_from_tier(
+                    CustomerPlan.TIER_CLOUD_PLUS
+                )
+
+            result_dict[backend_name]["unavailable_reason"] = _(
+                "You need to upgrade to the {required_upgrade_plan_name} plan to use this authentication method."
+            ).format(required_upgrade_plan_name=required_upgrade_plan_name)
+        else:
+            result_dict[backend_name]["available"] = True
+
+    return result_dict
+
+
 def validate_authentication_methods_dict_from_api(
     realm: Realm, authentication_methods: Dict[str, bool]
 ) -> None:
@@ -219,6 +270,32 @@ def validate_authentication_methods_dict_from_api(
             raise JsonableError(
                 _("Invalid authentication method: {name}. Valid methods are: {methods}").format(
                     name=name, methods=sorted(current_authentication_methods.keys())
+                )
+            )
+
+    if settings.BILLING_ENABLED:
+        validate_plan_for_authentication_methods(realm, authentication_methods)
+
+
+def validate_plan_for_authentication_methods(
+    realm: Realm, authentication_methods: Dict[str, bool]
+) -> None:
+    from zproject.backends import AUTH_BACKEND_NAME_MAP
+
+    old_authentication_methods = realm.authentication_methods_dict()
+    newly_enabled_authentication_methods = {
+        name
+        for name, enabled in authentication_methods.items()
+        if enabled and not old_authentication_methods.get(name, False)
+    }
+    for name in newly_enabled_authentication_methods:
+        available_for = AUTH_BACKEND_NAME_MAP[name].available_for_cloud_plans
+        if available_for is not None and realm.plan_type not in available_for:
+            # This should only be feasible via the API, since app UI should prevent
+            # trying to enable an unavailable authentication method.
+            raise JsonableError(
+                _("Authentication method {name} is not available on your current plan.").format(
+                    name=name
                 )
             )
 
@@ -561,6 +638,8 @@ def do_change_realm_org_type(
 def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
+    from zproject.backends import AUTH_BACKEND_NAME_MAP
+
     old_value = realm.plan_type
 
     if plan_type == Realm.PLAN_TYPE_LIMITED:
@@ -580,6 +659,19 @@ def do_change_realm_plan_type(
         if realm.can_access_all_users_group_id != everyone_system_group.id:
             do_change_realm_permission_group_setting(
                 realm, "can_access_all_users_group", everyone_system_group, acting_user=acting_user
+            )
+
+    # If downgrading, disable authentication methods that are not available on the new plan.
+    if settings.BILLING_ENABLED:
+        realm_authentication_methods = realm.authentication_methods_dict()
+        for backend_name, enabled in realm_authentication_methods.items():
+            if enabled and plan_type < old_value:
+                available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans
+                if available_for is not None and plan_type not in available_for:
+                    realm_authentication_methods[backend_name] = False
+        if realm_authentication_methods != realm.authentication_methods_dict():
+            do_set_realm_authentication_methods(
+                realm, realm_authentication_methods, acting_user=acting_user
             )
 
     realm.plan_type = plan_type

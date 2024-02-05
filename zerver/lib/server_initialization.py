@@ -14,7 +14,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.users import get_system_bot
-from zproject.backends import all_implemented_backend_names
+from zproject.backends import all_default_backend_names
 
 
 def server_initialized() -> bool:
@@ -41,11 +41,10 @@ def create_internal_realm() -> None:
     create_system_user_groups_for_realm(realm)
     set_default_for_realm_permission_group_settings(realm)
 
-    # We create realms with all authentications methods enabled by default.
     RealmAuthenticationMethod.objects.bulk_create(
         [
             RealmAuthenticationMethod(name=backend_name, realm=realm)
-            for backend_name in all_implemented_backend_names()
+            for backend_name in all_default_backend_names()
         ]
     )
 

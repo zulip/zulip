@@ -41,7 +41,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
-from zproject.backends import all_implemented_backend_names
+from zproject.backends import all_default_backend_names
 
 # stubs
 ZerverFieldsT: TypeAlias = Dict[str, Any]
@@ -378,7 +378,7 @@ def build_realm(
         zerver_realmplayground=[],
         zerver_realmauthenticationmethod=[
             {"realm": realm_id, "name": name, "id": i}
-            for i, name in enumerate(all_implemented_backend_names(), start=1)
+            for i, name in enumerate(all_default_backend_names(), start=1)
         ],
     )
     return realm

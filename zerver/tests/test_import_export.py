@@ -1577,6 +1577,52 @@ class RealmImportExportTest(ExportFile):
 
         self.assertEqual(message_ids, [555, 888, 999])
 
+    def test_import_of_authentication_methods(self) -> None:
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+            )
+        ):
+            realm = get_realm("zulip")
+            authentication_methods_dict = realm.authentication_methods_dict()
+            for auth_method in authentication_methods_dict:
+                authentication_methods_dict[auth_method] = True
+            do_set_realm_authentication_methods(
+                realm, authentication_methods_dict, acting_user=None
+            )
+
+            self.export_realm(realm)
+
+            with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+                do_import_realm(get_output_dir(), "test-zulip")
+
+            imported_realm = Realm.objects.get(string_id="test-zulip")
+            self.assertEqual(
+                realm.authentication_methods_dict(),
+                imported_realm.authentication_methods_dict(),
+            )
+
+            self.export_realm(realm)
+
+            with self.settings(BILLING_ENABLED=True), self.assertLogs(level="WARN") as mock_warn:
+                do_import_realm(get_output_dir(), "test-zulip2")
+
+            imported_realm = Realm.objects.get(string_id="test-zulip2")
+
+            self.assertEqual(
+                imported_realm.authentication_methods_dict(),
+                {"Email": True, "AzureAD": False, "SAML": False},
+            )
+            self.assertEqual(
+                mock_warn.output,
+                [
+                    "WARNING:root:Dropped restricted authentication method: AzureAD",
+                    "WARNING:root:Dropped restricted authentication method: SAML",
+                ],
+            )
+
     def test_plan_type(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm

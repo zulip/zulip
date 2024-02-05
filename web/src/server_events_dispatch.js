@@ -290,7 +290,20 @@ export function dispatch_normal_event(event) {
                     switch (event.property) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
-                                realm["realm_" + key] = value;
+                                if (key === "authentication_methods") {
+                                    for (const [auth_method, enabled] of Object.entries(
+                                        event.data.authentication_methods,
+                                    )) {
+                                        realm.realm_authentication_methods[auth_method].enabled =
+                                            enabled;
+                                    }
+                                    settings_org.populate_auth_methods(
+                                        event.data.authentication_methods,
+                                    );
+                                } else {
+                                    realm["realm_" + key] = value;
+                                }
+
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
@@ -304,11 +317,6 @@ export function dispatch_normal_event(event) {
                                 if (key === "edit_topic_policy") {
                                     message_live_update.rerender_messages_view();
                                 }
-                            }
-                            if (event.data.authentication_methods !== undefined) {
-                                settings_org.populate_auth_methods(
-                                    event.data.authentication_methods,
-                                );
                             }
                             break;
                         case "icon":

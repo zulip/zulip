@@ -711,13 +711,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         on the server, this will not return an entry for "Email")."""
         # This mapping needs to be imported from here due to the cyclic
         # dependency.
-        from zproject.backends import AUTH_BACKEND_NAME_MAP, all_implemented_backend_names
+        from zproject.backends import AUTH_BACKEND_NAME_MAP
 
         ret: Dict[str, bool] = {}
         supported_backends = [type(backend) for backend in supported_auth_backends()]
 
-        for backend_name in all_implemented_backend_names():
-            backend_class = AUTH_BACKEND_NAME_MAP[backend_name]
+        for backend_name, backend_class in AUTH_BACKEND_NAME_MAP.items():
             if backend_class in supported_backends:
                 ret[backend_name] = False
         for realm_authentication_method in RealmAuthenticationMethod.objects.filter(
