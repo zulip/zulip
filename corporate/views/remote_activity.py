@@ -4,8 +4,8 @@ from psycopg2.sql import SQL
 
 from corporate.lib.activity import (
     fix_rows,
-    format_date_for_activity_reports,
     format_none_as_zero,
+    format_optional_datetime,
     get_plan_data_by_remote_realm,
     get_plan_data_by_remote_server,
     get_query_data,
@@ -85,7 +85,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         "Realm host or server hostname",
         "Server contact email",
         "Server Zulip version",
-        "Server last audit log update",
+        "Server last audit log update (UTC)",
         "Server mobile users",
         "Server mobile pushes",
         "Realm organization type",
@@ -199,7 +199,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     # Format column data and add total row
     for i, col in enumerate(cols):
         if i == LAST_AUDIT_LOG_DATE:
-            fix_rows(rows, i, format_date_for_activity_reports)
+            fix_rows(rows, i, format_optional_datetime)
         if i in [MOBILE_USER_COUNT, MOBILE_PUSH_COUNT]:
             fix_rows(rows, i, format_none_as_zero)
         if i == SERVER_AND_REALM_IDS:

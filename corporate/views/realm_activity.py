@@ -11,7 +11,7 @@ from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
 
 from corporate.lib.activity import (
-    format_date_for_activity_reports,
+    format_optional_datetime,
     make_table,
     realm_stats_link,
     user_activity_link,
@@ -116,8 +116,8 @@ def realm_user_summary_table(
         "Email",
         "User type",
         "Messages sent",
-        "Last heard from",
-        "Last message sent",
+        "Last heard from (UTC)",
+        "Last message sent (UTC)",
     ]
 
     rows = []
@@ -129,8 +129,8 @@ def realm_user_summary_table(
             user_summary.user_type,
             user_summary.messages_sent,
         ]
-        cells.append(format_date_for_activity_reports(user_summary.last_heard_from))
-        cells.append(format_date_for_activity_reports(user_summary.last_message_sent))
+        cells.append(format_optional_datetime(user_summary.last_heard_from))
+        cells.append(format_optional_datetime(user_summary.last_message_sent))
 
         row_class = ""
         if user_summary.last_heard_from and is_recent(user_summary.last_heard_from):
