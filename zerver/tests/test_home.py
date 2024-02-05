@@ -369,6 +369,128 @@ class HomeTest(ZulipTestCase):
         self.assertCountEqual(page_params, expected_keys)
         self.assertIsNone(page_params["state_data"])
 
+    def test_realm_authentication_methods(self) -> None:
+        realm = get_realm("zulip")
+        self.login("desdemona")
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            )
+        ):
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Standard plan to use this authentication method.",
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+            # Now try with BILLING_ENABLED=False. This simulates a self-hosted deployment
+            # instead of Zulip Cloud. In this case, all authentication methods should be available.
+            with self.settings(BILLING_ENABLED=False):
+                result = self._get_home_page()
+                state_data = self._get_page_params(result)["state_data"]
+
+                self.assertEqual(
+                    state_data["realm_authentication_methods"],
+                    {
+                        "Email": {"enabled": True, "available": True},
+                        "AzureAD": {
+                            "enabled": True,
+                            "available": True,
+                        },
+                        "SAML": {
+                            "enabled": True,
+                            "available": True,
+                        },
+                    },
+                )
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+            )
+        ):
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+        # Changing the plan_type to Standard grants access to AzureAD, but not SAML:
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            )
+        ):
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+            # Now upgrade to Plus and verify that both SAML and AzureAD are available.
+            do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                },
+            )
+
     def test_sentry_keys(self) -> None:
         def home_params() -> Dict[str, Any]:
             result = self._get_home_page()
