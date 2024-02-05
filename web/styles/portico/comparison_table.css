@@ -256,7 +256,7 @@
     .comparison-table-feature-desc {
         font-size: 14px;
         opacity: 0.7;
-        margin-top: 2px;
+        margin-top: 4px;
     }
 
     .comparison-value-positive {
@@ -344,7 +344,7 @@
         .comparison-table th,
         .comparison-table th.sticky {
             font-size: 14px;
-            line-height: 16px;
+            line-height: 18px;
             box-sizing: border-box;
             height: 44px;
             padding: 4px 2px;
@@ -352,7 +352,7 @@
 
         .comparison-table td {
             font-size: 14px;
-            line-height: 14px;
+            line-height: 18px;
         }
 
         .comparison-table td.subheader.comparison-table-feature {
