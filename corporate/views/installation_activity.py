@@ -15,7 +15,7 @@ from corporate.lib.activity import (
     dictfetchall,
     estimate_annual_recurring_revenue_by_realm,
     fix_rows,
-    format_date_for_activity_reports,
+    format_optional_datetime,
     get_query_data,
     get_realms_with_default_discount_dict,
     make_table,
@@ -331,15 +331,15 @@ def get_integrations_activity(request: HttpRequest) -> HttpResponse:
         "Client",
         "Realm",
         "Hits",
-        "Last time",
+        "Last time (UTC)",
     ]
 
     rows = get_query_data(query)
     for i, col in enumerate(cols):
         if col == "Realm":
             fix_rows(rows, i, realm_activity_link)
-        elif col == "Last time":
-            fix_rows(rows, i, format_date_for_activity_reports)
+        elif col == "Last time (UTC)":
+            fix_rows(rows, i, format_optional_datetime)
 
     content = make_table(title, cols, rows)
     return render(

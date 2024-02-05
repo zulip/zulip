@@ -1,4 +1,3 @@
-import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
@@ -33,13 +32,6 @@ from zilencer.models import (
     RemoteZulipServer,
     get_remote_customer_user_count,
 )
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
-
-eastern_tz = zoneinfo.ZoneInfo("America/New_York")
 
 
 @dataclass
@@ -100,9 +92,11 @@ def dictfetchall(cursor: CursorWrapper) -> List[Dict[str, Any]]:
     return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
 
 
-def format_date_for_activity_reports(date: Optional[datetime]) -> str:
+def format_optional_datetime(date: Optional[datetime], display_none: bool = False) -> str:
     if date:
-        return date.astimezone(eastern_tz).strftime("%Y-%m-%d %H:%M")
+        return date.strftime("%Y-%m-%d %H:%M")
+    elif display_none:
+        return "None"
     else:
         return ""
 
