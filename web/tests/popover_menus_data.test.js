@@ -9,6 +9,10 @@ const {page_params, realm} = require("./lib/zpage_params");
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 const message_lists = zrequire("message_lists");
+message_lists.update_current_message_list = (list) => {
+    message_lists.current = list;
+};
+
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
@@ -135,7 +139,7 @@ test("my_message_all_actions", () => {
     // Get message with maximum permissions available
     // Initialize message list
     const list = init_message_list();
-    message_lists.set_current(list);
+    message_lists.update_current_message_list(list);
 
     // Assume message has been previously edited.
     // Message is sent by me, and is a stream. I should have all permissions to this message.
@@ -185,7 +189,7 @@ test("not_my_message_view_actions", () => {
     // Get message that is only viewable
 
     const list = init_message_list();
-    message_lists.set_current(list);
+    message_lists.update_current_message_list(list);
 
     // Message is sent by somebody else and is a stream with previous history.
     // I should only be able to view this message with no edit/move permissions.
@@ -225,7 +229,7 @@ test("not_my_message_view_source_and_move", () => {
     // Get message that is movable with viewable source
 
     const list = init_message_list();
-    message_lists.set_current(list);
+    message_lists.update_current_message_list(list);
 
     // Message tests edge case where message it sent by someone else.
     // Message is movable, however--I should have only view permissions with the exception of moving the message.
