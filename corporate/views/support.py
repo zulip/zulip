@@ -19,7 +19,7 @@ from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
-from corporate.lib.activity import remote_installation_stats_link
+from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
 from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteRealmBillingSession,
@@ -638,6 +638,7 @@ def remote_servers_support(
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
     context["format_discount"] = format_discount_percentage
+    context["format_optional_datetime"] = format_optional_datetime
     context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link
     context["REMOTE_PLAN_TIERS"] = get_remote_plan_tier_options()
