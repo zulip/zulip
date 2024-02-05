@@ -304,13 +304,13 @@ function stream_notification_reset(e) {
 
     stream_settings_api.bulk_set_stream_property(
         data,
-        $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
+        $(e.target).closest(".subsection-parent").find(".alert-notification"),
     );
 }
 
 function stream_setting_changed(e) {
     const sub = get_sub_for_target(e.target);
-    const $status_element = $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
+    const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
     const setting = e.target.name;
     if (!sub) {
         blueslip.error("undefined sub in stream_setting_changed()");
