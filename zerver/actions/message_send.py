@@ -850,7 +850,6 @@ def get_active_presence_idle_user_ids(
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
-    email_gateway: bool = False,
     mark_as_read: Sequence[int] = [],
 ) -> List[SentMessageResult]:
     """See
