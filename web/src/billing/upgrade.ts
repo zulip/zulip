@@ -29,6 +29,10 @@ if ($("input[type=hidden][name=schedule]").length === 1) {
     // we need to override schedule from localstorage if it was set.
     selected_schedule = $<HTMLInputElement>("input[type=hidden][name=schedule]").val()!;
 }
+if (page_params.fixed_price !== null) {
+    // By default, we show annual schedule (and price) for a fixed-price plan.
+    selected_schedule = "annual";
+}
 
 let current_license_count = page_params.seat_count;
 
