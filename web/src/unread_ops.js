@@ -466,6 +466,18 @@ export function process_visible() {
     }
 }
 
+function process_selected_message() {
+    if (viewport_is_visible_and_focused() && message_lists.current.selected_id() !== -1) {
+        const selected_message = message_lists.current.selected_message();
+        if (
+            unread.message_unread(selected_message) &&
+            message_lists.current.can_mark_messages_read()
+        ) {
+            message_lists.current.select_id(selected_message.id);
+        }
+    }
+}
+
 export function mark_current_list_as_read(options) {
     notify_server_messages_read(message_lists.current.all_messages(), options);
 }
@@ -544,6 +556,11 @@ export function initialize() {
             // Update many places on the DOM to reflect unread
             // counts.
             process_visible();
+
+            // Check selected message after process_visible
+            // in case the bottom of the message feed isn't
+            // visible.
+            process_selected_message();
         })
         .on("blur", () => {
             window_focused = false;

@@ -12,6 +12,7 @@ import * as message_list_data from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
+import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
@@ -548,8 +549,11 @@ export function initialize(home_view_loaded) {
         if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
             // We fall back to the closest selected id, as the user
             // may have removed a stream from the home view while we
-            // were loading data.
+            // were loading data. We do not mark as read here because
+            // the user may not have the home view as their current view
+            // (for reloads) or their default view (for initial load).
             message_lists.home.select_id(data.anchor, {
+                mark_read: false,
                 then_scroll: true,
                 use_closest: true,
                 target_scroll_offset: initial_offset,
@@ -568,6 +572,17 @@ export function initialize(home_view_loaded) {
                 // Since for spectators, this is the main fetch, we
                 // hide the Recent Conversations loading indicator here.
                 recent_view_ui.hide_loading_indicator();
+            }
+
+            if (
+                narrow_state.is_message_feed_visible() &&
+                message_lists.current === message_lists.home
+            ) {
+                // If user has the all messages view as their default and
+                // current view, call select_id on the selected message
+                // again, this time to potentially mark it as read.
+                const current_selected_message = message_lists.home.selected_id();
+                message_lists.home.select_id(current_selected_message);
             }
 
             // See server_events.js for this callback.
