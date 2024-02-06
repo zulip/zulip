@@ -1775,6 +1775,7 @@ update_message_flags_remove_event = event_dict_type(
                     ],
                     optional_keys=[
                         ("mentioned", bool),
+                        ("has_alert_words", bool),
                         ("user_ids", ListType(int)),
                         ("stream_id", int),
                         ("topic", str),

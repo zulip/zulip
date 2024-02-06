@@ -41,6 +41,8 @@ export const unread_mentions_counter = new Set<number>();
 export const direct_message_with_mention_count = new Set();
 const unread_messages = new Set<number>();
 
+export const unread_alerts_counter = new Set<number>();
+
 // Map with keys of the form "{stream_id}:{topic.toLowerCase()}" and
 // values being Sets of message IDs for unread messages mentioning the
 // user within that topic. Use `recent_view_util.get_topic_key` to
@@ -698,6 +700,7 @@ export function process_loaded_messages(
             if (message.type === "private") {
                 process_unread_message({
                     id: message.id,
+                    alerted: message.alerted,
                     mentioned: message.mentioned,
                     mentioned_me_directly: message.mentioned_me_directly,
                     type: message.type,
@@ -707,6 +710,7 @@ export function process_loaded_messages(
             } else {
                 process_unread_message({
                     id: message.id,
+                    alerted: message.alerted,
                     mentioned: message.mentioned,
                     mentioned_me_directly: message.mentioned_me_directly,
                     type: message.type,
@@ -724,6 +728,7 @@ export function process_loaded_messages(
 
 type UnreadMessageData = {
     id: number;
+    alerted: boolean;
     mentioned: boolean;
     mentioned_me_directly: boolean;
     unread: boolean;
@@ -762,6 +767,7 @@ export function process_unread_message(message: UnreadMessageData): void {
     }
 
     update_message_for_mention(message);
+    update_message_for_alert(message);
 }
 
 export function update_message_for_mention(
@@ -809,6 +815,27 @@ export function update_message_for_mention(
     return false;
 }
 
+export function update_message_for_alert(
+    message: UnreadMessageData,
+    content_edited = false,
+): boolean {
+    // Returns true if this is a stream message whose content was
+    // changed, and thus the caller might need to trigger a rerender
+    // of UI elements displaying whether the message's topic contains
+    // an unread mention of the user.
+    if (!message.unread) {
+        unread_alerts_counter.delete(message.id);
+        return false;
+    }
+    if (message.alerted) {
+        unread_alerts_counter.add(message.id);
+    }
+    if (content_edited && message.type === "stream") {
+        return true;
+    }
+    return false;
+}
+
 export function mark_as_read(message_id: number): void {
     // We don't need to check anything about the message, since all
     // the following methods are cheap and work fine even if message_id
@@ -821,6 +848,7 @@ export function mark_as_read(message_id: number): void {
     remove_message_from_unread_mention_topics(message_id);
     unread_topic_counter.delete(message_id);
     unread_mentions_counter.delete(message_id);
+    unread_alerts_counter.delete(message_id);
     direct_message_with_mention_count.delete(message_id);
     unread_messages.delete(message_id);
 
@@ -835,6 +863,7 @@ export function declare_bankruptcy(): void {
     unread_direct_message_counter.clear();
     unread_topic_counter.clear();
     unread_mentions_counter.clear();
+    unread_alerts_counter.clear();
     direct_message_with_mention_count.clear();
     unread_messages.clear();
     unread_mention_topics.clear();
@@ -851,6 +880,7 @@ export function get_unread_topics(include_per_topic_latest_msg_id = false): Unre
 export type FullUnreadCountsData = {
     direct_message_count: number;
     mentioned_message_count: number;
+    alert_message_count: number;
     direct_message_with_mention_count: number;
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
@@ -872,6 +902,7 @@ export function get_counts(): FullUnreadCountsData {
     return {
         direct_message_count: pm_res.total_count,
         mentioned_message_count: unread_mentions_counter.size,
+        alert_message_count: unread_alerts_counter.size,
         direct_message_with_mention_count: direct_message_with_mention_count.size,
         stream_unread_messages: topic_res.stream_unread_messages,
         followed_topic_unread_messages_count: topic_res.followed_topic_unread_messages,
@@ -1041,6 +1072,7 @@ type UnreadMessagesParams = {
         streams: UnreadStreamInfo[];
         huddles: UnreadHuddleInfo[];
         mentions: number[];
+        alerts: number[];
         count: number;
         old_unreads_missing: boolean;
     };
@@ -1060,6 +1092,10 @@ export function initialize(params: UnreadMessagesParams): void {
         }
     }
     clear_and_populate_unread_mention_topics();
+
+    for (const message_id of unread_msgs.alerts) {
+        unread_alerts_counter.add(message_id);
+    }
 
     for (const obj of unread_msgs.huddles) {
         for (const message_id of obj.unread_message_ids) {

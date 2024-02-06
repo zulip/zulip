@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 244**
+
+* [`POST /register`](/api/register-queue):
+  Added a new property - `alerts` to the `unread_msgs`, which is an
+  array that includes message ids of all the messages which contain alert
+  words set by the user.
+* [`GET /events`](/api/get-events):
+  Added an `has_alert_words` flag which indicates whether a message includes
+  any of the alert words set by the user or not.
+
 **Feature level 243**
 
 * [`POST /register`](/api/register-queue), [`GET

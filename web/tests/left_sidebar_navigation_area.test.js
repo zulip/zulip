@@ -82,9 +82,12 @@ run_test("update_count_in_dom", () => {
         mentioned_message_count: 222,
         home_unread_messages: 333,
         stream_unread_messages: 666,
+        alert_message_count: 999,
     };
 
     make_elem($(".top_left_mentions"), "<mentioned-count>");
+
+    make_elem($(".top_left_alerts"), "<alerted-count>");
 
     make_elem($(".top_left_inbox"), "<home-count>");
 
@@ -104,6 +107,7 @@ run_test("update_count_in_dom", () => {
     left_sidebar_navigation_area.initialize();
 
     assert.equal($("<mentioned-count>").text(), "222");
+    assert.equal($("<alerted-count>").text(), "999");
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
     assert.equal($("<scheduled-count>").text(), "555");

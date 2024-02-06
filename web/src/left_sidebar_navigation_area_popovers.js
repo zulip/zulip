@@ -18,6 +18,7 @@ import * as settings_config from "./settings_config";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as ui_util from "./ui_util";
+import {get_counts} from "./unread";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -257,6 +258,10 @@ export function initialize() {
             );
         },
         onMount() {
+            ui_util.update_unread_count_in_dom(
+                $(".condensed-views-popover-menu-alerts"),
+                get_counts().alert_message_count,
+            );
             ui_util.update_unread_count_in_dom(
                 $(".condensed-views-popover-menu-drafts"),
                 drafts.draft_model.getDraftCount(),

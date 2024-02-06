@@ -768,6 +768,7 @@ test("server_counts", () => {
                 },
             ],
             mentions: [31, 34, 40, 41],
+            alerts: [23, 74, 10, 99],
         },
     };
 

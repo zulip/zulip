@@ -62,6 +62,7 @@ from zerver.models.users import is_cross_realm_bot_email
 class MessageDetailsDict(TypedDict, total=False):
     type: str
     mentioned: bool
+    has_alert_words: bool
     user_ids: List[int]
     stream_id: int
     topic: str
@@ -86,6 +87,7 @@ class RawUnreadMessagesResult(TypedDict):
     stream_dict: Dict[int, RawUnreadStreamDict]
     huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
+    alerts: Set[int]
     muted_stream_ids: Set[int]
     unmuted_stream_msgs: Set[int]
     old_unreads_missing: bool
@@ -114,6 +116,7 @@ class UnreadMessagesResult(TypedDict):
     streams: List[UnreadStreamInfo]
     huddles: List[UnreadHuddleInfo]
     mentions: List[int]
+    alerts: List[int]
     count: int
     old_unreads_missing: bool
 
@@ -593,6 +596,7 @@ def extract_unread_data_from_um_rows(
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
     mentions: Set[int] = set()
+    alerts: Set[int] = set()
     total_unreads = 0
 
     raw_unread_messages: RawUnreadMessagesResult = dict(
@@ -602,6 +606,7 @@ def extract_unread_data_from_um_rows(
         unmuted_stream_msgs=unmuted_stream_msgs,
         huddle_dict=huddle_dict,
         mentions=mentions,
+        alerts=alerts,
         old_unreads_missing=False,
     )
 
@@ -678,7 +683,7 @@ def extract_unread_data_from_um_rows(
                 user_ids_string=user_ids_string,
             )
 
-        # TODO: Add support for alert words here as well.
+        is_alert = row["flags"] & UserMessage.flags.has_alert_word
         is_mentioned = (row["flags"] & UserMessage.flags.mentioned) != 0
         is_stream_wildcard_mentioned = (
             row["flags"] & UserMessage.flags.stream_wildcard_mentioned
@@ -688,6 +693,8 @@ def extract_unread_data_from_um_rows(
         ) != 0
         if is_mentioned:
             mentions.add(message_id)
+        if is_alert:
+            alerts.add(message_id)
         if is_stream_wildcard_mentioned or is_topic_wildcard_mentioned:
             if msg_type == Recipient.STREAM:
                 stream_id = row["message__recipient__type_id"]
@@ -786,6 +793,7 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
     unmuted_stream_msgs = raw_data["unmuted_stream_msgs"]
     huddle_dict = raw_data["huddle_dict"]
     mentions = list(raw_data["mentions"])
+    alerts = list(raw_data["alerts"])
 
     count = len(pm_dict) + len(unmuted_stream_msgs) + len(huddle_dict)
 
@@ -798,6 +806,7 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         streams=stream_objects,
         huddles=huddle_objects,
         mentions=mentions,
+        alerts=alerts,
         count=count,
         old_unreads_missing=raw_data["old_unreads_missing"],
     )
@@ -865,6 +874,8 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
+    if "has_alert_word" in flags:
+        state["alerts"].add(message_id)
     if (
         "stream_wildcard_mentioned" in flags or "topic_wildcard_mentioned" in flags
     ) and message_id in state["unmuted_stream_msgs"]:
@@ -879,6 +890,7 @@ def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id
     state["huddle_dict"].pop(message_id, None)
     state["unmuted_stream_msgs"].discard(message_id)
     state["mentions"].discard(message_id)
+    state["alerts"].discard(message_id)
 
 
 def format_unread_message_details(
@@ -902,6 +914,8 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+        if message_id in raw_unread_data["alerts"]:
+            message_details["has_alert_words"] = True
         unread_data[str(message_id)] = message_details
 
     for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
@@ -916,6 +930,8 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+        if message_id in raw_unread_data["alerts"]:
+            message_details["has_alert_words"] = True
         unread_data[str(message_id)] = message_details
 
     for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
@@ -932,6 +948,8 @@ def format_unread_message_details(
         )
         if message_id in raw_unread_data["mentions"]:
             message_details["mentioned"] = True
+        if message_id in raw_unread_data["alerts"]:
+            message_details["has_alert_words"] = True
         unread_data[str(message_id)] = message_details
 
     return unread_data
@@ -945,6 +963,9 @@ def add_message_to_unread_msgs(
 ) -> None:
     if message_details.get("mentioned"):
         state["mentions"].add(message_id)
+
+    if message_details.get("has_alert_words"):
+        state["alerts"].add(message_id)
 
     if message_details["type"] == "private":
         user_ids: List[int] = message_details["user_ids"]

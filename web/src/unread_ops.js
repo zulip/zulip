@@ -384,6 +384,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
         unread.process_unread_message({
             id: message_id,
             mentioned: message_info.mentioned,
+            alerted: message_info.alert,
             mentioned_me_directly,
             stream_id: message_info.stream_id,
             topic: message_info.topic,

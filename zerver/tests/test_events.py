@@ -478,6 +478,16 @@ class NormalActionsTest(BaseAction):
                 partial(self.send_stream_message, self.example_user("cordelia"), "Verona", content),
             )
 
+    def test_alert_send_message_events(self) -> None:
+        alert_words = ["hello", "hi", "bye"]
+        do_add_alert_words(self.user_profile, alert_words)
+
+        for alert_word in alert_words:
+            content = alert_word
+            self.verify_action(
+                partial(self.send_stream_message, self.example_user("cordelia"), "Verona", content),
+            )
+
     def test_automatically_follow_topic_where_mentioned(self) -> None:
         user = self.example_user("hamlet")
 
@@ -1027,6 +1037,7 @@ class NormalActionsTest(BaseAction):
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
         user_profile = self.example_user("hamlet")
         mention = "@**" + user_profile.full_name + "**"
+        do_add_alert_words(self.user_profile, ["hello"])
 
         for content in ["hello", mention]:
             message = self.send_stream_message(
