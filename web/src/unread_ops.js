@@ -442,7 +442,14 @@ function process_scrolled_to_bottom() {
     }
 
     if (message_lists.current.can_mark_messages_read()) {
-        mark_current_list_as_read();
+        // Mark all the messages in this message feed as read.
+        //
+        // Important: We have not checked definitively whether there
+        // are further messages that we're waiting on the server to
+        // return that would appear below the visible part of the
+        // feed, so it would not be correct to instead ask the server
+        // to mark all messages matching this entire narrow as read.
+        notify_server_messages_read(message_lists.current.all_messages());
         return;
     }
 
@@ -460,14 +467,10 @@ export function process_visible() {
     if (
         viewport_is_visible_and_focused() &&
         message_viewport.bottom_rendered_message_visible() &&
-        message_lists.current.view.is_end_rendered()
+        message_lists.current.view.is_fetched_end_rendered()
     ) {
         process_scrolled_to_bottom();
     }
-}
-
-export function mark_current_list_as_read(options) {
-    notify_server_messages_read(message_lists.current.all_messages(), options);
 }
 
 export function mark_stream_as_read(stream_id) {
