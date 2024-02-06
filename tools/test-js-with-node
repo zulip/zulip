@@ -182,7 +182,7 @@ EXEMPT_FILES = make_set(
         "web/src/reload.js",
         "web/src/reload_setup.js",
         "web/src/reminder.js",
-        "web/src/resize.js",
+        "web/src/resize.ts",
         "web/src/resize_handler.js",
         "web/src/rows.ts",
         "web/src/scheduled_messages.ts",
