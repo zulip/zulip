@@ -106,12 +106,19 @@ export function handle_narrow_activated(filter: Filter): void {
     ops = filter.operands("is");
     if (ops.length >= 1) {
         filter_name = ops[0];
-        if (filter_name === "starred") {
-            $filter_li = $(".top_left_starred_messages");
-            $filter_li.addClass("active-filter");
-        } else if (filter_name === "mentioned") {
-            $filter_li = $(".top_left_mentions");
-            $filter_li.addClass("active-filter");
+        switch (filter_name) {
+            case "starred": {
+                $filter_li = $(".top_left_starred_messages");
+                $filter_li.addClass("active-filter");
+
+                break;
+            }
+            case "mentioned": {
+                $filter_li = $(".top_left_mentions");
+                $filter_li.addClass("active-filter");
+
+                break;
+            }
         }
     }
 }
