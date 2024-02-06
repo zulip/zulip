@@ -11,6 +11,7 @@ class zulip_ops::app_frontend {
   zulip_ops::firewall_allow{ 'http': }
   zulip_ops::firewall_allow{ 'https': }
 
+  $redis_hostname = zulipconf('redis', 'hostname', undef)
   group { 'redistunnel':
     ensure => present,
     gid    => '1080',
@@ -25,13 +26,16 @@ class zulip_ops::app_frontend {
     managehome => true,
   }
   zulip_ops::user_dotfiles { 'redistunnel':
-    keys => true,
+    keys        => true,
+    known_hosts => [$redis_hostname],
   }
   package { 'autossh': ensure => installed }
-  $redis_hostname = zulipconf('redis', 'hostname', undef)
   file { "${zulip::common::supervisor_conf_dir}/redis_tunnel.conf":
     ensure  => file,
-    require => Package['supervisor', 'autossh'],
+    require => [
+      Package['supervisor', 'autossh'],
+      Zulip_Ops::User_Dotfiles['redistunnel'],
+    ],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
