@@ -39,7 +39,7 @@ export function get_sorted_options_list(option_values_object) {
 export function get_realm_time_limits_in_minutes(property) {
     if (realm[property] === null) {
         // This represents "Anytime" case.
-        return null;
+        return "";
     }
     let val = (realm[property] / 60).toFixed(1);
     if (Number.parseFloat(val, 10) === Number.parseInt(val, 10)) {
