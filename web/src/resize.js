@@ -195,7 +195,7 @@ function resize_navbar_alerts() {
 
 export function resize_page_components() {
     resize_navbar_alerts();
-    const h = resize_sidebars();
-    resize_bottom_whitespace(h);
+    resize_sidebars();
+    resize_bottom_whitespace();
     resize_stream_subscribers_list();
 }
