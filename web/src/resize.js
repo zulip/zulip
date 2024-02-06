@@ -171,7 +171,6 @@ export function resize_sidebars() {
     const h = get_new_heights();
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
-    return h;
 }
 
 export function update_recent_view_filters_height() {
