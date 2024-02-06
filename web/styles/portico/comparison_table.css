@@ -158,6 +158,8 @@
         border-radius: var(--border-radius-table);
         color: var(--color-table-text);
         background: var(--color-table-background);
+
+        max-width: max-content;
     }
 
     .comparison-table a {
@@ -239,12 +241,15 @@
         line-height: 18px;
     }
 
-    .comparison-table colgroup col:first-child {
-        width: 340px;
+    .comparison-table th,
+    .comparison-table td {
+        width: 10%;
     }
 
-    .comparison-table colgroup col {
-        width: 112px;
+    .comparison-table th:first-child,
+    .comparison-table td:first-child {
+        width: 30%;
+        max-width: max-content;
     }
 
     .comparison-table th.comparison-table-feature,
