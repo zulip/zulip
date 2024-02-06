@@ -201,6 +201,21 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                             },
                         ),
                     };
+                case "alerted":
+                    return {
+                        title: $t({defaultMessage: "You have no messages with alert words."}),
+                        html: $t_html(
+                            {
+                                defaultMessage: "Learn more about alerts <z-link>here</z-link>.",
+                            },
+                            {
+                                "z-link": (content_html) =>
+                                    `<a target="_blank" rel="noopener noreferrer" href="/help/dm-mention-alert-notifications">${content_html.join(
+                                        "",
+                                    )}</a>`,
+                            },
+                        ),
+                    };
                 case "dm":
                     // You have no direct messages.
                     if (

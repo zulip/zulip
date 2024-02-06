@@ -822,6 +822,9 @@ export class Filter {
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["is-alerted"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["streams-public"])) {
             return true;
         }
@@ -876,6 +879,8 @@ export class Filter {
                     return "/#narrow/is/starred";
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
+                case "is-alerted":
+                    return "/#narrow/is/alerted";
                 case "streams-public":
                     return "/#narrow/streams/public";
                 case "dm":
@@ -931,6 +936,9 @@ export class Filter {
                 break;
             case "is-resolved":
                 icon = "check";
+                break;
+            case "is-alerted":
+                zulip_icon = "preview";
                 break;
             default:
                 icon = undefined;
@@ -1013,11 +1021,11 @@ export class Filter {
                     return $t({defaultMessage: "All direct messages"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
+                case "is-alerted":
+                    return $t({defaultMessage: "Alerted messages"});
                 // These cases return false for is_common_narrow, and therefore are not
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.
-                case "is-alerted":
-                    return $t({defaultMessage: "Alerted messages"});
                 case "is-unread":
                     return $t({defaultMessage: "Unread messages"});
             }

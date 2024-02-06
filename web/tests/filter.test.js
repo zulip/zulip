@@ -1729,10 +1729,10 @@ test("navbar_helpers", () => {
         },
         {
             terms: is_alerted,
-            is_common_narrow: false,
-            icon: undefined,
+            is_common_narrow: true,
+            zulip_icon: "preview",
             title: "translated: Alerted messages",
-            redirect_url_with_search: "#",
+            redirect_url_with_search: "/#narrow/is/alerted",
         },
         {
             terms: is_unread,

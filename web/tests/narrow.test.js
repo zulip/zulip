@@ -295,6 +295,16 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    set_filter([["is", "alerted"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no messages with alert words.",
+            'translated HTML: Learn more about alerts <a target="_blank" rel="noopener noreferrer" href="/help/dm-mention-alert-notifications">here</a>.',
+        ),
+    );
+
     // organization has disabled sending direct messages
     realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
