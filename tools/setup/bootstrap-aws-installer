@@ -40,7 +40,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 # The following line gets subbed in by a call to pack-local-script,
 # which will make $AWS_INSTALLER the path to a local copy of install-aws-cli
-AWS_INSTALLER="inline!puppet/zulip_ops/files/install-aws-cli"
+AWS_INSTALLER="inline!puppet/kandra/files/install-aws-cli"
 
 # We then call it, to install the AWS CLI
 "$AWS_INSTALLER"
@@ -57,7 +57,7 @@ EOF
 # The following line gets replaced by pack-local-script output, which
 # smuggles the install-ssh-keys binary into this one.
 # install-ssh-keys, in turn, pulls key data from AWS' secret manager.
-INSTALL_SSH_KEYS="inline!puppet/zulip_ops/files/install-ssh-keys"
+INSTALL_SSH_KEYS="inline!puppet/kandra/files/install-ssh-keys"
 "$INSTALL_SSH_KEYS" root prod/ssh/keys/internal-read-only-deploy-key
 
 # Provide GitHub known_hosts setup; you can verify against fingerprints at

@@ -52,7 +52,7 @@ To add a new queue processor:
 The queue will automatically be added to the list of queues tracked by
 `scripts/nagios/check-rabbitmq-consumers`, so Nagios can properly
 check whether a queue processor is running for your queue. You still
-need to update the sample Nagios configuration in `puppet/zulip_ops`
+need to update the sample Nagios configuration in `puppet/kandra`
 manually.
 
 ### Publishing events into a queue
