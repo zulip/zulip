@@ -98,7 +98,6 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
     stub_buddy_list_elements();
-    mock_template("buddy_list/section_header.hbs", false, noop);
     mock_template("buddy_list/view_all_users.hbs", false, noop);
 
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
@@ -225,8 +224,6 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
     override(padded_widget, "update_padding", noop);
     override(message_viewport, "height", () => 550);
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
-    mock_template("empty_list_widget_for_list.hbs", false, noop);
-    mock_template("buddy_list/section_header.hbs", false, noop);
     mock_template("buddy_list/view_all_users.hbs", false, noop);
 
     let items_to_html_call_count = 0;
