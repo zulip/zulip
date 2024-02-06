@@ -390,6 +390,12 @@ ul {
 
         .group-name {
             font-weight: bold;
+
+            .zulip-icon-triple-users {
+                position: relative;
+                top: 2px;
+                margin-right: 5px;
+            }
         }
     }
 
