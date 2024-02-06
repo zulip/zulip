@@ -100,24 +100,31 @@ export function page_down_the_right_amount() {
 }
 
 export function page_up() {
-    if (
-        message_viewport.at_rendered_top() &&
-        !message_lists.current.visibly_empty() &&
-        message_lists.current.view.is_fetched_start_rendered()
-    ) {
-        message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
+    if (message_viewport.at_rendered_top() && !message_lists.current.visibly_empty()) {
+        if (message_lists.current.view.is_fetched_start_rendered()) {
+            message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
+        } else {
+            message_lists.current.select_id(
+                message_lists.current.view.first_rendered_message().id,
+                {
+                    then_scroll: false,
+                },
+            );
+        }
     } else {
         page_up_the_right_amount();
     }
 }
 
 export function page_down() {
-    if (
-        message_viewport.at_rendered_bottom() &&
-        !message_lists.current.visibly_empty() &&
-        message_lists.current.view.is_fetched_end_rendered()
-    ) {
-        message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
+    if (message_viewport.at_rendered_bottom() && !message_lists.current.visibly_empty()) {
+        if (message_lists.current.view.is_fetched_end_rendered()) {
+            message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
+        } else {
+            message_lists.current.select_id(message_lists.current.view.last_rendered_message().id, {
+                then_scroll: false,
+            });
+        }
         unread_ops.process_visible();
     } else {
         page_down_the_right_amount();
