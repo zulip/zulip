@@ -1840,9 +1840,13 @@ div.focused-message-list {
     right: 8px;
     border-radius: 4px;
 
-    /* For FontAwesome icons used in place of images for some users. */
+    /* For FontAwesome icons and zulip icons used in place of images for some users. */
     font-size: 19px;
     text-align: center;
+
+    &.zulip-icon-triple-users {
+        font-size: 19px;
+    }
 
     &.no-presence-circle {
         margin-left: 9px;
