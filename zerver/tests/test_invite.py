@@ -962,7 +962,7 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(signups_stream_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
             signups_stream_msg.content.startswith(
-                f"@_**alice_zulip.com|{invitee_profile.id}** just signed up",
+                f"@_**alice_zulip.com|{invitee_profile.id}** joined this organization",
             )
         )
 
