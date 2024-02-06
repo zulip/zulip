@@ -51,6 +51,7 @@ class ErrorCode(Enum):
     STREAM_WILDCARD_MENTION_NOT_ALLOWED = auto()
     REMOTE_BILLING_UNAUTHENTICATED_USER = auto()
     REMOTE_REALM_SERVER_MISMATCH_ERROR = auto()
+    PUSH_NOTIFICATIONS_DISALLOWED = auto()
 
 
 class JsonableError(Exception):
