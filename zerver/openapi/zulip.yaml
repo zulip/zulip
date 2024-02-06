@@ -8952,7 +8952,7 @@ paths:
         Note that for private streams with [protected
         history](/help/stream-permissions), the user will only have access to
         topics of messages sent after they [subscribed to](/api/subscribe) the
-        stream. Similarly, a user's [bot](/help/bots-and-integrations#bot-type)
+        stream. Similarly, a user's [bot](/help/bots-overview#bot-type)
         will only have access to messages sent after the bot was subscribed to
         the stream, instead of when the user subscribed.
       parameters:
