@@ -83,7 +83,7 @@ class zulip::common {
       },
     },
 
-    ### zulip_ops packages
+    ### kandra packages
 
     # https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html
     'aws_signing_helper' => {
