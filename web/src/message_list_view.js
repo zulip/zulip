@@ -1152,7 +1152,7 @@ export class MessageListView {
     }
 
     update_render_window(selected_idx, check_for_changed) {
-        const new_start = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
+        const new_start = Math.max(selected_idx - Math.floor(this._RENDER_WINDOW_SIZE / 2), 0);
         if (check_for_changed && new_start === this._render_win_start) {
             return false;
         }
