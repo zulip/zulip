@@ -1439,6 +1439,10 @@ export class MessageListView {
         this.message_containers.clear();
     }
 
+    last_rendered_message() {
+        return this.list.data._items[this._render_win_end - 1];
+    }
+
     is_fetched_end_rendered() {
         return this._render_win_end === this.list.num_items();
     }
@@ -1450,6 +1454,10 @@ export class MessageListView {
         // not rendered due to a render window, or we haven't finished
         // fetching the newest messages for this view from the server.
         return this.is_fetched_end_rendered() && this.list.data.fetch_status.has_found_newest();
+    }
+
+    first_rendered_message() {
+        return this.list.data._items[this._render_win_start];
     }
 
     is_fetched_start_rendered() {
