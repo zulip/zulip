@@ -384,11 +384,13 @@ def get_chart_data(
                 _("No analytics data available. Please contact your server administrator.")
             )
         if start is None:
-            first = aggregate_table_remote.objects.filter(server=server).first()
+            first = (
+                aggregate_table_remote.objects.filter(server=server).order_by("remote_id").first()
+            )
             assert first is not None
             start = first.end_time
         if end is None:
-            last = aggregate_table_remote.objects.filter(server=server).last()
+            last = aggregate_table_remote.objects.filter(server=server).order_by("remote_id").last()
             assert last is not None
             end = last.end_time
     else:
