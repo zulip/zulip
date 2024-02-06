@@ -543,4 +543,50 @@
     .comparison-table th .icon {
         display: revert;
     }
+
+    .comparison-table th {
+        vertical-align: top;
+    }
+
+    .comparison-table th.comparison-table-feature {
+        padding-top: 28px;
+    }
+
+    .comparison-table td.stuck {
+        padding-top: 28px;
+    }
+
+    @media (width <= 730px) {
+        .comparison-table th {
+            padding: 8px 2px;
+        }
+
+        .comparison-table th.comparison-table-feature {
+            padding-top: 24px;
+            padding-left: 14px;
+        }
+
+        .comparison-table td.subheader.comparison-table-feature {
+            /* Line up features with plan titles. */
+            line-height: 18px;
+        }
+
+        .comparison-table td.stuck {
+            padding-top: 24px;
+            vertical-align: top;
+        }
+    }
+
+    @media (width <= 684px) {
+        .comparison-table td.stuck {
+            height: 60px;
+        }
+    }
+
+    @media (width <= 500px) {
+        .comparison-table td.subheader.comparison-table-feature {
+            /* Line up features with plan titles. */
+            line-height: 14px;
+        }
+    }
 }
