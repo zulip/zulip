@@ -131,7 +131,7 @@ export function resize_stream_subscribers_list() {
     // This avoids the stream settings from overflowing the container and
     // having a scroll bar.
 
-    if (!$("#stream_settings").length === 1) {
+    if ($("#stream_settings").length === 0) {
         // Don't run if stream settings (like $subscriptions_info below) is not open.
         return;
     }
