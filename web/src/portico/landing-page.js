@@ -164,6 +164,17 @@ $(() => {
             // Set the correct values for span and colspan
             $(".features-col-group").attr("span", plans_columns_count);
             $(".subheader-filler").attr("colspan", plans_columns_count);
+
+            const observer = new IntersectionObserver(
+                ([entries]) => {
+                    entries.target.classList.toggle("stuck", entries.intersectionRatio < 1);
+                },
+                {thresholds: [0.8], rootMargin: "-120px 0px 0px 0px"},
+            );
+
+            for (const subheader of document.querySelectorAll("td.subheader")) {
+                observer.observe(subheader);
+            }
         }
     }
 });
