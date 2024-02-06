@@ -214,6 +214,13 @@ test("get_subscriber_count", () => {
     people.add_active_user(fred);
     people.add_active_user(gail);
     people.add_active_user(george);
+    const welcome_bot = {
+        email: "welcome-bot@example.com",
+        user_id: 40,
+        full_name: "Welcome Bot",
+        is_bot: true,
+    };
+    people.add_active_user(welcome_bot);
 
     const india = {
         stream_id: 102,
@@ -235,6 +242,11 @@ test("get_subscriber_count", () => {
 
     peer_data.remove_subscriber(india.stream_id, george.user_id);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 1);
+
+    peer_data.add_subscriber(india.stream_id, welcome_bot.user_id);
+    assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 2);
+    // Get the count without bots
+    assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id, false), 1);
 });
 
 test("is_subscriber_subset", () => {
