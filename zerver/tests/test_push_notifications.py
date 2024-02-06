@@ -827,8 +827,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload,
             content_type="application/json",
         )
-        self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
-        self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
+        self.assert_json_error(
+            result,
+            "Your plan doesn't allow sending push notifications. Reason provided by the server: Missing data",
+        )
+        self.assertEqual(orjson.loads(result.content)["code"], "PUSH_NOTIFICATIONS_DISALLOWED")
 
         human_counts = {
             str(UserProfile.ROLE_REALM_ADMINISTRATOR): 1,
@@ -852,8 +855,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload,
             content_type="application/json",
         )
-        self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
-        self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
+        self.assert_json_error(
+            result,
+            "Your plan doesn't allow sending push notifications. Reason provided by the server: No plan many users",
+        )
+        self.assertEqual(orjson.loads(result.content)["code"], "PUSH_NOTIFICATIONS_DISALLOWED")
 
         # Check that sponsored realms are allowed to send push notifications.
         remote_server.plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY

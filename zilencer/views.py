@@ -432,6 +432,16 @@ class OldZulipServerError(JsonableError):
         self._msg: str = msg
 
 
+class PushNotificationsDisallowedError(JsonableError):
+    code = ErrorCode.PUSH_NOTIFICATIONS_DISALLOWED
+
+    def __init__(self, reason: str) -> None:
+        msg = _(
+            "Your plan doesn't allow sending push notifications. Reason provided by the server: {reason}"
+        ).format(reason=reason)
+        super().__init__(msg)
+
+
 @has_request_variables
 def remote_server_notify_push(
     request: HttpRequest,
@@ -462,7 +472,8 @@ def remote_server_notify_push(
         if server.last_api_feature_level is None:
             raise OldZulipServerError(_("Your plan doesn't allow sending push notifications."))
         else:
-            raise JsonableError(_("Your plan doesn't allow sending push notifications."))
+            reason = push_status.message
+            raise PushNotificationsDisallowedError(reason=reason)
 
     android_devices = list(
         RemotePushDeviceToken.objects.filter(
