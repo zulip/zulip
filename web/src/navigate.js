@@ -103,7 +103,7 @@ export function page_up() {
     if (
         message_viewport.at_rendered_top() &&
         !message_lists.current.visibly_empty() &&
-        message_lists.current.view.is_start_rendered()
+        message_lists.current.view.is_fetched_start_rendered()
     ) {
         message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
     } else {
@@ -115,7 +115,7 @@ export function page_down() {
     if (
         message_viewport.at_rendered_bottom() &&
         !message_lists.current.visibly_empty() &&
-        message_lists.current.view.is_end_rendered()
+        message_lists.current.view.is_fetched_end_rendered()
     ) {
         message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
         unread_ops.process_visible();

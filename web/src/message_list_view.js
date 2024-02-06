@@ -1439,16 +1439,21 @@ export class MessageListView {
         this.message_containers.clear();
     }
 
+    is_fetched_end_rendered() {
+        return this._render_win_end === this.list.num_items();
+    }
+
     is_end_rendered() {
         // Used as a helper in checks for whether a given scroll
         // position is actually the very end of this view. It could
         // fail to be for two reasons: Either some newer messages are
         // not rendered due to a render window, or we haven't finished
         // fetching the newest messages for this view from the server.
-        return (
-            this._render_win_end === this.list.num_items() &&
-            this.list.data.fetch_status.has_found_newest()
-        );
+        return this.is_fetched_end_rendered() && this.list.data.fetch_status.has_found_newest();
+    }
+
+    is_fetched_start_rendered() {
+        return this._render_win_start === 0;
     }
 
     is_start_rendered() {
@@ -1457,7 +1462,7 @@ export class MessageListView {
         // fail to be for two reasons: Either some older messages are
         // not rendered due to a render window, or we haven't finished
         // fetching the oldest messages for this view from the server.
-        return this._render_win_start === 0 && this.list.data.fetch_status.has_found_oldest();
+        return this.is_fetched_start_rendered() && this.list.data.fetch_status.has_found_oldest();
     }
 
     get_row(id) {
