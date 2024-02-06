@@ -75,7 +75,8 @@ class PlanData:
 
 @dataclass
 class MobilePushData:
-    mobile_users: Optional[int] = None
+    total_mobile_users: int
+    uncategorized_mobile_users: Optional[int] = None
     mobile_pushes_forwarded: Optional[int] = None
     last_mobile_push_sent: Optional[datetime] = None
 
@@ -234,8 +235,13 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
 
 def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -> MobilePushData:
     if isinstance(remote_entity, RemoteZulipServer):
-        mobile_users = (
+        total_users = (
             RemotePushDeviceToken.objects.filter(server=remote_entity)
+            .distinct("user_id", "user_uuid")
+            .count()
+        )
+        uncategorized_users = (
+            RemotePushDeviceToken.objects.filter(server=remote_entity, remote_realm__isnull=True)
             .distinct("user_id", "user_uuid")
             .count()
         )
@@ -250,12 +256,14 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
         ).last()
         if latest_remote_server_push_forwarded_count is not None:  # nocoverage
             return MobilePushData(
-                mobile_users=mobile_users,
+                total_mobile_users=total_users,
+                uncategorized_mobile_users=uncategorized_users,
                 mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
                 last_mobile_push_sent=latest_remote_server_push_forwarded_count.end_time,
             )
         return MobilePushData(
-            mobile_users=mobile_users,
+            total_mobile_users=total_users,
+            uncategorized_mobile_users=uncategorized_users,
             mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
             last_mobile_push_sent=None,
         )
@@ -277,12 +285,14 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
         ).last()
         if latest_remote_realm_push_forwarded_count is not None:  # nocoverage
             return MobilePushData(
-                mobile_users=mobile_users,
+                total_mobile_users=mobile_users,
+                uncategorized_mobile_users=None,
                 mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
                 last_mobile_push_sent=latest_remote_realm_push_forwarded_count.end_time,
             )
         return MobilePushData(
-            mobile_users=mobile_users,
+            total_mobile_users=mobile_users,
+            uncategorized_mobile_users=None,
             mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
             last_mobile_push_sent=None,
         )
