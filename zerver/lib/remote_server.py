@@ -185,6 +185,10 @@ def send_to_push_bouncer(
             raise PushNotificationBouncerError(
                 _("Push notifications bouncer error: {error}").format(error=msg)
             )
+        elif "code" in result_dict and result_dict["code"] == "PUSH_NOTIFICATIONS_DISALLOWED":
+            from zerver.lib.push_notifications import PushNotificationsDisallowedByBouncerError
+
+            raise PushNotificationsDisallowedByBouncerError(reason=msg)
         elif (
             endpoint == "push/test_notification"
             and "code" in result_dict
