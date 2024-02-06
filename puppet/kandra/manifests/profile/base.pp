@@ -82,7 +82,7 @@ class kandra::profile::base {
     file { '/etc/chrony/chrony.conf':
       ensure  => file,
       mode    => '0644',
-      source  => 'puppet:///modules/kandra/chrony.conf',
+      source  => "puppet:///modules/kandra/chrony-${::os['distro']['release']['major']}.conf",
       require => Package['chrony'],
       notify  => Service['chrony'],
     }
