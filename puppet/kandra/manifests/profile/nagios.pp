@@ -2,7 +2,6 @@ class kandra::profile::nagios inherits kandra::profile::base {
 
   include kandra::apache
 
-  zulip::ssh_keys { 'nagios': }
   $nagios_packages = [# Packages needed for Nagios
                       'nagios4',
                       # For sending outgoing email
@@ -32,6 +31,13 @@ class kandra::profile::nagios inherits kandra::profile::base {
   $hosts_fullstack = split(zulipconf('nagios', 'hosts_fullstack', undef), ',')
   $hosts_smokescreen = split(zulipconf('nagios', 'hosts_smokescreen', undef), ',')
   $hosts_other = split(zulipconf('nagios', 'hosts_other', undef), ',')
+
+  $hosts = zulipconf_nagios_hosts()
+  $qualified_hosts = $hosts.map |$h| { if '.' in $h { $h } else { "${h}.${default_host_domain}" }}
+  Kandra::User_Dotfiles['nagios'] {
+    keys        => 'nagios',
+    known_hosts => $qualified_hosts,
+  }
 
   file { '/etc/nagios4/':
     recurse => true,
@@ -100,7 +106,8 @@ class kandra::profile::nagios inherits kandra::profile::base {
   }
 
   service { 'nagios4':
-    ensure => running,
+    ensure  => running,
+    require => Kandra::User_Dotfiles['nagios'],
   }
 
   file { [
@@ -114,7 +121,6 @@ class kandra::profile::nagios inherits kandra::profile::base {
     ensure     => absent,
   }
 
-  $hosts = zulipconf_nagios_hosts()
   file { '/etc/nagios4/conf.d/zulip_autossh.cfg':
     ensure  => file,
     mode    => '0644',
