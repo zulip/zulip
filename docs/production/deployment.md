@@ -193,7 +193,7 @@ want to choose in the list of includes in [the main manifest for the
 default all-in-one Zulip server][standalone.pp], though it's also
 possible to subclass some of the lower-level manifests defined in that
 directory if you want to customize. A good example of doing this is
-in the [zulip_ops Puppet configuration][zulipchat-puppet] that we use
+in the [kandra Puppet configuration][zulipchat-puppet] that we use
 as part of managing chat.zulip.org and zulip.com.
 
 ### Using Zulip with Amazon RDS as the database
@@ -498,7 +498,7 @@ that your Zulip server sits at `https://10.10.10.10:443`; see
 
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
 [standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp
-[zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/zulip_ops/manifests
+[zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/kandra/manifests
 
 ### Apache2 configuration
 
