@@ -106,7 +106,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
     is_first_user = user_count == 1
     if not is_first_user:
         with override_language(user_profile.realm.default_language):
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+            message = _("{user} joined this organization.").format(
                 user=silent_mention_syntax_for_user(user_profile), user_count=user_count
             )
 
