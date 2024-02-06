@@ -151,7 +151,7 @@ body {
     --browser-overlay-scrollbar-width: 10px;
 
     /* This is a rough estimate for height occupied by Recent Conversations filters.
-       We expect `resize.js` to update this once UI is initialized. */
+       We expect `resize.ts` to update this once UI is initialized. */
     --recent-topics-filters-height: 50px;
 
     /* Overlay heights for streams modal */
@@ -166,7 +166,7 @@ body {
 
     /*
     Maximum height of the compose box when it is not in expanded state. This
-    is equal to the height of `#bottom_whitespace`. We expect resize.js to
+    is equal to the height of `#bottom_whitespace`. We expect resize.ts to
     replace it with its pixel calculation since even if `vh` has great support,
     it can change depending on browser / OS on mobile devices.
     */
