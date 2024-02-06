@@ -610,7 +610,20 @@ def send_notifications_to_bouncer(
         "apple_devices": [device.token for device in apple_devices],
     }
     # Calls zilencer.views.remote_server_notify_push
-    response_data = send_json_to_push_bouncer("POST", "push/notify", post_data)
+
+    try:
+        response_data = send_json_to_push_bouncer("POST", "push/notify", post_data)
+    except PushNotificationsDisallowedByBouncerError as e:
+        logger.warning("Bouncer refused to send push notification: %s", e.reason)
+        do_set_realm_property(
+            user_profile.realm,
+            "push_notifications_enabled",
+            False,
+            acting_user=None,
+        )
+        do_set_push_notifications_enabled_end_timestamp(user_profile.realm, None, acting_user=None)
+        return
+
     assert isinstance(response_data["total_android_devices"], int)
     assert isinstance(response_data["total_apple_devices"], int)
 
@@ -1504,3 +1517,8 @@ class InvalidRemotePushDeviceTokenError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Device not recognized by the push bouncer")
+
+
+class PushNotificationsDisallowedByBouncerError(Exception):
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
