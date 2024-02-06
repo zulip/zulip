@@ -2,6 +2,7 @@ define zulip_ops::user_dotfiles (
   $home = '',
   $keys = false,
   $authorized_keys = false,
+  $known_hosts = false,
 ) {
   $user = $name
 
@@ -50,6 +51,24 @@ define zulip_ops::user_dotfiles (
     zulip_ops::ssh_authorized_keys{ $user:
       keys    => $authorized_keys,
       require => File["${homedir}/.ssh"],
+    }
+  }
+  if $known_hosts != false {
+    file { "${homedir}/.ssh/known_hosts":
+      # We mark this as "present" to ensure that it exists, but not to
+      # directly control its contents.
+      ensure  => present,
+      owner   => $user,
+      group   => $user,
+      mode    => '0644',
+      require => File["${homedir}/.ssh"],
+    }
+    $known_hosts.each |String $hostname| {
+      exec { "${user} ssh known_hosts ${hostname}":
+        command => "ssh-keyscan ${hostname} >> ${homedir}/.ssh/known_hosts",
+        unless  => "grep ${hostname} ${homedir}/.ssh/known_hosts",
+        require => File["${homedir}/.ssh/known_hosts"],
+      }
     }
   }
 }
