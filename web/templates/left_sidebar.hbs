@@ -37,6 +37,14 @@
                         <span class="unread_count"></span>
                     </a>
                 </li>
+                <li class="top_left_alerts left-sidebar-navigation-condensed-item">
+                    <a href="#narrow/is/alerted" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="alerts-tooltip-template">
+                        <span class="filter-icon">
+                            <i class="zulip-icon zulip-icon-preview" aria-hidden="true"></i>
+                        </span>
+                        <span class="unread_count"></span>
+                    </a>
+                </li>
                 <li class="top_left_starred_messages left-sidebar-navigation-condensed-item">
                     <a href="#narrow/is/starred" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="starred-tooltip-template">
                         <span class="filter-icon">
@@ -97,6 +105,17 @@
                     <span class="left-sidebar-navigation-label">{{t 'Mentions' }}</span>
                     <span class="unread_count"></span>
                 </a>
+            </li>
+            <li class="top_left_alerts top_left_row hidden-for-spectators">
+                <a class="left-sidebar-navigation-label-container" href="#narrow/is/alerted">
+                    <span class="filter-icon">
+                        <i class="zulip-icon zulip-icon-preview" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span class="left-sidebar-navigation-label">{{t 'Alerts' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+                <span class="arrow sidebar-menu-icon alerts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_starred_messages top_left_row hidden-for-spectators">
                 <a class="left-sidebar-navigation-label-container" href="#narrow/is/starred">

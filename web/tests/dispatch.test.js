@@ -82,6 +82,7 @@ mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
     handle_home_view_changed() {},
+    update_alert_messages_row() {},
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");

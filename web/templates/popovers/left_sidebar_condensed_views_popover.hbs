@@ -1,5 +1,17 @@
 {{! Contents of the condensed nav vdots popup }}
 <ul class="nav nav-list condensed-views-popover-menu">
+    {{#if alert_words_set}}
+    <li class="condensed-views-popover-menu-alerts">
+        {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
+        <a tabindex="0" href="#narrow/is/alerted" class="left-sidebar-popover-icon-label-count tippy-left-sidebar-tooltip" data-tooltip-template-id="alerts-tooltip-template">
+            <span class="filter-icon">
+                <i class="zulip-icon zulip-icon-preview" aria-hidden="true"></i>
+            </span>
+            <span class="left-sidebar-navigation-label">{{t 'Alerts' }}</span>
+            <span class="unread_count"></span>
+        </a>
+    </li>
+    {{/if}}
     <li class="condensed-views-popover-menu-drafts">
         {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
         <a tabindex="0" href="#drafts" class="left-sidebar-popover-icon-label-count tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template">

@@ -94,6 +94,7 @@ export function dispatch_normal_event(event) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
             alert_words_ui.rerender_alert_words_ui();
+            left_sidebar_navigation_area.update_alert_messages_row();
             break;
 
         case "attachment":

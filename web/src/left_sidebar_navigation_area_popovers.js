@@ -1,12 +1,14 @@
 import $ from "jquery";
 
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
+import render_left_sidebar_alerts_view_popover from "../templates/left_sidebar_alerts_view_popover.hbs";
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar_all_messages_popover.hbs";
 import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar_condensed_views_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar_inbox_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar_recent_view_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 
+import * as alert_words from "./alert_words";
 import * as channel from "./channel";
 import * as drafts from "./drafts";
 import * as popover_menus from "./popover_menus";
@@ -212,12 +214,34 @@ export function initialize() {
         },
     });
 
+    // Alerts popover
+    popover_menus.register_popover_menu(".alerts-sidebar-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+
+            $popper.one("click", "#alert_words_settings", () => {
+                instance.hide();
+            });
+        },
+        onShow(instance) {
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popovers.hide_all();
+            instance.setContent(ui_util.parse_html(render_left_sidebar_alerts_view_popover()));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            ui_util.hide_left_sidebar_menu_icon();
+        },
+    });
+
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
             // Determine at show time whether there are scheduled messages,
             // so that Tippy properly calculates the height of the popover
             const scheduled_message_count = scheduled_messages.get_count();
+            const alert_words_set = alert_words.get_word_list().length > 0;
             let has_scheduled_messages = false;
             if (scheduled_message_count > 0) {
                 has_scheduled_messages = true;
@@ -225,7 +249,10 @@ export function initialize() {
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
-                    render_left_sidebar_condensed_views_popover({has_scheduled_messages}),
+                    render_left_sidebar_condensed_views_popover({
+                        alert_words_set,
+                        has_scheduled_messages,
+                    }),
                 ),
             );
         },
