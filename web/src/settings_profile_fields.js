@@ -29,6 +29,125 @@ function display_success_status() {
     settings_ui.display_checkmark($spinner);
 }
 
+// Used to render field choices in set_up_select_field_edit_form
+function render_field_choices($choice_list, field_data) {
+    $choice_list.off().empty();
+    const choices_data = parse_field_choices_from_field_data(field_data);
+
+    for (const choice of choices_data) {
+        $choice_list.append(
+            render_settings_profile_field_choice({
+                text: choice.text,
+                value: choice.value,
+            }),
+        );
+    }
+
+    // Add blank choice at last
+    create_choice_row($choice_list);
+    Sortable.create($choice_list[0], {
+        onUpdate: () => toggle_alphabetize_btn($(".profile-field-form")),
+        filter: "input",
+        preventOnFilter: false,
+    });
+}
+
+function set_up_select_field_edit_form_events($profile_field_form) {
+    toggle_alphabetize_btn($(".profile-field-form"));
+    $profile_field_form
+        .find(".edit_profile_field_choices_container")
+        .on("input", ".choice-row input", () => {
+            toggle_alphabetize_btn($(".profile-field-form"));
+        });
+
+    $profile_field_form
+        .find(".edit_profile_field_choices_container")
+        .on("input", ".choice-row input", (e) => {
+            add_choice_row(e);
+            toggle_alphabetize_btn($(".profile-field-form"));
+        });
+
+    $profile_field_form
+        .find(".edit_profile_field_choices_container")
+        .on("click", "button.delete-choice", (e) => {
+            delete_choice_row(e);
+            toggle_alphabetize_btn($(".profile-field-form"));
+        });
+}
+
+function toggle_alphabetize_btn($container) {
+    const $choices = $container.find(".choice-row input");
+    const choices_array = $choices
+        .map(function () {
+            return $(this).val().trim().toLowerCase();
+        })
+        .get()
+        .filter(Boolean);
+    const sorted_choices = [...choices_array].sort();
+
+    const are_choices_sorted = JSON.stringify(choices_array) === JSON.stringify(sorted_choices);
+
+    if (are_choices_sorted) {
+        $container.find("#alphabetize-choices-btn").prop("disabled", true).hide();
+    } else {
+        $container.find("#alphabetize-choices-btn").prop("disabled", false).show();
+    }
+}
+
+function sorting_field_choices_data(field_data) {
+    const sorted_data_array = Object.entries(field_data).sort((a, b) =>
+        a[1].text.toLowerCase().localeCompare(b[1].text.toLowerCase()),
+    );
+
+    const sorted_data = {};
+    let index = 1;
+    for (const [key, value] of sorted_data_array) {
+        value.order = index.toString();
+        sorted_data[key] = value;
+        index = index + 1;
+    }
+
+    return sorted_data;
+}
+
+function alphabetize_choices() {
+    const field_data = [];
+
+    // Collect input values into an array
+    $(".new-profile-field-form")
+        .find("div.choice-row input")
+        .each(function () {
+            const text = $(this).val().trim();
+            if (text) {
+                field_data.push(text);
+            }
+        });
+
+    // Sort the array
+    field_data.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+    // Update input values with sorted array
+    $(".new-profile-field-form")
+        .find("div.choice-row input")
+        .each(function (index) {
+            $(this).val(field_data[index] || ""); // Set empty string if no corresponding value in sorted array
+        });
+
+    $("#alphabetize-choices-btn").prop("disabled", true).hide();
+}
+
+function alphabetize_choices_edit_form($profile_field_form) {
+    let field_data = {};
+    field_data = read_select_field_data_from_form($profile_field_form);
+
+    const alphabetized_field_data = sorting_field_choices_data(field_data);
+    const $choice_list = $profile_field_form.find(".edit_profile_field_choices_container");
+    render_field_choices($choice_list, alphabetized_field_data);
+    set_up_select_field_edit_form_events($profile_field_form);
+
+    $("#alphabetize-choices-btn").prop("disabled", true).hide();
+}
+
 export function maybe_disable_widgets() {
     if (current_user.is_admin) {
         return;
@@ -407,28 +526,14 @@ function set_up_external_account_field_edit_form($profile_field_form, url_patter
 }
 
 function set_up_select_field_edit_form($profile_field_form, field_data) {
-    // Re-render field choices in edit form to load initial select data
     const $choice_list = $profile_field_form.find(".edit_profile_field_choices_container");
-    $choice_list.off();
-    $choice_list.empty();
+    render_field_choices($choice_list, field_data);
+    set_up_select_field_edit_form_events($profile_field_form);
 
-    const choices_data = parse_field_choices_from_field_data(field_data);
-
-    for (const choice of choices_data) {
-        $choice_list.append(
-            render_settings_profile_field_choice({
-                text: choice.text,
-                value: choice.value,
-            }),
-        );
-    }
-
-    // Add blank choice at last
-    create_choice_row($choice_list);
-    Sortable.create($choice_list[0], {
-        onUpdate() {},
-        filter: "input",
-        preventOnFilter: false,
+    $("#alphabetize-choices-btn").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        alphabetize_choices_edit_form($profile_field_form);
     });
 }
 
@@ -489,13 +594,6 @@ function open_edit_form_modal(e) {
         // Set initial value in edit form
         $profile_field_form.find("input[name=name]").val(field.name);
         $profile_field_form.find("input[name=hint]").val(field.hint);
-
-        $profile_field_form
-            .find(".edit_profile_field_choices_container")
-            .on("input", ".choice-row input", add_choice_row);
-        $profile_field_form
-            .find(".edit_profile_field_choices_container")
-            .on("click", "button.delete-choice", delete_choice_row);
     }
 
     function submit_form() {
@@ -697,7 +795,7 @@ function set_up_select_field() {
     if (current_user.is_admin) {
         const choice_list = $("#profile_field_choices")[0];
         Sortable.create(choice_list, {
-            onUpdate() {},
+            onUpdate: () => toggle_alphabetize_btn($(".new-profile-field-form")),
             filter: "input",
             preventOnFilter: false,
         });
@@ -719,6 +817,17 @@ function set_up_select_field() {
         } else {
             $("#profile_field_choices_row").hide();
         }
+    });
+
+    $("#alphabetize-choices-btn").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        alphabetize_choices();
+    });
+
+    toggle_alphabetize_btn($(".new-profile-field-form"));
+    $("#profile_field_choices").on("input", ".choice-row input", () => {
+        toggle_alphabetize_btn($(".new-profile-field-form"));
     });
 
     $("#profile_field_choices").on("input", ".choice-row input", add_choice_row);

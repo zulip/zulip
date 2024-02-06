@@ -1878,6 +1878,17 @@ $option_title_width: 180px;
     }
 }
 
+#alphabetize-choices-btn {
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+    border: 1px solid var(--color-exit-button-border);
+    margin: 12px 0 0;
+
+    &:hover {
+        background: var(--color-exit-button-background-interactive);
+    }
+}
+
 .settings_url_input,
 .settings_text_input {
     padding: 4px 6px;
