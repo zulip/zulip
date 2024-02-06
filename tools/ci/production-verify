@@ -141,14 +141,17 @@ for consumer in $consumer_list; do
     fi
 done
 
+# Create a root realm, (and also zulipinternal realm, for check_send_receive_time)
+su zulip -c "/home/zulip/deployments/current/manage.py create_realm Testing user@example.com 'Some User'"
+
 # Some of the Nagios tests have been temporarily disabled to work
 # around a Travis CI infrastructure issue.
 echo
 echo "Now running additional Nagios tests"
 echo
 if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
-    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check --nagios-user=$NAGIOS_USER"; then # || \
-    #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
+    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check --nagios-user=$NAGIOS_USER" \
+    || ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --force-localhost --site https://zulipinternal.zulip.example.net --nagios --insecure"; then
     set +x
     echo
     echo "FAILURE: Nagios checks don't pass:"

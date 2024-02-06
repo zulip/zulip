@@ -2,4 +2,4 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 USER=zulip
 
-* * * * * zulip /usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --nagios --site=https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST) >/dev/null
+* * * * * zulip /usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --nagios --site=https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST) --force-localhost >/dev/null 2>/dev/null

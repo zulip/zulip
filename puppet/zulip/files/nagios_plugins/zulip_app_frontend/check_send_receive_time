@@ -14,7 +14,8 @@ import random
 import sys
 import time
 import traceback
-from typing import Any, Dict, List, NoReturn, Optional
+from typing import Any, Dict, List, Mapping, NoReturn, Optional
+from urllib.parse import urlsplit
 
 sys.path.append(".")
 sys.path.append("/home/zulip/deployments/current")
@@ -23,7 +24,10 @@ from scripts.lib.setup_path import setup_path
 setup_path()
 
 import django
+import urllib3
 import zulip
+from requests import PreparedRequest
+from requests.adapters import HTTPAdapter
 
 usage = """Usage: send-receive.py [options] [config]
 
@@ -32,13 +36,10 @@ usage = """Usage: send-receive.py [options] [config]
 
 parser = argparse.ArgumentParser(usage=usage)
 parser.add_argument("--site", default="https://api.zulip.com")
-
 parser.add_argument("--nagios", action="store_true")
-
+parser.add_argument("--force-localhost", action="store_true")
 parser.add_argument("--insecure", action="store_true")
-
 parser.add_argument("--munin", action="store_true")
-
 parser.add_argument("config", nargs="?")
 
 options = parser.parse_args()
@@ -75,6 +76,30 @@ states = {
     "CRITICAL": 2,
     "UNKNOWN": 3,
 }
+
+
+class LocalhostAdapter(HTTPAdapter):
+    def get_connection(self, url: str, proxies: Optional[Mapping[str, str]] = None) -> None:
+        u = urlsplit(url)
+        u = u._replace(netloc="localhost" if u.port is None else f"localhost:{u.port}")
+        return super().get_connection(u.geturl(), proxies)
+
+    def add_headers(self, request: PreparedRequest, **kwargs: object) -> None:
+        super().add_headers(request)
+        assert isinstance(request.url, str)
+        u = urlsplit(request.url)
+        assert u.hostname is not None
+        request.headers["Host"] = u.hostname if u.port is None else f"{u.hostname}:{u.port}"
+
+
+localhost_adapter = LocalhostAdapter()
+
+
+class LocalhostClient(zulip.Client):
+    def ensure_session(self) -> None:
+        super().ensure_session()
+        assert self.session is not None
+        self.session.mount(self.base_url, localhost_adapter)
 
 
 def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> NoReturn:
@@ -121,20 +146,29 @@ else:
     sender = get_system_bot(settings.NAGIOS_SEND_BOT, internal_realm_id)
     recipient = get_system_bot(settings.NAGIOS_RECEIVE_BOT, internal_realm_id)
 
-zulip_sender = zulip.Client(
+Client = LocalhostClient if options.force_localhost else zulip.Client
+
+insecure = False
+if options.insecure or options.force_localhost:
+    insecure = True
+    # Zulip provides its own warning about how insecure is bad;
+    # silence the urllib3 one.
+    urllib3.disable_warnings()
+
+zulip_sender = Client(
     email=sender.email,
     api_key=sender.api_key,
     verbose=True,
-    insecure=options.insecure,
+    insecure=insecure,
     client="ZulipMonitoring/0.1",
     site=options.site,
 )
 
-zulip_recipient = zulip.Client(
+zulip_recipient = Client(
     email=recipient.email,
     api_key=recipient.api_key,
     verbose=True,
-    insecure=options.insecure,
+    insecure=insecure,
     client="ZulipMonitoring/0.1",
     site=options.site,
 )
