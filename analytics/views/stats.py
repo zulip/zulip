@@ -55,7 +55,6 @@ def render_stats(
     realm: Optional[Realm],
     *,
     title: Optional[str] = None,
-    remote: bool = False,
     analytics_ready: bool = True,
 ) -> HttpResponse:
     assert request.user.is_authenticated
@@ -75,20 +74,18 @@ def render_stats(
         guest_users = None
         space_used = None
 
-    page_params = dict(
-        data_url_suffix=data_url_suffix,
-        remote=remote,
-        upload_space_used=space_used,
-        guest_users=guest_users,
-    )
-
     request_language = get_and_set_request_language(
         request,
         request.user.default_language,
         translation.get_language_from_path(request.path_info),
     )
 
-    page_params["translation_data"] = get_language_translation_data(request_language)
+    page_params = dict(
+        data_url_suffix=data_url_suffix,
+        upload_space_used=space_used,
+        guest_users=guest_users,
+        translation_data=get_language_translation_data(request_language),
+    )
 
     return render(
         request,
@@ -208,7 +205,6 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
         f"/remote/{server.id}/installation",
         None,
         title=f"remote installation {server.hostname}",
-        remote=True,
     )
 
 
