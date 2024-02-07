@@ -55,7 +55,6 @@ def render_stats(
     realm: Optional[Realm],
     *,
     title: Optional[str] = None,
-    for_installation: bool = False,
     remote: bool = False,
     analytics_ready: bool = True,
 ) -> HttpResponse:
@@ -78,7 +77,6 @@ def render_stats(
 
     page_params = dict(
         data_url_suffix=data_url_suffix,
-        for_installation=for_installation,
         remote=remote,
         upload_space_used=space_used,
         guest_users=guest_users,
@@ -198,7 +196,7 @@ def get_chart_data_for_remote_realm(
 @require_server_admin
 def stats_for_installation(request: HttpRequest) -> HttpResponse:
     assert request.user.is_authenticated
-    return render_stats(request, "/installation", None, title="installation", for_installation=True)
+    return render_stats(request, "/installation", None, title="installation")
 
 
 @require_server_admin
@@ -210,7 +208,6 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
         f"/remote/{server.id}/installation",
         None,
         title=f"remote installation {server.hostname}",
-        for_installation=True,
         remote=True,
     )
 
