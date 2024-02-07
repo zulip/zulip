@@ -117,7 +117,7 @@
         transition: all 200ms ease-out;
     }
 
-    .comparison-table tr:hover {
+    .comparison-table tbody tr:hover {
         background-color: hsl(0deg 0% 100% / 30%);
     }
 
