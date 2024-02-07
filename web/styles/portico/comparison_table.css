@@ -353,3 +353,23 @@
         }
     }
 }
+
+/* Change comparison-table visibility on /plans
+   based on active plan tab. */
+
+.showing-cloud {
+    #self-hosted-plan-comparison,
+    #all-plan-comparison,
+    .self-hosted-feature-only,
+    .self-hosted-cell {
+        display: none;
+    }
+}
+
+.showing-self-hosted {
+    #cloud-plan-comparison,
+    #all-plan-comparison,
+    .cloud-cell {
+        display: none;
+    }
+}
