@@ -1334,12 +1334,18 @@ textarea.new_message_textarea,
        as 100% of the container width, plus
        the 8px from the negative left margin. */
     max-width: calc(100% + 8px);
-    /* Set an ellipsis when the translated
-       version of `Drafts` exceeds the width,
-       and keep button text to a single line. */
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    gap: 1px;
+
+    .compose-drafts-text {
+        /* Set an ellipsis when the translated
+           version of `Drafts` exceeds the width,
+           and keep button text to a single line. */
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+    }
 
     @media (width < $mc_min) {
         margin-left: 0;

@@ -10,6 +10,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_validate from "./compose_validate";
+import * as drafts from "./drafts";
 import * as flatpickr from "./flatpickr";
 import * as modals from "./modals";
 import * as popover_menus from "./popover_menus";
@@ -165,6 +166,8 @@ export function initialize() {
                 focus_first_send_later_popover_item();
                 send_later_popover_keyboard_toggle = false;
             }
+            // Make sure the compose drafts count, which is also displayed in this popover, has a current value.
+            drafts.update_compose_draft_count();
             const $popper = $(instance.popper);
             common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
             $popper.one("click", ".send_later_selected_send_later_time", () => {
