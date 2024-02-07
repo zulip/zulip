@@ -14,6 +14,7 @@ import {user_settings} from "./user_settings";
 
 type TypingAPIRequest = {op: "start" | "stop"} & (
     | {
+          type: string;
           to: string;
       }
     | {
@@ -46,6 +47,7 @@ function send_direct_message_typing_notification(
 ): void {
     const data = {
         to: JSON.stringify(user_ids_array),
+        type: "direct",
         op: operation,
     };
     send_typing_notification_ajax(data);
