@@ -475,7 +475,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             populate_auth_methods(property_value);
             break;
         case "realm_new_stream_announcements_stream_id":
-        case "realm_signup_notifications_stream_id":
+        case "realm_signup_announcements_stream_id":
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
@@ -660,26 +660,26 @@ export function init_dropdown_widgets() {
     );
     new_stream_announcements_stream_widget.setup();
 
-    const signup_notifications_stream_widget = new dropdown_widget.DropdownWidget({
-        widget_name: "realm_signup_notifications_stream_id",
+    const signup_announcements_stream_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "realm_signup_announcements_stream_id",
         get_options: notification_stream_options,
         $events_container: $("#settings_overlay_container #organization-settings"),
         item_click_callback(event, dropdown) {
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
-            settings_components.signup_notifications_stream_widget.render();
+            settings_components.signup_announcements_stream_widget.render();
             settings_components.save_discard_widget_status_handler($("#org-notifications"));
         },
         tippy_props: {
             placement: "bottom-start",
         },
-        default_id: realm.realm_signup_notifications_stream_id,
+        default_id: realm.realm_signup_announcements_stream_id,
         unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
         text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
     });
-    settings_components.set_signup_notifications_stream_widget(signup_notifications_stream_widget);
-    signup_notifications_stream_widget.setup();
+    settings_components.set_signup_announcements_stream_widget(signup_announcements_stream_widget);
+    signup_announcements_stream_widget.setup();
 
     const default_code_language_widget = new dropdown_widget.DropdownWidget({
         widget_name: "realm_default_code_block_language",

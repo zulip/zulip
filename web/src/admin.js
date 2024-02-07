@@ -31,7 +31,7 @@ const admin_settings_label = {
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
     realm_new_stream_announcements_stream: $t({defaultMessage: "New stream announcements"}),
-    realm_signup_notifications_stream: $t({defaultMessage: "New user announcements"}),
+    realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
     }),
@@ -138,7 +138,7 @@ export function build_page() {
         realm_default_language_code: realm.realm_default_language,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
-        realm_signup_notifications_stream_id: realm.realm_signup_notifications_stream_id,
+        realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
         is_admin: current_user.is_admin,
         is_guest: current_user.is_guest,
         is_owner: current_user.is_owner,

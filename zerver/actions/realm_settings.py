@@ -260,7 +260,7 @@ def do_set_realm_authentication_methods(
 
 def do_set_realm_stream(
     realm: Realm,
-    field: Literal["new_stream_announcements_stream", "signup_notifications_stream"],
+    field: Literal["new_stream_announcements_stream", "signup_announcements_stream"],
     stream: Optional[Stream],
     stream_id: int,
     *,
@@ -272,10 +272,10 @@ def do_set_realm_stream(
         old_value = realm.new_stream_announcements_stream_id
         realm.new_stream_announcements_stream = stream
         property = "new_stream_announcements_stream_id"
-    elif field == "signup_notifications_stream":
-        old_value = realm.signup_notifications_stream_id
-        realm.signup_notifications_stream = stream
-        property = "signup_notifications_stream_id"
+    elif field == "signup_announcements_stream":
+        old_value = realm.signup_announcements_stream_id
+        realm.signup_announcements_stream = stream
+        property = "signup_announcements_stream_id"
     else:
         raise AssertionError("Invalid realm stream field.")
 
@@ -312,11 +312,11 @@ def do_set_realm_new_stream_announcements_stream(
     )
 
 
-def do_set_realm_signup_notifications_stream(
+def do_set_realm_signup_announcements_stream(
     realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     do_set_realm_stream(
-        realm, "signup_notifications_stream", stream, stream_id, acting_user=acting_user
+        realm, "signup_announcements_stream", stream, stream_id, acting_user=acting_user
     )
 
 

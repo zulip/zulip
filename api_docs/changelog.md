@@ -23,8 +23,9 @@ format used by the Zulip server that they are interacting with.
 **Feature level 241**
 
 * [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
-  `PATCH /realm`: Renamed the realm setting `notifications_stream`
-  to `new_stream_announcements_stream`.
+  `PATCH /realm`: Renamed the realm settings `notifications_stream` and
+  `signup_notifications_stream` to `new_stream_announcements_stream` and
+  `signup_announcements_stream`, respectively.
 
 **Feature level 240**
 

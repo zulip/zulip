@@ -47,10 +47,10 @@ async function test_change_new_stream_announcements_stream(page: Page): Promise<
     await submit_announcements_stream_settings(page);
 }
 
-async function test_change_signup_notifications_stream(page: Page): Promise<void> {
+async function test_change_signup_announcements_stream(page: Page): Promise<void> {
     console.log('Changing signup notifications stream to Verona by filtering with "verona"');
 
-    await page.click("#realm_signup_notifications_stream_id_widget");
+    await page.click("#realm_signup_announcements_stream_id_widget");
     await page.waitForSelector(".dropdown-list-search-input", {visible: true});
 
     await page.type(".dropdown-list-search-input", "verona");
@@ -264,7 +264,7 @@ async function admin_test(page: Page): Promise<void> {
 
     await common.manage_organization(page);
     await test_change_new_stream_announcements_stream(page);
-    await test_change_signup_notifications_stream(page);
+    await test_change_signup_announcements_stream(page);
 
     await test_organization_permissions(page);
     // Currently, Firefox (with puppeteer) does not support file upload:

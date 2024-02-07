@@ -532,10 +532,10 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_new_stream_announcements_stream_id, 42);
     realm.realm_new_stream_announcements_stream_id = -1; // make sure to reset for future tests
 
-    event = event_fixtures.realm__update__signup_notifications_stream_id;
+    event = event_fixtures.realm__update__signup_announcements_stream_id;
     dispatch(event);
-    assert_same(realm.realm_signup_notifications_stream_id, 41);
-    realm.realm_signup_notifications_stream_id = -1; // make sure to reset for future tests
+    assert_same(realm.realm_signup_announcements_stream_id, 41);
+    realm.realm_signup_announcements_stream_id = -1; // make sure to reset for future tests
 
     event = event_fixtures.realm__update__default_code_block_language;
     dispatch(event);

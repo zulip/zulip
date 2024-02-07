@@ -284,16 +284,16 @@ def do_create_realm(
     # stream is the new_stream_announcements_stream.
     DefaultStream.objects.create(stream=new_stream_announcements_stream, realm=realm)
 
-    signup_notifications_stream = ensure_stream(
+    signup_announcements_stream = ensure_stream(
         realm,
         Realm.INITIAL_PRIVATE_STREAM_NAME,
         invite_only=True,
         stream_description="A private stream for core team members.",
         acting_user=None,
     )
-    realm.signup_notifications_stream = signup_notifications_stream
+    realm.signup_announcements_stream = signup_announcements_stream
 
-    realm.save(update_fields=["new_stream_announcements_stream", "signup_notifications_stream"])
+    realm.save(update_fields=["new_stream_announcements_stream", "signup_announcements_stream"])
 
     if plan_type is None and settings.BILLING_ENABLED:
         # We use acting_user=None for setting the initial plan type.
