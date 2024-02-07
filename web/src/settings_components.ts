@@ -1,25 +1,42 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
+import type {DropdownWidget} from "./dropdown_widget";
 import {$t} from "./i18n";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import type {StreamSubscription} from "./sub_store";
+import type {UserGroup} from "./user_groups";
 import * as util from "./util";
 
 const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
 
-export function get_sorted_options_list(option_values_object) {
-    const options_list = Object.keys(option_values_object).map((key) => ({
-        ...option_values_object[key],
-        key,
-    }));
-    let comparator = (x, y) => x.order - y.order;
+type SettingOptionValue = {
+    order?: number;
+    code: number;
+    description: string;
+};
+
+type SettingOptionValueWithKey = SettingOptionValue & {key: string};
+
+export function get_sorted_options_list(
+    option_values_object: Record<string, SettingOptionValue>,
+): SettingOptionValueWithKey[] {
+    const options_list: SettingOptionValueWithKey[] = Object.keys(option_values_object).map(
+        (key: string) => ({
+            ...option_values_object[key],
+            key,
+        }),
+    );
+    let comparator: (x: SettingOptionValueWithKey, y: SettingOptionValueWithKey) => number;
+
     if (!options_list[0].order) {
         comparator = (x, y) => {
             const key_x = x.key.toUpperCase();
@@ -32,12 +49,24 @@ export function get_sorted_options_list(option_values_object) {
             }
             return 0;
         };
+    } else {
+        comparator = (x, y) => {
+            assert(x.order !== undefined);
+            assert(y.order !== undefined);
+            return x.order - y.order;
+        };
     }
     options_list.sort(comparator);
     return options_list;
 }
 
-export function get_realm_time_limits_in_minutes(property) {
+type message_time_limit_settings =
+    | "realm_message_content_edit_limit_seconds"
+    | "realm_move_messages_between_streams_limit_seconds"
+    | "realm_move_messages_within_stream_limit_seconds"
+    | "realm_message_content_delete_limit_seconds";
+
+export function get_realm_time_limits_in_minutes(property: message_time_limit_settings): string {
     const setting_value = realm[property];
     if (setting_value === null) {
         // This represents "Anytime" case.
@@ -50,7 +79,34 @@ export function get_realm_time_limits_in_minutes(property) {
     return val;
 }
 
-export function get_property_value(property_name, for_realm_default_settings, sub, group) {
+type RealmSetting = Omit<typeof realm, "realm_authentication_methods"> & {
+    realm_authentication_methods: Record<string, boolean>;
+};
+type RealmSettingProperties = keyof RealmSetting | "realm_org_join_restrictions";
+
+type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
+type RealmUserSettingDefaultProperties =
+    | keyof RealmUserSettingDefaultType
+    | "email_notification_batching_period_edit_minutes";
+
+type StreamSettingProperties = keyof StreamSubscription | "stream_privacy" | "is_default_stream";
+
+type valueof<T> = T[keyof T];
+
+export function get_property_value(
+    property_name:
+        | RealmSettingProperties
+        | StreamSettingProperties
+        | keyof UserGroup
+        | RealmUserSettingDefaultProperties,
+    for_realm_default_settings?: boolean,
+    sub?: StreamSubscription,
+    group?: UserGroup,
+):
+    | valueof<RealmSetting>
+    | valueof<StreamSubscription>
+    | valueof<UserGroup>
+    | valueof<RealmUserSettingDefaultType> {
     if (for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
         if (property_name === "twenty_four_hour_time") {
@@ -62,7 +118,8 @@ export function get_property_value(property_name, for_realm_default_settings, su
         ) {
             return realm_user_settings_defaults.email_notifications_batching_period_seconds;
         }
-        return realm_user_settings_defaults[property_name];
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        return realm_user_settings_defaults[property_name as keyof RealmUserSettingDefaultType];
     }
 
     if (sub) {
@@ -72,12 +129,13 @@ export function get_property_value(property_name, for_realm_default_settings, su
         if (property_name === "is_default_stream") {
             return stream_data.is_default_stream_id(sub.stream_id);
         }
-
-        return sub[property_name];
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        return sub[property_name as keyof StreamSubscription];
     }
 
     if (group) {
-        return group[property_name];
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        return group[property_name as keyof UserGroup];
     }
 
     if (property_name === "realm_org_join_restrictions") {
@@ -94,11 +152,12 @@ export function get_property_value(property_name, for_realm_default_settings, su
         return realm_authentication_methods_to_boolean_dict();
     }
 
-    return realm[property_name];
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return realm[property_name as keyof RealmSetting] as valueof<RealmSetting>;
 }
 
-export function realm_authentication_methods_to_boolean_dict() {
-    const auth_method_to_bool = {};
+export function realm_authentication_methods_to_boolean_dict(): Record<string, boolean> {
+    const auth_method_to_bool: Record<string, boolean> = {};
     for (const [auth_method_name, auth_method_info] of Object.entries(
         realm.realm_authentication_methods,
     )) {
@@ -108,37 +167,64 @@ export function realm_authentication_methods_to_boolean_dict() {
     return auth_method_to_bool;
 }
 
-export function extract_property_name($elem, for_realm_default_settings) {
+export function extract_property_name($elem: JQuery, for_realm_default_settings?: boolean): string {
+    const elem_id = $elem.attr("id");
+    assert(elem_id !== undefined);
     if (for_realm_default_settings) {
         // ID for realm_user_default_settings elements are of the form
         // "realm_{settings_name}}" because both user and realm default
         // settings use the same template and each element should have
         // unique id.
-        return /^realm_(.*)$/.exec($elem.attr("id").replaceAll("-", "_"))[1];
+        return /^realm_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
     }
 
-    if ($elem.attr("id").startsWith("id_authmethod")) {
+    if (elem_id.startsWith("id_authmethod")) {
         // Authentication Method component IDs include authentication method name
         // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
         // We need to strip that whole construct down to extract the actual property name.
         // The [\da-z]+ part of the regexp covers the auth method name itself.
         // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
         // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-        return /^id_authmethod[\da-z]+_(.*)$/.exec($elem.attr("id"))[1];
+        return /^id_authmethod[\da-z]+_(.*)$/.exec(elem_id)![1];
     }
 
-    return /^id_(.*)$/.exec($elem.attr("id").replaceAll("-", "_"))[1];
+    return /^id_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
 }
 
-export function get_subsection_property_elements($subsection) {
+export function get_subsection_property_elements($subsection: JQuery): HTMLElement[] {
     return [...$subsection.find(".prop-element")];
 }
 
-export function set_property_dropdown_value(property_name) {
-    $(`#id_${CSS.escape(property_name)}`).val(get_property_value(property_name));
+type simple_dropdown_realm_settings = Pick<
+    typeof realm,
+    | "realm_create_private_stream_policy"
+    | "realm_create_public_stream_policy"
+    | "realm_create_web_public_stream_policy"
+    | "realm_invite_to_stream_policy"
+    | "realm_user_group_edit_policy"
+    | "realm_private_message_policy"
+    | "realm_add_custom_emoji_policy"
+    | "realm_invite_to_realm_policy"
+    | "realm_wildcard_mention_policy"
+    | "realm_move_messages_between_streams_policy"
+    | "realm_edit_topic_policy"
+    | "realm_org_type"
+>;
+
+export function set_property_dropdown_value(
+    property_name: keyof simple_dropdown_realm_settings,
+): void {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const property_value = get_property_value(
+        property_name,
+    ) as valueof<simple_dropdown_realm_settings>;
+    $(`#id_${CSS.escape(property_name)}`).val(property_value);
 }
 
-export function change_element_block_display_property(elem_id, show_element) {
+export function change_element_block_display_property(
+    elem_id: string,
+    show_element: boolean,
+): void {
     const $elem = $(`#${CSS.escape(elem_id)}`);
     if (show_element) {
         $elem.parent().show();
@@ -147,13 +233,21 @@ export function change_element_block_display_property(elem_id, show_element) {
     }
 }
 
-export function is_video_chat_provider_jitsi_meet() {
-    const video_chat_provider_id = Number.parseInt($("#id_realm_video_chat_provider").val(), 10);
+export function is_video_chat_provider_jitsi_meet(): boolean {
+    const video_chat_provider_id = Number.parseInt(
+        $<HTMLSelectElement & {type: "select-one"}>(
+            "select:not([multiple])#id_realm_video_chat_provider",
+        ).val()!,
+        10,
+    );
     const jitsi_meet_id = realm.realm_available_video_chat_providers.jitsi_meet.id;
     return video_chat_provider_id === jitsi_meet_id;
 }
 
-function get_jitsi_server_url_setting_value($input_elem, for_api_data = true) {
+function get_jitsi_server_url_setting_value(
+    $input_elem: JQuery<HTMLSelectElement>,
+    for_api_data = true,
+): string | null {
     // If the video chat provider dropdown is not set to Jitsi, we return
     // `realm_jitsi_server_url` to indicate that the property remains unchanged.
     // This ensures the appropriate state of the save button and prevents the
@@ -170,19 +264,19 @@ function get_jitsi_server_url_setting_value($input_elem, for_api_data = true) {
         return JSON.stringify("default");
     }
 
-    const $custom_input_elem = $("#id_realm_jitsi_server_url_custom_input");
+    const $custom_input_elem = $<HTMLInputElement>("input#id_realm_jitsi_server_url_custom_input");
     if (!for_api_data) {
-        return $custom_input_elem.val();
+        return $custom_input_elem.val()!;
     }
     return JSON.stringify($custom_input_elem.val());
 }
 
-export function update_custom_value_input(property_name) {
+export function update_custom_value_input(property_name: message_time_limit_settings): void {
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
     const custom_input_elem_id = $dropdown_elem
         .parent()
         .find(".time-limit-custom-input")
-        .attr("id");
+        .attr("id")!;
 
     const show_custom_limit_input = $dropdown_elem.val() === "custom_period";
     change_element_block_display_property(custom_input_elem_id, show_custom_limit_input);
@@ -193,7 +287,9 @@ export function update_custom_value_input(property_name) {
     }
 }
 
-export function get_time_limit_dropdown_setting_value(property_name) {
+export function get_time_limit_dropdown_setting_value(
+    property_name: message_time_limit_settings,
+): string {
     if (realm[property_name] === null) {
         return "any_time";
     }
@@ -206,7 +302,7 @@ export function get_time_limit_dropdown_setting_value(property_name) {
     return "custom_period";
 }
 
-export function set_time_limit_setting(property_name) {
+export function set_time_limit_setting(property_name: message_time_limit_settings): void {
     const dropdown_elem_val = get_time_limit_dropdown_setting_value(property_name);
     $(`#id_${CSS.escape(property_name)}`).val(dropdown_elem_val);
 
@@ -216,12 +312,12 @@ export function set_time_limit_setting(property_name) {
     $custom_input.val(get_realm_time_limits_in_minutes(property_name));
 
     change_element_block_display_property(
-        $custom_input.attr("id"),
+        $custom_input.attr("id")!,
         dropdown_elem_val === "custom_period",
     );
 }
 
-function check_valid_number_input(input_value, keep_number_as_float = false) {
+function check_valid_number_input(input_value: string, keep_number_as_float = false): number {
     // This check is important to make sure that inputs like "24a" are
     // considered invalid and this function returns NaN for such inputs.
     // Number.parseInt and Number.parseFloat will convert strings like
@@ -237,7 +333,10 @@ function check_valid_number_input(input_value, keep_number_as_float = false) {
     return Number.parseInt(input_value, 10);
 }
 
-function get_message_retention_setting_value($input_elem, for_api_data = true) {
+function get_message_retention_setting_value(
+    $input_elem: JQuery<HTMLSelectElement>,
+    for_api_data = true,
+): string | number | null {
     const select_elem_val = $input_elem.val();
     if (select_elem_val === "unlimited") {
         if (!for_api_data) {
@@ -255,17 +354,17 @@ function get_message_retention_setting_value($input_elem, for_api_data = true) {
 
     const custom_input_val = $input_elem
         .parent()
-        .find(".message-retention-setting-custom-input")
-        .val();
+        .find<HTMLInputElement>(".message-retention-setting-custom-input")
+        .val()!;
     if (custom_input_val.length === 0) {
         return settings_config.retain_message_forever;
     }
     return check_valid_number_input(custom_input_val);
 }
 
-export function sort_object_by_key(obj) {
+export function sort_object_by_key(obj: Record<string, boolean>): Record<string, boolean> {
     const keys = Object.keys(obj).sort();
-    const new_obj = {};
+    const new_obj: Record<string, boolean> = {};
 
     for (const key of keys) {
         new_obj[key] = obj[key];
@@ -274,17 +373,19 @@ export function sort_object_by_key(obj) {
     return new_obj;
 }
 
-export let default_code_language_widget = null;
-export let new_stream_announcements_stream_widget = null;
-export let signup_announcements_stream_widget = null;
-export let zulip_update_announcements_stream_widget = null;
-export let create_multiuse_invite_group_widget = null;
-export let can_remove_subscribers_group_widget = null;
-export let can_access_all_users_group_widget = null;
-export let can_mention_group_widget = null;
-export let new_group_can_mention_group_widget = null;
+export let default_code_language_widget: DropdownWidget | null = null;
+export let new_stream_announcements_stream_widget: DropdownWidget | null = null;
+export let signup_announcements_stream_widget: DropdownWidget | null = null;
+export let zulip_update_announcements_stream_widget: DropdownWidget | null = null;
+export let create_multiuse_invite_group_widget: DropdownWidget | null = null;
+export let can_remove_subscribers_group_widget: DropdownWidget | null = null;
+export let can_access_all_users_group_widget: DropdownWidget | null = null;
+export let can_mention_group_widget: DropdownWidget | null = null;
+export let new_group_can_mention_group_widget: DropdownWidget | null = null;
 
-export function get_widget_for_dropdown_list_settings(property_name) {
+export function get_widget_for_dropdown_list_settings(
+    property_name: string,
+): DropdownWidget | null {
     switch (property_name) {
         case "realm_new_stream_announcements_stream_id":
             return new_stream_announcements_stream_widget;
@@ -308,61 +409,69 @@ export function get_widget_for_dropdown_list_settings(property_name) {
     }
 }
 
-export function set_default_code_language_widget(widget) {
+export function set_default_code_language_widget(widget: DropdownWidget): void {
     default_code_language_widget = widget;
 }
 
-export function set_new_stream_announcements_stream_widget(widget) {
+export function set_new_stream_announcements_stream_widget(widget: DropdownWidget): void {
     new_stream_announcements_stream_widget = widget;
 }
 
-export function set_signup_announcements_stream_widget(widget) {
+export function set_signup_announcements_stream_widget(widget: DropdownWidget): void {
     signup_announcements_stream_widget = widget;
 }
 
-export function set_zulip_update_announcements_stream_widget(widget) {
+export function set_zulip_update_announcements_stream_widget(widget: DropdownWidget): void {
     zulip_update_announcements_stream_widget = widget;
 }
 
-export function set_create_multiuse_invite_group_widget(widget) {
+export function set_create_multiuse_invite_group_widget(widget: DropdownWidget): void {
     create_multiuse_invite_group_widget = widget;
 }
 
-export function set_can_remove_subscribers_group_widget(widget) {
+export function set_can_remove_subscribers_group_widget(widget: DropdownWidget): void {
     can_remove_subscribers_group_widget = widget;
 }
 
-export function set_can_access_all_users_group_widget(widget) {
+export function set_can_access_all_users_group_widget(widget: DropdownWidget): void {
     can_access_all_users_group_widget = widget;
 }
 
-export function set_can_mention_group_widget(widget) {
+export function set_can_mention_group_widget(widget: DropdownWidget): void {
     can_mention_group_widget = widget;
 }
 
-export function set_new_group_can_mention_group_widget(widget) {
+export function set_new_group_can_mention_group_widget(widget: DropdownWidget): void {
     new_group_can_mention_group_widget = widget;
 }
 
-export function set_dropdown_list_widget_setting_value(property_name, value) {
+export function set_dropdown_list_widget_setting_value(
+    property_name: string,
+    value: number | string,
+): void {
     const widget = get_widget_for_dropdown_list_settings(property_name);
+    assert(widget !== null);
     widget.render(value);
 }
 
-export function get_dropdown_list_widget_setting_value($input_elem) {
+export function get_dropdown_list_widget_setting_value($input_elem: JQuery): number | string {
     const widget_name = extract_property_name($input_elem);
     const setting_widget = get_widget_for_dropdown_list_settings(widget_name);
+    assert(setting_widget !== null);
 
-    const setting_value_type = $input_elem.attr("data-setting-value-type");
-    if (setting_value_type === "number") {
-        return Number.parseInt(setting_widget.value(), 10);
-    }
+    const setting_value = setting_widget.value();
+    assert(setting_value !== undefined);
 
-    return setting_widget.value();
+    return setting_value;
 }
 
-export function change_save_button_state($element, state) {
-    function show_hide_element($element, show, fadeout_delay, fadeout_callback) {
+export function change_save_button_state($element: JQuery, state: string): void {
+    function show_hide_element(
+        $element: JQuery,
+        show: boolean,
+        fadeout_delay: number,
+        fadeout_callback: (this: HTMLElement) => void,
+    ): void {
         if (show) {
             $element.removeClass("hide").addClass(".show").fadeIn(300);
             return;
@@ -380,9 +489,9 @@ export function change_save_button_state($element, state) {
     }
 
     if (state === "discarded") {
-        show_hide_element($element, false, 0, () =>
-            enable_or_disable_save_button($element.closest(".settings-subsection-parent")),
-        );
+        show_hide_element($element, false, 0, () => {
+            enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
+        });
         return;
     }
 
@@ -422,7 +531,9 @@ export function change_save_button_state($element, state) {
             break;
     }
 
+    assert(button_text !== undefined);
     $textEl.text(button_text);
+    assert(data_status !== undefined);
     $saveBtn.attr("data-status", data_status);
     if (state === "unsaved") {
         // Ensure the save button is visible when the state is "unsaved",
@@ -433,39 +544,60 @@ export function change_save_button_state($element, state) {
         );
         enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
     }
-    show_hide_element($element, is_show, 800);
+    assert(is_show !== undefined);
+    show_hide_element($element, is_show, 800, () => {
+        // There is no need for a callback here since we have already
+        // called the function to enable or disable save button.
+    });
 }
 
-function get_input_type($input_elem, input_type) {
-    if (["boolean", "string", "number"].includes(input_type)) {
+function get_input_type($input_elem: JQuery, input_type?: string): string {
+    if (input_type !== undefined && ["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
     return $input_elem.data("setting-widget-type");
 }
 
-export function get_input_element_value(input_elem, input_type) {
+export function get_input_element_value(
+    input_elem: HTMLElement,
+    input_type?: string,
+): number | string | null | undefined {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
+    let input_value;
     switch (input_type) {
         case "boolean":
-            return $input_elem.prop("checked");
+            return $(input_elem).prop("checked");
         case "string":
-            return $input_elem.val().trim();
+            assert(
+                input_elem instanceof HTMLInputElement || input_elem instanceof HTMLSelectElement,
+            );
+            input_value = $(input_elem).val()!;
+            assert(typeof input_value === "string");
+            return input_value.trim();
         case "number":
-            return Number.parseInt($input_elem.val().trim(), 10);
+            assert(
+                input_elem instanceof HTMLInputElement || input_elem instanceof HTMLSelectElement,
+            );
+            input_value = $(input_elem).val()!;
+            assert(typeof input_value === "string");
+            return Number.parseInt(input_value.trim(), 10);
         case "radio-group": {
-            const selected_val = $input_elem.find("input:checked").val();
+            const selected_val = $input_elem.find<HTMLInputElement>("input:checked").val()!;
             if ($input_elem.data("setting-choice-type") === "number") {
                 return Number.parseInt(selected_val, 10);
             }
             return selected_val.trim();
         }
         case "time-limit":
-            return get_time_limit_setting_value($input_elem);
+            assert(input_elem instanceof HTMLSelectElement);
+            return get_time_limit_setting_value($(input_elem));
         case "jitsi-server-url-setting":
-            return get_jitsi_server_url_setting_value($input_elem);
+            assert(input_elem instanceof HTMLSelectElement);
+            return get_jitsi_server_url_setting_value($(input_elem));
         case "message-retention-setting":
-            return get_message_retention_setting_value($input_elem);
+            assert(input_elem instanceof HTMLSelectElement);
+            return get_message_retention_setting_value($(input_elem));
         case "dropdown-list-widget":
             return get_dropdown_list_widget_setting_value($input_elem);
         default:
@@ -473,23 +605,30 @@ export function get_input_element_value(input_elem, input_type) {
     }
 }
 
-export function set_input_element_value($input_elem, value) {
+export function set_input_element_value(
+    $input_elem: JQuery,
+    value: number | string | boolean,
+): void {
     const input_type = get_input_type($input_elem, typeof value);
     if (input_type) {
         if (input_type === "boolean") {
-            return $input_elem.prop("checked", value);
+            assert(typeof value === "boolean");
+            $input_elem.prop("checked", value);
+            return;
         } else if (input_type === "string" || input_type === "number") {
-            return $input_elem.val(value);
+            assert(typeof value !== "boolean");
+            $input_elem.val(value);
+            return;
         }
     }
     blueslip.error("Failed to set value of property", {
         property: extract_property_name($input_elem),
     });
-    return undefined;
+    return;
 }
 
-export function get_auth_method_list_data() {
-    const new_auth_methods = {};
+export function get_auth_method_list_data(): Record<string, boolean> {
+    const new_auth_methods: Record<string, boolean> = {};
     const $auth_method_rows = $("#id_realm_authentication_methods").find("div.method_row");
 
     for (const method_row of $auth_method_rows) {
@@ -501,13 +640,16 @@ export function get_auth_method_list_data() {
     return new_auth_methods;
 }
 
-export function parse_time_limit($elem) {
-    const time_limit_in_minutes = check_valid_number_input($elem.val(), true);
+export function parse_time_limit($elem: JQuery<HTMLInputElement>): number {
+    const time_limit_in_minutes = check_valid_number_input($elem.val()!, true);
     return Math.floor(time_limit_in_minutes * 60);
 }
 
-function get_time_limit_setting_value($input_elem, for_api_data = true) {
-    const select_elem_val = $input_elem.val();
+function get_time_limit_setting_value(
+    $input_elem: JQuery<HTMLSelectElement>,
+    for_api_data = true,
+): string | number | null {
+    const select_elem_val = $input_elem.val()!;
 
     if (select_elem_val === "any_time") {
         // "unlimited" is sent to API when a user wants to set the setting to
@@ -520,11 +662,14 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     }
 
     if (select_elem_val !== "custom_period") {
+        assert(typeof select_elem_val === "string");
         return Number.parseInt(select_elem_val, 10);
     }
 
-    const $custom_input_elem = $input_elem.parent().find(".time-limit-custom-input");
-    if ($custom_input_elem.val().length === 0) {
+    const $custom_input_elem = $input_elem
+        .parent()
+        .find<HTMLInputElement>("input.time-limit-custom-input");
+    if ($custom_input_elem.val() === "") {
         // This handles the case where the initial setting value is "Any time" and then
         // dropdown is changed to "Custom" where the input box is empty initially and
         // thus we do not show the save-discard widget until something is typed in the
@@ -535,21 +680,37 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     if ($input_elem.attr("id") === "id_realm_waiting_period_threshold") {
         // For realm waiting period threshold setting, the custom input element contains
         // number of days.
-        return check_valid_number_input($custom_input_elem.val());
+        return check_valid_number_input($custom_input_elem.val()!);
     }
 
     return parse_time_limit($custom_input_elem);
 }
 
-export function check_property_changed(elem, for_realm_default_settings, sub, group) {
+type setting_property_type =
+    | RealmSettingProperties
+    | StreamSettingProperties
+    | keyof UserGroup
+    | RealmUserSettingDefaultProperties;
+
+export function check_property_changed(
+    elem: HTMLElement,
+    for_realm_default_settings: boolean,
+    sub: StreamSubscription,
+    group: UserGroup,
+): boolean {
     const $elem = $(elem);
-    const property_name = extract_property_name($elem, for_realm_default_settings);
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const property_name = extract_property_name(
+        $elem,
+        for_realm_default_settings,
+    ) as setting_property_type;
     let current_val = get_property_value(property_name, for_realm_default_settings, sub, group);
     let proposed_val;
 
     switch (property_name) {
         case "realm_authentication_methods":
-            current_val = sort_object_by_key(current_val);
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            current_val = sort_object_by_key(current_val as Record<string, boolean>);
             current_val = JSON.stringify(current_val);
             proposed_val = get_auth_method_list_data();
             proposed_val = JSON.stringify(proposed_val);
@@ -570,14 +731,17 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "realm_move_messages_between_streams_limit_seconds":
         case "realm_move_messages_within_stream_limit_seconds":
         case "realm_waiting_period_threshold":
-            proposed_val = get_time_limit_setting_value($elem, false);
+            assert(elem instanceof HTMLSelectElement);
+            proposed_val = get_time_limit_setting_value($(elem), false);
             break;
         case "realm_message_retention_days":
         case "message_retention_days":
-            proposed_val = get_message_retention_setting_value($elem, false);
+            assert(elem instanceof HTMLSelectElement);
+            proposed_val = get_message_retention_setting_value($(elem), false);
             break;
         case "realm_jitsi_server_url":
-            proposed_val = get_jitsi_server_url_setting_value($elem, false);
+            assert(elem instanceof HTMLSelectElement);
+            proposed_val = get_jitsi_server_url_setting_value($(elem), false);
             break;
         case "realm_default_language":
             proposed_val = $(
@@ -599,7 +763,10 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
     return current_val !== proposed_val;
 }
 
-function switching_to_private(properties_elements, for_realm_default_settings) {
+function switching_to_private(
+    properties_elements: HTMLElement[],
+    for_realm_default_settings: boolean,
+): boolean {
     for (const elem of properties_elements) {
         const $elem = $(elem);
         const property_name = extract_property_name($elem, for_realm_default_settings);
@@ -613,11 +780,11 @@ function switching_to_private(properties_elements, for_realm_default_settings) {
 }
 
 export function save_discard_widget_status_handler(
-    $subsection,
-    for_realm_default_settings,
-    sub,
-    group,
-) {
+    $subsection: JQuery,
+    for_realm_default_settings: boolean,
+    sub: StreamSubscription,
+    group: UserGroup,
+): void {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
@@ -663,8 +830,11 @@ export function save_discard_widget_status_handler(
     }
 }
 
-function check_maximum_valid_value($custom_input_elem, property_name) {
-    let setting_value = Number.parseInt($custom_input_elem.val(), 10);
+function check_maximum_valid_value(
+    $custom_input_elem: JQuery<HTMLInputElement>,
+    property_name: string,
+): boolean {
+    let setting_value = Number.parseInt($custom_input_elem.val()!, 10);
     if (
         property_name === "realm_message_content_edit_limit_seconds" ||
         property_name === "realm_message_content_delete_limit_seconds" ||
@@ -675,23 +845,34 @@ function check_maximum_valid_value($custom_input_elem, property_name) {
     return setting_value <= MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE;
 }
 
-function should_disable_save_button_for_jitsi_server_url_setting() {
+function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
     if (!is_video_chat_provider_jitsi_meet()) {
         return false;
     }
 
-    const $dropdown_elem = $("#id_realm_jitsi_server_url");
-    const $custom_input_elem = $("#id_realm_jitsi_server_url_custom_input");
+    const $dropdown_elem = $<HTMLSelectElement & {type: "select-one"}>(
+        "select:not([multiple])#id_realm_jitsi_server_url",
+    );
+    const $custom_input_elem = $<HTMLInputElement>("input#id_realm_jitsi_server_url_custom_input");
 
-    return $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val(), true);
+    return (
+        $dropdown_elem.val()!.toString() === "custom" &&
+        !util.is_valid_url($custom_input_elem.val()!, true)
+    );
 }
 
-function should_disable_save_button_for_time_limit_settings(time_limit_settings) {
+function should_disable_save_button_for_time_limit_settings(
+    time_limit_settings: HTMLElement[],
+): boolean {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
-        const $dropdown_elem = $(setting_elem).find("select");
-        const $custom_input_elem = $(setting_elem).find(".time-limit-custom-input");
-        const custom_input_elem_val = check_valid_number_input($custom_input_elem.val());
+        const $dropdown_elem = $(setting_elem).find<HTMLSelectElement & {type: "select-one"}>(
+            "select:not([multiple])",
+        );
+        const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
+            "input.time-limit-custom-input",
+        );
+        const custom_input_elem_val = check_valid_number_input($custom_input_elem.val()!);
 
         const for_realm_default_settings =
             $dropdown_elem.closest(".settings-section.show").attr("id") ===
@@ -722,7 +903,7 @@ function should_disable_save_button_for_time_limit_settings(time_limit_settings)
     return disable_save_btn;
 }
 
-function enable_or_disable_save_button($subsection_elem) {
+function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
     let disable_save_btn = false;

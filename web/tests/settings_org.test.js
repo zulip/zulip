@@ -631,6 +631,13 @@ test("set_up", ({override, override_rewire}) => {
         $.create("<stub-create-web-public-stream-policy-parent>"),
     );
 
+    override_rewire(settings_components, "get_input_element_value", (elem) => {
+        if ($(elem).data() === "number") {
+            return Number.parseInt($(elem).val(), 10);
+        }
+        return $(elem).val();
+    });
+
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
     override(current_user, "is_owner", true);
