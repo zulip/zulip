@@ -93,6 +93,20 @@
 
     {{#if is_realm_admin}}
     <li class="topic-menu-item">
+        <a tabindex="0" class="sidebar-popover-pin-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            {{#if is_topic_pinned}}
+            <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+            {{t "Unpin topic"}}
+            {{else}}
+            <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+            {{t "Pin topic"}}
+            {{/if}}
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if is_realm_admin}}
+    <li class="topic-menu-item">
         <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-trash" aria-hidden="true"></i>
             {{t "Delete topic"}}

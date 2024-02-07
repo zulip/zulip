@@ -590,6 +590,19 @@ def delete_topic(client: Client, stream_id: int, topic: str) -> None:
     assert result["result"] == "success"
 
 
+@openapi_test_function("/stream_topics:post")
+def update_stream_topic_setting(
+    client: Client, stream_id: int, topic_name: str, stream_topic_setting: int
+) -> None:
+    request = {
+        "stream_id": stream_id,
+        "topic_name": topic_name,
+        "stream_topic_setting": stream_topic_setting,
+    }
+    result = client.call_endpoint(url="/stream_topics", method="POST", request=request)
+    validate_against_openapi_schema(result, "/stream_topics", "post", "200")
+
+
 @openapi_test_function("/streams:get")
 def get_streams(client: Client) -> None:
     # {code_example|start}
@@ -1615,6 +1628,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     archive_stream(client, stream_id)
     add_default_stream(client)
     remove_default_stream(client)
+    update_stream_topic_setting(client, 1, "test", 1)
 
     test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)

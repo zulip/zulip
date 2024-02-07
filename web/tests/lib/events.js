@@ -209,6 +209,12 @@ exports.fixtures = {
         ],
     },
 
+    pin_topics: {
+        type: "realm_topic_pins",
+        value: [12, "demo_topic"],
+        setting: 0,
+    },
+
     presence: {
         type: "presence",
         email: "alice@example.com",
@@ -781,6 +787,12 @@ exports.fixtures = {
         message_type: "direct",
         sender: typing_person1,
         recipients: [typing_person2],
+    },
+
+    unpin_topics: {
+        type: "realm_topic_pins",
+        value: [12, "demo_topic"],
+        setting: 1,
     },
 
     update_message_flags__read: {

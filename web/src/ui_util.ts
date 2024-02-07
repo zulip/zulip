@@ -192,11 +192,18 @@ export function listener_for_preferred_color_scheme_change(callback: () => void)
 }
 
 // Keep the menu icon over which the popover is based off visible.
+// We want to remove the pin icon when the menu icon is added.
 export function show_left_sidebar_menu_icon(element: HTMLElement): void {
     $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");
+    $(element)
+        .closest(".topic-box")
+        .children(".sidebar-pin-icon")
+        .addClass("left_sidebar_pin_icon_invisible");
 }
 
 // Remove the class from element when popover is closed
+// We want to add the pin icon back when we remove the menu icon.
 export function hide_left_sidebar_menu_icon(): void {
     $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
+    $(".left_sidebar_pin_icon_invisible").removeClass("left_sidebar_pin_icon_invisible");
 }

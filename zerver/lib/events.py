@@ -87,6 +87,7 @@ from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import get_realm_domains
 from zerver.models.streams import get_default_stream_groups
+from zerver.models.topics import get_topic_pins
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
@@ -673,6 +674,7 @@ def fetch_initial_state_data(
 
     if want("user_topic"):
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
+        state["pin_realm_stream_topics"] = list(get_topic_pins(realm).values_list("stream", "name"))
 
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.zoom_token is not None
@@ -1520,6 +1522,8 @@ def apply_event(
         else:
             fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
             state["user_topics"].append({x: event[x] for x in fields})
+    # elif event["type"] == "realm_topic_pins":
+    #     state["pin_realm_stream_topics"] = event["value"]
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
     else:

@@ -25,6 +25,9 @@ const user_topics = mock_esm("../src/user_topics", {
     is_topic_unmuted_or_followed() {
         return false;
     },
+    is_topic_pinned() {
+        return false;
+    },
 });
 const narrow_state = mock_esm("../src/narrow_state", {
     topic() {},
@@ -99,6 +102,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_active_topic: false,
         is_muted: false,
         is_followed: false,
+        is_topic_pinned: false,
         is_unmuted_or_followed: false,
         is_zero: true,
         topic_display_name: "topic 9",
@@ -113,6 +117,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_active_topic: false,
         is_muted: false,
         is_followed: false,
+        is_topic_pinned: false,
         is_unmuted_or_followed: false,
         is_zero: true,
         topic_display_name: "topic 8",
@@ -270,6 +275,13 @@ test("get_list_info unreads", ({override}) => {
         return topic_name === "topic 5";
     });
 
+    //  Irrespective of condition, pinned topics should
+    //  always appear at the top.
+    override(user_topics, "is_topic_pinned", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name === "topic 7";
+    });
+
     list_info = get_list_info();
     assert.equal(list_info.items.length, 12);
     assert.equal(list_info.more_topics_unreads, 3);
@@ -280,13 +292,13 @@ test("get_list_info unreads", ({override}) => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
+            "topic 7",
             "topic 5",
             "topic 0",
             "topic 1",
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
             "topic 8",
             "topic 9",
             "topic 10",
@@ -310,13 +322,13 @@ test("get_list_info unreads", ({override}) => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
+            "topic 7",
             "topic 5",
             "topic 0",
             "topic 1",
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
             "topic 10",
             "topic 11",
             "topic 12",
@@ -336,13 +348,13 @@ test("get_list_info unreads", ({override}) => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
+            "topic 7",
             "topic 5",
             "topic 0",
             "topic 1",
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
             "topic 10",
             "topic 11",
             "topic 12",
@@ -363,13 +375,13 @@ test("get_list_info unreads", ({override}) => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
+            "topic 7",
             "topic 5",
             "topic 0",
             "topic 1",
             "topic 2",
             "topic 3",
             "topic 6",
-            "topic 7",
             "topic 10",
             "topic 11",
             "topic 12",

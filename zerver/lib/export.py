@@ -173,6 +173,7 @@ ALL_ZULIP_TABLES = {
     "zerver_userstatus",
     "zerver_usertopic",
     "zerver_muteduser",
+    "zerver_topic",
 }
 
 # This set contains those database tables that we expect to not be

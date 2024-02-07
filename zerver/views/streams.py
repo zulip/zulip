@@ -36,6 +36,7 @@ from zerver.actions.streams import (
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_deactivate_stream,
+    do_pin_realm_stream_topic,
     do_rename_stream,
     get_subscriber_ids,
 )
@@ -100,6 +101,7 @@ from zerver.lib.validator import (
     to_non_negative_int,
 )
 from zerver.models import Realm, Stream, UserGroup, UserMessage, UserProfile
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.users import get_system_bot
 
 
@@ -1102,3 +1104,20 @@ def get_stream_email_address(
     stream_email = encode_email_address(stream, show_sender=True)
 
     return json_success(request, data={"email": stream_email})
+
+
+@require_realm_admin
+@has_request_variables
+def update_stream_topic_setting(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ(json_validator=check_int),
+    topic_name: str = REQ(str_validator=check_capped_string(MAX_TOPIC_NAME_LENGTH)),
+    stream_topic_setting: int = REQ(json_validator=check_int_in([0, 1])),
+) -> HttpResponse:
+    pin_stream_topic_settings = [0, 1]
+
+    if stream_topic_setting in pin_stream_topic_settings:
+        do_pin_realm_stream_topic(user_profile.realm, stream_id, topic_name, stream_topic_setting)
+
+    return json_success(request)

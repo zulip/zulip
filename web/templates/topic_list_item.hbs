@@ -18,6 +18,11 @@
                 {{unread}}
             </span>
         </div>
+        {{#if is_topic_pinned}}
+            <span class="sidebar-pin-icon topic-sidebar-pin-icon">
+                <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+            </span>
+        {{/if}}
         <span class="sidebar-menu-icon topic-sidebar-menu-icon">
             <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
         </span>
